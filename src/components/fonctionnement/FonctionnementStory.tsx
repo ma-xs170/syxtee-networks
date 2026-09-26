@@ -136,6 +136,7 @@ export default function FonctionnementStory() {
       scenes={scenes}
       height={`${N * 110}vh`}
       backdrop={(p) => <TripMap p={p} />}
+      progress={false}
     />
   );
 }

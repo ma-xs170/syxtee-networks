@@ -6,19 +6,11 @@ const D = 8;
 const H = 140;
 const Z = 150; // bas du téléphone
 
-export default function PhoneMoblin({
-  className,
-  animated = true,
-  waves = true,
-}: {
-  className?: string;
-  animated?: boolean;
-  waves?: boolean;
-}) {
+/** Le dessin seul (<g>), dans le repère de l'illustration (viewBox "-115 -365 250 320"). */
+export function MoblinDrawing({ waves = true }: { waves?: boolean }) {
   const [cx, cy] = iso(W / 2, D / 2, Z + H + 6);
   return (
-    <Illustration viewBox="-115 -365 250 320" className={className} animated={animated}>
-      <g className="illu-float">
+    <g>
         {/* Perche télescopique, pince derrière le téléphone */}
         <path d={`M${iso(W / 2, -6, Z + 40).join(" ")}L${iso(W / 2, -6, 70).join(" ")}`} />
         <path d={`M${iso(W / 2, -6, 110).join(" ")}L${iso(W / 2, -6, 70).join(" ")}`} strokeWidth={3} />
@@ -74,6 +66,23 @@ export default function PhoneMoblin({
             <Label x={cx + 62} y={cy - 40} anchor="middle">Wi-Fi</Label>
           </g>
         )}
+    </g>
+  );
+}
+
+export default function PhoneMoblin({
+  className,
+  animated = true,
+  waves = true,
+}: {
+  className?: string;
+  animated?: boolean;
+  waves?: boolean;
+}) {
+  return (
+    <Illustration viewBox="-115 -365 250 320" className={className} animated={animated}>
+      <g className="illu-float">
+        <MoblinDrawing waves={waves} />
       </g>
     </Illustration>
   );

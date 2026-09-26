@@ -8,15 +8,29 @@ export const site = {
   year: new Date().getFullYear(),
 };
 
-export const nav = [
+export type ToolIcon = "phone" | "dish" | "esim";
+export type NavLink = { label: string; href: string };
+export type NavTool = NavLink & { desc: string; icon: ToolIcon; badge?: string };
+export type NavItem = NavLink | { label: string; children: NavTool[] };
+
+export const nav: NavItem[] = [
   { label: "Services", href: "/services" },
   { label: "Fonctionnement", href: "/fonctionnement" },
-  { label: "Moblin", href: "/moblin" },
-  { label: "Starlink", href: "/starlink" },
+  {
+    label: "Outils",
+    children: [
+      { label: "Moblin", href: "/moblin", desc: "L'app IRL qu'on recommande", icon: "phone" },
+      { label: "Starlink", href: "/starlink", desc: "Le live là où la 4G abandonne", icon: "dish" },
+      { label: "Saily", href: "/saily", desc: "Une 4G de plus en eSIM", icon: "esim", badge: "Partenaire" },
+    ],
+  },
   { label: "Relais", href: "/relais" },
   { label: "Offres", href: "/offres" },
   { label: "FAQ", href: "/faq" },
 ];
+
+/** Toutes les pages du menu, à plat (sitemap…). */
+export const navLinks: NavLink[] = nav.flatMap((item) => ("children" in item ? item.children : [item]));
 
 export type Relay = {
   city: string;

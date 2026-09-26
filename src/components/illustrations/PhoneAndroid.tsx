@@ -22,7 +22,7 @@ export function ChipGlyph({ x, y, s = 1, lit = true }: { x: number; y: number; s
   );
 }
 
-function Screen({ screen }: { screen: AndroidScreen }) {
+function Screen({ screen, lit }: { screen: AndroidScreen; lit: boolean }) {
   const t = (x: number, y: number, s: string, strong = false, size = 5.5): ReactNode => (
     <text x={x} y={y} fontSize={size} stroke="none" fill={strong ? "var(--foreground)" : "var(--muted)"} className="font-mono">
       {s}
@@ -37,7 +37,7 @@ function Screen({ screen }: { screen: AndroidScreen }) {
           <path d={`M${W / 2 - 7} ${-H + 58}l5 5l9 -10`} strokeWidth={1.5} />
           {t(10, -H + 86, "Connected", true)}
           {t(10, -H + 94, "to streamer")}
-          <ChipGlyph x={9} y={-38} s={0.7} />
+          <ChipGlyph x={9} y={-38} s={0.7} lit={lit} />
           {t(30, -24, "eSIM")}
           <Led x={W - 12} y={-29} r={1.6} />
         </g>
@@ -80,28 +80,18 @@ function Screen({ screen }: { screen: AndroidScreen }) {
       return (
         <g>
           {t(9, -H + 26, "eSIM", true, 6.5)}
-          <ChipGlyph x={W / 2 - 18} y={-H + 44} s={1.5} />
+          <ChipGlyph x={W / 2 - 18} y={-H + 44} s={1.5} lit={lit} />
           {t(12, -30, "Compatible ?")}
         </g>
       );
   }
 }
 
-export default function PhoneAndroid({
-  className,
-  animated = true,
-  screen = "moblink",
-  waves = false,
-}: {
-  className?: string;
-  animated?: boolean;
-  screen?: AndroidScreen;
-  waves?: boolean;
-}) {
+/** Le dessin seul (<g>), dans le repère de l'illustration (viewBox "-100 -215 210 250"). `lit` : la puce eSIM s'illumine. */
+export function AndroidDrawing({ screen = "moblink", waves = false, lit = true }: { screen?: AndroidScreen; waves?: boolean; lit?: boolean }) {
   const [cx, cy] = iso(W / 2, D / 2, Z + H + 6);
   return (
-    <Illustration viewBox="-100 -215 210 250" className={className} animated={animated}>
-      <g className="illu-float">
+    <g>
         <IsoBox
           at={[0, 0, Z]}
           size={[W, D, H]}
@@ -110,7 +100,7 @@ export default function PhoneAndroid({
             <g strokeWidth={1}>
               <rect x={4} y={-H + 4} width={W - 8} height={H - 8} rx={5} />
               <circle cx={W / 2} cy={-H + 10} r={2} />
-              <Screen screen={screen} />
+              <Screen screen={screen} lit={lit} />
               <path d={`M${W / 2 - 10} -8h20`} opacity={0.6} />
             </g>
           }
@@ -124,6 +114,25 @@ export default function PhoneAndroid({
             </Label>
           </g>
         )}
+    </g>
+  );
+}
+
+export default function PhoneAndroid({
+  className,
+  animated = true,
+  screen = "moblink",
+  waves = false,
+}: {
+  className?: string;
+  animated?: boolean;
+  screen?: AndroidScreen;
+  waves?: boolean;
+}) {
+  return (
+    <Illustration viewBox="-100 -215 210 250" className={className} animated={animated}>
+      <g className="illu-float">
+        <AndroidDrawing screen={screen} waves={waves} />
       </g>
     </Illustration>
   );

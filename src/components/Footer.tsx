@@ -20,11 +20,26 @@ export default function Footer() {
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Navigation</p>
           <ul className="mt-4 space-y-3 text-sm">
-            {nav.map((item) => (
-              <li key={item.href}>
-                <Link href={item.href} className="text-muted hover:text-foreground">{item.label}</Link>
-              </li>
-            ))}
+            {nav.map((item) =>
+              "children" in item ? (
+                <li key={item.label}>
+                  <span className="text-muted">{item.label}</span>
+                  <ul className="mt-3 space-y-3 border-l border-line pl-4">
+                    {item.children.map((t) => (
+                      <li key={t.href}>
+                        <Link href={t.href} className="text-muted hover:text-foreground">
+                          {t.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ) : (
+                <li key={item.href}>
+                  <Link href={item.href} className="text-muted hover:text-foreground">{item.label}</Link>
+                </li>
+              ),
+            )}
           </ul>
         </div>
 

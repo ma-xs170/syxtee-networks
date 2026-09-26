@@ -28,8 +28,8 @@ export function PartnerNote({ className = "" }: { className?: string }) {
   );
 }
 
-/** Bouton « Obtenir une eSIM Saily » + code promo (s'il est rempli) + mention. */
-export function SailyLink({ variant = "primary", note = true }: { variant?: "primary" | "ghost"; note?: boolean }) {
+/** Bouton « Obtenir une eSIM Saily » + code promo (s'il est rempli et `code`) + mention. */
+export function SailyLink({ variant = "primary", note = true, code = true }: { variant?: "primary" | "ghost"; note?: boolean; code?: boolean }) {
   const styles =
     variant === "primary" ? "bg-white text-black hover:bg-neutral-200" : "border border-line text-foreground hover:bg-white/5";
   return (
@@ -41,7 +41,7 @@ export function SailyLink({ variant = "primary", note = true }: { variant?: "pri
         >
           Obtenir une eSIM {saily.name} <span aria-hidden="true">↗</span>
         </a>
-        {isFilled(saily.code) && (
+        {code && isFilled(saily.code) && (
           <p className="font-mono text-xs text-muted">
             Code promo : <span className="text-foreground">{saily.code}</span>
           </p>

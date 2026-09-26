@@ -5,6 +5,7 @@ import PocketRouter from "@/components/illustrations/PocketRouter";
 import { Container, SectionHeader } from "@/components/ui";
 import Highlight from "@/components/ui/Highlight";
 import { partners } from "@/lib/site";
+import PromoCode from "./PromoCode";
 import { PartnerNote, SailyLink, SailyLogo, sailyLinkProps } from "./Saily";
 
 // Section « 4G en plus avec Saily » (page /moblin, ancre #saily).
@@ -44,29 +45,37 @@ function Box({ kicker, children, art }: { kicker: string; children: ReactNode; a
   );
 }
 
-export default function SailySection() {
+/** header : "full" (titre surligné, intro, logo) ou "compact" (sur /saily, après le ScrollStory). */
+export default function SailySection({ header = "full" }: { header?: "full" | "compact" }) {
   return (
     <section id="saily" className="scroll-mt-20 overflow-x-clip border-b border-line py-20 sm:py-24">
       <Container>
-        <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
-          <SectionHeader
-            kicker="4G en plus avec Saily"
-            title={
-              <>
-                Une 4G de plus, <Highlight>en quelques minutes.</Highlight>
-              </>
-            }
-          >
-            Ton iPhone n&apos;utilise qu&apos;une ligne de données à la fois. Pour ajouter une 4G au bonding, on installe une
-            eSIM {partners.saily.name} sur un 2e appareil, qui rejoint Moblin via l&apos;app Moblink.
-          </SectionHeader>
-          <a {...sailyLinkProps} aria-label={`${partners.saily.name} (lien partenaire)`} className="shrink-0 opacity-90 transition-opacity hover:opacity-100">
-            <SailyLogo className="h-14 w-auto" />
-          </a>
-        </div>
+        {header === "full" ? (
+          <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
+            <SectionHeader
+              kicker="4G en plus avec Saily"
+              title={
+                <>
+                  Une 4G de plus, <Highlight>en quelques minutes.</Highlight>
+                </>
+              }
+            >
+              Ton iPhone n&apos;utilise qu&apos;une ligne de données à la fois. Pour ajouter une 4G au bonding, on installe une
+              eSIM {partners.saily.name} sur un 2e appareil, qui rejoint Moblin via l&apos;app Moblink.
+            </SectionHeader>
+            <a {...sailyLinkProps} aria-label={`${partners.saily.name} (lien partenaire)`} className="shrink-0 opacity-90 transition-opacity hover:opacity-100">
+              <SailyLogo className="h-14 w-auto" />
+            </a>
+          </div>
+        ) : (
+          <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
+            <SectionHeader kicker="Mode d'emploi" title="Tout pour installer ta 2e 4G." />
+            <SailyLogo className="h-12 w-auto opacity-90" />
+          </div>
+        )}
 
         {/* a) Les 3 atouts */}
-        <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3">
+        <div className={`grid gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3 mt-14`}>
           {cards.map((c) => (
             <article key={c.t} className="bg-black p-8">
               <h3 className="text-base font-semibold">{c.t}</h3>
@@ -74,8 +83,9 @@ export default function SailySection() {
             </article>
           ))}
         </div>
-        <div className="mt-8">
-          <SailyLink />
+        <div className="mt-8 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+          <SailyLink code={false} />
+          <PromoCode />
         </div>
 
         {/* b) Tutoriel */}

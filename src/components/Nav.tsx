@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { nav } from "@/lib/site";
+import { ToolsAccordion, ToolsMenu } from "./NavTools";
 import { DiscordButton } from "./ui";
 
 export default function Nav() {
@@ -21,16 +22,20 @@ export default function Nav() {
         </Link>
 
         <nav className="hidden items-center gap-6 lg:flex xl:gap-8">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={isActive(item.href) ? "page" : undefined}
-              className={`text-sm transition-colors hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-muted"}`}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {nav.map((item) =>
+            "children" in item ? (
+              <ToolsMenu key={item.label} label={item.label} tools={item.children} active={item.children.some((t) => isActive(t.href))} />
+            ) : (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={isActive(item.href) ? "page" : undefined}
+                className={`text-sm transition-colors hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-muted"}`}
+              >
+                {item.label}
+              </Link>
+            ),
+          )}
         </nav>
 
         <div className="hidden lg:block">
@@ -53,17 +58,27 @@ export default function Nav() {
       {open && (
         <div className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-line bg-black px-4 pb-6 pt-2 lg:hidden">
           <nav className="flex flex-col">
-            {nav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                aria-current={isActive(item.href) ? "page" : undefined}
-                className={`border-b border-line py-4 text-base hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-muted"}`}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {nav.map((item) =>
+              "children" in item ? (
+                <ToolsAccordion
+                  key={item.label}
+                  label={item.label}
+                  tools={item.children}
+                  active={item.children.some((t) => isActive(t.href))}
+                  onNavigate={() => setOpen(false)}
+                />
+              ) : (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  className={`border-b border-line py-4 text-base hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-muted"}`}
+                >
+                  {item.label}
+                </Link>
+              ),
+            )}
           </nav>
           <div className="mt-6">
             <DiscordButton>Support Discord</DiscordButton>

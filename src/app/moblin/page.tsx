@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import NextStep from "@/components/NextStep";
 import MoblinStory from "@/components/moblin/MoblinStory";
-import SailySection from "@/components/partners/SailySection";
+import PhoneAndroid from "@/components/illustrations/PhoneAndroid";
 import CopyCode from "@/components/CopyCode";
 import PhoneMockup from "@/components/PhoneMockup";
 import { Container, SectionHeader } from "@/components/ui";
@@ -204,7 +204,33 @@ export default function MoblinPage() {
         </Container>
       </section>
 
-      <SailySection />
+      {/* Renvoi court vers la page Saily */}
+      <section id="saily" className="scroll-mt-20 border-b border-line py-16">
+        <Container>
+          <Link
+            href="/saily"
+            className="group grid items-center gap-6 rounded-3xl border border-line bg-gradient-to-b from-white/[0.06] to-transparent p-6 transition-colors hover:bg-white/[0.04] sm:grid-cols-[auto_1fr_auto] sm:p-8"
+          >
+            <span className="mx-auto h-32 w-28 transition-transform duration-300 group-hover:-translate-y-1 sm:mx-0">
+              <PhoneAndroid screen="moblink" />
+            </span>
+            <span>
+              <span className="flex items-center gap-2">
+                <span className="font-mono text-xs uppercase tracking-[0.2em] text-muted">+ 4G avec Saily</span>
+                <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+                  Partenaire
+                </span>
+              </span>
+              <span className="mt-3 block text-xl font-medium leading-snug sm:text-2xl">
+                Une 2e 4G dans ton bonding, avec une eSIM sur un 2e téléphone et Moblink.
+              </span>
+            </span>
+            <span className="inline-flex items-center gap-2 text-sm text-foreground">
+              Voir le guide Saily <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
+            </span>
+          </Link>
+        </Container>
+      </section>
 
       <section className="border-b border-line py-20 sm:py-24">
         <Container className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">

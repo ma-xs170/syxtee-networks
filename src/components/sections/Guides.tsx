@@ -25,7 +25,7 @@ const guides: { href: string; kicker: string; title: string; text: string; art: 
     alt: "Antenne Starlink Mini sur sa béquille",
   },
   {
-    href: "/moblin#saily",
+    href: "/saily",
     kicker: "Partenaire",
     title: "+ 4G avec Saily",
     text: "Une eSIM Saily sur un 2e téléphone avec Moblink : une 4G de plus dans ton bonding, chez un autre opérateur.",

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { SailyLink } from "@/components/partners/Saily";
 import ScrollStory, { type StoryScene } from "@/components/story/ScrollStory";
 import MoblinStage from "./MoblinStage";
 
@@ -76,7 +75,14 @@ const scenes: StoryScene[] = [
       "Installe une eSIM Saily sur un téléphone Android avec l'app Moblink : il s'ajoute automatiquement au bonding de Moblin.",
       "Deux opérateurs différents = beaucoup moins de risques de coupure.",
     ],
-    footer: <SailyLink />,
+    footer: (
+      <Link
+        href="/saily"
+        className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-medium text-black transition-colors hover:bg-neutral-200"
+      >
+        Ajouter une 4G avec Saily <span aria-hidden="true">→</span>
+      </Link>
+    ),
     staticAt: 0.95,
     render: (_, { global }) => stage(global),
   },

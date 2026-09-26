@@ -22,7 +22,6 @@ export default function PopOutImage({
   fallback?: ReactNode;
   children: ReactNode;
 }) {
-  const exists = existsSync(path.join(process.cwd(), "public", src));
   const isSide = overflow === "side";
 
   // Image : 160 px en mobile, 320 px à partir de md. Elle dépasse d'environ 30 % de sa hauteur.
@@ -43,25 +42,54 @@ export default function PopOutImage({
       className={`relative overflow-visible rounded-3xl border border-line bg-gradient-to-b from-white/[0.06] to-transparent p-6 sm:p-10 ${padding}`}
     >
       <div className={`pointer-events-none absolute z-10 h-40 w-40 md:h-80 md:w-80 ${position}`}>
-        <PopOutParallax>
-          <div className="relative h-full w-full">
-            <div className="absolute inset-[15%] rounded-full bg-white/5 blur-3xl" aria-hidden="true" />
-            <div className="relative h-full w-full drop-shadow-[0_30px_40px_rgba(0,0,0,0.8)]">
-              {exists ? (
-                <Image src={src} alt={alt} fill sizes="(min-width: 768px) 320px, 160px" className="object-contain" />
-              ) : (
-                fallback && (
-                  <div role="img" aria-label={alt} className="h-full w-full">
-                    {fallback}
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-        </PopOutParallax>
+        <PopOutArt src={src} alt={alt} fallback={fallback} sizes="(min-width: 768px) 320px, 160px" />
       </div>
 
       <div className="relative">{children}</div>
     </div>
+  );
+}
+
+// Visuel détouré : halo, ombre réaliste, parallaxe au scroll. Remplit son conteneur (qui doit avoir une taille).
+export function PopOutArt({
+  src,
+  alt,
+  fallback,
+  sizes,
+  eager = false,
+}: {
+  src: string;
+  alt: string;
+  fallback?: ReactNode;
+  sizes: string;
+  eager?: boolean;
+}) {
+  const exists = existsSync(path.join(process.cwd(), "public", src));
+
+  return (
+    <PopOutParallax>
+      <div className="relative h-full w-full">
+        <div className="absolute inset-[15%] rounded-full bg-white/5 blur-3xl" aria-hidden="true" />
+        <div className="relative h-full w-full drop-shadow-[0_30px_40px_rgba(0,0,0,0.8)]">
+          {exists ? (
+            <Image
+              src={src}
+              alt={alt}
+              fill
+              sizes={sizes}
+              loading={eager ? "eager" : "lazy"}
+              fetchPriority={eager ? "high" : undefined}
+              className="object-contain"
+            />
+          ) : (
+            fallback && (
+              <div role="img" aria-label={alt} className="h-full w-full">
+                {fallback}
+              </div>
+            )
+          )}
+        </div>
+      </div>
+    </PopOutParallax>
   );
 }

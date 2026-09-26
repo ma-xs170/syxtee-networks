@@ -11,8 +11,8 @@ export default function PopOutParallax({ children }: { children: ReactNode }) {
     const el = ref.current;
     if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    // On observe la carte (le parent positionné), pas l'image qui déborde.
-    const target = el.closest("[data-popout-card]") ?? el;
+    // On observe la carte (ou la section), pas l'image qui déborde.
+    const target = el.closest("[data-popout-card]") ?? el.closest("section") ?? el;
     const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), { threshold: 0.25 });
     observer.observe(target);
     return () => observer.disconnect();

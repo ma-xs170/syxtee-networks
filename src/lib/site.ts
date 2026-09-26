@@ -49,7 +49,7 @@ export const partners = {
   saily: {
     name: "Saily",
     url: "<LIEN_AFFILIÉ_SAILY>", // ← remplace par ton lien partenaire
-    code: "<CODE_PROMO>", // ← optionnel
+    code: "SYXTEE26",
     logo: "/images/partners/saily/saily-logo-white.svg", // kit officiel partenaire
     devicesUrl: "https://saily.com/esim-supported-devices/",
   },

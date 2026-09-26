@@ -98,7 +98,16 @@ body {
   to { background-position: 200% 0; }
 }
 
+/* Paquets qui circulent dans le schéma du bonding */
+.bond-dash {
+  stroke-dasharray: 4 12;
+  animation: bond 1s linear infinite;
+}
+@keyframes bond {
+  to { stroke-dashoffset: -16; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .marquee, .flow-line, .live-dot::after { animation: none; }
+  .marquee, .flow-line, .bond-dash, .live-dot::after { animation: none; }
   html { scroll-behavior: auto; }
 }

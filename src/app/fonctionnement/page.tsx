@@ -1,0 +1,151 @@
+import type { Metadata } from "next";
+import PageHero from "@/components/PageHero";
+import Figure from "@/components/Figure";
+import NextStep from "@/components/NextStep";
+import BondingDiagram from "@/components/blocks/BondingDiagram";
+import DetailSection, { Point } from "@/components/blocks/DetailSection";
+import FlowDiagram from "@/components/blocks/FlowDiagram";
+import { Container, SectionHeader } from "@/components/ui";
+
+export const metadata: Metadata = {
+  title: "Fonctionnement",
+  description:
+    "Téléphone → relais SRTLA → OBS → Twitch, Kick ou YouTube : comment SYXTEE NETWORKS combine tes connexions 4G, 5G et Wi-Fi et envoie le flux SRT dans ton OBS.",
+  alternates: { canonical: "/fonctionnement" },
+};
+
+const chain = [
+  { title: "Ton téléphone", text: "Moblin ou IRL Pro filme, compresse et envoie la vidéo en SRTLA sur toutes tes connexions à la fois." },
+  { title: "Relais SYXTEE", text: "Il reçoit les paquets de chaque réseau, les remet dans l'ordre et les transforme en un seul flux SRT." },
+  { title: "Ton OBS", text: "Ton PC récupère ce flux comme une source vidéo et l'intègre à tes scènes, overlays et alertes." },
+  { title: "Plateformes", text: "OBS diffuse le résultat final sur Twitch, Kick, YouTube ou n'importe quelle plateforme RTMP." },
+];
+
+const obsSteps = [
+  "Dans ta scène IRL, clique sur + dans Sources, puis choisis « Source média ».",
+  "Décoche « Fichier local ».",
+  "Dans « Entrée », colle l'adresse SRT qu'on te donne sur Discord (du type srt://<ADRESSE_RELAIS>:<PORT>…).",
+  "Dans « Format d'entrée », mets mpegts, puis valide.",
+  "Lance le live sur ton téléphone : l'image apparaît dans OBS en quelques secondes.",
+];
+
+const glossary = [
+  {
+    term: "SRT",
+    def: "Secure Reliable Transport. Un protocole vidéo conçu pour les réseaux instables : il renvoie les paquets perdus au lieu de laisser l'image se casser. C'est ce qui sort du relais vers ton OBS.",
+  },
+  {
+    term: "SRTLA",
+    def: "SRT Link Aggregation. Une extension du SRT qui répartit un même flux sur plusieurs connexions. C'est ce que ton téléphone envoie au relais.",
+  },
+  {
+    term: "Bonding",
+    def: "Le fait de combiner plusieurs connexions (4G, 5G, Wi-Fi) pour qu'elles travaillent ensemble. Plus de débit disponible, et surtout moins de coupures.",
+  },
+  {
+    term: "Bitrate",
+    def: "La quantité de données envoyée par seconde, en Mb/s. Plus il est haut, plus l'image est détaillée, mais plus il faut de réseau et de data. En IRL, 4 à 6 Mb/s en 1080p est un bon point de départ.",
+  },
+  {
+    term: "Latence",
+    def: "Le délai entre ce que tu filmes et ce qui arrive dans OBS. Une petite réserve (en général 1 à 2 secondes) laisse au relais le temps de récupérer les paquets en retard : c'est elle qui absorbe les micro-coupures.",
+  },
+];
+
+export default function FonctionnementPage() {
+  return (
+    <>
+      <PageHero kicker="Fonctionnement" title="De ta poche à ton live." crumb="Fonctionnement">
+        Ta vidéo fait quatre étapes avant d&apos;arriver chez tes viewers. Voici ce qui se passe à chacune, et pourquoi ça
+        tient mieux qu&apos;un live en 4G classique.
+      </PageHero>
+
+      <section className="border-b border-line py-20 sm:py-24">
+        <Container>
+          <FlowDiagram large />
+          <ol className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            {chain.map((c, i) => (
+              <li key={c.title}>
+                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-line font-mono text-sm">{i + 1}</span>
+                <h2 className="mt-5 text-lg font-semibold">{c.title}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{c.text}</p>
+              </li>
+            ))}
+          </ol>
+        </Container>
+      </section>
+
+      <DetailSection n="01" title="Tes connexions 4G, 5G et Wi-Fi combinées pour moins de coupures" visual={<BondingDiagram />}>
+        <Point label="Le principe">
+          <p>
+            Ton téléphone ne choisit pas <em>une</em> connexion : il les utilise <strong>toutes en même temps</strong>. La
+            vidéo est découpée en paquets numérotés, et chaque paquet part sur la connexion qui a de la place à ce
+            moment-là.
+          </p>
+        </Point>
+        <Point label="Côté relais">
+          <p>
+            Les paquets arrivent au relais dans le désordre, par des chemins différents. Le relais les remet dans
+            l&apos;ordre grâce à leur numéro et redemande ceux qui manquent. S&apos;il en manque encore, la petite réserve
+            de latence laisse le temps de les récupérer.
+          </p>
+        </Point>
+        <Point label="Quand une connexion lâche">
+          <p>
+            Si ta 4G tombe dans une rue mal couverte, les paquets passent simplement par la 5G et le Wi-Fi. Le live
+            continue, parfois avec un bitrate plus bas le temps que ça revienne. Avec Moblin ou IRL Pro, active le bitrate
+            adaptatif : l&apos;app baisse la qualité toute seule au lieu de couper.
+          </p>
+        </Point>
+      </DetailSection>
+
+      <DetailSection
+        n="02"
+        title="Le flux récupéré directement dans ton OBS"
+        reverse
+        visual={<Figure src="/photos/obs-source-srt.jpg" alt="capture d'OBS avec les réglages de la source média SRT" caption="Réglages de la source média dans OBS Studio." />}
+      >
+        <Point label="La source SRT">
+          <p>
+            Le relais ne diffuse rien sur Twitch à ta place : il met ton flux à disposition en <strong>SRT</strong>, et
+            c&apos;est ton OBS qui vient le chercher. Pour lui, ton téléphone devient une source vidéo comme une autre.
+          </p>
+        </Point>
+        <Point label="Dans OBS">
+          <ol className="space-y-3">
+            {obsSteps.map((s, i) => (
+              <li key={s} className="flex gap-4">
+                <span className="font-mono text-sm text-foreground">0{i + 1}</span>
+                <span>{s}</span>
+              </li>
+            ))}
+          </ol>
+        </Point>
+        <Point label="Bon à savoir">
+          <p>
+            Garde une scène « BRB » prête. Si le signal disparaît, tu bascules dessus (à la main, ou automatiquement avec
+            NOALBS ou Advanced Scene Switcher) et tes viewers voient un écran propre au lieu d&apos;une image figée.
+          </p>
+        </Point>
+      </DetailSection>
+
+      <section className="border-b border-line py-20 sm:py-24">
+        <Container className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
+          <SectionHeader kicker="Glossaire" title="Les mots à connaître.">
+            Cinq termes que tu vas croiser dans Moblin, OBS et sur le Discord.
+          </SectionHeader>
+          <dl className="divide-y divide-line border-y border-line">
+            {glossary.map((g) => (
+              <div key={g.term} className="grid gap-2 py-5 sm:grid-cols-[8rem_1fr] sm:gap-6">
+                <dt className="font-mono text-sm uppercase tracking-[0.1em]">{g.term}</dt>
+                <dd className="text-sm leading-relaxed text-muted">{g.def}</dd>
+              </div>
+            ))}
+          </dl>
+        </Container>
+      </section>
+
+      <NextStep label="Configurer Moblin" href="/moblin" />
+    </>
+  );
+}

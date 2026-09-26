@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { site } from "@/lib/site";
 
@@ -35,4 +36,13 @@ export function SectionHeader({ kicker, title, children }: { kicker: string; tit
 
 export function Container({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <div className={`mx-auto w-full max-w-6xl px-4 sm:px-6 ${className}`}>{children}</div>;
+}
+
+export function MoreLink({ href, children = "En savoir plus" }: { href: string; children?: ReactNode }) {
+  return (
+    <Link href={href} className="group inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground">
+      {children}
+      <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
+    </Link>
+  );
 }

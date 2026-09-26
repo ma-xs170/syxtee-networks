@@ -1,4 +1,4 @@
-import { Container, SectionHeader } from "../ui";
+import { Container, MoreLink, SectionHeader } from "../ui";
 
 const classic = [
   "Encodeur ou sac à dos dédié",
@@ -48,6 +48,10 @@ export default function LowCost() {
               ))}
             </ul>
           </div>
+        </div>
+
+        <div className="mt-10">
+          <MoreLink href="/offres" />
         </div>
       </Container>
     </section>

@@ -9,11 +9,13 @@ export const site = {
 };
 
 export const nav = [
-  { label: "Services", href: "#services" },
-  { label: "Fonctionnement", href: "#fonctionnement" },
-  { label: "Relais", href: "#relais" },
-  { label: "Offres", href: "#offres" },
-  { label: "FAQ", href: "#faq" },
+  { label: "Services", href: "/services" },
+  { label: "Fonctionnement", href: "/fonctionnement" },
+  { label: "Moblin", href: "/moblin" },
+  { label: "Starlink", href: "/starlink" },
+  { label: "Relais", href: "/relais" },
+  { label: "Offres", href: "/offres" },
+  { label: "FAQ", href: "/faq" },
 ];
 
 export type Relay = {

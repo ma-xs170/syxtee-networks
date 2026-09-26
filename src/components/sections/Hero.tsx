@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { relays } from "@/lib/site";
 import { Container, DiscordButton } from "../ui";
 
@@ -29,12 +30,12 @@ export default function Hero() {
 
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <DiscordButton />
-            <a
-              href="#fonctionnement"
+            <Link
+              href="/fonctionnement"
               className="inline-flex items-center justify-center rounded-full border border-line px-5 py-3 text-sm font-medium hover:bg-white/5"
             >
               Comment ça marche
-            </a>
+            </Link>
           </div>
         </div>
 

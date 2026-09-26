@@ -4,6 +4,7 @@ import Services from "@/components/sections/Services";
 import HowItWorks from "@/components/sections/HowItWorks";
 import LowCost from "@/components/sections/LowCost";
 import Relays from "@/components/sections/Relays";
+import Guides from "@/components/sections/Guides";
 import Offers from "@/components/sections/Offers";
 import Streamers from "@/components/sections/Streamers";
 import Faq from "@/components/sections/Faq";
@@ -18,6 +19,7 @@ export default function Home() {
       <HowItWorks />
       <LowCost />
       <Relays />
+      <Guides />
       <Offers />
       <Streamers />
       <Faq />

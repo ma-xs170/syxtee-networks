@@ -1,4 +1,4 @@
-import { Container, SectionHeader } from "../ui";
+import { Container, MoreLink, SectionHeader } from "../ui";
 
 const services = [
   {
@@ -39,6 +39,10 @@ export default function Services() {
               <p className="mt-3 text-sm leading-relaxed text-muted">{s.text}</p>
             </article>
           ))}
+        </div>
+
+        <div className="mt-10">
+          <MoreLink href="/services" />
         </div>
       </Container>
     </section>

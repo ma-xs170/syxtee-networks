@@ -1,5 +1,5 @@
-import { relays, site } from "@/lib/site";
-import { Container, SectionHeader } from "../ui";
+import RelayGrid from "../blocks/RelayGrid";
+import { Container, MoreLink, SectionHeader } from "../ui";
 
 export default function Relays() {
   return (
@@ -9,39 +9,12 @@ export default function Relays() {
           Choisis le relais le plus proche de là où tu streames. De nouvelles régions arrivent selon la demande de la communauté.
         </SectionHeader>
 
-        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {relays.map((r) => (
-            <div key={r.city} className="rounded-2xl border border-line p-6">
-              <div className="flex items-center justify-between">
-                <p className="text-lg font-semibold">{r.city}</p>
-                {r.status === "online" ? (
-                  <span className="inline-flex items-center gap-2 font-mono text-xs uppercase text-foreground">
-                    <span className="live-dot" /> En ligne
-                  </span>
-                ) : (
-                  <span className="font-mono text-xs uppercase text-muted">Bientôt</span>
-                )}
-              </div>
-              <p className="mt-1 text-sm text-muted">{r.region}</p>
-              <div className="mt-6 flex flex-wrap gap-2">
-                {r.protocols.map((p) => (
-                  <span key={p} className="rounded-full border border-line px-3 py-1 font-mono text-xs text-muted">{p}</span>
-                ))}
-              </div>
-            </div>
-          ))}
+        <div className="mt-14">
+          <RelayGrid />
+        </div>
 
-          <a
-            href={site.discord}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex flex-col justify-between rounded-2xl border border-dashed border-line p-6 transition-colors hover:bg-white/[0.03]"
-          >
-            <p className="text-lg font-semibold text-muted">Ta région ?</p>
-            <p className="mt-6 text-sm text-muted">
-              Vote pour le prochain relais sur le Discord <span aria-hidden="true">→</span>
-            </p>
-          </a>
+        <div className="mt-10">
+          <MoreLink href="/relais" />
         </div>
       </Container>
     </section>

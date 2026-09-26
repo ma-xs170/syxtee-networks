@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import NextStep from "@/components/NextStep";
 import PopOutImage from "@/components/PopOutImage";
 import Powerbank from "@/components/illustrations/Powerbank";
-import StarlinkMini from "@/components/illustrations/StarlinkMini";
 import StarlinkMiniBag from "@/components/illustrations/StarlinkMiniBag";
 import StarlinkStory from "@/components/starlink/StarlinkStory";
 import { Container, DiscordButton, SectionHeader } from "@/components/ui";
@@ -72,41 +70,6 @@ const settings = [
 export default function StarlinkPage() {
   return (
     <>
-      {/* HERO : le Mini déborde du bas de sa carte */}
-      <section className="relative z-10 overflow-x-clip border-b border-line">
-        <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />
-        <Container className="relative grid items-center gap-10 pt-16 sm:pt-24 lg:grid-cols-[1.15fr_0.85fr] lg:pb-24">
-          <div>
-            <nav aria-label="Fil d'Ariane" className="font-mono text-xs text-muted">
-              <ol className="flex flex-wrap items-center gap-2">
-                <li>
-                  <Link href="/" className="hover:text-foreground">Accueil</Link>
-                </li>
-                <li aria-hidden="true" className="text-white/20">/</li>
-                <li aria-current="page" className="text-foreground">Starlink</li>
-              </ol>
-            </nav>
-            <p className="mt-10 font-mono text-xs uppercase tracking-[0.2em] text-muted">Starlink Mini × SYXTEE</p>
-            <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
-              Du live là où la 4G abandonne.
-            </h1>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
-              Le Starlink Mini dans ton sac, Moblin sur ton iPhone, et le bonding SRTLA qui combine satellite et réseau
-              mobile.
-            </p>
-          </div>
-
-          <div className="pb-16 md:pb-28 lg:pb-0">
-            <PopOutImage alt="Starlink Mini sur sa béquille" overflow="bottom" art={<StarlinkMini />}>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Starlink Mini</p>
-              <p className="mt-2 text-lg font-medium">1,10 kg · Wi-Fi intégré · USB-C 100 W</p>
-            </PopOutImage>
-          </div>
-        </Container>
-      </section>
-
-      {/* Espace pour le Mini qui déborde du hero, puis le scrollytelling */}
-      <div className="pt-24 md:pt-32" aria-hidden="true" />
       <StarlinkStory />
 
       <section className="overflow-x-clip border-b border-line py-20 sm:py-24">
@@ -223,7 +186,6 @@ export default function StarlinkPage() {
           </p>
         </Container>
       </section>
-
 
       <NextStep label="Configurer Moblin" href="/moblin" />
     </>

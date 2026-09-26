@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion, useTransform, type MotionValue } from "motion/react";
 import Starfield from "@/components/illustrations/Starfield";
 import ScrollStory, { type StoryScene } from "@/components/story/ScrollStory";
@@ -39,10 +40,26 @@ function Finale() {
   );
 }
 
+// La page /starlink commence directement par l'histoire : fil d'Ariane et h1 dans la scène 1.
+const breadcrumb = (
+  <nav aria-label="Fil d'Ariane" className="mb-6 font-mono text-xs text-muted lg:mb-8">
+    <ol className="flex flex-wrap items-center gap-2">
+      <li>
+        <Link href="/" className="hover:text-foreground">Accueil</Link>
+      </li>
+      <li aria-hidden="true" className="text-white/20">/</li>
+      <li aria-current="page" className="text-foreground">Starlink</li>
+    </ol>
+  </nav>
+);
+
 const scenes: StoryScene[] = [
   {
+    header: breadcrumb,
     kicker: "01 · Comment ça marche",
     title: "Une antenne qui vise le ciel toute seule.",
+    titleAs: "h1",
+    subtitle: <p className="mt-3 font-mono text-xs text-foreground">1,10 kg · Wi-Fi intégré · USB-C 100 W</p>,
     paragraphs: [
       "L'antenne à réseau phasé oriente son faisceau électroniquement vers les satellites, sans aucune pièce mobile.",
       "Le routeur Wi-Fi est intégré : ton iPhone s'y connecte directement, sans boîtier en plus.",

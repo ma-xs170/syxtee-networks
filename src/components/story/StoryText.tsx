@@ -10,6 +10,7 @@ import { band, ramp, type Band } from "./timeline";
 export type StoryTextScene = {
   kicker: string;
   title: ReactNode;
+  titleAs?: "h1" | "h2";
   paragraphs: string[];
   header?: ReactNode;
   subtitle?: ReactNode;
@@ -18,6 +19,10 @@ export type StoryTextScene = {
   paragraphBands: Band[];
   footerBand?: Band;
 };
+
+export function Title({ as: Tag = "h2", className, children }: { as?: "h1" | "h2"; className: string; children: ReactNode }) {
+  return <Tag className={className}>{children}</Tag>;
+}
 
 /** Opacité + léger glissement vers le haut, selon une fenêtre [a, b, c, d]. */
 export function useFade(p: MotionValue<number>, [a, b, c, d]: Band, dist: number) {
@@ -51,7 +56,9 @@ function SceneBlock({ p, s }: { p: MotionValue<number>; s: StoryTextScene }) {
     <motion.div style={style} className="[grid-area:1/1] self-center">
       {s.header}
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">{s.kicker}</p>
-      <h2 className="mt-3 text-2xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">{s.title}</h2>
+      <Title as={s.titleAs} className="mt-3 text-2xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+        {s.title}
+      </Title>
       {s.subtitle}
       <div className="mt-4 grid sm:mt-6">
         {s.paragraphs.map((t, k) => (

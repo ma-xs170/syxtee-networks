@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import PageHero from "@/components/PageHero";
-import Figure from "@/components/Figure";
 import NextStep from "@/components/NextStep";
 import CopyCode from "@/components/CopyCode";
+import PhoneMockup from "@/components/PhoneMockup";
+import PopOutImage from "@/components/PopOutImage";
 import { Container, DiscordButton, SectionHeader } from "@/components/ui";
+import { creditFor } from "@/lib/credits";
 
 export const metadata: Metadata = {
   title: "Moblin",
@@ -14,7 +16,20 @@ export const metadata: Metadata = {
   alternates: { canonical: "/moblin" },
 };
 
-const appStoreUrl = "https://apps.apple.com/app/moblin/id6466745933";
+const appStoreUrl = "https://apps.apple.com/app/id6466745933";
+const readmeUrl = "https://github.com/eerimoq/moblin#readme";
+const iconCredit = creditFor("icon.png");
+
+// Fonctionnalités vérifiées dans le README officiel de Moblin (readmeUrl).
+const features = [
+  "RTMP",
+  "SRT",
+  "SRTLA",
+  "RIST",
+  "H.264 / H.265",
+  "Jusqu'à 4K60",
+  "App Apple Watch : chat, contrôle du live, changement de scène",
+];
 const srtlaUrl = "srtla://<ADRESSE_RELAIS>:<PORT>?streamid=<TON_ID>";
 
 const reasons = [
@@ -65,7 +80,7 @@ function Step({ n, title, img, alt, children }: { n: string; title: string; img:
         <div className="mt-4 space-y-4 text-base leading-relaxed text-muted">{children}</div>
       </div>
       <div className="mx-auto w-full max-w-[220px]">
-        <Figure src={img} alt={alt} ratio="9/19.5" sizes="220px" />
+        <PhoneMockup src={img} alt={alt} sizes="220px" />
       </div>
     </li>
   );
@@ -74,12 +89,27 @@ function Step({ n, title, img, alt, children }: { n: string; title: string; img:
 export default function MoblinPage() {
   return (
     <>
-      <PageHero
-        kicker="App recommandée"
-        title="Moblin, ton encodeur IRL dans la poche."
-        crumb="Moblin"
-        actions={
-          <>
+      <section className="relative overflow-x-clip border-b border-line">
+        <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />
+        <Container className="relative pb-16 pt-16 sm:pb-24 sm:pt-24">
+          <nav aria-label="Fil d'Ariane" className="font-mono text-xs text-muted">
+            <ol className="flex flex-wrap items-center gap-2">
+              <li>
+                <Link href="/" className="hover:text-foreground">Accueil</Link>
+              </li>
+              <li aria-hidden="true" className="text-white/20">/</li>
+              <li aria-current="page" className="text-foreground">Moblin</li>
+            </ol>
+          </nav>
+          <p className="mt-10 font-mono text-xs uppercase tracking-[0.2em] text-muted">App recommandée</p>
+          <h1 className="mt-4 max-w-2xl text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
+            Moblin, ton encodeur IRL dans la poche.
+          </h1>
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
+            L&apos;app iOS gratuite et open source qui transforme ton iPhone en encodeur IRL : compatible SRTLA, pensée pour
+            streamer dehors.
+          </p>
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <a
               href={appStoreUrl}
               target="_blank"
@@ -92,12 +122,50 @@ export default function MoblinPage() {
               Télécharger sur l&apos;App Store
             </a>
             <DiscordButton variant="ghost">Besoin d&apos;aide ? Discord</DiscordButton>
-          </>
-        }
-      >
-        L&apos;app iOS gratuite et open source qui transforme ton iPhone en encodeur IRL : compatible SRTLA, pensée pour
-        streamer dehors.
-      </PageHero>
+          </div>
+
+          <div className="mt-24 md:mt-32">
+            <PopOutImage
+              alt="Moblin en live sur iPhone"
+              shape="phone"
+              art={
+                <div className="relative">
+                  <PhoneMockup src="/images/moblin/screen-live.png" alt="Moblin en live sur iPhone" sizes="(min-width: 768px) 208px, 144px" eager />
+                  <div className="absolute -left-10 top-[30%] w-14 -rotate-12 drop-shadow-[0_18px_24px_rgba(0,0,0,0.7)] md:-left-16 md:w-20">
+                    <Image src="/images/moblin/icon.png" alt="Icône de l'app Moblin" width={80} height={80} sizes="80px" className="h-auto w-full rounded-[22%]" />
+                  </div>
+                </div>
+              }
+            >
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">En live</p>
+              <p className="mt-4 max-w-md text-xl font-medium leading-snug sm:text-2xl">
+                Ta caméra, ton bitrate et ton chat, sur l&apos;écran de ton iPhone.
+              </p>
+              <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">
+                Moblin envoie ta vidéo en SRTLA au relais SYXTEE, et tu gardes un œil sur tes stats réseau pendant que tu
+                marches.
+              </p>
+            </PopOutImage>
+          </div>
+        </Container>
+      </section>
+
+      <section className="border-b border-line py-10">
+        <Container>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Fonctionnalités vérifiées</p>
+          <ul className="mt-5 flex flex-wrap gap-2">
+            {features.map((f) => (
+              <li key={f} className="rounded-full border border-line px-4 py-2 font-mono text-xs text-foreground">{f}</li>
+            ))}
+          </ul>
+          <p className="mt-4 text-xs text-muted">
+            Source :{" "}
+            <a href={readmeUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:text-foreground">
+              README officiel de Moblin
+            </a>
+          </p>
+        </Container>
+      </section>
 
       <section className="border-b border-line py-20 sm:py-24">
         <Container>
@@ -223,6 +291,15 @@ export default function MoblinPage() {
           <p className="mt-8 text-xs text-muted">
             Moblin est une app indépendante. SYXTEE NETWORKS n&apos;est pas affilié à son développeur.
           </p>
+          {iconCredit && (
+            <p className="mt-2 text-xs text-muted">
+              Icône Moblin {iconCredit.author}, licence{" "}
+              <a href={iconCredit.licenseUrl} target="_blank" rel="noopener noreferrer license" className="underline underline-offset-4 hover:text-foreground">
+                {iconCredit.license}
+              </a>
+              .
+            </p>
+          )}
         </Container>
       </section>
 

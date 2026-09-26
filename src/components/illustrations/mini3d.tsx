@@ -3,7 +3,7 @@
 // `miniFrame(v)` calcule la pose pour un progrès v (0 = assemblé sur sa béquille), `MiniDrawing` la dessine,
 // `applyMiniFrame` met à jour le DOM sans re-render React (scroll).
 
-import { band, clamp01, lerp, ramp } from "@/components/starlink/timeline";
+import { band, clamp01, lerp, ramp } from "@/components/story/timeline";
 
 // Dimensions réelles (mm) : 298,5 × 259 × 38,5.
 const W = 298.5;

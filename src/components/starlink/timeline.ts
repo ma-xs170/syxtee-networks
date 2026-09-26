@@ -1,20 +1,10 @@
-// Outils de timeline partagés par les scènes du scrollytelling Starlink.
-// Tout est piloté par un seul progrès de scroll `v` (0 → 1) :
+// Réglages du scrollytelling Starlink. Tout est piloté par un seul progrès de scroll `v` (0 → 1) :
 // scène 1 de 0 à 0,33, scène 2 de 0,33 à 0,66, scène 3 de 0,66 à 1.
+// Les fenêtres sont réglées à la main (elles remplacent le découpage automatique du moteur ScrollStory).
 
-export const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
-export const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-const smooth = (x: number) => x * x * (3 - 2 * x);
-export const easeOut = (x: number) => 1 - (1 - x) ** 3;
+import { clamp01, easeOut, lerp, ramp, type Band } from "@/components/story/timeline";
 
-/** 0 → 1 entre a et b, lissé. */
-export const ramp = (v: number, a: number, b: number) => smooth(clamp01((v - a) / (b - a)));
-
-/** Monte de a à b, reste à 1, redescend de c à d. */
-export const band = (v: number, a: number, b: number, c: number, d: number) =>
-  Math.min(ramp(v, a, b), 1 - ramp(v, c, d));
-
-export type Band = readonly [number, number, number, number];
+export { band, clamp01, easeOut, lerp, ramp, type Band } from "@/components/story/timeline";
 
 // Fenêtres d'apparition des blocs de texte (les scènes se chevauchent d'environ 0,05).
 export const SCENE_BANDS: readonly Band[] = [
@@ -42,8 +32,20 @@ export const PARA_BANDS: readonly (readonly Band[])[] = [
 
 export const FINALE_BAND: Band = [0.92, 0.95, 2, 3];
 
-/** Index de la scène active (pour l'indicateur 01 / 02 / 03). */
-export const sceneIndex = (v: number) => (v < 0.33 ? 0 : v < 0.66 ? 1 : 2);
+/** Début de chaque scène (pour l'indicateur 01 / 02 / 03). */
+export const SCENE_STARTS = [0, 0.33, 0.66] as const;
+
+// Moments où chaque scène est figée en version statique (prefers-reduced-motion).
+export const STATIC_AT = [0.15, 0.55, 0.97] as const;
+
+/** Ciel étoilé : opacité, dérive (caméra qui monte) et sortie vers le haut (caméra qui redescend). */
+export function skyState(v: number, h: number) {
+  return {
+    alpha: ramp(v, 0.3, 0.37) * (1 - ramp(v, 0.7, 0.76)),
+    drift: ramp(v, 0.33, 0.6) * 70,
+    exit: ramp(v, 0.6, 0.72) * h * 1.25,
+  };
+}
 
 // Scène 2 → 3 : position du satellite (coordonnées de la scène, 600 × 600) et du faisceau.
 export const MINI_GROUND = { x: 300, y: 468 };

@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import ScrollStory, { type StoryScene } from "@/components/story/ScrollStory";
 import StoryStage from "@/components/story/StoryStage";
 import { DiscordButton } from "@/components/ui";
+import Highlight from "@/components/ui/Highlight";
 import { useNarrow } from "./kit";
 import { SceneAntennas, SceneCapture, SceneInternet } from "./scenesA";
 import { SceneDataCenter, SceneServer, SceneSubsea } from "./scenesB";
@@ -69,7 +70,11 @@ export default function FonctionnementStory() {
     },
     {
       kicker: "04 · Sous l'océan",
-      title: "Ta vidéo traverse la mer… en lumière.",
+      title: (
+        <>
+          Ta vidéo traverse la mer… <Highlight>en lumière.</Highlight>
+        </>
+      ),
       paragraphs: [
         "Des câbles en fibre optique posés au fond de l'océan relient les Antilles au continent.",
         "Tes paquets y voyagent sous forme d'impulsions de lumière.",
@@ -100,7 +105,11 @@ export default function FonctionnementStory() {
     },
     {
       kicker: "08 · OBS",
-      title: "Tu gardes le contrôle total.",
+      title: (
+        <>
+          Tu gardes <Highlight>le contrôle total.</Highlight>
+        </>
+      ),
       paragraphs: [
         "Dans OBS, ajoute une source Média avec l'adresse SRT du relais.",
         "Tes scènes, overlays, alertes et chat restent les tiens.",

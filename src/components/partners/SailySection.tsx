@@ -3,6 +3,7 @@ import PhoneAndroid from "@/components/illustrations/PhoneAndroid";
 import PhoneMoblin from "@/components/illustrations/PhoneMoblin";
 import PocketRouter from "@/components/illustrations/PocketRouter";
 import { Container, SectionHeader } from "@/components/ui";
+import Highlight from "@/components/ui/Highlight";
 import { partners } from "@/lib/site";
 import { PartnerNote, SailyLink, SailyLogo, sailyLinkProps } from "./Saily";
 
@@ -48,7 +49,14 @@ export default function SailySection() {
     <section id="saily" className="scroll-mt-20 overflow-x-clip border-b border-line py-20 sm:py-24">
       <Container>
         <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
-          <SectionHeader kicker="4G en plus avec Saily" title="Ajoute une 2e 4G avec une eSIM.">
+          <SectionHeader
+            kicker="4G en plus avec Saily"
+            title={
+              <>
+                Une 4G de plus, <Highlight>en quelques minutes.</Highlight>
+              </>
+            }
+          >
             Ton iPhone n&apos;utilise qu&apos;une ligne de données à la fois. Pour ajouter une 4G au bonding, on installe une
             eSIM {partners.saily.name} sur un 2e appareil, qui rejoint Moblin via l&apos;app Moblink.
           </SectionHeader>

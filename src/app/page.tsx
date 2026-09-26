@@ -5,6 +5,7 @@ import HowItWorks from "@/components/sections/HowItWorks";
 import LowCost from "@/components/sections/LowCost";
 import Relays from "@/components/sections/Relays";
 import Offers from "@/components/sections/Offers";
+import Streamers from "@/components/sections/Streamers";
 import Faq from "@/components/sections/Faq";
 import FinalCta from "@/components/sections/FinalCta";
 
@@ -18,6 +19,7 @@ export default function Home() {
       <LowCost />
       <Relays />
       <Offers />
+      <Streamers />
       <Faq />
       <FinalCta />
     </>

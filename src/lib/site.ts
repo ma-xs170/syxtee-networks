@@ -28,3 +28,15 @@ export const relays: Relay[] = [
 ];
 
 export const compat = ["Moblin", "IRL Pro", "BELABOX", "OBS Studio", "Twitch", "Kick", "YouTube", "TikTok Live"];
+
+export type Streamer = {
+  handle: string;
+  platform: "twitch" | "kick" | "youtube" | "tiktok";
+  url: string;
+  avatar?: string; // ex. "/streamers/imsyxtee.jpg" (fichier dans public/streamers/)
+};
+
+// Uniquement de vrais utilisateurs qui ont donné leur accord.
+export const streamers: Streamer[] = [
+  { handle: "imsyxtee", platform: "twitch", url: "https://twitch.tv/imsyxtee" },
+];

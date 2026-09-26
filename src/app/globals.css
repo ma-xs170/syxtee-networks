@@ -107,7 +107,56 @@ body {
   to { stroke-dashoffset: -16; }
 }
 
+/* Illustrations filaires : trait constant quelle que soit l'échelle du SVG */
+.svg-hairline * {
+  vector-effect: non-scaling-stroke;
+}
+
+/* Ondes Wi-Fi qui pulsent */
+.wifi-pulse {
+  animation: wifi-pulse 1.8s ease-in-out infinite;
+}
+@keyframes wifi-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Ondes qui partent d'une source (transform-origin défini sur l'élément) */
+.wave-out {
+  transform-box: view-box;
+  animation: wave-out 2.4s ease-out infinite;
+}
+@keyframes wave-out {
+  from { opacity: 0; transform: scale(0.55); }
+  30% { opacity: 1; }
+  to { opacity: 0; transform: scale(1); }
+}
+
+/* LED d'activité qui clignote */
+.led-blink {
+  animation: led-blink 1.4s steps(2, jump-none) infinite;
+}
+@keyframes led-blink {
+  50% { opacity: 0.25; }
+}
+
+/* Léger flottement des illustrations */
+.illu-float {
+  animation: illu-float 5s ease-in-out infinite;
+}
+@keyframes illu-float {
+  0%, 100% { transform: translateY(-4px); }
+  50% { transform: translateY(4px); }
+}
+
+/* animated={false} sur une illustration */
+.illu-still,
+.illu-still * {
+  animation: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .marquee, .flow-line, .bond-dash, .live-dot::after { animation: none; }
+  .marquee, .flow-line, .bond-dash, .live-dot::after,
+  .wifi-pulse, .wave-out, .led-blink, .illu-float { animation: none; }
   html { scroll-behavior: auto; }
 }

@@ -5,8 +5,8 @@ import NextStep from "@/components/NextStep";
 import PopOutImage from "@/components/PopOutImage";
 import CreditsTable from "@/components/credits/CreditsTable";
 import PhotoCredit from "@/components/credits/PhotoCredit";
-import StarlinkDiagram from "@/components/blocks/StarlinkDiagram";
 import DishMini from "@/components/illustrations/DishMini";
+import StarlinkStory from "@/components/starlink/StarlinkStory";
 import { Container, DiscordButton, SectionHeader } from "@/components/ui";
 import { credits } from "@/lib/credits";
 
@@ -108,7 +108,11 @@ export default function StarlinkPage() {
         </Container>
       </section>
 
-      <section className="overflow-x-clip border-b border-line pb-20 pt-24 sm:pb-24 md:pt-32">
+      {/* Espace pour le Mini qui déborde du hero, puis le scrollytelling */}
+      <div className="pt-24 md:pt-32" aria-hidden="true" />
+      <StarlinkStory />
+
+      <section className="overflow-x-clip border-b border-line py-20 sm:py-24">
         <Container>
           <SectionHeader kicker="Pourquoi le Mini" title="Pensé pour bouger." />
           <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
@@ -127,20 +131,6 @@ export default function StarlinkPage() {
               fiche technique officielle Starlink Mini
             </a>
           </p>
-        </Container>
-      </section>
-
-      <section className="overflow-x-clip border-b border-line py-20 sm:py-24">
-        <Container>
-          <div className="max-w-2xl">
-            <SectionHeader kicker="Comment ça s'intègre" title="Satellite et 4G, ensemble.">
-              Moblin envoie ta vidéo à la fois sur le Wi-Fi du Mini et sur ta 4G/5G. Si le satellite est masqué par un
-              arbre ou un bâtiment, la 4G prend le relais, et inversement.
-            </SectionHeader>
-          </div>
-          <div className="mx-auto mt-14 max-w-5xl">
-            <StarlinkDiagram />
-          </div>
         </Container>
       </section>
 

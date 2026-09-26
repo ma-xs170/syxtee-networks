@@ -31,6 +31,10 @@ export const faq: FaqItem[] = [
     a: "Un forfait avec beaucoup de data en 4G/5G, idéalement 100 Go ou plus si tu lives souvent. Vérifie que ton forfait n'est pas bridé après un certain volume et qu'il couvre bien les pays où tu streames. Pour le bonding, le mieux est d'avoir deux opérateurs différents : quand l'un capte mal, l'autre prend souvent le relais. Sur iPhone, une seule ligne data est utilisée à la fois, donc la deuxième connexion passe par un autre téléphone en partage de connexion, ou par un modem en Wi-Fi.",
   },
   {
+    q: "Je peux mettre 2 SIM dans mon iPhone pour doubler la 4G ?",
+    a: "Non, l'iPhone n'utilise qu'une ligne de données à la fois. Ajoute un 2e appareil avec une eSIM Saily et Moblink.",
+  },
+  {
     q: "Combien de data je consomme par heure ?",
     a: "Ça dépend du bitrate que tu envoies. En gros : 3 Mb/s ≈ 1,4 Go par heure, 6 Mb/s ≈ 2,7 Go par heure, 8 Mb/s ≈ 3,6 Go par heure. Avec le bonding, ce total est réparti entre tes connexions, pas multiplié, mais prévois environ 10 % de plus pour les paquets renvoyés quand le réseau est instable. Pour de l'IRL, 4 à 6 Mb/s en 1080p H.265 est un bon compromis.",
   },

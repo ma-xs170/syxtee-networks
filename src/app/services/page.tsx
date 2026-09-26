@@ -50,6 +50,14 @@ export default function ServicesPage() {
             Moins d&apos;écrans noirs, moins de « le stream a planté » dans le chat, et un bitrate plus stable. Tu te
             concentres sur ce que tu filmes, pas sur les barres de réseau.
           </p>
+          <p>
+            Envie d&apos;une 2e 4G ? Ton iPhone n&apos;utilise qu&apos;une ligne de données : ajoute un 2e appareil avec une
+            eSIM, voir{" "}
+            <Link href="/moblin#saily" className="text-foreground underline underline-offset-4">
+              4G en plus avec Saily
+            </Link>
+            .
+          </p>
         </Point>
       </DetailSection>
 

@@ -42,3 +42,18 @@ export type Streamer = {
 export const streamers: Streamer[] = [
   { handle: "imsyxtee", platform: "twitch", url: "https://twitch.tv/imsyxtee" },
 ];
+
+// Partenaires. Tous les liens partenaires passent par ici (rel="sponsored noopener", nouvel onglet).
+// `code` est optionnel : il ne s'affiche que s'il est rempli (et plus un placeholder <…>).
+export const partners = {
+  saily: {
+    name: "Saily",
+    url: "<LIEN_AFFILIÉ_SAILY>", // ← remplace par ton lien partenaire
+    code: "<CODE_PROMO>", // ← optionnel
+    logo: "/images/partners/saily/saily-logo-white.svg", // kit officiel partenaire
+    devicesUrl: "https://saily.com/esim-supported-devices/",
+  },
+};
+
+/** Vrai si la valeur est remplie (pas vide, pas un placeholder <…>). */
+export const isFilled = (v: string) => v.trim() !== "" && !/^<.*>$/.test(v.trim());

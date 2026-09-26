@@ -44,6 +44,11 @@ export default function CreditsPage() {
             affilié ni à SpaceX, ni au développeur de Moblin. Toutes les autres illustrations du site sont créées par
             SYXTEE NETWORKS.
           </p>
+          <p className="mt-3 max-w-3xl text-xs leading-relaxed text-muted">
+            Saily est une marque de Nord Security ; son logo provient du kit officiel fourni aux partenaires. Moblin et
+            Moblink sont des apps indépendantes d&apos;eerimoq. Les liens Saily sont des liens partenaires : SYXTEE NETWORKS
+            peut percevoir une commission, sans surcoût pour toi.
+          </p>
         </Container>
       </section>
     </>

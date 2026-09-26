@@ -8,11 +8,15 @@ export default function Figure({
   alt,
   caption,
   ratio = "16/9",
+  sizes = "(min-width: 1024px) 560px, 100vw",
+  eager = false,
 }: {
   src: string;
   alt: string;
   caption?: string;
   ratio?: string;
+  sizes?: string;
+  eager?: boolean; // image visible dès l'arrivée sur la page : chargée en priorité au lieu de lazy
 }) {
   const exists = existsSync(path.join(process.cwd(), "public", src));
 
@@ -20,7 +24,15 @@ export default function Figure({
     <figure>
       {exists ? (
         <div className="relative overflow-hidden rounded-2xl border border-line" style={{ aspectRatio: ratio }}>
-          <Image src={src} alt={alt} fill sizes="(min-width: 1024px) 560px, 100vw" className="object-cover" />
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            sizes={sizes}
+            loading={eager ? "eager" : "lazy"}
+            fetchPriority={eager ? "high" : undefined}
+            className="object-cover"
+          />
         </div>
       ) : (
         <div

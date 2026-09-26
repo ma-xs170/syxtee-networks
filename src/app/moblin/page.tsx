@@ -65,7 +65,7 @@ function Step({ n, title, img, alt, children }: { n: string; title: string; img:
         <div className="mt-4 space-y-4 text-base leading-relaxed text-muted">{children}</div>
       </div>
       <div className="mx-auto w-full max-w-[220px]">
-        <Figure src={img} alt={alt} ratio="9/19.5" />
+        <Figure src={img} alt={alt} ratio="9/19.5" sizes="220px" />
       </div>
     </li>
   );

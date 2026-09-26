@@ -187,3 +187,9 @@ export function Illustration({
     </svg>
   );
 }
+
+/** Logo S de SYXTEE en filaire (éclair), dans une boîte w × h en (x, y). */
+export function SyxteeLogo({ x, y, w = 20, h = 28 }: { x: number; y: number; w?: number; h?: number }) {
+  const pts = [[1, 0], [0, 0.3], [0.42, 0.6], [0, 1], [1, 0.71], [0.57, 0.4]];
+  return <path d={`M${pts.map(([a, b]) => `${f(x + a * w)} ${f(y + b * h)}`).join("L")}Z`} fill="currentColor" fillOpacity={0.1} />;
+}

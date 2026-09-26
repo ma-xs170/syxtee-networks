@@ -1,0 +1,127 @@
+/* Animations CSS des illustrations animées (scènes de /fonctionnement, BeachView, ObsInterface…).
+   En pause via .illu-still (hors écran ou animated={false}), coupées si prefers-reduced-motion. */
+
+/* Ligne d'eau / vagues qui ondulent (motif répété sur 60 unités) */
+.wave {
+  animation: wave 3s linear infinite;
+}
+@keyframes wave {
+  to { transform: translateX(-60px); }
+}
+
+/* Poissons, raie : traversée lente de gauche à droite (--dx : distance) */
+.swim {
+  animation: swim 22s linear infinite;
+}
+@keyframes swim {
+  from { transform: translateX(-160px); }
+  to { transform: translateX(var(--dx, 900px)); }
+}
+
+/* Bulles qui remontent */
+.bubble {
+  animation: bubble 6s ease-in infinite;
+}
+@keyframes bubble {
+  from { transform: translateY(0); opacity: 0; }
+  15% { opacity: 0.8; }
+  to { transform: translateY(-260px); opacity: 0; }
+}
+
+/* Impulsions de lumière dans une fibre (trait en pointillés qui défile) */
+.pulse {
+  stroke-dasharray: 6 60;
+  animation: pulse 0.9s linear infinite;
+}
+@keyframes pulse {
+  to { stroke-dashoffset: -66; }
+}
+.pulseBack {
+  stroke-dasharray: 6 60;
+  animation: pulse-back 0.6s linear infinite;
+}
+@keyframes pulse-back {
+  to { stroke-dashoffset: 66; }
+}
+
+/* Flux épais et régulier (SRT) */
+.stream {
+  stroke-dasharray: 10 8;
+  animation: stream 0.8s linear infinite;
+}
+@keyframes stream {
+  to { stroke-dashoffset: -18; }
+}
+
+/* Ventilateurs qui tournent */
+.spin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: spin 1.2s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Palmier qui se balance */
+.sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: sway 4s ease-in-out infinite alternate;
+}
+@keyframes sway {
+  from { transform: rotate(-3deg); }
+  to { transform: rotate(3deg); }
+}
+
+/* Oiseaux qui planent */
+.glide {
+  animation: glide 14s linear infinite;
+}
+@keyframes glide {
+  from { transform: translateX(0); }
+  to { transform: translateX(var(--dx, 200px)); }
+}
+
+/* Barres du mixeur audio */
+.meter {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: meter 0.7s ease-in-out infinite alternate;
+}
+@keyframes meter {
+  from { transform: scaleY(0.35); }
+  to { transform: scaleY(1); }
+}
+
+/* Bruit d'image (signal perdu) */
+.noise {
+  animation: noise 0.18s steps(2) infinite;
+}
+@keyframes noise {
+  50% { opacity: 0.15; }
+}
+
+/* Cœurs et messages qui s'envolent */
+.rise {
+  animation: rise 4.5s ease-out infinite;
+}
+@keyframes rise {
+  from { transform: translateY(0); opacity: 0; }
+  15% { opacity: 1; }
+  to { transform: translateY(-140px); opacity: 0; }
+}
+
+/* Clignotement (case manquante, signal faible) */
+.blink {
+  animation: blink 0.9s steps(2, jump-none) infinite;
+}
+@keyframes blink {
+  50% { opacity: 0.2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wave, .swim, .bubble, .pulse, .pulseBack, .stream, .spin, .sway, .glide, .meter, .noise, .rise, .blink {
+    animation: none;
+  }
+}

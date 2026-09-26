@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import PageHero from "@/components/PageHero";
 import NextStep from "@/components/NextStep";
 import BondingDiagram from "@/components/blocks/BondingDiagram";
 import DetailSection, { IllustrationCard, Point } from "@/components/blocks/DetailSection";
-import ObsScreen from "@/components/illustrations/ObsScreen";
-import FlowDiagram from "@/components/blocks/FlowDiagram";
+import ObsInterface from "@/components/illustrations/ObsInterface";
+import FonctionnementStory from "@/components/fonctionnement/FonctionnementStory";
 import { Container, SectionHeader } from "@/components/ui";
 
 export const metadata: Metadata = {
@@ -13,13 +12,6 @@ export const metadata: Metadata = {
     "Téléphone → relais SRTLA → OBS → Twitch, Kick ou YouTube : comment SYXTEE NETWORKS combine tes connexions 4G, 5G et Wi-Fi et envoie le flux SRT dans ton OBS.",
   alternates: { canonical: "/fonctionnement" },
 };
-
-const chain = [
-  { title: "Ton téléphone", text: "Moblin ou IRL Pro filme, compresse et envoie la vidéo en SRTLA sur toutes tes connexions à la fois." },
-  { title: "Relais SYXTEE", text: "Il reçoit les paquets de chaque réseau, les remet dans l'ordre et les transforme en un seul flux SRT." },
-  { title: "Ton OBS", text: "Ton PC récupère ce flux comme une source vidéo et l'intègre à tes scènes, overlays et alertes." },
-  { title: "Plateformes", text: "OBS diffuse le résultat final sur Twitch, Kick, YouTube ou n'importe quelle plateforme RTMP." },
-];
 
 const obsSteps = [
   "Dans ta scène IRL, clique sur + dans Sources, puis choisis « Source média ».",
@@ -55,27 +47,13 @@ const glossary = [
 export default function FonctionnementPage() {
   return (
     <>
-      <PageHero kicker="Fonctionnement" title="De ta poche à ton live." crumb="Fonctionnement">
-        Ta vidéo fait quatre étapes avant d&apos;arriver chez tes viewers. Voici ce qui se passe à chacune, et pourquoi ça
-        tient mieux qu&apos;un live en 4G classique.
-      </PageHero>
+      <FonctionnementStory />
 
-      <section className="border-b border-line py-20 sm:py-24">
-        <Container>
-          <FlowDiagram large />
-          <ol className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-            {chain.map((c, i) => (
-              <li key={c.title}>
-                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-line font-mono text-sm">{i + 1}</span>
-                <h2 className="mt-5 text-lg font-semibold">{c.title}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{c.text}</p>
-              </li>
-            ))}
-          </ol>
-        </Container>
-      </section>
-
-      <DetailSection n="01" title="Tes connexions 4G, 5G et Wi-Fi combinées pour moins de coupures" visual={<BondingDiagram />}>
+      <DetailSection
+        n="En détail"
+        title="Tes connexions 4G, 5G et Wi-Fi combinées pour moins de coupures"
+        visual={<BondingDiagram />}
+      >
         <Point label="Le principe">
           <p>
             Ton téléphone ne choisit pas <em>une</em> connexion : il les utilise <strong>toutes en même temps</strong>. La
@@ -100,12 +78,12 @@ export default function FonctionnementPage() {
       </DetailSection>
 
       <DetailSection
-        n="02"
+        n="Dans OBS"
         title="Le flux récupéré directement dans ton OBS"
         reverse
         visual={
           <IllustrationCard label="Le flux SRT du relais, comme une source vidéo dans OBS">
-            <ObsScreen />
+            <ObsInterface />
           </IllustrationCard>
         }
       >

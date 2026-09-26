@@ -4,7 +4,7 @@ import PageHero from "@/components/PageHero";
 import NextStep from "@/components/NextStep";
 import DetailSection, { IllustrationCard, Point } from "@/components/blocks/DetailSection";
 import DiscordChat from "@/components/illustrations/DiscordChat";
-import ObsScreen from "@/components/illustrations/ObsScreen";
+import ObsInterface from "@/components/illustrations/ObsInterface";
 import PhoneMoblin from "@/components/illustrations/PhoneMoblin";
 import StarlinkMini from "@/components/illustrations/StarlinkMini";
 
@@ -100,7 +100,7 @@ export default function ServicesPage() {
         title="Tu gardes la main dans OBS"
         visual={
           <IllustrationCard label="La source SRT du relais dans ta scène OBS">
-            <ObsScreen />
+            <ObsInterface />
           </IllustrationCard>
         }
       >

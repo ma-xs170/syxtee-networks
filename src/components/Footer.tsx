@@ -45,7 +45,10 @@ export default function Footer() {
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>© {site.year} {site.name}. Tous droits réservés.</p>
-          <Link href="/mentions-legales" className="hover:text-foreground">Mentions légales</Link>
+          <div className="flex gap-6">
+            <Link href="/mentions-legales" className="hover:text-foreground">Mentions légales</Link>
+            <Link href="/credits" className="hover:text-foreground">Crédits</Link>
+          </div>
         </div>
       </div>
     </footer>

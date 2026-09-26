@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Figure from "@/components/Figure";
 import NextStep from "@/components/NextStep";
-import PopOutImage, { PopOutArt } from "@/components/PopOutImage";
+import PopOutImage from "@/components/PopOutImage";
+import CreditsTable from "@/components/credits/CreditsTable";
+import PhotoCredit from "@/components/credits/PhotoCredit";
 import StarlinkDiagram from "@/components/blocks/StarlinkDiagram";
 import DishMini from "@/components/illustrations/DishMini";
 import { Container, DiscordButton, SectionHeader } from "@/components/ui";
+import { credits } from "@/lib/credits";
 
 export const metadata: Metadata = {
   title: "Starlink Mini en IRL",
@@ -70,7 +74,7 @@ const settings = [
 export default function StarlinkPage() {
   return (
     <>
-      {/* HERO : le Mini déborde du bas du hero sur la section suivante */}
+      {/* HERO : le Mini déborde du bas de sa carte */}
       <section className="relative z-10 overflow-x-clip border-b border-line">
         <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />
         <Container className="relative grid items-center gap-10 pt-16 sm:pt-24 lg:grid-cols-[1.15fr_0.85fr] lg:pb-24">
@@ -94,21 +98,17 @@ export default function StarlinkPage() {
             </p>
           </div>
 
-          <div className="relative mx-auto h-64 w-64 sm:h-80 sm:w-80 lg:h-96 lg:w-full">
-            <div className="absolute inset-x-0 -bottom-16 top-0 lg:-bottom-48 lg:top-12">
-              <PopOutArt
-                src="/images/starlink/mini.png"
-                alt="Starlink Mini"
-                fallback={<DishMini />}
-                sizes="(min-width: 1024px) 480px, 320px"
-                eager
-              />
-            </div>
+          <div className="pb-16 md:pb-28 lg:pb-0">
+            <PopOutImage src="/images/starlink/mini.png" alt="Starlink Mini sur sa béquille" overflow="bottom" fallback={<DishMini />} eager>
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Starlink Mini</p>
+              <p className="mt-2 text-lg font-medium">1,10 kg · Wi-Fi intégré · USB-C 100 W</p>
+              <PhotoCredit file="mini.png" label="Image" />
+            </PopOutImage>
           </div>
         </Container>
       </section>
 
-      <section className="overflow-x-clip border-b border-line pb-20 pt-28 sm:pb-24 lg:pt-40">
+      <section className="overflow-x-clip border-b border-line pb-20 pt-24 sm:pb-24 md:pt-32">
         <Container>
           <SectionHeader kicker="Pourquoi le Mini" title="Pensé pour bouger." />
           <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
@@ -147,19 +147,36 @@ export default function StarlinkPage() {
       <section className="overflow-x-clip border-b border-line py-20 sm:py-24">
         <Container>
           <SectionHeader kicker="Le setup sac à dos" title="Tout tient dans un sac." />
-          <div className="mt-24 space-y-28 md:mt-32 md:space-y-36">
-            <PopOutImage src="/images/starlink/mini-sac.png" alt="Starlink Mini dans un sac à dos" side="left" overflow="side" fallback={<DishMini />}>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Dans le sac</p>
-              <p className="mt-4 text-xl font-medium leading-snug sm:text-2xl">
-                Le Mini à plat vers le ciel, le câble et la powerbank.
-              </p>
-            </PopOutImage>
-            <PopOutImage src="/images/starlink/mini-powerbank.png" alt="Starlink Mini branché sur une powerbank USB-C" side="right" overflow="side" fallback={<DishMini />}>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Alimentation</p>
-              <p className="mt-4 text-xl font-medium leading-snug sm:text-2xl">
-                Une powerbank USB-C PD 100 W suffit, pas de batterie V-mount nécessaire.
-              </p>
-            </PopOutImage>
+          <div className="mt-14 grid items-center gap-8 md:grid-cols-2">
+            <div className="rounded-3xl border border-line bg-gradient-to-b from-white/[0.06] to-transparent p-4 sm:p-6">
+              <Figure
+                src="/images/starlink/mini-trepied.jpg"
+                alt="Starlink Mini monté sur un trépied photo"
+                caption="Le Mini monté sur trépied photo"
+                ratio="4/5"
+                fit="contain"
+                sizes="(min-width: 1152px) 520px, (min-width: 768px) 45vw, 100vw"
+              />
+              <PhotoCredit file="mini-trepied.jpg" />
+            </div>
+            <ul className="divide-y divide-line border-y border-line">
+              <li className="py-6">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Dans le sac</p>
+                <p className="mt-3 text-lg leading-relaxed">Le Mini à plat vers le ciel, le câble et la powerbank.</p>
+              </li>
+              <li className="py-6">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Alimentation</p>
+                <p className="mt-3 text-lg leading-relaxed">
+                  Une powerbank USB-C PD 100 W suffit, pas de batterie V-mount nécessaire.
+                </p>
+              </li>
+              <li className="py-6">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">En statique</p>
+                <p className="mt-3 text-lg leading-relaxed">
+                  Sur un trépied photo, le Mini reste stable et au-dessus des obstacles bas.
+                </p>
+              </li>
+            </ul>
           </div>
         </Container>
       </section>
@@ -231,9 +248,18 @@ export default function StarlinkPage() {
             </div>
           </div>
 
-          <p className="mt-12 text-xs text-muted">
-            Starlink et Starlink Mini sont des marques de SpaceX. SYXTEE NETWORKS n&apos;est pas affilié à SpaceX. Visuels :
-            photos SYXTEE NETWORKS.
+        </Container>
+      </section>
+
+      <section className="overflow-x-clip border-t border-line py-16">
+        <Container>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Crédits photos</p>
+          <div className="mt-6">
+            <CreditsTable items={credits.filter((c) => c.page === "/starlink")} />
+          </div>
+          <p className="mt-6 text-xs text-muted">
+            Starlink et Starlink Mini sont des marques de SpaceX. SYXTEE NETWORKS n&apos;est pas affilié à SpaceX ni aux
+            auteurs des photos.
           </p>
         </Container>
       </section>

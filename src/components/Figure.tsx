@@ -10,6 +10,7 @@ export default function Figure({
   ratio = "16/9",
   sizes = "(min-width: 1024px) 560px, 100vw",
   eager = false,
+  fit = "cover",
 }: {
   src: string;
   alt: string;
@@ -17,6 +18,7 @@ export default function Figure({
   ratio?: string;
   sizes?: string;
   eager?: boolean; // image visible dès l'arrivée sur la page : chargée en priorité au lieu de lazy
+  fit?: "cover" | "contain"; // contain pour les photos qu'on n'a pas le droit de rogner (licences ND)
 }) {
   const exists = existsSync(path.join(process.cwd(), "public", src));
 
@@ -31,7 +33,7 @@ export default function Figure({
             sizes={sizes}
             loading={eager ? "eager" : "lazy"}
             fetchPriority={eager ? "high" : undefined}
-            className="object-cover"
+            className={fit === "contain" ? "object-contain" : "object-cover"}
           />
         </div>
       ) : (

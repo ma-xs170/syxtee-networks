@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import NextStep from "@/components/NextStep";
+import MoblinStory from "@/components/moblin/MoblinStory";
+import SailySection from "@/components/partners/SailySection";
 import CopyCode from "@/components/CopyCode";
 import PhoneMockup from "@/components/PhoneMockup";
-import PopOutImage from "@/components/PopOutImage";
-import { Container, DiscordButton, SectionHeader } from "@/components/ui";
+import { Container, SectionHeader } from "@/components/ui";
 import { creditFor } from "@/lib/credits";
 
 export const metadata: Metadata = {
@@ -89,66 +89,7 @@ function Step({ n, title, img, alt, children }: { n: string; title: string; img:
 export default function MoblinPage() {
   return (
     <>
-      <section className="relative overflow-x-clip border-b border-line">
-        <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />
-        <Container className="relative pb-16 pt-16 sm:pb-24 sm:pt-24">
-          <nav aria-label="Fil d'Ariane" className="font-mono text-xs text-muted">
-            <ol className="flex flex-wrap items-center gap-2">
-              <li>
-                <Link href="/" className="hover:text-foreground">Accueil</Link>
-              </li>
-              <li aria-hidden="true" className="text-white/20">/</li>
-              <li aria-current="page" className="text-foreground">Moblin</li>
-            </ol>
-          </nav>
-          <p className="mt-10 font-mono text-xs uppercase tracking-[0.2em] text-muted">App recommandée</p>
-          <h1 className="mt-4 max-w-2xl text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
-            Moblin, ton encodeur IRL dans la poche.
-          </h1>
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
-            L&apos;app iOS gratuite et open source qui transforme ton iPhone en encodeur IRL : compatible SRTLA, pensée pour
-            streamer dehors.
-          </p>
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-            <a
-              href={appStoreUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-medium text-black transition-colors hover:bg-neutral-200"
-            >
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-4 w-4">
-                <path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8s2 .8 3.4.8c1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.1ZM13.9 5c.7-.9 1.2-2 1.1-3.2-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.1 1.1.1 2.3-.6 3-1.5Z" />
-              </svg>
-              Télécharger sur l&apos;App Store
-            </a>
-            <DiscordButton variant="ghost">Besoin d&apos;aide ? Discord</DiscordButton>
-          </div>
-
-          <div className="mt-24 md:mt-32">
-            <PopOutImage
-              alt="Moblin en live sur iPhone"
-              shape="phone"
-              art={
-                <div className="relative">
-                  <PhoneMockup src="/images/moblin/screen-live.png" alt="Moblin en live sur iPhone" sizes="(min-width: 768px) 208px, 144px" eager />
-                  <div className="absolute -left-10 top-[30%] w-14 -rotate-12 drop-shadow-[0_18px_24px_rgba(0,0,0,0.7)] md:-left-16 md:w-20">
-                    <Image src="/images/moblin/icon.png" alt="Icône de l'app Moblin" width={80} height={80} sizes="80px" className="h-auto w-full rounded-[22%]" />
-                  </div>
-                </div>
-              }
-            >
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">En live</p>
-              <p className="mt-4 max-w-md text-xl font-medium leading-snug sm:text-2xl">
-                Ta caméra, ton bitrate et ton chat, sur l&apos;écran de ton iPhone.
-              </p>
-              <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">
-                Moblin envoie ta vidéo en SRTLA au relais SYXTEE, et tu gardes un œil sur tes stats réseau pendant que tu
-                marches.
-              </p>
-            </PopOutImage>
-          </div>
-        </Container>
-      </section>
+      <MoblinStory />
 
       <section className="border-b border-line py-10">
         <Container>
@@ -182,7 +123,7 @@ export default function MoblinPage() {
         </Container>
       </section>
 
-      <section className="border-b border-line py-20 sm:py-24">
+      <section id="tutoriel" className="scroll-mt-16 border-b border-line py-20 sm:py-24">
         <Container>
           <SectionHeader kicker="Tutoriel" title="Configurer Moblin avec SYXTEE.">
             Six étapes, une dizaine de minutes. Garde le Discord ouvert à côté : ton adresse de relais et ton identifiant
@@ -263,6 +204,8 @@ export default function MoblinPage() {
         </Container>
       </section>
 
+      <SailySection />
+
       <section className="border-b border-line py-20 sm:py-24">
         <Container className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
           <SectionHeader kicker="Terrain" title="Astuces terrain." />
@@ -289,11 +232,11 @@ export default function MoblinPage() {
             </p>
           </aside>
           <p className="mt-8 text-xs text-muted">
-            Moblin est une app indépendante. SYXTEE NETWORKS n&apos;est pas affilié à son développeur.
+            Moblin est une app indépendante. SYXTEE NETWORKS n&apos;est pas affilié au développeur de Moblin.
           </p>
           {iconCredit && (
             <p className="mt-2 text-xs text-muted">
-              Icône Moblin {iconCredit.author}, licence{" "}
+              Logo Moblin © {iconCredit.author} — licence{" "}
               <a href={iconCredit.licenseUrl} target="_blank" rel="noopener noreferrer license" className="underline underline-offset-4 hover:text-foreground">
                 {iconCredit.license}
               </a>

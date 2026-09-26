@@ -195,3 +195,15 @@ body {
 .group:focus-within .hover-play * {
   animation-play-state: running;
 }
+
+/* Nuages qui glissent sur l'écran du téléphone (/moblin) */
+.cloud-drift {
+  animation: cloud-drift 14s ease-in-out infinite;
+}
+@keyframes cloud-drift {
+  0%, 100% { transform: translateX(-10px); }
+  50% { transform: translateX(14px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cloud-drift { animation: none; }
+}

@@ -7,14 +7,11 @@ import { credits } from "@/lib/credits";
 
 export const metadata: Metadata = {
   title: "Crédits",
-  description: "Crédits et licences des images et visuels tiers utilisés sur le site SYXTEE NETWORKS.",
+  description: "Crédits et licences des visuels tiers utilisés sur le site SYXTEE NETWORKS.",
   alternates: { canonical: "/credits" },
 };
 
-const pages = [
-  { href: "/starlink", label: "Starlink" },
-  { href: "/moblin", label: "Moblin" },
-];
+const pages = [{ href: "/moblin", label: "Moblin" }];
 
 export default function CreditsPage() {
   return (
@@ -44,8 +41,8 @@ export default function CreditsPage() {
         <Container>
           <p className="max-w-3xl text-xs leading-relaxed text-muted">
             Starlink et Starlink Mini sont des marques de SpaceX. Moblin est une app indépendante. SYXTEE NETWORKS n&apos;est
-            affilié ni à SpaceX, ni au développeur de Moblin, ni aux auteurs des photos. Les autres visuels du site sont
-            créés par SYXTEE NETWORKS.
+            affilié ni à SpaceX, ni au développeur de Moblin. Toutes les autres illustrations du site sont créées par
+            SYXTEE NETWORKS.
           </p>
         </Container>
       </section>

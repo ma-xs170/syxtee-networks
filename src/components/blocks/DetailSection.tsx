@@ -42,3 +42,13 @@ export function Point({ label, children }: { label: string; children: ReactNode 
     </div>
   );
 }
+
+// Cadre d'une illustration filaire dans une DetailSection.
+export function IllustrationCard({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <figure className="rounded-3xl border border-line bg-gradient-to-b from-white/[0.06] to-transparent p-6 sm:p-10">
+      <div className="mx-auto aspect-[4/3] max-w-md">{children}</div>
+      <figcaption className="mt-4 text-center font-mono text-xs text-muted">{label}</figcaption>
+    </figure>
+  );
+}

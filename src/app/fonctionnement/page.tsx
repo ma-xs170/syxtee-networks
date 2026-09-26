@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
-import Figure from "@/components/Figure";
 import NextStep from "@/components/NextStep";
 import BondingDiagram from "@/components/blocks/BondingDiagram";
-import DetailSection, { Point } from "@/components/blocks/DetailSection";
+import DetailSection, { IllustrationCard, Point } from "@/components/blocks/DetailSection";
+import ObsScreen from "@/components/illustrations/ObsScreen";
 import FlowDiagram from "@/components/blocks/FlowDiagram";
 import { Container, SectionHeader } from "@/components/ui";
 
@@ -103,7 +103,11 @@ export default function FonctionnementPage() {
         n="02"
         title="Le flux récupéré directement dans ton OBS"
         reverse
-        visual={<Figure src="/photos/obs-source-srt.jpg" alt="capture d'OBS avec les réglages de la source média SRT" caption="Réglages de la source média dans OBS Studio." />}
+        visual={
+          <IllustrationCard label="Le flux SRT du relais, comme une source vidéo dans OBS">
+            <ObsScreen />
+          </IllustrationCard>
+        }
       >
         <Point label="La source SRT">
           <p>

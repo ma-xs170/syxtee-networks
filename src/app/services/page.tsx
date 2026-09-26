@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
-import Figure from "@/components/Figure";
 import NextStep from "@/components/NextStep";
-import BondingDiagram from "@/components/blocks/BondingDiagram";
-import DetailSection, { Point } from "@/components/blocks/DetailSection";
+import DetailSection, { IllustrationCard, Point } from "@/components/blocks/DetailSection";
+import DiscordChat from "@/components/illustrations/DiscordChat";
+import ObsScreen from "@/components/illustrations/ObsScreen";
+import PhoneMoblin from "@/components/illustrations/PhoneMoblin";
+import StarlinkMini from "@/components/illustrations/StarlinkMini";
 
 export const metadata: Metadata = {
   title: "Services",
@@ -12,14 +14,6 @@ export const metadata: Metadata = {
     "Relais SRTLA, bonding 4G/5G/Wi-Fi, flux SRT dans OBS et support Discord : tout ce que SYXTEE NETWORKS fait pour ton live IRL depuis ton téléphone.",
   alternates: { canonical: "/services" },
 };
-
-const ticket = [
-  { k: "App", v: "Moblin ou IRL Pro + version" },
-  { k: "Réseau", v: "Opérateur, 4G / 5G / Wi-Fi" },
-  { k: "Relais", v: "New York" },
-  { k: "Heure", v: "Quand le souci est arrivé" },
-  { k: "Capture", v: "Écran de l'erreur ou des stats" },
-];
 
 export default function ServicesPage() {
   return (
@@ -29,7 +23,15 @@ export default function ServicesPage() {
         une vraie personne sur Discord quand ça coince.
       </PageHero>
 
-      <DetailSection n="01" title="Relais SRTLA" visual={<BondingDiagram />}>
+      <DetailSection
+        n="01"
+        title="Relais SRTLA"
+        visual={
+          <IllustrationCard label="4G, 5G et Wi-Fi envoyés en même temps">
+            <PhoneMoblin />
+          </IllustrationCard>
+        }
+      >
         <Point label="Ce que c'est">
           <p>
             Le SRTLA, c&apos;est du <strong>bonding</strong> : ton téléphone découpe la vidéo en petits paquets et les envoie
@@ -55,7 +57,14 @@ export default function ServicesPage() {
         n="02"
         title="Ton téléphone suffit"
         reverse
-        visual={<Figure src="/photos/telephone-irl.jpg" alt="téléphone sur perche en live IRL" caption="Moblin sur iPhone, monté sur une perche." />}
+        visual={
+          <IllustrationCard label="Ton iPhone, et le Starlink Mini quand la 4G ne suffit pas">
+            <div className="grid h-full grid-cols-[1.3fr_1fr] items-end gap-2">
+              <StarlinkMini />
+              <PhoneMoblin waves={false} />
+            </div>
+          </IllustrationCard>
+        }
       >
         <Point label="Ce que c'est">
           <p>
@@ -81,7 +90,11 @@ export default function ServicesPage() {
       <DetailSection
         n="03"
         title="Tu gardes la main dans OBS"
-        visual={<Figure src="/photos/obs-source-srt.jpg" alt="capture d'OBS avec la source média SRT" caption="La source SRT du relais dans une scène OBS." />}
+        visual={
+          <IllustrationCard label="La source SRT du relais dans ta scène OBS">
+            <ObsScreen />
+          </IllustrationCard>
+        }
       >
         <Point label="Ce que c'est">
           <p>
@@ -113,18 +126,9 @@ export default function ServicesPage() {
         title="Support Discord"
         reverse
         visual={
-          <div className="rounded-2xl border border-line bg-white/[0.02] p-6 sm:p-8">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Ticket · ce qu&apos;il faut fournir</p>
-            <dl className="mt-6 divide-y divide-line border-y border-line">
-              {ticket.map((t) => (
-                <div key={t.k} className="flex items-baseline justify-between gap-6 py-3">
-                  <dt className="font-mono text-xs uppercase text-muted">{t.k}</dt>
-                  <dd className="text-right text-sm">{t.v}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        }
+          <IllustrationCard label="Un ticket, un salon privé, une vraie personne">
+            <DiscordChat />
+          </IllustrationCard>        }
       >
         <Point label="Ce que c'est">
           <p>

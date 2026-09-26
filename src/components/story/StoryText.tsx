@@ -18,6 +18,8 @@ export type StoryTextScene = {
   band: Band;
   paragraphBands: Band[];
   footerBand?: Band;
+  /** true : le footer prend la place des paragraphes (même case) ; false : il s'affiche en dessous. */
+  footerReplaces?: boolean;
 };
 
 export function Title({ as: Tag = "h2", className, children }: { as?: "h1" | "h2"; className: string; children: ReactNode }) {
@@ -66,12 +68,19 @@ function SceneBlock({ p, s }: { p: MotionValue<number>; s: StoryTextScene }) {
             {t}
           </Paragraph>
         ))}
-        {s.footer && s.footerBand && (
+        {s.footer && s.footerBand && s.footerReplaces && (
           <FooterSlot p={p} range={s.footerBand}>
             {s.footer}
           </FooterSlot>
         )}
       </div>
+      {s.footer && s.footerBand && !s.footerReplaces && (
+        <div className="mt-6 grid">
+          <FooterSlot p={p} range={s.footerBand}>
+            {s.footer}
+          </FooterSlot>
+        </div>
+      )}
     </motion.div>
   );
 }

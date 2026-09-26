@@ -160,3 +160,38 @@ body {
   .wifi-pulse, .wave-out, .led-blink, .illu-float { animation: none; }
   html { scroll-behavior: auto; }
 }
+
+/* Houle de la mer au loin (scène « Dans la rue ») */
+.sea-drift {
+  animation: sea-drift 6s ease-in-out infinite;
+}
+@keyframes sea-drift {
+  0%, 100% { transform: translateX(-6px); }
+  50% { transform: translateX(6px); }
+}
+
+/* Messages et cœurs qui montent sur l'écran du live */
+.float-up {
+  opacity: 0;
+  animation: float-up 3.6s ease-out infinite;
+}
+@keyframes float-up {
+  0% { opacity: 0; transform: translateY(0); }
+  15% { opacity: 1; }
+  75% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-120px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sea-drift { animation: none; }
+  .float-up { animation: none; opacity: 1; }
+}
+
+/* Illustrations des cartes : animations en pause, elles jouent au survol ou au focus de la carte */
+.hover-play * {
+  animation-play-state: paused;
+}
+.group:hover .hover-play *,
+.group:focus-within .hover-play * {
+  animation-play-state: running;
+}

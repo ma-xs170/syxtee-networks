@@ -1,4 +1,3 @@
-import FlowDiagram from "../blocks/FlowDiagram";
 import { Container, MoreLink, SectionHeader } from "../ui";
 
 const steps = [
@@ -13,11 +12,7 @@ export default function HowItWorks() {
       <Container>
         <SectionHeader kicker="Fonctionnement" title="De ta poche à ton live, en 3 étapes." />
 
-        <div className="mt-14">
-          <FlowDiagram />
-        </div>
-
-        <ol className="mt-16 grid gap-10 md:grid-cols-3">
+        <ol className="mt-14 grid gap-10 md:grid-cols-3">
           {steps.map((s) => (
             <li key={s.n}>
               <span className="flex h-10 w-10 items-center justify-center rounded-full border border-line font-mono text-sm">{s.n}</span>

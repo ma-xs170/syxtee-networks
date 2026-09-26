@@ -1,4 +1,17 @@
+import type { ReactNode } from "react";
+import DiscordChat from "../illustrations/DiscordChat";
+import ObsScreen from "../illustrations/ObsScreen";
+import PhoneMoblin from "../illustrations/PhoneMoblin";
+import RelayServer from "../illustrations/RelayServer";
 import { Container, MoreLink, SectionHeader } from "../ui";
+
+// Illustrations des cartes : animations en pause, elles jouent au survol (ou au focus) de la carte.
+const art: Record<string, ReactNode> = {
+  "01": <RelayServer />,
+  "02": <PhoneMoblin />,
+  "03": <ObsScreen />,
+  "04": <DiscordChat />,
+};
 
 const services = [
   {
@@ -33,7 +46,10 @@ export default function Services() {
 
         <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2">
           {services.map((s) => (
-            <article key={s.n} className="bg-black p-8 transition-colors hover:bg-neutral-950">
+            <article key={s.n} className="group bg-black p-8 transition-colors hover:bg-neutral-950">
+              <div className="hover-play mb-6 h-32 w-full transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-[1.03]">
+                {art[s.n]}
+              </div>
               <p className="font-mono text-sm text-muted">{s.n}</p>
               <h3 className="mt-6 text-xl font-semibold">{s.title}</h3>
               <p className="mt-3 text-sm leading-relaxed text-muted">{s.text}</p>

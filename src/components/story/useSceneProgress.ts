@@ -11,22 +11,25 @@ export function sceneRanges(n: number, starts?: readonly number[]): SceneRange[]
   return s.map((start, i) => ({ start, end: i < n - 1 ? s[i + 1] : 1 }));
 }
 
-/** Fenêtre d'apparition d'une scène : fondu croisé de largeur `overlap` autour de chaque frontière. */
+/**
+ * Fenêtre d'apparition du texte d'une scène. Autour de chaque frontière, une transition de largeur `overlap` :
+ * le texte sortant disparaît sur la première moitié, le suivant apparaît sur la seconde (pas de superposition).
+ */
 export function defaultSceneBand(i: number, ranges: SceneRange[], overlap: number): Band {
   const h = overlap / 2;
   const { start, end } = ranges[i];
   const first = i === 0;
   const last = i === ranges.length - 1;
-  return [first ? -1 : start - h, first ? 0 : start + h, last ? 2 : end - h, last ? 3 : end + h];
+  return [first ? -1 : start, first ? 0 : start + h, last ? 2 : end - h, last ? 3 : end];
 }
 
-/** Fenêtres des paragraphes d'une scène : ils se relaient à parts égales, le dernier reste jusqu'au bout. */
+/** Fenêtres des paragraphes d'une scène : ils se relaient à parts égales (l'un sort, puis l'autre entre), le dernier reste. */
 export function defaultParagraphBands(range: SceneRange, count: number, fade = 0.02): Band[] {
   const len = range.end - range.start;
   return Array.from({ length: count }, (_, k) => {
     const a = range.start + (len * k) / count;
     const b = range.start + (len * (k + 1)) / count;
-    return [k === 0 ? -1 : a - fade / 2, k === 0 ? 0 : a + fade / 2, k === count - 1 ? 2 : b - fade / 2, k === count - 1 ? 3 : b + fade / 2];
+    return [k === 0 ? -1 : a, k === 0 ? 0 : a + fade / 2, k === count - 1 ? 2 : b - fade / 2, k === count - 1 ? 3 : b];
   });
 }
 

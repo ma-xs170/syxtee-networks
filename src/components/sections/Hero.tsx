@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { relays } from "@/lib/site";
+import HeroStreet from "../home/HeroStreet";
 import { Container, DiscordButton } from "../ui";
 
 export default function Hero() {
@@ -9,7 +9,7 @@ export default function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-line">
       <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />
-      <Container className="relative grid items-center gap-14 py-20 sm:py-28 lg:grid-cols-[1.2fr_0.8fr]">
+      <Container className="relative grid items-center gap-14 py-20 sm:py-28 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
           <p className="inline-flex items-center gap-3 rounded-full border border-line bg-white/[0.03] px-4 py-1.5 font-mono text-xs uppercase tracking-[0.15em] text-muted">
             <span className="live-dot" />
@@ -39,11 +39,8 @@ export default function Hero() {
           </div>
         </div>
 
-        <div className="relative mx-auto hidden aspect-square w-full max-w-sm items-center justify-center lg:flex">
-          <div className="absolute inset-0 rounded-full border border-line" />
-          <div className="absolute inset-10 rounded-full border border-line" />
-          <div className="absolute inset-20 rounded-full border border-white/5 bg-white/[0.02]" />
-          <Image src="/logo-400.png" alt="SYXTEE NETWORKS" width={160} height={219} priority className="relative" />
+        <div className="relative">
+          <HeroStreet />
         </div>
       </Container>
     </section>

@@ -28,7 +28,7 @@ export type StoryScene = {
   header?: ReactNode;
   /** Sous le titre (ex. chiffres clés). */
   subtitle?: ReactNode;
-  /** Après les paragraphes (ex. bouton), qui apparaît à la fin de la scène. */
+  /** Après les paragraphes (ex. bouton). Avec `footerBand`, il prend la place des paragraphes pendant cette fenêtre. */
   footer?: ReactNode;
   /** Réglages fins, en progrès global. Par défaut : calculés à partir du découpage automatique. */
   band?: Band;
@@ -93,7 +93,9 @@ function AnimatedStory({ scenes, height, ranges, overlap, stage, backdrop }: Req
     ...s,
     band: bands[i],
     paragraphBands: s.paragraphBands ?? defaultParagraphBands(ranges[i], s.paragraphs.length),
-    footerBand: s.footer ? (s.footerBand ?? [ranges[i].end - 0.08, ranges[i].end - 0.05, 2, 3]) : undefined,
+    // footerBand explicite : le footer remplace les paragraphes (ex. finale Starlink). Sinon il apparaît dessous.
+    footerBand: s.footer ? (s.footerBand ?? ([ranges[i].start + 0.02, ranges[i].start + 0.06, 2, 3] as Band)) : undefined,
+    footerReplaces: s.footerBand !== undefined,
   }));
 
   return (

@@ -1,4 +1,5 @@
 import Hero from "@/components/sections/Hero";
+import JourneyStory from "@/components/home/JourneyStory";
 import Compat from "@/components/sections/Compat";
 import Services from "@/components/sections/Services";
 import HowItWorks from "@/components/sections/HowItWorks";
@@ -14,6 +15,7 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <JourneyStory />
       <Compat />
       <Services />
       <HowItWorks />

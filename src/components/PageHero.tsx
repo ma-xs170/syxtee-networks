@@ -6,11 +6,13 @@ export default function PageHero({
   kicker,
   title,
   crumb,
+  actions,
   children,
 }: {
   kicker: string;
   title: ReactNode;
   crumb: string;
+  actions?: ReactNode;
   children?: ReactNode;
 }) {
   return (
@@ -30,6 +32,7 @@ export default function PageHero({
         <p className="mt-10 font-mono text-xs uppercase tracking-[0.2em] text-muted">{kicker}</p>
         <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">{title}</h1>
         {children && <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">{children}</p>}
+        {actions && <div className="mt-10 flex flex-col gap-3 sm:flex-row">{actions}</div>}
       </Container>
     </section>
   );

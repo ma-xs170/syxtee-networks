@@ -23,6 +23,15 @@ export function defaultSceneBand(i: number, ranges: SceneRange[], overlap: numbe
   return [first ? -1 : start, first ? 0 : start + h, last ? 2 : end - h, last ? 3 : end];
 }
 
+/** Fenêtre d'un visuel de scène : fondu croisé de largeur `overlap`, centré sur chaque frontière (se chevauche). */
+export function crossfadeBand(i: number, ranges: SceneRange[], overlap: number): Band {
+  const h = overlap / 2;
+  const { start, end } = ranges[i];
+  const first = i === 0;
+  const last = i === ranges.length - 1;
+  return [first ? -1 : start - h, first ? 0 : start + h, last ? 2 : end - h, last ? 3 : end + h];
+}
+
 /** Fenêtres des paragraphes d'une scène : ils se relaient à parts égales (l'un sort, puis l'autre entre), le dernier reste. */
 export function defaultParagraphBands(range: SceneRange, count: number, fade = 0.02): Band[] {
   const len = range.end - range.start;

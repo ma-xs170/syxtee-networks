@@ -7,7 +7,7 @@ import { StoryActiveContext, useReducedMotion } from "./StoryContext";
 import StoryProgress from "./StoryProgress";
 import StoryText, { Title, useFade } from "./StoryText";
 import type { Band } from "./timeline";
-import { defaultParagraphBands, defaultSceneBand, sceneRanges, useSceneProgress, type SceneRange } from "./useSceneProgress";
+import { crossfadeBand, defaultParagraphBands, defaultSceneBand, sceneRanges, useSceneProgress, type SceneRange } from "./useSceneProgress";
 
 // Moteur de scrollytelling : un conteneur haut (nombre de scènes × 130vh par défaut), un bloc sticky collé sous la nav,
 // et un seul progrès de scroll (0 → 1) lissé par un ressort, découpé automatiquement en scènes qui se chevauchent.
@@ -55,6 +55,8 @@ type Props = {
   stage?: (global: MotionValue<number>) => ReactNode;
   /** Fond plein cadre derrière le contenu du bloc sticky (ex. ciel étoilé, voile). */
   backdrop?: (global: MotionValue<number>) => ReactNode;
+  /** Indicateur 01 / 02 / 03 en bas à droite (true par défaut). */
+  progress?: boolean;
 };
 
 const spring = { stiffness: 180, damping: 36, restDelta: 0.0002 };
@@ -72,7 +74,15 @@ function SceneVisual({ scene, p, range, band }: { scene: StoryScene; p: MotionVa
   );
 }
 
-function AnimatedStory({ scenes, height, ranges, overlap, stage, backdrop }: Required<Pick<Props, "scenes" | "overlap">> & Pick<Props, "stage" | "backdrop"> & { height: string; ranges: SceneRange[] }) {
+function AnimatedStory({
+  scenes,
+  height,
+  ranges,
+  overlap,
+  stage,
+  backdrop,
+  progress,
+}: Required<Pick<Props, "scenes" | "overlap" | "progress">> & Pick<Props, "stage" | "backdrop"> & { height: string; ranges: SceneRange[] }) {
   const ref = useRef<HTMLDivElement>(null);
   const sticky = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: [`start ${NAV}px`, "end end"] });
@@ -89,6 +99,8 @@ function AnimatedStory({ scenes, height, ranges, overlap, stage, backdrop }: Req
   }, []);
 
   const bands = scenes.map((s, i) => s.band ?? defaultSceneBand(i, ranges, overlap));
+  // Visuels : fondu croisé qui se chevauche (pas de passage au noir entre deux scènes).
+  const visualBands = scenes.map((s, i) => s.band ?? crossfadeBand(i, ranges, overlap));
   const text = scenes.map((s, i) => ({
     ...s,
     band: bands[i],
@@ -111,7 +123,7 @@ function AnimatedStory({ scenes, height, ranges, overlap, stage, backdrop }: Req
               ) : (
                 <div className="relative h-full w-full">
                   {scenes.map((s, i) => (
-                    <SceneVisual key={s.kicker} scene={s} p={p} range={ranges[i]} band={bands[i]} />
+                    <SceneVisual key={s.kicker} scene={s} p={p} range={ranges[i]} band={visualBands[i]} />
                   ))}
                 </div>
               )}
@@ -121,7 +133,7 @@ function AnimatedStory({ scenes, height, ranges, overlap, stage, backdrop }: Req
             </div>
           </div>
 
-          <StoryProgress p={p} ranges={ranges} />
+          {progress && <StoryProgress p={p} ranges={ranges} />}
         </div>
       </div>
     </StoryActiveContext.Provider>
@@ -159,7 +171,7 @@ function StaticScene({ scene, range }: { scene: StoryScene; range: SceneRange })
   );
 }
 
-export default function ScrollStory({ scenes, id, className = "", height, starts, overlap = 0.05, stage, backdrop, ...rest }: Props) {
+export default function ScrollStory({ scenes, id, className = "", height, starts, overlap = 0.05, stage, backdrop, progress = true, ...rest }: Props) {
   const reduced = useReducedMotion();
   const ranges = sceneRanges(scenes.length, starts);
   return (
@@ -173,6 +185,7 @@ export default function ScrollStory({ scenes, id, className = "", height, starts
             overlap={overlap}
             stage={stage}
             backdrop={backdrop}
+            progress={progress}
           />
         </div>
       )}

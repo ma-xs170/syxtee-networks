@@ -1,3 +1,4 @@
+import RackMini from "@/components/relay/RackMini";
 import { relays, site } from "@/lib/site";
 
 export default function RelayGrid() {
@@ -16,10 +17,13 @@ export default function RelayGrid() {
             )}
           </div>
           <p className="mt-1 text-sm text-muted">{r.region}</p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {r.protocols.map((p) => (
-              <span key={p} className="rounded-full border border-line px-3 py-1 font-mono text-xs text-muted">{p}</span>
-            ))}
+          <div className="mt-6 flex items-end justify-between gap-4">
+            <div className="flex flex-wrap gap-2">
+              {r.protocols.map((p) => (
+                <span key={p} className="rounded-full border border-line px-3 py-1 font-mono text-xs text-muted">{p}</span>
+              ))}
+            </div>
+            <RackMini online={r.status === "online"} />
           </div>
         </div>
       ))}

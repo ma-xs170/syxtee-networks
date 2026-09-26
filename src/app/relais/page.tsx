@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import PageHero from "@/components/PageHero";
 import NextStep from "@/components/NextStep";
 import DetailSection, { Point } from "@/components/blocks/DetailSection";
 import RelayGrid from "@/components/blocks/RelayGrid";
-import { Container } from "@/components/ui";
+import RelayStory from "@/components/relay/RelayStory";
+import { Container, SectionHeader } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Relais",
@@ -22,14 +22,17 @@ const latency = [
 export default function RelaisPage() {
   return (
     <>
-      <PageHero kicker="Relais" title="Nos serveurs." crumb="Relais">
-        Les relais SYXTEE tournent 24h/24. De nouvelles régions ouvrent selon la demande de la communauté : vote pour la
-        tienne sur le Discord.
-      </PageHero>
+      <RelayStory />
 
       <section className="border-b border-line py-20 sm:py-24">
         <Container>
-          <RelayGrid />
+          <SectionHeader kicker="Relais" title="Nos serveurs.">
+            Les relais SYXTEE tournent 24h/24. De nouvelles régions ouvrent selon la demande de la communauté : vote pour la
+            tienne sur le Discord.
+          </SectionHeader>
+          <div className="mt-14">
+            <RelayGrid />
+          </div>
         </Container>
       </section>
 

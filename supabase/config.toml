@@ -1,0 +1,35 @@
+# Configuration Auth du projet Supabase SYXTEE, appliquée avec `supabase config push`.
+# Seuls les réglages déclarés ici sont envoyés ; tout le reste du projet reste inchangé.
+# Clés OAuth (Twitch, Discord, Google) et SMTP Resend : dans le tableau de bord (voir supabase/README.md),
+# jamais dans ce fichier.
+project_id = "syxtee-networks"
+
+[auth]
+# Domaine de production (à remplacer par le domaine final).
+site_url = "https://syxtee-networks.vercel.app"
+# Retours autorisés après un lien magique ou une connexion OAuth : production, previews Vercel, dev, tests e2e.
+additional_redirect_urls = [
+  "https://syxtee-networks.vercel.app/auth/**",
+  "https://*-dj-syxtee.vercel.app/auth/**",
+  "http://localhost:3000/auth/**",
+  "http://localhost:3100/auth/**",
+]
+# Bouton « Lier mon Twitch » (/compte et /bienvenue).
+enable_manual_linking = true
+
+[auth.email]
+# Lien magique valable 10 minutes.
+otp_expiry = 600
+# Un envoi toutes les 30 s au plus (aligné sur le bouton « Renvoyer (30 s) »).
+max_frequency = "30s"
+
+# Email de connexion aux couleurs SYXTEE (nouveaux comptes et comptes existants).
+# ⚠️ Supabase refuse les modèles personnalisés tant que le SMTP par défaut est utilisé (offre gratuite) :
+# décommenter après avoir branché Resend (SMTP), puis relancer `supabase config push`.
+# [auth.email.template.magic_link]
+# subject = "Connexion à SYXTEE"
+# content_path = "./supabase/templates/magic-link.html"
+
+# [auth.email.template.confirmation]
+# subject = "Connexion à SYXTEE"
+# content_path = "./supabase/templates/magic-link.html"

@@ -13,30 +13,32 @@ URL de retour OAuth de Supabase (appelée `CALLBACK` plus bas) :
 ## 1. Créer le projet Supabase
 
 1. supabase.com → New project. Région : **Europe** (Paris `eu-west-3` ou Francfort `eu-central-1`).
-2. **SQL Editor** → New query → coller tout `supabase/migrations/0001_comptes.sql` → Run.
+2. `supabase link --project-ref <ref>` puis `supabase db push` (ou SQL Editor → coller `supabase/migrations/0001_comptes.sql` → Run).
 3. **Project Settings → API Keys** : copier l'URL du projet, la clé **publishable** (`sb_publishable_…`) et la clé **secret** (`sb_secret_…`).
 
-## 2. Authentication → URL Configuration
+## 2. Réglages Auth en code : `supabase/config.toml`
 
-- **Site URL** : `https://<ton-domaine>` (en attendant : `https://syxtee-networks.vercel.app`).
-- **Redirect URLs** (Add URL) :
-  - `https://<ton-domaine>/auth/**`
-  - `https://syxtee-networks.vercel.app/auth/**`
-  - `http://localhost:3000/auth/**`
-  - projet de test uniquement : `http://localhost:3100/auth/**`
+URL du site, URL de retour autorisées (prod, previews Vercel, localhost), lien valable 10 minutes et liaison manuelle
+sont déclarés dans `supabase/config.toml` et appliqués avec :
+
+```
+supabase link --project-ref <ref>
+supabase config diff   # vérifier
+supabase config push
+```
+
+Seuls les réglages déclarés dans le fichier sont envoyés. Le modèle d'email SYXTEE y est commenté : Supabase le refuse
+tant que le SMTP par défaut est utilisé (offre gratuite). Le décommenter après l'étape 4 (Resend), puis `supabase config push`.
 
 ## 3. Authentication → Sign In / Providers
 
-- **Email** : activé, « Confirm email » activé, **Email OTP Expiration = 600** (10 minutes).
-- **Allow manual linking** : activé (bouton « Lier mon Twitch » dans /compte).
+- **Email** : activé (expiration 10 minutes et liaison manuelle : gérées par `config.toml`).
 - **Twitch**, **Discord**, **Google** : activer, coller Client ID + Client Secret (étape 6).
 
 ## 4. Authentication → Emails
 
-**Templates** : pour **Magic Link** ET **Confirm signup** (nouveau compte) :
-
-- Subject : `Connexion à SYXTEE`
-- Body : coller `supabase/templates/magic-link.html`
+**Modèle d'email** : après le SMTP ci-dessous, décommenter les blocs `[auth.email.template.*]` de `config.toml` et lancer
+`supabase config push` (ou coller `supabase/templates/magic-link.html` dans Templates → Magic Link et Confirm signup).
 
 **SMTP Settings** → Enable custom SMTP (après l'étape 7) :
 

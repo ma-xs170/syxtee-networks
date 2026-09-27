@@ -4,6 +4,7 @@ import { createServer } from "node:http";
 
 export function startFakeSls(port, apiKey) {
   const ids = new Map(); // player → publisher
+  const desc = new Map(); // player → description
   const live = new Set();
   const server = createServer((req, res) => {
     const url = new URL(req.url, "http://x");
@@ -24,11 +25,12 @@ export function startFakeSls(port, apiKey) {
         return json(200, { status: "ok", publisher: { bitrate: 5800 + Math.round(Math.random() * 400), rtt: 42, buffer: 2000, dropped_pkts: 3, uptime: 10, latency: 2000, peers: [{ connection_id: "a", bitrate: 3000 }, { connection_id: "b", bitrate: 2900 }] } });
       }
       if (!authed) return json(401, { status: "error" });
-      if (url.pathname === "/api/stream-ids" && req.method === "GET") return json(200, { status: "success", data: [...ids].map(([player, publisher]) => ({ player, publisher })) });
+      if (url.pathname === "/api/stream-ids" && req.method === "GET") return json(200, { status: "success", data: [...ids].map(([player, publisher]) => ({ player, publisher, description: desc.get(player) })) });
       if (url.pathname === "/api/stream-ids" && req.method === "POST") {
-        const { publisher, player } = JSON.parse(body);
+        const { publisher, player, description } = JSON.parse(body);
         if (ids.has(player)) return json(409, { status: "error" });
         ids.set(player, publisher);
+        desc.set(player, description);
         return json(200, { status: "success" });
       }
       if (url.pathname.startsWith("/api/stream-ids/") && req.method === "DELETE") {
@@ -40,5 +42,5 @@ export function startFakeSls(port, apiKey) {
     });
   });
   server.listen(port);
-  return { server, ids, live };
+  return { server, ids, desc, live };
 }

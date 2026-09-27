@@ -37,3 +37,13 @@ test("aperçu : images-clés seules, une image toutes les 3 s", () => {
   assert.deepEqual(args.slice(args.indexOf("-skip_frame"), args.indexOf("-skip_frame") + 2), ["-skip_frame", "nokey"]);
   assert.ok(args.includes("fps=1/3,scale=640:-2"));
 });
+
+test("nettoyage du relais : seulement les paires SYXTEE sans clé en base", async () => {
+  const { orphanPair } = await import("../src/keys.ts");
+  const known = new Set(["play_ok"]);
+  assert.equal(orphanPair({ player: "play_old", description: "syxtee:u1" }, known), true);
+  assert.equal(orphanPair({ player: "play_out_old", description: "syxtee-regie:u1" }, known), true);
+  assert.equal(orphanPair({ player: "play_ok", description: "syxtee:u2" }, known), false);
+  assert.equal(orphanPair({ player: "live", description: "Mon stream perso" }, known), false);
+  assert.equal(orphanPair({ player: "live" }, known), false);
+});

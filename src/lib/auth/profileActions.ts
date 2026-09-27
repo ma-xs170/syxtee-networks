@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { deleteStreamKeys, hasCore } from "@/lib/core";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, requireUser, safeNext } from "./dal";
@@ -67,6 +68,15 @@ export async function uploadAvatar(_prev: FormState, formData: FormData): Promis
 export async function deleteAccount(_prev: FormState, formData: FormData): Promise<FormState> {
   const user = await requireUser("/compte");
   if (String(formData.get("confirm") ?? "").trim() !== "SUPPRIMER") return { error: "Tape SUPPRIMER pour confirmer." };
+  // Clés de stream retirées du relais d'abord : une URL qui aurait fuité cesse de marcher tout de suite.
+  // En cas d'échec, le Core retire de toute façon les paires orphelines lors de son nettoyage horaire.
+  if (hasCore) {
+    try {
+      await deleteStreamKeys(user.id);
+    } catch (e) {
+      console.error("deleteAccount : Core", e);
+    }
+  }
   const admin = createAdminClient();
   const { data: files } = await admin.storage.from("avatars").list(user.id);
   if (files?.length) await admin.storage.from("avatars").remove(files.map((f) => `${user.id}/${f.name}`));

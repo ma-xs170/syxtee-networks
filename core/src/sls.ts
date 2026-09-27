@@ -45,8 +45,8 @@ export function createSls(baseUrl: string, apiKey: string, fetchImpl: typeof fet
         if (!(e instanceof SlsError && e.status === 404)) throw e;
       }
     },
-    async listStreamIds(): Promise<{ publisher: string; player: string }[]> {
-      const json = (await (await call("/api/stream-ids")).json()) as { data?: { publisher: string; player: string }[] };
+    async listStreamIds(): Promise<{ publisher: string; player: string; description?: string }[]> {
+      const json = (await (await call("/api/stream-ids")).json()) as { data?: { publisher: string; player: string; description?: string }[] };
       return json.data ?? [];
     },
     /** Stats du publieur d'un player ; null si personne ne publie. */

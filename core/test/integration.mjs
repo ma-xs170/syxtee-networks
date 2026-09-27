@@ -65,6 +65,10 @@ try {
   await sleep(2500);
   const hist = await (await fetch(`http://127.0.0.1:${PORT}/v1/me/health?range=15m`, { headers: { Authorization: `Bearer ${jwt}` } })).json();
   ok(hist.samples.length >= 1, `historique : ${hist.samples.length} point(s) enregistré(s)`);
+  // Suppression des clés (compte supprimé) : plus rien dans le relais pour cet utilisateur.
+  ok((await api(`/v1/users/${uid}/keys`, { method: "DELETE" })).status === 204, "suppression des clés → 204");
+  ok(sls.ids.size === 0, "paires retirées du relais");
+  ok((await api(`/v1/users/${uid}/keys`)).status === 404, "clés effacées de la base");
 } finally {
   await admin.auth.admin.deleteUser(uid);
   const { data: left } = await admin.from("stream_keys").select("user_id").eq("user_id", uid);

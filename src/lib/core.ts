@@ -22,7 +22,7 @@ export type StreamKeys = {
 
 export class CoreError extends Error {}
 
-async function core<T>(path: string, method: "GET" | "POST" | "PUT" = "GET", body?: unknown): Promise<T | null> {
+async function core<T>(path: string, method: "GET" | "POST" | "PUT" | "DELETE" = "GET", body?: unknown): Promise<T | null> {
   if (!hasCore) throw new CoreError("Core non configuré");
   const res = await fetch(`${coreUrl}${path}`, {
     method,
@@ -31,7 +31,7 @@ async function core<T>(path: string, method: "GET" | "POST" | "PUT" = "GET", bod
     cache: "no-store",
     signal: AbortSignal.timeout(8000),
   });
-  if (res.status === 404) return null;
+  if (res.status === 404 || res.status === 204) return null;
   if (!res.ok) throw new CoreError(`Core ${method} ${path.split("/").slice(0, 3).join("/")} → ${res.status}`);
   return (await res.json()) as T;
 }
@@ -49,3 +49,6 @@ export type CamInfo = { cam_key: string; cam_path: string; whip_url: string };
 export const getCam = (userId: string) => core<CamInfo>(`/v1/users/${userId}/cam`);
 /** Nouveau lien caméra : l'ancien cesse de marcher. */
 export const rotateCam = (userId: string) => core<CamInfo>(`/v1/users/${userId}/cam/rotate`, "POST");
+
+/** Compte supprimé : clés retirées du relais (plus aucune URL Moblin/OBS/Cam ne marche) puis effacées. */
+export const deleteStreamKeys = (userId: string) => core<null>(`/v1/users/${userId}/keys`, "DELETE");

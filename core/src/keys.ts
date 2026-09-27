@@ -7,6 +7,11 @@ import type { Sls } from "./sls.ts";
 export type Mode = "direct" | "regie";
 export type KeyRow = StreamIds & { user_id: string; mode: Mode; created_at: string; rotated_at: string | null; cam_key?: string | null };
 
+/** Paire du relais créée par SYXTEE et sans clé correspondante en base. */
+export function orphanPair(p: { player: string; description?: string }, known: Set<string>) {
+  return /^syxtee(-regie)?:/.test(p.description ?? "") && !known.has(p.player);
+}
+
 export function createKeyStore(db: SupabaseClient, sls: Sls) {
   async function get(userId: string): Promise<KeyRow | null> {
     const { data, error } = await db.from("stream_keys").select("*").eq("user_id", userId).maybeSingle();
@@ -68,6 +73,31 @@ export function createKeyStore(db: SupabaseClient, sls: Sls) {
       const { data, error } = await db.from("stream_keys").update({ mode }).eq("user_id", userId).select("*").single();
       if (error) throw new Error(`stream_keys mode : ${error.message}`);
       return data as KeyRow;
+    },
+
+    /** Supprime les clés : retirées du relais (elles cessent de marcher), puis effacées de la base. */
+    async remove(userId: string): Promise<boolean> {
+      const row = await get(userId);
+      if (!row) return false;
+      await unregister(row);
+      const { error } = await db.from("stream_keys").delete().eq("user_id", userId);
+      if (error) throw new Error(`stream_keys delete : ${error.message}`);
+      return true;
+    },
+
+    /**
+     * Filet de sécurité : retire du relais les paires SYXTEE (description « syxtee… ») qui ne correspondent plus
+     * à aucune clé en base (compte supprimé, échec réseau pendant une suppression…). Les paires créées à la main
+     * dans l'interface du relais (autre description) ne sont jamais touchées.
+     */
+    async cleanupOrphans(): Promise<string[]> {
+      const { data, error } = await db.from("stream_keys").select("play_id, out_play_id");
+      if (error) throw new Error(`stream_keys : ${error.message}`); // base illisible : on ne retire rien
+      const rows = (data ?? []) as { play_id: string; out_play_id: string }[];
+      const known = new Set(rows.flatMap((r) => [r.play_id, r.out_play_id]));
+      const orphans = (await sls.listStreamIds()).filter((p) => orphanPair(p, known)).map((p) => p.player);
+      for (const player of orphans) await sls.deleteStreamId(player);
+      return orphans;
     },
 
     async all(): Promise<KeyRow[]> {

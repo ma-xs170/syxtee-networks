@@ -95,6 +95,13 @@ export function buildServer(d: Deps) {
     d.onKeysChanged();
     return keyView(k, d.config);
   });
+  // Compte supprimé : les clés sont retirées du relais et effacées (plus aucune URL ne marche).
+  app.delete("/v1/users/:id/keys", { preHandler: service }, async (req, reply) => {
+    const { id } = uuid.parse(req.params);
+    await d.keys.remove(id);
+    d.onKeysChanged();
+    return reply.code(204).send();
+  });
   app.put("/v1/users/:id/mode", { preHandler: service }, async (req, reply) => {
     const { id } = uuid.parse(req.params);
     const { mode } = z.object({ mode: z.enum(["direct", "regie"]) }).parse(req.body);

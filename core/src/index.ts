@@ -115,7 +115,17 @@ try {
   log((e as Error).message);
 }
 await refreshKeys();
+const cleanup = async () => {
+  try {
+    const removed = await keys.cleanupOrphans();
+    if (removed.length) log(`relais : ${removed.length} paire(s) orpheline(s) retirée(s)`);
+  } catch (e) {
+    log(`nettoyage du relais impossible : ${(e as Error).message}`);
+  }
+};
+await cleanup();
 const timers = [
+  setInterval(() => void cleanup(), 3_600_000),
   setInterval(() => void sessions.tick(), 5_000),
   setInterval(() => void health.tick(), 200),
   setInterval(() => void refreshKeys(), 30_000),

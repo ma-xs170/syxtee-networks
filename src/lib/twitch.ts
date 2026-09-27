@@ -4,8 +4,8 @@ import "server-only";
 // TWITCH_API_BASE / TWITCH_AUTH_BASE : remplacées par un faux serveur Twitch pendant les tests e2e.
 const API = process.env.TWITCH_API_BASE || "https://api.twitch.tv/helix";
 const AUTH = process.env.TWITCH_AUTH_BASE || "https://id.twitch.tv/oauth2";
-const clientId = process.env.TWITCH_CLIENT_ID ?? "";
-const clientSecret = process.env.TWITCH_CLIENT_SECRET ?? "";
+const clientId = (process.env.TWITCH_CLIENT_ID ?? "").trim();
+const clientSecret = (process.env.TWITCH_CLIENT_SECRET ?? "").trim();
 export const hasTwitch = clientId !== "" && clientSecret !== "";
 
 let token: { value: string; expires: number } | null = null;

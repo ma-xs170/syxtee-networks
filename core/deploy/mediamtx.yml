@@ -1,0 +1,39 @@
+# MediaMTX « SYXTEE Cam » : reçoit le WebRTC (WHIP) des téléphones, rien d'autre.
+# Instance séparée du mediamtx existant : RTMP, HLS et SRT désactivés (pas de conflit de ports).
+# Le Core valide chaque publication (authMethod http) et relaie le flux vers le relais SRT.
+logLevel: info
+
+authMethod: http
+authHTTPAddress: http://127.0.0.1:8787/internal/mediamtx/auth
+authHTTPExclude:
+  - action: api
+  - action: metrics
+  - action: pprof
+
+api: true
+apiAddress: 127.0.0.1:9997
+
+# RTSP en local seulement : le Core y lit le flux pour le relayer.
+rtsp: true
+rtspAddress: 127.0.0.1:8554
+rtspTransports: [tcp]
+rtmp: false
+hls: false
+srt: false
+playback: false
+metrics: false
+pprof: false
+
+webrtc: true
+# Handshake WHIP : derrière Caddy (HTTPS), en local seulement.
+webrtcAddress: 127.0.0.1:8889
+webrtcAllowOrigins: ["*"]
+webrtcTrustedProxies: ["127.0.0.1"]
+# Média WebRTC : port 8189 en UDP (et TCP en secours pour les réseaux qui bloquent l'UDP).
+webrtcLocalUDPAddress: :8189
+webrtcLocalTCPAddress: :8189
+webrtcIPsFromInterfaces: true
+webrtcAdditionalHosts: []
+
+paths:
+  all_others:

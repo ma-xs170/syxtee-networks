@@ -5,7 +5,7 @@ import type { Sls } from "./sls.ts";
 // Clés de stream : table Supabase `stream_keys` (écrite par le Core seulement) + paires déclarées dans le SLS.
 
 export type Mode = "direct" | "regie";
-export type KeyRow = StreamIds & { user_id: string; mode: Mode; created_at: string; rotated_at: string | null };
+export type KeyRow = StreamIds & { user_id: string; mode: Mode; created_at: string; rotated_at: string | null; cam_key?: string | null };
 
 export function createKeyStore(db: SupabaseClient, sls: Sls) {
   async function get(userId: string): Promise<KeyRow | null> {

@@ -40,3 +40,12 @@ export const getStreamKeys = (userId: string) => core<StreamKeys>(`/v1/users/${u
 export const createStreamKeys = (userId: string) => core<StreamKeys>(`/v1/users/${userId}/keys`, "POST");
 export const rotateStreamKeys = (userId: string) => core<StreamKeys>(`/v1/users/${userId}/keys/rotate`, "POST");
 export const setStreamMode = (userId: string, mode: StreamKeys["mode"]) => core<StreamKeys>(`/v1/users/${userId}/mode`, "PUT", { mode });
+
+// ───── SYXTEE Cam ─────
+
+export type CamInfo = { cam_key: string; cam_path: string; whip_url: string };
+
+/** Clé caméra de l'utilisateur (créée au besoin, avec ses clés de stream). */
+export const getCam = (userId: string) => core<CamInfo>(`/v1/users/${userId}/cam`);
+/** Nouveau lien caméra : l'ancien cesse de marcher. */
+export const rotateCam = (userId: string) => core<CamInfo>(`/v1/users/${userId}/cam/rotate`, "POST");

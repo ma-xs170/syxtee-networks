@@ -8,12 +8,17 @@ import type { HealthMonitor, Live } from "./health.ts";
 import type { KeyRow, KeyStore } from "./keys.ts";
 import type { SampleStore } from "./samples.ts";
 import type { SessionTracker } from "./sessions.ts";
+import type { Cam } from "./cam.ts";
 
 // API HTTP du Core (derrière Caddy en HTTPS).
 // /v1/users/:id/*  → serveur Vercel, jeton de service.
 // /v1/me/*         → navigateur, jeton de session Supabase.
 
 export type Deps = {
+  /** SYXTEE Cam (null si désactivée). */
+  cam?: Cam | null;
+  /** Pseudo et Twitch vérifié, pour l'app /cam (chat en superposition). */
+  profile?: (userId: string) => Promise<{ username: string | null; twitch_login: string | null }>;
   config: Config;
   keys: KeyStore;
   health: HealthMonitor;
@@ -178,6 +183,70 @@ export function buildServer(d: Deps) {
     if (!fresh) return reply.code(404).send({ error: "no_preview" });
     return reply.header("Content-Type", "image/jpeg").header("Cache-Control", "no-store").send(readFileSync(file));
   });
+
+  // ───── SYXTEE Cam ─────
+  const cam = d.cam;
+  if (cam) {
+    const camView = (k: KeyRow) => ({ cam_key: k.cam_key, cam_path: `/cam?k=${k.cam_key}`, whip_url: cam.whipUrl(k.cam_key!) });
+    app.get("/v1/users/:id/cam", { preHandler: service }, async (req) => camView(await cam.ensure(uuid.parse(req.params).id)));
+    app.post("/v1/users/:id/cam/rotate", { preHandler: service }, async (req) => {
+      const k = await cam.rotate(uuid.parse(req.params).id);
+      d.onKeysChanged();
+      return camView(k);
+    });
+
+    // App /cam : authentifiée par la clé caméra (Authorization: Bearer cam_…).
+    const camRow = async (req: FastifyRequest, reply: FastifyReply) => {
+      const h = req.headers.authorization ?? "";
+      const row = h.startsWith("Bearer ") ? await cam.lookup(h.slice(7).trim()) : null;
+      if (!row) reply.code(401).send({ error: "unauthorized" });
+      return row;
+    };
+    app.get("/v1/cam/me", async (req, reply) => {
+      const row = await camRow(req, reply);
+      if (!row) return;
+      const p = (await d.profile?.(row.user_id)) ?? { username: null, twitch_login: null };
+      return {
+        username: p.username,
+        twitch_login: p.twitch_login,
+        whip_url: cam.whipUrl(row.cam_key!),
+        relay: d.config.RELAY_NAME,
+        live: d.health.state(row.user_id)?.live ?? false,
+      };
+    });
+    const gps = z.object({
+      lat: z.number().min(-90).max(90),
+      lon: z.number().min(-180).max(180),
+      acc: z.number().min(0).max(100_000).nullish(),
+      speed: z.number().min(0).max(1000).nullish(),
+      t: z.number().int().optional(),
+    });
+    app.post("/v1/cam/gps", async (req, reply) => {
+      const row = await camRow(req, reply);
+      if (!row) return;
+      const g = gps.parse(req.body);
+      const now = Date.now();
+      // Horodatage du téléphone accepté s'il est plausible (±2 min), sinon heure du serveur.
+      const t = g.t && Math.abs(g.t - now) < 120_000 ? g.t : now;
+      d.samples.addPosition(row.user_id, { t, lat: g.lat, lon: g.lon, acc: g.acc ?? null, speed: g.speed ?? null });
+      return reply.code(204).send();
+    });
+    app.get("/v1/me/positions", async (req, reply) => {
+      const id = await userId(req, reply);
+      if (!id) return;
+      const { range } = z.object({ range: z.enum(["15m", "1h", "6h", "24h"]).default("1h") }).parse(req.query);
+      return { positions: d.samples.positions(id, Date.now() - RANGES[range]) };
+    });
+
+    // MediaMTX → Core : autorisation d'une publication. Jamais accessible de l'extérieur
+    // (bloqué dans Caddy, et refusé ici dès qu'une requête arrive par un proxy).
+    app.post("/internal/mediamtx/auth", async (req, reply) => {
+      const local = ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(req.socket.remoteAddress ?? "");
+      if (!local || req.headers["x-forwarded-for"]) return reply.code(404).send();
+      const ok = await cam.authorize(req.body as Record<string, string>);
+      return reply.code(ok ? 200 : 401).send();
+    });
+  }
 
   app.setErrorHandler((err, _req, reply) => {
     if (err instanceof z.ZodError) return reply.code(400).send({ error: "bad_request", issues: err.issues.map((i) => i.message) });

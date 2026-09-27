@@ -47,6 +47,8 @@ CODE=$(curl -s -o /dev/null -w "%{http_code}" -m 5 -H "Authorization: Bearer $KE
 umask 077
 cat > "$ENV" <<EOF
 CORE_DOMAIN=$DOMAIN
+CAM_DOMAIN=cam.$DOMAIN
+CAM_WHIP_BASE=https://cam.$DOMAIN
 CORE_API_TOKEN=$TOKEN
 SUPABASE_URL=$SUPA_URL
 SUPABASE_SECRET_KEY=$SECRET

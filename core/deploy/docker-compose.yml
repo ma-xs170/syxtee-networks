@@ -18,6 +18,15 @@ services:
     restart: unless-stopped
     logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
 
+  # SYXTEE Cam : réception WebRTC (WHIP). Instance séparée du mediamtx existant (RTMP/HLS/SRT désactivés).
+  mediamtx:
+    image: bluenviron/mediamtx:1.21.1
+    network_mode: host
+    volumes:
+      - ./core/deploy/mediamtx.yml:/mediamtx.yml:ro
+    restart: unless-stopped
+    logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
+
   caddy:
     image: caddy:2
     network_mode: host

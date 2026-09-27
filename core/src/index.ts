@@ -9,6 +9,7 @@ import { createPreviews } from "./preview.ts";
 import { createRegie } from "./regie.ts";
 import { openSamples } from "./samples.ts";
 import { buildServer } from "./server.ts";
+import { createCam } from "./cam.ts";
 import { createSessionTracker, supabaseSessionDb } from "./sessions.ts";
 import { createSls } from "./sls.ts";
 
@@ -47,10 +48,27 @@ const regie = config.REGIE_ENABLED
     })
   : null;
 
+// WHIP sur un sous-domaine dédié (Caddy → MediaMTX), par défaut cam.<CORE_DOMAIN>.
+const camWhipBase = config.CAM_WHIP_BASE || (config.CORE_DOMAIN ? `https://cam.${config.CORE_DOMAIN}` : "");
+const cam =
+  config.CAM_ENABLED && camWhipBase
+    ? createCam({
+        db: supabase,
+        keys,
+        apiUrl: config.MEDIAMTX_API_URL,
+        rtspUrl: config.MEDIAMTX_RTSP_URL,
+        whipBase: camWhipBase,
+        output: (publishId) =>
+          config.CAM_RELAY_URL.replace("{host}", config.SLS_SRT_HOST).replace("{port}", String(config.SRT_PUBLISH_PORT)).replace("{publish_id}", publishId),
+        log,
+      })
+    : null;
+
 async function refreshKeys() {
   try {
     const all = await keys.all();
     health.setKeys(all);
+    cam?.setKeys(all);
     await regie?.sync(all);
   } catch (e) {
     log(`lecture des clés impossible : ${(e as Error).message}`);
@@ -73,6 +91,11 @@ const app = buildServer({
   health,
   samples,
   sessions,
+  cam,
+  profile: async (id) => {
+    const { data } = await supabase.from("profiles").select("username, twitch_login").eq("id", id).maybeSingle();
+    return { username: (data?.username as string | null) ?? null, twitch_login: (data?.twitch_login as string | null) ?? null };
+  },
   verifyUser: createUserVerifier(config.SUPABASE_URL),
   previewPath: (id) => previews?.path(id) ?? "",
   onKeysChanged: () => void refreshKeys(),
@@ -96,16 +119,18 @@ const timers = [
   setInterval(() => void sessions.tick(), 5_000),
   setInterval(() => void health.tick(), 200),
   setInterval(() => void refreshKeys(), 30_000),
+  ...(cam ? [setInterval(() => void cam.syncRelays(), 1_000)] : []),
   setInterval(() => log(`purge santé : ${samples.purge()} points supprimés`), 3_600_000),
 ];
 
 await app.listen({ port: config.PORT, host: config.HOST });
-log(`prêt sur :${config.PORT} · relais ${config.RELAY_NAME} (${config.RELAY_PUBLIC_HOST}) · aperçus ${previews ? "oui" : "non"} · régie ${regie ? "oui" : "non"}`);
+log(`prêt sur :${config.PORT} · relais ${config.RELAY_NAME} (${config.RELAY_PUBLIC_HOST}) · aperçus ${previews ? "oui" : "non"} · régie ${regie ? "oui" : "non"} · cam ${cam ? camWhipBase : "non"}`);
 
 const shutdown = async () => {
   timers.forEach(clearInterval);
   previews?.stopAll();
   regie?.stopAll();
+  cam?.stopAll();
   await sessions.closeAll();
   await app.close();
   samples.close();

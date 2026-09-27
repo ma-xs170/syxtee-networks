@@ -31,7 +31,7 @@ export const dashboardNav: DashItem[] = [
     label: "Outils",
     children: [
       { label: "Mire de coupure", href: "/dashboard/mire", desc: "L'écran affiché si tu coupes", icon: "mire" },
-      { label: "SYXTEE Cam", href: "/dashboard/cam", desc: "Ton téléphone en caméra", icon: "cam", badge: SOON },
+      { label: "SYXTEE Cam", href: "/dashboard/cam", desc: "Ton téléphone en caméra", icon: "cam" },
       { label: "Sécurité & clés", href: "/dashboard/securite", desc: "Régénérer, révoquer", icon: "security" },
     ],
   },

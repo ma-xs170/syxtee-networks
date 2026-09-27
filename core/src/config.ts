@@ -45,6 +45,16 @@ const schema = z.object({
   REGIE_BEEP: bool.default(false),
   // Coupure détectée après ce délai sans paquets.
   REGIE_TIMEOUT_MS: z.coerce.number().default(1500),
+
+  // SYXTEE Cam (WebRTC/WHIP via MediaMTX, voir deploy/mediamtx.yml).
+  CAM_ENABLED: bool.default(true),
+  MEDIAMTX_API_URL: z.string().default("http://127.0.0.1:9997"),
+  MEDIAMTX_RTSP_URL: z.string().default("rtsp://127.0.0.1:8554"),
+  // Adresse publique du WHIP (Caddy → MediaMTX). Par défaut : https://cam.<CORE_DOMAIN>
+  CAM_WHIP_BASE: z.string().optional(),
+  CORE_DOMAIN: z.string().optional(),
+  // Sortie du relais Cam ; {host}, {port}, {publish_id} sont remplacés.
+  CAM_RELAY_URL: z.string().default("srt://{host}:{port}?streamid={publish_id}&pkt_size=1316&latency=200000"),
 });
 
 export type Config = z.infer<typeof schema>;

@@ -1,7 +1,11 @@
-# HTTPS automatique (Let's Encrypt) pour l'API du Core. CORE_DOMAIN dans .env
-# (ex. core.syxtee.fr, ou 203-0-113-7.sslip.io tant qu'il n'y a pas de domaine).
+# HTTPS automatique (Let's Encrypt). Domaines dans .env :
+#   CORE_DOMAIN : API du Core (ex. 147-182-220-5.sslip.io)
+#   CAM_DOMAIN  : WHIP de SYXTEE Cam vers MediaMTX (ex. cam.147-182-220-5.sslip.io)
 {$CORE_DOMAIN} {
 	encode gzip
+	# Routes internes (MediaMTX → Core) : jamais depuis internet.
+	@internal path /internal/*
+	respond @internal 404
 	reverse_proxy 127.0.0.1:8787 {
 		# Server-Sent Events (santé du flux en direct) : pas de mise en tampon.
 		flush_interval -1
@@ -9,6 +13,15 @@
 	header {
 		Strict-Transport-Security "max-age=31536000"
 		X-Content-Type-Options nosniff
+		-Server
+	}
+}
+
+{$CAM_DOMAIN} {
+	# Handshake WHIP seulement ; le média WebRTC passe par le port 8189 (UDP/TCP) directement.
+	reverse_proxy 127.0.0.1:8889
+	header {
+		Strict-Transport-Security "max-age=31536000"
 		-Server
 	}
 }

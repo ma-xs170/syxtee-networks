@@ -14,6 +14,7 @@ const COMPAT: [string, string, string][] = [
   ["Objectif 0,5x", "Oui (grand-angle)", "Selon le téléphone"],
   ["Zoom 2x / 3x", "Téléobjectif s'il existe", "Oui (zoom de la caméra)"],
   ["Torche", "Non", "Oui"],
+  ["Stabilisation (bouton STAB)", "Oui, après autorisation « Mouvements »", "Oui"],
   ["Batterie affichée", "Non", "Oui"],
   ["Enregistrement sur le téléphone", "Oui", "Oui"],
   ["Écran toujours allumé", "Oui", "Oui"],

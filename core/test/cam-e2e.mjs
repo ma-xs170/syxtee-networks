@@ -32,7 +32,18 @@ const yml = readFileSync(new URL("../deploy/mediamtx.yml", import.meta.url), "ut
   .replace("127.0.0.1:8889", "127.0.0.1:18889")
   .replaceAll(":8189", ":18189");
 writeFileSync(join(dir, "mediamtx.yml"), yml);
-const startMtx = () => spawn("mediamtx", [join(dir, "mediamtx.yml")], { stdio: "ignore" });
+const started = [];
+const startMtx = () => {
+  const p = spawn("mediamtx", [join(dir, "mediamtx.yml")], { stdio: "ignore" });
+  started.push(p);
+  return p;
+};
+// Ports du test libérés (processus orphelins d'un essai interrompu).
+for (const port of [18787, 18080, 18889, 19997]) {
+  try {
+    execFileSync("sh", ["-c", `lsof -ti tcp:${port} | xargs kill 2>/dev/null`]);
+  } catch {}
+}
 
 const sls = startFakeSls(18080, "sls-test-key");
 const core = spawn(process.execPath, ["src/index.ts"], {
@@ -62,7 +73,7 @@ try {
   const refused = await fetch(`http://127.0.0.1:18889/cam_${"0".repeat(32)}/whip`, { method: "POST", headers: { "Content-Type": "application/sdp" }, body: "v=0" });
   ok(refused.status === 401 || refused.status === 400, `WHIP avec une clé inconnue refusé (HTTP ${refused.status})`);
 
-  const ctx = await browser.newContext({ permissions: ["camera", "microphone", "geolocation"], geolocation: { latitude: 16.2411, longitude: -61.5331 } });
+  const ctx = await browser.newContext({ permissions: ["camera", "microphone", "geolocation", "accelerometer", "gyroscope"], geolocation: { latitude: 16.2411, longitude: -61.5331 } });
   // La page parle au Core de prod (CORE_URL) : on redirige vers le Core local.
   if (PROD_CORE)
     await ctx.route(`${PROD_CORE}/**`, async (r) => {
@@ -89,6 +100,33 @@ try {
   ok(/h264/.test(probe) && /aac/.test(probe), `sortie du relais : ${probe.trim().split("\n").join(" + ") || "rien"}`);
   await page.screenshot({ path: join(dir, "cam-live.png") });
 
+  // Stabilisation en plein direct : gyroscope simulé (tremblements), la diffusion doit continuer.
+  await page.evaluate(() => {
+    window.__shake = setInterval(() => {
+      const t = Date.now() / 60;
+      // Chromium ignore les valeurs d'un DeviceMotionEvent construit à la main : événement simple + rotationRate attaché.
+      const ev = new Event("devicemotion");
+      Object.defineProperty(ev, "rotationRate", { value: { alpha: 1.5 * Math.sin(t * 1.3), beta: 8 * Math.sin(t), gamma: 8 * Math.cos(t) } });
+      window.dispatchEvent(ev);
+    }, 16);
+  });
+  await page.getByRole("button", { name: "Activer la stabilisation" }).click();
+  await sleep(3500);
+  ok(await page.getByRole("button", { name: "Désactiver la stabilisation" }).isVisible(), "stabilisation active (gyroscope détecté)");
+  if (!(await page.getByRole("button", { name: "Désactiver la stabilisation" }).isVisible()))
+    console.log("  message affiché :", await page.locator("button.absolute.left-1\\/2").innerText().catch(() => "aucun"));
+  ok(await page.getByText("EN DIRECT").isVisible(), "direct maintenu après activation (piste remplacée sans coupure)");
+  let probe2 = "";
+  try {
+    probe2 = execFileSync("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=codec_name,width,height", "-of", "csv=p=0", "-i", "udp://127.0.0.1:19999?timeout=8000000"], { timeout: 15000 }).toString();
+  } catch (e) {
+    probe2 = String(e.stdout ?? "");
+  }
+  ok(/h264/.test(probe2), `sortie stabilisée : ${probe2.trim().split("\n")[0] || "rien"}`);
+  await page.screenshot({ path: join(dir, "cam-stab.png") });
+  await page.getByRole("button", { name: "Désactiver la stabilisation" }).click();
+  await page.evaluate(() => clearInterval(window.__shake));
+
   // Position GPS reçue par le Core
   const { data: link } = await admin.auth.admin.generateLink({ type: "magiclink", email: u.user.email });
   const anon = createClient(E.NEXT_PUBLIC_SUPABASE_URL, E.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } });
@@ -111,7 +149,7 @@ try {
 } finally {
   await browser.close();
   await admin.auth.admin.deleteUser(uid);
-  mtx.kill("SIGKILL");
+  for (const p of started) p.kill("SIGKILL");
   core.kill("SIGINT");
   sls.server.close();
 }

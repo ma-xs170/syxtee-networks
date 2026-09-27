@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { requestMotionPermission, stabilizationSupported, Stabilizer } from "./stabilizer";
 import { supportsH264, whipPublish, whipStop, type WhipSession } from "./whip";
 
 // SYXTEE Cam : le téléphone devient une caméra du direct, sur UNE connexion (Wi-Fi ou 4G), en WebRTC (WHIP)
@@ -77,7 +78,8 @@ function Pill({ children, active = false, onClick, label }: { children: ReactNod
 
 export default function CamApp({ coreUrl }: { coreUrl: string }) {
   const video = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const streamRef = useRef<MediaStream | null>(null); // caméra + micro bruts
+  const stabRef = useRef<Stabilizer | null>(null); // stabilisation (gyroscope) si activée
   const session = useRef<WhipSession | null>(null);
   const want = useRef(false); // l'utilisateur veut être en direct (reconnexion auto)
   const retry = useRef(0);
@@ -109,6 +111,7 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
   const [net, setNet] = useState<string | null>(null);
   const [chat, setChat] = useState<{ id: number; user: string; text: string }[]>([]);
   const [showSettings, setShowSettings] = useState(false);
+  const [stab, setStab] = useState(false);
   const [notice, setNotice] = useState<string | null>(() =>
     supportsH264() ? null : "Ce navigateur n'envoie pas de H.264 : utilise Safari (iPhone) ou Chrome (Android).",
   );
@@ -135,9 +138,31 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
       .catch(() => setFatal("core"));
   }, [camKey, coreUrl]);
 
+  /** Flux envoyé (diffusion, REC, aperçu) : vidéo stabilisée si la stabilisation est active, sinon la caméra. */
+  function outStream() {
+    const raw = streamRef.current;
+    if (!raw) return null;
+    const st = stabRef.current;
+    return st ? new MediaStream([st.track, ...raw.getAudioTracks()]) : raw;
+  }
+
+  /** Applique le flux envoyé à l'aperçu et, en direct, aux pistes WebRTC (sans renégocier). */
+  async function applyOutput() {
+    const out = outStream();
+    if (!out) return;
+    if (video.current) video.current.srcObject = out;
+    const pc = session.current?.pc;
+    if (pc) {
+      for (const snd of pc.getSenders()) {
+        const t = out.getTracks().find((x) => x.kind === snd.track?.kind);
+        if (t && t !== snd.track) await snd.replaceTrack(t);
+      }
+    }
+  }
+
   // ───── Caméra et micro ─────
-  const openCamera = useCallback(
-    async (lens?: Lens) => {
+  async function openCamera(lens?: Lens) {
+    {
       const q = QUALITY[prefs.quality];
       const videoC: MediaTrackConstraints = lens?.deviceId
         ? { deviceId: { exact: lens.deviceId }, width: { ideal: q.w }, height: { ideal: q.h }, frameRate: { ideal: 30 } }
@@ -148,15 +173,9 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
       });
       const old = streamRef.current;
       streamRef.current = s;
-      if (video.current) video.current.srcObject = s;
-      // En direct : on remplace les pistes sans renégocier.
-      const pc = session.current?.pc;
-      if (pc) {
-        for (const snd of pc.getSenders()) {
-          const t = s.getTracks().find((x) => x.kind === snd.track?.kind);
-          if (t) await snd.replaceTrack(t);
-        }
-      }
+      // Stabilisation active : la piste stabilisée reste la même, seule sa source change.
+      await stabRef.current?.setSource(s);
+      await applyOutput();
       old?.getTracks().forEach((t) => t.stop());
       const vt = s.getVideoTracks()[0];
       const caps = (vt?.getCapabilities?.() ?? {}) as MediaTrackCapabilities & { torch?: boolean; zoom?: { min: number; max: number } };
@@ -171,9 +190,8 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
         }
         setLenses(l);
       } else setLenses([{ zoom: 1 }]);
-    },
-    [prefs.quality, prefs.facing, muted],
-  );
+    }
+  }
 
   useEffect(() => {
     if (!me) return;
@@ -190,6 +208,7 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
 
   async function pickLens(l: Lens) {
     setZoom(l.zoom);
+    stabRef.current?.setZoom(l.zoom);
     if (l.digital) {
       const vt = streamRef.current?.getVideoTracks()[0];
       await vt?.applyConstraints({ advanced: [{ zoom: l.zoom } as MediaTrackConstraintSet] }).catch(() => {});
@@ -209,6 +228,46 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
     }
   }
 
+  // ───── Stabilisation électronique (gyroscope + recadrage) ─────
+  async function toggleStab() {
+    if (stabRef.current) {
+      stabRef.current.stop();
+      stabRef.current = null;
+      setStab(false);
+      await applyOutput();
+      return;
+    }
+    if (prefs.facing === "user") return setNotice("Stabilisation disponible avec la caméra arrière.");
+    if (!stabilizationSupported() || !streamRef.current) return setNotice("Stabilisation indisponible sur ce navigateur.");
+    if (!(await requestMotionPermission())) return setNotice("Autorise l'accès aux mouvements (gyroscope) pour stabiliser l'image.");
+    const st = new Stabilizer(30);
+    st.setZoom(zoom);
+    await st.setSource(streamRef.current);
+    st.start();
+    stabRef.current = st;
+    setStab(true);
+    await applyOutput();
+    // Pas de gyroscope (ordinateur, capteur absent) : on revient à l'image normale.
+    setTimeout(() => {
+      if (stabRef.current === st && !st.hasMotion) {
+        void toggleStab();
+        setNotice("Pas de gyroscope détecté : stabilisation impossible sur cet appareil.");
+      }
+    }, 2000);
+  }
+
+  // Caméra avant : pas de stabilisation.
+  useEffect(() => {
+    if (prefs.facing === "user" && stabRef.current) {
+      stabRef.current.stop();
+      stabRef.current = null;
+      void applyOutput().then(() => setStab(false));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefs.facing]);
+
+  useEffect(() => () => stabRef.current?.stop(), []);
+
   function toggleMute() {
     const m = !muted;
     streamRef.current?.getAudioTracks().forEach((t) => (t.enabled = !m));
@@ -218,10 +277,11 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
   // ───── Diffusion (WHIP) + reconnexion automatique ─────
   const connectRef = useRef<() => Promise<void>>(async () => {});
   async function connect() {
-    if (!me || !streamRef.current || !want.current) return;
+    const out = outStream();
+    if (!me || !out || !want.current) return;
     setLink(retry.current ? "reconnecting" : "connecting");
     try {
-      const s = await whipPublish(me.whip_url, streamRef.current, QUALITY[prefs.quality].bps);
+      const s = await whipPublish(me.whip_url, out, QUALITY[prefs.quality].bps);
       session.current = s;
       retry.current = 0;
       setLink("live");
@@ -392,9 +452,10 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
       setRec(false);
       return;
     }
-    if (!streamRef.current || typeof MediaRecorder === "undefined") return setNotice("Enregistrement indisponible sur ce navigateur.");
+    const out = outStream();
+    if (!out || typeof MediaRecorder === "undefined") return setNotice("Enregistrement indisponible sur ce navigateur.");
     const type = ["video/mp4", "video/webm;codecs=vp9,opus", "video/webm"].find((t) => MediaRecorder.isTypeSupported(t));
-    const r = new MediaRecorder(streamRef.current, type ? { mimeType: type } : undefined);
+    const r = new MediaRecorder(out, type ? { mimeType: type } : undefined);
     chunks.current = [];
     r.ondataavailable = (e) => e.data.size && chunks.current.push(e.data);
     r.onstop = () => {
@@ -499,6 +560,9 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
         </Pill>
         <Pill active={!!torch} onClick={toggleTorch} label="Torche">
           {torch === null ? <span className="text-white/40">TORCHE</span> : "TORCHE"}
+        </Pill>
+        <Pill active={stab} onClick={() => void toggleStab()} label={stab ? "Désactiver la stabilisation" : "Activer la stabilisation"}>
+          STAB
         </Pill>
         <Pill active={rec} onClick={toggleRec} label="Enregistrer sur le téléphone">
           <span className={`h-2 w-2 rounded-full ${rec ? "bg-live" : "bg-white/70"}`} /> REC

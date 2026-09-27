@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { site } from "@/lib/site";
 import { Container } from "@/components/ui";
 
@@ -48,8 +49,9 @@ export default function MentionsLegales() {
           <div>
             <h2 className="text-base font-semibold text-foreground">Données personnelles</h2>
             <p className="mt-3">
-              Ce site vitrine ne collecte aucune donnée personnelle via formulaire et n&apos;utilise pas de cookies publicitaires.
-              Les échanges de support ont lieu sur Discord, soumis à la politique de confidentialité de Discord.
+              Le détail des données collectées par l&apos;espace client est dans la{" "}
+              <Link href="/confidentialite" className="text-foreground underline">politique de confidentialité</Link>. Le site n&apos;utilise pas de
+              cookies publicitaires. Les échanges de support ont lieu sur Discord, soumis à la politique de confidentialité de Discord.
             </p>
           </div>
         </div>

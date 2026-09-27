@@ -3,8 +3,6 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { site } from "@/lib/site";
-import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
 
 
 export const metadata: Metadata = {
@@ -31,11 +29,7 @@ export const viewport: Viewport = { themeColor: "#000000" };
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="fr" className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
-        <Nav />
-        <main className="flex-1">{children}</main>
-        <Footer />
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

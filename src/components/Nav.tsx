@@ -4,24 +4,27 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { signOut } from "@/app/(auth)/actions";
 import { nav } from "@/lib/site";
+import AccountMenu, { Avatar, useAccount } from "./AccountMenu";
 import { Badge, ToolsAccordion, ToolsMenu } from "./NavTools";
 import { DiscordButton } from "./ui";
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const account = useAccount();
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-black/70 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-4 sm:px-6">
         <Link href="/" onClick={() => setOpen(false)} className="flex shrink-0 items-center gap-3" aria-label="SYXTEE NETWORKS — accueil">
           <Image src="/logo-400.png" alt="" width={26} height={36} priority />
-          <span className="whitespace-nowrap text-sm font-semibold tracking-[0.18em]">SYXTEE <span className="font-normal text-muted">NETWORKS</span></span>
+          <span className="whitespace-nowrap text-sm font-semibold tracking-[0.18em]">SYXTEE <span className="font-normal text-muted lg:hidden xl:inline">NETWORKS</span></span>
         </Link>
 
-        <nav className="hidden items-center gap-4 lg:flex xl:gap-8">
+        <nav className="hidden items-center gap-4 lg:flex xl:gap-6">
           {nav.map((item) =>
             "children" in item ? (
               <ToolsMenu key={item.label} label={item.label} tools={item.children} active={item.children.some((t) => isActive(t.href))} />
@@ -39,8 +42,13 @@ export default function Nav() {
           )}
         </nav>
 
-        <div className="hidden shrink-0 lg:block">
-          <DiscordButton>Support Discord</DiscordButton>
+        <div className="hidden shrink-0 items-center gap-4 lg:flex xl:gap-5">
+          <AccountMenu account={account} />
+          {/* Libellé court à 1024 px pour garder la nav sur une ligne */}
+          <DiscordButton>
+            <span className="xl:hidden">Discord</span>
+            <span className="hidden xl:inline">Support Discord</span>
+          </DiscordButton>
         </div>
 
         <button
@@ -82,6 +90,32 @@ export default function Nav() {
               ),
             )}
           </nav>
+          <div className="mt-2 flex flex-col">
+            {account ? (
+              <>
+                <p className="flex items-center gap-3 py-4 text-sm text-muted">
+                  <Avatar account={account} size={28} />@{account.username}
+                </p>
+                <Link href="/dashboard" onClick={() => setOpen(false)} className="border-b border-line py-4 text-base text-muted hover:text-foreground">
+                  Dashboard
+                </Link>
+                <Link href="/compte" onClick={() => setOpen(false)} className="border-b border-line py-4 text-base text-muted hover:text-foreground">
+                  Mon compte
+                </Link>
+                <form action={signOut}>
+                  <button type="submit" className="w-full border-b border-line py-4 text-left text-base text-muted hover:text-foreground">
+                    Déconnexion
+                  </button>
+                </form>
+              </>
+            ) : (
+              account === null && (
+                <Link href="/connexion" onClick={() => setOpen(false)} className="border-b border-line py-4 text-base text-muted hover:text-foreground">
+                  Connexion
+                </Link>
+              )
+            )}
+          </div>
           <div className="mt-6">
             <DiscordButton>Support Discord</DiscordButton>
           </div>

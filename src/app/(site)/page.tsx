@@ -11,8 +11,13 @@ import Offers from "@/components/sections/Offers";
 import Streamers from "@/components/sections/Streamers";
 import Faq from "@/components/sections/Faq";
 import FinalCta from "@/components/sections/FinalCta";
+import { getHomeStreamers } from "@/lib/streamers";
 
-export default function Home() {
+// Accueil statique, régénéré toutes les 60 s (streamers et statut live Twitch).
+export const revalidate = 60;
+
+export default async function Home() {
+  const streamers = await getHomeStreamers();
   return (
     <>
       <ProStory page="home" />
@@ -25,7 +30,7 @@ export default function Home() {
       <Relays />
       <Guides />
       <Offers />
-      <Streamers />
+      <Streamers streamers={streamers} />
       <Faq />
       <FinalCta />
     </>

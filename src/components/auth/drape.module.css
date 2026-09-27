@@ -1,0 +1,57 @@
+/* Drapés lumineux des pages de connexion : calques composités (transform seulement), boucles lentes et décalées. */
+
+.layer {
+  position: absolute;
+  will-change: transform;
+  animation: sway 26s ease-in-out infinite;
+}
+.layerAlt {
+  animation-name: sway-alt;
+  animation-duration: 21s;
+}
+
+.topRight {
+  top: -18%;
+  right: -12%;
+  width: min(1000px, 62vw);
+  transform-origin: 100% 0;
+}
+.bottomLeft {
+  bottom: -18%;
+  left: -12%;
+  width: min(1000px, 62vw);
+  transform-origin: 0 100%;
+}
+
+@keyframes sway {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  50% { transform: translate3d(-1.2%, 1.4%, 0) rotate(-1.4deg) scale(1.035); }
+}
+@keyframes sway-alt {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1.02); }
+  50% { transform: translate3d(1%, -0.8%, 0) rotate(1.1deg) scale(0.99); }
+}
+
+.paused .layer {
+  animation-play-state: paused;
+}
+
+/* Mobile : drapés plus petits et plus discrets, repoussés dans les coins. */
+@media (max-width: 639px) {
+  .topRight {
+    top: -12%;
+    right: -38%;
+    width: 120vw;
+    opacity: 0.55;
+  }
+  .bottomLeft {
+    bottom: -14%;
+    left: -40%;
+    width: 120vw;
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer { animation: none; }
+}

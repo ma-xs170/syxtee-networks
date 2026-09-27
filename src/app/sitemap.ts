@@ -7,5 +7,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...navLinks.map((item) => ({ url: `${site.url}${item.href}`, changeFrequency: "monthly" as const, priority: 0.8 })),
     { url: `${site.url}/mentions-legales`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${site.url}/credits`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${site.url}/cgu`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${site.url}/confidentialite`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${site.url}/connexion`, changeFrequency: "yearly", priority: 0.3 },
   ];
 }

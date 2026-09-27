@@ -66,9 +66,11 @@ mkdir -p "$DIR/data" && chown -R 1000:1000 "$DIR/data"
 
 echo "✔ .env écrit : domaine $DOMAIN · relais $HOST · clé relais ${#KEY} car. · jeton ${#TOKEN} car. · clé Supabase OK"
 cd "$DIR"
-docker compose up -d --force-recreate
-echo "Démarrage (20 s)…"
-sleep 20
+# Fichiers de déploiement toujours à jour (copiés depuis le dépôt).
+cp "$DIR/core/deploy/docker-compose.yml" "$DIR/core/deploy/Caddyfile" "$DIR/"
+docker compose up -d --build --force-recreate
+echo "Démarrage (25 s)…"
+sleep 25
 docker compose ps
 echo "--- Test :"
 curl -s -m 10 "https://$DOMAIN/health" && echo || echo "Pas encore de réponse HTTPS : docker compose logs --tail 20 caddy"

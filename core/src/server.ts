@@ -7,6 +7,7 @@ import type { Config } from "./config.ts";
 import type { HealthMonitor, Live } from "./health.ts";
 import type { KeyRow, KeyStore } from "./keys.ts";
 import type { SampleStore } from "./samples.ts";
+import type { SessionTracker } from "./sessions.ts";
 
 // API HTTP du Core (derrière Caddy en HTTPS).
 // /v1/users/:id/*  → serveur Vercel, jeton de service.
@@ -17,6 +18,7 @@ export type Deps = {
   keys: KeyStore;
   health: HealthMonitor;
   samples: SampleStore;
+  sessions: SessionTracker;
   verifyUser: (authorization: string | undefined) => Promise<string | null>;
   previewPath: (userId: string) => string;
   onKeysChanged: () => void;
@@ -105,10 +107,8 @@ export function buildServer(d: Deps) {
     return { live: d.health.state(id), samples: d.samples.history(id, Date.now() - RANGES[range]) };
   });
 
-  // Santé en temps réel (Server-Sent Events). Réponse écrite à la main : on remet les en-têtes CORS.
-  app.get("/v1/me/health/stream", async (req, reply) => {
-    const id = await userId(req, reply);
-    if (!id) return;
+  // Server-Sent Events : réponse écrite à la main, on remet les en-têtes CORS.
+  const openStream = (req: FastifyRequest, reply: FastifyReply) => {
     reply.hijack();
     const origin = req.headers.origin;
     reply.raw.writeHead(200, {
@@ -118,7 +118,46 @@ export function buildServer(d: Deps) {
       "X-Accel-Buffering": "no",
       ...(origin && origins.includes(origin) ? { "Access-Control-Allow-Origin": origin, Vary: "Origin" } : {}),
     });
-    const send = (event: string, data: unknown) => reply.raw.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+    return (event: string, data: unknown) => reply.raw.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  };
+
+  // Statut léger (pastille de la barre du dashboard) : en ligne ou non, début du direct, débit toutes les 5 s au plus.
+  // N'accélère pas les relevés (pas de watch) : ouvert sur toutes les pages du dashboard.
+  app.get("/v1/me/status/stream", async (req, reply) => {
+    const id = await userId(req, reply);
+    if (!id) return;
+    const send = openStream(req, reply);
+    let lastSent = 0;
+    const push = () => {
+      const s = d.health.state(id);
+      const cur = d.sessions.current(id);
+      lastSent = Date.now();
+      send("status", {
+        live: !!s?.live,
+        reconnecting: !s?.live && !!cur?.reconnecting,
+        started_at: cur?.started_at ?? (s?.live ? s.since : null),
+        kbps: s?.live && s.sample ? Math.round(s.sample.bitrate) : null,
+        reconnects: cur?.reconnects ?? 0,
+      });
+    };
+    push();
+    const onStatus = (uid: string) => uid === id && push();
+    const onSample = (uid: string) => uid === id && Date.now() - lastSent >= 5000 && push();
+    d.health.events.on("status", onStatus);
+    d.health.events.on("sample", onSample);
+    const ping = setInterval(() => reply.raw.write(": ping\n\n"), 15_000);
+    req.raw.on("close", () => {
+      clearInterval(ping);
+      d.health.events.off("status", onStatus);
+      d.health.events.off("sample", onSample);
+    });
+  });
+
+  // Santé en temps réel (Server-Sent Events).
+  app.get("/v1/me/health/stream", async (req, reply) => {
+    const id = await userId(req, reply);
+    if (!id) return;
+    const send = openStream(req, reply);
     send("state", d.health.state(id) ?? { live: false, since: Date.now(), sample: null });
     const onSample = (uid: string, s: Live) => uid === id && send("state", s);
     d.health.events.on("sample", onSample);

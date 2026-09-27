@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/dal";
 import { allow } from "@/lib/auth/rateLimit";
-import { createStreamKeys, rotateStreamKeys } from "@/lib/core";
+import { createStreamKeys, rotateStreamKeys, setStreamMode } from "@/lib/core";
+import { forgetOverview } from "@/lib/dashboard-overview";
 
 export type KeyActionState = { error?: string };
 
@@ -15,7 +16,8 @@ export async function createKeys(): Promise<KeyActionState> {
     console.error("createKeys", e);
     return { error: "Le relais ne répond pas. Réessaie dans un instant." };
   }
-  revalidatePath("/dashboard");
+  forgetOverview(user.id);
+  revalidatePath("/dashboard", "layout");
   return {};
 }
 
@@ -29,6 +31,22 @@ export async function rotateKeys(): Promise<KeyActionState> {
     console.error("rotateKeys", e);
     return { error: "Le relais ne répond pas. Réessaie dans un instant." };
   }
-  revalidatePath("/dashboard");
+  forgetOverview(user.id);
+  revalidatePath("/dashboard", "layout");
+  return {};
+}
+
+/** Mode de sortie : Direct (OBS lit le téléphone) ou Régie (mire automatique si le téléphone coupe). */
+export async function changeMode(mode: "direct" | "regie"): Promise<KeyActionState> {
+  const user = await requireUser("/dashboard/mire");
+  if (!(await allow(`mode:${user.id}`, 20, 3600))) return { error: "Trop de changements. Réessaie dans une heure." };
+  try {
+    await setStreamMode(user.id, mode);
+  } catch (e) {
+    console.error("changeMode", e);
+    return { error: "Le relais ne répond pas, ou la régie n'est pas encore disponible." };
+  }
+  forgetOverview(user.id);
+  revalidatePath("/dashboard", "layout");
   return {};
 }

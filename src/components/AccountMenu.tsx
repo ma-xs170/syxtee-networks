@@ -50,9 +50,16 @@ export function Avatar({ account, size = 32 }: { account: NonNullable<Account>; 
   );
 }
 
+export type MenuLink = { label: string; href: string };
+/** Entrées du menu sur le site. Le dashboard passe les siennes (Profil, Abonnement, Documentation). */
+export const siteAccountLinks: MenuLink[] = [
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Mon compte", href: "/compte" },
+];
+
 const itemCls = "block w-full rounded-lg px-3 py-2 text-left text-sm text-muted transition-colors hover:bg-white/5 hover:text-foreground";
 
-export default function AccountMenu({ account }: { account: Account | undefined }) {
+export default function AccountMenu({ account, links = siteAccountLinks }: { account: Account | undefined; links?: MenuLink[] }) {
   const [open, setOpen] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
 
@@ -93,12 +100,11 @@ export default function AccountMenu({ account }: { account: Account | undefined 
       {open && (
         <div role="menu" className="absolute right-0 top-full z-50 mt-3 w-52 rounded-xl border border-line bg-black/95 p-1.5 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] backdrop-blur-md">
           <p className="truncate px-3 pb-2 pt-1.5 font-mono text-xs text-muted">@{account.username}</p>
-          <Link role="menuitem" href="/dashboard" onClick={() => setOpen(false)} className={itemCls}>
-            Dashboard
-          </Link>
-          <Link role="menuitem" href="/compte" onClick={() => setOpen(false)} className={itemCls}>
-            Mon compte
-          </Link>
+          {links.map((l) => (
+            <Link key={l.href} role="menuitem" href={l.href} onClick={() => setOpen(false)} className={itemCls}>
+              {l.label}
+            </Link>
+          ))}
           <form action={signOut}>
             <button role="menuitem" type="submit" className={itemCls}>
               Déconnexion

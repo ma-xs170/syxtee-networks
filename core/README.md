@@ -4,6 +4,8 @@ Service du VPS, à côté du `srtla-receiver` (OpenIRL). Il gère :
 
 - **Clés de stream** par utilisateur : paires `live_…` / `play_…` déclarées dans le srt-live-server (SLS) et enregistrées dans Supabase (`stream_keys`).
 - **Santé du flux** : relevé de `/stats/<play_id>` du SLS (débit, RTT, pertes, buffer, latence, liens SRTLA), 24 h d'historique (SQLite), temps réel en SSE.
+- **Historique des directs** : une ligne `live_sessions` (Supabase) par direct, ouverte au passage en ligne, fermée après 60 s hors ligne (coupure plus courte = reconnexion). Durée, débit moyen / crête, mini-courbe. Migration `supabase/migrations/0004_live_sessions.sql` à appliquer avant de déployer.
+- **Statut en direct** : `/v1/me/status/stream` (SSE léger pour la barre du dashboard).
 - **Aperçu** : une vignette JPEG toutes les 3 s par flux live (ffmpeg, images-clés seules).
 - **Régie** (désactivée par défaut) : sortie SRT toujours active, bascule automatique sur la mire SYXTEE si le téléphone coupe.
 

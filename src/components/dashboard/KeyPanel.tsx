@@ -2,11 +2,11 @@
 
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { createKeys, rotateKeys, type KeyActionState } from "@/app/(site)/dashboard/actions";
-import CopyCode from "@/components/CopyCode";
+import { createKeys, rotateKeys, type KeyActionState } from "@/app/(dashboard)/dashboard/actions";
 import type { StreamKeys } from "@/lib/core";
+import MaskedUrl from "./MaskedUrl";
 
-// Tes URLs (Moblin, IRL Pro / SRT, OBS) + « Régénérer ma clé » avec confirmation.
+// Tes URLs (Moblin, IRL Pro / SRT, OBS), clés masquées par défaut, et « Régénérer ma clé » avec confirmation.
 
 function Submit({ children, variant = "primary" }: { children: string; variant?: "primary" | "danger" }) {
   const { pending } = useFormStatus();
@@ -29,7 +29,7 @@ function Url({ label, hint, url }: { label: string; hint: string; url: string })
       <p className="text-sm font-medium">{label}</p>
       <p className="mt-1 text-xs text-muted">{hint}</p>
       <div className="mt-2">
-        <CopyCode code={url} />
+        <MaskedUrl url={url} label={label} />
       </div>
     </div>
   );
@@ -49,9 +49,6 @@ export function CreateKeys() {
 }
 
 export default function KeyPanel({ keys }: { keys: StreamKeys }) {
-  const [state, action] = useActionState<KeyActionState, FormData>(rotateKeys, {});
-  const [confirm, setConfirm] = useState(false);
-
   return (
     <section className="space-y-6" aria-labelledby="urls">
       <div>
@@ -63,35 +60,43 @@ export default function KeyPanel({ keys }: { keys: StreamKeys }) {
       <Url label="Moblin (SRTLA)" hint="Moblin → Réglages → Streams → ton stream → URL." url={keys.moblin_srtla_url} />
       <Url label="IRL Pro, BELABOX ou encodeur SRT" hint="Envoi direct en SRT, sans agrégation de liens." url={keys.srt_publish_url} />
       <Url label="OBS (source Média)" hint="OBS → Source média → décocher « Fichier local » → Entrée." url={keys.obs_srt_url} />
-
-      <div className="border-t border-line pt-6">
-        {confirm ? (
-          <form action={action} className="space-y-4">
-            <p className="text-sm leading-relaxed text-muted">
-              Tes URLs actuelles cesseront de fonctionner immédiatement. Tu devras coller les nouvelles dans Moblin et OBS.
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <Submit variant="danger">Confirmer la régénération</Submit>
-              <button type="button" onClick={() => setConfirm(false)} className="h-11 px-4 text-sm text-muted hover:text-foreground">
-                Annuler
-              </button>
-            </div>
-          </form>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setConfirm(true)}
-            className="h-11 rounded-full border border-line px-5 text-sm font-medium transition-colors hover:bg-white/5"
-          >
-            Régénérer ma clé
-          </button>
-        )}
-        {state.error && (
-          <p role="alert" className="mt-3 text-sm text-red-400/90">
-            {state.error}
-          </p>
-        )}
-      </div>
     </section>
+  );
+}
+
+/** Régénération de la clé, avec confirmation : les anciennes URLs cessent de marcher tout de suite. */
+export function RotateKey() {
+  const [state, action] = useActionState<KeyActionState, FormData>(rotateKeys, {});
+  const [confirm, setConfirm] = useState(false);
+
+  return (
+    <div>
+      {confirm ? (
+        <form action={action} className="space-y-4">
+          <p className="text-sm leading-relaxed text-muted">
+            Tes URLs actuelles cesseront de fonctionner immédiatement. Tu devras coller les nouvelles dans Moblin et OBS.
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <Submit variant="danger">Confirmer la régénération</Submit>
+            <button type="button" onClick={() => setConfirm(false)} className="h-11 px-4 text-sm text-muted hover:text-foreground">
+              Annuler
+            </button>
+          </div>
+        </form>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setConfirm(true)}
+          className="h-11 rounded-full border border-line px-5 text-sm font-medium transition-colors hover:bg-white/5"
+        >
+          Régénérer ma clé
+        </button>
+      )}
+      {state.error && (
+        <p role="alert" className="mt-3 text-sm text-red-400/90">
+          {state.error}
+        </p>
+      )}
+    </div>
   );
 }

@@ -245,3 +245,17 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .teaser-grain, .teaser-scan, .teaser-caret { animation: none; }
 }
+
+/* Dashboard, mode stream : tout ce qui est sensible est flouté */
+[data-sensitive] {
+  transition: filter 0.2s ease-out;
+}
+html[data-stream-mode="on"] [data-sensitive] {
+  filter: blur(7px);
+  user-select: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-sensitive] {
+    transition: none;
+  }
+}

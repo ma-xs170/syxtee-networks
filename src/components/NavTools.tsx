@@ -11,7 +11,19 @@ import RelayServer from "./illustrations/RelayServer";
 import StarlinkMini from "./illustrations/StarlinkMini";
 import Streamer from "./illustrations/Streamer";
 import { ProDrawing } from "./pro/ProExploded";
-import { isMenu, type NavItem, type NavMenu, type ToolIcon } from "@/lib/site";
+import DashArt from "./dashboard/DashArt";
+import type { DashIcon, DashItem, DashMenu } from "@/lib/dashboard-nav";
+import type { NavItem, NavMenu, ToolIcon } from "@/lib/site";
+
+// Même composant pour la nav du site et celle du dashboard (autres entrées, autres illustrations).
+type AnyMenu = NavMenu | DashMenu;
+type AnyItem = NavItem | DashItem;
+const isAnyMenu = (item: AnyItem): item is AnyMenu => "children" in item;
+const DASH_ICONS = new Set<string>(["urls", "health", "preview", "control", "stats", "lives", "map", "mire", "cam", "security", "profile", "plan", "settings"]);
+
+function ItemArt({ icon }: { icon: ToolIcon | DashIcon }) {
+  return DASH_ICONS.has(icon) ? <DashArt icon={icon as DashIcon} /> : <ToolArt icon={icon as ToolIcon} />;
+}
 
 // Menus de la nav (Produits, Outils, Ressources) : méga-menus sur desktop (survol + clic, clavier, Échap, clic
 // extérieur, un seul ouvert à la fois), accordéons dans le burger. Chaque entrée a sa mini-illustration filaire.
@@ -77,7 +89,7 @@ function NewDot() {
 type Open = { label: string; pinned: boolean } | null;
 
 /** Desktop : les menus déroulants et les liens simples, centrés dans la barre. */
-export function DesktopMenus({ items, isActive }: { items: NavItem[]; isActive: (href: string) => boolean }) {
+export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: (href: string) => boolean }) {
   const [open, setOpen] = useState<Open>(null);
   const wrap = useRef<HTMLElement>(null);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -104,7 +116,7 @@ export function DesktopMenus({ items, isActive }: { items: NavItem[]; isActive: 
       }}
     >
       {items.map((item) =>
-        isMenu(item) ? (
+        isAnyMenu(item) ? (
           <Dropdown
             key={item.label}
             menu={item}
@@ -146,7 +158,7 @@ function Dropdown({
   onPin,
   onClose,
 }: {
-  menu: NavMenu;
+  menu: AnyMenu;
   active: boolean;
   open: boolean;
   onEnter: () => void;
@@ -215,7 +227,7 @@ function Dropdown({
                 {grid ? (
                   <Link href={t.href} onClick={onClose} className="group flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-white/5 focus-visible:bg-white/5">
                     <span className="h-16 w-16 shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.06]">
-                      <ToolArt icon={t.icon} />
+                      <ItemArt icon={t.icon} />
                     </span>
                     <span className="min-w-0">
                       <span className="flex items-center gap-2 text-sm font-medium text-foreground">
@@ -232,7 +244,7 @@ function Dropdown({
                     className="group flex w-[220px] flex-col rounded-xl p-4 transition-colors hover:bg-white/5 focus-visible:bg-white/5"
                   >
                     <div className="h-24 w-full transition-transform duration-300 ease-out group-hover:-translate-y-1 group-hover:scale-[1.04]">
-                      <ToolArt icon={t.icon} />
+                      <ItemArt icon={t.icon} />
                     </div>
                     <div className="mt-3 flex items-center gap-2">
                       <span className="whitespace-nowrap text-sm font-medium text-foreground">{t.label}</span>
@@ -255,7 +267,7 @@ function Dropdown({
 }
 
 /** Mobile (menu burger) : accordéon. */
-export function NavAccordion({ menu, active, onNavigate }: { menu: NavMenu; active: boolean; onNavigate: () => void }) {
+export function NavAccordion({ menu, active, onNavigate }: { menu: AnyMenu; active: boolean; onNavigate: () => void }) {
   const [open, setOpen] = useState(active);
   const id = useId();
   return (
@@ -278,7 +290,7 @@ export function NavAccordion({ menu, active, onNavigate }: { menu: NavMenu; acti
           <li key={t.href}>
             <Link href={t.href} onClick={onNavigate} className="flex items-center gap-4 rounded-xl px-2 py-3 hover:bg-white/5">
               <span className="h-12 w-12 shrink-0">
-                <ToolArt icon={t.icon} />
+                <ItemArt icon={t.icon} />
               </span>
               <span className="min-w-0">
                 <span className="flex items-center gap-2">

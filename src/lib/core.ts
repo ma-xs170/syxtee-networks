@@ -39,3 +39,4 @@ async function core<T>(path: string, method: "GET" | "POST" | "PUT" = "GET", bod
 export const getStreamKeys = (userId: string) => core<StreamKeys>(`/v1/users/${userId}/keys`);
 export const createStreamKeys = (userId: string) => core<StreamKeys>(`/v1/users/${userId}/keys`, "POST");
 export const rotateStreamKeys = (userId: string) => core<StreamKeys>(`/v1/users/${userId}/keys/rotate`, "POST");
+export const setStreamMode = (userId: string, mode: StreamKeys["mode"]) => core<StreamKeys>(`/v1/users/${userId}/mode`, "PUT", { mode });

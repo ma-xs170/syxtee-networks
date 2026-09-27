@@ -1,4 +1,4 @@
-import ProStory from "@/components/pro/ProStory";
+import ProTeaser from "@/components/pro/ProTeaser";
 import Hero from "@/components/sections/Hero";
 import JourneyStory from "@/components/home/JourneyStory";
 import Compat from "@/components/sections/Compat";
@@ -20,7 +20,7 @@ export default async function Home() {
   const streamers = await getHomeStreamers();
   return (
     <>
-      <ProStory page="home" />
+      <ProTeaser />
       <Hero />
       <JourneyStory />
       <Compat />

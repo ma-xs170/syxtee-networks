@@ -8,27 +8,44 @@ export const site = {
   year: new Date().getFullYear(),
 };
 
-export type ToolIcon = "phone" | "dish" | "esim";
+export type ToolIcon = "bag" | "rack" | "phone" | "dish" | "esim" | "route" | "services" | "docs" | "faq";
 export type NavLink = { label: string; href: string; badge?: string };
 export type NavTool = NavLink & { desc: string; icon: ToolIcon };
-export type NavItem = NavLink | { label: string; children: NavTool[] };
+/** Menu déroulant : `dot` = point rouge de nouveauté à côté du libellé, `note` = ligne en pied de panneau. */
+export type NavMenu = { label: string; children: NavTool[]; dot?: boolean; note?: string };
+export type NavItem = NavLink | NavMenu;
 
 export const nav: NavItem[] = [
-  { label: "SYXTEE PRO", href: "/pro", badge: "Nouveau" },
-  { label: "Services", href: "/services" },
-  { label: "Fonctionnement", href: "/fonctionnement" },
+  {
+    label: "Produits",
+    dot: true,
+    children: [
+      { label: "SYXTEE PRO", href: "/pro", desc: "Le sac encodeur IRL", icon: "bag", badge: "Nouveau" },
+      { label: "Relais SYXTEE", href: "/relais", desc: "Nos serveurs SRTLA", icon: "rack" },
+    ],
+  },
   {
     label: "Outils",
+    note: "Tous nos outils fonctionnent avec le relais SYXTEE",
     children: [
       { label: "Moblin", href: "/moblin", desc: "L'app IRL qu'on recommande", icon: "phone" },
       { label: "Starlink", href: "/starlink", desc: "Le live là où la 4G abandonne", icon: "dish" },
       { label: "Saily", href: "/saily", desc: "Une 4G de plus en eSIM", icon: "esim", badge: "Partenaire" },
     ],
   },
-  { label: "Relais", href: "/relais" },
+  {
+    label: "Ressources",
+    children: [
+      { label: "Fonctionnement", href: "/fonctionnement", desc: "Le trajet d'un live de A à Z", icon: "route" },
+      { label: "Services", href: "/services", desc: "Tout ce que fait le relais", icon: "services" },
+      { label: "Documentation", href: "/docs", desc: "Les guides pour bien démarrer", icon: "docs" },
+      { label: "FAQ", href: "/faq", desc: "Les questions qu'on nous pose", icon: "faq" },
+    ],
+  },
   { label: "Offres", href: "/offres" },
-  { label: "FAQ", href: "/faq" },
 ];
+
+export const isMenu = (item: NavItem): item is NavMenu => "children" in item;
 
 // SYXTEE PRO : sac encodeur IRL (en développement). Prix affichés sur l'accueil et /pro.
 export const pro = {
@@ -37,7 +54,7 @@ export const pro = {
 };
 
 /** Toutes les pages du menu, à plat (sitemap…). */
-export const navLinks: NavLink[] = nav.flatMap((item) => ("children" in item ? item.children : [item]));
+export const navLinks: NavLink[] = nav.flatMap((item) => (isMenu(item) ? item.children : [item]));
 
 export type Relay = {
   city: string;

@@ -14,9 +14,9 @@ import { PRO_TIMELINE as TL } from "./timeline";
 // Légendes : calque HTML au-dessus du canvas, positionné en projetant des ancres 3D à chaque image.
 // Tout est piloté dans useFrame à partir du progrès global de l'histoire : aucun re-render React pendant le scroll.
 
-type Mats = { solid: THREE.MeshStandardMaterial; wire: THREE.MeshBasicMaterial; line: THREE.LineBasicMaterial };
+export type Mats = { solid: THREE.MeshStandardMaterial; wire: THREE.MeshBasicMaterial; line: THREE.LineBasicMaterial };
 
-function makeMats(color = "#0c0c0c", roughness = 0.55, metalness = 0.25): Mats {
+export function makeMats(color = "#0c0c0c", roughness = 0.55, metalness = 0.25): Mats {
   return {
     solid: new THREE.MeshStandardMaterial({ color, roughness, metalness, transparent: true }),
     wire: new THREE.MeshBasicMaterial({ color: "#ffffff", wireframe: true, transparent: true, depthWrite: false }),
@@ -25,7 +25,7 @@ function makeMats(color = "#0c0c0c", roughness = 0.55, metalness = 0.25): Mats {
 }
 
 /** Mélange squelette → plein. `k` : visibilité globale de la pièce (le sac s'efface en vue éclatée). */
-function applyMode(m: Mats, full: number, k = 1, wire = 0.1) {
+export function applyMode(m: Mats, full: number, k = 1, wire = 0.1) {
   m.solid.opacity = full * k;
   m.solid.visible = full * k > 0.01;
   m.wire.opacity = wire * (1 - full) * k;
@@ -33,7 +33,7 @@ function applyMode(m: Mats, full: number, k = 1, wire = 0.1) {
   m.line.opacity = lerp(0.85, 0.1, full) * k;
 }
 
-function Part({ geo, mats, edges = true, ...rest }: { geo: THREE.BufferGeometry; mats: Mats; edges?: boolean } & Omit<ThreeElements["group"], "children">) {
+export function Part({ geo, mats, edges = true, ...rest }: { geo: THREE.BufferGeometry; mats: Mats; edges?: boolean } & Omit<ThreeElements["group"], "children">) {
   const edgeGeo = useMemo(() => (edges ? new THREE.EdgesGeometry(geo, 30) : null), [geo, edges]);
   return (
     <group {...rest}>
@@ -95,7 +95,7 @@ function roundedRect(w: number, h: number, r: number) {
 }
 
 // Positions des pièces : dans le sac (fermé) → vue éclatée.
-const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
+export const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 const POS = {
   encoder: { in: V(0, 0.22, 0.04), out: V(0.72, 0.62, 0.55) },
   starlink: { in: V(0, 0, -0.16), out: V(-0.78, 0.5, -0.55) },
@@ -167,16 +167,8 @@ function applyTextures(mesh: THREE.MeshBasicMaterial, logo: THREE.MeshBasicMater
   logo.color.setScalar(lerp(1, 0.35, full));
 }
 
-function Model({ p, labels }: { p: MotionValue<number>; labels: RefObject<(HTMLDivElement | null)[]> }) {
-  const root = useRef<THREE.Group>(null);
-  const enc = useRef<THREE.Group>(null);
-  const star = useRef<THREE.Group>(null);
-  const batA = useRef<THREE.Group>(null);
-  const batB = useRef<THREE.Group>(null);
-  const flap = useRef<THREE.Group>(null);
-  const anchors = useRef<(THREE.Object3D | null)[]>([]);
-  const spin = useRef(0.6);
-
+/** Géométries, textures et matériaux du modèle (partagés avec le teaser de l'accueil). Libérés au démontage. */
+export function useProKit() {
   const r = useMemo(() => {
     const bagShape = roundedRect(0.82, 0.92, 0.16);
     const mesh = diamondTexture();
@@ -228,6 +220,23 @@ function Model({ p, labels }: { p: MotionValue<number>; labels: RefObject<(HTMLD
     },
     [r],
   );
+
+  return r;
+}
+
+export type ProKit = ReturnType<typeof useProKit>;
+
+function Model({ p, labels }: { p: MotionValue<number>; labels: RefObject<(HTMLDivElement | null)[]> }) {
+  const root = useRef<THREE.Group>(null);
+  const enc = useRef<THREE.Group>(null);
+  const star = useRef<THREE.Group>(null);
+  const batA = useRef<THREE.Group>(null);
+  const batB = useRef<THREE.Group>(null);
+  const flap = useRef<THREE.Group>(null);
+  const anchors = useRef<(THREE.Object3D | null)[]>([]);
+  const spin = useRef(0.6);
+
+  const r = useProKit();
 
   useStudioEnv();
 

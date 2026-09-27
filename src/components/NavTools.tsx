@@ -2,17 +2,45 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
+import DataCenter from "./illustrations/DataCenter";
+import DiscordChat from "./illustrations/DiscordChat";
+import ObsScreen from "./illustrations/ObsScreen";
 import PhoneAndroid from "./illustrations/PhoneAndroid";
 import PhoneMoblin from "./illustrations/PhoneMoblin";
+import RelayServer from "./illustrations/RelayServer";
 import StarlinkMini from "./illustrations/StarlinkMini";
-import type { NavTool, ToolIcon } from "@/lib/site";
+import Streamer from "./illustrations/Streamer";
+import { ProDrawing } from "./pro/ProExploded";
+import { isMenu, type NavItem, type NavMenu, type ToolIcon } from "@/lib/site";
 
-// Menu « Outils » : méga-menu sur desktop (survol + clic, clavier, Échap, clic extérieur), accordéon dans le burger.
+// Menus de la nav (Produits, Outils, Ressources) : méga-menus sur desktop (survol + clic, clavier, Échap, clic
+// extérieur, un seul ouvert à la fois), accordéons dans le burger. Chaque entrée a sa mini-illustration filaire.
 
 export function ToolArt({ icon, className = "h-full w-full" }: { icon: ToolIcon; className?: string }) {
-  if (icon === "phone") return <PhoneMoblin waves={false} animated={false} className={className} />;
-  if (icon === "dish") return <StarlinkMini animated={false} className={className} />;
-  return <PhoneAndroid screen="esim" animated={false} className={className} />;
+  switch (icon) {
+    case "bag":
+      return (
+        <svg viewBox="150 70 300 390" className={`${className} text-foreground`} fill="none" aria-hidden="true">
+          <ProDrawing closed />
+        </svg>
+      );
+    case "rack":
+      return <RelayServer animated={false} className={className} />;
+    case "phone":
+      return <PhoneMoblin waves={false} animated={false} className={className} />;
+    case "dish":
+      return <StarlinkMini animated={false} className={className} />;
+    case "esim":
+      return <PhoneAndroid screen="esim" animated={false} className={className} />;
+    case "route":
+      return <Streamer animated={false} className={className} />;
+    case "services":
+      return <DataCenter animated={false} className={className} />;
+    case "docs":
+      return <ObsScreen animated={false} className={className} />;
+    case "faq":
+      return <DiscordChat animated={false} className={className} />;
+  }
 }
 
 function Chevron({ open }: { open: boolean }) {
@@ -27,50 +55,128 @@ export function Badge({ children }: { children: string }) {
   return <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{children}</span>;
 }
 
-/** Desktop : lien « Outils » + panneau déroulant. */
-export function ToolsMenu({ label, tools, active }: { label: string; tools: NavTool[]; active: boolean }) {
-  const [hover, setHover] = useState(false);
-  const [pinned, setPinned] = useState(false);
-  const open = hover || pinned;
-  const wrap = useRef<HTMLDivElement>(null);
-  const trigger = useRef<HTMLButtonElement>(null);
-  const leaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const panelId = useId();
+/** Point rouge de nouveauté (pas de badge texte dans la barre). */
+function NewDot() {
+  return (
+    <>
+      <span className="h-1.5 w-1.5 rounded-full bg-live" aria-hidden="true" />
+      <span className="sr-only">(nouveauté)</span>
+    </>
+  );
+}
 
-  const close = () => {
-    setHover(false);
-    setPinned(false);
-  };
+type Open = { label: string; pinned: boolean } | null;
+
+/** Desktop : les menus déroulants et les liens simples, centrés dans la barre. */
+export function DesktopMenus({ items, isActive }: { items: NavItem[]; isActive: (href: string) => boolean }) {
+  const [open, setOpen] = useState<Open>(null);
+  const wrap = useRef<HTMLElement>(null);
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Clic à l'extérieur
   useEffect(() => {
     if (!open) return;
     const onDown = (e: PointerEvent) => {
-      if (!wrap.current?.contains(e.target as Node)) close();
+      if (!wrap.current?.contains(e.target as Node)) setOpen(null);
     };
     document.addEventListener("pointerdown", onDown);
     return () => document.removeEventListener("pointerdown", onDown);
   }, [open]);
 
+  useEffect(() => () => clearTimeout(leaveTimer.current), []);
+
+  return (
+    <nav
+      ref={wrap}
+      aria-label="Navigation principale"
+      className="hidden items-center gap-7 lg:flex"
+      onBlur={(e) => {
+        if (!wrap.current?.contains(e.relatedTarget as Node)) setOpen(null);
+      }}
+    >
+      {items.map((item) =>
+        isMenu(item) ? (
+          <Dropdown
+            key={item.label}
+            menu={item}
+            active={item.children.some((t) => isActive(t.href))}
+            open={open?.label === item.label}
+            onEnter={() => {
+              clearTimeout(leaveTimer.current);
+              setOpen((o) => (o?.label === item.label ? o : { label: item.label, pinned: false }));
+            }}
+            onLeave={() => {
+              leaveTimer.current = setTimeout(() => setOpen((o) => (o?.pinned ? o : null)), 120);
+            }}
+            onToggle={() => setOpen((o) => (o?.label === item.label && o.pinned ? null : { label: item.label, pinned: true }))}
+            onPin={() => setOpen({ label: item.label, pinned: true })}
+            onClose={() => setOpen(null)}
+          />
+        ) : (
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={isActive(item.href) ? "page" : undefined}
+            className={`whitespace-nowrap text-sm transition-colors hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-muted"}`}
+          >
+            {item.label}
+          </Link>
+        ),
+      )}
+    </nav>
+  );
+}
+
+function Dropdown({
+  menu,
+  active,
+  open,
+  onEnter,
+  onLeave,
+  onToggle,
+  onPin,
+  onClose,
+}: {
+  menu: NavMenu;
+  active: boolean;
+  open: boolean;
+  onEnter: () => void;
+  onLeave: () => void;
+  onToggle: () => void;
+  onPin: () => void;
+  onClose: () => void;
+}) {
+  const trigger = useRef<HTMLButtonElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  const panelId = useId();
+  const grid = menu.children.length > 3; // 4 entrées : grille 2 × 2 compacte
+
+  const links = () => Array.from(panel.current?.querySelectorAll<HTMLAnchorElement>("a") ?? []);
+
   return (
     <div
-      ref={wrap}
       className="relative"
-      onMouseEnter={() => {
-        clearTimeout(leaveTimer.current);
-        setHover(true);
-      }}
-      onMouseLeave={() => {
-        leaveTimer.current = setTimeout(() => setHover(false), 120);
-      }}
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
       onKeyDown={(e) => {
         if (e.key === "Escape" && open) {
-          close();
+          e.preventDefault();
+          onClose();
           trigger.current?.focus();
+          return;
         }
-      }}
-      onBlur={(e) => {
-        if (!wrap.current?.contains(e.relatedTarget as Node)) close();
+        // Flèches : parcourir les entrées du panneau
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          if (!open) onPin();
+          // Après le rendu : le panneau doit être visible pour recevoir le focus
+          setTimeout(() => {
+            const all = links();
+            const i = all.indexOf(document.activeElement as HTMLAnchorElement);
+            const next = e.key === "ArrowDown" ? (i + 1) % all.length : i <= 0 ? all.length - 1 : i - 1;
+            all[next]?.focus();
+          }, 30);
+        }
       }}
     >
       <button
@@ -78,48 +184,61 @@ export function ToolsMenu({ label, tools, active }: { label: string; tools: NavT
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => {
-          // Au clavier / au toucher : le clic ouvre et épingle ; un 2e clic referme.
-          if (pinned) close();
-          else setPinned(true);
-        }}
-        className={`flex items-center gap-1.5 text-sm transition-colors hover:text-foreground ${active || open ? "text-foreground" : "text-muted"}`}
+        onClick={onToggle}
+        className={`flex items-center gap-1.5 whitespace-nowrap text-sm transition-colors hover:text-foreground ${active || open ? "text-foreground" : "text-muted"}`}
       >
-        {label}
+        {menu.label}
+        {menu.dot && <NewDot />}
         <Chevron open={open} />
       </button>
 
       <div
+        ref={panel}
         id={panelId}
         className={`absolute left-1/2 top-full z-50 -translate-x-1/2 pt-4 transition duration-150 ease-out ${
           open ? "visible translate-y-0 opacity-100" : "pointer-events-none invisible -translate-y-2 opacity-0"
         }`}
       >
-        <div className="rounded-2xl border border-line bg-black/90 p-3 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] backdrop-blur-md">
-          <ul className="flex gap-2">
-            {tools.map((t) => (
+        <div className="rounded-2xl border border-white/10 bg-black/95 p-3 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] backdrop-blur-md">
+          <ul className={grid ? "grid w-[660px] grid-cols-2 gap-1" : "flex gap-2"}>
+            {menu.children.map((t) => (
               <li key={t.href}>
-                <Link
-                  href={t.href}
-                  onClick={close}
-                  className="group flex w-[220px] flex-col rounded-xl p-4 transition-colors hover:bg-white/5 focus-visible:bg-white/5"
-                >
-                  <div className="h-24 w-full transition-transform duration-300 ease-out group-hover:-translate-y-1 group-hover:scale-[1.04]">
-                    <ToolArt icon={t.icon} />
-                  </div>
-                  <div className="mt-3 flex items-center gap-2">
-                    <span className="text-sm font-medium text-foreground">{t.label}</span>
-                    {t.badge && <Badge>{t.badge}</Badge>}
-                    <span aria-hidden="true" className="ml-auto text-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-                      →
+                {grid ? (
+                  <Link href={t.href} onClick={onClose} className="group flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-white/5 focus-visible:bg-white/5">
+                    <span className="h-16 w-16 shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.06]">
+                      <ToolArt icon={t.icon} />
                     </span>
-                  </div>
-                  <span className="mt-1 text-sm leading-snug text-muted">{t.desc}</span>
-                </Link>
+                    <span className="min-w-0">
+                      <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                        {t.label}
+                        {t.badge && <Badge>{t.badge}</Badge>}
+                      </span>
+                      <span className="mt-0.5 block text-sm leading-snug text-muted">{t.desc}</span>
+                    </span>
+                  </Link>
+                ) : (
+                  <Link
+                    href={t.href}
+                    onClick={onClose}
+                    className="group flex w-[220px] flex-col rounded-xl p-4 transition-colors hover:bg-white/5 focus-visible:bg-white/5"
+                  >
+                    <div className="h-24 w-full transition-transform duration-300 ease-out group-hover:-translate-y-1 group-hover:scale-[1.04]">
+                      <ToolArt icon={t.icon} />
+                    </div>
+                    <div className="mt-3 flex items-center gap-2">
+                      <span className="whitespace-nowrap text-sm font-medium text-foreground">{t.label}</span>
+                      {t.badge && <Badge>{t.badge}</Badge>}
+                      <span aria-hidden="true" className="ml-auto text-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                        →
+                      </span>
+                    </div>
+                    <span className="mt-1 text-sm leading-snug text-muted">{t.desc}</span>
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
-          <p className="mt-2 border-t border-line px-4 pb-1 pt-3 text-xs text-muted">Tous nos outils fonctionnent avec le relais SYXTEE</p>
+          {menu.note && <p className="mt-2 border-t border-line px-4 pb-1 pt-3 text-xs text-muted">{menu.note}</p>}
         </div>
       </div>
     </div>
@@ -127,7 +246,7 @@ export function ToolsMenu({ label, tools, active }: { label: string; tools: NavT
 }
 
 /** Mobile (menu burger) : accordéon. */
-export function ToolsAccordion({ label, tools, active, onNavigate }: { label: string; tools: NavTool[]; active: boolean; onNavigate: () => void }) {
+export function NavAccordion({ menu, active, onNavigate }: { menu: NavMenu; active: boolean; onNavigate: () => void }) {
   const [open, setOpen] = useState(active);
   const id = useId();
   return (
@@ -139,11 +258,14 @@ export function ToolsAccordion({ label, tools, active, onNavigate }: { label: st
         onClick={() => setOpen((v) => !v)}
         className={`flex w-full items-center justify-between py-4 text-base hover:text-foreground ${active ? "text-foreground" : "text-muted"}`}
       >
-        {label}
+        <span className="flex items-center gap-2">
+          {menu.label}
+          {menu.dot && <NewDot />}
+        </span>
         <Chevron open={open} />
       </button>
       <ul id={id} hidden={!open} className="pb-3">
-        {tools.map((t) => (
+        {menu.children.map((t) => (
           <li key={t.href}>
             <Link href={t.href} onClick={onNavigate} className="flex items-center gap-4 rounded-xl px-2 py-3 hover:bg-white/5">
               <span className="h-12 w-12 shrink-0">

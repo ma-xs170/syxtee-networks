@@ -1,13 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
-import { nav, site } from "@/lib/site";
+import { isMenu, nav, site, type NavLink } from "@/lib/site";
 import { DiscordIcon } from "./ui";
+
+// Mêmes catégories que la nav : Produits (+ Offres), Outils, Ressources, puis Support.
+const columns: { title: string; links: NavLink[] }[] = nav.filter(isMenu).map((m) => ({ title: m.label, links: [...m.children] }));
+const offers = nav.find((item) => !isMenu(item)) as NavLink | undefined;
+if (offers) columns[0]?.links.push(offers);
 
 export default function Footer() {
   return (
     <footer className="border-t border-line">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-4">
-        <div className="md:col-span-2">
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-4 py-14 sm:px-6 md:grid-cols-4 lg:grid-cols-6">
+        <div className="col-span-2 md:col-span-4 lg:col-span-2">
           <div className="flex items-center gap-3">
             <Image src="/logo-400.png" alt="" width={32} height={44} />
             <span className="text-sm font-semibold tracking-[0.18em]">SYXTEE <span className="font-normal text-muted">NETWORKS</span></span>
@@ -17,36 +22,21 @@ export default function Footer() {
           </p>
         </div>
 
-        <div>
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Navigation</p>
-          <ul className="mt-4 space-y-3 text-sm">
-            {nav.map((item) =>
-              "children" in item ? (
-                <li key={item.label}>
-                  <span className="text-muted">{item.label}</span>
-                  <ul className="mt-3 space-y-3 border-l border-line pl-4">
-                    {item.children.map((t) => (
-                      <li key={t.href}>
-                        <Link href={t.href} className="text-muted hover:text-foreground">
-                          {t.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ) : (
-                <li key={item.href}>
-                  <Link href={item.href} className="inline-flex items-center gap-2 text-muted hover:text-foreground">
-                    {item.label}
-                    {item.badge && (
-                      <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]">{item.badge}</span>
-                    )}
+        {columns.map((col) => (
+          <div key={col.title}>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">{col.title}</p>
+            <ul className="mt-4 space-y-3 text-sm">
+              {col.links.map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className="inline-flex items-center gap-2 text-muted hover:text-foreground">
+                    {l.label}
+                    {l.badge && <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]">{l.badge}</span>}
                   </Link>
                 </li>
-              ),
-            )}
-          </ul>
-        </div>
+              ))}
+            </ul>
+          </div>
+        ))}
 
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Support</p>

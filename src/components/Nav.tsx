@@ -5,9 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { signOut } from "@/app/(auth)/actions";
-import { nav } from "@/lib/site";
+import { isMenu, nav } from "@/lib/site";
 import AccountMenu, { Avatar, useAccount } from "./AccountMenu";
-import { Badge, ToolsAccordion, ToolsMenu } from "./NavTools";
+import { DesktopMenus, NavAccordion } from "./NavTools";
 import { DiscordButton } from "./ui";
 
 export default function Nav() {
@@ -18,37 +18,20 @@ export default function Nav() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-black/70 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-4 sm:px-6">
-        <Link href="/" onClick={() => setOpen(false)} className="flex shrink-0 items-center gap-3" aria-label="SYXTEE NETWORKS — accueil">
+      {/* 3 zones : logo à gauche, menus centrés, compte + Discord à droite */}
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr]">
+        <Link href="/" onClick={() => setOpen(false)} className="flex shrink-0 items-center gap-3 justify-self-start" aria-label="SYXTEE NETWORKS, accueil">
           <Image src="/logo-400.png" alt="" width={26} height={36} priority />
-          <span className="whitespace-nowrap text-sm font-semibold tracking-[0.18em]">SYXTEE <span className="font-normal text-muted lg:hidden xl:inline">NETWORKS</span></span>
+          <span className="whitespace-nowrap text-sm font-semibold tracking-[0.18em]">
+            SYXTEE<span className="hidden font-normal text-muted xl:inline"> NETWORKS</span>
+          </span>
         </Link>
 
-        <nav className="hidden items-center gap-4 lg:flex xl:gap-6">
-          {nav.map((item) =>
-            "children" in item ? (
-              <ToolsMenu key={item.label} label={item.label} tools={item.children} active={item.children.some((t) => isActive(t.href))} />
-            ) : (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={isActive(item.href) ? "page" : undefined}
-                className={`flex items-center gap-2 whitespace-nowrap text-sm transition-colors hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-muted"}`}
-              >
-                {item.label}
-                {item.badge && <Badge>{item.badge}</Badge>}
-              </Link>
-            ),
-          )}
-        </nav>
+        <DesktopMenus items={nav} isActive={isActive} />
 
-        <div className="hidden shrink-0 items-center gap-4 lg:flex xl:gap-5">
+        <div className="hidden shrink-0 items-center gap-6 justify-self-end lg:flex">
           <AccountMenu account={account} />
-          {/* Libellé court à 1024 px pour garder la nav sur une ligne */}
-          <DiscordButton>
-            <span className="xl:hidden">Discord</span>
-            <span className="hidden xl:inline">Support Discord</span>
-          </DiscordButton>
+          <DiscordButton size="sm">Discord</DiscordButton>
         </div>
 
         <button
@@ -66,13 +49,12 @@ export default function Nav() {
 
       {open && (
         <div className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-line bg-black px-4 pb-6 pt-2 lg:hidden">
-          <nav className="flex flex-col">
+          <nav aria-label="Navigation principale" className="flex flex-col">
             {nav.map((item) =>
-              "children" in item ? (
-                <ToolsAccordion
+              isMenu(item) ? (
+                <NavAccordion
                   key={item.label}
-                  label={item.label}
-                  tools={item.children}
+                  menu={item}
                   active={item.children.some((t) => isActive(t.href))}
                   onNavigate={() => setOpen(false)}
                 />
@@ -82,10 +64,9 @@ export default function Nav() {
                   href={item.href}
                   onClick={() => setOpen(false)}
                   aria-current={isActive(item.href) ? "page" : undefined}
-                  className={`flex items-center gap-2 border-b border-line py-4 text-base hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-muted"}`}
+                  className={`border-b border-line py-4 text-base hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-muted"}`}
                 >
                   {item.label}
-                  {item.badge && <Badge>{item.badge}</Badge>}
                 </Link>
               ),
             )}
@@ -117,7 +98,7 @@ export default function Nav() {
             )}
           </div>
           <div className="mt-6">
-            <DiscordButton>Support Discord</DiscordButton>
+            <DiscordButton>Discord</DiscordButton>
           </div>
         </div>
       )}

@@ -92,9 +92,7 @@ git clone --depth 1 --filter=blob:none --sparse https://github.com/ma-xs170/syxt
 cd repo && git sparse-checkout set core && cd ..
 ln -s repo/core core
 cp core/deploy/docker-compose.yml core/deploy/Caddyfile .
-cp core/deploy/.env.example .env && chmod 600 .env
-openssl rand -hex 32      # → CORE_API_TOKEN (à garder pour Vercel)
-nano .env
+bash core/deploy/setup-env.sh   # remplit .env (demande la clé Supabase et CORE_API_TOKEN), démarre et teste
 ```
 
 Dans `.env` :
@@ -109,6 +107,7 @@ Dans `.env` :
 | `RELAY_PUBLIC_HOST` | `<IP>` ou un domaine du relais (ce que les streamers collent dans Moblin/OBS) |
 
 ```bash
+mkdir -p data && chown -R 1000:1000 data   # le Core tourne en utilisateur « node » (uid 1000)
 docker compose up -d --build
 docker compose logs -f core     # attendre « prêt sur :8787 », puis Ctrl+C
 curl https://<CORE_DOMAIN>/health

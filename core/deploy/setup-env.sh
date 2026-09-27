@@ -59,6 +59,9 @@ REGIE_ENABLED=false
 EOF
 chmod 600 "$ENV"
 
+# Dossier de données (historique santé, aperçus) : appartient à l'utilisateur « node » (uid 1000) du conteneur.
+mkdir -p "$DIR/data" && chown -R 1000:1000 "$DIR/data"
+
 echo "✔ .env écrit : domaine $DOMAIN · relais $HOST · clé relais ${#KEY} car. · jeton ${#TOKEN} car. · clé Supabase OK"
 cd "$DIR"
 docker compose up -d --force-recreate

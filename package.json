@@ -7,13 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "maplibre:worker": "cp node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs node_modules/maplibre-gl/dist/maplibre-gl-shared.mjs public/maplibre/ && node -p \"require('maplibre-gl/package.json').version\" > public/maplibre/VERSION"
   },
   "dependencies": {
     "@react-three/fiber": "^9.8.1",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
     "geist": "^1.7.2",
+    "maplibre-gl": "^6.11.2",
     "motion": "^13.4.4",
     "next": "16.3.6",
     "react": "19.2.8",

@@ -16,6 +16,8 @@ const eslintConfig = defineConfig([
     ".next-e2e/**",
     // SYXTEE Core (VPS) : projet séparé, vérifié par son propre tsc et ses tests
     "core/**",
+    // Worker MapLibre copié tel quel (fichiers minifiés du paquet)
+    "public/maplibre/**",
     "test-results/**",
     "playwright-report/**",
   ]),

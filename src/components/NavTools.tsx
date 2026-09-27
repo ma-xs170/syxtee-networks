@@ -40,6 +40,15 @@ export function ToolArt({ icon, className = "h-full w-full" }: { icon: ToolIcon;
       return <ObsScreen animated={false} className={className} />;
     case "faq":
       return <DiscordChat animated={false} className={className} />;
+    case "tower":
+      // Antenne relais filaire (carte /antennes)
+      return (
+        <svg viewBox="0 0 120 90" className={`${className} text-foreground`} fill="none" stroke="currentColor" strokeWidth={1.25} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M60 22L46 82M60 22L74 82M50 64H70M53 50H67M56 36H64M40 82H80" />
+          <rect x="56" y="14" width="8" height="10" rx="1" />
+          <path d="M44 16a18 18 0 0 0 0 16M76 16a18 18 0 0 1 0 16M36 10a28 28 0 0 0 0 28M84 10a28 28 0 0 1 0 28" opacity={0.6} />
+        </svg>
+      );
   }
 }
 

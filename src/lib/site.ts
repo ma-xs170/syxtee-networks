@@ -8,7 +8,7 @@ export const site = {
   year: new Date().getFullYear(),
 };
 
-export type ToolIcon = "bag" | "rack" | "phone" | "dish" | "esim" | "route" | "services" | "docs" | "faq";
+export type ToolIcon = "bag" | "rack" | "phone" | "dish" | "esim" | "route" | "services" | "docs" | "faq" | "tower";
 export type NavLink = { label: string; href: string; badge?: string };
 export type NavTool = NavLink & { desc: string; icon: ToolIcon };
 /** Menu déroulant : `dot` = point rouge de nouveauté à côté du libellé, `note` = ligne en pied de panneau. */
@@ -39,6 +39,7 @@ export const nav: NavItem[] = [
       { label: "Fonctionnement", href: "/fonctionnement", desc: "Le trajet d'un live de A à Z", icon: "route" },
       { label: "Services", href: "/services", desc: "Tout ce que fait le relais", icon: "services" },
       { label: "Documentation", href: "/docs", desc: "Les guides pour bien démarrer", icon: "docs" },
+      { label: "Antennes 4G/5G", href: "/antennes", desc: "La carte des antennes par opérateur", icon: "tower" },
       { label: "FAQ", href: "/faq", desc: "Les questions qu'on nous pose", icon: "faq" },
     ],
   },

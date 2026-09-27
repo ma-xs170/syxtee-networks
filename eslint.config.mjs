@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Build des tests e2e et rapports Playwright
     ".next-e2e/**",
+    // SYXTEE Core (VPS) : projet séparé, vérifié par son propre tsc et ses tests
+    "core/**",
     "test-results/**",
     "playwright-report/**",
   ]),

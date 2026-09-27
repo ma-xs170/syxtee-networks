@@ -1,0 +1,34 @@
+# /opt/syxtee/docker-compose.yml : SYXTEE Core + Caddy (HTTPS), à côté du compose du srtla-receiver.
+# Réseau « host » : le Core joint le SLS sur 127.0.0.1 (ports déjà publiés par le srtla-receiver),
+# et n'écoute lui-même que sur 127.0.0.1:8787. Seul Caddy (80/443) est exposé.
+services:
+  core:
+    build:
+      context: ./core
+      dockerfile: ${CORE_DOCKERFILE:-Dockerfile}
+    network_mode: host
+    env_file: .env
+    environment:
+      HOST: 127.0.0.1
+      PORT: "8787"
+      SLS_API_URL: http://127.0.0.1:8080
+      SLS_SRT_HOST: 127.0.0.1
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
+
+  caddy:
+    image: caddy:2
+    network_mode: host
+    env_file: .env
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,14 @@
+# HTTPS automatique (Let's Encrypt) pour l'API du Core. CORE_DOMAIN dans .env
+# (ex. core.syxtee.fr, ou 203-0-113-7.sslip.io tant qu'il n'y a pas de domaine).
+{$CORE_DOMAIN} {
+	encode gzip
+	reverse_proxy 127.0.0.1:8787 {
+		# Server-Sent Events (santé du flux en direct) : pas de mise en tampon.
+		flush_interval -1
+	}
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		-Server
+	}
+}

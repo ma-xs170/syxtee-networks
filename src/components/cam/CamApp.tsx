@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import ScanMode from "./ScanMode";
+import ZoneStatus from "./ZoneStatus";
 import { requestMotionPermission, stabilizationSupported, Stabilizer } from "./stabilizer";
 import { supportsH264, whipPublish, whipStop, type WhipSession } from "./whip";
 
@@ -656,6 +657,7 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
           </div>
         </div>
       )}
+      {me && <ZoneStatus live={live} enabled={prefs.gps} />}
       {showScan && camKey && <ScanMode coreUrl={coreUrl} camKey={camKey} onClose={() => setShowScan(false)} />}
     </div>
   );

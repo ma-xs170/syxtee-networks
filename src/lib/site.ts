@@ -39,7 +39,7 @@ export const nav: NavItem[] = [
       { label: "Fonctionnement", href: "/fonctionnement", desc: "Le trajet d'un live de A à Z", icon: "route" },
       { label: "Services", href: "/services", desc: "Tout ce que fait le relais", icon: "services" },
       { label: "Documentation", href: "/docs", desc: "Les guides pour bien démarrer", icon: "docs" },
-      { label: "Antennes 4G/5G", href: "/antennes", desc: "La carte des antennes par opérateur", icon: "tower" },
+      { label: "Où capter", href: "/couverture", desc: "La carte du réseau 4G / 5G", icon: "tower" },
       { label: "FAQ", href: "/faq", desc: "Les questions qu'on nous pose", icon: "faq" },
     ],
   },

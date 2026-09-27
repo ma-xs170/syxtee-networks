@@ -25,6 +25,7 @@ export const dashboardNav: DashItem[] = [
       { label: "Vue globale", href: "/dashboard/stats", desc: "Tes chiffres sur 7 / 30 jours", icon: "stats" },
       { label: "Historique des lives", href: "/dashboard/lives", desc: "Chaque direct en détail", icon: "lives" },
       { label: "Carte du débit", href: "/dashboard/carte", desc: "Où ton signal a faibli", icon: "map", badge: SOON },
+      { label: "Où capter", href: "/couverture", desc: "La carte 4G / 5G communautaire", icon: "health" },
     ],
   },
   {

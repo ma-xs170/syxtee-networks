@@ -23,7 +23,7 @@ function Chevron({ open }: { open: boolean }) {
   );
 }
 
-function Badge({ children }: { children: string }) {
+export function Badge({ children }: { children: string }) {
   return <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{children}</span>;
 }
 

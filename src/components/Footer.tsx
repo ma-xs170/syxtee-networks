@@ -36,7 +36,12 @@ export default function Footer() {
                 </li>
               ) : (
                 <li key={item.href}>
-                  <Link href={item.href} className="text-muted hover:text-foreground">{item.label}</Link>
+                  <Link href={item.href} className="inline-flex items-center gap-2 text-muted hover:text-foreground">
+                    {item.label}
+                    {item.badge && (
+                      <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]">{item.badge}</span>
+                    )}
+                  </Link>
                 </li>
               ),
             )}

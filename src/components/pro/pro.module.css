@@ -1,0 +1,55 @@
+/* Animations des cartes bento du SYXTEE PRO (cycles de 4 s, en boucle). */
+
+.grow {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: grow 4s ease-out infinite;
+}
+@keyframes grow {
+  0%, 8% { transform: scaleX(0); }
+  30%, 85% { transform: scaleX(1); }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+
+.fill {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: fill 4s ease-in-out infinite;
+}
+@keyframes fill {
+  0% { transform: scaleY(0.1); }
+  70%, 90% { transform: scaleY(1); }
+  100% { transform: scaleY(0.1); }
+}
+
+.plug {
+  animation: plug 4s ease-in-out infinite;
+}
+@keyframes plug {
+  0%, 10% { transform: translateX(-26px); }
+  40%, 85% { transform: translateX(0); }
+  100% { transform: translateX(-26px); }
+}
+
+.slide {
+  animation: slide 4s ease-in-out infinite;
+}
+@keyframes slide {
+  0%, 10% { transform: translateY(-34px); opacity: 0; }
+  40%, 85% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-34px); opacity: 0; }
+}
+
+.on {
+  animation: on 4s steps(1, end) infinite;
+}
+@keyframes on {
+  0% { opacity: 0.15; }
+  40% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { opacity: 0.15; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grow, .fill, .plug, .slide, .on { animation: none; }
+}

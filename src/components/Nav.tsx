@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { nav } from "@/lib/site";
-import { ToolsAccordion, ToolsMenu } from "./NavTools";
+import { Badge, ToolsAccordion, ToolsMenu } from "./NavTools";
 import { DiscordButton } from "./ui";
 
 export default function Nav() {
@@ -16,12 +16,12 @@ export default function Nav() {
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-black/70 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-3" aria-label="SYXTEE NETWORKS — accueil">
+        <Link href="/" onClick={() => setOpen(false)} className="flex shrink-0 items-center gap-3" aria-label="SYXTEE NETWORKS — accueil">
           <Image src="/logo-400.png" alt="" width={26} height={36} priority />
-          <span className="text-sm font-semibold tracking-[0.18em]">SYXTEE <span className="font-normal text-muted">NETWORKS</span></span>
+          <span className="whitespace-nowrap text-sm font-semibold tracking-[0.18em]">SYXTEE <span className="font-normal text-muted">NETWORKS</span></span>
         </Link>
 
-        <nav className="hidden items-center gap-6 lg:flex xl:gap-8">
+        <nav className="hidden items-center gap-4 lg:flex xl:gap-8">
           {nav.map((item) =>
             "children" in item ? (
               <ToolsMenu key={item.label} label={item.label} tools={item.children} active={item.children.some((t) => isActive(t.href))} />
@@ -30,15 +30,16 @@ export default function Nav() {
                 key={item.href}
                 href={item.href}
                 aria-current={isActive(item.href) ? "page" : undefined}
-                className={`text-sm transition-colors hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-muted"}`}
+                className={`flex items-center gap-2 whitespace-nowrap text-sm transition-colors hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-muted"}`}
               >
                 {item.label}
+                {item.badge && <Badge>{item.badge}</Badge>}
               </Link>
             ),
           )}
         </nav>
 
-        <div className="hidden lg:block">
+        <div className="hidden shrink-0 lg:block">
           <DiscordButton>Support Discord</DiscordButton>
         </div>
 
@@ -73,9 +74,10 @@ export default function Nav() {
                   href={item.href}
                   onClick={() => setOpen(false)}
                   aria-current={isActive(item.href) ? "page" : undefined}
-                  className={`border-b border-line py-4 text-base hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-muted"}`}
+                  className={`flex items-center gap-2 border-b border-line py-4 text-base hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-muted"}`}
                 >
                   {item.label}
+                  {item.badge && <Badge>{item.badge}</Badge>}
                 </Link>
               ),
             )}

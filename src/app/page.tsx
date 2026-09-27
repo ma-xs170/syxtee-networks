@@ -1,3 +1,4 @@
+import ProStory from "@/components/pro/ProStory";
 import Hero from "@/components/sections/Hero";
 import JourneyStory from "@/components/home/JourneyStory";
 import Compat from "@/components/sections/Compat";
@@ -14,6 +15,7 @@ import FinalCta from "@/components/sections/FinalCta";
 export default function Home() {
   return (
     <>
+      <ProStory page="home" />
       <Hero />
       <JourneyStory />
       <Compat />

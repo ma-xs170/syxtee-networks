@@ -11,7 +11,7 @@ export function DiscordIcon({ className = "h-4 w-4" }: { className?: string }) {
 }
 
 export function DiscordButton({ children = "Rejoindre le Discord", variant = "primary" }: { children?: ReactNode; variant?: "primary" | "ghost" }) {
-  const base = "inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-medium transition-colors";
+  const base = "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 py-3 text-sm font-medium transition-colors";
   const styles =
     variant === "primary"
       ? "bg-white text-black hover:bg-neutral-200"

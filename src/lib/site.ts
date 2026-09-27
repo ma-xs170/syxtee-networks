@@ -9,11 +9,12 @@ export const site = {
 };
 
 export type ToolIcon = "phone" | "dish" | "esim";
-export type NavLink = { label: string; href: string };
-export type NavTool = NavLink & { desc: string; icon: ToolIcon; badge?: string };
+export type NavLink = { label: string; href: string; badge?: string };
+export type NavTool = NavLink & { desc: string; icon: ToolIcon };
 export type NavItem = NavLink | { label: string; children: NavTool[] };
 
 export const nav: NavItem[] = [
+  { label: "SYXTEE PRO", href: "/pro", badge: "Nouveau" },
   { label: "Services", href: "/services" },
   { label: "Fonctionnement", href: "/fonctionnement" },
   {
@@ -28,6 +29,12 @@ export const nav: NavItem[] = [
   { label: "Offres", href: "/offres" },
   { label: "FAQ", href: "/faq" },
 ];
+
+// SYXTEE PRO : sac encodeur IRL (en développement). Prix affichés sur l'accueil et /pro.
+export const pro = {
+  launchPrice: "999 €",
+  publicPrice: "1 290 €",
+};
 
 /** Toutes les pages du menu, à plat (sitemap…). */
 export const navLinks: NavLink[] = nav.flatMap((item) => ("children" in item ? item.children : [item]));

@@ -52,3 +52,4 @@ export const rotateCam = (userId: string) => core<CamInfo>(`/v1/users/${userId}/
 
 /** Compte supprimé : clés retirées du relais (plus aucune URL Moblin/OBS/Cam ne marche) puis effacées. */
 export const deleteStreamKeys = (userId: string) => core<null>(`/v1/users/${userId}/keys`, "DELETE");
+export const deleteCoverage = (userId: string) => core<{ deleted: number }>(`/v1/users/${userId}/coverage`, "DELETE");

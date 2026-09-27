@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "description": "SYXTEE Core : clés de stream, santé du flux, aperçus et régie (VPS).",
-  "engines": { "node": ">=24" },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "node --watch --experimental-strip-types src/index.ts",
     "build": "tsc -p tsconfig.json",
@@ -16,7 +18,9 @@
     "@fastify/cors": "^11.0.0",
     "@supabase/supabase-js": "^2.117.2",
     "fastify": "^5.4.0",
+    "h3-js": "^4.5.0",
     "jose": "^6.0.0",
+    "mmdb-lib": "^3.0.3",
     "zod": "^4.6.5"
   },
   "devDependencies": {

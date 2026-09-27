@@ -34,6 +34,10 @@ const schema = z.object({
   SRT_PLAY_PORT: z.coerce.number().default(4000),
 
   DATA_DIR: z.string().default("./data"),
+  // Carte de couverture : jeton IPinfo Lite (opérateur d'une IP, base téléchargée chaque semaine) et sel des
+  // identifiants anonymes d'appareil (par défaut dérivé de CORE_API_TOKEN).
+  IPINFO_TOKEN: z.string().default(""),
+  COVERAGE_SALT: z.string().optional(),
   PREVIEW_ENABLED: bool.default(true),
   PREVIEW_INTERVAL_S: z.coerce.number().default(3),
   // Régie (mire automatique) : réencodage, ~1,5–2 vCPU par flux 1080p. Désactivée par défaut.

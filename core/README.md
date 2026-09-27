@@ -15,6 +15,24 @@ Moblin ──SRTLA :5000──► srtla-receiver (SLS) ──SRT :4000──► 
                      SYXTEE Core 127.0.0.1:8787 ◄── Caddy HTTPS (core.<domaine>) ◄── dashboard Vercel
 ```
 
+## Carte de couverture (mesures communautaires)
+
+- **Consentement obligatoire**, vérifié par le Core : case `profiles.coverage_consent` relue (sans cache) juste avant chaque écriture. Décocher arrête la collecte en moins de 30 s.
+- **Sources** : pendant un direct, débit / RTT / pertes du relais + dernière position envoyée par SYXTEE Cam (toutes les 2 s) ; en **mode Scan** de SYXTEE Cam (`POST /v1/cam/scan`), un envoi de 0,1 à 3 Mo mesure le débit montant, et l'opérateur est déduit de l'IP.
+- **Filtres** : précision GPS > 50 m, vitesse > 250 km/h, zones privées (table `private_zones`, 3 cercles max), 300 premiers et derniers mètres de chaque session.
+- **Tables** (migration `0006_coverage.sql`) : `measurements` (sans user_id, `device_hash` HMAC qui change chaque mois), `contributions` (récompenses, 90 j), `coverage_hex` (agrégats publics dès 3 contributeurs ou 20 mesures).
+- **Agrégation** : `coverage_aggregate()` appelée toutes les 10 min (purge à 90 j, médiane / 10e percentile, score, fraîcheur).
+- **Effacement** : `DELETE /v1/users/:id/coverage` (bouton dans Paramètres et suppression du compte).
+- **Opérateur** : base IPinfo Lite (`IPINFO_TOKEN`, CC BY-SA 4.0), téléchargée dans `data/ipinfo_lite.mmdb` et rafraîchie chaque semaine. Sans jeton : opérateur inconnu.
+
+### TODO : opérateur de chaque lien SRTLA pendant un direct
+
+Testé le 27/09/2026 sur le VPS, sans toucher au relais : `conntrack` n'est pas installé, `nf_conntrack_acct` vaut 0, et surtout
+tous les liens SRTLA arrivent sur le même port UDP 5000. Rien ne permet de rattacher une IP source à un streamer sans les données
+internes de srtla-receiver (groupes SRTLA). Pistes : exposer l'IP de chaque peer dans `/stats` du SLS (patch OpenIRL), ou lire
+les groupes dans srtla-receiver. En attendant, les mesures d'un direct n'ont pas d'opérateur ; le mode Scan, si.
+Si on reprend la piste conntrack : `apt-get install conntrack`, puis `echo net.netfilter.nf_conntrack_acct=1 > /etc/sysctl.d/90-conntrack-acct.conf && sysctl --system` (sans redémarrer Docker).
+
 ## Développement
 
 ```

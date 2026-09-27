@@ -8,6 +8,8 @@ import { loadLogo } from "./mire.ts";
 import { createPreviews } from "./preview.ts";
 import { createRegie } from "./regie.ts";
 import { openSamples } from "./samples.ts";
+import { createAsn } from "./asn.ts";
+import { createCoverage, supabaseCoverageDb } from "./coverage.ts";
 import { buildServer } from "./server.ts";
 import { createCam } from "./cam.ts";
 import { createSessionTracker, supabaseSessionDb } from "./sessions.ts";
@@ -22,6 +24,8 @@ const supabase = createClient(config.SUPABASE_URL, config.SUPABASE_SECRET_KEY, {
 const sls = createSls(config.SLS_API_URL, config.SLS_API_KEY);
 const keys = createKeyStore(supabase, sls);
 const samples = openSamples(join(config.DATA_DIR, "health.sqlite"));
+const asn = createAsn({ file: join(config.DATA_DIR, "ipinfo_lite.mmdb"), token: config.IPINFO_TOKEN, log });
+const coverage = createCoverage({ db: supabaseCoverageDb(supabase), salt: config.COVERAGE_SALT || `coverage:${config.CORE_API_TOKEN}`, log });
 const health = createHealthMonitor({ sls, samples, perSecond: config.SLS_STATS_PER_SECOND });
 const sessionDb = supabaseSessionDb(supabase);
 const sessions = createSessionTracker({ db: sessionDb, relay: config.RELAY_NAME, log });
@@ -78,11 +82,16 @@ async function refreshKeys() {
 health.events.on("status", (userId: string, s: { live: boolean }) => {
   log(`flux ${userId.slice(0, 8)} ${s.live ? "en ligne" : "hors ligne"}`);
   sessions.status(userId, s.live);
+  if (!s.live) coverage.end(userId, "live");
   previews?.sync(health.liveUsers());
 });
 
 health.events.on("sample", (userId: string, s: Live) => {
-  if (s.live && s.sample) sessions.sample(userId, s.sample.bitrate);
+  if (!s.live || !s.sample) return;
+  sessions.sample(userId, s.sample.bitrate);
+  // Couverture : relevé du direct + dernière position envoyée par SYXTEE Cam (consentement vérifié dans coverage).
+  const pos = samples.positions(userId, s.sample.t - 5000).at(-1) ?? null;
+  if (pos) coverage.live(userId, s.sample, pos).catch((e) => log(`couverture : ${(e as Error).message}`));
 });
 
 const app = buildServer({
@@ -91,6 +100,8 @@ const app = buildServer({
   health,
   samples,
   sessions,
+  coverage,
+  asn,
   cam,
   profile: async (id) => {
     const { data } = await supabase.from("profiles").select("username, twitch_login").eq("id", id).maybeSingle();
@@ -124,7 +135,18 @@ const cleanup = async () => {
   }
 };
 await cleanup();
+void asn.refresh();
+const runAggregate = async () => {
+  try {
+    await coverage.aggregate();
+  } catch (e) {
+    log((e as Error).message);
+  }
+};
 const timers = [
+  setInterval(() => void coverage.flush(), 30_000),
+  setInterval(() => void runAggregate(), 10 * 60_000),
+  setInterval(() => void asn.refresh(), 6 * 3_600_000),
   setInterval(() => void cleanup(), 3_600_000),
   setInterval(() => void sessions.tick(), 5_000),
   setInterval(() => void health.tick(), 200),
@@ -142,6 +164,7 @@ const shutdown = async () => {
   regie?.stopAll();
   cam?.stopAll();
   await sessions.closeAll();
+  await coverage.flush();
   await app.close();
   samples.close();
   process.exit(0);

@@ -26,7 +26,7 @@ export function DashHeader({ lead, hl, sub, children }: { lead: string; hl: stri
   );
 }
 
-export function Tile({ children, className = "", as: As = "section", ...rest }: { children: ReactNode; className?: string; as?: "section" | "div"; "aria-labelledby"?: string }) {
+export function Tile({ children, className = "", as: As = "section", ...rest }: { children: ReactNode; className?: string; as?: "section" | "div"; id?: string; "aria-labelledby"?: string }) {
   return (
     <As className={`rounded-2xl border border-line bg-black p-5 sm:p-6 ${className}`} {...rest}>
       {children}

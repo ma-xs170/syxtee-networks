@@ -20,6 +20,7 @@ export type Profile = {
   instagram: string | null;
   x: string | null;
   show_on_site: boolean;
+  coverage_consent?: boolean;
   onboarded_at: string | null;
 };
 

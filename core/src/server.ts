@@ -8,7 +8,9 @@ import type { HealthMonitor, Live } from "./health.ts";
 import type { KeyRow, KeyStore } from "./keys.ts";
 import type { SampleStore } from "./samples.ts";
 import type { SessionTracker } from "./sessions.ts";
+import type { Asn } from "./asn.ts";
 import type { Cam } from "./cam.ts";
+import type { Coverage } from "./coverage.ts";
 
 // API HTTP du Core (derrière Caddy en HTTPS).
 // /v1/users/:id/*  → serveur Vercel, jeton de service.
@@ -24,6 +26,8 @@ export type Deps = {
   health: HealthMonitor;
   samples: SampleStore;
   sessions: SessionTracker;
+  coverage?: Coverage;
+  asn?: Asn;
   verifyUser: (authorization: string | undefined) => Promise<string | null>;
   previewPath: (userId: string) => string;
   onKeysChanged: () => void;
@@ -101,6 +105,11 @@ export function buildServer(d: Deps) {
     await d.keys.remove(id);
     d.onKeysChanged();
     return reply.code(204).send();
+  });
+  // Carte de couverture : effacement des mesures d'un compte (bouton dans Paramètres, suppression du compte).
+  app.delete("/v1/users/:id/coverage", { preHandler: service }, async (req) => {
+    const { id } = uuid.parse(req.params);
+    return { deleted: d.coverage ? await d.coverage.erase(id) : 0 };
   });
   app.put("/v1/users/:id/mode", { preHandler: service }, async (req, reply) => {
     const { id } = uuid.parse(req.params);
@@ -244,6 +253,58 @@ export function buildServer(d: Deps) {
       const { range } = z.object({ range: z.enum(["15m", "1h", "6h", "24h"]).default("1h") }).parse(req.query);
       return { positions: d.samples.positions(id, Date.now() - RANGES[range]) };
     });
+
+    // ───── Couverture : mode Scan de SYXTEE Cam ─────
+    // Ping (RTT mesuré par le téléphone), puis envoi de 0,1 à 3 Mo : le Core mesure le débit montant reçu
+    // et déduit l'opérateur de l'IP. Rien n'est gardé sans consentement (vérifié dans coverage).
+    const cov = d.coverage;
+    if (cov) {
+      app.get("/v1/cam/ping", async (_req, reply) => reply.code(204).header("Cache-Control", "no-store").send());
+      app.get("/v1/cam/coverage", async (req, reply) => {
+        const row = await camRow(req, reply);
+        if (!row) return;
+        return { consent: await cov.consent(row.user_id), operator: d.asn?.operator(req.ip) ?? null };
+      });
+      const scanQuery = z.object({
+        lat: z.coerce.number().min(-90).max(90),
+        lng: z.coerce.number().min(-180).max(180),
+        acc: z.coerce.number().min(0).max(100_000).optional(),
+        rtt: z.coerce.number().min(0).max(60_000).optional(),
+        t: z.coerce.number().int().optional(),
+      });
+      app.addContentTypeParser("application/octet-stream", { parseAs: "buffer", bodyLimit: 3 * 1024 * 1024 }, (_req, body, done) => done(null, body));
+      app.post(
+        "/v1/cam/scan",
+        {
+          bodyLimit: 3 * 1024 * 1024,
+          onRequest: async (req) => {
+            (req as FastifyRequest & { t0?: number }).t0 = performance.now();
+          },
+        },
+        async (req, reply) => {
+          const ms = performance.now() - ((req as FastifyRequest & { t0?: number }).t0 ?? performance.now());
+          const bytes = Buffer.isBuffer(req.body) ? req.body.length : 0;
+          const row = await camRow(req, reply);
+          if (!row) return;
+          const q = scanQuery.parse(req.query);
+          if (bytes < 100_000) return reply.code(400).send({ error: "payload_too_small" });
+          const up_kbps = ms > 0 ? Math.round((bytes * 8) / ms) : null; // octets·8 / ms = kbit/s
+          const now = Date.now();
+          const operator = d.asn?.operator(req.ip) ?? null;
+          const reason = await cov.add(row.user_id, "scan", {
+            t: q.t && Math.abs(q.t - now) < 120_000 ? q.t : now,
+            lat: q.lat,
+            lng: q.lng,
+            acc: q.acc ?? null,
+            up_kbps,
+            rtt_ms: q.rtt ?? null,
+            loss_pct: null,
+            operator,
+          });
+          return { accepted: reason === null, reason, operator, up_kbps, bytes };
+        },
+      );
+    }
 
     // MediaMTX → Core : autorisation d'une publication. Jamais accessible de l'extérieur
     // (bloqué dans Caddy, et refusé ici dès qu'une requête arrive par un proxy).

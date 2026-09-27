@@ -21,6 +21,16 @@ export const credits: Credit[] = [
     changes: "Aucune",
     page: "/moblin",
   },
+  {
+    file: "ipinfo_lite.mmdb (serveur)",
+    title: "Données opérateur : IPinfo (CC BY-SA 4.0)",
+    author: "IPinfo",
+    license: "CC BY-SA 4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+    source: "https://ipinfo.io/lite",
+    changes: "Numéros d'AS regroupés par marque d'opérateur (Orange Caraïbe, Digicel…)",
+    page: "/confidentialite#couverture",
+  },
 ];
 
 export function creditFor(file: string) {

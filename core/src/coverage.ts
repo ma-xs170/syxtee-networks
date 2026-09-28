@@ -1,20 +1,25 @@
 import { createHmac } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { latLngToCell } from "h3-js";
+import { cellToLatLng, cellToParent, latLngToCell } from "h3-js";
+import { aggregate, layerOf, MAX_ACCURACY_M, MOVING_KMH, type HexAggregate, type Measurement } from "./aggregate.ts";
+import type { LinkClass } from "./link.ts";
 
 // Mesures de couverture pour la carte communautaire (table `measurements`, sans user_id).
 // Règles appliquées ICI, côté Core (jamais seulement dans l'interface) :
 // - rien n'est gardé sans le consentement « coverage_consent » du profil, revérifié juste avant chaque écriture ;
-// - précision GPS > 50 m, vitesse > 250 km/h et points dans une zone privée : ignorés ;
-// - les 300 premiers et 300 derniers mètres de chaque session ne sont jamais écrits
-//   (un point n'est écrit qu'une fois qu'on s'en est éloigné de 300 m ; à la fin de la session, le reste est jeté).
+// - aucune restriction géographique : tout pays, tout opérateur (un inconnu garde son ASN et son nom brut) ;
+// - précision GPS > 20 m, vitesse > 250 km/h et points dans une zone privée : ignorés ;
+// - la position exacte des 60 premières secondes de chaque session n'est pas publiée : le point est ramené
+//   au centre de son hexagone de rés. 8 (~0,7 km²) et ne compte que pour la vue dézoomée ;
+// - chaque mesure porte son type de lien (cellular / wifi / starlink / fixed / unknown) et sa confiance :
+//   seul 'cellular' avec une confiance ≥ 0,7 alimente la carte 4G/5G, et rapporte des contributions.
 
-export const MAX_ACCURACY_M = 50;
+export { MAX_ACCURACY_M };
 export const MAX_SPEED_KMH = 250;
-export const TRIM_M = 300;
+export const COARSE_MS = 60_000;
 const SESSION_GAP_MS = 10 * 60_000;
 const PREFS_TTL = 15_000;
-export const H3_RES = 9;
+const DAY = 86_400_000;
 
 export type Source = "live" | "scan" | "android";
 export type Zone = { lat: number; lng: number; radius_m: number };
@@ -25,12 +30,16 @@ export type Point = {
   lat: number;
   lng: number;
   acc: number | null;
+  /** Vitesse GPS en km/h, si le téléphone la donne (sinon calculée entre deux points). */
+  speed_kmh?: number | null;
   up_kbps: number | null;
+  down_kbps?: number | null;
   rtt_ms: number | null;
   loss_pct: number | null;
   operator: string | null;
+  asn?: number | null;
   tech?: "4g" | "5g" | "inconnu";
-  link_type?: "cell" | "wifi" | "starlink";
+  link?: LinkClass;
 };
 
 export type MeasurementRow = {
@@ -38,23 +47,36 @@ export type MeasurementRow = {
   lat: number;
   lng: number;
   accuracy_m: number | null;
-  h3_index: string;
+  h3_8: string;
+  h3_9: string | null;
+  h3_10: string | null;
+  coarse: boolean;
   operator: string | null;
+  asn: number | null;
   tech: string;
   link_type: string;
+  link_conf: number;
   up_kbps: number | null;
+  down_kbps: number | null;
   rtt_ms: number | null;
   loss_pct: number | null;
+  speed_kmh: number | null;
+  moving: boolean;
   source: Source;
   device_hash: string;
 };
-export type ContributionRow = { user_id: string; h3_index: string; ts: string };
+export type ContributionRow = { user_id: string; h3_index: string; ts: string; n: number };
 
 export type CoverageDb = {
   prefs(userId: string): Promise<Prefs>;
   insertMeasurements(rows: MeasurementRow[]): Promise<void>;
   insertContributions(rows: ContributionRow[]): Promise<void>;
-  aggregate(): Promise<unknown>;
+  /** Purge des mesures et contributions de plus de 90 jours. */
+  purge(): Promise<void>;
+  /** Mesures des 90 derniers jours dans ces hexagones de rés. 8 (null = toutes). */
+  measurements(parents8: string[] | null): Promise<Measurement[]>;
+  /** Remplace les agrégats de ces hexagones de rés. 8 (null = toute la table). */
+  writeHexes(rows: HexAggregate[], parents8: string[] | null): Promise<void>;
   /** Droit à l'effacement : mesures de ces identifiants d'appareil + contributions du compte. */
   erase(deviceHashes: string[], userId: string): Promise<number>;
 };
@@ -82,7 +104,14 @@ export function deviceHash(salt: string, userId: string, t: number) {
   return createHmac("sha256", salt).update(`${userId}:${month}`).digest("hex").slice(0, 24);
 }
 
-type Track = { start: Point | null; leftStart: boolean; last: Point | null; pending: Point[]; lastAt: number };
+/** Hexagones d'un point : rés. 10, puis parents exacts en rés. 9 et 8 (même hiérarchie partout). */
+export function cellsOf(lat: number, lng: number) {
+  const h10 = latLngToCell(lat, lng, 10);
+  return { h3_10: h10, h3_9: cellToParent(h10, 9), h3_8: cellToParent(h10, 8) };
+}
+
+const UNKNOWN: LinkClass = { link_type: "unknown", conf: 0.2 };
+type Track = { startT: number; last: Point | null; lastAt: number };
 
 export function createCoverage(opts: { db: CoverageDb; salt: string; now?: () => number; log?: (m: string) => void }) {
   const { db, salt } = opts;
@@ -91,8 +120,9 @@ export function createCoverage(opts: { db: CoverageDb; salt: string; now?: () =>
   const tracks = new Map<string, Track>(); // `${userId}:${source}`
   const prefsCache = new Map<string, { at: number; p: Prefs }>();
   const queue: { userId: string; row: MeasurementRow }[] = [];
-  const contributed = new Set<string>(); // user:h3:jour, pour ne pas dupliquer les contributions
+  const dirty = new Set<string>(); // hexagones de rés. 8 à recalculer
   const lastLive = new Map<string, number>();
+  const liveLink = new Map<string, { operator: string | null; asn: number | null; link: LinkClass; at: number }>();
 
   async function prefs(userId: string) {
     const c = prefsCache.get(userId);
@@ -102,21 +132,36 @@ export function createCoverage(opts: { db: CoverageDb; salt: string; now?: () =>
     return p;
   }
 
-  function release(userId: string, source: Source, p: Point) {
+  function release(userId: string, source: Source, p: Point, speed: number | null, coarse: boolean) {
+    const link = p.link ?? UNKNOWN;
+    let lat = p.lat;
+    let lng = p.lng;
+    let cells: { h3_8: string; h3_9: string | null; h3_10: string | null } = cellsOf(lat, lng);
+    if (coarse) {
+      // Début de session : la position exacte n'est jamais écrite, seulement le centre de l'hexagone de rés. 8.
+      [lat, lng] = cellToLatLng(cells.h3_8);
+      cells = { h3_8: cells.h3_8, h3_9: null, h3_10: null };
+    }
     queue.push({
       userId,
       row: {
         ts: new Date(p.t).toISOString(),
-        lat: Math.round(p.lat * 1e5) / 1e5, // ~1 m : suffisant pour l'hexagone, pas plus
-        lng: Math.round(p.lng * 1e5) / 1e5,
+        lat: Math.round(lat * 1e5) / 1e5, // ~1 m : suffisant pour l'hexagone, pas plus
+        lng: Math.round(lng * 1e5) / 1e5,
         accuracy_m: p.acc,
-        h3_index: latLngToCell(p.lat, p.lng, H3_RES),
+        ...cells,
+        coarse,
         operator: p.operator,
+        asn: p.asn ?? null,
         tech: p.tech ?? "inconnu",
-        link_type: p.link_type ?? "cell",
+        link_type: link.link_type,
+        link_conf: link.conf,
         up_kbps: p.up_kbps === null ? null : Math.round(p.up_kbps),
+        down_kbps: p.down_kbps == null ? null : Math.round(p.down_kbps),
         rtt_ms: p.rtt_ms === null ? null : Math.round(p.rtt_ms),
         loss_pct: p.loss_pct,
+        speed_kmh: speed === null ? null : Math.round(speed * 10) / 10,
+        moving: (speed ?? 0) > MOVING_KMH,
         source,
         device_hash: deviceHash(salt, userId, p.t),
       },
@@ -133,52 +178,68 @@ export function createCoverage(opts: { db: CoverageDb; salt: string; now?: () =>
     }
     let tr = tracks.get(key);
     if (!tr || p.t - tr.lastAt > SESSION_GAP_MS) {
-      tr = { start: null, leftStart: false, last: null, pending: [], lastAt: p.t };
+      tr = { startT: p.t, last: null, lastAt: p.t };
       tracks.set(key, tr);
     }
     tr.lastAt = p.t;
     if (p.acc === null || p.acc > MAX_ACCURACY_M) return "accuracy";
     if (inZones(p, pr.zones)) return "private_zone";
-    if (tr.last && p.t > tr.last.t && (distance(tr.last, p) / ((p.t - tr.last.t) / 1000)) * 3.6 > MAX_SPEED_KMH) return "speed";
+    const computed = tr.last && p.t > tr.last.t ? (distance(tr.last, p) / ((p.t - tr.last.t) / 1000)) * 3.6 : null;
+    if (computed !== null && computed > MAX_SPEED_KMH) return "speed";
     tr.last = p;
-
-    if (!tr.start) tr.start = p;
-    if (!tr.leftStart) {
-      if (distance(tr.start, p) < TRIM_M) return "trim";
-      tr.leftStart = true;
-    }
-    // Fin de session inconnue d'avance : un point n'est libéré qu'une fois à 300 m derrière nous.
-    tr.pending.push(p);
-    while (tr.pending.length && distance(tr.pending[0], p) >= TRIM_M) release(userId, source, tr.pending.shift()!);
+    release(userId, source, p, p.speed_kmh ?? computed, p.t - tr.startT < COARSE_MS);
     return null;
+  }
+
+  async function runAggregate(parents: string[] | null) {
+    const rows = aggregate(await db.measurements(parents), now());
+    await db.writeHexes(rows, parents);
+    return rows;
   }
 
   return {
     add,
 
+    /** Réseau vu par SYXTEE Cam pendant le direct (IP de /v1/cam/gps + connection.type), pour classer les points du live. */
+    setLink(userId: string, info: { operator: string | null; asn: number | null; link: LinkClass }) {
+      liveLink.set(userId, { ...info, at: now() });
+    },
+
     /** Relevé de santé d'un flux en direct + dernière position connue (SYXTEE Cam). Au plus un point toutes les 2 s. */
-    async live(userId: string, s: { t: number; bitrate: number; rtt: number; dropped: number }, pos: { t: number; lat: number; lon: number; acc: number | null } | null) {
+    async live(
+      userId: string,
+      s: { t: number; bitrate: number; rtt: number; dropped: number },
+      pos: { t: number; lat: number; lon: number; acc: number | null; speed?: number | null } | null,
+    ) {
       if (!pos || s.t - pos.t > 5000) return null;
       const prev = lastLive.get(userId) ?? 0;
       if (s.t - prev < 2000) return null;
       lastLive.set(userId, s.t);
+      const net = liveLink.get(userId);
+      const fresh = net && now() - net.at < 60_000 ? net : null;
       return add(userId, "live", {
         t: s.t,
         lat: pos.lat,
         lng: pos.lon,
         acc: pos.acc,
+        speed_kmh: pos.speed == null ? null : pos.speed * 3.6,
         up_kbps: s.bitrate,
         rtt_ms: s.rtt,
         loss_pct: lossPct(s.dropped, s.bitrate, prev ? s.t - prev : 2000),
-        // TODO : opérateur par lien SRTLA (l'IP source de chaque lien n'est pas exposée par srtla-receiver).
-        operator: null,
+        // TODO : un classement par lien SRTLA quand srtla-receiver exposera l'IP source de chaque lien.
+        operator: fresh?.operator ?? null,
+        asn: fresh?.asn ?? null,
+        link: fresh?.link ?? UNKNOWN,
       });
     },
 
-    /** Fin d'une session (direct terminé) : les derniers 300 m ne sont jamais écrits. */
+    /** Fin d'une session (direct terminé). */
     end(userId: string, source: Source) {
       tracks.delete(`${userId}:${source}`);
-      if (source === "live") lastLive.delete(userId);
+      if (source === "live") {
+        lastLive.delete(userId);
+        liveLink.delete(userId);
+      }
     },
 
     /** Consentement retiré ou zones modifiées : relire tout de suite. */
@@ -202,21 +263,23 @@ export function createCoverage(opts: { db: CoverageDb; salt: string; now?: () =>
       }
       const kept = batch.filter((b) => ok.has(b.userId));
       if (!kept.length) return 0;
-      const contributions: ContributionRow[] = [];
+      // Contributions : seulement les mesures qui comptent sur la carte (jamais le Wi-Fi), une ligne par compte, hexagone et jour.
+      const contrib = new Map<string, ContributionRow>();
       for (const { userId, row } of kept) {
-        const k = `${userId}:${row.h3_index}:${row.ts.slice(0, 10)}`;
-        if (contributed.has(k)) continue;
-        contributed.add(k);
-        contributions.push({ user_id: userId, h3_index: row.h3_index, ts: row.ts });
+        if (!row.h3_9 || !layerOf(row)) continue;
+        const k = `${userId}:${row.h3_9}:${row.ts.slice(0, 10)}`;
+        const c = contrib.get(k);
+        if (c) c.n++;
+        else contrib.set(k, { user_id: userId, h3_index: row.h3_9, ts: row.ts, n: 1 });
       }
-      if (contributed.size > 100_000) contributed.clear();
       try {
         await db.insertMeasurements(kept.map((b) => b.row));
-        if (contributions.length) await db.insertContributions(contributions);
+        if (contrib.size) await db.insertContributions([...contrib.values()]);
       } catch (e) {
         log(`couverture : écriture impossible (${(e as Error).message})`);
         return 0;
       }
+      for (const { row } of kept) if (layerOf(row)) dirty.add(row.h3_8);
       return kept.length;
     },
 
@@ -226,17 +289,38 @@ export function createCoverage(opts: { db: CoverageDb; salt: string; now?: () =>
       tracks.forEach((_, k) => k.startsWith(`${userId}:`) && tracks.delete(k));
       const t = now();
       const hashes = [0, 1, 2, 3, 4].map((m) => deviceHash(salt, userId, Date.UTC(new Date(t).getUTCFullYear(), new Date(t).getUTCMonth() - m, 15)));
-      return db.erase([...new Set(hashes)], userId);
+      const n = await db.erase([...new Set(hashes)], userId);
+      await runAggregate(null).catch((e) => log(`couverture : recalcul après effacement impossible (${(e as Error).message})`));
+      return n;
     },
 
     /** Consentement actuel (sans cache), pour l'app /cam. */
     consent: async (userId: string) => (await db.prefs(userId)).consent,
-    aggregate: () => db.aggregate(),
+
+    /** Recalcul des hexagones touchés depuis le dernier passage ; `full` : purge 90 j et recalcul de toute la carte. */
+    async aggregate(full = false) {
+      if (full) {
+        await db.purge();
+        dirty.clear();
+        return (await runAggregate(null)).length;
+      }
+      if (!dirty.size) return 0;
+      const parents = [...dirty];
+      dirty.clear();
+      try {
+        return (await runAggregate(parents)).length;
+      } catch (e) {
+        parents.forEach((p) => dirty.add(p));
+        throw e;
+      }
+    },
     pending: () => queue.length,
   };
 }
 
 export type Coverage = ReturnType<typeof createCoverage>;
+
+const MEASUREMENT_COLUMNS = "ts, lng, accuracy_m, h3_8, h3_9, h3_10, operator, tech, link_type, link_conf, up_kbps, down_kbps, rtt_ms, loss_pct, moving, device_hash";
 
 /** Implémentation Supabase (clé secrète du Core). */
 export function supabaseCoverageDb(db: SupabaseClient): CoverageDb {
@@ -258,17 +342,49 @@ export function supabaseCoverageDb(db: SupabaseClient): CoverageDb {
       const { error } = await db.from("contributions").insert(rows);
       if (error) throw new Error(`contributions : ${error.message}`);
     },
+    async purge() {
+      const { error } = await db.rpc("coverage_purge");
+      if (error) throw new Error(`coverage_purge : ${error.message}`);
+    },
+    async measurements(parents) {
+      const since = new Date(Date.now() - 90 * DAY).toISOString();
+      const out: Measurement[] = [];
+      const chunks = parents ? Array.from({ length: Math.ceil(parents.length / 100) }, (_, i) => parents.slice(i * 100, i * 100 + 100)) : [null];
+      for (const chunk of chunks) {
+        for (let from = 0; ; from += 1000) {
+          let q = db.from("measurements").select(MEASUREMENT_COLUMNS).gte("ts", since).lte("accuracy_m", MAX_ACCURACY_M).not("h3_8", "is", null);
+          if (chunk) q = q.in("h3_8", chunk);
+          const { data, error } = await q.order("id").range(from, from + 999);
+          if (error) throw new Error(`measurements : ${error.message}`);
+          out.push(...((data ?? []) as Measurement[]));
+          if (!data || data.length < 1000) break;
+        }
+      }
+      return out;
+    },
+    async writeHexes(rows, parents) {
+      const stamp = new Date().toISOString();
+      for (let i = 0; i < rows.length; i += 500) {
+        const { error } = await db
+          .from("coverage_hex")
+          .upsert(rows.slice(i, i + 500).map((r) => ({ ...r, updated_at: stamp })), { onConflict: "res,h3_index,layer,operator,tech,mode" });
+        if (error) throw new Error(`coverage_hex : ${error.message}`);
+      }
+      // Ce qui n'a pas été réécrit (mesures expirées ou effacées) disparaît.
+      const chunks = parents ? Array.from({ length: Math.ceil(parents.length / 100) }, (_, i) => parents.slice(i * 100, i * 100 + 100)) : [null];
+      for (const chunk of chunks) {
+        let q = db.from("coverage_hex").delete().lt("updated_at", stamp);
+        if (chunk) q = q.in("parent8", chunk);
+        const { error } = await q;
+        if (error) throw new Error(`coverage_hex : ${error.message}`);
+      }
+    },
     async erase(hashes, userId) {
       const m = await db.from("measurements").delete({ count: "exact" }).in("device_hash", hashes);
       if (m.error) throw new Error(`measurements : ${m.error.message}`);
       const c = await db.from("contributions").delete().eq("user_id", userId);
       if (c.error) throw new Error(`contributions : ${c.error.message}`);
       return m.count ?? 0;
-    },
-    async aggregate() {
-      const { data, error } = await db.rpc("coverage_aggregate");
-      if (error) throw new Error(`coverage_aggregate : ${error.message}`);
-      return data;
     },
   };
 }

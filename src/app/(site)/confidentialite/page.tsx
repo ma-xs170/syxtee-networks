@@ -48,8 +48,11 @@ export default function ConfidentialitePage() {
         <LegalBlock title="Carte de couverture communautaire (optionnelle)">
           <p>
             <strong className="text-foreground">Finalité :</strong> construire une carte publique de la qualité du réseau mobile (où capter en 4G / 5G). Pendant
-            un direct, ou en mode Scan de SYXTEE Cam, nous enregistrons la position GPS et sa précision, le débit montant, la latence, les pertes et
-            l&apos;opérateur (déduit de l&apos;adresse IP grâce à la base IPinfo Lite).
+            un direct, ou en mode Scan de SYXTEE Cam, partout dans le monde, nous enregistrons la position GPS, sa précision et la vitesse, les débits
+            montant et descendant, la latence, les pertes, l&apos;opérateur et son numéro de réseau (ASN, déduits de l&apos;adresse IP grâce à la base IPinfo
+            Lite) et le type de réseau (4G/5G, Wi-Fi, Starlink ou box, déduit du type de connexion du téléphone et du réseau IP). L&apos;adresse IP
+            elle-même n&apos;est jamais enregistrée avec la mesure ; seul le bloc d&apos;adresses (/24 ou /48) est retenu, sans lien avec toi, pour
+            reconnaître les réseaux Wi-Fi. Les mesures en Wi-Fi ne sont jamais publiées.
           </p>
           <p>
             <strong className="text-foreground">Base légale :</strong> ton consentement, demandé séparément (case « Partager anonymement mes mesures de réseau
@@ -57,11 +60,13 @@ export default function ConfidentialitePage() {
           </p>
           <p>
             <strong className="text-foreground">Anonymisation :</strong> les mesures ne contiennent ni ton nom ni ton identifiant de compte, seulement un
-            identifiant d&apos;appareil chiffré qui change chaque mois. Rien n&apos;est enregistré dans tes zones privées (jusqu&apos;à 3 cercles) ni dans les 300
-            premiers et derniers mètres de chaque session. Une zone n&apos;apparaît sur la carte qu&apos;avec au moins 3 contributeurs ou 20 mesures.
+            identifiant d&apos;appareil chiffré qui change chaque mois. Rien n&apos;est enregistré dans tes zones privées (jusqu&apos;à 3 cercles), et la
+            position exacte des 60 premières secondes de chaque session n&apos;est jamais écrite (seulement une zone d&apos;environ 0,7 km²). Une zone
+            apparaît sur la carte dès 5 mesures, même d&apos;un seul contributeur, avec un indice de fiabilité : on n&apos;y publie alors que la moyenne,
+            jamais de point, d&apos;heure exacte ni d&apos;identité, et les dates sont arrondies au mois.
           </p>
           <p>
-            <strong className="text-foreground">Durée :</strong> mesures détaillées 90 jours, puis seules les moyennes par zone (environ 0,1 km²) sont gardées.
+            <strong className="text-foreground">Durée :</strong> mesures détaillées 90 jours, puis seules les moyennes par zone (de 0,015 à 0,7 km²) sont gardées.
             Le lien entre ton compte et les zones que tu as mesurées (programme de récompenses) est supprimé au bout de 90 jours.
           </p>
           <p>

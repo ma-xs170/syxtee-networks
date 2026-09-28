@@ -2,7 +2,7 @@ import { latLngToCell } from "h3-js";
 import type { NextRequest } from "next/server";
 import { best, hexesAt } from "@/lib/coverage/public";
 
-// GET /api/coverage/at?lat=&lng= : zone (hexagone H3 rés. 9) à cette position, son score et le meilleur réseau.
+// GET /api/coverage/at?lat=&lng= : zone (hexagone H3 rés. 9, couche 4G/5G) à cette position, son score, sa fiabilité et le meilleur réseau.
 // Utilisé par SYXTEE Cam (statut à l'ouverture, alertes pendant le live).
 export async function GET(request: NextRequest) {
   const lat = Number(request.nextUrl.searchParams.get("lat"));
@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     {
       h3: h,
       score: all?.score ?? null,
+      reliability: all?.reliability ?? null,
       median_kbps: all?.median_kbps ?? null,
       best: top ? { operator: top.operator, tech: top.tech, median_kbps: top.median_kbps } : null,
       operators: rows.filter((r) => r.operator !== "*").map((r) => ({ operator: r.operator, tech: r.tech, median_kbps: r.median_kbps, score: r.score })),

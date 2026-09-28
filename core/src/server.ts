@@ -1,4 +1,6 @@
+import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
+import { Readable } from "node:stream";
 import cors from "@fastify/cors";
 import Fastify, { type FastifyReply, type FastifyRequest } from "fastify";
 import { z } from "zod";
@@ -10,7 +12,9 @@ import type { SampleStore } from "./samples.ts";
 import type { SessionTracker } from "./sessions.ts";
 import type { Asn } from "./asn.ts";
 import type { Cam } from "./cam.ts";
+import { median } from "./aggregate.ts";
 import type { Coverage } from "./coverage.ts";
+import { classify, countsOnMap, ipPrefix, netToken, type Prefixes } from "./link.ts";
 
 // API HTTP du Core (derrière Caddy en HTTPS).
 // /v1/users/:id/*  → serveur Vercel, jeton de service.
@@ -28,6 +32,8 @@ export type Deps = {
   sessions: SessionTracker;
   coverage?: Coverage;
   asn?: Asn;
+  /** Préfixes IP appris depuis les Android (Wi-Fi / mobile). */
+  prefixes?: Prefixes;
   verifyUser: (authorization: string | undefined) => Promise<string | null>;
   previewPath: (userId: string) => string;
   onKeysChanged: () => void;
@@ -236,6 +242,7 @@ export function buildServer(d: Deps) {
       acc: z.number().min(0).max(100_000).nullish(),
       speed: z.number().min(0).max(1000).nullish(),
       t: z.number().int().optional(),
+      ct: z.string().max(20).nullish(), // navigator.connection.type (Android)
     });
     app.post("/v1/cam/gps", async (req, reply) => {
       const row = await camRow(req, reply);
@@ -245,6 +252,14 @@ export function buildServer(d: Deps) {
       // Horodatage du téléphone accepté s'il est plausible (±2 min), sinon heure du serveur.
       const t = g.t && Math.abs(g.t - now) < 120_000 ? g.t : now;
       d.samples.addPosition(row.user_id, { t, lat: g.lat, lon: g.lon, acc: g.acc ?? null, speed: g.speed ?? null });
+      // Réseau du téléphone pendant le direct : classe les points de couverture du live (le Wi-Fi n'entre jamais dans la carte 4G/5G).
+      if (d.coverage) {
+        const info = d.asn?.lookup(req.ip) ?? { operator: null, asn: null, asName: null };
+        const prefix = ipPrefix(req.ip);
+        d.prefixes?.learn(prefix, g.ct);
+        const link = classify({ device: g.ct, asn: info.asn, asName: info.asName, prefix: d.prefixes?.get(prefix) });
+        d.coverage.setLink(row.user_id, { operator: info.operator, asn: info.asn, link });
+      }
       return reply.code(204).send();
     });
     app.get("/v1/me/positions", async (req, reply) => {
@@ -255,28 +270,42 @@ export function buildServer(d: Deps) {
     });
 
     // ───── Couverture : mode Scan de SYXTEE Cam ─────
-    // Ping (RTT mesuré par le téléphone), puis envoi de 0,1 à 3 Mo : le Core mesure le débit montant reçu
-    // et déduit l'opérateur de l'IP. Rien n'est gardé sans consentement (vérifié dans coverage).
+    // Un point = 3 micro-tests (5 pings, envoi pendant 2 s, réception pendant 2 s), puis la médiane. Le débit montant
+    // est mesuré ICI (octets reçus / durée), le descendant par le téléphone. Le type de lien (Wi-Fi ou 4G/5G) est déduit
+    // de navigator.connection.type, de l'ASN de l'IP et des préfixes appris. Rien n'est gardé sans consentement.
     const cov = d.coverage;
     if (cov) {
+      // iPhone : `from` = réseau à l'ouverture de la page, `cell` = réseau vu juste après « Coupe le Wi-Fi ».
+      // Le changement ne compte que tant que le téléphone reste sur ce réseau-là (un nouveau Wi-Fi plus tard ne passe pas).
+      const net = (req: FastifyRequest, device: string | null | undefined, from?: string | null, cell?: string | null) => {
+        const info = d.asn?.lookup(req.ip) ?? { operator: null, asn: null, asName: null };
+        const prefix = ipPrefix(req.ip);
+        const token = netToken(d.config.CORE_API_TOKEN, prefix);
+        const switched = !!from && !!token && token !== from && (cell === undefined || token === cell);
+        const link = classify({ device, asn: info.asn, asName: info.asName, prefix: d.prefixes?.get(prefix), switched });
+        return { ...info, prefix, token, link };
+      };
+      const upTests = new Map<string, { at: number; bytes: number; ms: number }[]>(); // `${user}:${test}:${i}`
+      const sweep = () => {
+        const old = Date.now() - 120_000;
+        for (const [k, v] of upTests) if (!v.length || v[v.length - 1].at < old) upTests.delete(k);
+      };
+      const randomChunk = randomBytes(64 * 1024); // aléatoire : aucune compression en route
+
       app.get("/v1/cam/ping", async (_req, reply) => reply.code(204).header("Cache-Control", "no-store").send());
       app.get("/v1/cam/coverage", async (req, reply) => {
         const row = await camRow(req, reply);
         if (!row) return;
-        return { consent: await cov.consent(row.user_id), operator: d.asn?.operator(req.ip) ?? null };
+        const q = z.object({ ct: z.string().max(20).optional(), from: z.string().max(40).optional() }).parse(req.query);
+        const n = net(req, q.ct, q.from);
+        return { consent: await cov.consent(row.user_id), operator: n.operator, link_type: n.link.link_type, link_conf: n.link.conf, net: n.token };
       });
-      const scanQuery = z.object({
-        lat: z.coerce.number().min(-90).max(90),
-        lng: z.coerce.number().min(-180).max(180),
-        acc: z.coerce.number().min(0).max(100_000).optional(),
-        rtt: z.coerce.number().min(0).max(60_000).optional(),
-        t: z.coerce.number().int().optional(),
-      });
-      app.addContentTypeParser("application/octet-stream", { parseAs: "buffer", bodyLimit: 3 * 1024 * 1024 }, (_req, body, done) => done(null, body));
+      app.addContentTypeParser("application/octet-stream", { parseAs: "buffer", bodyLimit: 8 * 1024 * 1024 }, (_req, body, done) => done(null, body));
+      // Un morceau de la fenêtre d'envoi de 2 s (le téléphone enchaîne les morceaux).
       app.post(
-        "/v1/cam/scan",
+        "/v1/cam/scan/up",
         {
-          bodyLimit: 3 * 1024 * 1024,
+          bodyLimit: 8 * 1024 * 1024,
           onRequest: async (req) => {
             (req as FastifyRequest & { t0?: number }).t0 = performance.now();
           },
@@ -286,24 +315,92 @@ export function buildServer(d: Deps) {
           const bytes = Buffer.isBuffer(req.body) ? req.body.length : 0;
           const row = await camRow(req, reply);
           if (!row) return;
-          const q = scanQuery.parse(req.query);
-          if (bytes < 100_000) return reply.code(400).send({ error: "payload_too_small" });
-          const up_kbps = ms > 0 ? Math.round((bytes * 8) / ms) : null; // octets·8 / ms = kbit/s
-          const now = Date.now();
-          const operator = d.asn?.operator(req.ip) ?? null;
-          const reason = await cov.add(row.user_id, "scan", {
-            t: q.t && Math.abs(q.t - now) < 120_000 ? q.t : now,
-            lat: q.lat,
-            lng: q.lng,
-            acc: q.acc ?? null,
-            up_kbps,
-            rtt_ms: q.rtt ?? null,
-            loss_pct: null,
-            operator,
-          });
-          return { accepted: reason === null, reason, operator, up_kbps, bytes };
+          const q = z.object({ test: z.string().regex(/^[\w-]{6,40}$/), i: z.coerce.number().int().min(0).max(2) }).parse(req.query);
+          if (bytes < 16 * 1024) return reply.code(400).send({ error: "payload_too_small" });
+          sweep();
+          const k = `${row.user_id}:${q.test}:${q.i}`;
+          upTests.set(k, [...(upTests.get(k) ?? []), { at: Date.now(), bytes, ms }]);
+          return { kbps: ms > 0 ? Math.round((bytes * 8) / ms) : null };
         },
       );
+      // Réception : données aléatoires pendant `ms` millisecondes, plafonnées en octets (data du téléphone).
+      app.get("/v1/cam/scan/down", async (req, reply) => {
+        const row = await camRow(req, reply);
+        if (!row) return;
+        const q = z
+          .object({ ms: z.coerce.number().int().min(500).max(3000).default(2000), max: z.coerce.number().int().min(65_536).max(8_000_000).default(6_000_000) })
+          .parse(req.query);
+        const until = performance.now() + q.ms;
+        let sent = 0;
+        const stream = new Readable({
+          read() {
+            if (performance.now() >= until || sent >= q.max) return void this.push(null);
+            sent += randomChunk.length;
+            this.push(randomChunk);
+          },
+        });
+        return reply.header("Content-Type", "application/octet-stream").header("Cache-Control", "no-store, no-transform").send(stream);
+      });
+      const scanBody = z.object({
+        test: z.string().regex(/^[\w-]{6,40}$/),
+        lat: z.number().min(-90).max(90),
+        lng: z.number().min(-180).max(180),
+        acc: z.number().min(0).max(100_000).nullish(),
+        speed: z.number().min(0).max(1000).nullish(), // m/s (GPS)
+        t: z.number().int().optional(),
+        ct: z.string().max(20).nullish(), // navigator.connection.type (Android)
+        from: z.string().max(40).nullish(), // jeton réseau lu à l'ouverture de la page (iPhone)
+        cell: z.string().max(40).nullish(), // jeton réseau lu après « Coupe le Wi-Fi » (iPhone)
+        down_kbps: z.array(z.number().min(0).max(10_000_000)).max(3).default([]),
+        rtt_ms: z.array(z.number().min(0).max(60_000)).max(3).default([]),
+      });
+      // Fin d'un point : médiane des 3 micro-tests, classement du lien, filtres (dans coverage).
+      app.post("/v1/cam/scan", async (req, reply) => {
+        const row = await camRow(req, reply);
+        if (!row) return;
+        const b = scanBody.parse(req.body);
+        const ups = [0, 1, 2].flatMap((i) => {
+          const k = `${row.user_id}:${b.test}:${i}`;
+          const parts = upTests.get(k) ?? [];
+          upTests.delete(k);
+          const bytes = parts.reduce((a, p) => a + p.bytes, 0);
+          const ms = parts.reduce((a, p) => a + p.ms, 0);
+          return ms > 0 && bytes > 0 ? [(bytes * 8) / ms] : [];
+        });
+        if (!ups.length) return reply.code(400).send({ error: "no_upload" });
+        const med = (xs: number[]) => (xs.length ? Math.round(median(xs)) : null);
+        const n = net(req, b.ct, b.from, b.cell ?? null);
+        d.prefixes?.learn(n.prefix, b.ct);
+        const now = Date.now();
+        const point = {
+          t: b.t && Math.abs(b.t - now) < 120_000 ? b.t : now,
+          lat: b.lat,
+          lng: b.lng,
+          acc: b.acc ?? null,
+          speed_kmh: b.speed == null ? null : b.speed * 3.6,
+          up_kbps: med(ups),
+          down_kbps: med(b.down_kbps),
+          rtt_ms: med(b.rtt_ms),
+          loss_pct: null,
+          operator: n.operator,
+          asn: n.asn,
+          link: n.link,
+        };
+        const reason = await cov.add(row.user_id, "scan", point);
+        const counted = reason === null && countsOnMap(n.link);
+        const t = n.link.link_type;
+        return {
+          accepted: reason === null,
+          counted,
+          reason: reason ?? (counted ? null : t === "wifi" || t === "fixed" ? "wifi" : t === "starlink" ? "starlink" : "unknown_link"),
+          operator: n.operator,
+          link_type: t,
+          link_conf: n.link.conf,
+          up_kbps: point.up_kbps,
+          down_kbps: point.down_kbps,
+          rtt_ms: point.rtt_ms,
+        };
+      });
     }
 
     // MediaMTX → Core : autorisation d'une publication. Jamais accessible de l'extérieur

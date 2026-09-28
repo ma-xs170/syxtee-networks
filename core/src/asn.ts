@@ -1,10 +1,14 @@
 import { existsSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { Reader, type Response } from "mmdb-lib";
+import { asnNumber } from "./link.ts";
 
 // Opérateur d'une IP : base IPinfo Lite (CC BY-SA 4.0, attribution « Données opérateur : IPinfo (CC BY-SA 4.0) »).
 // Fichier MMDB en cache local, retéléchargé chaque semaine. Aucune requête réseau par mesure.
+// Aucun filtre de pays : un opérateur inconnu garde son nom brut et son ASN.
 
 type LiteRecord = { asn?: string; as_name?: string; as_domain?: string; country_code?: string };
+
+export type IpInfo = { operator: string | null; asn: number | null; asName: string | null };
 
 const WEEK = 7 * 86_400_000;
 // Antilles-Guyane + Saint-Barthélemy / Saint-Martin : marques « Caraïbe ».
@@ -60,18 +64,22 @@ export function createAsn(opts: { file: string; token: string; log: (m: string) 
     }
   }
 
+  function lookup(ip: string | undefined): IpInfo {
+    if (!reader || !ip) return { operator: null, asn: null, asName: null };
+    try {
+      const r = reader.get(ip.replace(/^::ffff:/, "")) as LiteRecord | null;
+      return { operator: brand(r), asn: asnNumber(r?.asn), asName: r?.as_name ?? null };
+    } catch {
+      return { operator: null, asn: null, asName: null };
+    }
+  }
+
   load();
   return {
     refresh,
+    lookup,
     /** Marque de l'opérateur de cette IP, ou null (base absente, IP privée…). */
-    operator(ip: string | undefined): string | null {
-      if (!reader || !ip) return null;
-      try {
-        return brand(reader.get(ip.replace(/^::ffff:/, "")) as LiteRecord | null);
-      } catch {
-        return null;
-      }
-    },
+    operator: (ip: string | undefined): string | null => lookup(ip).operator,
   };
 }
 

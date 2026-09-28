@@ -36,8 +36,8 @@ export function ConsentToggle({ initial }: { initial: boolean }) {
         <span className="text-sm leading-relaxed text-foreground">Partager anonymement mes mesures de réseau pour la carte communautaire</span>
       </label>
       <p className="mt-2 pl-8 text-sm leading-relaxed text-muted">
-        Position, débit, latence et opérateur, sans ton nom ni ton compte. Jamais dans tes zones privées, ni dans les 300 premiers et derniers mètres
-        d&apos;une session. Gardé 90 jours.{" "}
+        Position, débit, latence, opérateur et type de réseau (4G/5G ou Wi-Fi), sans ton nom ni ton compte. Jamais dans tes zones privées ; la position
+        exacte des 60 premières secondes d&apos;une session n&apos;est jamais publiée. Gardé 90 jours.{" "}
         <Link href="/confidentialite#couverture" className="text-foreground underline underline-offset-4">
           En savoir plus
         </Link>

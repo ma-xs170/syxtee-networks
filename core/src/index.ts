@@ -9,7 +9,9 @@ import { createPreviews } from "./preview.ts";
 import { createRegie } from "./regie.ts";
 import { openSamples } from "./samples.ts";
 import { createAsn } from "./asn.ts";
+import { runBackfill, supabaseBackfillDb } from "./backfill.ts";
 import { createCoverage, supabaseCoverageDb } from "./coverage.ts";
+import { createPrefixes } from "./link.ts";
 import { buildServer } from "./server.ts";
 import { createCam } from "./cam.ts";
 import { createSessionTracker, supabaseSessionDb } from "./sessions.ts";
@@ -25,7 +27,23 @@ const sls = createSls(config.SLS_API_URL, config.SLS_API_KEY);
 const keys = createKeyStore(supabase, sls);
 const samples = openSamples(join(config.DATA_DIR, "health.sqlite"));
 const asn = createAsn({ file: join(config.DATA_DIR, "ipinfo_lite.mmdb"), token: config.IPINFO_TOKEN, log });
-const coverage = createCoverage({ db: supabaseCoverageDb(supabase), salt: config.COVERAGE_SALT || `coverage:${config.CORE_API_TOKEN}`, log });
+const coverageSalt = config.COVERAGE_SALT || `coverage:${config.CORE_API_TOKEN}`;
+const coverage = createCoverage({ db: supabaseCoverageDb(supabase), salt: coverageSalt, log });
+// Préfixes IP (/24, /48) appris depuis les Android : table ip_prefix_class.
+const prefixes = createPrefixes(
+  {
+    load: async () => {
+      const { data, error } = await supabase.from("ip_prefix_class").select("prefix, cellular, wifi").limit(100_000);
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+    save: async (rows) => {
+      const { error } = await supabase.from("ip_prefix_class").upsert(rows.map((r) => ({ ...r, updated_at: new Date().toISOString() })));
+      if (error) throw new Error(error.message);
+    },
+  },
+  log,
+);
 const health = createHealthMonitor({ sls, samples, perSecond: config.SLS_STATS_PER_SECOND });
 const sessionDb = supabaseSessionDb(supabase);
 const sessions = createSessionTracker({ db: sessionDb, relay: config.RELAY_NAME, log });
@@ -102,6 +120,7 @@ const app = buildServer({
   sessions,
   coverage,
   asn,
+  prefixes,
   cam,
   profile: async (id) => {
     const { data } = await supabase.from("profiles").select("username, twitch_login").eq("id", id).maybeSingle();
@@ -136,16 +155,24 @@ const cleanup = async () => {
 };
 await cleanup();
 void asn.refresh();
-const runAggregate = async () => {
+void prefixes.load();
+// Couverture : hexagones touchés toutes les 10 min, purge 90 j + recalcul complet chaque jour.
+const runAggregate = async (full = false) => {
   try {
-    await coverage.aggregate();
+    await coverage.aggregate(full);
   } catch (e) {
-    log((e as Error).message);
+    log(`couverture : ${(e as Error).message}`);
   }
 };
+// Re-traitement unique des mesures déjà collectées (règles v2), puis carte complète.
+void runBackfill({ db: supabaseBackfillDb(supabase), salt: coverageSalt, aggregateAll: () => coverage.aggregate(true), log })
+  .then((r) => (r ? null : runAggregate(true)))
+  .catch((e) => log(`couverture, backfill : ${(e as Error).message}`));
 const timers = [
   setInterval(() => void coverage.flush(), 30_000),
   setInterval(() => void runAggregate(), 10 * 60_000),
+  setInterval(() => void runAggregate(true), 24 * 3_600_000),
+  setInterval(() => void prefixes.flush(), 60_000),
   setInterval(() => void asn.refresh(), 6 * 3_600_000),
   setInterval(() => void cleanup(), 3_600_000),
   setInterval(() => void sessions.tick(), 5_000),
@@ -165,6 +192,7 @@ const shutdown = async () => {
   cam?.stopAll();
   await sessions.closeAll();
   await coverage.flush();
+  await prefixes.flush();
   await app.close();
   samples.close();
   process.exit(0);

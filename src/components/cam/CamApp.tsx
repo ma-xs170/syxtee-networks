@@ -398,7 +398,15 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
       fetch(`${coreUrl}/v1/cam/gps`, {
         method: "POST",
         headers: { Authorization: `Bearer ${camKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ lat: p.coords.latitude, lon: p.coords.longitude, acc: p.coords.accuracy, speed: p.coords.speed, t: p.timestamp }),
+        // ct : type de réseau réel (Android) pour que les mesures du live faites en Wi-Fi n'entrent jamais dans la carte 4G/5G.
+        body: JSON.stringify({
+          lat: p.coords.latitude,
+          lon: p.coords.longitude,
+          acc: p.coords.accuracy,
+          speed: p.coords.speed,
+          t: p.timestamp,
+          ct: (navigator as Navigator & { connection?: { type?: string } }).connection?.type ?? null,
+        }),
       }).catch(() => {});
     }, 2000);
     return () => {

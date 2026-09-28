@@ -15,13 +15,14 @@ export const revalidate = 600;
 
 const nf = new Intl.NumberFormat("fr-FR");
 
-// Carte communautaire : agrégats anonymes des mesures SYXTEE (Prompt A), publiés dès 3 contributeurs ou 20 mesures.
+// Carte communautaire : agrégats anonymes des mesures 4G/5G SYXTEE (jamais le Wi-Fi), publiés dès 1 contributeur et 5 mesures,
+// avec un indice de fiabilité (Estimation, Fiable, Très fiable). Compteurs recalculés toutes les 10 min.
 export default async function CouverturePage() {
   const s = await coverageStats();
   const figures = [
+    [nf.format(s.contributors), s.contributors > 1 ? "contributeurs" : "contributeur"],
     [`${nf.format(s.km2)} km²`, "scannés"],
     [nf.format(s.measurements), "mesures"],
-    [nf.format(s.contributors), "contributeurs"],
   ];
   return (
     <section className="py-14 sm:py-20">
@@ -30,7 +31,8 @@ export default async function CouverturePage() {
           La carte du réseau, <Highlight>faite par les streamers.</Highlight>
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
-          Débit montant, latence et meilleur opérateur, zone par zone. Mesuré pendant les lives et les scans SYXTEE Cam, de façon anonyme.
+          Débit montant, latence et meilleur opérateur, zone par zone, partout où un streamer est passé. Mesuré en 4G/5G pendant les lives et les scans
+          SYXTEE Cam, de façon anonyme. Le Wi-Fi ne compte jamais.
         </p>
         <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-4">
           {figures.map(([v, l]) => (

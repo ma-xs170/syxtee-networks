@@ -18,10 +18,13 @@ Moblin ──SRTLA :5000──► srtla-receiver (SLS) ──SRT :4000──► 
 ## Carte de couverture (mesures communautaires)
 
 - **Consentement obligatoire**, vérifié par le Core : case `profiles.coverage_consent` relue (sans cache) juste avant chaque écriture. Décocher arrête la collecte en moins de 30 s.
-- **Sources** : pendant un direct, débit / RTT / pertes du relais + dernière position envoyée par SYXTEE Cam (toutes les 2 s) ; en **mode Scan** de SYXTEE Cam (`POST /v1/cam/scan`), un envoi de 0,1 à 3 Mo mesure le débit montant, et l'opérateur est déduit de l'IP.
-- **Filtres** : précision GPS > 50 m, vitesse > 250 km/h, zones privées (table `private_zones`, 3 cercles max), 300 premiers et derniers mètres de chaque session.
-- **Tables** (migration `0006_coverage.sql`) : `measurements` (sans user_id, `device_hash` HMAC qui change chaque mois), `contributions` (récompenses, 90 j), `coverage_hex` (agrégats publics dès 3 contributeurs ou 20 mesures).
-- **Agrégation** : `coverage_aggregate()` appelée toutes les 10 min (purge à 90 j, médiane / 10e percentile, score, fraîcheur).
+- **Collecte mondiale** : aucun filtre de pays ni d'opérateur ; un opérateur inconnu garde son ASN et son nom brut.
+- **Sources** : pendant un direct, débit / RTT / pertes du relais + dernière position envoyée par SYXTEE Cam (toutes les 2 s, avec `connection.type`) ; en **mode Scan** de SYXTEE Cam, un point = 3 micro-tests (5 pings, `POST /v1/cam/scan/up` pendant 2 s mesuré par le Core, `GET /v1/cam/scan/down` pendant 2 s mesuré par le téléphone) puis `POST /v1/cam/scan` (médianes).
+- **Type de lien** (`src/link.ts`) : `cellular` / `wifi` / `starlink` / `fixed` / `unknown` + confiance. Signaux : `navigator.connection.type` (Android, 0,95), table `ASN_CLASSES` (Starlink AS14593, box, mobile, mixte), préfixes /24 et /48 appris depuis les Android (table `ip_prefix_class`), iPhone : IP changée après « Coupe le Wi-Fi ». Seul `cellular` ≥ 0,7 alimente la carte 4G/5G ; Starlink a sa couche ; le Wi-Fi n'est jamais publié ni compté en contribution.
+- **Filtres** : précision GPS > 20 m, vitesse > 250 km/h, zones privées (table `private_zones`, 3 cercles max). La position exacte des 60 premières secondes de chaque session n'est jamais écrite (centre de l'hexagone rés. 8). Au-delà de 30 km/h : point « en mouvement ».
+- **Tables** (migrations `0006`, `0009_coverage_v2.sql`) : `measurements` (sans user_id, `device_hash` HMAC qui change chaque mois, H3 rés. 8/9/10), `contributions` (récompenses, 90 j), `coverage_hex` (rés. 8/9/10 × couche × opérateur × techno × mode à pied / véhicule / tous), publiés dès 1 contributeur et 5 mesures.
+- **Agrégation** (`src/aggregate.ts`, testée) : hexagones touchés toutes les 10 min, purge 90 j + recalcul complet chaque jour. Médiane ± 3 MAD par hexagone et opérateur, valeurs pondérées (fraîcheur, précision GPS, confiance du lien, poids 0,25 en mouvement sur la carte « à pied »), fiabilité Estimation / Fiable / Très fiable, tranches horaires, dates au mois près avec un seul contributeur.
+- **Backfill v2** (`src/backfill.ts`) : lancé une fois au démarrage (clé `backfill_v2` de `coverage_meta`, qui garde aussi les chiffres).
 - **Effacement** : `DELETE /v1/users/:id/coverage` (bouton dans Paramètres et suppression du compte).
 - **Opérateur** : base IPinfo Lite (`IPINFO_TOKEN`, CC BY-SA 4.0), téléchargée dans `data/ipinfo_lite.mmdb` et rafraîchie chaque semaine. Sans jeton : opérateur inconnu.
 

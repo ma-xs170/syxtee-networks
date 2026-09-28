@@ -6,6 +6,7 @@ export const isRange = (v: unknown): v is Range => v === "7d" || v === "30d";
 
 export type LiveSession = {
   id: string;
+  relay_id: string | null;
   device_name: string | null;
   started_at: string;
   ended_at: string | null;
@@ -15,6 +16,8 @@ export type LiveSession = {
   reconnects: number;
   relay: string;
   bitrate_series: number[];
+  /** Relais du direct (null s'il a été supprimé depuis). */
+  relay_info?: { name: string } | null;
 };
 
 export type Kpis = {
@@ -39,15 +42,17 @@ export type Overview = {
   hasEverStreamed: boolean;
   lastEndedAt: string | null;
   alerts: Alert[];
+  /** URLs du relais principal (le plus ancien relais SRTLA actif), pour le guide de démarrage. */
   keys: { relay: string; moblin: string; srt: string; obs: string } | null;
+  relays: { active: number; max: number };
   coreStatus: "ok" | "down" | "off";
   plan: { name: string; streams: number };
 };
 
-export const SESSION_COLUMNS = "id, device_name, started_at, ended_at, duration_s, avg_kbps, peak_kbps, reconnects, relay, bitrate_series";
+export const SESSION_COLUMNS = "id, relay_id, device_name, started_at, ended_at, duration_s, avg_kbps, peak_kbps, reconnects, relay, bitrate_series, relay_info:relays(name)";
 
 /** Nom affiché pour l'appareil d'un direct. */
-export const deviceLabel = (s: Pick<LiveSession, "device_name" | "relay">) => s.device_name ?? `Relais ${s.relay}`;
+export const deviceLabel = (s: Pick<LiveSession, "device_name" | "relay" | "relay_info">) => s.relay_info?.name ?? s.device_name ?? `Relais ${s.relay}`;
 
 // ─────────────── Formats ───────────────
 
@@ -101,5 +106,8 @@ export function delta(current: number, previous: number): { text: string; up: bo
 
 /** Masque la clé d'une URL de stream : srtla://hôte:5000?streamid=live_•••••••• */
 export function maskUrl(url: string) {
+  // Clé seule (champ « Clé » RTMP) ou clé en fin de chemin RTMP (…/live/live_xxx).
+  if (/^live_[0-9a-f]+$/i.test(url)) return "live_••••••••";
+  if (url.startsWith("rtmp")) return url.replace(/\/(live_)[0-9a-f]+$/i, "/$1••••••••");
   return url.replace(/(streamid=)([a-z]+_)?[^&]*/i, (_m, p: string, prefix = "") => `${p}${prefix}••••••••`);
 }

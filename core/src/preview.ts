@@ -1,6 +1,6 @@
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
-import type { KeyRow } from "./keys.ts";
+import type { Relay } from "./relays.ts";
 import { supervise, type Supervised } from "./supervisor.ts";
 
 // Aperçu : une vignette JPEG toutes les N secondes par flux live. ffmpeg ne décode que les images-clés
@@ -21,13 +21,13 @@ export function previewArgs(o: { host: string; port: number; playId: string; out
 export function createPreviews(o: { dir: string; host: string; port: number; intervalS: number; log: (m: string) => void }) {
   mkdirSync(o.dir, { recursive: true });
   const running = new Map<string, Supervised>();
-  const path = (userId: string) => join(o.dir, `${userId}.jpg`);
+  const path = (relayId: string) => join(o.dir, `${relayId}.jpg`);
 
   return {
     path,
     /** Aligne les processus sur la liste des flux live. */
-    sync(live: KeyRow[]) {
-      const want = new Map(live.map((k) => [k.user_id, k]));
+    sync(live: Relay[]) {
+      const want = new Map(live.map((k) => [k.id, k]));
       for (const [id, p] of running) {
         if (!want.has(id)) {
           p.stop();

@@ -1,11 +1,12 @@
 import "server-only";
 import type { Profile } from "@/lib/auth/dal";
-import { getStreamKeys, hasCore, type StreamKeys } from "@/lib/core";
+import { hasCore, listRelays, type RelayView } from "@/lib/core";
+import { planOf, relayLimit } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
 import { RANGE_DAYS, SESSION_COLUMNS, type Alert, type Kpis, type LiveSession, type Overview, type Range } from "./dashboard-data";
 
 // Vue d'ensemble du dashboard : calculée à partir de live_sessions (lecture avec la session de l'utilisateur, RLS)
-// et des clés du Core. Gardée 30 s en mémoire par utilisateur et par période.
+// et des relais du Core. Gardée 30 s en mémoire par utilisateur et par période.
 
 const DAY = 86_400_000;
 const TTL = 30_000;
@@ -38,7 +39,7 @@ export function dailyMinutes(sessions: LiveSession[], now: number, days = 30) {
   });
 }
 
-export function buildAlerts(o: { month: LiveSession[]; profile: Profile; keys: StreamKeys | null; coreOk: boolean; hasEverStreamed: boolean }): Alert[] {
+export function buildAlerts(o: { month: LiveSession[]; profile: Profile; relays: RelayView[]; coreOk: boolean; hasEverStreamed: boolean }): Alert[] {
   const alerts: Alert[] = [];
   const short = o.month.filter((s) => s.ended_at && s.duration_s < 60).length;
   if (short >= 3)
@@ -58,39 +59,47 @@ export function buildAlerts(o: { month: LiveSession[]; profile: Profile; keys: S
     });
   if (!o.profile.twitch_login)
     alerts.push({ id: "twitch", text: "Ton Twitch n'est pas renseigné : tu n'apparais pas sur le site.", href: "/dashboard/profil", cta: "Profil" });
-  if (o.coreOk && !o.keys) alerts.push({ id: "nokeys", text: "Tu n'as pas encore généré tes clés de stream.", href: "/dashboard/urls", cta: "Mes URLs" });
-  else if (o.keys && !o.hasEverStreamed) alerts.push({ id: "unused", text: "Ta clé n'a jamais été utilisée.", href: "/dashboard/urls", cta: "Mes URLs" });
+  const active = o.relays.filter((r) => !r.archived);
+  if (o.coreOk && !active.length) alerts.push({ id: "norelay", text: "Tu n'as pas encore de relais.", href: "/dashboard/relais", cta: "Créer un relais" });
+  else if (active.length && !o.hasEverStreamed) alerts.push({ id: "unused", text: "Ton relais n'a jamais été utilisé.", href: "/dashboard/relais", cta: "Mes relais" });
   return alerts.slice(0, 3);
 }
 
-async function loadKeys(userId: string): Promise<{ keys: StreamKeys | null; status: Overview["coreStatus"] }> {
-  if (!hasCore) return { keys: null, status: "off" };
+async function loadRelayViews(userId: string): Promise<{ relays: RelayView[]; status: Overview["coreStatus"] }> {
+  if (!hasCore) return { relays: [], status: "off" };
   try {
-    return { keys: await getStreamKeys(userId), status: "ok" };
+    return { relays: await listRelays(userId), status: "ok" };
   } catch (e) {
     console.error("dashboard : Core", e);
-    return { keys: null, status: "down" };
+    return { relays: [], status: "down" };
   }
 }
 
+/** URLs du relais principal : le plus ancien relais SRTLA actif. */
+function mainKeys(relays: RelayView[]): Overview["keys"] {
+  const r = relays.find((x) => !x.archived && x.protocol === "srtla");
+  return r && r.urls.srtla_url && r.urls.srt_url ? { relay: r.name, moblin: r.urls.srtla_url, srt: r.urls.srt_url, obs: r.obs_srt_url } : null;
+}
+
 /** Directs de l'utilisateur connecté (RLS), du plus récent au plus ancien. */
-export async function listSessions(opts: { since?: number; limit?: number } = {}) {
+export async function listSessions(opts: { since?: number; limit?: number; relayId?: string } = {}) {
   const supabase = await createClient();
   let q = supabase.from("live_sessions").select(SESSION_COLUMNS).order("started_at", { ascending: false }).limit(opts.limit ?? 2000);
   if (opts.since) q = q.gte("started_at", new Date(opts.since).toISOString());
+  if (opts.relayId) q = q.eq("relay_id", opts.relayId);
   const { data, error } = await q;
   if (error) {
     // Table absente (migration pas encore appliquée) : dashboard vide plutôt qu'en erreur.
     console.error("live_sessions", error.message);
     return [];
   }
-  return (data ?? []) as LiveSession[];
+  return (data ?? []) as unknown as LiveSession[]; // relay_info : objet (relation plusieurs-à-un), pas un tableau
 }
 
 export async function getSession(id: string) {
   const supabase = await createClient();
   const { data } = await supabase.from("live_sessions").select(SESSION_COLUMNS).eq("id", id).maybeSingle();
-  return (data as LiveSession | null) ?? null;
+  return (data as unknown as LiveSession | null) ?? null;
 }
 
 export async function getOverview(userId: string, profile: Profile, range: Range): Promise<Overview> {
@@ -100,11 +109,12 @@ export async function getOverview(userId: string, profile: Profile, range: Range
 
   const now = Date.now();
   const days = RANGE_DAYS[range];
-  const [recent60, latest, { keys, status }] = await Promise.all([
+  const [recent60, latest, { relays, status }] = await Promise.all([
     listSessions({ since: now - Math.max(60, days * 2) * DAY }),
     listSessions({ limit: 3 }),
-    loadKeys(userId),
+    loadRelayViews(userId),
   ]);
+  const plan = planOf(userId);
 
   const finished = recent60.filter((s) => s.ended_at);
   const inRange = (s: LiveSession, from: number, to: number) => {
@@ -127,10 +137,11 @@ export async function getOverview(userId: string, profile: Profile, range: Range
     recent: latest,
     hasEverStreamed,
     lastEndedAt: done[0]?.ended_at ?? null,
-    alerts: buildAlerts({ month, profile, keys, coreOk: status === "ok", hasEverStreamed }),
-    keys: keys ? { relay: keys.relay.name, moblin: keys.moblin_srtla_url, srt: keys.srt_publish_url, obs: keys.obs_srt_url } : null,
+    alerts: buildAlerts({ month, profile, relays, coreOk: status === "ok", hasEverStreamed }),
+    keys: mainKeys(relays),
+    relays: { active: relays.filter((r) => !r.archived).length, max: relayLimit(plan) },
     coreStatus: status,
-    plan: { name: "Bêta gratuite", streams: 1 },
+    plan: { name: plan.name, streams: Number.isFinite(plan.maxConcurrentStreams) ? plan.maxConcurrentStreams : 99 },
   };
   memo.set(key, { at: now, data });
   if (memo.size > 500) for (const [k, v] of memo) if (now - v.at > TTL) memo.delete(k);

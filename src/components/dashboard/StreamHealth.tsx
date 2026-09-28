@@ -40,7 +40,7 @@ function Curve({ samples }: { samples: Sample[] }) {
   );
 }
 
-export default function StreamHealth({ coreUrl }: { coreUrl: string }) {
+export default function StreamHealth({ coreUrl, relayId }: { coreUrl: string; relayId: string }) {
   const [live, setLive] = useState<Live | null>(null);
   const [history, setHistory] = useState<Sample[]>([]);
   const [link, setLink] = useState<"connecting" | "ok" | "error">("connecting");
@@ -52,9 +52,9 @@ export default function StreamHealth({ coreUrl }: { coreUrl: string }) {
       let delay = 1000;
       while (!stopped) {
         try {
-          const h = await coreFetch(coreUrl, "/v1/me/health?range=15m", { signal: ctrl.signal });
+          const h = await coreFetch(coreUrl, `/v1/me/relays/${relayId}/health?range=15m`, { signal: ctrl.signal });
           if (h.ok) setHistory(((await h.json()) as { samples: Sample[] }).samples);
-          const res = await coreFetch(coreUrl, "/v1/me/health/stream", { signal: ctrl.signal });
+          const res = await coreFetch(coreUrl, `/v1/me/relays/${relayId}/health/stream`, { signal: ctrl.signal });
           if (!res.ok || !res.body) throw new Error(String(res.status));
           setLink("ok");
           delay = 1000;
@@ -90,7 +90,7 @@ export default function StreamHealth({ coreUrl }: { coreUrl: string }) {
       stopped = true;
       ctrl.abort();
     };
-  }, [coreUrl]);
+  }, [coreUrl, relayId]);
 
   const s = live?.live ? live.sample : null;
   const now = s?.t ?? Date.now();

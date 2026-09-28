@@ -7,7 +7,9 @@ import { coreFetch, readSse, sleep } from "./coreClient";
 // Statut du flux en temps réel (SSE du Core, /v1/me/status/stream), partagé par la barre et les pages du dashboard :
 // une seule connexion par onglet, reconnexion automatique.
 
-export type LiveState = { live: boolean; reconnecting: boolean; started_at: number | null; kbps: number | null; reconnects: number };
+export type RelayLive = { id: string; name: string; live: boolean; reconnecting: boolean; started_at: number | null; kbps: number | null; reconnects: number };
+/** Champs de premier niveau : relais principal (le premier en direct, sinon en reconnexion). `relays` : tous les relais actifs. */
+export type LiveState = Omit<RelayLive, "id" | "name"> & { relay_id?: string | null; relays?: RelayLive[] };
 type Ctx = { state: LiveState | null; link: "off" | "connecting" | "ok" | "error"; coreUrl: string };
 
 const LiveContext = createContext<Ctx>({ state: null, link: "off", coreUrl: "" });

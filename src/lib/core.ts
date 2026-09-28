@@ -9,20 +9,38 @@ export const hasCore = coreUrl !== "" && token !== "";
 /** URL publique du Core, transmise aux composants client du dashboard. */
 export const publicCoreUrl = coreUrl;
 
-export type StreamKeys = {
+export type RelayProtocol = "srtla" | "rtmp";
+
+/** Un relais, tel que le Core le montre au dashboard. */
+export type RelayView = {
+  id: string;
+  name: string;
+  protocol: RelayProtocol;
+  server: string;
+  host: string;
+  archived: boolean;
+  live: boolean;
   mode: "direct" | "regie";
   regie_available: boolean;
-  relay: { name: string; host: string };
-  moblin_srtla_url: string;
-  srt_publish_url: string;
+  urls: { srtla_url?: string; srt_url?: string; rtmp_server?: string; rtmp_key?: string; rtmp_url?: string };
   obs_srt_url: string;
   created_at: string;
   rotated_at: string | null;
+  last_live_at: string | null;
 };
 
-export class CoreError extends Error {}
+/** Erreur métier renvoyée par le Core (quota atteint, serveur indisponible…). */
+export class CoreRefusal extends Error {
+  constructor(public code: string) {
+    super(code);
+  }
+}
 
-async function core<T>(path: string, method: "GET" | "POST" | "PUT" | "DELETE" = "GET", body?: unknown): Promise<T | null> {
+export class CoreError extends Error {}
+/** Le Core répond, mais sans les routes des relais : il tourne une version plus ancienne que le dashboard. */
+export class CoreOutdated extends CoreError {}
+
+async function core<T>(path: string, method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" = "GET", body?: unknown): Promise<T | null> {
   if (!hasCore) throw new CoreError("Core non configuré");
   const res = await fetch(`${coreUrl}${path}`, {
     method,
@@ -32,24 +50,40 @@ async function core<T>(path: string, method: "GET" | "POST" | "PUT" | "DELETE" =
     signal: AbortSignal.timeout(8000),
   });
   if (res.status === 404 || res.status === 204) return null;
+  if (res.status === 403 || res.status === 409) throw new CoreRefusal(((await res.json().catch(() => ({}))) as { error?: string }).error ?? String(res.status));
   if (!res.ok) throw new CoreError(`Core ${method} ${path.split("/").slice(0, 3).join("/")} → ${res.status}`);
   return (await res.json()) as T;
 }
 
-export const getStreamKeys = (userId: string) => core<StreamKeys>(`/v1/users/${userId}/keys`);
-export const createStreamKeys = (userId: string) => core<StreamKeys>(`/v1/users/${userId}/keys`, "POST");
-export const rotateStreamKeys = (userId: string) => core<StreamKeys>(`/v1/users/${userId}/keys/rotate`, "POST");
-export const setStreamMode = (userId: string, mode: StreamKeys["mode"]) => core<StreamKeys>(`/v1/users/${userId}/mode`, "PUT", { mode });
+// ───── Relais ─────
+
+export async function listRelays(userId: string) {
+  const res = await core<{ relays: RelayView[] }>(`/v1/users/${userId}/relays`);
+  if (!res) throw new CoreOutdated("Core sans /relays : mise à jour du VPS nécessaire");
+  return res.relays;
+}
+export const getRelay = (userId: string, relayId: string) => core<RelayView>(`/v1/users/${userId}/relays/${relayId}`);
+/** Nouveau relais ; `limit` = relais actifs max de la formule (le Core recompte : 403 « quota » si atteint). */
+export async function createRelay(userId: string, body: { name: string; protocol: RelayProtocol; server: string; limit: number }) {
+  const relay = await core<RelayView>(`/v1/users/${userId}/relays`, "POST", body);
+  if (!relay) throw new CoreOutdated("Core sans /relays : mise à jour du VPS nécessaire");
+  return relay;
+}
+export const updateRelay = (userId: string, relayId: string, patch: { name?: string; archived?: boolean; mode?: RelayView["mode"]; limit?: number }) =>
+  core<RelayView>(`/v1/users/${userId}/relays/${relayId}`, "PATCH", patch);
+/** Nouvelle clé : l'ancienne cesse de marcher immédiatement. */
+export const rotateRelay = (userId: string, relayId: string) => core<RelayView>(`/v1/users/${userId}/relays/${relayId}/rotate`, "POST");
+export const deleteRelay = (userId: string, relayId: string) => core<null>(`/v1/users/${userId}/relays/${relayId}`, "DELETE");
 
 // ───── SYXTEE Cam ─────
 
-export type CamInfo = { cam_key: string; cam_path: string; whip_url: string };
+export type CamInfo = { cam_key: string; cam_path: string; whip_url: string; relay: { id: string; name: string } };
 
-/** Clé caméra de l'utilisateur (créée au besoin, avec ses clés de stream). */
+/** Clé caméra du compte (créée au besoin sur son relais ; null s'il n'a aucun relais actif). */
 export const getCam = (userId: string) => core<CamInfo>(`/v1/users/${userId}/cam`);
 /** Nouveau lien caméra : l'ancien cesse de marcher. */
 export const rotateCam = (userId: string) => core<CamInfo>(`/v1/users/${userId}/cam/rotate`, "POST");
 
-/** Compte supprimé : clés retirées du relais (plus aucune URL Moblin/OBS/Cam ne marche) puis effacées. */
-export const deleteStreamKeys = (userId: string) => core<null>(`/v1/users/${userId}/keys`, "DELETE");
+/** Compte supprimé : tous ses relais retirés du SLS (plus aucune URL Moblin/OBS/Cam ne marche) puis effacés. */
+export const deleteAllRelays = (userId: string) => core<null>(`/v1/users/${userId}/relays`, "DELETE");
 export const deleteCoverage = (userId: string) => core<{ deleted: number }>(`/v1/users/${userId}/coverage`, "DELETE");

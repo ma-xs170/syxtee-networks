@@ -3,6 +3,8 @@ import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
 // Historique de santé du flux : SQLite local (node:sqlite), 24 h glissantes, un point toutes les 2 s par flux.
+// Table samples : la colonne user_id contient l'id du RELAIS (nom gardé pour ne pas migrer la base locale).
+// Table positions : id du compte (SYXTEE Cam envoie la position du téléphone, pas d'un relais).
 
 export type Sample = {
   t: number; // ms epoch
@@ -43,12 +45,12 @@ export function openSamples(file: string) {
   const purgePos = db.prepare("DELETE FROM positions WHERE t < ?");
 
   return {
-    add(userId: string, s: Sample) {
-      insert.run(userId, s.t, s.bitrate, s.rtt, s.dropped, s.buffer, s.latency, s.congestion, s.links);
+    add(relayId: string, s: Sample) {
+      insert.run(relayId, s.t, s.bitrate, s.rtt, s.dropped, s.buffer, s.latency, s.congestion, s.links);
     },
     /** Points depuis `sinceMs`, réduits à `maxPoints` au plus (moyenne par tranche, pertes additionnées). */
-    history(userId: string, sinceMs: number, maxPoints = 720): Sample[] {
-      const rows = range.all(userId, sinceMs) as unknown as Sample[];
+    history(relayId: string, sinceMs: number, maxPoints = 720): Sample[] {
+      const rows = range.all(relayId, sinceMs) as unknown as Sample[];
       if (rows.length <= maxPoints) return rows;
       const size = Math.ceil(rows.length / maxPoints);
       const out: Sample[] = [];

@@ -47,7 +47,7 @@ export default async function StatsPage({ searchParams }: PageProps<"/dashboard/
         <Tile>
           <p className="text-sm text-muted">Pas encore de direct enregistré. Tes chiffres apparaissent ici après ton premier live.</p>
           <div className="mt-4">
-            <ArrowLink href="/dashboard/urls">Mes URLs</ArrowLink>
+            <ArrowLink href="/dashboard/relais">Mes relais</ArrowLink>
           </div>
         </Tile>
       ) : (

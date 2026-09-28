@@ -19,7 +19,7 @@ import type { NavItem, NavMenu, ToolIcon } from "@/lib/site";
 type AnyMenu = NavMenu | DashMenu;
 type AnyItem = NavItem | DashItem;
 const isAnyMenu = (item: AnyItem): item is AnyMenu => "children" in item;
-const DASH_ICONS = new Set<string>(["urls", "health", "preview", "control", "stats", "lives", "map", "mire", "cam", "security", "profile", "plan", "settings"]);
+const DASH_ICONS = new Set<string>(["relays", "urls", "health", "preview", "control", "stats", "lives", "map", "mire", "cam", "security", "profile", "plan", "settings"]);
 
 function ItemArt({ icon }: { icon: ToolIcon | DashIcon }) {
   return DASH_ICONS.has(icon) ? <DashArt icon={icon as DashIcon} /> : <ToolArt icon={icon as ToolIcon} />;

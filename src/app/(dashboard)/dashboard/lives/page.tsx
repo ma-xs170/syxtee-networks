@@ -1,17 +1,23 @@
 import type { Metadata } from "next";
 import { SessionList } from "@/components/dashboard/sessions";
 import { ArrowLink, DashHeader, DashPage, Tile } from "@/components/dashboard/ui";
+import RelayPicker from "@/components/relais/RelayPicker";
 import { requireUser } from "@/lib/auth/dal";
 import { listSessions } from "@/lib/dashboard-overview";
+import { loadRelays } from "@/lib/relays";
 
 export const metadata: Metadata = { title: "Historique des lives", robots: { index: false } };
 
-export default async function LivesPage() {
-  await requireUser("/dashboard/lives");
-  const sessions = await listSessions({ limit: 100 });
+export default async function LivesPage({ searchParams }: PageProps<"/dashboard/lives">) {
+  const user = await requireUser("/dashboard/lives");
+  const { relay: wanted } = await searchParams;
+  const { relays } = await loadRelays(user.id);
+  const current = relays.find((r) => r.id === wanted)?.id ?? null;
+  const sessions = await listSessions({ limit: 100, relayId: current ?? undefined });
   return (
     <DashPage>
       <DashHeader lead="Historique des" hl="lives" sub="Tes 100 derniers directs. Ouvre un direct pour voir sa courbe de débit." />
+      <RelayPicker relays={relays} current={current} base="/dashboard/lives" all={relays.length > 1} />
       <Tile>
         {sessions.length ? (
           <>
@@ -27,7 +33,7 @@ export default async function LivesPage() {
           <>
             <p className="text-sm text-muted">Aucun direct enregistré pour l&apos;instant.</p>
             <div className="mt-4">
-              <ArrowLink href="/dashboard/urls">Mes URLs</ArrowLink>
+              <ArrowLink href="/dashboard/relais">Mes relais</ArrowLink>
             </div>
           </>
         )}

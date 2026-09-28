@@ -1,19 +1,20 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createCam, isCamKey, newCamKey, relayArgs } from "../src/cam.ts";
-import type { KeyRow, KeyStore } from "../src/keys.ts";
+import type { Relay, RelayStore } from "../src/relays.ts";
 
-const row: KeyRow = {
-  user_id: "00000000-0000-0000-0000-000000000001",
+const row: Relay = {
+  id: "10000000-0000-0000-0000-000000000001", user_id: "00000000-0000-0000-0000-000000000001", name: "iPhone", protocol: "srtla", server: "nyc1",
   publish_id: "live_a", play_id: "play_a", out_publish_id: "live_out_a", out_play_id: "play_out_a",
-  mode: "direct", created_at: "", rotated_at: null, cam_key: `cam_${"a".repeat(32)}`,
+  mode: "direct", status: "offline", archived: false, created_at: "", rotated_at: null, last_live_at: null, cam_key: `cam_${"a".repeat(32)}`,
 };
 
 function cam(paths: { name: string; ready: boolean }[] = []) {
   const fetchImpl = (async () => new Response(JSON.stringify({ items: paths }))) as unknown as typeof fetch;
-  const db = { from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null }) }) }) }) };
+  const eq = () => ({ eq, maybeSingle: async () => ({ data: null }) });
+  const db = { from: () => ({ select: () => ({ eq }) }) };
   const c = createCam({
-    db: db as never, keys: {} as KeyStore, apiUrl: "http://mtx", rtspUrl: "rtsp://127.0.0.1:8554", whipBase: "https://cam.example",
+    db: db as never, relays: {} as RelayStore, apiUrl: "http://mtx", rtspUrl: "rtsp://127.0.0.1:8554", whipBase: "https://cam.example",
     output: (id) => `udp://out/${id}`, log: () => {}, fetchImpl,
   });
   c.setKeys([row]);

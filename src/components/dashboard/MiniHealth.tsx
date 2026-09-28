@@ -14,14 +14,15 @@ type Sample = { t: number; bitrate: number; rtt: number; dropped: number; conges
 export default function MiniHealth() {
   const { state, coreUrl } = useLiveStatus();
   const live = !!state?.live;
+  const relayId = state?.relay_id;
   const [samples, setSamples] = useState<Sample[]>([]);
 
   useEffect(() => {
-    if (!live || !coreUrl) return;
+    if (!live || !coreUrl || !relayId) return;
     let stopped = false;
     const load = async () => {
       try {
-        const res = await coreFetch(coreUrl, "/v1/me/health?range=15m");
+        const res = await coreFetch(coreUrl, `/v1/me/relays/${relayId}/health?range=15m`);
         if (res.ok && !stopped) setSamples(((await res.json()) as { samples: Sample[] }).samples);
       } catch {
         // Relais injoignable : on garde les dernières valeurs.
@@ -33,7 +34,7 @@ export default function MiniHealth() {
       stopped = true;
       clearInterval(t);
     };
-  }, [live, coreUrl]);
+  }, [live, coreUrl, relayId]);
 
   const last = live ? samples[samples.length - 1] : undefined;
   const lost = live ? samples.filter((s) => last && s.t > last.t - 60_000).reduce((a, s) => a + s.dropped, 0) : 0;

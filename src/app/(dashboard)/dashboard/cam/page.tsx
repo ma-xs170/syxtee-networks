@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { headers } from "next/headers";
 import QRCode from "qrcode";
 import CamPanel from "@/components/cam/CamPanel";
@@ -46,7 +47,21 @@ export default async function CamPage() {
           <TileLabel>Lien caméra</TileLabel>
           <div className="mt-5">
             {!hasCore || down || !cam ? (
-              <p className="text-sm text-muted">{down ? "Le relais ne répond pas pour le moment. Réessaie dans quelques minutes." : "SYXTEE Cam n'est pas encore branchée au relais."}</p>
+              <p className="text-sm text-muted">
+                {down ? (
+                  "Le relais ne répond pas pour le moment. Réessaie dans quelques minutes."
+                ) : hasCore ? (
+                  <>
+                    SYXTEE Cam diffuse vers un de tes relais. Crée d&apos;abord un relais dans{" "}
+                    <Link href="/dashboard/relais" className="text-foreground underline underline-offset-4">
+                      Mes relais
+                    </Link>
+                    .
+                  </>
+                ) : (
+                  "SYXTEE Cam n'est pas encore branchée au relais."
+                )}
+              </p>
             ) : (
               <CamPanel key={cam.cam_key} link={link} qrSvg={qr} />
             )}
@@ -57,10 +72,10 @@ export default async function CamPage() {
           <Tile>
             <TileLabel>Dans OBS</TileLabel>
             <p className="mt-3 text-sm leading-relaxed text-muted">
-              Rien à changer : la caméra arrive sur ta source SRT habituelle. Ne diffuse pas en même temps depuis Moblin avec la même clé.
+              Rien à changer : la caméra arrive sur la source SRT {cam ? <>du relais « {cam.relay.name} »</> : "de ton relais"}. Ne diffuse pas en même temps depuis Moblin avec la même clé.
             </p>
             <div className="mt-4">
-              <ArrowLink href="/dashboard/urls">Mes URLs</ArrowLink>
+              <ArrowLink href="/dashboard/relais">Mes relais</ArrowLink>
             </div>
           </Tile>
           <Tile>

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { changeMode } from "@/app/(dashboard)/dashboard/actions";
+import { changeModeAction } from "@/app/(dashboard)/dashboard/relais/actions";
 
-// Choix du mode de sortie : Direct (OBS lit le téléphone) ou Régie (mire automatique pendant les coupures).
-export default function ModeSwitch({ mode, available }: { mode: "direct" | "regie"; available: boolean }) {
+// Choix du mode de sortie d'un relais : Direct (OBS lit l'encodeur) ou Régie (mire automatique pendant les coupures).
+export default function ModeSwitch({ relayId, mode, available }: { relayId: string; mode: "direct" | "regie"; available: boolean }) {
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const options = [
@@ -26,7 +26,7 @@ export default function ModeSwitch({ mode, available }: { mode: "direct" | "regi
               onClick={() =>
                 mode !== o.id &&
                 start(async () => {
-                  const r = await changeMode(o.id);
+                  const r = await changeModeAction(relayId, o.id);
                   setError(r.error ?? null);
                 })
               }

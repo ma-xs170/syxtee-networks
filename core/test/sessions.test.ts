@@ -22,6 +22,7 @@ function fakeDb() {
 }
 
 const U = "00000000-0000-0000-0000-000000000001";
+const R = "10000000-0000-0000-0000-000000000001";
 
 test("downsample : moyenne par tranche, jamais plus de n points", () => {
   assert.deepEqual(downsample([1, 2, 3]), [1, 2, 3]);
@@ -36,21 +37,23 @@ test("une session s'ouvre au passage en ligne et se ferme après la période de 
   const { db, rows } = fakeDb();
   const s = createSessionTracker({ db, relay: "nyc1", now: () => t });
 
-  s.status(U, true);
-  s.sample(U, 6000);
+  s.status(R, true, U);
+  s.sample(R, 6000);
   t += 2000;
-  s.sample(U, 4000);
+  s.sample(R, 4000);
   t += 118_000;
-  s.sample(U, 5000);
-  s.status(U, false);
+  s.sample(R, 5000);
+  s.status(R, false, U);
   await s.tick();
-  assert.ok(s.current(U)?.reconnecting);
+  assert.ok(s.current(R)?.reconnecting);
 
   t += GRACE_MS;
   await s.tick();
-  assert.equal(s.current(U), null);
+  assert.equal(s.current(R), null);
   const [row] = [...rows.values()];
   assert.equal(row.relay, "nyc1");
+  assert.equal(row.relay_id, R);
+  assert.equal(row.user_id, U);
   assert.equal(row.duration_s, 120);
   assert.equal(row.avg_kbps, 5000);
   assert.equal(row.peak_kbps, 6000);
@@ -63,14 +66,14 @@ test("une coupure courte compte comme une reconnexion, pas comme un nouveau dire
   let t = 0;
   const { db, rows } = fakeDb();
   const s = createSessionTracker({ db, relay: "nyc1", now: () => t });
-  s.status(U, true);
+  s.status(R, true, U);
   t += 10_000;
-  s.status(U, false);
+  s.status(R, false, U);
   t += 20_000;
   await s.tick();
-  s.status(U, true);
+  s.status(R, true, U);
   t += 10_000;
-  s.status(U, false);
+  s.status(R, false, U);
   t += GRACE_MS;
   await s.tick();
   assert.equal(rows.size, 1);
@@ -81,12 +84,27 @@ test("sauvegarde toutes les 30 s pendant le direct", async () => {
   let t = 0;
   const { db, rows } = fakeDb();
   const s = createSessionTracker({ db, relay: "nyc1", now: () => t });
-  s.status(U, true);
+  s.status(R, true, U);
   t += 31_000;
-  s.sample(U, 3000);
+  s.sample(R, 3000);
   await s.tick();
   const row = [...rows.values()][0];
   assert.equal(row.ended_at, null);
   assert.equal(row.duration_s, 31);
   assert.equal(row.avg_kbps, 3000);
+});
+
+test("deux relais du même compte en direct en même temps : deux sessions", async () => {
+  let t = 0;
+  const { db, rows } = fakeDb();
+  const s = createSessionTracker({ db, relay: "nyc1", now: () => t });
+  const R2 = "10000000-0000-0000-0000-000000000002";
+  s.status(R, true, U);
+  s.status(R2, true, U);
+  t += 10_000;
+  s.status(R, false, U);
+  s.status(R2, false, U);
+  t += GRACE_MS;
+  await s.tick();
+  assert.deepEqual([...rows.values()].map((r) => r.relay_id).sort(), [R, R2]);
 });

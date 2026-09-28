@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { deleteCoverage, deleteStreamKeys, hasCore } from "@/lib/core";
+import { deleteAllRelays, deleteCoverage, hasCore } from "@/lib/core";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, requireUser, safeNext } from "./dal";
@@ -72,7 +72,7 @@ export async function deleteAccount(_prev: FormState, formData: FormData): Promi
   // En cas d'échec, le Core retire de toute façon les paires orphelines lors de son nettoyage horaire.
   if (hasCore) {
     try {
-      await deleteStreamKeys(user.id);
+      await deleteAllRelays(user.id);
       await deleteCoverage(user.id); // mesures de couverture (anonymes, mais rattachables par le Core)
     } catch (e) {
       console.error("deleteAccount : Core", e);

@@ -67,6 +67,12 @@ const uid = u.user.id;
 const browser = await chromium.launch({ args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"] });
 try {
   for (let i = 0; i < 40 && !logs.includes("prêt"); i++) await sleep(250);
+  // La Cam publie vers un relais du compte : on en crée un d'abord.
+  await fetch(`${CORE}/v1/users/${uid}/relays`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${TOKEN}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ name: "Test Cam", protocol: "srtla", server: "nyc1", limit: 1 }),
+  });
   const cam = await (await fetch(`${CORE}/v1/users/${uid}/cam`, { headers: { Authorization: `Bearer ${TOKEN}` } })).json();
   ok(/^cam_[0-9a-f]{32}$/.test(cam.cam_key ?? ""), "clé caméra créée");
   ok((await fetch(`${CORE}/v1/cam/me`, { headers: { Authorization: "Bearer cam_" + "0".repeat(32) } })).status === 401, "clé inconnue refusée");

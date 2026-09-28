@@ -45,7 +45,11 @@ function StatusBanner({ data, onLaunch }: { data: OverviewData; onLaunch: () => 
             <span className="text-foreground">{reconnecting ? "Reconnexion" : "En live"}</span>
             {clock && <span className="tabular-nums text-foreground">{clock}</span>}
             {state?.kbps != null && <span className="tabular-nums text-muted">{fmtInt(state.kbps)} kbps</span>}
-            {data.keys && <span className="text-muted">Relais {data.keys.relay}</span>}
+            {state?.relays && state.relays.filter((r) => r.live).length > 1 ? (
+              <span className="text-muted">{state.relays.filter((r) => r.live).length} relais</span>
+            ) : (
+              state?.relays?.find((r) => r.id === state.relay_id) && <span className="normal-case tracking-normal text-muted">{state.relays.find((r) => r.id === state.relay_id)!.name}</span>
+            )}
           </>
         ) : (
           <>
@@ -123,9 +127,9 @@ function LaunchGuide({ open, onClose, keys }: { open: boolean; onClose: () => vo
           </ol>
         ) : (
           <p className="mt-4 text-sm text-muted">
-            Génère d&apos;abord tes clés dans{" "}
-            <Link href="/dashboard/urls" className="text-foreground underline underline-offset-4">
-              Mes URLs
+            Crée d&apos;abord un relais dans{" "}
+            <Link href="/dashboard/relais" className="text-foreground underline underline-offset-4">
+              Mes relais
             </Link>
             .
           </p>
@@ -259,7 +263,7 @@ function Onboarding({ keys }: { keys: OverviewData["keys"] }) {
           </div>
         ) : (
           <div className="mt-6">
-            <ArrowLink href="/dashboard/urls">Générer mes clés</ArrowLink>
+            <ArrowLink href="/dashboard/relais">Créer mon premier relais</ArrowLink>
           </div>
         )}
       </div>
@@ -274,12 +278,18 @@ function Onboarding({ keys }: { keys: OverviewData["keys"] }) {
 
 function Subscription({ data }: { data: OverviewData }) {
   const { state } = useLiveStatus();
-  const used = state?.live || state?.reconnecting ? 1 : 0;
+  const used = state?.relays ? state.relays.filter((r) => r.live || r.reconnecting).length : state?.live || state?.reconnecting ? 1 : 0;
   return (
     <Tile aria-labelledby="abonnement">
       <TileLabel id="abonnement">Ton abonnement</TileLabel>
       <p className="mt-4 text-xl font-semibold tracking-tight">{data.plan.name}</p>
       <div className="mt-4 flex items-center justify-between text-sm">
+        <span className="text-muted">Relais</span>
+        <span className="font-mono tabular-nums">
+          {data.relays.active} / {data.relays.max >= 1_000_000 ? "∞" : data.relays.max}
+        </span>
+      </div>
+      <div className="mt-2 flex items-center justify-between text-sm">
         <span className="text-muted">Flux simultanés</span>
         <span className="font-mono tabular-nums">
           {used} / {data.plan.streams}
@@ -295,7 +305,7 @@ function Subscription({ data }: { data: OverviewData }) {
 function Urls({ data }: { data: OverviewData }) {
   return (
     <Tile aria-labelledby="urls-courtes">
-      <TileLabel id="urls-courtes">Tes URLs</TileLabel>
+      <TileLabel id="urls-courtes">{data.keys ? data.keys.relay : "Tes URLs"}</TileLabel>
       {data.keys ? (
         <div className="mt-4 space-y-3">
           {(
@@ -317,18 +327,18 @@ function Urls({ data }: { data: OverviewData }) {
             ? "Le relais ne répond pas pour le moment."
             : data.coreStatus === "off"
               ? "Le relais n'est pas encore branché au dashboard."
-              : "Pas encore de clés."}
+              : "Pas encore de relais."}
         </p>
       )}
       <div className="mt-5">
-        <ArrowLink href="/dashboard/urls">Toutes les URLs</ArrowLink>
+        <ArrowLink href="/dashboard/relais">Mes relais</ArrowLink>
       </div>
     </Tile>
   );
 }
 
 const shortcuts = [
-  { label: "Mes URLs", href: "/dashboard/urls" },
+  { label: "Mes relais", href: "/dashboard/relais" },
   { label: "Contrôle caméra", href: "/dashboard/controle" },
   { label: "Historique", href: "/dashboard/lives" },
   { label: "Documentation", href: "/docs" },

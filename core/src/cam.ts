@@ -1,12 +1,13 @@
 import { randomBytes } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { KeyRow, KeyStore } from "./keys.ts";
+import type { Relay, RelayStore } from "./relays.ts";
 import { supervise, type Supervised } from "./supervisor.ts";
 
 // SYXTEE Cam : un téléphone publie en WebRTC (WHIP) vers MediaMTX, le Core relaie vers le relais SRT
-// sur l'emplacement habituel de l'utilisateur (publish_id) : OBS garde la même URL que pour Moblin.
+// sur l'emplacement d'un relais du compte (publish_id) : OBS garde la même URL que pour Moblin.
 //
-// - Clé caméra (cam_key) : secrète, 128 bits, sert de chemin MediaMTX et d'authentification de l'app /cam.
+// - Clé caméra (cam_key) : portée par un relais (le plus ancien relais actif du compte, sauf s'il en a déjà une),
+//   secrète, 128 bits, sert de chemin MediaMTX et d'authentification de l'app /cam.
 // - MediaMTX demande au Core si une publication est autorisée (POST /internal/mediamtx/auth).
 // - Le Core lit l'API de MediaMTX chaque seconde : chemin prêt → relais ffmpeg (vidéo copiée, son → AAC).
 
@@ -32,7 +33,7 @@ const LOCAL = new Set(["127.0.0.1", "::1", "::ffff:127.0.0.1"]);
 
 export function createCam(o: {
   db: SupabaseClient;
-  keys: KeyStore;
+  relays: RelayStore;
   apiUrl: string;
   rtspUrl: string;
   whipBase: string;
@@ -42,31 +43,38 @@ export function createCam(o: {
   fetchImpl?: typeof fetch;
 }) {
   const fetchImpl = o.fetchImpl ?? fetch;
-  const byCamKey = new Map<string, KeyRow>();
+  const byCamKey = new Map<string, Relay>();
   const relays = new Map<string, { proc: Supervised; publishId: string }>();
 
-  function setKeys(rows: KeyRow[]) {
+  function setKeys(rows: Relay[]) {
     byCamKey.clear();
     for (const r of rows) if (r.cam_key) byCamKey.set(r.cam_key, r);
   }
 
-  async function lookup(camKey: string): Promise<KeyRow | null> {
+  async function lookup(camKey: string): Promise<Relay | null> {
     if (!isCamKey(camKey)) return null;
     const cached = byCamKey.get(camKey);
     if (cached) return cached;
-    const { data } = await o.db.from("stream_keys").select("*").eq("cam_key", camKey).maybeSingle();
-    if (data) byCamKey.set(camKey, data as KeyRow);
-    return (data as KeyRow | null) ?? null;
+    const { data } = await o.db.from("relays").select("*").eq("cam_key", camKey).eq("archived", false).maybeSingle();
+    if (data) byCamKey.set(camKey, data as Relay);
+    return (data as Relay | null) ?? null;
   }
 
-  async function setCamKey(userId: string, onlyIfMissing: boolean): Promise<KeyRow> {
-    const row = await o.keys.ensure(userId);
+  /** Relais qui porte la clé caméra du compte (null si le compte n'a aucun relais actif). */
+  async function camRelay(userId: string): Promise<Relay | null> {
+    const active = (await o.relays.list(userId)).filter((r) => !r.archived);
+    return active.find((r) => r.cam_key) ?? active[0] ?? null;
+  }
+
+  async function setCamKey(userId: string, onlyIfMissing: boolean): Promise<Relay | null> {
+    const row = await camRelay(userId);
+    if (!row) return null;
     if (onlyIfMissing && row.cam_key) return row;
-    const q = o.db.from("stream_keys").update({ cam_key: newCamKey() }).eq("user_id", userId);
+    const q = o.db.from("relays").update({ cam_key: newCamKey() }).eq("id", row.id);
     const { data, error } = await (onlyIfMissing ? q.is("cam_key", null) : q).select("*").maybeSingle();
     if (error) throw new Error(`cam_key : ${error.message}`);
     // Course entre deux requêtes « onlyIfMissing » : l'autre a gagné, on relit.
-    const fresh = (data as KeyRow | null) ?? (await o.keys.get(userId))!;
+    const fresh = (data as Relay | null) ?? (await o.relays.get(row.id))!;
     if (row.cam_key && row.cam_key !== fresh.cam_key) byCamKey.delete(row.cam_key);
     if (fresh.cam_key) byCamKey.set(fresh.cam_key, fresh);
     return fresh;
@@ -105,7 +113,7 @@ export function createCam(o: {
     setKeys,
     lookup,
     whipUrl: (camKey: string) => `${o.whipBase}/${camKey}/whip`,
-    /** Clé caméra de l'utilisateur (créée au besoin, avec ses clés de stream). */
+    /** Clé caméra du compte (créée au besoin sur son relais ; null s'il n'a aucun relais actif). */
     ensure: (userId: string) => setCamKey(userId, true),
     /** Nouvelle clé caméra : l'ancien lien /cam cesse de marcher. */
     rotate: (userId: string) => setCamKey(userId, false),

@@ -28,6 +28,8 @@ test("redirections /login, /signup et pages privées", async ({ page }) => {
   await expect(page).toHaveURL(/\/inscription$/);
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/connexion\?next=%2Fdashboard$/);
+  await page.goto("/dashboard/urls");
+  await expect(page).toHaveURL(/\/connexion\?next=%2Fdashboard%2Frelais$/);
 });
 
 test("lien expiré : message en français", async ({ page }) => {

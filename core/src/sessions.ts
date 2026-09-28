@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-// Historique des directs : une ligne `live_sessions` par session de diffusion (Supabase).
+// Historique des directs : une ligne `live_sessions` par session de diffusion et par relais (Supabase).
 // Ouverte quand le flux passe en ligne, mise à jour toutes les 30 s (durée, débit moyen / crête, mini-courbe),
 // fermée quand le flux reste hors ligne plus de GRACE_MS. Une coupure plus courte compte comme une reconnexion.
 
@@ -10,6 +10,7 @@ const SERIES_POINTS = 60;
 
 export type SessionRow = {
   user_id: string;
+  relay_id: string;
   device_name: string | null;
   started_at: string;
   ended_at: string | null;
@@ -55,12 +56,12 @@ export function createSessionTracker(opts: { db: SessionDb; relay: string; now?:
   const { db, relay } = opts;
   const now = opts.now ?? Date.now;
   const log = opts.log ?? (() => {});
-  const open = new Map<string, Open>();
-  const queue = new Map<string, Promise<unknown>>(); // écritures en série par utilisateur
+  const open = new Map<string, Open>(); // par id de relais
+  const queue = new Map<string, Promise<unknown>>(); // écritures en série par relais
 
-  const serial = (userId: string, job: () => Promise<unknown>) => {
-    const next = (queue.get(userId) ?? Promise.resolve()).then(job).catch((e) => log(`session ${userId.slice(0, 8)} : ${(e as Error).message}`));
-    queue.set(userId, next);
+  const serial = (relayId: string, job: () => Promise<unknown>) => {
+    const next = (queue.get(relayId) ?? Promise.resolve()).then(job).catch((e) => log(`session ${relayId.slice(0, 8)} : ${(e as Error).message}`));
+    queue.set(relayId, next);
     return next;
   };
 
@@ -75,25 +76,25 @@ export function createSessionTracker(opts: { db: SessionDb; relay: string; now?:
     };
   }
 
-  function flush(userId: string, s: Open, end: number, ended: boolean) {
+  function flush(relayId: string, s: Open, end: number, ended: boolean) {
     const patch: Partial<SessionRow> = { ...stats(s, end), ...(ended ? { ended_at: new Date(end).toISOString() } : {}) };
     s.lastFlush = now();
-    return serial(userId, async () => {
+    return serial(relayId, async () => {
       const id = await s.id;
       if (id) await db.update(id, patch);
     });
   }
 
-  function close(userId: string, s: Open) {
-    open.delete(userId);
-    return flush(userId, s, s.offlineSince ?? s.lastLiveAt, true);
+  function close(relayId: string, s: Open) {
+    open.delete(relayId);
+    return flush(relayId, s, s.offlineSince ?? s.lastLiveAt, true);
   }
 
   return {
-    /** Changement d'état du flux (évènement « status » du moniteur de santé). */
-    status(userId: string, live: boolean) {
+    /** Changement d'état du flux d'un relais (évènement « status » du moniteur de santé). */
+    status(relayId: string, live: boolean, userId: string) {
       const t = now();
-      const s = open.get(userId);
+      const s = open.get(relayId);
       if (!live) {
         if (s && s.offlineSince === null) s.offlineSince = t;
         return;
@@ -108,6 +109,7 @@ export function createSessionTracker(opts: { db: SessionDb; relay: string; now?:
       }
       const row: SessionRow = {
         user_id: userId,
+        relay_id: relayId,
         device_name: null,
         started_at: new Date(t).toISOString(),
         ended_at: null,
@@ -120,8 +122,8 @@ export function createSessionTracker(opts: { db: SessionDb; relay: string; now?:
       };
       let resolve!: (id: string | null) => void;
       const id = new Promise<string | null>((r) => (resolve = r));
-      open.set(userId, { id, startedAt: t, lastLiveAt: t, offlineSince: null, reconnects: 0, points: [], lastFlush: t });
-      serial(userId, async () => {
+      open.set(relayId, { id, startedAt: t, lastLiveAt: t, offlineSince: null, reconnects: 0, points: [], lastFlush: t });
+      serial(relayId, async () => {
         try {
           resolve(await db.insert(row));
         } catch (e) {
@@ -132,8 +134,8 @@ export function createSessionTracker(opts: { db: SessionDb; relay: string; now?:
     },
 
     /** Relevé de débit d'un flux en ligne. */
-    sample(userId: string, kbps: number) {
-      const s = open.get(userId);
+    sample(relayId: string, kbps: number) {
+      const s = open.get(relayId);
       if (!s || s.offlineSince !== null) return;
       s.points.push(kbps);
       s.lastLiveAt = now();
@@ -143,24 +145,24 @@ export function createSessionTracker(opts: { db: SessionDb; relay: string; now?:
     tick() {
       const t = now();
       const jobs: Promise<unknown>[] = [];
-      for (const [userId, s] of open) {
-        if (s.offlineSince !== null && t - s.offlineSince >= GRACE_MS) jobs.push(close(userId, s));
-        else if (s.offlineSince === null && t - s.lastFlush >= FLUSH_MS) jobs.push(flush(userId, s, s.lastLiveAt, false));
+      for (const [relayId, s] of open) {
+        if (s.offlineSince !== null && t - s.offlineSince >= GRACE_MS) jobs.push(close(relayId, s));
+        else if (s.offlineSince === null && t - s.lastFlush >= FLUSH_MS) jobs.push(flush(relayId, s, s.lastLiveAt, false));
       }
       return Promise.all(jobs);
     },
 
     /** Direct en cours (même pendant une coupure de moins de GRACE_MS). */
-    current(userId: string) {
-      const s = open.get(userId);
+    current(relayId: string) {
+      const s = open.get(relayId);
       return s ? { started_at: s.startedAt, reconnects: s.reconnects, reconnecting: s.offlineSince !== null } : null;
     },
 
     /** Arrêt du Core : ferme toutes les sessions. */
     closeAll() {
-      for (const [userId, s] of open) {
+      for (const [relayId, s] of open) {
         if (s.offlineSince === null) s.offlineSince = now();
-        void close(userId, s);
+        void close(relayId, s);
       }
       return Promise.all(queue.values());
     },

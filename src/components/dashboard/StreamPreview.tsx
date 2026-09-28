@@ -5,7 +5,7 @@ import { coreFetch } from "./coreClient";
 
 // Aperçu : dernière vignette du flux (toutes les 3 s), servie par le Core au seul propriétaire du flux.
 
-export default function StreamPreview({ coreUrl }: { coreUrl: string }) {
+export default function StreamPreview({ coreUrl, relayId }: { coreUrl: string; relayId: string }) {
   const [src, setSrc] = useState<string | null>(null);
 
   useEffect(() => {
@@ -13,7 +13,7 @@ export default function StreamPreview({ coreUrl }: { coreUrl: string }) {
     let stopped = false;
     const load = async () => {
       try {
-        const res = await coreFetch(coreUrl, "/v1/me/preview.jpg");
+        const res = await coreFetch(coreUrl, `/v1/me/relays/${relayId}/preview.jpg`);
         const next = res.ok ? URL.createObjectURL(await res.blob()) : null;
         if (stopped) return next && URL.revokeObjectURL(next);
         if (current) URL.revokeObjectURL(current);
@@ -30,7 +30,7 @@ export default function StreamPreview({ coreUrl }: { coreUrl: string }) {
       clearInterval(t);
       if (current) URL.revokeObjectURL(current);
     };
-  }, [coreUrl]);
+  }, [coreUrl, relayId]);
 
   return (
     <section className="overflow-hidden rounded-2xl border border-line" aria-labelledby="apercu">

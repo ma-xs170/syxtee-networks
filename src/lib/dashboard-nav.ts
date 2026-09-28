@@ -1,6 +1,6 @@
 // Menus de la barre de navigation sur /dashboard/* (même composant que la nav du site, autres entrées).
 
-export type DashIcon = "urls" | "health" | "preview" | "control" | "stats" | "lives" | "map" | "mire" | "cam" | "security" | "profile" | "plan" | "settings";
+export type DashIcon = "relays" | "urls" | "health" | "preview" | "control" | "stats" | "lives" | "map" | "mire" | "cam" | "security" | "profile" | "plan" | "settings";
 export type DashLink = { label: string; href: string; badge?: string };
 export type DashTool = DashLink & { desc: string; icon: DashIcon };
 export type DashMenu = { label: string; children: DashTool[]; note?: string; dot?: boolean };
@@ -13,7 +13,7 @@ export const dashboardNav: DashItem[] = [
   {
     label: "Direct",
     children: [
-      { label: "Mes URLs", href: "/dashboard/urls", desc: "Moblin, SRT, OBS", icon: "urls" },
+      { label: "Mes relais", href: "/dashboard/relais", desc: "SRTLA, RTMP, tes URLs", icon: "relays" },
       { label: "Santé du flux", href: "/dashboard/sante", desc: "Débit, RTT, pertes en temps réel", icon: "health" },
       { label: "Aperçu", href: "/dashboard/apercu", desc: "Ton flux en direct", icon: "preview" },
       { label: "Contrôle caméra", href: "/dashboard/controle", desc: "Piloter ton téléphone", icon: "control", badge: SOON },
@@ -34,7 +34,7 @@ export const dashboardNav: DashItem[] = [
       { label: "Mire de coupure", href: "/dashboard/mire", desc: "L'écran affiché si tu coupes", icon: "mire" },
       { label: "SYXTEE Cam", href: "/dashboard/cam", desc: "Ton téléphone en caméra", icon: "cam" },
       { label: "Mes contributions", href: "/dashboard/contributions", desc: "Tes mesures sur la carte 4G / 5G", icon: "map" },
-      { label: "Sécurité & clés", href: "/dashboard/securite", desc: "Régénérer, révoquer", icon: "security" },
+      { label: "Sécurité & clés", href: "/dashboard/securite", desc: "Mode stream, clés", icon: "security" },
     ],
   },
   {

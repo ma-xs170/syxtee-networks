@@ -1,5 +1,6 @@
-# MediaMTX « SYXTEE Cam » : reçoit le WebRTC (WHIP) des téléphones, rien d'autre.
-# Instance séparée du mediamtx existant : RTMP, HLS et SRT désactivés (pas de conflit de ports).
+# MediaMTX SYXTEE : reçoit le WebRTC (WHIP) de SYXTEE Cam et le RTMP des caméras (DJI, GoPro, OBS…).
+# Instance séparée du mediamtx existant : HLS et SRT désactivés. RTMP sur 1935 : ce port doit être libre
+# (vérifier avec `sudo ss -ltnp | grep 1935` avant de déployer).
 # Le Core valide chaque publication (authMethod http) et relaie le flux vers le relais SRT.
 logLevel: info
 
@@ -17,7 +18,10 @@ apiAddress: 127.0.0.1:9997
 rtsp: true
 rtspAddress: 127.0.0.1:8554
 rtspTransports: [tcp]
-rtmp: false
+# RTMP : rtmp://<hôte>:1935/live/<clé de diffusion> (relais RTMP créés dans le dashboard).
+rtmp: true
+rtmpAddress: :1935
+rtmpEncryption: "no"
 hls: false
 srt: false
 playback: false

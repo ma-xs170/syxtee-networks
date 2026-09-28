@@ -28,9 +28,13 @@ function kbpsAt(samples: Sample[], t: number) {
   return s && Math.abs(s.t - t) < 10_000 ? s.bitrate : null;
 }
 
-export default function LiveTrip() {
+/** Trajet du direct d'un relais (par défaut le relais principal en direct). */
+export default function LiveTrip({ relayId }: { relayId?: string }) {
   const { state, coreUrl } = useLiveStatus();
-  const live = !!state?.live;
+  const rid = relayId ?? state?.relay_id ?? null;
+  const current = state?.relays?.find((r) => r.id === rid);
+  const live = !!current?.live;
+  const startedAt = current?.started_at ?? null;
   const box = useRef<HTMLDivElement>(null);
   const map = useRef<MlMap | null>(null);
   const [ready, setReady] = useState(false);
@@ -38,13 +42,13 @@ export default function LiveTrip() {
   const framed = useRef(false);
 
   useEffect(() => {
-    if (!live || !coreUrl) return;
+    if (!live || !coreUrl || !rid) return;
     let stopped = false;
     const load = async () => {
       try {
-        const [p, h] = await Promise.all([coreFetch(coreUrl, "/v1/me/positions?range=6h"), coreFetch(coreUrl, "/v1/me/health?range=6h")]);
+        const [p, h] = await Promise.all([coreFetch(coreUrl, "/v1/me/positions?range=6h"), coreFetch(coreUrl, `/v1/me/relays/${rid}/health?range=6h`)]);
         if (!p.ok || !h.ok || stopped) return;
-        const since = state?.started_at ?? 0;
+        const since = startedAt ?? 0;
         const pos = ((await p.json()) as { positions: Pos[] }).positions.filter((x) => x.t >= since);
         const smp = ((await h.json()) as { samples: Sample[] }).samples;
         if (!stopped) setPoints({ p: pos, s: smp });
@@ -58,7 +62,7 @@ export default function LiveTrip() {
       stopped = true;
       clearInterval(t);
     };
-  }, [live, coreUrl, state?.started_at]);
+  }, [live, coreUrl, rid, startedAt]);
 
   const hasTrip = (points?.p.length ?? 0) >= 2;
 

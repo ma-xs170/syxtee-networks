@@ -2,8 +2,10 @@
 
 Service du VPS, à côté du `srtla-receiver` (OpenIRL). Il gère :
 
-- **Clés de stream** par utilisateur : paires `live_…` / `play_…` déclarées dans le srt-live-server (SLS) et enregistrées dans Supabase (`stream_keys`).
-- **Santé du flux** : relevé de `/stats/<play_id>` du SLS (débit, RTT, pertes, buffer, latence, liens SRTLA), 24 h d'historique (SQLite), temps réel en SSE.
+- **Relais** : chaque compte crée ses relais (SRTLA ou RTMP, dans la limite de sa formule). Chaque relais a sa paire `live_…` / `play_…` déclarée dans le srt-live-server (SLS) et enregistrée dans Supabase (`relays`, migration `0008_relays.sql`). Un relais archivé est retiré du SLS.
+- **Entrée RTMP** (DJI, GoPro, Insta360, OBS) : MediaMTX reçoit `rtmp://<hôte>:1935/live/<clé>`, le Core vérifie la clé puis republie le flux en SRT dans le SLS (vidéo copiée, son AAC). OBS lit ensuite en SRT comme pour SRTLA.
+- **Latence** : `GET /ping` (204, CORS ouvert) pour choisir le serveur le plus proche depuis le navigateur.
+- **Santé du flux** (par relais) : relevé de `/stats/<play_id>` du SLS (débit, RTT, pertes, buffer, latence, liens SRTLA), 24 h d'historique (SQLite), temps réel en SSE.
 - **Historique des directs** : une ligne `live_sessions` (Supabase) par direct, ouverte au passage en ligne, fermée après 60 s hors ligne (coupure plus courte = reconnexion). Durée, débit moyen / crête, mini-courbe. Migration `supabase/migrations/0004_live_sessions.sql` à appliquer avant de déployer.
 - **Statut en direct** : `/v1/me/status/stream` (SSE léger pour la barre du dashboard).
 - **Aperçu** : une vignette JPEG toutes les 3 s par flux live (ffmpeg, images-clés seules).
@@ -11,6 +13,7 @@ Service du VPS, à côté du `srtla-receiver` (OpenIRL). Il gère :
 
 ```
 Moblin ──SRTLA :5000──► srtla-receiver (SLS) ──SRT :4000──► OBS
+DJI ──RTMP :1935──► MediaMTX ──► Core (ffmpeg, copie) ──SRT :4001──┘
                            ▲ API + stats :8080 (localhost)
                      SYXTEE Core 127.0.0.1:8787 ◄── Caddy HTTPS (core.<domaine>) ◄── dashboard Vercel
 ```
@@ -103,6 +106,7 @@ sudo ufw allow 443/tcp         # API du Core en HTTPS
 sudo ufw allow 5000/udp        # SRTLA (Moblin)
 sudo ufw allow 4000/udp        # SRT lecture (OBS)
 sudo ufw allow 4001/udp        # SRT publication (IRL Pro, encodeurs)
+sudo ufw allow 1935/tcp        # RTMP (caméras DJI, GoPro, OBS)
 sudo ufw enable
 sudo apt-get install -y fail2ban && sudo systemctl enable --now fail2ban
 ```
@@ -147,6 +151,13 @@ Sur Vercel (Production + Preview), ajouter `CORE_URL=https://<CORE_DOMAIN>` et `
 ```bash
 cd /opt/syxtee/repo && git pull && cd .. && docker compose up -d --build
 ```
+
+### Passage aux relais multiples (une fois, dans cet ordre)
+
+1. Supabase → SQL Editor : exécuter `supabase/migrations/0008_relays.sql` (les clés existantes deviennent « Relais 1 », mêmes URLs).
+2. Vérifier que le port RTMP est libre : `sudo ss -ltnp | grep 1935` (rien ne doit s'afficher), puis `sudo ufw allow 1935/tcp`.
+3. Mettre à jour le Core (commande ci-dessus) : il lit désormais `relays`, et MediaMTX écoute en RTMP.
+4. Pousser le dashboard sur Vercel.
 
 ### Commandes utiles
 

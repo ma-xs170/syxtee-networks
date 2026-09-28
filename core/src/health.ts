@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import type { KeyRow } from "./keys.ts";
+import type { Relay } from "./relays.ts";
 import type { SampleStore, Sample } from "./samples.ts";
 import type { PublisherStats, Sls } from "./sls.ts";
 
@@ -9,7 +9,7 @@ import type { PublisherStats, Sls } from "./sls.ts";
 
 export type Live = { live: boolean; since: number; sample: Sample | null; peers: PublisherStats["peers"] };
 
-type Entry = { key: KeyRow; nextAt: number; lastDropped: number | null; lastStored: number; state: Live };
+type Entry = { key: Relay; nextAt: number; lastDropped: number | null; lastStored: number; state: Live };
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 
@@ -23,33 +23,33 @@ export function createHealthMonitor(opts: { sls: Sls; samples: SampleStore; perS
   const now = opts.now ?? Date.now;
   const events = new EventEmitter();
   events.setMaxListeners(0);
-  const entries = new Map<string, Entry>(); // par user_id
-  const watchers = new Map<string, number>(); // user_id → nombre d'abonnés
+  const entries = new Map<string, Entry>(); // par id de relais
+  const watchers = new Map<string, number>(); // id de relais → nombre d'abonnés
   let credit = perSecond; // budget plein au démarrage
   let lastTick = now();
 
-  function setKeys(keys: KeyRow[]) {
+  function setKeys(keys: Relay[]) {
     const seen = new Set<string>();
     for (const key of keys) {
-      seen.add(key.user_id);
-      const e = entries.get(key.user_id);
+      seen.add(key.id);
+      const e = entries.get(key.id);
       if (e) e.key = key;
-      else entries.set(key.user_id, { key, nextAt: 0, lastDropped: null, lastStored: 0, state: { live: false, since: now(), sample: null, peers: undefined } });
+      else entries.set(key.id, { key, nextAt: 0, lastDropped: null, lastStored: 0, state: { live: false, since: now(), sample: null, peers: undefined } });
     }
     for (const id of entries.keys()) if (!seen.has(id)) entries.delete(id);
   }
 
   function interval(e: Entry) {
-    const busy = [...entries.values()].filter((x) => x.state.live || watchers.has(x.key.user_id)).length;
+    const busy = [...entries.values()].filter((x) => x.state.live || watchers.has(x.key.id)).length;
     const fast = Math.max(1000, (busy / perSecond) * 1000);
-    return e.state.live || watchers.has(e.key.user_id) ? fast : Math.max(10_000, fast);
+    return e.state.live || watchers.has(e.key.id) ? fast : Math.max(10_000, fast);
   }
 
   function setLive(e: Entry, live: boolean) {
     if (e.state.live === live) return;
     e.state = { ...e.state, live, since: now(), sample: live ? e.state.sample : null, peers: live ? e.state.peers : undefined };
     if (!live) e.lastDropped = null;
-    events.emit("status", e.key.user_id, e.state);
+    events.emit("status", e.key.id, e.state, e.key);
   }
 
   async function poll(e: Entry) {
@@ -62,7 +62,7 @@ export function createHealthMonitor(opts: { sls: Sls; samples: SampleStore; perS
     const t = now();
     if (!stats || stats.bitrate <= 0) {
       setLive(e, false);
-      events.emit("sample", e.key.user_id, e.state);
+      events.emit("sample", e.key.id, e.state, e.key);
       return;
     }
     const cum = stats.dropped_pkts ?? 0;
@@ -81,10 +81,10 @@ export function createHealthMonitor(opts: { sls: Sls; samples: SampleStore; perS
     setLive(e, true);
     e.state = { ...e.state, sample, peers: stats.peers };
     if (t - e.lastStored >= 2000) {
-      samples.add(e.key.user_id, sample);
+      samples.add(e.key.id, sample);
       e.lastStored = t;
     }
-    events.emit("sample", e.key.user_id, e.state);
+    events.emit("sample", e.key.id, e.state, e.key);
   }
 
   /** Appelé en boucle (toutes les 200 ms) : dépense le budget de requêtes sur les flux les plus en retard. */
@@ -108,17 +108,20 @@ export function createHealthMonitor(opts: { sls: Sls; samples: SampleStore; perS
     events,
     setKeys,
     tick,
-    state: (userId: string): Live | null => entries.get(userId)?.state ?? null,
-    liveUsers: () => [...entries.values()].filter((e) => e.state.live).map((e) => e.key),
+    state: (relayId: string): Live | null => entries.get(relayId)?.state ?? null,
+    relay: (relayId: string): Relay | null => entries.get(relayId)?.key ?? null,
+    /** Relais actifs d'un compte, avec leur état. */
+    byUser: (userId: string) => [...entries.values()].filter((e) => e.key.user_id === userId).map((e) => ({ relay: e.key, state: e.state })),
+    liveRelays: () => [...entries.values()].filter((e) => e.state.live).map((e) => e.key),
     /** Un abonné (dashboard ouvert) : relevé rapide même hors ligne. Renvoie la fonction de désabonnement. */
-    watch(userId: string) {
-      watchers.set(userId, (watchers.get(userId) ?? 0) + 1);
-      const e = entries.get(userId);
+    watch(relayId: string) {
+      watchers.set(relayId, (watchers.get(relayId) ?? 0) + 1);
+      const e = entries.get(relayId);
       if (e) e.nextAt = 0;
       return () => {
-        const n = (watchers.get(userId) ?? 1) - 1;
-        if (n <= 0) watchers.delete(userId);
-        else watchers.set(userId, n);
+        const n = (watchers.get(relayId) ?? 1) - 1;
+        if (n <= 0) watchers.delete(relayId);
+        else watchers.set(relayId, n);
       };
     },
   };

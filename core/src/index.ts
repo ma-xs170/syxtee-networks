@@ -3,7 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 import { createUserVerifier } from "./auth.ts";
 import { loadConfig } from "./config.ts";
 import { createHealthMonitor, type Live } from "./health.ts";
-import { createKeyStore } from "./keys.ts";
+import type { Relay } from "./relays.ts";
+import { createRelayStore } from "./relays.ts";
+import { createRtmp } from "./rtmp.ts";
 import { loadLogo } from "./mire.ts";
 import { createPreviews } from "./preview.ts";
 import { createRegie } from "./regie.ts";
@@ -24,7 +26,7 @@ const log = (m: string) => console.log(`[core] ${m}`);
 
 const supabase = createClient(config.SUPABASE_URL, config.SUPABASE_SECRET_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
 const sls = createSls(config.SLS_API_URL, config.SLS_API_KEY);
-const keys = createKeyStore(supabase, sls);
+const relays = createRelayStore(supabase, sls, config.RELAY_NAME);
 const samples = openSamples(join(config.DATA_DIR, "health.sqlite"));
 const asn = createAsn({ file: join(config.DATA_DIR, "ipinfo_lite.mmdb"), token: config.IPINFO_TOKEN, log });
 const coverageSalt = config.COVERAGE_SALT || `coverage:${config.CORE_API_TOKEN}`;
@@ -57,7 +59,7 @@ const regie = config.REGIE_ENABLED
       relay: config.RELAY_NAME,
       logoPng: loadLogo(new URL("../assets/logo.png", import.meta.url).pathname),
       log,
-      username: (id) => keys.username(id),
+      username: (id) => relays.username(id),
       srtHost: config.SLS_SRT_HOST,
       playPort: config.SRT_PLAY_PORT,
       publishPort: config.SRT_PUBLISH_PORT,
@@ -70,51 +72,62 @@ const regie = config.REGIE_ENABLED
     })
   : null;
 
+// Sortie SRT vers le SLS des flux reçus par MediaMTX (Cam en WebRTC, caméras en RTMP).
+const srtOut = (publishId: string) =>
+  config.CAM_RELAY_URL.replace("{host}", config.SLS_SRT_HOST).replace("{port}", String(config.SRT_PUBLISH_PORT)).replace("{publish_id}", publishId);
+
 // WHIP sur un sous-domaine dédié (Caddy → MediaMTX), par défaut cam.<CORE_DOMAIN>.
 const camWhipBase = config.CAM_WHIP_BASE || (config.CORE_DOMAIN ? `https://cam.${config.CORE_DOMAIN}` : "");
 const cam =
   config.CAM_ENABLED && camWhipBase
     ? createCam({
         db: supabase,
-        keys,
+        relays,
         apiUrl: config.MEDIAMTX_API_URL,
         rtspUrl: config.MEDIAMTX_RTSP_URL,
         whipBase: camWhipBase,
-        output: (publishId) =>
-          config.CAM_RELAY_URL.replace("{host}", config.SLS_SRT_HOST).replace("{port}", String(config.SRT_PUBLISH_PORT)).replace("{publish_id}", publishId),
+        output: srtOut,
         log,
       })
     : null;
 
+// Entrée RTMP : même MediaMTX que la Cam.
+const rtmp = config.RTMP_ENABLED
+  ? createRtmp({ db: supabase, apiUrl: config.MEDIAMTX_API_URL, rtspUrl: config.MEDIAMTX_RTSP_URL, output: srtOut, log })
+  : null;
+
 async function refreshKeys() {
   try {
-    const all = await keys.all();
+    const all = await relays.all();
     health.setKeys(all);
     cam?.setKeys(all);
+    rtmp?.setKeys(all);
     await regie?.sync(all);
   } catch (e) {
     log(`lecture des clés impossible : ${(e as Error).message}`);
   }
 }
 
-health.events.on("status", (userId: string, s: { live: boolean }) => {
-  log(`flux ${userId.slice(0, 8)} ${s.live ? "en ligne" : "hors ligne"}`);
-  sessions.status(userId, s.live);
-  if (!s.live) coverage.end(userId, "live");
-  previews?.sync(health.liveUsers());
+health.events.on("status", (relayId: string, s: { live: boolean }, relay: Relay) => {
+  log(`relais ${relayId.slice(0, 8)} ${s.live ? "en ligne" : "hors ligne"}`);
+  sessions.status(relayId, s.live, relay.user_id);
+  relays.setStatus(relayId, s.live).catch((e) => log((e as Error).message));
+  if (!s.live) coverage.end(relay.user_id, "live");
+  previews?.sync(health.liveRelays());
 });
 
-health.events.on("sample", (userId: string, s: Live) => {
+health.events.on("sample", (relayId: string, s: Live, relay: Relay) => {
   if (!s.live || !s.sample) return;
-  sessions.sample(userId, s.sample.bitrate);
+  sessions.sample(relayId, s.sample.bitrate);
   // Couverture : relevé du direct + dernière position envoyée par SYXTEE Cam (consentement vérifié dans coverage).
-  const pos = samples.positions(userId, s.sample.t - 5000).at(-1) ?? null;
-  if (pos) coverage.live(userId, s.sample, pos).catch((e) => log(`couverture : ${(e as Error).message}`));
+  const pos = samples.positions(relay.user_id, s.sample.t - 5000).at(-1) ?? null;
+  if (pos) coverage.live(relay.user_id, s.sample, pos).catch((e) => log(`couverture : ${(e as Error).message}`));
 });
 
 const app = buildServer({
   config,
-  keys,
+  relays,
+  rtmp,
   health,
   samples,
   sessions,
@@ -144,10 +157,15 @@ try {
 } catch (e) {
   log((e as Error).message);
 }
+try {
+  await relays.resetStatus();
+} catch (e) {
+  log((e as Error).message);
+}
 await refreshKeys();
 const cleanup = async () => {
   try {
-    const removed = await keys.cleanupOrphans();
+    const removed = await relays.cleanupOrphans();
     if (removed.length) log(`relais : ${removed.length} paire(s) orpheline(s) retirée(s)`);
   } catch (e) {
     log(`nettoyage du relais impossible : ${(e as Error).message}`);
@@ -179,17 +197,19 @@ const timers = [
   setInterval(() => void health.tick(), 200),
   setInterval(() => void refreshKeys(), 30_000),
   ...(cam ? [setInterval(() => void cam.syncRelays(), 1_000)] : []),
+  ...(rtmp ? [setInterval(() => void rtmp.sync(), 1_000)] : []),
   setInterval(() => log(`purge santé : ${samples.purge()} points supprimés`), 3_600_000),
 ];
 
 await app.listen({ port: config.PORT, host: config.HOST });
-log(`prêt sur :${config.PORT} · relais ${config.RELAY_NAME} (${config.RELAY_PUBLIC_HOST}) · aperçus ${previews ? "oui" : "non"} · régie ${regie ? "oui" : "non"} · cam ${cam ? camWhipBase : "non"}`);
+log(`prêt sur :${config.PORT} · relais ${config.RELAY_NAME} (${config.RELAY_PUBLIC_HOST}) · aperçus ${previews ? "oui" : "non"} · régie ${regie ? "oui" : "non"} · cam ${cam ? camWhipBase : "non"} · rtmp ${rtmp ? `:${config.RTMP_PORT}` : "non"}`);
 
 const shutdown = async () => {
   timers.forEach(clearInterval);
   previews?.stopAll();
   regie?.stopAll();
   cam?.stopAll();
+  rtmp?.stopAll();
   await sessions.closeAll();
   await coverage.flush();
   await prefixes.flush();

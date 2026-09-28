@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/login", destination: "/connexion", permanent: true },
       { source: "/signup", destination: "/inscription", permanent: true },
+      { source: "/dashboard/urls", destination: "/dashboard/relais", permanent: true },
     ];
   },
 };

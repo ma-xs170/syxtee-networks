@@ -128,6 +128,8 @@ function SettingsArt() {
 
 export default function DashArt({ icon, className = "h-full w-full" }: { icon: DashIcon; className?: string }) {
   switch (icon) {
+    case "relays":
+      return <RelayServer animated={false} className={className} />;
     case "urls":
       return <PhoneMoblin waves={false} animated={false} className={className} />;
     case "preview":

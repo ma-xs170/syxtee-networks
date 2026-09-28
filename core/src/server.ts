@@ -7,7 +7,9 @@ import { z } from "zod";
 import { isServiceToken } from "./auth.ts";
 import type { Config } from "./config.ts";
 import type { HealthMonitor, Live } from "./health.ts";
-import type { KeyRow, KeyStore } from "./keys.ts";
+import { QuotaError, type Relay, type RelayStore } from "./relays.ts";
+import type { Rtmp } from "./rtmp.ts";
+import { RTMP_APP } from "./rtmp.ts";
 import type { SampleStore } from "./samples.ts";
 import type { SessionTracker } from "./sessions.ts";
 import type { Asn } from "./asn.ts";
@@ -18,15 +20,18 @@ import { classify, countsOnMap, ipPrefix, netToken, type Prefixes } from "./link
 
 // API HTTP du Core (derrière Caddy en HTTPS).
 // /v1/users/:id/*  → serveur Vercel, jeton de service.
-// /v1/me/*         → navigateur, jeton de session Supabase.
+// /v1/me/*         → navigateur, jeton de session Supabase (seulement ses propres relais).
+// /ping            → public : mesure de latence depuis le navigateur (choix du serveur).
 
 export type Deps = {
   /** SYXTEE Cam (null si désactivée). */
   cam?: Cam | null;
   /** Pseudo et Twitch vérifié, pour l'app /cam (chat en superposition). */
   profile?: (userId: string) => Promise<{ username: string | null; twitch_login: string | null }>;
+  /** Entrée RTMP (null si désactivée). */
+  rtmp?: Rtmp | null;
   config: Config;
-  keys: KeyStore;
+  relays: RelayStore;
   health: HealthMonitor;
   samples: SampleStore;
   sessions: SessionTracker;
@@ -35,24 +40,33 @@ export type Deps = {
   /** Préfixes IP appris depuis les Android (Wi-Fi / mobile). */
   prefixes?: Prefixes;
   verifyUser: (authorization: string | undefined) => Promise<string | null>;
-  previewPath: (userId: string) => string;
+  previewPath: (relayId: string) => string;
   onKeysChanged: () => void;
   slsHealthy: () => Promise<boolean>;
 };
 
 /** Ce que voit le dashboard (jamais l'identifiant de publication de la régie, interne au Core). */
-export function keyView(k: KeyRow, c: Config) {
+export function relayView(r: Relay, c: Config, live = false) {
   const host = c.RELAY_PUBLIC_HOST;
-  const regie = k.mode === "regie" && c.REGIE_ENABLED;
+  const regie = r.mode === "regie" && c.REGIE_ENABLED;
   return {
-    mode: k.mode,
+    id: r.id,
+    name: r.name,
+    protocol: r.protocol,
+    server: r.server,
+    host,
+    archived: r.archived,
+    live: !r.archived && live,
+    mode: r.mode,
     regie_available: c.REGIE_ENABLED,
-    relay: { name: c.RELAY_NAME, host },
-    moblin_srtla_url: `srtla://${host}:${c.SRTLA_PORT}?streamid=${k.publish_id}`,
-    srt_publish_url: `srt://${host}:${c.SRT_PUBLISH_PORT}?streamid=${k.publish_id}`,
-    obs_srt_url: `srt://${host}:${c.SRT_PLAY_PORT}?streamid=${regie ? k.out_play_id : k.play_id}`,
-    created_at: k.created_at,
-    rotated_at: k.rotated_at,
+    urls:
+      r.protocol === "rtmp"
+        ? { rtmp_server: `rtmp://${host}:${c.RTMP_PORT}/${RTMP_APP}`, rtmp_key: r.publish_id, rtmp_url: `rtmp://${host}:${c.RTMP_PORT}/${RTMP_APP}/${r.publish_id}` }
+        : { srtla_url: `srtla://${host}:${c.SRTLA_PORT}?streamid=${r.publish_id}`, srt_url: `srt://${host}:${c.SRT_PUBLISH_PORT}?streamid=${r.publish_id}` },
+    obs_srt_url: `srt://${host}:${c.SRT_PLAY_PORT}?streamid=${regie ? r.out_play_id : r.play_id}`,
+    created_at: r.created_at,
+    rotated_at: r.rotated_at,
+    last_live_at: r.last_live_at,
   };
 }
 
@@ -85,30 +99,87 @@ export function buildServer(d: Deps) {
   };
   const uuid = z.object({ id: z.uuid() });
 
-  app.get("/health", async () => ({ ok: true, sls: await d.slsHealthy(), streams_live: d.health.liveUsers().length }));
+  app.get("/health", async () => ({ ok: true, sls: await d.slsHealthy(), streams_live: d.health.liveRelays().length }));
+
+  // Latence vue du navigateur (assistant « Créer un relais ») : réponse vide, jamais en cache, ouverte à tous.
+  app.get("/ping", async (_req, reply) =>
+    reply.code(204).header("Cache-Control", "no-store").header("Access-Control-Allow-Origin", "*").header("Timing-Allow-Origin", "*").send(),
+  );
 
   // ───── Serveur Vercel ─────
-  app.get("/v1/users/:id/keys", { preHandler: service }, async (req, reply) => {
+  const view = (r: Relay) => relayView(r, d.config, d.health.state(r.id)?.live ?? false);
+  const relayParams = z.object({ id: z.uuid(), rid: z.uuid() });
+  /** Relais :rid du compte :id, ou 404 (un relais d'un autre compte n'existe pas pour lui). */
+  const ownRelay = async (req: FastifyRequest, reply: FastifyReply) => {
+    const { id, rid } = relayParams.parse(req.params);
+    const r = await d.relays.get(rid);
+    if (!r || r.user_id !== id) {
+      reply.code(404).send({ error: "no_relay" });
+      return null;
+    }
+    return r;
+  };
+  const changed = <T>(v: T) => (d.onKeysChanged(), v);
+
+  app.get("/v1/users/:id/relays", { preHandler: service }, async (req) => {
     const { id } = uuid.parse(req.params);
-    const k = await d.keys.get(id);
-    return k ? keyView(k, d.config) : reply.code(404).send({ error: "no_keys" });
+    return { relays: (await d.relays.list(id)).map(view) };
   });
-  app.post("/v1/users/:id/keys", { preHandler: service }, async (req) => {
+  app.post("/v1/users/:id/relays", { preHandler: service }, async (req, reply) => {
     const { id } = uuid.parse(req.params);
-    const k = await d.keys.ensure(id);
+    const body = z
+      .object({ name: z.string().trim().min(1).max(40), protocol: z.enum(["srtla", "rtmp"]), server: z.string(), limit: z.number().int().min(0) })
+      .parse(req.body);
+    if (body.server !== d.config.RELAY_NAME) return reply.code(409).send({ error: "server_unavailable" });
+    if (body.protocol === "rtmp" && !d.rtmp) return reply.code(409).send({ error: "rtmp_disabled" });
+    try {
+      return changed(view(await d.relays.create(id, body)));
+    } catch (e) {
+      if (e instanceof QuotaError) return reply.code(403).send({ error: "quota" });
+      throw e;
+    }
+  });
+  app.get("/v1/users/:id/relays/:rid", { preHandler: service }, async (req, reply) => {
+    const r = await ownRelay(req, reply);
+    return r ? view(r) : undefined;
+  });
+  app.patch("/v1/users/:id/relays/:rid", { preHandler: service }, async (req, reply) => {
+    let r = await ownRelay(req, reply);
+    if (!r) return;
+    const body = z
+      .object({
+        name: z.string().trim().min(1).max(40).optional(),
+        archived: z.boolean().optional(),
+        mode: z.enum(["direct", "regie"]).optional(),
+        limit: z.number().int().min(0).default(0),
+      })
+      .parse(req.body);
+    if (body.mode === "regie" && !d.config.REGIE_ENABLED) return reply.code(409).send({ error: "regie_disabled" });
+    try {
+      if (body.name !== undefined) r = await d.relays.rename(r, body.name);
+      if (body.mode !== undefined) r = await d.relays.setMode(r, body.mode);
+      if (body.archived !== undefined) r = await d.relays.setArchived(r, body.archived, body.limit);
+    } catch (e) {
+      if (e instanceof QuotaError) return reply.code(403).send({ error: "quota" });
+      throw e;
+    }
+    return changed(view(r));
+  });
+  app.post("/v1/users/:id/relays/:rid/rotate", { preHandler: service }, async (req, reply) => {
+    const r = await ownRelay(req, reply);
+    return r ? changed(view(await d.relays.rotate(r))) : undefined;
+  });
+  app.delete("/v1/users/:id/relays/:rid", { preHandler: service }, async (req, reply) => {
+    const r = await ownRelay(req, reply);
+    if (!r) return;
+    await d.relays.remove(r);
     d.onKeysChanged();
-    return keyView(k, d.config);
+    return reply.code(204).send();
   });
-  app.post("/v1/users/:id/keys/rotate", { preHandler: service }, async (req) => {
+  // Compte supprimé : tous ses relais sont retirés du SLS et effacés (plus aucune URL ne marche).
+  app.delete("/v1/users/:id/relays", { preHandler: service }, async (req, reply) => {
     const { id } = uuid.parse(req.params);
-    const k = await d.keys.rotate(id);
-    d.onKeysChanged();
-    return keyView(k, d.config);
-  });
-  // Compte supprimé : les clés sont retirées du relais et effacées (plus aucune URL ne marche).
-  app.delete("/v1/users/:id/keys", { preHandler: service }, async (req, reply) => {
-    const { id } = uuid.parse(req.params);
-    await d.keys.remove(id);
+    await d.relays.removeAll(id);
     d.onKeysChanged();
     return reply.code(204).send();
   });
@@ -117,21 +188,25 @@ export function buildServer(d: Deps) {
     const { id } = uuid.parse(req.params);
     return { deleted: d.coverage ? await d.coverage.erase(id) : 0 };
   });
-  app.put("/v1/users/:id/mode", { preHandler: service }, async (req, reply) => {
-    const { id } = uuid.parse(req.params);
-    const { mode } = z.object({ mode: z.enum(["direct", "regie"]) }).parse(req.body);
-    if (mode === "regie" && !d.config.REGIE_ENABLED) return reply.code(409).send({ error: "regie_disabled" });
-    const k = await d.keys.setMode(id, mode);
-    d.onKeysChanged();
-    return keyView(k, d.config);
-  });
-
   // ───── Navigateur (dashboard) ─────
-  app.get("/v1/me/health", async (req, reply) => {
+  /** Relais :rid actif appartenant au compte connecté (404 sinon, même s'il existe pour un autre compte). */
+  const myRelay = async (req: FastifyRequest, reply: FastifyReply) => {
     const id = await userId(req, reply);
-    if (!id) return;
+    if (!id) return null;
+    const parsed = z.object({ rid: z.uuid() }).safeParse(req.params);
+    const r = parsed.success ? d.health.relay(parsed.data.rid) : null;
+    if (!r || r.user_id !== id) {
+      reply.code(404).send({ error: "no_relay" });
+      return null;
+    }
+    return r;
+  };
+
+  app.get("/v1/me/relays/:rid/health", async (req, reply) => {
+    const r = await myRelay(req, reply);
+    if (!r) return;
     const { range } = z.object({ range: z.enum(["15m", "1h", "6h", "24h"]).default("1h") }).parse(req.query);
-    return { live: d.health.state(id), samples: d.samples.history(id, Date.now() - RANGES[range]) };
+    return { live: d.health.state(r.id), samples: d.samples.history(r.id, Date.now() - RANGES[range]) };
   });
 
   // Server-Sent Events : réponse écrite à la main, on remet les en-têtes CORS.
@@ -148,7 +223,8 @@ export function buildServer(d: Deps) {
     return (event: string, data: unknown) => reply.raw.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   };
 
-  // Statut léger (pastille de la barre du dashboard) : en ligne ou non, début du direct, débit toutes les 5 s au plus.
+  // Statut léger (pastille de la barre du dashboard) : tous les relais du compte, débit toutes les 5 s au plus.
+  // Les champs de premier niveau décrivent le relais principal (le premier en direct, sinon en reconnexion).
   // N'accélère pas les relevés (pas de watch) : ouvert sur toutes les pages du dashboard.
   app.get("/v1/me/status/stream", async (req, reply) => {
     const id = await userId(req, reply);
@@ -156,20 +232,34 @@ export function buildServer(d: Deps) {
     const send = openStream(req, reply);
     let lastSent = 0;
     const push = () => {
-      const s = d.health.state(id);
-      const cur = d.sessions.current(id);
+      const relays = d.health.byUser(id).map(({ relay, state: s }) => {
+        const cur = d.sessions.current(relay.id);
+        return {
+          id: relay.id,
+          name: relay.name,
+          live: s.live,
+          reconnecting: !s.live && !!cur?.reconnecting,
+          started_at: cur?.started_at ?? (s.live ? s.since : null),
+          kbps: s.live && s.sample ? Math.round(s.sample.bitrate) : null,
+          reconnects: cur?.reconnects ?? 0,
+        };
+      });
+      const main = relays.find((r) => r.live) ?? relays.find((r) => r.reconnecting);
       lastSent = Date.now();
       send("status", {
-        live: !!s?.live,
-        reconnecting: !s?.live && !!cur?.reconnecting,
-        started_at: cur?.started_at ?? (s?.live ? s.since : null),
-        kbps: s?.live && s.sample ? Math.round(s.sample.bitrate) : null,
-        reconnects: cur?.reconnects ?? 0,
+        live: !!main?.live,
+        reconnecting: !!main?.reconnecting,
+        started_at: main?.started_at ?? null,
+        kbps: main?.kbps ?? null,
+        reconnects: main?.reconnects ?? 0,
+        relay_id: main?.id ?? null,
+        relays,
       });
     };
     push();
-    const onStatus = (uid: string) => uid === id && push();
-    const onSample = (uid: string) => uid === id && Date.now() - lastSent >= 5000 && push();
+    const mine = (rid: string) => d.health.relay(rid)?.user_id === id;
+    const onStatus = (rid: string) => mine(rid) && push();
+    const onSample = (rid: string) => mine(rid) && Date.now() - lastSent >= 5000 && push();
     d.health.events.on("status", onStatus);
     d.health.events.on("sample", onSample);
     const ping = setInterval(() => reply.raw.write(": ping\n\n"), 15_000);
@@ -180,15 +270,15 @@ export function buildServer(d: Deps) {
     });
   });
 
-  // Santé en temps réel (Server-Sent Events).
-  app.get("/v1/me/health/stream", async (req, reply) => {
-    const id = await userId(req, reply);
-    if (!id) return;
+  // Santé d'un relais en temps réel (Server-Sent Events).
+  app.get("/v1/me/relays/:rid/health/stream", async (req, reply) => {
+    const r = await myRelay(req, reply);
+    if (!r) return;
     const send = openStream(req, reply);
-    send("state", d.health.state(id) ?? { live: false, since: Date.now(), sample: null });
-    const onSample = (uid: string, s: Live) => uid === id && send("state", s);
+    send("state", d.health.state(r.id) ?? { live: false, since: Date.now(), sample: null });
+    const onSample = (rid: string, s: Live) => rid === r.id && send("state", s);
     d.health.events.on("sample", onSample);
-    const unwatch = d.health.watch(id);
+    const unwatch = d.health.watch(r.id);
     const ping = setInterval(() => reply.raw.write(": ping\n\n"), 15_000);
     req.raw.on("close", () => {
       clearInterval(ping);
@@ -197,11 +287,11 @@ export function buildServer(d: Deps) {
     });
   });
 
-  app.get("/v1/me/preview.jpg", async (req, reply) => {
-    const id = await userId(req, reply);
-    if (!id) return;
-    const file = d.previewPath(id);
-    const fresh = existsSync(file) && Date.now() - statSync(file).mtimeMs < 15_000;
+  app.get("/v1/me/relays/:rid/preview.jpg", async (req, reply) => {
+    const r = await myRelay(req, reply);
+    if (!r) return;
+    const file = d.previewPath(r.id);
+    const fresh = file !== "" && existsSync(file) && Date.now() - statSync(file).mtimeMs < 15_000;
     if (!fresh) return reply.code(404).send({ error: "no_preview" });
     return reply.header("Content-Type", "image/jpeg").header("Cache-Control", "no-store").send(readFileSync(file));
   });
@@ -209,12 +299,14 @@ export function buildServer(d: Deps) {
   // ───── SYXTEE Cam ─────
   const cam = d.cam;
   if (cam) {
-    const camView = (k: KeyRow) => ({ cam_key: k.cam_key, cam_path: `/cam?k=${k.cam_key}`, whip_url: cam.whipUrl(k.cam_key!) });
-    app.get("/v1/users/:id/cam", { preHandler: service }, async (req) => camView(await cam.ensure(uuid.parse(req.params).id)));
-    app.post("/v1/users/:id/cam/rotate", { preHandler: service }, async (req) => {
+    // Pas de relais actif : 404 (la Cam publie toujours vers un relais du compte).
+    const camView = (k: Relay | null, reply: FastifyReply) =>
+      k ? { cam_key: k.cam_key, cam_path: `/cam?k=${k.cam_key}`, whip_url: cam.whipUrl(k.cam_key!), relay: { id: k.id, name: k.name } } : reply.code(404).send({ error: "no_relay" });
+    app.get("/v1/users/:id/cam", { preHandler: service }, async (req, reply) => camView(await cam.ensure(uuid.parse(req.params).id), reply));
+    app.post("/v1/users/:id/cam/rotate", { preHandler: service }, async (req, reply) => {
       const k = await cam.rotate(uuid.parse(req.params).id);
       d.onKeysChanged();
-      return camView(k);
+      return camView(k, reply);
     });
 
     // App /cam : authentifiée par la clé caméra (Authorization: Bearer cam_…).
@@ -233,7 +325,7 @@ export function buildServer(d: Deps) {
         twitch_login: p.twitch_login,
         whip_url: cam.whipUrl(row.cam_key!),
         relay: d.config.RELAY_NAME,
-        live: d.health.state(row.user_id)?.live ?? false,
+        live: d.health.state(row.id)?.live ?? false,
       };
     });
     const gps = z.object({
@@ -403,12 +495,16 @@ export function buildServer(d: Deps) {
       });
     }
 
-    // MediaMTX → Core : autorisation d'une publication. Jamais accessible de l'extérieur
-    // (bloqué dans Caddy, et refusé ici dès qu'une requête arrive par un proxy).
+  }
+
+  // MediaMTX → Core : autorisation d'une publication (Cam en WebRTC, caméras en RTMP). Jamais accessible de
+  // l'extérieur (bloqué dans Caddy, et refusé ici dès qu'une requête arrive par un proxy).
+  if (cam || d.rtmp) {
     app.post("/internal/mediamtx/auth", async (req, reply) => {
       const local = ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(req.socket.remoteAddress ?? "");
       if (!local || req.headers["x-forwarded-for"]) return reply.code(404).send();
-      const ok = await cam.authorize(req.body as Record<string, string>);
+      const p = req.body as Record<string, string>;
+      const ok = p.path?.startsWith(`${RTMP_APP}/`) ? !!(await d.rtmp?.authorize(p)) : !!(await cam?.authorize(p));
       return reply.code(ok ? 200 : 401).send();
     });
   }

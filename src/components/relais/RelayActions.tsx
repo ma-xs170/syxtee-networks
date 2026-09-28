@@ -1,0 +1,206 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { archiveRelayAction, deleteRelayAction, renameRelayAction, rotateRelayAction, type RelayActionState } from "@/app/(dashboard)/dashboard/relais/actions";
+import type { RelayView } from "@/lib/core";
+
+// Actions d'un relais : Copier l'URL (clé jamais affichée ici), Voir, et un menu (Renommer, Régénérer la clé,
+// Archiver ou Réactiver, Supprimer). Les actions qui coupent des URLs passent par une confirmation.
+
+type Pending = "rename" | "rotate" | "archive" | "delete" | null;
+
+/** URL que l'encodeur colle : SRTLA pour Moblin, URL RTMP complète pour une caméra. */
+export const ingestUrl = (r: Pick<RelayView, "protocol" | "urls">) => (r.protocol === "rtmp" ? r.urls.rtmp_url : r.urls.srtla_url) ?? "";
+
+const btn = "h-10 whitespace-nowrap rounded-full border border-line px-4 text-sm transition-colors hover:bg-white/5 disabled:opacity-40";
+
+export default function RelayActions({ relay, showView = true }: { relay: RelayView; showView?: boolean }) {
+  const router = useRouter();
+  const [menu, setMenu] = useState(false);
+  const [ask, setAsk] = useState<Pending>(null);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [name, setName] = useState(relay.name);
+  const [pending, start] = useTransition();
+  const menuRef = useRef<HTMLDivElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    if (!menu) return;
+    const close = (e: MouseEvent | KeyboardEvent) => {
+      if (e instanceof KeyboardEvent ? e.key === "Escape" : !menuRef.current?.contains(e.target as Node)) setMenu(false);
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", close);
+    };
+  }, [menu]);
+
+  useEffect(() => {
+    const d = dialog.current;
+    if (!d) return;
+    if (ask && !d.open) d.showModal();
+    if (!ask && d.open) d.close();
+  }, [ask]);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(ingestUrl(relay));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  function open(p: Pending) {
+    setMenu(false);
+    setError(null);
+    setName(relay.name);
+    setAsk(p);
+  }
+
+  function confirm() {
+    start(async () => {
+      let r: RelayActionState = {};
+      if (ask === "rename") r = await renameRelayAction(relay.id, name);
+      if (ask === "rotate") r = await rotateRelayAction(relay.id);
+      if (ask === "archive") r = await archiveRelayAction(relay.id, !relay.archived);
+      if (ask === "delete") r = await deleteRelayAction(relay.id);
+      if (r.error) return setError(r.error);
+      const wasDelete = ask === "delete";
+      setAsk(null);
+      if (wasDelete && !showView) router.push("/dashboard/relais");
+      else router.refresh();
+    });
+  }
+
+  const texts: Record<Exclude<Pending, null>, { title: string; body: string; cta: string; danger?: boolean }> = {
+    rename: { title: "Renommer le relais", body: "Le nom de l'appareil qui utilise ce relais. Les URLs ne changent pas.", cta: "Renommer" },
+    rotate: {
+      title: "Régénérer la clé",
+      body: "Les URLs actuelles de ce relais cesseront de marcher immédiatement. Tu devras coller les nouvelles dans ton encodeur et dans OBS.",
+      cta: "Régénérer",
+      danger: true,
+    },
+    archive: relay.archived
+      ? { title: "Réactiver le relais", body: "Ses URLs remarchent tout de suite. Il compte de nouveau dans la limite de ta formule.", cta: "Réactiver" }
+      : {
+          title: "Archiver le relais",
+          body: "Ses URLs cessent de marcher et il ne compte plus dans ta limite. Tu pourras le réactiver avec les mêmes URLs.",
+          cta: "Archiver",
+          danger: true,
+        },
+    delete: {
+      title: "Supprimer le relais",
+      body: "Ses URLs cessent de marcher et le relais est effacé. Ses directs restent dans ton historique. Action définitive.",
+      cta: "Supprimer définitivement",
+      danger: true,
+    },
+  };
+  const t = ask ? texts[ask] : null;
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {!relay.archived && (
+        <button type="button" onClick={copy} className={btn} aria-label={`Copier l'URL de ${relay.name}`}>
+          <span aria-live="polite">{copied ? "Copié" : "Copier l'URL"}</span>
+        </button>
+      )}
+      {showView && (
+        <Link href={`/dashboard/relais/${relay.id}`} className={`${btn} inline-flex items-center`}>
+          Voir
+        </Link>
+      )}
+      <div ref={menuRef} className="relative">
+        <button type="button" onClick={() => setMenu((v) => !v)} aria-expanded={menu} aria-haspopup="menu" className={btn} aria-label={`Plus d'actions pour ${relay.name}`}>
+          Plus
+        </button>
+        {menu && (
+          <div role="menu" className="absolute right-0 top-12 z-20 w-56 overflow-hidden rounded-xl border border-line bg-black py-1 shadow-[0_18px_40px_rgba(0,0,0,0.6)]">
+            {(
+              [
+                ["rename", "Renommer"],
+                ...(relay.archived ? [] : [["rotate", "Régénérer la clé"]]),
+                ["archive", relay.archived ? "Réactiver" : "Archiver"],
+                ["delete", "Supprimer"],
+              ] as [Exclude<Pending, null>, string][]
+            ).map(([k, label]) => (
+              <button
+                key={k}
+                type="button"
+                role="menuitem"
+                onClick={() => open(k)}
+                className={`block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-white/5 ${k === "delete" ? "text-red-300" : ""}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <dialog
+        ref={dialog}
+        onClose={() => setAsk(null)}
+        onClick={(e) => e.target === dialog.current && setAsk(null)}
+        aria-labelledby={`ask-${relay.id}`}
+        className="m-auto w-[min(480px,calc(100vw-2rem))] rounded-2xl border border-line bg-black p-0 text-foreground backdrop:bg-black/80 backdrop:backdrop-blur-sm"
+      >
+        {t && (
+          <form
+            className="p-6"
+            onSubmit={(e) => {
+              e.preventDefault();
+              confirm();
+            }}
+          >
+            <h2 id={`ask-${relay.id}`} className="text-lg font-semibold tracking-tight">
+              {t.title}
+            </h2>
+            <p className="mt-1 text-sm text-muted">{relay.name}</p>
+            <p className="mt-4 text-sm leading-relaxed text-muted">{t.body}</p>
+            {ask === "rename" && (
+              <div className="mt-4">
+                <label htmlFor={`name-${relay.id}`} className="text-sm">
+                  Nom de l&apos;appareil
+                </label>
+                <input
+                  id={`name-${relay.id}`}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  maxLength={40}
+                  autoFocus
+                  className="mt-2 h-11 w-full rounded-xl border border-line bg-black px-4 text-sm text-foreground focus:border-white/60 focus:outline-none"
+                />
+              </div>
+            )}
+            {error && (
+              <p role="alert" className="mt-4 text-sm text-red-400">
+                {error}
+              </p>
+            )}
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <button
+                type="submit"
+                disabled={pending || (ask === "rename" && !name.trim())}
+                className={`h-11 whitespace-nowrap rounded-full px-5 text-sm font-medium transition-colors disabled:opacity-60 ${
+                  t.danger ? "border border-red-400/40 text-red-300 hover:bg-red-400/10" : "bg-white text-black hover:bg-neutral-200"
+                }`}
+              >
+                {pending ? "Un instant…" : t.cta}
+              </button>
+              <button type="button" onClick={() => setAsk(null)} className="h-11 px-4 text-sm text-muted hover:text-foreground">
+                Annuler
+              </button>
+            </div>
+          </form>
+        )}
+      </dialog>
+    </div>
+  );
+}

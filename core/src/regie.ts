@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { KeyRow } from "./keys.ts";
+import type { Relay } from "./relays.ts";
 import { mireSvg } from "./mire.ts";
 import { sessionCode } from "./ids.ts";
 import { supervise, type Supervised } from "./supervisor.ts";
@@ -63,18 +63,18 @@ export function createRegie(o: RegieOptions & { dir: string; relay: string; logo
   mkdirSync(o.dir, { recursive: true });
   const running = new Map<string, { proc: Supervised; outPublishId: string }>();
 
-  async function start(k: KeyRow) {
-    const svgPath = join(o.dir, `${k.user_id}.svg`);
+  async function start(k: Relay) {
+    const svgPath = join(o.dir, `${k.id}.svg`);
     const source = await o.username(k.user_id);
     writeFileSync(svgPath, mireSvg({ width: o.width, height: o.height, relay: o.relay, source, session: sessionCode(), logoPng: o.logoPng }));
     const args = regieArgs({ ...o, playId: k.play_id, outPublishId: k.out_publish_id, mireSvgPath: svgPath });
-    running.set(k.user_id, { proc: supervise(`régie ${source}`, "gst-launch-1.0", args, o.log), outPublishId: k.out_publish_id });
+    running.set(k.id, { proc: supervise(`régie ${source}`, "gst-launch-1.0", args, o.log), outPublishId: k.out_publish_id });
   }
 
   return {
-    /** Une régie par utilisateur en mode « regie » (clé changée : la régie redémarre). */
-    async sync(keys: KeyRow[]) {
-      const want = new Map(keys.filter((k) => k.mode === "regie").map((k) => [k.user_id, k]));
+    /** Une régie par relais en mode « regie » (clé changée : la régie redémarre). */
+    async sync(keys: Relay[]) {
+      const want = new Map(keys.filter((k) => k.mode === "regie").map((k) => [k.id, k]));
       for (const [id, r] of running) {
         const k = want.get(id);
         if (!k || k.out_publish_id !== r.outPublishId) {

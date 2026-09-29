@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Relay } from "./relays.ts";
-import { mireSvg } from "./mire.ts";
+import { CLOCK, mireSvg } from "./mire.ts";
 import { sessionCode } from "./ids.ts";
 import { supervise, type Supervised } from "./supervisor.ts";
 
@@ -46,7 +46,8 @@ export function regieArgs(o: RegieOptions & { playId: string; outPublishId: stri
     "videotestsrc", "is-live=true", "pattern=black", "!", `video/x-raw,width=${o.width},height=${o.height},framerate=${o.fps}/1`, "!",
     "rsvgoverlay", `location=${o.mireSvgPath}`, "!",
     "clockoverlay", "time-format=%H:%M:%S", "halignment=right", "valignment=top",
-    `xpad=${Math.round(80 * scale)}`, `ypad=${Math.round(66 * scale)}`, `font-desc="DejaVu Sans Mono ${Math.round(22 * scale)}"`, "shaded-background=false", "!",
+    `xpad=${Math.round(CLOCK.right * scale)}`, `ypad=${Math.round(CLOCK.top * scale)}`, `font-desc="${CLOCK.font} ${Math.round(CLOCK.size * scale)}"`,
+    "shaded-background=false", "draw-shadow=false", "auto-resize=false", "!",
     "videoconvert", "!", "video/x-raw,format=I420", "!", "queue", "!", "vsw.sink_1",
     // Son de la mire : silence, ou bip 1 kHz discret.
     "audiotestsrc", "is-live=true", ...(o.beep ? ["wave=sine", "freq=1000", "volume=0.05"] : ["wave=silence"]), "!", audio, "!", "queue", "!", "asw.sink_1",
@@ -59,7 +60,7 @@ export function regieArgs(o: RegieOptions & { playId: string; outPublishId: stri
   ];
 }
 
-export function createRegie(o: RegieOptions & { dir: string; relay: string; logoPng?: Buffer; log: (m: string) => void; username: (userId: string) => Promise<string> }) {
+export function createRegie(o: RegieOptions & { dir: string; tz: string; relay: string; logoPng?: Buffer; log: (m: string) => void; username: (userId: string) => Promise<string> }) {
   mkdirSync(o.dir, { recursive: true });
   const running = new Map<string, { proc: Supervised; outPublishId: string }>();
 
@@ -68,7 +69,7 @@ export function createRegie(o: RegieOptions & { dir: string; relay: string; logo
     const source = await o.username(k.user_id);
     writeFileSync(svgPath, mireSvg({ width: o.width, height: o.height, relay: o.relay, source, session: sessionCode(), logoPng: o.logoPng }));
     const args = regieArgs({ ...o, playId: k.play_id, outPublishId: k.out_publish_id, mireSvgPath: svgPath });
-    running.set(k.id, { proc: supervise(`régie ${source}`, "gst-launch-1.0", args, o.log), outPublishId: k.out_publish_id });
+    running.set(k.id, { proc: supervise(`régie ${source}`, "gst-launch-1.0", args, o.log, { TZ: o.tz }), outPublishId: k.out_publish_id });
   }
 
   return {

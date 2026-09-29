@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { newStreamIds } from "../src/ids.ts";
-import { mireSvg } from "../src/mire.ts";
+import { BARS_Y, mireSvg } from "../src/mire.ts";
 import { previewArgs } from "../src/preview.ts";
 import { regieArgs } from "../src/regie.ts";
 
@@ -15,9 +15,14 @@ test("identifiants : préfixes et 128 bits aléatoires", () => {
 
 test("mire : textes échappés, bande de 7 couleurs", () => {
   const svg = mireSvg({ width: 1280, height: 720, relay: "nyc1", source: "<script>&", session: "7F3A-21C4" });
-  assert.ok(svg.includes("SOURCE : &lt;script&gt;&amp;"));
-  assert.ok(svg.includes("SIGNAL PERDU"));
-  assert.equal((svg.match(/y="640"/g) ?? []).length, 7);
+  assert.ok(svg.includes(">&lt;script&gt;&amp;</text>"));
+  assert.ok(svg.includes(">SIGNAL</text>") && svg.includes(">PERDU</text>"));
+  assert.equal((svg.match(new RegExp(`y="${BARS_Y}"`, "g")) ?? []).length, 7);
+});
+
+test("mire : source trop longue coupée", () => {
+  const svg = mireSvg({ width: 1280, height: 720, relay: "nyc1", source: "x".repeat(60), session: "7F3A-21C4" });
+  assert.ok(svg.includes(`>${"x".repeat(27)}…</text>`));
 });
 
 test("régie : entrée = play du téléphone, sortie = publication régie, bascule à 1,5 s", () => {
@@ -29,7 +34,8 @@ test("régie : entrée = play du téléphone, sortie = publication régie, bascu
   assert.ok(args.includes("uri=srt://sls:4001?streamid=live_out_y"));
   assert.equal(args.filter((a) => a === "timeout=1500000000").length, 2);
   assert.ok(args.includes("wave=silence"));
-  assert.ok(args.includes('font-desc="DejaVu Sans Mono 22"'));
+  assert.ok(args.includes('font-desc="Geist Mono 11"'));
+  assert.ok(args.includes("auto-resize=false"));
 });
 
 test("aperçu : images-clés seules, une image toutes les 3 s", () => {

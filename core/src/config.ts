@@ -62,6 +62,8 @@ const schema = z.object({
   REGIE_FPS: z.coerce.number().default(30),
   REGIE_BITRATE_KBPS: z.coerce.number().default(4000),
   REGIE_BEEP: bool.default(false),
+  // Fuseau de l'heure affichée sur la mire (le conteneur tourne en UTC).
+  REGIE_TZ: z.string().default("Europe/Paris"),
   // Coupure détectée après ce délai sans paquets.
   REGIE_TIMEOUT_MS: z.coerce.number().default(1500),
 

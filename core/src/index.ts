@@ -99,6 +99,7 @@ const regie = config.REGIE_ENABLED
       bitrateKbps: config.REGIE_BITRATE_KBPS,
       timeoutMs: config.REGIE_TIMEOUT_MS,
       beep: config.REGIE_BEEP,
+      tz: config.REGIE_TZ,
     })
   : null;
 

@@ -15,7 +15,7 @@ const COMPAT: [string, string, string][] = [
   ["Objectif 0,5x", "Oui (grand-angle)", "Selon le téléphone"],
   ["Zoom 2x / 3x", "Téléobjectif s'il existe", "Oui (zoom de la caméra)"],
   ["Torche", "Non", "Oui"],
-  ["Stabilisation (bouton STAB)", "Oui, après autorisation « Mouvements »", "Oui"],
+  ["Stabilisation", "Non : Safari ne l'expose pas (utilise Moblin)", "Selon le téléphone et Chrome"],
   ["Batterie affichée", "Non", "Oui"],
   ["Enregistrement sur le téléphone", "Oui", "Oui"],
   ["Écran toujours allumé", "Oui", "Oui"],
@@ -112,6 +112,7 @@ export default async function CamPage() {
           <p className="mt-4 text-xs text-muted">
             Si la connexion coupe, SYXTEE Cam se reconnecte seule. L&apos;écran de coupure dans OBS (mire) arrive avec le mode Régie.
           </p>
+          <p className="mt-2 text-xs text-muted">Pour une stabilisation maximale en IRL sur iPhone, utilise Moblin avec ton relais SYXTEE.</p>
         </Tile>
       </div>
     </DashPage>

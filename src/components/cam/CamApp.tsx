@@ -4,15 +4,22 @@ import Image from "next/image";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import ScanMode from "./ScanMode";
 import ZoneStatus from "./ZoneStatus";
-import { requestMotionPermission, stabilizationSupported, Stabilizer } from "./stabilizer";
 import { supportsH264, whipPublish, whipStop, type WhipSession } from "./whip";
 
 // SYXTEE Cam : le téléphone devient une caméra du direct, sur UNE connexion (Wi-Fi ou 4G), en WebRTC (WHIP)
 // vers le SYXTEE Core, qui relaie en SRT sur la clé habituelle (même URL OBS que Moblin).
 // Pas de bonding : pour l'IRL multi-réseaux, Moblin reste recommandé.
+// Pas de stabilisation logicielle : un navigateur ne peut pas activer celle du téléphone (aucune contrainte getUserMedia
+// ne l'expose), et un recadrage image par image en JavaScript fait chauffer le téléphone pour un mauvais résultat.
+// Sur iPhone, on conseille Moblin (stabilisation native d'iOS). Voir docs/plan-app-ios.md.
 
 const KEY = "syxtee:cam-key";
 const PREFS = "syxtee:cam-prefs";
+const IOS_TIP = "syxtee:cam-ios-tip";
+const IOS_STAB_TIP = "Pour une stabilisation maximale en IRL, utilise Moblin avec ton relais SYXTEE.";
+
+/** iPhone / iPad (iPadOS se présente comme un Mac tactile). */
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
 type Me = { username: string | null; twitch_login: string | null; whip_url: string; relay: string };
 type Quality = "720" | "1080" | "1080hq";
@@ -81,7 +88,6 @@ function Pill({ children, active = false, onClick, label }: { children: ReactNod
 export default function CamApp({ coreUrl }: { coreUrl: string }) {
   const video = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null); // caméra + micro bruts
-  const stabRef = useRef<Stabilizer | null>(null); // stabilisation (gyroscope) si activée
   const session = useRef<WhipSession | null>(null);
   const want = useRef(false); // l'utilisateur veut être en direct (reconnexion auto)
   const retry = useRef(0);
@@ -114,10 +120,16 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
   const [chat, setChat] = useState<{ id: number; user: string; text: string }[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [showScan, setShowScan] = useState(false);
-  const [stab, setStab] = useState(false);
-  const [notice, setNotice] = useState<string | null>(() =>
-    supportsH264() ? null : "Ce navigateur n'envoie pas de H.264 : utilise Safari (iPhone) ou Chrome (Android).",
-  );
+  const [ios] = useState(isIOS);
+  const [notice, setNotice] = useState<string | null>(() => {
+    if (!supportsH264()) return "Ce navigateur n'envoie pas de H.264 : utilise Safari (iPhone) ou Chrome (Android).";
+    // Conseil montré une fois sur iPhone (toujours rappelé dans les réglages).
+    if (ios && !store.get(IOS_TIP, false)) {
+      store.set(IOS_TIP, true);
+      return IOS_STAB_TIP;
+    }
+    return null;
+  });
 
   // ───── Clé caméra : lien /cam?k=… (QR du dashboard), retenue sur le téléphone ─────
   useEffect(() => {
@@ -141,15 +153,12 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
       .catch(() => setFatal("core"));
   }, [camKey, coreUrl]);
 
-  /** Flux envoyé (diffusion, REC, aperçu) : vidéo stabilisée si la stabilisation est active, sinon la caméra. */
+  /** Flux envoyé (diffusion, REC, aperçu) : la caméra telle quelle, sans traitement image par image. */
   function outStream() {
-    const raw = streamRef.current;
-    if (!raw) return null;
-    const st = stabRef.current;
-    return st ? new MediaStream([st.track, ...raw.getAudioTracks()]) : raw;
+    return streamRef.current;
   }
 
-  /** Applique le flux envoyé à l'aperçu et, en direct, aux pistes WebRTC (sans renégocier). */
+  /** Applique le flux à l'aperçu et, en direct, aux pistes WebRTC (sans renégocier). */
   async function applyOutput() {
     const out = outStream();
     if (!out) return;
@@ -167,17 +176,22 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
   async function openCamera(lens?: Lens) {
     {
       const q = QUALITY[prefs.quality];
-      const videoC: MediaTrackConstraints = lens?.deviceId
-        ? { deviceId: { exact: lens.deviceId }, width: { ideal: q.w }, height: { ideal: q.h }, frameRate: { ideal: 30 } }
-        : { facingMode: prefs.facing, width: { ideal: q.w }, height: { ideal: q.h }, frameRate: { ideal: 30 } };
+      // Résolution et cadence demandées au capteur lui-même (resizeMode « none ») : pas de mise à l'échelle par le
+      // navigateur. Sans objectif choisi : caméra principale (1x) côté arrière.
+      const format: MediaTrackConstraints = {
+        width: { ideal: q.w },
+        height: { ideal: q.h },
+        aspectRatio: { ideal: 16 / 9 },
+        frameRate: { ideal: 30 },
+        resizeMode: { ideal: "none" },
+      } as MediaTrackConstraints;
+      const videoC: MediaTrackConstraints = lens?.deviceId ? { deviceId: { exact: lens.deviceId }, ...format } : { facingMode: prefs.facing, ...format };
       const s = await navigator.mediaDevices.getUserMedia({
         video: videoC,
         audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: true },
       });
       const old = streamRef.current;
       streamRef.current = s;
-      // Stabilisation active : la piste stabilisée reste la même, seule sa source change.
-      await stabRef.current?.setSource(s);
       await applyOutput();
       old?.getTracks().forEach((t) => t.stop());
       const vt = s.getVideoTracks()[0];
@@ -211,7 +225,6 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
 
   async function pickLens(l: Lens) {
     setZoom(l.zoom);
-    stabRef.current?.setZoom(l.zoom);
     if (l.digital) {
       const vt = streamRef.current?.getVideoTracks()[0];
       await vt?.applyConstraints({ advanced: [{ zoom: l.zoom } as MediaTrackConstraintSet] }).catch(() => {});
@@ -230,46 +243,6 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
       setNotice("La torche ne répond pas sur cet appareil.");
     }
   }
-
-  // ───── Stabilisation électronique (gyroscope + recadrage) ─────
-  async function toggleStab() {
-    if (stabRef.current) {
-      stabRef.current.stop();
-      stabRef.current = null;
-      setStab(false);
-      await applyOutput();
-      return;
-    }
-    if (prefs.facing === "user") return setNotice("Stabilisation disponible avec la caméra arrière.");
-    if (!stabilizationSupported() || !streamRef.current) return setNotice("Stabilisation indisponible sur ce navigateur.");
-    if (!(await requestMotionPermission())) return setNotice("Autorise l'accès aux mouvements (gyroscope) pour stabiliser l'image.");
-    const st = new Stabilizer(30);
-    st.setZoom(zoom);
-    await st.setSource(streamRef.current);
-    st.start();
-    stabRef.current = st;
-    setStab(true);
-    await applyOutput();
-    // Pas de gyroscope (ordinateur, capteur absent) : on revient à l'image normale.
-    setTimeout(() => {
-      if (stabRef.current === st && !st.hasMotion) {
-        void toggleStab();
-        setNotice("Pas de gyroscope détecté : stabilisation impossible sur cet appareil.");
-      }
-    }, 2000);
-  }
-
-  // Caméra avant : pas de stabilisation.
-  useEffect(() => {
-    if (prefs.facing === "user" && stabRef.current) {
-      stabRef.current.stop();
-      stabRef.current = null;
-      void applyOutput().then(() => setStab(false));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [prefs.facing]);
-
-  useEffect(() => () => stabRef.current?.stop(), []);
 
   function toggleMute() {
     const m = !muted;
@@ -572,9 +545,6 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
         <Pill active={!!torch} onClick={toggleTorch} label="Torche">
           {torch === null ? <span className="text-white/40">TORCHE</span> : "TORCHE"}
         </Pill>
-        <Pill active={stab} onClick={() => void toggleStab()} label={stab ? "Désactiver la stabilisation" : "Activer la stabilisation"}>
-          STAB
-        </Pill>
         <Pill active={rec} onClick={toggleRec} label="Enregistrer sur le téléphone">
           <span className={`h-2 w-2 rounded-full ${rec ? "bg-live" : "bg-white/70"}`} /> REC
         </Pill>
@@ -652,6 +622,7 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
               Une seule connexion (Wi-Fi ou 4G), sans bonding. Pour l&apos;IRL multi-réseaux, utilise Moblin. Si la connexion coupe, SYXTEE Cam se
               reconnecte seule.
             </p>
+            {ios && <p className="mt-3 text-xs leading-relaxed text-white/80">{IOS_STAB_TIP}</p>}
             <button
               type="button"
               onClick={() => {

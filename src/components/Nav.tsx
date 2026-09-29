@@ -12,6 +12,7 @@ import { LivePill } from "./dashboard/LiveStatus";
 import StreamModeToggle from "./dashboard/StreamModeToggle";
 import { restoreStreamMode } from "./dashboard/streamMode";
 import { DesktopMenus, NavAccordion } from "./NavTools";
+import { SupportId } from "./SupportId";
 import { DiscordButton, DiscordIcon } from "./ui";
 
 // Barre du site. Sur /dashboard/* (variant « dashboard ») : mêmes logo, hauteur, flou et méga-menus, mais les menus
@@ -136,6 +137,11 @@ export default function Nav({ variant = "site" }: { variant?: "site" | "dashboar
                 <p className="flex items-center gap-3 py-4 text-sm text-muted">
                   <Avatar account={account} size={28} />@{account.username}
                 </p>
+                {account.supportId && (
+                  <div className="border-b border-line pb-4">
+                    <SupportId id={account.supportId} compact />
+                  </div>
+                )}
                 {accountLinks.map((l) => (
                   <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="border-b border-line py-4 text-base text-muted hover:text-foreground">
                     {l.label}

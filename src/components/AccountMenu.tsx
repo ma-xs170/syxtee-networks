@@ -6,11 +6,12 @@ import { useEffect, useRef, useState } from "react";
 import { signOut } from "@/app/(auth)/actions";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabase } from "@/lib/supabase/env";
+import { SupportId } from "./SupportId";
 
 // Nav : « Connexion » pour les visiteurs, avatar rond + menu (Dashboard, Mon compte, Déconnexion) une fois connecté.
 // Lecture côté navigateur : les pages publiques restent statiques.
 
-export type Account = { username: string; avatar: string | null } | null;
+export type Account = { username: string; avatar: string | null; supportId: string | null } | null;
 
 export function useAccount() {
   const [account, setAccount] = useState<Account | undefined>(hasSupabase ? undefined : null);
@@ -25,8 +26,8 @@ export function useAccount() {
         if (alive) setAccount(null);
         return;
       }
-      const { data: p } = await supabase.from("profiles").select("username, avatar_url").eq("id", user.id).single();
-      if (alive) setAccount({ username: p?.username ?? user.email ?? "?", avatar: p?.avatar_url ?? null });
+      const { data: p } = await supabase.from("profiles").select("username, avatar_url, support_id").eq("id", user.id).single();
+      if (alive) setAccount({ username: p?.username ?? user.email ?? "?", avatar: p?.avatar_url ?? null, supportId: p?.support_id ?? null });
     };
     load();
     const { data: sub } = supabase.auth.onAuthStateChange(() => {
@@ -98,8 +99,13 @@ export default function AccountMenu({ account, links = siteAccountLinks }: { acc
         <Avatar account={account} />
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 top-full z-50 mt-3 w-52 rounded-xl border border-line bg-black/95 p-1.5 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] backdrop-blur-md">
+        <div role="menu" className="absolute right-0 top-full z-50 mt-3 w-64 rounded-xl border border-line bg-black/95 p-1.5 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] backdrop-blur-md">
           <p className="truncate px-3 pb-2 pt-1.5 font-mono text-xs text-muted">@{account.username}</p>
+          {account.supportId && (
+            <div className="mb-1 border-b border-line px-3 pb-2">
+              <SupportId id={account.supportId} compact />
+            </div>
+          )}
           {links.map((l) => (
             <Link key={l.href} role="menuitem" href={l.href} onClick={() => setOpen(false)} className={itemCls}>
               {l.label}

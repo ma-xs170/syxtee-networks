@@ -48,6 +48,29 @@ test("connexion : compte existant → /dashboard, menu du compte, déconnexion",
   await expect(page).toHaveURL(/\/connexion/);
 });
 
+test("ID support : généré à la création, visible dans le menu et les paramètres", async ({ page }) => {
+  const email = testEmail("support");
+  const user = await createUser(email);
+  created.push(user.id);
+  await admin().from("profiles").update({ onboarded_at: new Date().toISOString() }).eq("id", user.id);
+  const { data } = await admin().from("profiles").select("support_id").eq("id", user.id).single();
+  expect(data?.support_id).toMatch(/^SYX-[2-9A-HJ-NP-Z]{4}-[2-9A-HJ-NP-Z]{4}$/);
+
+  await signInWithMagicLink(page, email);
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.getByRole("button", { name: /Menu du compte/ }).click();
+  await expect(page.getByRole("menu").getByTestId("support-id")).toHaveText(data!.support_id);
+
+  await page.goto("/dashboard/parametres");
+  await expect(page.locator("#support").getByTestId("support-id")).toHaveText(data!.support_id);
+  await expect(page.locator("#support").getByRole("button", { name: "Ouvrir un ticket Discord" })).toBeVisible();
+
+  // L'admin est réservé à ADMIN_EMAILS : un compte normal reçoit une 404.
+  const res = await page.goto(`/admin/comptes?q=${data!.support_id}`);
+  expect(res?.status()).toBe(404);
+});
+
 test("accueil : un streamer en live passe en premier avec badge et viewers", async ({ page }) => {
   const user = await createUser(testEmail("live"));
   created.push(user.id);

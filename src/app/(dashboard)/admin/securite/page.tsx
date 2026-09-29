@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import BanForm from "@/components/admin/BanForm";
-import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
+import { ArrowLink, DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
 import { requireAdmin } from "@/lib/admin";
 import { getSecurity, hasCore, type SecurityEvent } from "@/lib/core";
 import { unbanAction } from "./actions";
@@ -68,7 +68,9 @@ export default async function AdminSecuritePage({ searchParams }: { searchParams
 
   return (
     <DashPage>
-      <DashHeader lead="Admin" hl="Sécurité" sub="Connexions refusées sur les relais SRT, SRTLA, RTMP et Cam. 10 refus en 1 minute bannissent une IP 15 minutes." />
+      <DashHeader lead="Admin" hl="Sécurité" sub="Connexions refusées sur les relais SRT, SRTLA, RTMP et Cam. 10 refus en 1 minute bannissent une IP 15 minutes.">
+        <ArrowLink href="/admin/comptes">Comptes</ArrowLink>
+      </DashHeader>
       {down ? (
         <p className="text-sm text-muted">Le Core ne répond pas, ou n&apos;a pas encore la page Sécurité. Réessaie après sa mise à jour.</p>
       ) : (

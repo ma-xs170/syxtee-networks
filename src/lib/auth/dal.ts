@@ -22,6 +22,7 @@ export type Profile = {
   show_on_site: boolean;
   coverage_consent?: boolean;
   onboarded_at: string | null;
+  support_id?: string | null;
 };
 
 /** Utilisateur connecté, vérifié auprès de Supabase (une fois par requête). */

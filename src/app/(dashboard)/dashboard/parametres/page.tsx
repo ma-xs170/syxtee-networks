@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { signOut } from "@/app/(auth)/actions";
 import { DeleteAccountForm } from "@/components/auth/AccountForms";
 import { ConsentToggle, EraseCoverage, PrivateZones, type PrivateZone } from "@/components/dashboard/CoverageSettings";
+import { DiscordTicketButton, SupportId } from "@/components/SupportId";
 import StreamModeToggle from "@/components/dashboard/StreamModeToggle";
 import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
 import { getProfile, requireUser } from "@/lib/auth/dal";
@@ -36,6 +37,18 @@ export default async function ParametresPage() {
             </button>
           </form>
         </Tile>
+        {profile?.support_id && (
+          <Tile id="support" className="lg:col-span-2">
+            <TileLabel>Support</TileLabel>
+            <p className="mt-4 text-sm leading-relaxed text-muted">Le support se fait uniquement sur Discord. Donne cet ID dans ton ticket : on retrouve ton compte sans te demander ton e-mail.</p>
+            <div className="mt-4">
+              <SupportId id={profile.support_id} />
+            </div>
+            <div className="mt-5">
+              <DiscordTicketButton id={profile.support_id} />
+            </div>
+          </Tile>
+        )}
         <Tile id="couverture">
           <TileLabel>Carte de couverture</TileLabel>
           <div className="mt-4">

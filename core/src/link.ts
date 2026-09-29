@@ -6,12 +6,19 @@ import { createHmac } from "node:crypto";
 //   b) classe de l'ASN de l'IP (table ci-dessous, maintenue à la main) ;
 //   c) préfixes IP (/24 en IPv4, /48 en IPv6) déjà vus depuis un Android en 'cellular' ou en 'wifi' ;
 //   d) iPhone : l'IP a changé depuis l'ouverture de la page après « Coupe le Wi-Fi » (switched).
-// Une box fibre/ADSL ('fixed') compte comme du Wi-Fi.
+//   e) opérateur déclaré par le compte (iPhone), comparé à la marque de l'ASN.
+// Une box fibre/ADSL ('fixed') compte comme du Wi-Fi. Le Relais privé iCloud (IP de sortie Apple, Cloudflare,
+// Akamai, Fastly) masque l'opérateur : seule la déclaration permet alors de compter la mesure.
 
 export type LinkType = "cellular" | "wifi" | "starlink" | "fixed" | "unknown";
 export type AsnClass = "mobile" | "fixed" | "satellite" | "mixed";
 export type PrefixStat = { cellular: number; wifi: number };
-export type LinkClass = { link_type: LinkType; conf: number };
+/** Étiquettes d'une mesure (colonne measurements.tags). */
+export type Tag = "private_relay" | "declared" | "declared_mismatch" | "pending" | "asn_inferred";
+export type LinkClass = { link_type: LinkType; conf: number; tags?: Tag[] };
+/** Opérateur mobile déclaré par le compte (profiles.mobile_operator). */
+export type Declared = "orange" | "sfr" | "digicel" | "free" | "other";
+export const DECLARED: Declared[] = ["orange", "sfr", "digicel", "free", "other"];
 
 /** Confiance minimale pour qu'une mesure 'cellular' compte sur la carte 4G/5G. */
 export const MIN_CONF = 0.7;
@@ -28,7 +35,54 @@ export const ASN_CLASSES: Record<number, AsnClass> = {
   21928: "mobile", // T-Mobile USA
   22394: "mobile", // Verizon Wireless
   7922: "fixed", // Comcast
+  // Antilles, Guyane, Saint-Martin, Saint-Barthélemy (vérifiés dans RIPE / ARIN le 29/09/2026).
+  16028: "mobile", // Orange Caraïbe (France Caraïbe Mobiles, « Orange Caraîbe Mobiles Network »)
+  48252: "mixed", // Digicel Antilles Françaises Guyane
+  20776: "mixed", // Outremer Telecom : SFR Caraïbe (mobile + box)
+  210595: "mixed", // Free Caraïbe (Free SAS)
+  33392: "mixed", // Dauphin Telecom (Saint-Martin, Saint-Barthélemy)
+  36511: "mixed", // Dauphin Telecom Guadeloupe
+  11081: "mixed", // UTS (Chippie), Saint-Martin partie hollandaise
+  21351: "fixed", // Canal+ Telecom (ex-Mediaserv) : box seulement
 };
+
+/** ASN des sorties du Relais privé iCloud et de « Limiter le suivi de l'adresse IP » : l'opérateur réel est masqué. */
+export const RELAY_ASNS = new Set([
+  714, 6185, // Apple
+  13335, 209242, // Cloudflare
+  20940, 16625, 36183, // Akamai (36183 : Akamai Private Relay)
+  54113, // Fastly
+]);
+
+const fold = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+/** Marque (clé) d'un nom d'opérateur ou d'organisation : « Orange Caraibe », « Outremer Telecom »… */
+export function brandKey(name: string | null | undefined): Exclude<Declared, "other"> | "bouygues" | "dauphin" | "uts" | "canal" | "starlink" | null {
+  const s = fold(name ?? "");
+  if (!s) return null;
+  if (/orange|france telecom|\bfcm\b/.test(s)) return "orange";
+  if (/digicel/.test(s)) return "digicel";
+  if (/\bsfr\b|sfr\.|outremer|\bonly\b/.test(s)) return "sfr";
+  if (/free|iliad|proxad|telco oi/.test(s)) return "free";
+  if (/dauphin/.test(s)) return "dauphin";
+  if (/\buts\b|chippie|united telecommunication/.test(s)) return "uts";
+  if (/canal ?\+|canalplus|mediaserv/.test(s)) return "canal";
+  if (/bouygues/.test(s)) return "bouygues";
+  if (/starlink|spacex/.test(s)) return "starlink";
+  return null;
+}
+
+/** Nom affiché d'une marque déclarée, avec « Caraïbe » aux Antilles-Guyane. */
+export function declaredName(d: Declared | null | undefined, caribbean: boolean): string | null {
+  if (!d || d === "other") return null;
+  if (d === "digicel") return "Digicel";
+  const n = { orange: "Orange", sfr: "SFR", free: "Free" }[d];
+  return caribbean ? `${n} Caraïbe` : n;
+}
+
+/** Position aux Antilles françaises, Saint-Martin, Saint-Barthélemy ou en Guyane. */
+export const isCaribbean = (lat: number | null | undefined, lng: number | null | undefined) =>
+  lat != null && lng != null && ((lat >= 14.3 && lat <= 18.2 && lng >= -63.3 && lng <= -60.7) || (lat >= 2 && lat <= 6 && lng >= -54.7 && lng <= -51.5));
 
 /** Classe d'un ASN : table, sinon indices dans le nom (mobile / satellite / câble…), sinon null (inconnu). */
 export function asnClass(asn: number | null, name: string | null): AsnClass | null {
@@ -72,16 +126,39 @@ export function ipPrefix(ip: string | null | undefined): string | null {
 /** Jeton opaque du réseau (préfixe IP) : l'iPhone le renvoie pour qu'on voie s'il a changé de réseau. */
 export const netToken = (salt: string, prefix: string | null) => (prefix ? createHmac("sha256", salt).update(`net:${prefix}`).digest("base64url").slice(0, 16) : "");
 
-/** Classement d'une mesure. `device` = navigator.connection.type ; `switched` = IP changée après « Coupe le Wi-Fi ». */
-export function classify(s: { device?: string | null; asn?: number | null; asName?: string | null; prefix?: PrefixStat | null; switched?: boolean }): LinkClass {
+/** Classement d'une mesure.
+ * `device` = navigator.connection.type ; `switched` = IP changée après « Coupe le Wi-Fi » ;
+ * `relay` = IP de sortie du Relais privé iCloud ; `pending` = base IPinfo indisponible (reclassé plus tard) ;
+ * `declared` = opérateur déclaré par le compte ; `operator` = marque de l'ASN (pour la comparer à la déclaration). */
+export function classify(s: {
+  device?: string | null;
+  asn?: number | null;
+  asName?: string | null;
+  operator?: string | null;
+  prefix?: PrefixStat | null;
+  switched?: boolean;
+  relay?: boolean;
+  pending?: boolean;
+  declared?: Declared | null;
+}): LinkClass {
   const cls = asnClass(s.asn ?? null, s.asName ?? null);
+  const declared = s.declared && s.declared !== "other" ? s.declared : null;
   // a) Signal de l'appareil : prioritaire.
   if (s.device === "cellular") return { link_type: "cellular", conf: 0.95 };
   if (s.device === "wifi" || s.device === "ethernet") return { link_type: cls === "satellite" ? "starlink" : "wifi", conf: 0.95 };
+  // Relais privé iCloud : l'IP est celle d'Apple / Cloudflare / Akamai / Fastly. Seule la déclaration tranche.
+  if (s.relay || (s.asn != null && RELAY_ASNS.has(s.asn))) {
+    return declared ? { link_type: "cellular", conf: 0.75, tags: ["private_relay", "declared"] } : { link_type: "unknown", conf: 0.2, tags: ["private_relay"] };
+  }
+  // Base IPinfo absente : on ne conclut rien, la mesure sera reclassée.
+  if (s.pending) return { link_type: "unknown", conf: 0.2, tags: ["pending"] };
   // b) ASN.
   if (cls === "satellite") return { link_type: "starlink", conf: 0.9 };
   if (cls === "fixed") return { link_type: "fixed", conf: 0.85 };
-  if (cls === "mobile") return { link_type: "cellular", conf: 0.85 };
+  const brand = brandKey(s.operator ?? s.asName);
+  const agrees = !!declared && brand === declared;
+  const contradicts = !!declared && !!brand && brand !== declared;
+  if (cls === "mobile") return agrees ? { link_type: "cellular", conf: 0.9, tags: ["declared"] } : { link_type: "cellular", conf: 0.85 };
   // c) Préfixe appris depuis les Android.
   const p = s.prefix;
   const n = p ? p.cellular + p.wifi : 0;
@@ -91,8 +168,13 @@ export function classify(s: { device?: string | null; asn?: number | null; asNam
     if (share >= 0.8) return { link_type: "cellular", conf };
     if (share <= 0.2) return { link_type: "fixed", conf };
   }
+  // e) Opérateur déclaré : même marque → mobile ; autre marque sur un ASN mixte → box d'un autre opérateur (Wi-Fi).
+  if (agrees) return { link_type: "cellular", conf: 0.9, tags: ["declared"] };
+  if (contradicts) return { link_type: "fixed", conf: 0.8, tags: ["declared_mismatch"] };
   // d) iPhone : réseau changé après avoir coupé le Wi-Fi, sur un ASN mixte ou inconnu.
   if (s.switched) return { link_type: "cellular", conf: 0.75 };
+  // ASN inconnu (ni mobile, ni fixe connu) : la déclaration compte, avec une confiance moindre.
+  if (declared && cls === null) return { link_type: "cellular", conf: 0.75, tags: ["declared"] };
   return { link_type: "unknown", conf: cls === "mixed" ? 0.4 : 0.2 };
 }
 

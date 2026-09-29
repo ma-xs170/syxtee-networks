@@ -87,6 +87,8 @@ export const rotateCam = (userId: string) => core<CamInfo>(`/v1/users/${userId}/
 /** Compte supprimé : tous ses relais retirés du SLS (plus aucune URL Moblin/OBS/Cam ne marche) puis effacés. */
 export const deleteAllRelays = (userId: string) => core<null>(`/v1/users/${userId}/relays`, "DELETE");
 export const deleteCoverage = (userId: string) => core<{ deleted: number }>(`/v1/users/${userId}/coverage`, "DELETE");
+/** Opérateur déclaré modifié : le Core reclasse les mesures récentes restées hors carte. */
+export const reclassifyCoverage = (userId: string) => core<{ reclassified: number }>(`/v1/users/${userId}/coverage/reclassify`, "POST");
 
 // ───── Sécurité ─────
 

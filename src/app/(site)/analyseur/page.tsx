@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/analyseur" },
 };
 
-// Analyseur public : tests sans compte, rien n'est gardé (volume plafonné par IP côté Core). Même moteur que SYXTEE Cam.
+// Analyseur public : tests sans compte, rien n'est gardé (volume plafonné par IP côté Core). Même moteur que le Scanner réseau.
 export default function AnalyseurPublicPage() {
   return (
     <section className="py-14 sm:py-20">

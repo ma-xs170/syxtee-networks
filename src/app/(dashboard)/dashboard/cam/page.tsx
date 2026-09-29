@@ -3,9 +3,11 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import QRCode from "qrcode";
 import CamPanel from "@/components/cam/CamPanel";
+import CamSoon from "@/components/cam/CamSoon";
 import { ArrowLink, DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
 import { requireUser } from "@/lib/auth/dal";
 import { getCam, hasCore, type CamInfo } from "@/lib/core";
+import { FEATURE_CAM } from "@/lib/features";
 
 export const metadata: Metadata = { title: "SYXTEE Cam", robots: { index: false } };
 
@@ -24,6 +26,8 @@ const COMPAT: [string, string, string][] = [
 
 export default async function CamPage() {
   const user = await requireUser("/dashboard/cam");
+  // En pause : page « Bientôt disponible » (le code ci-dessous reste en place, FEATURE_CAM=true pour la rouvrir).
+  if (!FEATURE_CAM) return <CamSoon />;
   let cam: CamInfo | null = null;
   let down = false;
   if (hasCore) {

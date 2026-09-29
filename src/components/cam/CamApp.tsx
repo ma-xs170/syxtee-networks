@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import ScanMode from "./ScanMode";
 import ZoneStatus from "./ZoneStatus";
 import { supportsH264, whipPublish, whipStop, type WhipSession } from "./whip";
 
@@ -119,7 +118,6 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
   const [net, setNet] = useState<string | null>(null);
   const [chat, setChat] = useState<{ id: number; user: string; text: string }[]>([]);
   const [showSettings, setShowSettings] = useState(false);
-  const [showScan, setShowScan] = useState(false);
   const [ios] = useState(isIOS);
   const [notice, setNotice] = useState<string | null>(() => {
     if (!supportsH264()) return "Ce navigateur n'envoie pas de H.264 : utilise Safari (iPhone) ou Chrome (Android).";
@@ -607,17 +605,10 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
                 <input type="checkbox" checked={prefs.gps} onChange={(e) => savePrefs({ gps: e.target.checked })} className="h-5 w-5 accent-white" />
               </label>
             </div>
-            <button
-              type="button"
-              disabled={live}
-              onClick={() => {
-                setShowSettings(false);
-                setShowScan(true);
-              }}
-              className="mt-5 h-11 w-full rounded-full border border-white/20 text-sm disabled:opacity-40"
-            >
-              Mode Scan (carte de couverture)
-            </button>
+            {/* Le scan de couverture a quitté SYXTEE Cam : il vit dans le Scanner réseau du dashboard. */}
+            <a href="/dashboard/scanner" className="mt-5 flex h-11 w-full items-center justify-center rounded-full border border-white/20 text-sm">
+              Scanner réseau (carte de couverture)
+            </a>
             <p className="mt-5 text-xs leading-relaxed text-white/50">
               Une seule connexion (Wi-Fi ou 4G), sans bonding. Pour l&apos;IRL multi-réseaux, utilise Moblin. Si la connexion coupe, SYXTEE Cam se
               reconnecte seule.
@@ -637,7 +628,6 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
         </div>
       )}
       {me && <ZoneStatus live={live} enabled={prefs.gps} />}
-      {showScan && camKey && <ScanMode coreUrl={coreUrl} camKey={camKey} onClose={() => setShowScan(false)} />}
     </div>
   );
 }

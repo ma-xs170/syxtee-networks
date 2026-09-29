@@ -132,7 +132,7 @@ export default function LiveTrip({ relayId }: { relayId?: string }) {
         </>
       ) : (
         <p className="mt-4 text-sm text-muted">
-          {live ? "Pas encore de position : active « Envoyer ma position » dans SYXTEE Cam." : "Le trajet s'affiche ici pendant un direct avec SYXTEE Cam."}
+          {live ? "Pas encore de position pour ce direct." : "Le trajet s'affichera ici pendant un direct, avec SYXTEE Cam (bientôt disponible)."}
         </p>
       )}
     </Tile>

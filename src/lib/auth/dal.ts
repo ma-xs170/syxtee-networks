@@ -21,6 +21,8 @@ export type Profile = {
   x: string | null;
   show_on_site: boolean;
   coverage_consent?: boolean;
+  /** Opérateur mobile déclaré (Scanner réseau, 0014_scanner.sql). */
+  mobile_operator?: "orange" | "sfr" | "digicel" | "free" | "other" | null;
   onboarded_at: string | null;
   support_id?: string | null;
 };

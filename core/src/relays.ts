@@ -320,12 +320,24 @@ export function createRelayStore(
       return data ? decode(data as unknown as Row) : null;
     },
 
-    /** Pseudo affiché sur la mire. */
+    /** Nom affiché sur la mire (SOURCE) : chaîne Twitch, sinon « Prénom N. ». */
     async username(userId: string): Promise<string> {
-      const { data } = await db.from("profiles").select("username").eq("id", userId).maybeSingle();
-      return (data?.username as string | undefined) ?? "streamer";
+      const { data } = await db.from("profiles").select("username, first_name, last_name, twitch_display_name").eq("id", userId).maybeSingle();
+      return publicName(data as NameRow | null) ?? "streamer";
     },
   };
 }
 
 export type RelayStore = ReturnType<typeof createRelayStore>;
+
+type NameRow = { username?: string | null; first_name?: string | null; last_name?: string | null; twitch_display_name?: string | null };
+
+/** Nom public d'un compte : chaîne Twitch si liée, sinon « Prénom N. », sinon l'ancien pseudo. */
+export function publicName(p: NameRow | null | undefined): string | null {
+  const twitch = p?.twitch_display_name?.trim();
+  if (twitch) return twitch;
+  const first = p?.first_name?.trim();
+  const last = p?.last_name?.trim();
+  if (first) return last ? `${first} ${last.charAt(0).toUpperCase()}.` : first;
+  return p?.username ?? null;
+}

@@ -92,10 +92,6 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
     <form action={action} className="space-y-8">
       <input type="hidden" name="next" value={next || (mode === "bienvenue" ? "/dashboard" : "/compte")} />
 
-      <Field id="username" label="Pseudo" hint="3 à 24 caractères : lettres minuscules, chiffres ou _.">
-        <input id="username" name="username" required defaultValue={v("username")} autoComplete="username" className={inputCls} />
-      </Field>
-
       {mode === "compte" && (
         <>
           <Field id="bio" label="Bio" hint="160 caractères maximum.">
@@ -158,6 +154,22 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
             {twitch
               ? "Ta chaîne Twitch apparaît dans « Ils nous font confiance » sur l'accueil, avec un badge quand tu es en live. Tu peux décocher à tout moment."
               : "Disponible une fois ton Twitch lié."}
+          </span>
+        </span>
+      </label>
+
+      <label className={`flex items-start gap-3 rounded-xl border border-white/10 p-4 ${twitch ? "cursor-pointer" : "opacity-60"}`}>
+        <input
+          type="checkbox"
+          name="show_first_name"
+          defaultChecked={profile.show_first_name === true}
+          disabled={!twitch}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-white"
+        />
+        <span>
+          <span className="block text-sm font-medium text-white">Afficher mon prénom sur le site</span>
+          <span className="mt-1 block text-xs leading-relaxed text-white/50">
+            Ton prénom apparaît à côté de ta chaîne dans « Ils nous font confiance ». Jamais ton nom.
           </span>
         </span>
       </label>

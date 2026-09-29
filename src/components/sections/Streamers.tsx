@@ -33,7 +33,10 @@ function StreamerCard({ streamer, hidden = false }: { streamer: HomeStreamer; hi
         {live && <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-black bg-live" aria-hidden="true" />}
       </span>
       <span className="min-w-0">
-        <span className="block truncate font-mono text-sm text-white">@{streamer.handle}</span>
+        <span className="block truncate font-mono text-sm text-white">
+          @{streamer.handle}
+          {streamer.firstName && <span className="font-sans text-muted"> · {streamer.firstName}</span>}
+        </span>
         {live ? (
           <span className="mt-1 flex items-center gap-2 text-sm">
             <span className="rounded bg-live px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.12em] text-white">EN LIVE</span>

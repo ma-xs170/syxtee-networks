@@ -7,21 +7,28 @@ project_id = "syxtee-networks"
 [auth]
 # Domaine de production (à remplacer par le domaine final).
 site_url = "https://syxtee-networks.vercel.app"
-# Retours autorisés après un lien magique ou une connexion OAuth : production, previews Vercel, dev, tests e2e.
+# Connexion par email + mot de passe : 10 caractères minimum (jauge et vérification des fuites côté site).
+minimum_password_length = 10
+# Retours autorisés après un lien reçu par email ou la liaison Twitch : production, previews Vercel, dev, tests e2e.
 additional_redirect_urls = [
   "https://syxtee-networks.vercel.app/auth/**",
   "https://*-dj-syxtee.vercel.app/auth/**",
   "http://localhost:3000/auth/**",
   "http://localhost:3100/auth/**",
 ]
-# Bouton « Lier mon Twitch » (/compte et /bienvenue).
+# Bouton « Lier mon Twitch » (Profil). Twitch ne sert plus à se connecter.
 enable_manual_linking = true
 
 [auth.email]
-# Lien magique valable 10 minutes.
-otp_expiry = 600
-# Un envoi toutes les 30 s au plus (aligné sur le bouton « Renvoyer (30 s) »).
-max_frequency = "30s"
+enable_signup = true
+# Le compte n'est actif qu'après le clic sur le lien de vérification.
+enable_confirmations = true
+# Changement d'email : lien envoyé à l'ancienne ET à la nouvelle adresse.
+double_confirm_changes = true
+# Liens valables 24 h (vérification de l'adresse). « Mot de passe oublié » : 1 h, imposé par le site (recovery.ts).
+otp_expiry = 86400
+# Un envoi toutes les 60 s au plus (aligné sur le bouton « Renvoyer l'email (60 s) »).
+max_frequency = "60s"
 
 # Email de connexion aux couleurs SYXTEE (nouveaux comptes et comptes existants).
 # ⚠️ Supabase refuse les modèles personnalisés tant que le SMTP par défaut est utilisé (offre gratuite) :

@@ -4,6 +4,7 @@ import { newStreamIds } from "../src/ids.ts";
 import { BARS_Y, mireSvg } from "../src/mire.ts";
 import { previewArgs } from "../src/preview.ts";
 import { regieArgs } from "../src/regie.ts";
+import { publicName } from "../src/relays.ts";
 
 test("identifiants : préfixes et 128 bits aléatoires", () => {
   const a = newStreamIds();
@@ -52,4 +53,11 @@ test("nettoyage du relais : seulement les paires SYXTEE sans clé en base", asyn
   assert.equal(orphanPair({ player: "play_ok", description: "syxtee:u2" }, known), false);
   assert.equal(orphanPair({ player: "live", description: "Mon stream perso" }, known), false);
   assert.equal(orphanPair({ player: "live" }, known), false);
+});
+
+test("nom public (mire, Cam) : chaîne Twitch, sinon Prénom N., sinon pseudo", () => {
+  assert.equal(publicName({ twitch_display_name: "SyxteeTV", first_name: "Mathis", last_name: "Nicolas" }), "SyxteeTV");
+  assert.equal(publicName({ first_name: " Mathis ", last_name: "nicolas" }), "Mathis N.");
+  assert.equal(publicName({ username: "djsyxtee" }), "djsyxtee");
+  assert.equal(publicName(null), null);
 });

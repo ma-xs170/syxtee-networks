@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { hasSupabase, supabaseKey, supabaseUrl } from "./env";
 
 const PRIVATE = ["/dashboard", "/compte", "/bienvenue"];
-const GUEST_ONLY = ["/connexion", "/inscription"];
+const GUEST_ONLY = ["/connexion", "/inscription", "/mot-de-passe-oublie"];
 const matches = (path: string, list: string[]) => list.some((p) => path === p || path.startsWith(`${p}/`));
 
 /** Rafraîchit la session (cookies) et fait les redirections « optimistes ». Les pages revérifient côté serveur. */

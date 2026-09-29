@@ -10,12 +10,12 @@ const handle = (re: RegExp, label: string) =>
     .refine((v) => v === "" || re.test(v), `Pseudo ${label} invalide.`)
     .transform((v) => (v === "" ? null : v));
 
+const name = (label: string) => z.string().trim().min(1, `${label} obligatoire.`).max(50, `${label} : 50 caractères maximum.`);
+
+/** Prénom + nom (inscription, modale des comptes existants, profil). */
+export const namesSchema = z.object({ first_name: name("Prénom"), last_name: name("Nom") });
+
 export const profileSchema = z.object({
-  username: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .regex(/^[a-z0-9_]{3,24}$/, "Pseudo : 3 à 24 caractères, lettres minuscules, chiffres ou _."),
   bio: z
     .string()
     .trim()
@@ -32,6 +32,7 @@ export const profileSchema = z.object({
   instagram: handle(/^[A-Za-z0-9._]{1,30}$/, "Instagram"),
   x: handle(/^[A-Za-z0-9_]{1,15}$/, "X"),
   show_on_site: z.preprocess((v) => v === "on" || v === "true", z.boolean()),
+  show_first_name: z.preprocess((v) => v === "on" || v === "true", z.boolean()),
 });
 
 export type ProfileInput = z.infer<typeof profileSchema>;

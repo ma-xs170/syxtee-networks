@@ -1,6 +1,6 @@
 # Comptes SYXTEE : configuration
 
-L'authentification repose sur **Supabase Auth**. La connexion se fait par lien magique (email), Twitch, Discord ou Google. Les emails partent via **Resend** (SMTP).
+L'authentification repose sur **Supabase Auth**. La connexion se fait par **email + mot de passe** (adresse vérifiée par un lien). Twitch sert seulement à lier sa chaîne (Profil). Les emails partent via **Resend** (SMTP).
 Les clés OAuth et le SMTP se renseignent **dans Supabase**, pas dans les variables du site.
 
 Deux projets Supabase : **production** et **test** (tests e2e). Refaire les étapes 1 à 4 sur chacun.
@@ -32,8 +32,15 @@ tant que le SMTP par défaut est utilisé (offre gratuite). Le décommenter apr�
 
 ## 3. Authentication → Sign In / Providers
 
-- **Email** : activé (expiration 10 minutes et liaison manuelle : gérées par `config.toml`).
-- **Twitch**, **Discord**, **Google** : activer, coller Client ID + Client Secret (étape 6).
+- **Email** : activé, avec « Confirm email » (confirmation, longueur minimale, liens 24 h et liaison manuelle : gérées par `config.toml`).
+- **Twitch** : activé (Client ID + Client Secret, étape 6) : nécessaire pour « Lier mon Twitch ».
+- **Discord**, **Google** : désactiver. Les comptes créés avec eux se connectent désormais avec leur email (voir « Comptes existants »).
+
+### Comptes existants (passage au mot de passe)
+
+Les comptes créés par lien magique, Twitch, Discord ou Google n'ont pas de mot de passe. Sur `/connexion`, le lien
+« Définis ton mot de passe » passe par « Mot de passe oublié » avec la même adresse : ils retrouvent tout leur compte.
+Au premier passage dans le dashboard, une modale leur demande prénom et nom (migration `0013_names.sql`).
 
 ## 4. Authentication → Emails
 

@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { admin, createUser, deleteUser, hasTestProject, signInWithMagicLink, testEmail } from "./helpers";
+import { admin, createUser, deleteUser, hasTestProject, signInWithMagicLink, signInWithPassword, testEmail, testPassword, userIdByEmail } from "./helpers";
 
-// Parcours réels sur le projet Supabase DE TEST (liens magiques générés par l'API admin, pas de vrai email).
+// Parcours réels sur le projet Supabase DE TEST (liens générés par l'API admin, pas de vrai email).
 test.skip(!hasTestProject, "E2E_SUPABASE_URL / E2E_SUPABASE_SECRET_KEY manquants (.env.test.local)");
 
 const created: string[] = [];
@@ -9,43 +9,114 @@ test.afterAll(async () => {
   for (const id of created) await deleteUser(id);
 });
 
-test("inscription : lien magique → /bienvenue → profil → /dashboard", async ({ page }) => {
+test("inscription : formulaire → vérification → connexion → /bienvenue → /dashboard", async ({ page, context }) => {
   const email = testEmail("inscription");
-  const user = await createUser(email);
-  created.push(user.id);
+  const password = testPassword();
+  await page.goto("/inscription");
+  await page.getByLabel("Prénom").fill("Mathis");
+  await page.getByLabel("Nom", { exact: true }).fill("Nicolas");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Mot de passe", { exact: true }).fill("court");
+  await expect(page.getByText("Solidité : Faible")).toBeVisible();
+  await page.getByLabel("Mot de passe", { exact: true }).fill(password);
+  await expect(page.getByText("Solidité : Fort")).toBeVisible();
+  await page.getByLabel("Confirmer le mot de passe").fill(password);
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: "Créer mon compte" }).click();
+  await expect(page.getByRole("heading", { name: "Vérifie ta boîte mail" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Renvoyer l'email \(\d+ s\)/ })).toBeDisabled();
 
-  await signInWithMagicLink(page, email);
+  const id = await userIdByEmail(email);
+  expect(id).toBeTruthy();
+  created.push(id!);
+  const { data: p } = await admin().from("profiles").select("first_name, last_name").eq("id", id!).single();
+  expect(p).toEqual({ first_name: "Mathis", last_name: "Nicolas" });
+
+  // Clic sur le lien de vérification (simulé par l'API admin), puis connexion avec le mot de passe.
+  await admin().auth.admin.updateUserById(id!, { email_confirm: true });
+  await context.clearCookies();
+  await signInWithPassword(page, email, password);
   await expect(page).toHaveURL(/\/bienvenue/);
-  const pseudo = `e2e_${Date.now().toString().slice(-8)}`;
-  await page.getByLabel("Pseudo", { exact: true }).fill(pseudo);
   await page.getByLabel("Kick").fill("@syxtee_kick");
-  await expect(page.getByRole("checkbox")).toBeDisabled(); // pas de Twitch lié
   await page.getByRole("button", { name: "Continuer" }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByRole("heading", { name: `Salut ${pseudo}.` })).toBeVisible();
-
-  const { data } = await admin().from("profiles").select("username, kick, onboarded_at, show_on_site").eq("id", user.id).single();
-  expect(data).toMatchObject({ username: pseudo, kick: "syxtee_kick", show_on_site: false });
-  expect(data?.onboarded_at).not.toBeNull();
+  await expect(page.getByRole("heading", { name: "Salut Mathis." })).toBeVisible();
 });
 
-test("connexion : compte existant → /dashboard, menu du compte, déconnexion", async ({ page }) => {
+test("connexion : mot de passe, erreur neutre, menu du compte, déconnexion", async ({ page }) => {
   const email = testEmail("connexion");
-  const user = await createUser(email);
+  const password = testPassword();
+  const user = await createUser(email, { password, first_name: "Léa", last_name: "Martin" });
   created.push(user.id);
   await admin().from("profiles").update({ onboarded_at: new Date().toISOString() }).eq("id", user.id);
 
-  await signInWithMagicLink(page, email);
+  await signInWithPassword(page, email, "mauvais-mot-de-passe");
+  await expect(page.getByText("Email ou mot de passe incorrect.")).toBeVisible();
+  await signInWithPassword(page, testEmail("inconnu"), password);
+  await expect(page.getByText("Email ou mot de passe incorrect.")).toBeVisible();
+
+  await signInWithPassword(page, email, password);
   await expect(page).toHaveURL(/\/dashboard$/);
   await page.goto("/connexion");
   await expect(page).toHaveURL(/\/dashboard$/); // déjà connecté
 
   await page.setViewportSize({ width: 1280, height: 800 });
-  await page.getByRole("button", { name: /Menu du compte/ }).click();
+  await page.getByRole("button", { name: /Menu du compte Léa M\./ }).click();
+  await expect(page.getByRole("menu")).toContainText("Léa M.");
   await page.getByRole("menuitem", { name: "Déconnexion" }).click();
   await expect(page).toHaveURL(/\/$/);
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/connexion/);
+});
+
+test("mot de passe oublié : lien → nouveau mot de passe → connexion", async ({ page, context }) => {
+  const email = testEmail("oubli");
+  const user = await createUser(email, { password: testPassword() });
+  created.push(user.id);
+  await admin().from("profiles").update({ onboarded_at: new Date().toISOString() }).eq("id", user.id);
+
+  await page.goto("/mot-de-passe-oublie");
+  await page.getByLabel("Email").fill(email);
+  await page.getByRole("button", { name: "Envoyer le lien" }).click();
+  await expect(page.getByText("Si un compte existe avec cette adresse")).toBeVisible();
+
+  // Sans lien récent, /reinitialiser renvoie vers la demande.
+  await page.goto("/reinitialiser");
+  await expect(page).toHaveURL(/\/mot-de-passe-oublie\?erreur=lien-expire/);
+
+  const { data, error } = await admin().auth.admin.generateLink({ type: "recovery", email });
+  expect(error).toBeNull();
+  await page.goto(`/auth/confirm?token_hash=${data.properties!.hashed_token}&type=recovery`);
+  await expect(page).toHaveURL(/\/reinitialiser$/);
+  const fresh = testPassword() + "x";
+  await page.getByLabel("Nouveau mot de passe").fill(fresh);
+  await page.getByLabel("Confirmer").fill(fresh);
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page).toHaveURL(/\/dashboard/);
+
+  await context.clearCookies();
+  await signInWithPassword(page, email, fresh);
+  await expect(page).toHaveURL(/\/dashboard$/);
+});
+
+test("ancien compte sans prénom : modale obligatoire, puis « Salut Prénom. »", async ({ page }) => {
+  const email = testEmail("ancien");
+  const password = testPassword();
+  const user = await createUser(email, { password, names: false });
+  created.push(user.id);
+  await admin().from("profiles").update({ onboarded_at: new Date().toISOString() }).eq("id", user.id);
+
+  await signInWithPassword(page, email, password);
+  await expect(page).toHaveURL(/\/dashboard$/);
+  const modal = page.getByRole("dialog", { name: "Comment tu t'appelles ?" });
+  await expect(modal).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(modal).toBeVisible(); // non fermable
+  await modal.getByLabel("Prénom").fill("Noé");
+  await modal.getByLabel("Nom", { exact: true }).fill("Bernard");
+  await modal.getByRole("button", { name: "Continuer" }).click();
+  await expect(modal).toBeHidden();
+  await expect(page.getByRole("heading", { name: "Salut Noé." })).toBeVisible();
 });
 
 test("ID support : généré à la création, visible dans le menu et les paramètres", async ({ page }) => {

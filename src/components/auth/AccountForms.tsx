@@ -3,7 +3,9 @@
 import Image from "next/image";
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { deleteAccount, uploadAvatar, type FormState } from "@/lib/auth/profileActions";
+import { passwordStrength } from "@/lib/auth/password";
+import { changeEmail, changePassword, deleteAccount, saveNames, uploadAvatar, type FormState } from "@/lib/auth/profileActions";
+import { PasswordInput } from "./AuthCard";
 import { Notice, inputCls } from "./ProfileForm";
 
 function Pending({ idle, busy, danger = false, disabled = false }: { idle: string; busy: string; danger?: boolean; disabled?: boolean }) {
@@ -21,14 +23,90 @@ function Pending({ idle, busy, danger = false, disabled = false }: { idle: strin
   );
 }
 
-export function AvatarForm({ url, name }: { url: string | null; name: string }) {
+/** Prénom + nom (Paramètres, et modale obligatoire des comptes existants). */
+export function NamesForm({ first, last, submit = "Enregistrer", onSaved }: { first: string; last: string; submit?: string; onSaved?: () => void }) {
+  const [state, action] = useActionState<FormState, FormData>(async (p, f) => {
+    const r = await saveNames(p, f);
+    if (r.ok) onSaved?.();
+    return r;
+  }, {});
+  return (
+    <form action={action} className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <label htmlFor="names-first" className="block text-sm font-medium text-white/80">
+            Prénom
+          </label>
+          <input id="names-first" name="first_name" autoComplete="given-name" required maxLength={50} defaultValue={state.fields?.first_name ?? first} className={inputCls} />
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="names-last" className="block text-sm font-medium text-white/80">
+            Nom
+          </label>
+          <input id="names-last" name="last_name" autoComplete="family-name" required maxLength={50} defaultValue={state.fields?.last_name ?? last} className={inputCls} />
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center gap-4">
+        <Pending idle={submit} busy="Enregistrement…" />
+        <Notice state={state} />
+      </div>
+    </form>
+  );
+}
+
+export function EmailForm({ current }: { current: string }) {
+  const [state, action] = useActionState<FormState, FormData>(changeEmail, {});
+  return (
+    <form action={action} className="space-y-4">
+      <p className="text-sm text-white/60">
+        Adresse actuelle : <span data-sensitive className="text-white">{current}</span>
+      </p>
+      <div className="space-y-2">
+        <label htmlFor="new-email" className="block text-sm font-medium text-white/80">
+          Nouvelle adresse
+        </label>
+        <input id="new-email" name="email" type="email" autoComplete="email" required defaultValue={state.fields?.email} className={inputCls} />
+        <p className="text-xs text-white/45">Un lien de confirmation part vers l&apos;ancienne et la nouvelle adresse.</p>
+      </div>
+      <div className="flex flex-wrap items-center gap-4">
+        <Pending idle="Changer d'email" busy="Envoi…" />
+        <Notice state={state} />
+      </div>
+    </form>
+  );
+}
+
+export function PasswordForm({ email }: { email: string }) {
+  const [state, action] = useActionState<FormState, FormData>(changePassword, {});
+  const [current, setCurrent] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const mismatch = confirm.length > 0 && confirm !== password;
+  return (
+    <form action={action} className="space-y-4">
+      <input type="email" name="username" autoComplete="username" value={email} readOnly hidden />
+      <PasswordInput id="current-password" name="current_password" label="Mot de passe actuel" autoComplete="current-password" value={current} onChange={setCurrent} />
+      <PasswordInput id="new-password" name="password" label="Nouveau mot de passe" autoComplete="new-password" value={password} onChange={setPassword} gauge />
+      <div className="space-y-2">
+        <PasswordInput id="new-password-confirm" name="password_confirm" label="Confirmer" autoComplete="new-password" value={confirm} onChange={setConfirm} />
+        {mismatch && <p className="text-xs text-red-400/90">Les deux mots de passe ne correspondent pas.</p>}
+      </div>
+      <div className="flex flex-wrap items-center gap-4">
+        <Pending idle="Changer le mot de passe" busy="Enregistrement…" disabled={mismatch || !current || passwordStrength(password) === 0} />
+        <Notice state={state} />
+      </div>
+    </form>
+  );
+}
+
+export function AvatarForm({ url, initials }: { url: string | null; initials: string }) {
   const [state, action] = useActionState<FormState, FormData>(uploadAvatar, {});
   return (
     <form action={action} className="flex flex-wrap items-center gap-5">
       {url ? (
         <Image src={url} alt="" width={64} height={64} className="h-16 w-16 rounded-full border border-white/10 object-cover" />
       ) : (
-        <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 font-mono text-xl uppercase text-white/70">{name.charAt(0)}</span>
+        <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 font-mono text-xl uppercase text-white/70">{initials}</span>
       )}
       <div className="space-y-2">
         <label className="block text-sm text-white/70">

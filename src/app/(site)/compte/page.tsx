@@ -6,6 +6,7 @@ import { signOut } from "@/app/(auth)/actions";
 import { AvatarForm, DeleteAccountForm } from "@/components/auth/AccountForms";
 import ProfileForm from "@/components/auth/ProfileForm";
 import { Container } from "@/components/ui";
+import { initials } from "@/lib/names";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { authErrorMessage } from "@/lib/auth/errors";
 
@@ -47,7 +48,7 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
 
       <div className="mt-10">
         <Block title="Avatar">
-          <AvatarForm url={profile.avatar_url} name={profile.username ?? "?"} />
+          <AvatarForm url={profile.avatar_url} initials={initials(profile)} />
         </Block>
         <Block title="Profil">
           <ProfileForm profile={profile} mode="compte" />

@@ -19,7 +19,8 @@ const day = (iso: string | null | undefined) =>
 type Found = {
   id: string;
   support_id: string;
-  username: string | null;
+  first_name: string | null;
+  last_name: string | null;
   plan: string;
   suspended_at: string | null;
   created_at: string;
@@ -32,7 +33,7 @@ async function findAccount(supportId: string): Promise<Found | null> {
   const db = createAdminClient();
   const { data: p } = await db
     .from("profiles")
-    .select("id, support_id, username, plan, suspended_at, created_at")
+    .select("id, support_id, first_name, last_name, plan, suspended_at, created_at")
     .eq("support_id", supportId)
     .maybeSingle();
   if (!p) return null;
@@ -54,7 +55,8 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
     ? [
         ["ID support", account.support_id],
         ["Email", account.email ?? "?"],
-        ["Pseudo", account.username ? `@${account.username}` : "?"],
+        ["Prénom", account.first_name ?? "?"],
+        ["Nom", account.last_name ?? "?"],
         ["Formule", PLAN[account.plan] ?? account.plan],
         ["Statut", account.suspended_at ? `Suspendu le ${day(account.suspended_at)}` : "Actif"],
         ["Relais actifs", String(account.relays)],

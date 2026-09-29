@@ -2,92 +2,143 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useActionState, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useActionState, useEffect, useId, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { motion, type Variants } from "motion/react";
-import { siDiscord, siGoogle, siTwitch, type SimpleIcon } from "simple-icons";
-import { sendMagicLink, signInWithProvider, type MagicLinkState } from "@/app/(auth)/actions";
+import { requestPasswordReset, resendVerification, resetPassword, signIn, signUp, type AuthState } from "@/app/(auth)/actions";
+import { PASSWORD_MIN, passwordStrength, STRENGTH_LABEL } from "@/lib/auth/password";
 
-// Carte de connexion / inscription : OAuth (Twitch, Discord, Google) + lien magique par email.
-// Les deux pages font la même chose (le lien magique crée le compte s'il n'existe pas) ; seuls les textes changent.
+// Cartes d'authentification (email + mot de passe) : connexion, inscription, mot de passe oublié, nouveau mot de passe.
+// Design façon Resend : drapés en fond (layout), tuile logo, champs arrondis, bouton blanc.
 
-type Method = "twitch" | "discord" | "google" | "email";
-const LAST_KEY = "syxtee:last-auth";
-const RESEND_DELAY = 30;
+const RESEND_DELAY = 60;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-function readLast(): Method | null {
-  try {
-    const v = localStorage.getItem(LAST_KEY);
-    return v === "twitch" || v === "discord" || v === "google" || v === "email" ? v : null;
-  } catch {
-    return null;
-  }
-}
-function remember(m: Method) {
-  try {
-    localStorage.setItem(LAST_KEY, m);
-  } catch {
-    // Stockage indisponible (navigation privée…) : pas de badge, rien d'autre.
-  }
-}
-const subscribeNoop = () => () => {};
-const useLastMethod = () => useSyncExternalStore(subscribeNoop, readLast, () => null);
+const IDLE: AuthState = { status: "idle" };
 
 const list: Variants = { show: { transition: { staggerChildren: 0.05 } } };
 const item: Variants = { hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } } };
 
-function BrandIcon({ icon }: { icon: SimpleIcon }) {
+export const fieldCls =
+  "h-[52px] w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 text-[15px] text-white placeholder:text-white/35 transition-[border-color,box-shadow] focus:border-white/30 focus:outline-none focus:ring-4 focus:ring-white/[0.06]";
+
+export function LogoTile() {
   return (
-    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0" fill="currentColor" aria-hidden="true">
-      <path d={icon.path} />
-    </svg>
+    <motion.div variants={item} className="mx-auto flex h-12 w-12 items-center justify-center rounded-[14px] border border-white/10 bg-[#0a0a0a] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-8px_16px_rgba(0,0,0,0.6)]">
+      <Image src="/logo-400.png" alt="SYXTEE" width={18} height={25} priority />
+    </motion.div>
   );
 }
 
-function LastBadge() {
+function Shell({ title, sub, children }: { title: string; sub?: ReactNode; children: ReactNode }) {
   return (
-    <span className="absolute -top-2.5 right-3 rounded-full border border-white/15 bg-[#1a1a1a] px-2 py-0.5 text-[11px] leading-4 text-white/80">
-      Dernière utilisée
-    </span>
+    <motion.div initial="hidden" animate="show" variants={list} className="w-full max-w-[420px]">
+      <LogoTile />
+      <motion.h1 variants={item} className="mt-8 text-center text-3xl font-semibold tracking-tight">
+        {title}
+      </motion.h1>
+      {sub && (
+        <motion.p variants={item} className="mt-3 text-center text-sm leading-relaxed text-white/60">
+          {sub}
+        </motion.p>
+      )}
+      {children}
+    </motion.div>
   );
 }
 
-function ProviderButton({ provider, icon, label, next, last, className = "" }: { provider: Exclude<Method, "email">; icon: SimpleIcon; label: string; next: string; last: boolean; className?: string }) {
+function Field({ id, label, aside, children }: { id: string; label: string; aside?: ReactNode; children: ReactNode }) {
   return (
-    <form action={signInWithProvider} onSubmit={() => remember(provider)} className={`relative ${className}`}>
-      <input type="hidden" name="provider" value={provider} />
-      <input type="hidden" name="next" value={next} />
-      <ProviderSubmit icon={icon} label={label} />
-      {last && <LastBadge />}
-    </form>
+    <div className="space-y-2">
+      <div className="flex items-baseline justify-between gap-3">
+        <label htmlFor={id} className="block text-sm font-medium text-white/80">
+          {label}
+        </label>
+        {aside}
+      </div>
+      {children}
+    </div>
   );
 }
 
-function ProviderSubmit({ icon, label }: { icon: SimpleIcon; label: string }) {
+function Submit({ idle, busy, disabled = false }: { idle: string; busy: string; disabled?: boolean }) {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
-      disabled={pending}
-      className="flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm font-medium text-white transition-colors hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 active:scale-[0.99] disabled:opacity-60"
+      disabled={disabled || pending}
+      className="h-12 w-full whitespace-nowrap rounded-xl bg-white text-sm font-medium text-black transition-colors hover:bg-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/35"
     >
-      <BrandIcon icon={icon} />
-      <span className="whitespace-nowrap">{pending ? "Redirection…" : label}</span>
+      {pending ? busy : idle}
     </button>
   );
 }
 
-function EmailSubmit({ valid }: { valid: boolean }) {
-  const { pending } = useFormStatus();
+function ErrorText({ children }: { children: ReactNode }) {
   return (
-    <button
-      type="submit"
-      disabled={!valid || pending}
-      className="h-12 w-full rounded-xl bg-white text-sm font-medium text-black transition-colors hover:bg-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/35"
-    >
-      {pending ? "Envoi…" : "Continuer avec l'email"}
-    </button>
+    <p role="alert" className="text-center text-sm text-red-400/90">
+      {children}
+    </p>
+  );
+}
+
+/** Mot de passe avec œil afficher / masquer, et jauge de solidité en direct (inscription, nouveau mot de passe). */
+export function PasswordInput({ id, name, label, autoComplete, value, onChange, gauge = false, aside }: {
+  id: string;
+  name: string;
+  label: string;
+  autoComplete: "current-password" | "new-password";
+  value: string;
+  onChange: (v: string) => void;
+  gauge?: boolean;
+  aside?: ReactNode;
+}) {
+  const [shown, setShown] = useState(false);
+  const hintId = useId();
+  const strength = passwordStrength(value);
+  return (
+    <Field id={id} label={label} aside={aside}>
+      <div className="relative">
+        <input
+          id={id}
+          name={name}
+          type={shown ? "text" : "password"}
+          autoComplete={autoComplete}
+          required
+          minLength={gauge ? PASSWORD_MIN : undefined}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          aria-describedby={gauge ? hintId : undefined}
+          className={`${fieldCls} pr-24`}
+        />
+        <button
+          type="button"
+          onClick={() => setShown((s) => !s)}
+          aria-pressed={shown}
+          className="absolute right-2 top-1/2 h-9 -translate-y-1/2 rounded-lg px-3 text-xs font-medium text-white/60 transition-colors hover:bg-white/[0.06] hover:text-white"
+        >
+          {shown ? "Masquer" : "Afficher"}
+        </button>
+      </div>
+      {gauge && (
+        <div id={hintId} className="space-y-1.5" aria-live="polite">
+          <div className="grid grid-cols-3 gap-1.5" aria-hidden="true">
+            {[0, 1, 2].map((i) => (
+              <span key={i} className={`h-1 rounded-full transition-colors ${value && i <= strength ? (strength === 0 ? "bg-white/40" : strength === 1 ? "bg-white/70" : "bg-white") : "bg-white/10"}`} />
+            ))}
+          </div>
+          <p className="text-xs text-white/50">
+            {value ? (
+              <>
+                Solidité : <span className="text-white/80">{STRENGTH_LABEL[strength]}</span>
+                {value.length < PASSWORD_MIN && ` · ${PASSWORD_MIN - value.length} caractère${PASSWORD_MIN - value.length > 1 ? "s" : ""} de plus`}
+              </>
+            ) : (
+              `${PASSWORD_MIN} caractères minimum. Une phrase est plus solide qu'un mot.`
+            )}
+          </p>
+        </div>
+      )}
+    </Field>
   );
 }
 
@@ -105,122 +156,99 @@ function ResendButton({ at }: { at: number }) {
       disabled={left > 0 || pending}
       className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.04] text-sm font-medium text-white transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:text-white/40 disabled:hover:bg-white/[0.04]"
     >
-      <span className="tabular-nums">{pending ? "Envoi…" : left > 0 ? `Renvoyer (${left} s)` : "Renvoyer"}</span>
+      <span className="tabular-nums">{pending ? "Envoi…" : left > 0 ? `Renvoyer l'email (${left} s)` : "Renvoyer l'email"}</span>
     </button>
   );
 }
 
-function ErrorText({ children }: { children: ReactNode }) {
+/** « Vérifie ta boîte mail » : après l'inscription (avec renvoi) ou une demande de réinitialisation. */
+function CheckMail({ email, at, lead, resend, next, onBack }: { email: string; at: number; lead: ReactNode; resend?: (p: AuthState, f: FormData) => Promise<AuthState>; next?: string; onBack: () => void }) {
+  const [state, action] = useActionState<AuthState, FormData>(resend ?? (async (s) => s), IDLE);
+  const sentAt = state.status === "sent" ? state.at : at;
   return (
-    <p role="alert" className="text-center text-sm text-red-400/90">
-      {children}
-    </p>
+    <Shell title="Vérifie ta boîte mail" sub={lead}>
+      <motion.p variants={item} className="mt-2 text-center text-sm text-white/60">
+        <span className="font-medium text-white">{email}</span>
+      </motion.p>
+      <motion.p variants={item} className="mt-4 text-center text-xs leading-relaxed text-white/45">
+        Rien reçu ? Regarde dans les spams, ou vérifie l&apos;adresse.
+      </motion.p>
+      {resend && (
+        <motion.form variants={item} action={action} className="mt-8">
+          <input type="hidden" name="email" value={email} />
+          <input type="hidden" name="next" value={next ?? ""} />
+          <ResendButton key={sentAt} at={sentAt} />
+        </motion.form>
+      )}
+      {state.status === "error" && (
+        <motion.div variants={item} className="mt-4">
+          <ErrorText>{state.message}</ErrorText>
+        </motion.div>
+      )}
+      <motion.div variants={item} className="mt-4 text-center">
+        <button type="button" onClick={onBack} className="text-sm text-white/60 underline-offset-4 transition-colors hover:text-white hover:underline">
+          Changer d&apos;email
+        </button>
+      </motion.div>
+    </Shell>
   );
 }
 
-export default function AuthCard({ mode, next = "", error }: { mode: "connexion" | "inscription"; next?: string; error?: string | null }) {
-  const [state, action] = useActionState<MagicLinkState, FormData>(sendMagicLink, { status: "idle" });
-  const [email, setEmail] = useState("");
-  // « Changer d'email » : on masque le résultat courant (chaque envoi renvoie un nouvel objet d'état).
-  const [dismissed, setDismissed] = useState<MagicLinkState | null>(null);
-  const last = useLastMethod();
-
-  const sent = state.status === "sent" && dismissed !== state ? state : null;
-  const valid = EMAIL_RE.test(email.trim());
-  const message = state.status === "error" && dismissed !== state ? state.message : error;
-  const nextQ = next ? `?next=${encodeURIComponent(next)}` : "";
-
-  const logo = (
-    <motion.div variants={item} className="mx-auto flex h-12 w-12 items-center justify-center rounded-[14px] border border-white/10 bg-[#0a0a0a] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-8px_16px_rgba(0,0,0,0.6)]">
-      <Image src="/logo-400.png" alt="SYXTEE" width={18} height={25} priority />
-    </motion.div>
+function Legal() {
+  return (
+    <>
+      <Link href="/cgu" target="_blank" className="underline underline-offset-2 hover:text-white">
+        Conditions d&apos;utilisation
+      </Link>{" "}
+      et la{" "}
+      <Link href="/confidentialite" target="_blank" className="underline underline-offset-2 hover:text-white">
+        Politique de confidentialité
+      </Link>
+    </>
   );
+}
 
-  if (sent) {
-    return (
-      <motion.div key="sent" initial="hidden" animate="show" variants={list} className="w-full max-w-[420px] text-center">
-        {logo}
-        <motion.h1 variants={item} className="mt-8 text-3xl font-semibold tracking-tight">
-          Vérifie ta boîte mail
-        </motion.h1>
-        <motion.p variants={item} className="mt-3 text-sm leading-relaxed text-white/60">
-          Lien de connexion envoyé à <span className="font-medium text-white">{sent.email}</span>.
-          <br />
-          Il est valable 10 minutes.
-        </motion.p>
-        <motion.form variants={item} action={action} className="mt-8">
-          <input type="hidden" name="email" value={sent.email} />
-          <input type="hidden" name="next" value={next} />
-          <ResendButton key={sent.at} at={sent.at} />
-        </motion.form>
-        <motion.button
-          variants={item}
-          type="button"
-          onClick={() => setDismissed(state)}
-          className="mt-4 text-sm text-white/60 underline-offset-4 transition-colors hover:text-white hover:underline"
-        >
-          Changer d&apos;email
-        </motion.button>
-      </motion.div>
-    );
-  }
+// ─────────────────────────── Connexion ───────────────────────────
+
+export function SignInCard({ next = "", error }: { next?: string; error?: string | null }) {
+  const [state, action] = useActionState<AuthState, FormData>(signIn, IDLE);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const nextQ = next ? `?next=${encodeURIComponent(next)}` : "";
+  const message = state.status === "error" ? state.message : error;
 
   return (
-    <motion.div key="form" initial="hidden" animate="show" variants={list} className="w-full max-w-[420px]">
-      {logo}
-      <motion.h1 variants={item} className="mt-8 text-center text-3xl font-semibold tracking-tight">
-        {mode === "connexion" ? "Connexion à SYXTEE" : "Crée ton compte SYXTEE"}
-      </motion.h1>
-      <motion.p variants={item} className="mt-3 text-center text-sm text-white/60">
-        {mode === "connexion" ? (
-          <>
-            Pas encore de compte ?{" "}
-            <Link href={`/inscription${nextQ}`} className="font-medium text-white hover:underline">
-              Inscris-toi.
-            </Link>
-          </>
-        ) : (
-          <>
-            Déjà un compte ?{" "}
-            <Link href={`/connexion${nextQ}`} className="font-medium text-white hover:underline">
-              Connecte-toi.
-            </Link>
-          </>
-        )}
-      </motion.p>
-
-      <motion.div variants={item} className="mt-10 grid gap-3 sm:grid-cols-2">
-        <ProviderButton provider="twitch" icon={siTwitch} label="Continuer avec Twitch" next={next} last={last === "twitch"} />
-        <ProviderButton provider="discord" icon={siDiscord} label="Continuer avec Discord" next={next} last={last === "discord"} />
-        <ProviderButton provider="google" icon={siGoogle} label="Continuer avec Google" next={next} last={last === "google"} className="sm:col-span-2" />
-      </motion.div>
-
-      <motion.div variants={item} className="my-8 flex items-center gap-4 text-xs text-white/40" aria-hidden="true">
-        <span className="h-px flex-1 bg-white/10" />
-        ou
-        <span className="h-px flex-1 bg-white/10" />
-      </motion.div>
-
-      <motion.form variants={item} action={action} onSubmit={() => remember("email")} className="relative space-y-3" noValidate>
+    <Shell
+      title="Connexion à SYXTEE"
+      sub={
+        <>
+          Pas encore de compte ?{" "}
+          <Link href={`/inscription${nextQ}`} className="font-medium text-white hover:underline">
+            Inscris-toi.
+          </Link>
+        </>
+      }
+    >
+      <motion.form variants={item} action={action} className="mt-10 space-y-5">
         <input type="hidden" name="next" value={next} />
-        <label htmlFor="email" className="block text-sm font-medium text-white/80">
-          Email
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="toi@exemple.com"
-          className="h-[52px] w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 text-[15px] text-white placeholder:text-white/35 transition-[border-color,box-shadow] focus:border-white/30 focus:outline-none focus:ring-4 focus:ring-white/[0.06]"
+        <Field id="email" label="Email">
+          <input id="email" name="email" type="email" inputMode="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="toi@exemple.com" className={fieldCls} />
+        </Field>
+        <PasswordInput
+          id="password"
+          name="password"
+          label="Mot de passe"
+          autoComplete="current-password"
+          value={password}
+          onChange={setPassword}
+          aside={
+            <Link href={`/mot-de-passe-oublie${email ? `?email=${encodeURIComponent(email)}` : ""}`} className="text-xs text-white/60 hover:text-white hover:underline">
+              Mot de passe oublié ?
+            </Link>
+          }
         />
-        <div className="relative pt-1">
-          <EmailSubmit valid={valid} />
-          {last === "email" && <LastBadge />}
+        <div className="pt-1">
+          <Submit idle="Se connecter" busy="Connexion…" disabled={!EMAIL_RE.test(email.trim()) || !password} />
         </div>
       </motion.form>
 
@@ -230,17 +258,154 @@ export default function AuthCard({ mode, next = "", error }: { mode: "connexion"
         </motion.div>
       )}
 
-      <motion.p variants={item} className="mt-10 text-center text-xs leading-relaxed text-white/45">
-        En continuant, tu acceptes nos{" "}
-        <Link href="/cgu" className="underline underline-offset-2 hover:text-white">
-          Conditions d&apos;utilisation
+      <motion.p variants={item} className="mt-10 rounded-xl border border-white/10 bg-white/[0.02] p-4 text-center text-xs leading-relaxed text-white/55">
+        Compte créé avec Twitch, Discord, Google ou un lien par email ?{" "}
+        <Link href={`/mot-de-passe-oublie${email ? `?email=${encodeURIComponent(email)}` : ""}`} className="font-medium text-white hover:underline">
+          Définis ton mot de passe
         </Link>{" "}
-        et notre{" "}
-        <Link href="/confidentialite" className="underline underline-offset-2 hover:text-white">
-          Politique de confidentialité
-        </Link>
-        .
+        avec la même adresse : tu retrouves tout ton compte.
       </motion.p>
-    </motion.div>
+    </Shell>
+  );
+}
+
+// ─────────────────────────── Inscription ───────────────────────────
+
+export function SignUpCard({ next = "", error }: { next?: string; error?: string | null }) {
+  const [state, action] = useActionState<AuthState, FormData>(signUp, IDLE);
+  const [dismissed, setDismissed] = useState<AuthState | null>(null);
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const nextQ = next ? `?next=${encodeURIComponent(next)}` : "";
+  const fields = state.status === "error" ? state.fields : undefined;
+
+  if (state.status === "sent" && dismissed !== state) {
+    return (
+      <CheckMail
+        email={state.email}
+        at={state.at}
+        next={next}
+        resend={resendVerification}
+        onBack={() => setDismissed(state)}
+        lead="On t'a envoyé un lien pour activer ton compte. Il est valable 24 h."
+      />
+    );
+  }
+
+  const mismatch = confirm.length > 0 && confirm !== password;
+  return (
+    <Shell
+      title="Crée ton compte SYXTEE"
+      sub={
+        <>
+          Déjà un compte ?{" "}
+          <Link href={`/connexion${nextQ}`} className="font-medium text-white hover:underline">
+            Connecte-toi.
+          </Link>
+        </>
+      }
+    >
+      <motion.form variants={item} action={action} className="mt-10 space-y-5">
+        <input type="hidden" name="next" value={next} />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field id="first_name" label="Prénom">
+            <input id="first_name" name="first_name" autoComplete="given-name" required maxLength={50} defaultValue={fields?.first_name} className={fieldCls} />
+          </Field>
+          <Field id="last_name" label="Nom">
+            <input id="last_name" name="last_name" autoComplete="family-name" required maxLength={50} defaultValue={fields?.last_name} className={fieldCls} />
+          </Field>
+        </div>
+        <Field id="email" label="Email">
+          <input id="email" name="email" type="email" inputMode="email" autoComplete="email" required defaultValue={fields?.email} placeholder="toi@exemple.com" className={fieldCls} />
+        </Field>
+        <PasswordInput id="password" name="password" label="Mot de passe" autoComplete="new-password" value={password} onChange={setPassword} gauge />
+        <div className="space-y-2">
+          <PasswordInput id="password_confirm" name="password_confirm" label="Confirmer le mot de passe" autoComplete="new-password" value={confirm} onChange={setConfirm} />
+          {mismatch && <p className="text-xs text-red-400/90">Les deux mots de passe ne correspondent pas.</p>}
+        </div>
+        <label className="flex cursor-pointer items-start gap-3 text-xs leading-relaxed text-white/60">
+          <input type="checkbox" name="cgu" required className="mt-0.5 h-4 w-4 shrink-0 accent-white" />
+          <span>
+            J&apos;accepte les <Legal />.
+          </span>
+        </label>
+        <div className="pt-1">
+          <Submit idle="Créer mon compte" busy="Création…" disabled={mismatch || passwordStrength(password) === 0} />
+        </div>
+      </motion.form>
+
+      {(state.status === "error" || error) && (
+        <motion.div variants={item} className="mt-4">
+          <ErrorText>{state.status === "error" ? state.message : error}</ErrorText>
+        </motion.div>
+      )}
+    </Shell>
+  );
+}
+
+// ─────────────────────────── Mot de passe oublié ───────────────────────────
+
+export function ForgotCard({ email: initial = "", error }: { email?: string; error?: string | null }) {
+  const [state, action] = useActionState<AuthState, FormData>(requestPasswordReset, IDLE);
+  const [dismissed, setDismissed] = useState<AuthState | null>(null);
+  const [email, setEmail] = useState(initial);
+
+  if (state.status === "sent" && dismissed !== state) {
+    return (
+      <CheckMail
+        email={state.email}
+        at={state.at}
+        onBack={() => setDismissed(state)}
+        lead="Si un compte existe avec cette adresse, tu vas recevoir un lien pour choisir un nouveau mot de passe. Il est valable 1 h."
+      />
+    );
+  }
+  return (
+    <Shell title="Mot de passe oublié" sub="Indique ton adresse : on t'envoie un lien pour en choisir un nouveau.">
+      <motion.form variants={item} action={action} className="mt-10 space-y-5">
+        <Field id="email" label="Email">
+          <input id="email" name="email" type="email" inputMode="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="toi@exemple.com" className={fieldCls} />
+        </Field>
+        <Submit idle="Envoyer le lien" busy="Envoi…" disabled={!EMAIL_RE.test(email.trim())} />
+      </motion.form>
+      {(state.status === "error" || error) && (
+        <motion.div variants={item} className="mt-4">
+          <ErrorText>{state.status === "error" ? state.message : error}</ErrorText>
+        </motion.div>
+      )}
+      <motion.p variants={item} className="mt-8 text-center text-sm">
+        <Link href="/connexion" className="text-white/60 hover:text-white hover:underline">
+          Retour à la connexion
+        </Link>
+      </motion.p>
+    </Shell>
+  );
+}
+
+// ─────────────────────────── Nouveau mot de passe ───────────────────────────
+
+export function ResetCard({ email }: { email: string }) {
+  const [state, action] = useActionState<AuthState, FormData>(resetPassword, IDLE);
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const mismatch = confirm.length > 0 && confirm !== password;
+  return (
+    <Shell title="Nouveau mot de passe" sub={<>Pour le compte <span className="font-medium text-white">{email}</span>.</>}>
+      <motion.form variants={item} action={action} className="mt-10 space-y-5">
+        {/* Aide les gestionnaires de mots de passe à associer le nouveau mot de passe au bon compte. */}
+        <input type="email" name="username" autoComplete="username" value={email} readOnly hidden />
+        <PasswordInput id="password" name="password" label="Nouveau mot de passe" autoComplete="new-password" value={password} onChange={setPassword} gauge />
+        <div className="space-y-2">
+          <PasswordInput id="password_confirm" name="password_confirm" label="Confirmer" autoComplete="new-password" value={confirm} onChange={setConfirm} />
+          {mismatch && <p className="text-xs text-red-400/90">Les deux mots de passe ne correspondent pas.</p>}
+        </div>
+        <Submit idle="Enregistrer" busy="Enregistrement…" disabled={mismatch || passwordStrength(password) === 0} />
+      </motion.form>
+      {state.status === "error" && (
+        <motion.div variants={item} className="mt-4">
+          <ErrorText>{state.message}</ErrorText>
+        </motion.div>
+      )}
+    </Shell>
   );
 }

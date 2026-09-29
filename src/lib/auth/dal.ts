@@ -8,6 +8,9 @@ import { createClient } from "@/lib/supabase/server";
 export type Profile = {
   id: string;
   username: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  show_first_name?: boolean;
   avatar_url: string | null;
   bio: string | null;
   country: string | null;

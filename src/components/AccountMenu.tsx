@@ -5,13 +5,15 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { signOut } from "@/app/(auth)/actions";
 import { createClient } from "@/lib/supabase/client";
+import { initials, shortName } from "@/lib/names";
 import { hasSupabase } from "@/lib/supabase/env";
 import { SupportId } from "./SupportId";
 
 // Nav : « Connexion » pour les visiteurs, avatar rond + menu (Dashboard, Mon compte, Déconnexion) une fois connecté.
 // Lecture côté navigateur : les pages publiques restent statiques.
 
-export type Account = { username: string; avatar: string | null; supportId: string | null } | null;
+/** name : « Mathis N. » (ou l'email tant que le prénom n'est pas renseigné). */
+export type Account = { name: string; initials: string; avatar: string | null; supportId: string | null } | null;
 
 export function useAccount() {
   const [account, setAccount] = useState<Account | undefined>(hasSupabase ? undefined : null);
@@ -26,8 +28,9 @@ export function useAccount() {
         if (alive) setAccount(null);
         return;
       }
-      const { data: p } = await supabase.from("profiles").select("username, avatar_url, support_id").eq("id", user.id).single();
-      if (alive) setAccount({ username: p?.username ?? user.email ?? "?", avatar: p?.avatar_url ?? null, supportId: p?.support_id ?? null });
+      const { data: p } = await supabase.from("profiles").select("first_name, last_name, avatar_url, support_id").eq("id", user.id).single();
+      const name = shortName(p, user.email ?? "?");
+      if (alive) setAccount({ name, initials: initials(p, name), avatar: p?.avatar_url ?? null, supportId: p?.support_id ?? null });
     };
     load();
     const { data: sub } = supabase.auth.onAuthStateChange(() => {
@@ -45,8 +48,8 @@ export function Avatar({ account, size = 32 }: { account: NonNullable<Account>; 
   return account.avatar ? (
     <Image src={account.avatar} alt="" width={size} height={size} className="rounded-full border border-white/15 object-cover" style={{ width: size, height: size }} />
   ) : (
-    <span className="flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] font-mono text-xs uppercase" style={{ width: size, height: size }}>
-      {account.username.charAt(0)}
+    <span className="flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] font-mono text-[11px] uppercase" style={{ width: size, height: size }}>
+      {account.initials}
     </span>
   );
 }
@@ -93,14 +96,14 @@ export default function AccountMenu({ account, links = siteAccountLinks }: { acc
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="menu"
-        aria-label={`Menu du compte ${account.username}`}
+        aria-label={`Menu du compte ${account.name}`}
         className="flex rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
       >
         <Avatar account={account} />
       </button>
       {open && (
         <div role="menu" className="absolute right-0 top-full z-50 mt-3 w-64 rounded-xl border border-line bg-black/95 p-1.5 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] backdrop-blur-md">
-          <p className="truncate px-3 pb-2 pt-1.5 font-mono text-xs text-muted">@{account.username}</p>
+          <p className="truncate px-3 pb-2 pt-1.5 text-sm text-foreground">{account.name}</p>
           {account.supportId && (
             <div className="mb-1 border-b border-line px-3 pb-2">
               <SupportId id={account.supportId} compact />

@@ -29,6 +29,7 @@ export type Deps = {
   /** SYXTEE Cam (null si désactivée). */
   cam?: Cam | null;
   /** Pseudo et Twitch vérifié, pour l'app /cam (chat en superposition). */
+  /** username : nom public (chaîne Twitch, sinon « Prénom N. ») ; le champ garde son nom pour les anciens clients. */
   profile?: (userId: string) => Promise<{ username: string | null; twitch_login: string | null }>;
   /** Entrée RTMP (null si désactivée). */
   rtmp?: Rtmp | null;

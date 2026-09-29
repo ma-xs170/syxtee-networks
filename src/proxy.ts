@@ -7,5 +7,5 @@ export async function proxy(request: NextRequest) {
 
 // Seulement les pages qui lisent la session : les pages publiques restent statiques.
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/compte/:path*", "/bienvenue/:path*", "/connexion", "/inscription"],
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/compte/:path*", "/bienvenue/:path*", "/connexion", "/inscription", "/mot-de-passe-oublie", "/reinitialiser"],
 };

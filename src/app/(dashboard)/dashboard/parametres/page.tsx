@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { signOut } from "@/app/(auth)/actions";
-import { DeleteAccountForm } from "@/components/auth/AccountForms";
+import { DeleteAccountForm, EmailForm, NamesForm, PasswordForm } from "@/components/auth/AccountForms";
 import { ConsentToggle, EraseCoverage, PrivateZones, type PrivateZone } from "@/components/dashboard/CoverageSettings";
 import { DiscordTicketButton, SupportId } from "@/components/SupportId";
 import StreamModeToggle from "@/components/dashboard/StreamModeToggle";
@@ -10,15 +10,39 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Paramètres", robots: { index: false } };
 
-export default async function ParametresPage() {
+export default async function ParametresPage({ searchParams }: PageProps<"/dashboard/parametres">) {
   const user = await requireUser("/dashboard/parametres");
+  const { email: emailDone } = await searchParams;
   const profile = await getProfile();
   const supabase = await createClient();
   const { data: zones } = await supabase.from("private_zones").select("id, label, lat, lng, radius_m").order("created_at");
   return (
     <DashPage>
       <DashHeader lead="Tes" hl="paramètres" />
+      {emailDone === "ok" && (
+        <p role="status" className="mb-4 rounded-xl border border-line px-4 py-3 text-sm text-muted">
+          Adresse confirmée. Si tu as aussi cliqué le lien reçu sur l&apos;autre adresse, ton email est changé.
+        </p>
+      )}
       <div className="grid gap-4 lg:grid-cols-2">
+        <Tile className="lg:col-span-2">
+          <TileLabel>Identité</TileLabel>
+          <div className="mt-5 max-w-xl">
+            <NamesForm first={profile?.first_name ?? ""} last={profile?.last_name ?? ""} />
+          </div>
+        </Tile>
+        <Tile>
+          <TileLabel>Email</TileLabel>
+          <div className="mt-5">
+            <EmailForm current={user.email ?? ""} />
+          </div>
+        </Tile>
+        <Tile>
+          <TileLabel>Mot de passe</TileLabel>
+          <div className="mt-5">
+            <PasswordForm email={user.email ?? ""} />
+          </div>
+        </Tile>
         <Tile>
           <TileLabel>Mode stream</TileLabel>
           <p className="mt-4 text-sm leading-relaxed text-muted">Floute clés, URLs et e-mail pour montrer ton dashboard en live. Le réglage reste actif sur ce navigateur.</p>

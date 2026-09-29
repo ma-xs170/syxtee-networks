@@ -4,7 +4,7 @@ import { createUserVerifier } from "./auth.ts";
 import { loadConfig } from "./config.ts";
 import { createHealthMonitor, type Live } from "./health.ts";
 import type { Relay } from "./relays.ts";
-import { createRelayStore } from "./relays.ts";
+import { createRelayStore, publicName } from "./relays.ts";
 import { createRtmp } from "./rtmp.ts";
 import { loadLogo } from "./mire.ts";
 import { createPreviews } from "./preview.ts";
@@ -179,8 +179,8 @@ const app = buildServer({
   cam,
   security,
   profile: async (id) => {
-    const { data } = await supabase.from("profiles").select("username, twitch_login").eq("id", id).maybeSingle();
-    return { username: (data?.username as string | null) ?? null, twitch_login: (data?.twitch_login as string | null) ?? null };
+    const { data } = await supabase.from("profiles").select("username, first_name, last_name, twitch_display_name, twitch_login").eq("id", id).maybeSingle();
+    return { username: publicName(data), twitch_login: (data?.twitch_login as string | null) ?? null };
   },
   verifyUser: createUserVerifier(config.SUPABASE_URL),
   previewPath: (id) => previews?.path(id) ?? "",

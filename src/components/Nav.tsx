@@ -135,7 +135,8 @@ export default function Nav({ variant = "site" }: { variant?: "site" | "dashboar
             {account ? (
               <>
                 <p className="flex items-center gap-3 py-4 text-sm text-muted">
-                  <Avatar account={account} size={28} />@{account.username}
+                  <Avatar account={account} size={28} />
+                  {account.name}
                 </p>
                 {account.supportId && (
                   <div className="border-b border-line pb-4">

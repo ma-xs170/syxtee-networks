@@ -13,7 +13,7 @@ export default async function DashboardPage() {
   const initial = await getOverview(user.id, profile, "7d");
   return (
     <DashPage>
-      <DashHeader lead="Salut" hl={`${profile.username ?? "toi"}.`} />
+      <DashHeader lead="Salut" hl={`${profile.first_name?.trim() || "toi"}.`} />
       <Overview initial={initial} />
     </DashPage>
   );

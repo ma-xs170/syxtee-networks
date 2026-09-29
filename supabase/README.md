@@ -55,7 +55,7 @@ Tous les emails (vérification, mot de passe oublié, changement d'email, alerte
    (ou `enabled = true` dans `config.toml` + `supabase config push`).
 3. Tester : `/dev/emails` (admin) → « M'envoyer tous les tests ».
 
-Migrations : `0013_names.sql` puis `0014_emails.sql` (production ET test).
+Migrations : `0013_names.sql` puis `0015_emails.sql` (production ET test).
 
 ## 4 bis. Authentication → Emails (ancien SMTP, inutile avec le hook)
 

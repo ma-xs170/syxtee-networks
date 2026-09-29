@@ -18,6 +18,23 @@ DJI ──RTMP :1935──► MediaMTX ──► Core (ffmpeg, copie) ──SRT 
                      SYXTEE Core 127.0.0.1:8787 ◄── Caddy HTTPS (core.<domaine>) ◄── dashboard Vercel
 ```
 
+## Sécurité des clés (relais SRTLA, SRT, RTMP, Cam)
+
+- **Deux clés par relais**, 128 bits aléatoires chacune (`crypto.randomBytes`) : `live_…` (publication : Moblin, DJI, encodeur) et `play_…` (lecture : OBS). Aucune ne se déduit de l'autre, de l'ID ou de l'email.
+- **En base, jamais en clair** (migrations `0010_relay_security.sql` puis `0011_drop_plain_keys.sql`) : empreintes SHA-256 en colonnes `UNIQUE` (tous comptes confondus, nouvelle génération en cas de collision) + clés chiffrées en AES-256-GCM (`keys_enc`, secret `RELAY_KEYS_SECRET` du `.env` du VPS, **à sauvegarder**). Le navigateur ne lit plus ces colonnes ; seul le Core déchiffre, pour le propriétaire.
+- **Vérification serveur** : le SLS vérifie chaque streamid dans sa base, et le Core n'y déclare QUE les relais autorisés (compte non suspendu, formule avec relais, non archivé, dans le quota), réalignés toutes les 30 s. À chaque publieur accepté, le Core revérifie en base (formule, suspension, quota, flux simultanés) et coupe sinon. RTMP et Cam : `authHTTPAddress` de MediaMTX vers le Core (même règles).
+- **Un seul éditeur par clé** : le SLS refuse le 2e (testé), MediaMTX aussi (`overridePublisher: false`). Le propriétaire voit « Tentative de connexion sur ton relais depuis <IP / pays> » dans Sécurité & clés (via SRTLA, l'IP du téléphone n'est pas visible : alerte si les tentatives insistent).
+- **Régénérer / archiver / supprimer** : paire retirée du SLS, sessions en cours coupées (Guard) ; RTMP et Cam coupés via l'API MediaMTX dans la seconde.
+- **SYXTEE Guard** (`src/guard.ts`, service `guard`, root) : suit le journal du SLS (API Docker) et applique les ordres du Core avec iptables dans le réseau du conteneur `srtla-receiver` (coupure d'une IP:port, bannissement).
+- **Force brute** : 10 refus en 1 min pour une IP → bannie 15 min (SRT/SRTLA par le Guard, RTMP/Cam par le Core). Journal `security_events` (90 j), table `ip_bans`, page admin `/admin/securite` (emails `ADMIN_EMAILS` sur Vercel). Les IP internes (srtla_rec, Docker) et `SECURITY_ALLOW_IPS` ne sont jamais bannies.
+- **Limite** : via SRTLA, le SLS voit toutes les connexions depuis `127.0.0.1` (srtla_rec) ; le bannissement par IP ne s'applique donc qu'au SRT direct, au RTMP et à la Cam. La clé (128 bits) reste la protection principale.
+
+Audit réel sur le VPS (compte temporaire, vraies connexions ffmpeg, tout est effacé à la fin) :
+
+```bash
+cd /opt/syxtee && docker compose exec -T core node --input-type=module - < core/test/security-audit.mjs
+```
+
 ## Carte de couverture (mesures communautaires)
 
 - **Consentement obligatoire**, vérifié par le Core : case `profiles.coverage_consent` relue (sans cache) juste avant chaque écriture. Décocher arrête la collecte en moins de 30 s.
@@ -158,6 +175,14 @@ cd /opt/syxtee/repo && git pull && cd .. && docker compose up -d --build
 2. Vérifier que le port RTMP est libre : `sudo ss -ltnp | grep 1935` (rien ne doit s'afficher), puis `sudo ufw allow 1935/tcp`.
 3. Mettre à jour le Core (commande ci-dessus) : il lit désormais `relays`, et MediaMTX écoute en RTMP.
 4. Pousser le dashboard sur Vercel.
+
+### Passage aux clés chiffrées (une fois, dans cet ordre)
+
+1. Supabase : appliquer `0010_relay_security.sql`.
+2. `.env` : `RELAY_KEYS_SECRET=$(openssl rand -hex 32)` (à sauvegarder hors du VPS) et `SECURITY_ALLOW_IPS=<IP du VPS>`.
+3. Arrêter tout autre service sur le port 1935 (`sudo ss -ltnp | grep 1935`), puis mettre à jour le Core : il chiffre les clés existantes au démarrage (« N relais : clés chiffrées »), le Guard démarre.
+4. Supabase : appliquer `0011_drop_plain_keys.sql` (supprime les colonnes en clair et `stream_keys`).
+5. Lancer l'audit ci-dessus : tout doit être ✅.
 
 ### Commandes utiles
 

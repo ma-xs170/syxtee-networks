@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Relay, RelayStore } from "./relays.ts";
+import type { Security } from "./security.ts";
+import { kickPath } from "./mediamtx.ts";
 import { supervise, type Supervised } from "./supervisor.ts";
 
 // SYXTEE Cam : un téléphone publie en WebRTC (WHIP) vers MediaMTX, le Core relaie vers le relais SRT
@@ -32,8 +33,8 @@ export type MediamtxAuth = { action?: string; path?: string; protocol?: string; 
 const LOCAL = new Set(["127.0.0.1", "::1", "::ffff:127.0.0.1"]);
 
 export function createCam(o: {
-  db: SupabaseClient;
   relays: RelayStore;
+  security?: Pick<Security, "refused" | "isBanned"> | null;
   apiUrl: string;
   rtspUrl: string;
   whipBase: string;
@@ -53,11 +54,8 @@ export function createCam(o: {
 
   async function lookup(camKey: string): Promise<Relay | null> {
     if (!isCamKey(camKey)) return null;
-    const cached = byCamKey.get(camKey);
-    if (cached) return cached;
-    const { data } = await o.db.from("relays").select("*").eq("cam_key", camKey).eq("archived", false).maybeSingle();
-    if (data) byCamKey.set(camKey, data as Relay);
-    return (data as Relay | null) ?? null;
+    // Seuls les relais autorisés (setKeys) : un compte suspendu ou sans formule ne publie pas.
+    return byCamKey.get(camKey) ?? null;
   }
 
   /** Relais qui porte la clé caméra du compte (null si le compte n'a aucun relais actif). */
@@ -70,11 +68,8 @@ export function createCam(o: {
     const row = await camRelay(userId);
     if (!row) return null;
     if (onlyIfMissing && row.cam_key) return row;
-    const q = o.db.from("relays").update({ cam_key: newCamKey() }).eq("id", row.id);
-    const { data, error } = await (onlyIfMissing ? q.is("cam_key", null) : q).select("*").maybeSingle();
-    if (error) throw new Error(`cam_key : ${error.message}`);
-    // Course entre deux requêtes « onlyIfMissing » : l'autre a gagné, on relit.
-    const fresh = (data as Relay | null) ?? (await o.relays.get(row.id))!;
+    // Course entre deux requêtes « onlyIfMissing » : l'autre a gagné, le store relit la ligne.
+    const fresh = await o.relays.setCamKey(row, newCamKey(), onlyIfMissing);
     if (row.cam_key && row.cam_key !== fresh.cam_key) byCamKey.delete(row.cam_key);
     if (fresh.cam_key) byCamKey.set(fresh.cam_key, fresh);
     return fresh;
@@ -102,7 +97,11 @@ export function createCam(o: {
     for (const path of ready) {
       if (relays.has(path)) continue;
       const row = await lookup(path);
-      if (!row) continue;
+      if (!row) {
+        // Clé caméra régénérée, relais archivé ou compte refusé : le téléphone est coupé.
+        if (await kickPath(o.apiUrl, path, fetchImpl)) o.log(`cam ${path.slice(0, 12)}… coupée (clé plus valable)`);
+        continue;
+      }
       const args = relayArgs(o.rtspUrl, path, o.output(row.publish_id));
       relays.set(path, { proc: supervise(`cam ${row.user_id.slice(0, 8)}`, "ffmpeg", args, o.log), publishId: row.publish_id });
       o.log(`cam ${row.user_id.slice(0, 8)} en ligne → relais`);
@@ -119,7 +118,13 @@ export function createCam(o: {
     rotate: (userId: string) => setCamKey(userId, false),
     /** Décision d'autorisation pour MediaMTX. */
     async authorize(p: MediamtxAuth): Promise<boolean> {
-      if (p.action === "publish") return p.protocol === "webrtc" && (await lookup(p.path ?? "")) !== null;
+      if (p.action === "publish") {
+        const ip = (p.ip ?? "").replace(/^::ffff:/, "");
+        if (o.security?.isBanned(ip)) return false;
+        const ok = p.protocol === "webrtc" && (await lookup(p.path ?? "")) !== null;
+        if (!ok) o.security?.refused({ protocol: "cam", ip, key: p.path ?? "", reason: p.protocol === "webrtc" ? "unknown_key" : "protocol" });
+        return ok;
+      }
       if (p.action === "read") return LOCAL.has(p.ip ?? ""); // le relais du Core, en local uniquement
       return false;
     },

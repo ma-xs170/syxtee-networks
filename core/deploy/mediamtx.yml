@@ -41,3 +41,5 @@ webrtcAdditionalHosts: []
 
 paths:
   all_others:
+    # Un seul éditeur par clé : un 2e appareil est refusé (au lieu de remplacer celui en direct).
+    overridePublisher: false

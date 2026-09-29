@@ -18,6 +18,30 @@ services:
     restart: unless-stopped
     logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
 
+  # SYXTEE Guard : suit le journal du relais (API Docker) et coupe / bannit sur ordre du Core, avec iptables
+  # dans le réseau du conteneur srtla-receiver. Root, mais aucun port public (API sur 127.0.0.1:8788, jeton).
+  guard:
+    build:
+      context: ./core
+      dockerfile: Dockerfile
+    image: syxtee-guard
+    command: ["node", "dist/guard.js"]
+    user: root
+    network_mode: host
+    pid: host
+    cap_drop: [ALL]
+    cap_add: [NET_ADMIN, NET_RAW, SYS_ADMIN, SYS_PTRACE]
+    security_opt: ["apparmor=unconfined"]
+    environment:
+      CORE_API_TOKEN: ${CORE_API_TOKEN}
+      GUARD_PORT: "8788"
+      PORT: "8787"
+      GUARD_SLS_CONTAINER: srtla-receiver
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
+
   # SYXTEE Cam : réception WebRTC (WHIP). Instance séparée du mediamtx existant (RTMP/HLS/SRT désactivés).
   mediamtx:
     image: bluenviron/mediamtx:1.21.1

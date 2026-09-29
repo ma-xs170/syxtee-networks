@@ -7,7 +7,9 @@ import { z } from "zod";
 import { isServiceToken } from "./auth.ts";
 import type { Config } from "./config.ts";
 import type { HealthMonitor, Live } from "./health.ts";
-import { QuotaError, type Relay, type RelayStore } from "./relays.ts";
+import { ForbiddenError, QuotaError, type Relay, type RelayStore } from "./relays.ts";
+import type { Security } from "./security.ts";
+import type { SlsEvent } from "./sls-log.ts";
 import type { Rtmp } from "./rtmp.ts";
 import { RTMP_APP } from "./rtmp.ts";
 import type { SampleStore } from "./samples.ts";
@@ -30,6 +32,8 @@ export type Deps = {
   profile?: (userId: string) => Promise<{ username: string | null; twitch_login: string | null }>;
   /** Entrée RTMP (null si désactivée). */
   rtmp?: Rtmp | null;
+  /** Sécurité du relais (journal des refus, bannissements, alertes). */
+  security?: Security | null;
   config: Config;
   relays: RelayStore;
   health: HealthMonitor;
@@ -136,6 +140,7 @@ export function buildServer(d: Deps) {
       return changed(view(await d.relays.create(id, body)));
     } catch (e) {
       if (e instanceof QuotaError) return reply.code(403).send({ error: "quota" });
+      if (e instanceof ForbiddenError) return reply.code(403).send({ error: "forbidden" });
       throw e;
     }
   });
@@ -161,6 +166,7 @@ export function buildServer(d: Deps) {
       if (body.archived !== undefined) r = await d.relays.setArchived(r, body.archived, body.limit);
     } catch (e) {
       if (e instanceof QuotaError) return reply.code(403).send({ error: "quota" });
+      if (e instanceof ForbiddenError) return reply.code(403).send({ error: "forbidden" });
       throw e;
     }
     return changed(view(r));
@@ -180,9 +186,39 @@ export function buildServer(d: Deps) {
   app.delete("/v1/users/:id/relays", { preHandler: service }, async (req, reply) => {
     const { id } = uuid.parse(req.params);
     await d.relays.removeAll(id);
+    await d.security?.forget(id).catch(() => {});
     d.onKeysChanged();
     return reply.code(204).send();
   });
+  // Alertes de sécurité du compte : 2e appareil refusé sur un de ses relais (7 derniers jours).
+  app.get("/v1/users/:id/alerts", { preHandler: service }, async (req) => {
+    const { id } = uuid.parse(req.params);
+    const rows = d.security ? await d.security.alerts(id) : [];
+    return { alerts: rows.map((a) => ({ at: a.at, relay_id: a.relay_id, ip: a.ip, country: a.country, protocol: a.protocol })) };
+  });
+
+  // ───── Admin (serveur Vercel, après vérification du rôle) : page Sécurité ─────
+  if (d.security) {
+    const sec = d.security;
+    app.get("/v1/admin/security", { preHandler: service }, async (req) => {
+      const { limit } = z.object({ limit: z.coerce.number().int().min(1).max(1000).default(200) }).parse(req.query);
+      return { events: await sec.recent(limit), bans: sec.bans() };
+    });
+    app.post("/v1/admin/bans", { preHandler: service }, async (req, reply) => {
+      const b = z.object({ ip: z.union([z.ipv4(), z.ipv6()]), minutes: z.number().int().min(1).max(525_600), reason: z.string().trim().min(1).max(200) }).parse(req.body);
+      try {
+        return await sec.ban(b.ip, b.minutes, b.reason, false);
+      } catch (e) {
+        return reply.code(409).send({ error: (e as Error).message });
+      }
+    });
+    app.delete("/v1/admin/bans/:ip", { preHandler: service }, async (req, reply) => {
+      const { ip } = z.object({ ip: z.union([z.ipv4(), z.ipv6()]) }).parse(req.params);
+      await sec.unban(ip);
+      return reply.code(204).send();
+    });
+  }
+
   // Carte de couverture : effacement des mesures d'un compte (bouton dans Paramètres, suppression du compte).
   app.delete("/v1/users/:id/coverage", { preHandler: service }, async (req) => {
     const { id } = uuid.parse(req.params);
@@ -507,6 +543,21 @@ export function buildServer(d: Deps) {
       const ok = p.path?.startsWith(`${RTMP_APP}/`) ? !!(await d.rtmp?.authorize(p)) : !!(await cam?.authorize(p));
       return reply.code(ok ? 200 : 401).send();
     });
+  }
+
+  // Guard → Core : événements du journal du SLS, bannissements actifs. Local + jeton de service.
+  const internalOnly = async (req: FastifyRequest, reply: FastifyReply) => {
+    const local = ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(req.socket.remoteAddress ?? "");
+    if (!local || req.headers["x-forwarded-for"] || !isServiceToken(req.headers.authorization, d.config.CORE_API_TOKEN)) return reply.code(404).send();
+  };
+  if (d.security) {
+    const sec = d.security;
+    app.post("/internal/guard/events", { preHandler: internalOnly, bodyLimit: 1024 * 1024 }, async (req) => {
+      const { events } = z.object({ events: z.array(z.looseObject({ kind: z.string() })).max(5000) }).parse(req.body);
+      await sec.handleSls(events as unknown as SlsEvent[]);
+      return { ok: true };
+    });
+    app.get("/internal/guard/bans", { preHandler: internalOnly }, async () => ({ bans: sec.bans() }));
   }
 
   app.setErrorHandler((err, _req, reply) => {

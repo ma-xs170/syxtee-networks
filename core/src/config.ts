@@ -15,6 +15,18 @@ const schema = z.object({
   // Jeton partagé avec le serveur Vercel (actions du dashboard). Long et aléatoire.
   CORE_API_TOKEN: z.string().min(32, "CORE_API_TOKEN : 32 caractères minimum"),
 
+  // Chiffrement des clés des relais au repos (AES-256-GCM) : `openssl rand -hex 32`. À sauvegarder : sans lui,
+  // les URLs ne peuvent plus être affichées (il faudrait régénérer toutes les clés).
+  RELAY_KEYS_SECRET: z.string().min(32, "RELAY_KEYS_SECRET : openssl rand -hex 32"),
+  // SYXTEE Guard (coupure des sessions, bannissement d'IP sur le relais) : API locale. Vide = désactivé.
+  GUARD_URL: z.string().default("http://127.0.0.1:8788"),
+  // Force brute : N refus en FENÊTRE secondes pour une IP → bannie BAN minutes.
+  SECURITY_MAX_FAILS: z.coerce.number().int().min(1).default(10),
+  SECURITY_WINDOW_S: z.coerce.number().int().min(1).default(60),
+  SECURITY_BAN_MINUTES: z.coerce.number().int().min(1).default(15),
+  // IP jamais bannies (séparées par des virgules), en plus des adresses internes.
+  SECURITY_ALLOW_IPS: z.string().default(""),
+
   SUPABASE_URL: z.url(),
   SUPABASE_SECRET_KEY: z.string().min(10),
 

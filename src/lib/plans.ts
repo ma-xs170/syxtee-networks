@@ -1,8 +1,9 @@
 // Formules : source unique de vérité pour les droits (quotas vérifiés côté serveur, dans les actions et le Core).
 // Le champ users.plan et l'attribution par l'admin arrivent avec les formules Gratuit / Payant / Partenaire.
-// En attendant, tous les comptes sont en bêta.
+// En attendant, tous les comptes sont en bêta. Copie côté Core : core/src/plans.ts (même table), qui revérifie
+// la formule (profiles.plan) et la suspension à chaque connexion au relais.
 
-export type PlanId = "free" | "beta" | "paid" | "admin";
+export type PlanId = "free" | "beta" | "paid" | "partner" | "admin";
 
 export type Plan = {
   id: PlanId;
@@ -17,6 +18,7 @@ export const PLANS: Record<PlanId, Plan> = {
   free: { id: "free", name: "Gratuit", maxRelays: 0, maxConcurrentStreams: 0 },
   beta: { id: "beta", name: "Bêta gratuite", maxRelays: 3, maxConcurrentStreams: 3 },
   paid: { id: "paid", name: "SYXTEE Relais", maxRelays: 3, maxConcurrentStreams: 3 },
+  partner: { id: "partner", name: "Partenaire", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: Number.POSITIVE_INFINITY },
   admin: { id: "admin", name: "Admin", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: Number.POSITIVE_INFINITY },
 };
 

@@ -351,7 +351,7 @@ test("backfill : reclassement, contributions reconstruites, chiffres", () => {
 test("routes /v1/cam/scan : 3 micro-tests, médiane, Wi-Fi signalé, refus sans clé", async () => {
   const { buildServer } = await import("../src/server.ts");
   const { loadConfig } = await import("../src/config.ts");
-  const config = loadConfig({
+  const config = loadConfig({ RELAY_KEYS_SECRET: "k".repeat(64),
     CORE_API_TOKEN: "x".repeat(32), SUPABASE_URL: "https://x.supabase.co", SUPABASE_SECRET_KEY: "secretsecret",
     SLS_API_KEY: "slskeyslskey", RELAY_PUBLIC_HOST: "1.2.3.4",
   } as NodeJS.ProcessEnv);

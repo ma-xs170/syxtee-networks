@@ -7,7 +7,7 @@ import { buildServer, type Deps } from "../src/server.ts";
 const TOKEN = "t".repeat(40);
 const A = "00000000-0000-4000-8000-00000000000a";
 const B = "00000000-0000-4000-8000-00000000000b";
-const config = loadConfig({ CORE_API_TOKEN: TOKEN, SUPABASE_URL: "https://x.supabase.co", SUPABASE_SECRET_KEY: "sb_secret_x", SLS_API_KEY: "slskey123", RELAY_PUBLIC_HOST: "relais.test" });
+const config = loadConfig({ CORE_API_TOKEN: TOKEN, SUPABASE_URL: "https://x.supabase.co", SUPABASE_SECRET_KEY: "sb_secret_x", SLS_API_KEY: "slskey123", RELAY_KEYS_SECRET: "k".repeat(64), RELAY_PUBLIC_HOST: "relais.test" });
 
 const relay = (id: string, user: string, protocol: Relay["protocol"] = "srtla"): Relay => ({
   id, user_id: user, name: "iPhone", protocol, server: "nyc1",

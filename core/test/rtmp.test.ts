@@ -12,9 +12,7 @@ const relay: Relay = {
 
 function rtmp(paths: { name: string; ready: boolean }[] = []) {
   const fetchImpl = (async () => new Response(JSON.stringify({ items: paths }))) as unknown as typeof fetch;
-  const eq = () => ({ eq, maybeSingle: async () => ({ data: null }) });
-  const db = { from: () => ({ select: () => ({ eq }) }) };
-  const r = createRtmp({ db: db as never, apiUrl: "http://mtx", rtspUrl: "rtsp://127.0.0.1:8554", output: (id) => `udp://out/${id}`, log: () => {}, fetchImpl });
+  const r = createRtmp({ apiUrl: "http://mtx", rtspUrl: "rtsp://127.0.0.1:8554", output: (id) => `udp://out/${id}`, log: () => {}, fetchImpl });
   r.setKeys([relay, { ...relay, id: "x", protocol: "srtla", publish_id: `live_${"c".repeat(32)}` }]);
   return r;
 }

@@ -78,6 +78,15 @@ export function createAsn(opts: { file: string; token: string; log: (m: string) 
   return {
     refresh,
     lookup,
+    /** Pays (code ISO à 2 lettres) de cette IP, ou null. */
+    country(ip: string | undefined): string | null {
+      if (!reader || !ip) return null;
+      try {
+        return (reader.get(ip.replace(/^::ffff:/, "")) as LiteRecord | null)?.country_code ?? null;
+      } catch {
+        return null;
+      }
+    },
     /** Marque de l'opérateur de cette IP, ou null (base absente, IP privée…). */
     operator: (ip: string | undefined): string | null => lookup(ip).operator,
   };

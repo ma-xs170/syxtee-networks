@@ -31,6 +31,9 @@ SECRET=$(get SUPABASE_SECRET_KEY)
 if [[ "$SECRET" != sb_secret_* ]]; then
   read -rsp "Clé secrète Supabase (sb_secret_…), puis Entrée : " SECRET; echo
 fi
+# Chiffrement des clés des relais au repos : généré une fois, jamais régénéré (sinon les URLs deviennent illisibles).
+KEYS_SECRET=$(get RELAY_KEYS_SECRET)
+[ ${#KEYS_SECRET} -eq 64 ] || KEYS_SECRET=$(openssl rand -hex 32)
 TOKEN=$(get CORE_API_TOKEN)
 if [ ${#TOKEN} -ne 64 ]; then
   read -rsp "CORE_API_TOKEN (64 caractères, colle avec ⌘V), puis Entrée : " TOKEN; echo
@@ -50,6 +53,7 @@ CORE_DOMAIN=$DOMAIN
 CAM_DOMAIN=cam.$DOMAIN
 CAM_WHIP_BASE=https://cam.$DOMAIN
 CORE_API_TOKEN=$TOKEN
+RELAY_KEYS_SECRET=$KEYS_SECRET
 SUPABASE_URL=$SUPA_URL
 SUPABASE_SECRET_KEY=$SECRET
 SLS_API_KEY=$KEY

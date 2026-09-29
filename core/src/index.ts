@@ -18,6 +18,9 @@ import { buildServer } from "./server.ts";
 import { createCam } from "./cam.ts";
 import { createSessionTracker, supabaseSessionDb } from "./sessions.ts";
 import { createSls } from "./sls.ts";
+import { createSealer, parseSecret } from "./keys.ts";
+import { publisherVerdict } from "./plans.ts";
+import { createGuardClient, createSecurity, supabaseSecurityDb } from "./security.ts";
 
 // SYXTEE Core : point d'entrée.
 
@@ -26,9 +29,37 @@ const log = (m: string) => console.log(`[core] ${m}`);
 
 const supabase = createClient(config.SUPABASE_URL, config.SUPABASE_SECRET_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
 const sls = createSls(config.SLS_API_URL, config.SLS_API_KEY);
-const relays = createRelayStore(supabase, sls, config.RELAY_NAME);
 const samples = openSamples(join(config.DATA_DIR, "health.sqlite"));
 const asn = createAsn({ file: join(config.DATA_DIR, "ipinfo_lite.mmdb"), token: config.IPINFO_TOKEN, log });
+
+// Sécurité : clés chiffrées au repos, vérification à chaque connexion, force brute, coupures (Guard).
+const guard = config.GUARD_URL ? createGuardClient(config.GUARD_URL, config.CORE_API_TOKEN) : null;
+let rtmp: ReturnType<typeof createRtmp> | null = null;
+let reconcileSoon: () => void = () => {};
+const relays = createRelayStore(supabase, sls, config.RELAY_NAME, {
+  sealer: createSealer(parseSecret(config.RELAY_KEYS_SECRET)),
+  log,
+  // Clé retirée du SLS : sessions SRT/SRTLA coupées par le Guard ; RTMP et Cam coupés par leur boucle de synchro.
+  onRevoked: (keys) => void security.kickKeys(keys).then((n) => n && log(`${n} session(s) coupée(s) (clé retirée)`)),
+});
+const health = createHealthMonitor({ sls, samples, perSecond: config.SLS_STATS_PER_SECOND });
+const security = createSecurity({
+  db: supabaseSecurityDb(supabase),
+  guard,
+  country: (ip) => asn.country(ip),
+  log,
+  allowIps: config.SECURITY_ALLOW_IPS.split(",").map((s) => s.trim()).filter(Boolean),
+  maxFails: config.SECURITY_MAX_FAILS,
+  windowMs: config.SECURITY_WINDOW_S * 1000,
+  banMinutes: config.SECURITY_BAN_MINUTES,
+  // Publieur accepté par le SLS : compte actif, formule, quota de relais, flux simultanés (relus en base, sans cache).
+  async checkPublisher(relay) {
+    const account = await relays.account(relay.user_id);
+    const liveOthers = health.byUser(relay.user_id).filter((x) => x.relay.id !== relay.id && x.state.live).length;
+    return publisherVerdict(account, await relays.list(relay.user_id), relay.id, liveOthers);
+  },
+  onDenied: () => reconcileSoon(),
+});
 const coverageSalt = config.COVERAGE_SALT || `coverage:${config.CORE_API_TOKEN}`;
 const coverage = createCoverage({ db: supabaseCoverageDb(supabase), salt: coverageSalt, log });
 // Préfixes IP (/24, /48) appris depuis les Android : table ip_prefix_class.
@@ -46,7 +77,6 @@ const prefixes = createPrefixes(
   },
   log,
 );
-const health = createHealthMonitor({ sls, samples, perSecond: config.SLS_STATS_PER_SECOND });
 const sessionDb = supabaseSessionDb(supabase);
 const sessions = createSessionTracker({ db: sessionDb, relay: config.RELAY_NAME, log });
 
@@ -81,8 +111,8 @@ const camWhipBase = config.CAM_WHIP_BASE || (config.CORE_DOMAIN ? `https://cam.$
 const cam =
   config.CAM_ENABLED && camWhipBase
     ? createCam({
-        db: supabase,
         relays,
+        security,
         apiUrl: config.MEDIAMTX_API_URL,
         rtspUrl: config.MEDIAMTX_RTSP_URL,
         whipBase: camWhipBase,
@@ -92,21 +122,32 @@ const cam =
     : null;
 
 // Entrée RTMP : même MediaMTX que la Cam.
-const rtmp = config.RTMP_ENABLED
-  ? createRtmp({ db: supabase, apiUrl: config.MEDIAMTX_API_URL, rtspUrl: config.MEDIAMTX_RTSP_URL, output: srtOut, log })
+rtmp = config.RTMP_ENABLED
+  ? createRtmp({ apiUrl: config.MEDIAMTX_API_URL, rtspUrl: config.MEDIAMTX_RTSP_URL, output: srtOut, log, security })
   : null;
 
+/** Aligne le SLS sur la base (relais autorisés seulement) et distribue les clés aux modules. */
+let refreshing: Promise<void> | null = null;
 async function refreshKeys() {
-  try {
-    const all = await relays.all();
-    health.setKeys(all);
-    cam?.setKeys(all);
-    rtmp?.setKeys(all);
-    await regie?.sync(all);
-  } catch (e) {
-    log(`lecture des clés impossible : ${(e as Error).message}`);
-  }
+  if (refreshing) return refreshing;
+  refreshing = (async () => {
+    try {
+      const { relays: ok, added, removed } = await relays.reconcile();
+      if (added || removed) log(`relais : ${added} paire(s) déclarée(s), ${removed} retirée(s) du SLS`);
+      health.setKeys(ok);
+      security.setRelays(ok);
+      cam?.setKeys(ok);
+      rtmp?.setKeys(ok);
+      await regie?.sync(ok);
+    } catch (e) {
+      log(`lecture des clés impossible : ${(e as Error).message}`);
+    } finally {
+      refreshing = null;
+    }
+  })();
+  return refreshing;
 }
+reconcileSoon = () => void refreshKeys();
 
 health.events.on("status", (relayId: string, s: { live: boolean }, relay: Relay) => {
   log(`relais ${relayId.slice(0, 8)} ${s.live ? "en ligne" : "hors ligne"}`);
@@ -135,6 +176,7 @@ const app = buildServer({
   asn,
   prefixes,
   cam,
+  security,
   profile: async (id) => {
     const { data } = await supabase.from("profiles").select("username, twitch_login").eq("id", id).maybeSingle();
     return { username: (data?.username as string | null) ?? null, twitch_login: (data?.twitch_login as string | null) ?? null };
@@ -162,16 +204,18 @@ try {
 } catch (e) {
   log((e as Error).message);
 }
+try {
+  const n = await relays.encryptLegacy();
+  if (n) log(`${n} relais : clés chiffrées (AES-256-GCM) et empreintes posées`);
+} catch (e) {
+  log(`chiffrement des clés : ${(e as Error).message}`);
+}
+try {
+  await security.loadBans();
+} catch (e) {
+  log(`ip_bans : ${(e as Error).message}`);
+}
 await refreshKeys();
-const cleanup = async () => {
-  try {
-    const removed = await relays.cleanupOrphans();
-    if (removed.length) log(`relais : ${removed.length} paire(s) orpheline(s) retirée(s)`);
-  } catch (e) {
-    log(`nettoyage du relais impossible : ${(e as Error).message}`);
-  }
-};
-await cleanup();
 void asn.refresh();
 void prefixes.load();
 // Couverture : hexagones touchés toutes les 10 min, purge 90 j + recalcul complet chaque jour.
@@ -192,7 +236,8 @@ const timers = [
   setInterval(() => void runAggregate(true), 24 * 3_600_000),
   setInterval(() => void prefixes.flush(), 60_000),
   setInterval(() => void asn.refresh(), 6 * 3_600_000),
-  setInterval(() => void cleanup(), 3_600_000),
+  setInterval(() => void security.flush(), 5_000),
+  setInterval(() => void supabase.rpc("security_purge").then(({ error }) => error && log(`security_purge : ${error.message}`)), 24 * 3_600_000),
   setInterval(() => void sessions.tick(), 5_000),
   setInterval(() => void health.tick(), 200),
   setInterval(() => void refreshKeys(), 30_000),
@@ -213,6 +258,7 @@ const shutdown = async () => {
   await sessions.closeAll();
   await coverage.flush();
   await prefixes.flush();
+  await security.flush();
   await app.close();
   samples.close();
   process.exit(0);

@@ -87,3 +87,19 @@ export const rotateCam = (userId: string) => core<CamInfo>(`/v1/users/${userId}/
 /** Compte supprimé : tous ses relais retirés du SLS (plus aucune URL Moblin/OBS/Cam ne marche) puis effacés. */
 export const deleteAllRelays = (userId: string) => core<null>(`/v1/users/${userId}/relays`, "DELETE");
 export const deleteCoverage = (userId: string) => core<{ deleted: number }>(`/v1/users/${userId}/coverage`, "DELETE");
+
+// ───── Sécurité ─────
+
+/** Alerte montrée au propriétaire : un 2e appareil a tenté de publier sur son relais. */
+export type SecurityAlert = { at: string; relay_id: string | null; ip: string | null; country: string | null; protocol: string | null };
+export type SecurityEvent = SecurityAlert & { kind: string; user_id: string | null; detail: Record<string, unknown> };
+export type IpBan = { ip: string; until: string; reason: string; auto: boolean };
+
+/** Alertes des 7 derniers jours (liste vide si le Core ne les connaît pas encore). */
+export async function listAlerts(userId: string) {
+  return (await core<{ alerts: SecurityAlert[] }>(`/v1/users/${userId}/alerts`))?.alerts ?? [];
+}
+/** Admin : refus récents et IP bannies. */
+export const getSecurity = () => core<{ events: SecurityEvent[]; bans: IpBan[] }>("/v1/admin/security?limit=300");
+export const banIp = (ip: string, minutes: number, reason: string) => core<IpBan>("/v1/admin/bans", "POST", { ip, minutes, reason });
+export const unbanIp = (ip: string) => core<null>(`/v1/admin/bans/${encodeURIComponent(ip)}`, "DELETE");

@@ -11,10 +11,8 @@ const row: Relay = {
 
 function cam(paths: { name: string; ready: boolean }[] = []) {
   const fetchImpl = (async () => new Response(JSON.stringify({ items: paths }))) as unknown as typeof fetch;
-  const eq = () => ({ eq, maybeSingle: async () => ({ data: null }) });
-  const db = { from: () => ({ select: () => ({ eq }) }) };
   const c = createCam({
-    db: db as never, relays: {} as RelayStore, apiUrl: "http://mtx", rtspUrl: "rtsp://127.0.0.1:8554", whipBase: "https://cam.example",
+    relays: {} as RelayStore, apiUrl: "http://mtx", rtspUrl: "rtsp://127.0.0.1:8554", whipBase: "https://cam.example",
     output: (id) => `udp://out/${id}`, log: () => {}, fetchImpl,
   });
   c.setKeys([row]);

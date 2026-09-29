@@ -31,6 +31,7 @@ export const nav: NavItem[] = [
       { label: "Moblin", href: "/moblin", desc: "L'app IRL qu'on recommande", icon: "phone" },
       { label: "Starlink", href: "/starlink", desc: "Le live là où la 4G abandonne", icon: "dish" },
       { label: "Saily", href: "/saily", desc: "Une 4G de plus en eSIM", icon: "esim", badge: "Partenaire" },
+      { label: "Analyseur réseau", href: "/analyseur", desc: "Teste ta 4G / 5G là où tu es", icon: "tower" },
     ],
   },
   {

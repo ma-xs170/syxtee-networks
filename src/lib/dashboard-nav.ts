@@ -33,6 +33,7 @@ export const dashboardNav: DashItem[] = [
     children: [
       { label: "Mire de coupure", href: "/dashboard/mire", desc: "L'écran affiché si tu coupes", icon: "mire" },
       { label: "SYXTEE Cam", href: "/dashboard/cam", desc: "Ton téléphone en caméra", icon: "cam" },
+      { label: "Analyseur réseau", href: "/dashboard/analyseur", desc: "Débit, RTT et opérateur ici", icon: "health" },
       { label: "Mes contributions", href: "/dashboard/contributions", desc: "Tes mesures sur la carte 4G / 5G", icon: "map" },
       { label: "Sécurité & clés", href: "/dashboard/securite", desc: "Mode stream, clés", icon: "security" },
     ],

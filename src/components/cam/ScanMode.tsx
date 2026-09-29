@@ -1,50 +1,21 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { connType, isWifi, measurePoint, precisePosition, readNet as readCoreNet, REASONS, type LinkType, type NetInfo, type ScanResult } from "@/lib/scan/engine";
 
 // SYXTEE Cam, mode Scan (sans être en live), pour la carte communautaire 4G/5G.
 // Un point toutes les 20 s (1 min en « Économie de data ») : position GPS précise (≤ 20 m, attendue jusqu'à 10 s),
 // puis 3 micro-tests (5 pings, envoi pendant 2 s, réception pendant 2 s) et la médiane. Le Core mesure le débit montant,
 // déduit l'opérateur et le type de lien (Wi-Fi ou 4G/5G) ; une mesure en Wi-Fi n'est jamais comptée.
 // iPhone (pas de navigator.connection.type) : on demande de couper le Wi-Fi, puis on vérifie que le réseau a changé.
-
-type LinkType = "cellular" | "wifi" | "starlink" | "fixed" | "unknown";
-type Result = {
-  accepted: boolean;
-  counted: boolean;
-  reason: string | null;
-  operator: string | null;
-  link_type: LinkType;
-  up_kbps: number | null;
-  down_kbps: number | null;
-  rtt_ms: number | null;
-};
-type Net = { consent: boolean; operator: string | null; link_type: LinkType; net: string };
-
-const REASONS: Record<string, string> = {
-  no_consent: "Partage désactivé : rien n'est gardé.",
-  accuracy: "Précision GPS insuffisante (plus de 20 m) : point sauté.",
-  private_zone: "Zone privée : rien n'est gardé ici.",
-  speed: "Déplacement incohérent, point ignoré.",
-  wifi: "Tu es en Wi-Fi : mesure non comptée.",
-  starlink: "Starlink : compté dans la couche Starlink, pas dans la carte 4G/5G.",
-  unknown_link: "Réseau non identifié : mesure non comptée sur la carte 4G/5G.",
-};
-const MICRO_TESTS = 3;
-const WINDOW_MS = 2000;
+// Mesures : moteur partagé avec l'Analyseur réseau (src/lib/scan/engine.ts).
 
 const nf = new Intl.NumberFormat("fr-FR");
 const mo = (b: number) => `${nf.format(Math.round((b / 1e6) * 10) / 10)} Mo`;
 const mbps = (k: number | null | undefined) => (k ? `${nf.format(Math.round(k / 100) / 10)} Mbit/s` : "–");
-const median = (xs: number[]) => {
-  const s = [...xs].sort((a, b) => a - b);
-  return s.length ? (s.length % 2 ? s[s.length >> 1] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2) : null;
-};
-const connType = () => (navigator as Navigator & { connection?: { type?: string } }).connection?.type ?? null;
-const isWifi = (t: LinkType | undefined) => t === "wifi" || t === "fixed";
 
 export default function ScanMode({ coreUrl, camKey, onClose }: { coreUrl: string; camKey: string; onClose: () => void }) {
-  const [net, setNet] = useState<Net | null>(null);
+  const [net, setNet] = useState<NetInfo | null>(null);
   // Ouvert seulement sur action de l'utilisateur (jamais rendu côté serveur) : navigator est disponible.
   const [ct] = useState<string | null>(() => (typeof navigator === "undefined" ? null : connType()));
   const [step, setStep] = useState<"idle" | "wifi-off" | "checking" | "running">("idle");
@@ -52,19 +23,14 @@ export default function ScanMode({ coreUrl, camKey, onClose }: { coreUrl: string
   const [used, setUsed] = useState(0);
   const [kept, setKept] = useState(0);
   const [link, setLink] = useState<LinkType | null>(null);
-  const [last, setLast] = useState<Result | null>(null);
+  const [last, setLast] = useState<ScanResult | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [phase, setPhase] = useState<string | null>(null);
   const pos = useRef<GeolocationPosition | null>(null);
   const from = useRef<string>(""); // réseau à l'ouverture de la page
   const cell = useRef<string>(""); // réseau vu après « Coupe le Wi-Fi » (iPhone)
-  const auth = { Authorization: `Bearer ${camKey}` };
-
-  async function readNet(params: Record<string, string>) {
-    const r = await fetch(`${coreUrl}/v1/cam/coverage?${new URLSearchParams(params)}`, { headers: auth, cache: "no-store" });
-    if (!r.ok) throw new Error(String(r.status));
-    return (await r.json()) as Net;
-  }
+  const client = useMemo(() => ({ coreUrl, auth: async () => ({ Authorization: `Bearer ${camKey}` }) }), [coreUrl, camKey]);
+  const readNet = (params: Record<string, string>) => readCoreNet(client, params);
 
   // Réseau à l'ouverture (référence pour l'iPhone : on verra si l'IP change après « Coupe le Wi-Fi »).
   useEffect(() => {
@@ -108,106 +74,25 @@ export default function ScanMode({ coreUrl, camKey, onClose }: { coreUrl: string
       () => setStatus("Position refusée : autorise la localisation pour scanner."),
       { enableHighAccuracy: true, maximumAge: 0 },
     );
-    const capUp = eco ? 1_000_000 : 3_000_000;
-    const capDown = eco ? 2_000_000 : 6_000_000;
-
-    /** Attend jusqu'à 10 s un point GPS récent et précis (≤ 20 m). */
-    async function precisePosition() {
-      const until = Date.now() + 10_000;
-      while (!stopped && Date.now() < until) {
-        const p = pos.current;
-        if (p && p.coords.accuracy <= 20 && Date.now() - p.timestamp < 5000) return p;
-        await new Promise((r) => setTimeout(r, 500));
-      }
-      return null;
-    }
-
-    async function ping() {
-      const rtts: number[] = [];
-      for (let i = 0; i < 5; i++) {
-        const t0 = performance.now();
-        const r = await fetch(`${coreUrl}/v1/cam/ping`, { cache: "no-store" }).catch(() => null);
-        if (r?.ok) rtts.push(performance.now() - t0);
-      }
-      return median(rtts);
-    }
-
-    /** Envoi pendant 2 s : morceaux enchaînés, taille ajustée au débit (le Core mesure chaque morceau). */
-    async function upload(test: string, i: number) {
-      const t0 = performance.now();
-      let sent = 0;
-      let size = 128 * 1024;
-      while (!stopped && performance.now() - t0 < WINDOW_MS && sent < capUp) {
-        const body = new Uint8Array(Math.min(size, capUp - sent + 16 * 1024));
-        const r = await fetch(`${coreUrl}/v1/cam/scan/up?test=${test}&i=${i}`, { method: "POST", headers: { ...auth, "Content-Type": "application/octet-stream" }, body });
-        sent += body.length + 500;
-        if (!r.ok) throw new Error(String(r.status));
-        const { kbps } = (await r.json()) as { kbps: number | null };
-        if (kbps) size = Math.min(2 * 1024 * 1024, Math.max(64 * 1024, Math.round((kbps * 1000 * 0.5) / 8)));
-      }
-      return sent;
-    }
-
-    /** Réception pendant 2 s : débit calculé ici, du premier au dernier octet. */
-    async function download() {
-      const r = await fetch(`${coreUrl}/v1/cam/scan/down?ms=${WINDOW_MS}&max=${capDown}`, { headers: auth, cache: "no-store" });
-      if (!r.ok || !r.body) throw new Error(String(r.status));
-      const reader = r.body.getReader();
-      let bytes = 0;
-      let t0 = 0;
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        if (!t0) t0 = performance.now();
-        else bytes += value.length; // le premier morceau démarre le chrono
-      }
-      const ms = performance.now() - t0;
-      return { bytes, kbps: t0 && ms > 50 && bytes > 0 ? (bytes * 8) / ms : null };
-    }
-
     async function measure() {
       setPhase("Attente d'un GPS précis…");
-      const p = await precisePosition();
+      const p = await precisePosition(() => pos.current, () => stopped);
       if (stopped) return;
       if (!p) {
         setPhase(null);
         return setStatus(REASONS.accuracy);
       }
-      const test = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
-      const downs: number[] = [];
-      const rtts: number[] = [];
-      for (let i = 0; i < MICRO_TESTS && !stopped; i++) {
-        setPhase(`Micro-test ${i + 1}/${MICRO_TESTS}`);
-        const rtt = await ping();
-        if (rtt !== null) rtts.push(rtt);
-        const sent = await upload(test, i);
-        const d = await download();
-        setUsed((u) => u + sent + d.bytes + 5 * 400);
-        if (d.kbps) downs.push(d.kbps);
-      }
-      if (stopped) return;
-      setPhase(null);
-      const t = connType();
-      const res = await fetch(`${coreUrl}/v1/cam/scan`, {
-        method: "POST",
-        headers: { ...auth, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          test,
-          lat: p.coords.latitude,
-          lng: p.coords.longitude,
-          acc: Math.round(p.coords.accuracy),
-          speed: p.coords.speed,
-          t: Math.round(p.timestamp),
-          ct: t,
-          from: t ? null : from.current,
-          cell: t ? null : cell.current,
-          down_kbps: downs.map(Math.round),
-          rtt_ms: rtts.map(Math.round),
-        }),
+      const j = await measurePoint(client, {
+        position: p,
+        from: from.current,
+        cell: cell.current,
+        eco,
+        stopped: () => stopped,
+        onPhase: setPhase,
+        onBytes: (b) => setUsed((u) => u + b),
       });
-      if (!res.ok) throw new Error(String(res.status));
-      const j = (await res.json()) as Result;
-      if (stopped) return;
+      if (!j || stopped) return;
+      setPhase(null);
       setLast(j);
       setLink(j.link_type);
       if (j.operator) setNet((n) => (n ? { ...n, operator: j.operator } : n));
@@ -232,11 +117,10 @@ export default function ScanMode({ coreUrl, camKey, onClose }: { coreUrl: string
       navigator.geolocation.clearWatch(watch);
       wake?.release().catch(() => {});
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- relancé seulement au démarrage / changement de rythme
-  }, [step, eco, coreUrl, camKey]);
+  }, [step, eco, client]);
 
   const running = step === "running";
-  const wifiNow = isWifi(link ?? undefined) || ct === "wifi";
+  const wifiNow = isWifi(link) || ct === "wifi";
 
   return (
     <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80 p-4" role="dialog" aria-label="Mode Scan">
@@ -291,7 +175,7 @@ export default function ScanMode({ coreUrl, camKey, onClose }: { coreUrl: string
               </div>
               <div>
                 <dt className="text-xs text-white/50">Réseau</dt>
-                <dd>{link === "cellular" ? "4G/5G" : isWifi(link ?? undefined) ? "Wi-Fi" : link === "starlink" ? "Starlink" : "–"}</dd>
+                <dd>{link === "cellular" ? "4G/5G" : isWifi(link) ? "Wi-Fi" : link === "starlink" ? "Starlink" : "–"}</dd>
               </div>
               <div>
                 <dt className="text-xs text-white/50">Montant</dt>

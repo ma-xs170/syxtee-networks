@@ -362,7 +362,7 @@ test("routes /v1/cam/scan : 3 micro-tests, médiane, Wi-Fi signalé, refus sans 
     config, cam, coverage, asn: { operator: () => "Digicel", lookup: () => ({ operator: "Digicel", asn: 3215, asName: "Digicel" }) },
     prefixes: createPrefixes(),
     health: { state: () => null }, samples: {}, sessions: {}, keys: {}, relays: {},
-    verifyUser: async () => null, previewPath: () => "", onKeysChanged: () => {}, slsHealthy: async () => true,
+    verifyUser: async (h?: string) => (h === "Bearer jwt_ok" ? U : null), previewPath: () => "", onKeysChanged: () => {}, slsHealthy: async () => true,
   } as unknown as Parameters<typeof buildServer>[0]);
   const auth = { authorization: "Bearer cam_ok" };
   const up = (i: number, size = 300_000, a = auth) =>
@@ -410,5 +410,30 @@ test("routes /v1/cam/scan : 3 micro-tests, médiane, Wi-Fi signalé, refus sans 
   assert.equal((await iphone("198.51.100.7")).counted, true);
   assert.equal((await iphone("192.0.2.9")).counted, false);
   assert.equal((await iphone("203.0.113.5")).counted, false);
+
+  // Analyseur du dashboard : même moteur, jeton de session Supabase à la place de la clé caméra.
+  const jwt = { authorization: "Bearer jwt_ok" };
+  const before = added.length;
+  for (const i of [0, 1, 2]) assert.equal((await up(i, 300_000, jwt)).statusCode, 200);
+  const dash = (await app.inject({ method: "POST", url: "/v1/cam/scan", headers: jwt, payload: body })).json();
+  assert.equal(dash.counted, true);
+  assert.equal(added.length, before + 1);
+  assert.equal((await app.inject({ method: "POST", url: "/v1/cam/scan", headers: jwt, payload: { ...body, lat: null } })).statusCode, 400);
+
+  // Analyseur public (anonyme) : résultats affichés, rien n'est gardé, volume plafonné par IP.
+  const anon = { "x-forwarded-for": "192.0.2.77" };
+  assert.equal((await app.inject({ method: "GET", url: "/v1/cam/coverage", headers: anon })).json().consent, null);
+  for (const i of [0, 1, 2]) assert.equal((await up(i, 300_000, anon)).statusCode, 200);
+  const a1 = (await app.inject({ method: "POST", url: "/v1/cam/scan", headers: anon, payload: { ...body, lat: null, lng: null } })).json();
+  assert.equal(a1.reason, "anonymous");
+  assert.equal(a1.accepted, false);
+  assert.ok(a1.up_kbps > 0);
+  assert.equal(added.length, before + 1);
+  let limited = 0;
+  for (let n = 0; n < 9; n++) if ((await up(0, 8_000_000, anon)).statusCode === 429) limited++;
+  assert.ok(limited > 0, "plafond anonyme atteint");
+  assert.equal((await app.inject({ method: "GET", url: "/v1/cam/scan/down?ms=500&max=65536", headers: anon })).statusCode, 429);
+  // Un compte n'est pas concerné par le plafond anonyme de la même IP.
+  assert.equal((await up(1, 300_000, { ...jwt, ...anon })).statusCode, 200);
   await app.close();
 });

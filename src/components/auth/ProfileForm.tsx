@@ -156,7 +156,7 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
           <span className="block text-sm font-medium text-white">Afficher ma chaîne sur le site SYXTEE</span>
           <span className="mt-1 block text-xs leading-relaxed text-white/50">
             {twitch
-              ? "Ta chaîne Twitch apparaît dans « Ils streament avec SYXTEE » sur l'accueil, avec un badge quand tu es en live. Tu peux décocher à tout moment."
+              ? "Ta chaîne Twitch apparaît dans « Ils nous font confiance » sur l'accueil, avec un badge quand tu es en live. Tu peux décocher à tout moment."
               : "Disponible une fois ton Twitch lié."}
           </span>
         </span>

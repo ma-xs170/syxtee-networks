@@ -1,8 +1,9 @@
 import Image from "next/image";
 import type { HomeStreamer } from "@/lib/streamers";
 import { Container } from "../ui";
+import Highlight from "../ui/Highlight";
 
-// « Ils streament avec SYXTEE » : comptes qui ont coché « Afficher ma chaîne » avec un Twitch vérifié.
+// « Ils nous font confiance » : comptes qui ont coché « Afficher ma chaîne » avec un Twitch vérifié.
 // Les chaînes en live passent en premier (rangée fixe, badge EN LIVE + viewers), les autres défilent dessous.
 
 const MIN_PER_ROW = 6;
@@ -73,7 +74,9 @@ export default function Streamers({ streamers }: { streamers: HomeStreamer[] }) 
   return (
     <section id="streamers" className="overflow-hidden border-b border-line py-24">
       <Container>
-        <h2 className="text-center text-3xl font-semibold tracking-tight sm:text-5xl">Ils streament avec SYXTEE.</h2>
+        <h2 className="text-center text-3xl font-semibold tracking-tight sm:text-5xl">
+          Ils nous font <Highlight>confiance.</Highlight>
+        </h2>
       </Container>
 
       {live.length > 0 && (

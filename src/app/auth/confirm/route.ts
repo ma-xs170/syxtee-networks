@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { afterLogin } from "@/lib/auth/afterLogin";
 import { mapSupabaseError } from "@/lib/auth/errors";
 import { grantRecovery, recoveryFresh } from "@/lib/auth/recovery";
+import { checkNewDevice, sendWelcomeOnce } from "@/lib/email/account";
 import { createClient } from "@/lib/supabase/server";
 
 // Liens reçus par email : vérification de l'adresse (inscription), mot de passe oublié, changement d'email.
@@ -34,5 +35,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/reinitialiser`);
   }
   if (type === "email_change") return NextResponse.redirect(`${origin}/dashboard/parametres?email=ok`);
+  // Adresse vérifiée (inscription) : appareil mémorisé et email de bienvenue (une seule fois).
+  await checkNewDevice(data.user);
+  sendWelcomeOnce(data.user, (data.user.user_metadata?.first_name as string | undefined) ?? null);
   return NextResponse.redirect(`${origin}${await afterLogin(data.user, next)}`);
 }

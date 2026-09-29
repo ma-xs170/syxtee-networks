@@ -6,6 +6,7 @@ import { z } from "zod";
 import { afterLogin } from "@/lib/auth/afterLogin";
 import { getUser, safeNext } from "@/lib/auth/dal";
 import { AUTH_ERRORS, mapSupabaseError } from "@/lib/auth/errors";
+import { checkNewDevice, sendPasswordChanged } from "@/lib/email/account";
 import { passwordProblem } from "@/lib/auth/password";
 import { isPwned } from "@/lib/auth/pwned";
 import { allow, clientIp } from "@/lib/auth/rateLimit";
@@ -102,6 +103,7 @@ export async function signIn(_prev: AuthState, f: FormData): Promise<AuthState> 
     if (code !== "identifiants" && code !== "email-non-verifie") console.error("signIn", error?.code, error?.message);
     return fail(AUTH_ERRORS[code], fields);
   }
+  await checkNewDevice(data.user);
   redirect(await afterLogin(data.user, str(f, "next") || null));
 }
 
@@ -134,6 +136,7 @@ export async function resetPassword(_prev: AuthState, f: FormData): Promise<Auth
     return fail("Enregistrement impossible. Réessaie.");
   }
   await clearRecovery();
+  sendPasswordChanged(user.email);
   redirect(await afterLogin(user, "/dashboard?mdp=ok"));
 }
 

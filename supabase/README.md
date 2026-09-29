@@ -42,7 +42,22 @@ Les comptes créés par lien magique, Twitch, Discord ou Google n'ont pas de mot
 « Définis ton mot de passe » passe par « Mot de passe oublié » avec la même adresse : ils retrouvent tout leur compte.
 Au premier passage dans le dashboard, une modale leur demande prénom et nom (migration `0013_names.sql`).
 
-## 4. Authentication → Emails
+## 4. Emails SYXTEE (Resend + Send Email Hook)
+
+Tous les emails (vérification, mot de passe oublié, changement d'email, alertes, bienvenue) sont nos modèles React Email
+(`src/emails`), envoyés par le site via Resend. Pour les emails d'auth, Supabase appelle `/api/auth/email-hook`.
+
+1. **Resend** : créer un compte, puis une clé API (`re_…`) → `RESEND_API_KEY` dans Vercel.
+   Sans domaine vérifié, laisser `EMAIL_FROM` vide : l'expéditeur de test ne livre qu'à l'adresse du compte Resend.
+   Avec un domaine (étape 7) : `EMAIL_FROM=SYXTEE <connexion@ton-domaine>`.
+2. **Supabase → Authentication → Hooks → Send Email** : type HTTPS, URL `https://<site>/api/auth/email-hook`,
+   générer le secret (`v1,whsec_…`) → `SEND_EMAIL_HOOK_SECRET` dans Vercel. Redéployer, puis activer le hook
+   (ou `enabled = true` dans `config.toml` + `supabase config push`).
+3. Tester : `/dev/emails` (admin) → « M'envoyer tous les tests ».
+
+Migrations : `0013_names.sql` puis `0014_emails.sql` (production ET test).
+
+## 4 bis. Authentication → Emails (ancien SMTP, inutile avec le hook)
 
 **Modèle d'email** : après le SMTP ci-dessous, décommenter les blocs `[auth.email.template.*]` de `config.toml` et lancer
 `supabase config push` (ou coller `supabase/templates/magic-link.html` dans Templates → Magic Link et Confirm signup).

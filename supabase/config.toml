@@ -30,7 +30,16 @@ otp_expiry = 86400
 # Un envoi toutes les 60 s au plus (aligné sur le bouton « Renvoyer l'email (60 s) »).
 max_frequency = "60s"
 
-# Email de connexion aux couleurs SYXTEE (nouveaux comptes et comptes existants).
+# Emails aux couleurs SYXTEE : Supabase n'envoie plus rien lui-même, il appelle le site (Send Email Hook),
+# qui envoie nos modèles via Resend (src/emails). Secret : SEND_EMAIL_HOOK_SECRET (Vercel) = même valeur ici.
+# ⚠️ Passer à true seulement quand RESEND_API_KEY et SEND_EMAIL_HOOK_SECRET sont dans Vercel (sinon plus
+# aucun email d'inscription ne part). Projet de test : laisser false.
+[auth.hook.send_email]
+enabled = false
+uri = "https://syxtee-networks.vercel.app/api/auth/email-hook"
+secrets = "env(SEND_EMAIL_HOOK_SECRET)"
+
+# Ancien modèle (SMTP), remplacé par le hook ci-dessus. Conservé pour mémoire.
 # ⚠️ Supabase refuse les modèles personnalisés tant que le SMTP par défaut est utilisé (offre gratuite) :
 # décommenter après avoir branché Resend (SMTP), puis relancer `supabase config push`.
 # [auth.email.template.magic_link]

@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { deleteAllRelays, deleteCoverage, hasCore } from "@/lib/core";
+import { sendPasswordChanged } from "@/lib/email/account";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, requireUser, safeNext } from "./dal";
@@ -110,6 +111,7 @@ export async function changePassword(_prev: FormState, formData: FormData): Prom
     console.error("changePassword", error.code, error.message);
     return { error: "Enregistrement impossible. Réessaie." };
   }
+  sendPasswordChanged(user.email);
   return { ok: "Mot de passe modifié." };
 }
 

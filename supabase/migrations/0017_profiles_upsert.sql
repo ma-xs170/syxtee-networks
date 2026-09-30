@@ -17,6 +17,9 @@ drop policy if exists "Créer son profil" on public.profiles;
 create policy "Créer son profil" on public.profiles
   for insert to authenticated with check ((select auth.uid()) = id);
 
+-- Note : le site ne fait plus d'upsert avec la session de l'utilisateur (l'INSERT évalue le défaut support_id,
+-- new_support_id() est interdite aux comptes → 42501). Il fait un update, et la clé serveur crée la ligne si elle manque.
+-- Droits ci-dessous gardés : inoffensifs grâce aux policies.
 -- Upsert PostgREST : INSERT (id, first_name, last_name) ... ON CONFLICT (id) DO UPDATE SET id = excluded.id, ...
 -- d'où le droit update sur id : la policy impose id = auth.uid(), donc la valeur ne peut pas changer.
 grant insert (id, first_name, last_name) on public.profiles to authenticated;

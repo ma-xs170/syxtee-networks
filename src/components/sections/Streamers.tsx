@@ -37,6 +37,9 @@ function StreamerCard({ streamer, hidden = false }: { streamer: HomeStreamer; hi
           @{streamer.handle}
           {streamer.firstName && <span className="font-sans text-muted"> · {streamer.firstName}</span>}
         </span>
+        {streamer.partner && (
+          <span className="mt-1 inline-block rounded border border-white/20 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.14em] text-white">PARTENAIRE</span>
+        )}
         {live ? (
           <span className="mt-1 flex items-center gap-2 text-sm">
             <span className="rounded bg-live px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.12em] text-white">EN LIVE</span>

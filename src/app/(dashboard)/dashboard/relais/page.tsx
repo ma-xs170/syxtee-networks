@@ -4,8 +4,10 @@ import { DashPage } from "@/components/dashboard/ui";
 import RelayList from "@/components/relais/RelayList";
 import { requireUser } from "@/lib/auth/dal";
 import { publicCoreUrl } from "@/lib/core";
-import { planOf, relayLimit } from "@/lib/plans";
+import { getPlan } from "@/lib/auth/plan";
+import { relayLimit } from "@/lib/plans";
 import { coreStatusText, loadRelays } from "@/lib/relays";
+import PlanGate from "@/components/plans/PlanGate";
 
 export const metadata: Metadata = { title: "Mes relais", robots: { index: false } };
 
@@ -20,11 +22,12 @@ async function visitorGeo() {
 export default async function RelaisPage() {
   const user = await requireUser("/dashboard/relais");
   const [{ relays, status }, geo] = await Promise.all([loadRelays(user.id), visitorGeo()]);
-  const plan = planOf(user.id);
+  const plan = await getPlan();
   const active = relays.filter((r) => !r.archived).length;
 
   return (
     <DashPage>
+      <PlanGate feature="relais">
       {status === "ok" ? (
         <RelayList relays={relays} active={active} max={relayLimit(plan)} coreUrl={publicCoreUrl} geo={geo} />
       ) : (
@@ -35,6 +38,7 @@ export default async function RelaisPage() {
           </p>
         </>
       )}
+    </PlanGate>
     </DashPage>
   );
 }

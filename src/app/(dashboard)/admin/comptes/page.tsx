@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { ArrowLink, DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
+import { PLANS, type PlanId } from "@/lib/plans";
 import { normalizeSupportId } from "@/lib/support-id";
+import PlanForms from "./PlanForms";
 
 export const metadata: Metadata = { title: "Admin · Comptes", robots: { index: false } };
 
@@ -10,8 +12,6 @@ export const metadata: Metadata = { title: "Admin · Comptes", robots: { index: 
 // Réservée à ADMIN_EMAILS (404 sinon). Lecture avec la clé secrète, côté serveur uniquement.
 
 const field = "h-11 w-full rounded-full border border-line bg-black px-4 font-mono text-sm uppercase text-foreground placeholder:text-neutral-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60";
-
-const PLAN: Record<string, string> = { free: "Gratuit", beta: "Bêta", paid: "Payant", partner: "Partenaire", admin: "Admin" };
 
 const day = (iso: string | null | undefined) =>
   iso ? new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "America/Guadeloupe" }) : "jamais";
@@ -22,6 +22,8 @@ type Found = {
   first_name: string | null;
   last_name: string | null;
   plan: string;
+  plan_until: string | null;
+  plan_note: string | null;
   suspended_at: string | null;
   created_at: string;
   email: string | null;
@@ -33,7 +35,7 @@ async function findAccount(supportId: string): Promise<Found | null> {
   const db = createAdminClient();
   const { data: p } = await db
     .from("profiles")
-    .select("id, support_id, first_name, last_name, plan, suspended_at, created_at")
+    .select("id, support_id, first_name, last_name, plan, plan_until, plan_note, suspended_at, created_at")
     .eq("support_id", supportId)
     .maybeSingle();
   if (!p) return null;
@@ -57,7 +59,8 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
         ["Email", account.email ?? "?"],
         ["Prénom", account.first_name ?? "?"],
         ["Nom", account.last_name ?? "?"],
-        ["Formule", PLAN[account.plan] ?? account.plan],
+        ["Formule", `${PLANS[account.plan as PlanId]?.name ?? account.plan}${account.plan_until ? ` jusqu'au ${day(account.plan_until)}` : ""}`],
+        ["Note", account.plan_note ?? ""],
         ["Statut", account.suspended_at ? `Suspendu le ${day(account.suspended_at)}` : "Actif"],
         ["Relais actifs", String(account.relays)],
         ["Inscrit le", day(account.created_at)],
@@ -69,7 +72,10 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
   return (
     <DashPage>
       <DashHeader lead="Admin" hl="Comptes" sub="Retrouve un compte avec l'ID support qu'il a collé dans son ticket Discord.">
-        <ArrowLink href="/admin/securite">Sécurité</ArrowLink>
+        <div className="flex flex-wrap gap-6">
+          <ArrowLink href="/admin/partenaires">Partenaires</ArrowLink>
+          <ArrowLink href="/admin/securite">Sécurité</ArrowLink>
+        </div>
       </DashHeader>
       <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
         <Tile>
@@ -106,6 +112,15 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
             </dl>
           )}
         </Tile>
+        {account && (
+          <Tile className="lg:col-span-2">
+            <TileLabel>Formule</TileLabel>
+            <p className="mt-2 text-sm text-muted">Chaque changement est inscrit au journal d&apos;audit et le client reçoit un email.</p>
+            <div className="mt-5 max-w-2xl">
+              <PlanForms key={`${account.plan}:${account.plan_until}`} userId={account.id} plan={account.plan} until={account.plan_until} note={account.plan_note} />
+            </div>
+          </Tile>
+        )}
       </div>
     </DashPage>
   );

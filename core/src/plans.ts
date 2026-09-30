@@ -14,7 +14,15 @@ export const PLAN_LIMITS: Record<PlanId, { maxRelays: number; maxConcurrentStrea
 /** Formule inconnue ou absente : aucun droit (refus par défaut). */
 export const limitsOf = (plan: string | null | undefined) => PLAN_LIMITS[(plan ?? "") as PlanId] ?? PLAN_LIMITS.free;
 
-export type Account = { plan: string | null; suspended: boolean };
+/** `until` : fin de la formule (profiles.plan_until, migration 0016). Passée : le compte est traité en Gratuit. */
+export type Account = { plan: string | null; suspended: boolean; until?: string | null };
+
+/** Formule effective d'un compte (échéance passée = Gratuit, même avant la tâche quotidienne du site). */
+export function planOf(account: Account | null, now = Date.now()): string {
+  if (!account) return "free";
+  if (account.plan !== "admin" && account.until && Date.parse(account.until) <= now) return "free";
+  return account.plan ?? "free";
+}
 
 /**
  * Relais d'un compte autorisés à diffuser : compte actif, formule payante ou bêta, relais non archivé,
@@ -22,7 +30,7 @@ export type Account = { plan: string | null; suspended: boolean };
  */
 export function allowedRelayIds<R extends { id: string; archived: boolean; created_at: string }>(account: Account | null, relays: R[]): Set<string> {
   if (!account || account.suspended) return new Set();
-  const { maxRelays } = limitsOf(account.plan);
+  const { maxRelays } = limitsOf(planOf(account));
   const active = relays.filter((r) => !r.archived).sort((a, b) => a.created_at.localeCompare(b.created_at));
   return new Set(active.slice(0, Number.isFinite(maxRelays) ? maxRelays : active.length).map((r) => r.id));
 }
@@ -39,7 +47,7 @@ export function publisherVerdict<R extends { id: string; archived: boolean; crea
 ): "account" | "suspended" | "plan" | "quota" | "streams" | null {
   if (!account) return "account";
   if (account.suspended) return "suspended";
-  const limits = limitsOf(account.plan);
+  const limits = limitsOf(planOf(account));
   if (!allowedRelayIds(account, relays).has(relayId)) return limits.maxRelays <= 0 ? "plan" : "quota";
   if (liveOthers + 1 > limits.maxConcurrentStreams) return "streams";
   return null;

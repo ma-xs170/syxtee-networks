@@ -220,6 +220,10 @@ test("vérification à la connexion : formule, suspension, quota de relais, flux
   assert.equal(publisherVerdict({ plan: "beta", suspended: false }, three, "a", 0), null);
   assert.equal(publisherVerdict({ plan: "beta", suspended: false }, three, "d", 0), "quota", "4e relais au-delà de la bêta (3)");
   assert.equal(publisherVerdict({ plan: "beta", suspended: false }, three, "c", 3), "streams");
+  // Formule échue (plan_until passé) : traitée en Gratuit, même avant la tâche quotidienne.
+  assert.equal(publisherVerdict({ plan: "partner", suspended: false, until: "2020-01-01T00:00:00Z" }, three, "a", 0), "plan");
+  assert.equal(publisherVerdict({ plan: "partner", suspended: false, until: "2999-01-01T00:00:00Z" }, three, "a", 0), null);
+  assert.equal(publisherVerdict({ plan: "free", suspended: false }, three, "a", 0), "plan");
   assert.equal(publisherVerdict({ plan: "free", suspended: false }, three, "a", 0), "plan");
   assert.equal(publisherVerdict({ plan: "beta", suspended: true }, three, "a", 0), "suspended");
   assert.equal(publisherVerdict({ plan: "inconnue", suspended: false }, three, "a", 0), "plan", "formule inconnue = aucun droit");

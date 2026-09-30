@@ -5,6 +5,7 @@ import { ArrowLink, DashHeader, DashPage, Tile, TileLabel } from "@/components/d
 import { requireUser } from "@/lib/auth/dal";
 import { deviceLabel, fmtDate, fmtDuration, fmtInt, fmtKbps } from "@/lib/dashboard-data";
 import { getSession } from "@/lib/dashboard-overview";
+import PlanGate from "@/components/plans/PlanGate";
 
 export const metadata: Metadata = { title: "Direct", robots: { index: false } };
 
@@ -26,6 +27,7 @@ export default async function LivePage({ params }: PageProps<"/dashboard/lives/[
 
   return (
     <DashPage>
+      <PlanGate feature="lives">
       <div className="mb-6">
         <ArrowLink href="/dashboard/lives">Historique des lives</ArrowLink>
       </div>
@@ -52,6 +54,7 @@ export default async function LivePage({ params }: PageProps<"/dashboard/lives/[
           )}
         </Tile>
       </div>
+    </PlanGate>
     </DashPage>
   );
 }

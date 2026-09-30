@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { newStreamIds, type StreamIds } from "./ids.ts";
 import { hashKey, keyHashes, type Sealer, type SecretKeys } from "./keys.ts";
-import { allowedRelayIds, limitsOf, type Account } from "./plans.ts";
+import { allowedRelayIds, limitsOf, planOf, type Account } from "./plans.ts";
 import type { Sls } from "./sls.ts";
 
 // Relais : table Supabase `relays` (écrite par le Core seulement) + paires déclarées dans le SLS.
@@ -93,9 +93,9 @@ export function createRelayStore(
   }
 
   async function account(userId: string): Promise<Account | null> {
-    const { data, error } = await db.from("profiles").select("plan, suspended_at").eq("id", userId).maybeSingle();
+    const { data, error } = await db.from("profiles").select("plan, plan_until, suspended_at").eq("id", userId).maybeSingle();
     if (error) throw new Error(`profiles : ${error.message}`);
-    return data ? { plan: (data.plan as string | null) ?? null, suspended: !!data.suspended_at } : null;
+    return data ? toAccount(data) : null;
   }
 
   async function register(r: Pick<Relay, "id" | "user_id">, ids: StreamIds) {
@@ -133,9 +133,9 @@ export function createRelayStore(
     const users = [...new Set(rows.map((r) => r.user_id))];
     const accounts = new Map<string, Account>();
     for (let i = 0; i < users.length; i += 200) {
-      const { data, error } = await db.from("profiles").select("id, plan, suspended_at").in("id", users.slice(i, i + 200));
+      const { data, error } = await db.from("profiles").select("id, plan, plan_until, suspended_at").in("id", users.slice(i, i + 200));
       if (error) throw new Error(`profiles : ${error.message}`);
-      for (const p of data ?? []) accounts.set(p.id as string, { plan: (p.plan as string | null) ?? null, suspended: !!p.suspended_at });
+      for (const p of data ?? []) accounts.set(p.id as string, toAccount(p));
     }
     const ok = new Set<string>();
     for (const u of users) for (const id of allowedRelayIds(accounts.get(u) ?? null, rows.filter((r) => r.user_id === u))) ok.add(id);
@@ -164,7 +164,7 @@ export function createRelayStore(
     async create(userId: string, p: { name: string; protocol: Protocol; limit: number }): Promise<Relay> {
       const acc = await account(userId);
       if (!acc || acc.suspended) throw new ForbiddenError("account");
-      const limit = Math.min(p.limit, limitsOf(acc.plan).maxRelays);
+      const limit = Math.min(p.limit, limitsOf(planOf(acc)).maxRelays);
       if (limit <= 0) throw new ForbiddenError("plan");
       const { count, error: countError } = await table().select("id", { count: "exact", head: true }).eq("user_id", userId).eq("archived", false);
       if (countError) throw new Error(`relays : ${countError.message}`);
@@ -224,7 +224,7 @@ export function createRelayStore(
       const acc = await account(r.user_id);
       if (!acc || acc.suspended) throw new ForbiddenError("account");
       const { count } = await table().select("id", { count: "exact", head: true }).eq("user_id", r.user_id).eq("archived", false);
-      if ((count ?? 0) >= Math.min(limit, limitsOf(acc.plan).maxRelays)) throw new QuotaError("quota");
+      if ((count ?? 0) >= Math.min(limit, limitsOf(planOf(acc)).maxRelays)) throw new QuotaError("quota");
       await register(r, r);
       try {
         return await update(r.id, { archived: false });
@@ -340,4 +340,9 @@ export function publicName(p: NameRow | null | undefined): string | null {
   const last = p?.last_name?.trim();
   if (first) return last ? `${first} ${last.charAt(0).toUpperCase()}.` : first;
   return p?.username ?? null;
+}
+
+/** Ligne profiles → compte (formule, échéance, suspension). */
+function toAccount(p: Record<string, unknown>): Account {
+  return { plan: (p.plan as string | null) ?? null, suspended: !!p.suspended_at, until: (p.plan_until as string | null) ?? null };
 }

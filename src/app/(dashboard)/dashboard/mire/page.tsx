@@ -7,6 +7,7 @@ import RelayPicker from "@/components/relais/RelayPicker";
 import { requireUser } from "@/lib/auth/dal";
 import { defaultRelay } from "@/lib/relay-groups";
 import { loadRelays } from "@/lib/relays";
+import PlanGate from "@/components/plans/PlanGate";
 
 export const metadata: Metadata = { title: "Mire de coupure", robots: { index: false } };
 
@@ -19,6 +20,7 @@ export default async function MirePage({ searchParams }: PageProps<"/dashboard/m
 
   return (
     <DashPage>
+      <PlanGate feature="mire">
       <DashHeader lead="Mire de" hl="coupure" sub="L'écran que voient tes viewers quand ton téléphone perd le réseau, au lieu d'un écran noir." />
       <RelayPicker relays={active} current={current?.id ?? null} base="/dashboard/mire" />
       <div className="grid gap-4 lg:grid-cols-3">
@@ -47,6 +49,7 @@ export default async function MirePage({ searchParams }: PageProps<"/dashboard/m
           </div>
         </Tile>
       </div>
+    </PlanGate>
     </DashPage>
   );
 }

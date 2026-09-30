@@ -1,5 +1,6 @@
 import "server-only";
 import type { User } from "@supabase/supabase-js";
+import { isAdminEmail } from "@/lib/admin";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 import { getTwitchUser } from "@/lib/twitch";
 import { safeNext } from "./dal";
@@ -13,7 +14,7 @@ const httpsUrl = (v: unknown) => (typeof v === "string" && v.startsWith("https:/
 export async function afterLogin(user: User, next: string | null) {
   if (!hasAdmin) return safeNext(next);
   const admin = createAdminClient();
-  const { data: profile } = await admin.from("profiles").select("avatar_url, twitch_id, onboarded_at").eq("id", user.id).single();
+  const { data: profile } = await admin.from("profiles").select("avatar_url, twitch_id, onboarded_at, plan").eq("id", user.id).single();
 
   const patch: Record<string, string> = {};
   const twitch = user.identities?.find((i) => i.provider === "twitch");
@@ -36,6 +37,11 @@ export async function afterLogin(user: User, next: string | null) {
     const fromProvider = httpsUrl(user.user_metadata?.avatar_url) ?? httpsUrl(user.user_metadata?.picture);
     if (fromProvider) patch.avatar_url = fromProvider;
   }
+  // Admin : formule « admin » en base (le Core ne connaît pas ADMIN_EMAILS). Retiré de la liste : repasse en Gratuit.
+  const admin_ = !!user.email_confirmed_at && isAdminEmail(user.email);
+  if (admin_ && profile?.plan !== "admin") patch.plan = "admin";
+  else if (!admin_ && profile?.plan === "admin") patch.plan = "free";
+
   if (Object.keys(patch).length > 0) {
     const { error } = await admin.from("profiles").update(patch).eq("id", user.id);
     if (error) console.error("Profil après connexion", error.message);

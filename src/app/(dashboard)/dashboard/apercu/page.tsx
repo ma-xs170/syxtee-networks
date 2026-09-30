@@ -7,6 +7,7 @@ import { requireUser } from "@/lib/auth/dal";
 import { publicCoreUrl } from "@/lib/core";
 import { defaultRelay } from "@/lib/relay-groups";
 import { coreStatusText, loadRelays } from "@/lib/relays";
+import PlanGate from "@/components/plans/PlanGate";
 
 export const metadata: Metadata = { title: "Aperçu", robots: { index: false } };
 
@@ -19,6 +20,7 @@ export default async function ApercuPage({ searchParams }: PageProps<"/dashboard
 
   return (
     <DashPage>
+      <PlanGate feature="apercu">
       <DashHeader lead="Ton flux en" hl="direct" sub="Une image toutes les 3 s, visible par toi seul." />
       {status !== "ok" ? (
         <p className="text-sm text-muted">{coreStatusText[status]}</p>
@@ -38,6 +40,7 @@ export default async function ApercuPage({ searchParams }: PageProps<"/dashboard
           </div>
         </>
       )}
+    </PlanGate>
     </DashPage>
   );
 }

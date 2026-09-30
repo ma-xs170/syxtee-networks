@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { signOut } from "@/app/(auth)/actions";
-import { dashboardNav } from "@/lib/dashboard-nav";
+import { dashboardNav, withLocks } from "@/lib/dashboard-nav";
 import { nav, site } from "@/lib/site";
 import AccountMenu, { Avatar, siteAccountLinks, useAccount, type MenuLink } from "./AccountMenu";
 import { LivePill } from "./dashboard/LiveStatus";
@@ -44,7 +44,7 @@ export default function Nav({ variant = "site" }: { variant?: "site" | "dashboar
   const pathname = usePathname();
   const account = useAccount();
   const dash = variant === "dashboard";
-  const items = dash ? dashboardNav : nav;
+  const items = dash ? (account ? withLocks(dashboardNav, account.features) : dashboardNav) : nav;
   const accountLinks = dash ? dashboardAccountLinks : siteAccountLinks;
   // « Vue d'ensemble » (/dashboard) n'est active que sur sa propre page.
   const isActive = (href: string) => pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`));

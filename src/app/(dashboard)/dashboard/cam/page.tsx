@@ -8,6 +8,7 @@ import { ArrowLink, DashHeader, DashPage, Tile, TileLabel } from "@/components/d
 import { requireUser } from "@/lib/auth/dal";
 import { getCam, hasCore, type CamInfo } from "@/lib/core";
 import { FEATURE_CAM } from "@/lib/features";
+import PlanGate from "@/components/plans/PlanGate";
 
 export const metadata: Metadata = { title: "SYXTEE Cam", robots: { index: false } };
 
@@ -45,6 +46,7 @@ export default async function CamPage() {
 
   return (
     <DashPage>
+      <PlanGate feature="cam">
       <DashHeader lead="SYXTEE" hl="Cam" sub="Un téléphone devient une caméra de ton direct, en un scan. Il arrive dans OBS avec ta clé habituelle : aucune URL de plus." />
       <div className="grid gap-4 lg:grid-cols-3">
         <Tile className="lg:col-span-2">
@@ -119,6 +121,7 @@ export default async function CamPage() {
           <p className="mt-2 text-xs text-muted">Pour une stabilisation maximale en IRL sur iPhone, utilise Moblin avec ton relais SYXTEE.</p>
         </Tile>
       </div>
+    </PlanGate>
     </DashPage>
   );
 }

@@ -5,6 +5,7 @@ import RelayPicker from "@/components/relais/RelayPicker";
 import { requireUser } from "@/lib/auth/dal";
 import { listSessions } from "@/lib/dashboard-overview";
 import { loadRelays } from "@/lib/relays";
+import PlanGate from "@/components/plans/PlanGate";
 
 export const metadata: Metadata = { title: "Historique des lives", robots: { index: false } };
 
@@ -16,6 +17,7 @@ export default async function LivesPage({ searchParams }: PageProps<"/dashboard/
   const sessions = await listSessions({ limit: 100, relayId: current ?? undefined });
   return (
     <DashPage>
+      <PlanGate feature="lives">
       <DashHeader lead="Historique des" hl="lives" sub="Tes 100 derniers directs. Ouvre un direct pour voir sa courbe de débit." />
       <RelayPicker relays={relays} current={current} base="/dashboard/lives" all={relays.length > 1} />
       <Tile>
@@ -38,6 +40,7 @@ export default async function LivesPage({ searchParams }: PageProps<"/dashboard/
           </>
         )}
       </Tile>
+    </PlanGate>
     </DashPage>
   );
 }

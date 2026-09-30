@@ -13,6 +13,7 @@ import { requireUser } from "@/lib/auth/dal";
 import { getRelay, hasCore, publicCoreUrl, type RelayView } from "@/lib/core";
 import { fmtAgo } from "@/lib/dashboard-data";
 import { listSessions } from "@/lib/dashboard-overview";
+import PlanGate from "@/components/plans/PlanGate";
 
 export const metadata: Metadata = { title: "Relais", robots: { index: false } };
 
@@ -33,6 +34,7 @@ export default async function RelayPage({ params }: PageProps<"/dashboard/relais
 
   return (
     <DashPage>
+      <PlanGate feature="relais">
       <div className="mb-6">
         <ArrowLink href="/dashboard/relais">Mes relais</ArrowLink>
       </div>
@@ -90,6 +92,7 @@ export default async function RelayPage({ params }: PageProps<"/dashboard/relais
           </Tile>
         </>
       )}
+    </PlanGate>
     </DashPage>
   );
 }

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { signOut } from "@/app/(auth)/actions";
 import { createClient } from "@/lib/supabase/client";
 import { initials, shortName } from "@/lib/names";
+import { effectivePlan, type Feature } from "@/lib/plans";
 import { hasSupabase } from "@/lib/supabase/env";
 import { SupportId } from "./SupportId";
 
@@ -13,7 +14,7 @@ import { SupportId } from "./SupportId";
 // Lecture côté navigateur : les pages publiques restent statiques.
 
 /** name : « Mathis N. » (ou l'email tant que le prénom n'est pas renseigné). */
-export type Account = { name: string; initials: string; avatar: string | null; supportId: string | null } | null;
+export type Account = { name: string; initials: string; avatar: string | null; supportId: string | null; planName: string; features: Feature[] } | null;
 
 export function useAccount() {
   const [account, setAccount] = useState<Account | undefined>(hasSupabase ? undefined : null);
@@ -28,9 +29,11 @@ export function useAccount() {
         if (alive) setAccount(null);
         return;
       }
-      const { data: p } = await supabase.from("profiles").select("first_name, last_name, avatar_url, support_id").eq("id", user.id).single();
+      const { data: p } = await supabase.from("profiles").select("first_name, last_name, avatar_url, support_id, plan, plan_until, suspended_at").eq("id", user.id).single();
       const name = shortName(p, user.email ?? "?");
-      if (alive) setAccount({ name, initials: initials(p, name), avatar: p?.avatar_url ?? null, supportId: p?.support_id ?? null });
+      // Affichage seulement (cadenas, nom de formule) : les droits sont revérifiés côté serveur.
+      const plan = p?.suspended_at ? effectivePlan(null) : effectivePlan(p);
+      if (alive) setAccount({ name, initials: initials(p, name), avatar: p?.avatar_url ?? null, supportId: p?.support_id ?? null, planName: plan.name, features: plan.features });
     };
     load();
     const { data: sub } = supabase.auth.onAuthStateChange(() => {

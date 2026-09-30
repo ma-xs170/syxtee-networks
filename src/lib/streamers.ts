@@ -7,12 +7,14 @@ export type HomeStreamer = {
   handle: string;
   /** Prénom, seulement si la personne a coché « Afficher mon prénom sur le site ». */
   firstName: string | null;
+  /** Formule Partenaire en cours (badge). */
+  partner: boolean;
   url: string;
   avatar: string | null;
   live: { viewers: number } | null;
 };
 
-type Row = { username: string; first_name?: string | null; avatar_url: string | null; twitch_id: string; twitch_login: string; twitch_display_name: string | null };
+type Row = { username: string; first_name?: string | null; partner?: boolean | null; avatar_url: string | null; twitch_id: string; twitch_login: string; twitch_display_name: string | null };
 
 /** Streamers de l'accueil (consentement + Twitch vérifié), chaînes en live d'abord. Ne lève jamais. */
 export async function getHomeStreamers(): Promise<HomeStreamer[]> {
@@ -34,6 +36,7 @@ export async function getHomeStreamers(): Promise<HomeStreamer[]> {
     .map((r) => ({
       handle: r.twitch_display_name || r.twitch_login,
       firstName: r.first_name?.trim() || null,
+      partner: r.partner === true,
       url: `https://twitch.tv/${r.twitch_login}`,
       avatar: r.avatar_url,
       live: live.get(r.twitch_id) ? { viewers: live.get(r.twitch_id)!.viewers } : null,

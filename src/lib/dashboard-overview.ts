@@ -1,7 +1,7 @@
 import "server-only";
 import type { Profile } from "@/lib/auth/dal";
 import { hasCore, listRelays, type RelayView } from "@/lib/core";
-import { planOf, relayLimit } from "@/lib/plans";
+import { relayLimit, type Plan } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
 import { RANGE_DAYS, SESSION_COLUMNS, type Alert, type Kpis, type LiveSession, type Overview, type Range } from "./dashboard-data";
 
@@ -102,7 +102,7 @@ export async function getSession(id: string) {
   return (data as unknown as LiveSession | null) ?? null;
 }
 
-export async function getOverview(userId: string, profile: Profile, range: Range): Promise<Overview> {
+export async function getOverview(userId: string, profile: Profile, range: Range, plan: Plan): Promise<Overview> {
   const key = `${userId}:${range}`;
   const hit = memo.get(key);
   if (hit && Date.now() - hit.at < TTL) return hit.data;
@@ -114,7 +114,6 @@ export async function getOverview(userId: string, profile: Profile, range: Range
     listSessions({ limit: 3 }),
     loadRelayViews(userId),
   ]);
-  const plan = planOf(userId);
 
   const finished = recent60.filter((s) => s.ended_at);
   const inRange = (s: LiveSession, from: number, to: number) => {

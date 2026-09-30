@@ -28,6 +28,9 @@ export type Profile = {
   mobile_operator?: "orange" | "sfr" | "digicel" | "free" | "other" | null;
   onboarded_at: string | null;
   support_id?: string | null;
+  plan?: string | null;
+  plan_until?: string | null;
+  suspended_at?: string | null;
 };
 
 /** Utilisateur connecté, vérifié auprès de Supabase (une fois par requête). */

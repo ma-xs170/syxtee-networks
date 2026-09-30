@@ -4,6 +4,7 @@ import { ArrowLink, DashHeader, DashPage, Tile, TileLabel } from "@/components/d
 import { requireUser } from "@/lib/auth/dal";
 import { hasCore, listAlerts, type SecurityAlert } from "@/lib/core";
 import { loadRelays } from "@/lib/relays";
+import PlanGate from "@/components/plans/PlanGate";
 
 const when = (iso: string) => new Date(iso).toLocaleString("fr-FR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
 const place = (a: SecurityAlert) =>
@@ -18,6 +19,7 @@ export default async function SecuritePage() {
 
   return (
     <DashPage>
+      <PlanGate feature="cles">
       <DashHeader lead="Sécurité &" hl="clés" sub="Tes clés de stream sont dans tes URLs : quiconque les connaît peut diffuser à ta place." />
       <div className="grid gap-4 lg:grid-cols-2">
         <Tile>
@@ -64,6 +66,7 @@ export default async function SecuritePage() {
           </div>
         </Tile>
       </div>
+    </PlanGate>
     </DashPage>
   );
 }

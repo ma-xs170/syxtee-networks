@@ -6,10 +6,12 @@ import { requireUser } from "@/lib/auth/dal";
 import { allow } from "@/lib/auth/rateLimit";
 import { CoreOutdated, CoreRefusal, createRelay, deleteRelay, rotateRelay, updateRelay, type RelayView } from "@/lib/core";
 import { forgetOverview } from "@/lib/dashboard-overview";
-import { planOf, relayLimit } from "@/lib/plans";
+import { getPlan, LOCKED_MESSAGE } from "@/lib/auth/plan";
+import { can, relayLimit, type Feature } from "@/lib/plans";
 import { serverById } from "@/lib/relay-servers";
 
-// Actions « Mes relais ». Les quotas viennent de plans.ts ; le Core recompte avant de créer ou réactiver.
+// Actions « Mes relais ». Droits et quotas de plans.ts, vérifiés ici ; le Core recompte avant de créer ou réactiver.
+// Compte gratuit : seules la suppression et l'archivage restent possibles (relais d'une ancienne formule).
 
 export type RelayActionState = { error?: string; relay?: RelayView };
 
@@ -46,8 +48,8 @@ export async function createRelayAction(input: z.input<typeof createInput>): Pro
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Champs invalides." };
   const { name, protocol, server } = parsed.data;
   if (!serverById(server)?.available) return { error: "Ce serveur n'est pas encore disponible." };
-  const plan = planOf(user.id);
-  if (plan.maxRelays <= 0) return { error: "Les relais sont inclus dans les offres." };
+  const plan = await getPlan();
+  if (!can(plan, "relais") || plan.maxRelays <= 0) return { error: LOCKED_MESSAGE };
   if (!(await allow(`relay-create:${user.id}`, 10, 3600))) return { error: "Trop de créations. Réessaie dans une heure." };
   try {
     const relay = await createRelay(user.id, { name, protocol, server, limit: relayLimit(plan) });
@@ -61,9 +63,10 @@ export async function createRelayAction(input: z.input<typeof createInput>): Pro
 
 const id = z.uuid();
 
-async function run(relayId: string, key: string, max: number, job: (userId: string) => Promise<unknown>): Promise<RelayActionState> {
+async function run(relayId: string, key: string, max: number, job: (userId: string) => Promise<unknown>, feature: Feature | null = "relais"): Promise<RelayActionState> {
   const user = await requireUser("/dashboard/relais");
   if (!id.safeParse(relayId).success) return { error: "Relais introuvable." };
+  if (feature && !can(await getPlan(), feature)) return { error: LOCKED_MESSAGE };
   if (!(await allow(`${key}:${user.id}`, max, 3600))) return { error: "Trop de changements. Réessaie dans une heure." };
   try {
     await job(user.id);
@@ -88,16 +91,18 @@ export async function rotateRelayAction(relayId: string) {
 
 /** Archiver coupe les URLs du relais ; le réactiver compte de nouveau dans la limite de la formule. */
 export async function archiveRelayAction(relayId: string, archived: boolean) {
-  return run(relayId, "relay-edit", 60, (u) => updateRelay(u, relayId, { archived, limit: relayLimit(planOf(u)) }));
+  const limit = relayLimit(await getPlan());
+  // Archiver reste possible sans formule ; réactiver demande la fonction « relais » (et le Core recompte).
+  return run(relayId, "relay-edit", 60, (u) => updateRelay(u, relayId, { archived, limit }), archived ? null : "relais");
 }
 
 export async function deleteRelayAction(relayId: string) {
-  return run(relayId, "relay-delete", 20, (u) => deleteRelay(u, relayId));
+  return run(relayId, "relay-delete", 20, (u) => deleteRelay(u, relayId), null);
 }
 
 /** Mode de sortie d'un relais : Direct (OBS lit l'encodeur) ou Régie (mire automatique si l'encodeur coupe). */
 export async function changeModeAction(relayId: string, mode: "direct" | "regie") {
-  const r = await run(relayId, "mode", 20, (u) => updateRelay(u, relayId, { mode }));
+  const r = await run(relayId, "mode", 20, (u) => updateRelay(u, relayId, { mode }), "mire");
   revalidatePath("/dashboard/mire");
   return r;
 }

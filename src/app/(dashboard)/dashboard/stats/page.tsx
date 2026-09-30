@@ -5,6 +5,7 @@ import { ArrowLink, DashHeader, DashPage, Tile, TileLabel } from "@/components/d
 import { requireUser } from "@/lib/auth/dal";
 import { delta, fmtDuration, fmtInt, isRange } from "@/lib/dashboard-data";
 import { getStats } from "@/lib/dashboard-overview";
+import PlanGate from "@/components/plans/PlanGate";
 
 export const metadata: Metadata = { title: "Statistiques", robots: { index: false } };
 
@@ -27,6 +28,7 @@ export default async function StatsPage({ searchParams }: PageProps<"/dashboard/
 
   return (
     <DashPage>
+      <PlanGate feature="stats">
       <DashHeader lead="Tes" hl="statistiques" sub={`Tes directs sur les ${days} derniers jours, comparés aux ${days} jours d'avant.`}>
         <div role="radiogroup" aria-label="Période" className="inline-flex rounded-full border border-line p-0.5">
           {(["7d", "30d"] as const).map((x) => (
@@ -73,6 +75,7 @@ export default async function StatsPage({ searchParams }: PageProps<"/dashboard/
           </div>
         </div>
       )}
+    </PlanGate>
     </DashPage>
   );
 }

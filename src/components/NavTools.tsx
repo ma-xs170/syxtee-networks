@@ -14,6 +14,7 @@ import { ProDrawing } from "./pro/ProExploded";
 import DashArt from "./dashboard/DashArt";
 import type { DashIcon, DashItem, DashMenu } from "@/lib/dashboard-nav";
 import type { NavItem, NavMenu, ToolIcon } from "@/lib/site";
+import { LockIcon } from "./plans/Locked";
 
 // Même composant pour la nav du site et celle du dashboard (autres entrées, autres illustrations).
 type AnyMenu = NavMenu | DashMenu;
@@ -233,6 +234,7 @@ function Dropdown({
                       <span className="flex items-center gap-2 text-sm font-medium text-foreground">
                         {t.label}
                         {t.badge && <Badge>{t.badge}</Badge>}
+                        {"locked" in t && t.locked && <LockIcon className="h-3.5 w-3.5 shrink-0 text-muted" />}
                       </span>
                       <span className="mt-0.5 block text-sm leading-snug text-muted">{t.desc}</span>
                     </span>
@@ -249,6 +251,7 @@ function Dropdown({
                     <div className="mt-3 flex items-center gap-2">
                       <span className="whitespace-nowrap text-sm font-medium text-foreground">{t.label}</span>
                       {t.badge && <Badge>{t.badge}</Badge>}
+                        {"locked" in t && t.locked && <LockIcon className="h-3.5 w-3.5 shrink-0 text-muted" />}
                       <span aria-hidden="true" className="ml-auto text-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
                         →
                       </span>
@@ -296,6 +299,7 @@ export function NavAccordion({ menu, active, onNavigate }: { menu: AnyMenu; acti
                 <span className="flex items-center gap-2">
                   <span className="text-base text-foreground">{t.label}</span>
                   {t.badge && <Badge>{t.badge}</Badge>}
+                        {"locked" in t && t.locked && <LockIcon className="h-3.5 w-3.5 shrink-0 text-muted" />}
                 </span>
                 <span className="block text-sm text-muted">{t.desc}</span>
               </span>

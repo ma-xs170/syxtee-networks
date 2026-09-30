@@ -21,6 +21,7 @@ export const dashboardNav: DashItem[] = [
       { label: "Santé du flux", href: "/dashboard/sante", desc: "Débit, RTT, pertes en temps réel", icon: "health", feature: "sante" },
       { label: "Aperçu", href: "/dashboard/apercu", desc: "Ton flux en direct", icon: "preview", feature: "apercu" },
       { label: "Mire de coupure", href: "/dashboard/mire", desc: "L'écran affiché si tu coupes", icon: "mire", feature: "mire" },
+      { label: "Caméras DJI", href: "/dashboard/dji", desc: "Osmo en Bluetooth vers ton relais", icon: "cam", feature: "dji" },
     ],
   },
   { label: "Statistiques", href: "/dashboard/stats" },

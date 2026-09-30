@@ -6,6 +6,7 @@ import { SupportId } from "@/components/SupportId";
 import { requireAdmin } from "@/lib/admin";
 import { liveNow } from "@/lib/admin-data";
 import { audit } from "@/lib/plan-admin";
+import { renews } from "@/lib/billing";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 import { CutButton, DeleteForm, IdentityForm, KeysForms, NoteForm, SuspendForm } from "../AdminForms";
@@ -174,6 +175,38 @@ export default async function AdminAccountPage({ params }: { params: Promise<{ i
             {(log?.length ?? 0) > 8 && (
               <div className="mt-4">
                 <ArrowLink href={`/admin/journal?compte=${id}`}>Tout le journal</ArrowLink>
+              </div>
+            )}
+          </Tile>
+
+          <Tile aria-labelledby="abo">
+            <TileLabel
+              id="abo"
+              right={
+                p.stripe_customer_id ? (
+                  <a href={`https://dashboard.stripe.com/customers/${p.stripe_customer_id}`} target="_blank" rel="noreferrer" className="text-xs text-muted underline underline-offset-4 hover:text-foreground">
+                    Stripe ↗
+                  </a>
+                ) : undefined
+              }
+            >
+              Abonnement
+            </TileLabel>
+            {!p.billing_status ? (
+              <p className="mt-4 text-sm text-muted">Aucun abonnement Stripe.</p>
+            ) : (
+              <div className="mt-4 grid gap-1 text-sm">
+                <p>
+                  {p.billing_interval === "year" ? "Annuel" : "Mensuel"} · <span className="font-mono text-xs uppercase">{p.billing_status}</span>
+                </p>
+                {p.billing_period_end && (
+                  <p className="text-muted">{`${renews(p) ? "Prochain prélèvement le" : "Fin le"} ${day(p.billing_period_end)}`}</p>
+                )}
+                {renews(p) && ["partner", "beta", "admin"].includes(p.plan) && (
+                  <p role="alert" className="mt-2 text-red-300">
+                    Formule {plan} attribuée à la main, mais l&apos;abonnement Stripe continue : résilie-le dans Stripe pour qu&apos;il ne paie pas pour rien.
+                  </p>
+                )}
               </div>
             )}
           </Tile>

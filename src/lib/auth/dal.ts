@@ -31,6 +31,12 @@ export type Profile = {
   plan?: string | null;
   plan_until?: string | null;
   suspended_at?: string | null;
+  /** Abonnement Stripe (0019_billing.sql). */
+  stripe_customer_id?: string | null;
+  billing_interval?: "month" | "year" | null;
+  billing_status?: string | null;
+  cancel_at_period_end?: boolean;
+  billing_period_end?: string | null;
 };
 
 /** Utilisateur connecté, vérifié auprès de Supabase (une fois par requête). */

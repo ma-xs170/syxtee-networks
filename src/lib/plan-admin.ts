@@ -2,6 +2,7 @@ import "server-only";
 import { planChanged } from "@/emails/templates";
 import { hasCore, refreshCore } from "@/lib/core";
 import { sendEmail } from "@/lib/email/send";
+import { renews, type Decision } from "@/lib/billing";
 import { ASSIGNABLE, type PlanId } from "@/lib/plans";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -60,14 +61,15 @@ export async function runPlanExpiry(now = new Date()) {
   const in7 = new Date(now.getTime() + 7 * 86_400_000).toISOString();
   const { data: soon } = await db
     .from("profiles")
-    .select("id, plan, plan_until")
+    .select("id, plan, plan_until, billing_status, cancel_at_period_end")
     .neq("plan", "free")
     .neq("plan", "admin")
     .is("plan_reminded_at", null)
     .gt("plan_until", now.toISOString())
     .lte("plan_until", in7)
     .limit(500);
-  for (const p of soon ?? []) {
+  // Abonnement Stripe qui se renouvelle : l'échéance bouge à chaque paiement, pas de rappel de fin.
+  for (const p of (soon ?? []).filter((r) => !renews(r))) {
     const email = await emailOf(p.id as string);
     if (email) await sendEmail(email, planChanged({ plan: p.plan as string, until: new Date(p.plan_until as string), expiring: true }));
     await db.from("profiles").update({ plan_reminded_at: now.toISOString() }).eq("id", p.id);
@@ -76,11 +78,21 @@ export async function runPlanExpiry(now = new Date()) {
 }
 
 /**
- * Point d'accroche Stripe (pas encore branché) : paiement réussi → Payant jusqu'à la fin de la période ;
- * résiliation → Gratuit à la fin de la période (via plan_until, la tâche quotidienne fait la bascule).
+ * Abonnement Stripe → formule (décision prise par `decide`, lib/billing.ts). Acteur « stripe » au journal.
+ * Payant : échéance repoussée à chaque renouvellement, email seulement au passage en Payant.
+ * Gratuit : abonnement terminé (résiliation arrivée à échéance, ou impayé après les relances).
  */
-export async function applyBillingEvent(e: { userId: string; kind: "paid" | "canceled"; periodEnd: Date }) {
-  if (e.kind === "paid") return setPlan("stripe", e.userId, { plan: "paid", until: e.periodEnd, note: null }, { action: "billing.paid" });
-  const { data } = await createAdminClient().from("profiles").select("plan_note").eq("id", e.userId).maybeSingle<{ plan_note: string | null }>();
-  return setPlan("stripe", e.userId, { plan: "paid", until: e.periodEnd, note: data?.plan_note ?? null }, { action: "billing.canceled", notify: false });
+export async function applyBillingEvent(userId: string, d: Decision) {
+  if (d.kind === "none") return false;
+  const { data } = await createAdminClient().from("profiles").select("plan, plan_note").eq("id", userId).maybeSingle<{ plan: string; plan_note: string | null }>();
+  if (!data) return false;
+  if (d.kind === "free") return setPlan("stripe", userId, { plan: "free", until: null, note: data.plan_note }, { action: "billing.ended" });
+  const first = data.plan !== "paid";
+  await setPlan("stripe", userId, { plan: "paid", until: d.until, note: data.plan_note }, { action: first ? "billing.subscribed" : "billing.renewed", notify: false });
+  if (first) {
+    const email = await emailOf(userId);
+    // Pas de date de fin dans l'email : l'abonnement se renouvelle tout seul.
+    if (email) await sendEmail(email, planChanged({ plan: "paid", until: null }));
+  }
+  return true;
 }

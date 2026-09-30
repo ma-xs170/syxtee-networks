@@ -41,6 +41,8 @@ export default defineConfig({
         CORE_API_TOKEN: "e2e-core-token-0123456789abcdef0123",
         // Admin des tests (espace /admin, TOTP) : compte créé par e2e/admin.spec.ts.
         ADMIN_EMAILS: "e2e-admin@syxtee.test",
+        // Webhook Stripe : secret de test (événements signés par e2e/billing.spec.ts, aucun appel à Stripe).
+        STRIPE_WEBHOOK_SECRET: "whsec_syxtee_e2e_0123456789abcdef",
         // Send Email Hook : secret de test (pas de RESEND_API_KEY : aucun email ne part vraiment).
         SEND_EMAIL_HOOK_SECRET: "v1,whsec_c3l4dGVlLWUyZS1ob29rLXNlY3JldC0wMTIzNDU2Nzg5",
       },

@@ -185,6 +185,22 @@ export function freeMonth(o: { until: Date }): Email {
   };
 }
 
+/** i) Abonnement : prélèvement refusé (Stripe réessaie ; l'accès continue jusqu'à l'échéance). */
+export function paymentFailed(o: { amount: number; currency: string }): Email {
+  const amount = new Intl.NumberFormat("fr-FR", { style: "currency", currency: o.currency.toUpperCase() }).format(o.amount / 100);
+  return {
+    subject: "Ton paiement SYXTEE n'est pas passé",
+    element: (
+      <Layout preview={`Le prélèvement de ${amount} a été refusé.`} kicker="Abonnement" reason="Tu reçois cet email car le paiement de ton abonnement SYXTEE a échoué.">
+        <Title lead="Paiement" hl="refusé." />
+        <Text style={p}>Le prélèvement de {amount} pour ton abonnement SYXTEE n&apos;est pas passé. Ta carte a peut-être expiré ou manque de provision.</Text>
+        <Text style={p}>On réessaie automatiquement dans les prochains jours. Ton accès continue d&apos;ici là. Mets ta carte à jour pour éviter la coupure.</Text>
+        <Cta href={`${site.url}/dashboard/abonnement`}>Mettre à jour ma carte</Cta>
+      </Layout>
+    ),
+  };
+}
+
 /** Lien de connexion (anciens liens magiques, invitations) : seulement si Supabase en envoie un. */
 export function loginLink(o: { url: string }): Email {
   return {
@@ -229,5 +245,6 @@ export function samples(): { key: string; label: string; email: Email }[] {
     { key: "g1", label: "g) Formule attribuée", email: planChanged({ plan: "partner", until: in30 }) },
     { key: "g2", label: "g) Formule : J-7", email: planChanged({ plan: "partner", until: in30, expiring: true }) },
     { key: "h", label: "h) 1 mois gagné", email: freeMonth({ until: in30 }) },
+    { key: "i", label: "i) Paiement refusé", email: paymentFailed({ amount: 999, currency: "eur" }) },
   ];
 }

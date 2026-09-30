@@ -35,8 +35,10 @@ test.describe("comptes", () => {
     const lock = page.getByRole("button", { name: /Relais et URLs : réservé aux abonnés/ });
     await expect(lock).toBeVisible();
     await lock.click();
-    await expect(page.getByRole("dialog", { name: "Fonction réservée aux abonnés" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Voir les offres" })).toBeVisible();
+    const modal = page.getByRole("dialog", { name: "Fonction réservée aux abonnés" });
+    await expect(modal).toBeVisible();
+    await expect(modal.getByRole("link", { name: "Voir les offres" })).toBeVisible();
+    await expect(modal.getByRole("link", { name: "Passer à la formule payante" })).toBeVisible();
 
     await page.goto("/dashboard/scanner");
     await expect(page.getByRole("button", { name: /réservé aux abonnés/ })).toHaveCount(0);

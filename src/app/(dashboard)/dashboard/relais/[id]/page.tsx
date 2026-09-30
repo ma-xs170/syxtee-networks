@@ -71,6 +71,15 @@ export default async function RelayPage({ params }: PageProps<"/dashboard/relais
               </Tile>
               <div className="space-y-4">
                 <StreamPreview coreUrl={publicCoreUrl} relayId={relay.id} />
+                {relay.protocol === "rtmp" && (
+                  <Tile>
+                    <TileLabel>Caméra DJI</TileLabel>
+                    <p className="mt-3 text-sm text-muted">Osmo Pocket, Osmo Action, Osmo 360 : envoie l&apos;URL de ce relais à ta caméra en Bluetooth, sans l&apos;app DJI Mimo.</p>
+                    <div className="mt-4">
+                      <ArrowLink href={`/dashboard/relais/${relay.id}/dji`}>Configurer une DJI</ArrowLink>
+                    </div>
+                  </Tile>
+                )}
                 <Tile>
                   <TileLabel>Mode de sortie</TileLabel>
                   <div className="mt-4">

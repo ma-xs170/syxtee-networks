@@ -19,6 +19,7 @@ const guides: { href: string; title: string; text: string; icon: ToolIcon }[] = 
   { href: "/relais", title: "Relais SYXTEE", text: "Choisir ton serveur SRTLA et savoir à quelle latence t'attendre.", icon: "rack" },
   { href: "/starlink", title: "Starlink", text: "Streamer là où la 4G ne passe plus.", icon: "dish" },
   { href: "/saily", title: "Saily", text: "Ajouter une 4G de plus à ton bonding avec une eSIM.", icon: "esim" },
+  { href: "/docs/dji", title: "Caméras DJI", text: "Osmo Pocket, Osmo Action : diffuser vers ton relais en Bluetooth.", icon: "phone" },
   { href: "/faq", title: "FAQ", text: "Batterie, data, OBS, Android : les réponses aux questions fréquentes.", icon: "faq" },
 ];
 

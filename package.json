@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:e2e": "playwright test",
+    "test:unit": "node --experimental-strip-types --test 'src/**/*.test.ts'",
     "maplibre:worker": "cp node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs node_modules/maplibre-gl/dist/maplibre-gl-shared.mjs public/maplibre/ && node -p \"require('maplibre-gl/package.json').version\" > public/maplibre/VERSION"
   },
   "dependencies": {

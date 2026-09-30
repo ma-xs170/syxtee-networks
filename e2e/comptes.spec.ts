@@ -137,13 +137,13 @@ test("modale prénom/nom : vraies erreurs, puis Mathis / CUSTOS enregistrés tel
   await modal.getByRole("button", { name: "Continuer" }).click();
   await expect(modal.getByRole("alert")).toHaveText("Nom invalide : lettres, espaces, tirets et apostrophes uniquement.");
 
-  // Session perdue : renvoyé vers la connexion (proxy), jamais un faux « enregistré ».
+  // Session perdue : la modale le dit (pas de page d'erreur, pas de faux « enregistré »).
+  const cookies = await context.cookies();
   await context.clearCookies();
   await modal.getByLabel("Nom", { exact: true }).fill("CUSTOS");
   await modal.getByRole("button", { name: "Continuer" }).click();
-  await expect(page).toHaveURL(/\/connexion/);
-  await signInWithPassword(page, email, password);
-  await expect(modal).toBeVisible();
+  await expect(modal.getByRole("alert")).toHaveText("Session expirée, reconnecte-toi.");
+  await context.addCookies(cookies);
 
   await modal.getByLabel("Prénom").fill("  Mathis ");
   await modal.getByLabel("Nom", { exact: true }).fill("CUSTOS");

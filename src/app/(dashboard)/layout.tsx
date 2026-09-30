@@ -4,18 +4,19 @@ import NamesModal from "@/components/auth/NamesModal";
 import Nav from "@/components/Nav";
 import { DiscordTicketButton, SupportId } from "@/components/SupportId";
 import { getProfile, requireUser } from "@/lib/auth/dal";
+import { isAdminEmail } from "@/lib/admin";
 import { publicCoreUrl } from "@/lib/core";
 import { hasNames } from "@/lib/names";
 
 // Dashboard : même barre que le site (menus du dashboard), statut du direct partagé par toutes les pages.
 // Pas le footer du site : un simple pied avec l'ID support et le ticket Discord.
 export default async function DashboardLayout({ children }: LayoutProps<"/">) {
-  await requireUser("/dashboard");
+  const user = await requireUser("/dashboard");
   const profile = await getProfile();
   if (!profile?.onboarded_at) redirect("/bienvenue");
   return (
     <LiveStatusProvider coreUrl={publicCoreUrl}>
-      <Nav variant="dashboard" />
+      <Nav variant="dashboard" admin={isAdminEmail(user.email)} />
       {/* Prénom/nom manquants : modale hors live, bandeau pendant un live (en haut, sous la barre). */}
       {!hasNames(profile) && <NamesModal />}
       <main className="flex-1">{children}</main>

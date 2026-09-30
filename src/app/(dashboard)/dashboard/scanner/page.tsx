@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { SectionTabs } from "@/components/dashboard/ui";
 import ScannerClient from "@/components/scanner/ScannerClient";
+import { scanTabs } from "@/lib/dashboard-nav";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { hasCore, publicCoreUrl } from "@/lib/core";
 
@@ -16,5 +18,12 @@ export default async function ScannerPage() {
         <p className="text-lg font-medium">Le Scanner n&apos;est pas encore branché au serveur de mesure.</p>
       </div>
     );
-  return <ScannerClient coreUrl={publicCoreUrl} declared={profile?.mobile_operator ?? null} />;
+  return (
+    <>
+      <div className="mx-auto w-full max-w-6xl px-4 pt-4 sm:px-6 lg:pt-8">
+        <SectionTabs tabs={scanTabs} current="/dashboard/scanner" label="Scanner" className="" />
+      </div>
+      <ScannerClient coreUrl={publicCoreUrl} declared={profile?.mobile_operator ?? null} />
+    </>
+  );
 }

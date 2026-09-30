@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AnalyzerClient from "@/components/analyseur/AnalyzerClient";
-import { DashHeader, DashPage } from "@/components/dashboard/ui";
+import { DashHeader, DashPage, SectionTabs } from "@/components/dashboard/ui";
+import { scanTabs } from "@/lib/dashboard-nav";
 import { requireUser } from "@/lib/auth/dal";
 import { hasCore, publicCoreUrl } from "@/lib/core";
 import { createClient } from "@/lib/supabase/server";
@@ -15,6 +16,7 @@ export default async function AnalyseurPage() {
   const mine = (data as { measurements?: number; hexes?: number } | null) ?? {};
   return (
     <DashPage>
+      <SectionTabs tabs={scanTabs} current="/dashboard/analyseur" label="Scanner" />
       <DashHeader lead="Analyseur" hl="réseau" sub="Débit, latence et opérateur là où tu es. En scan continu, tes mesures 4G/5G font avancer la carte communautaire." />
       {hasCore ? (
         <AnalyzerClient coreUrl={publicCoreUrl} account totals={{ measurements: mine.measurements ?? 0, hexes: mine.hexes ?? 0 }} />

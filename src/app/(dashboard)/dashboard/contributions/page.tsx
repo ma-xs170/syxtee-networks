@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { statsTabs } from "@/lib/dashboard-nav";
 import Link from "next/link";
 import MyCoverageMap, { type MyCell } from "@/components/dashboard/MyCoverageMap";
-import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
+import { DashHeader, DashPage, Tile, TileLabel, SectionTabs } from "@/components/dashboard/ui";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 
@@ -28,6 +29,7 @@ export default async function ContributionsPage() {
 
   return (
     <DashPage>
+      <SectionTabs tabs={statsTabs} current="/dashboard/contributions" label="Statistiques" />
       <DashHeader lead="Mes" hl="contributions" sub="Tes mesures 4G/5G sur la carte communautaire, sur les 90 derniers jours." />
       <div className="grid gap-4 lg:grid-cols-3">
         <Tile className="lg:col-span-1">

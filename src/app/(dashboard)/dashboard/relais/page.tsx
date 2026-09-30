@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { DashPage } from "@/components/dashboard/ui";
 import RelayList from "@/components/relais/RelayList";
+import SecurityAlerts from "@/components/relais/SecurityAlerts";
 import { requireUser } from "@/lib/auth/dal";
-import { publicCoreUrl } from "@/lib/core";
+import { listAlerts, publicCoreUrl } from "@/lib/core";
 import { getPlan } from "@/lib/auth/plan";
 import { relayLimit } from "@/lib/plans";
 import { coreStatusText, loadRelays } from "@/lib/relays";
@@ -21,7 +22,7 @@ async function visitorGeo() {
 
 export default async function RelaisPage() {
   const user = await requireUser("/dashboard/relais");
-  const [{ relays, status }, geo] = await Promise.all([loadRelays(user.id), visitorGeo()]);
+  const [{ relays, status }, geo, alerts] = await Promise.all([loadRelays(user.id), visitorGeo(), listAlerts(user.id).catch(() => [])]);
   const plan = await getPlan();
   const active = relays.filter((r) => !r.archived).length;
 
@@ -29,7 +30,10 @@ export default async function RelaisPage() {
     <DashPage>
       <PlanGate feature="relais">
       {status === "ok" ? (
-        <RelayList relays={relays} active={active} max={relayLimit(plan)} coreUrl={publicCoreUrl} geo={geo} />
+        <>
+          <RelayList relays={relays} active={active} max={relayLimit(plan)} coreUrl={publicCoreUrl} geo={geo} />
+          <SecurityAlerts alerts={alerts} relays={relays} />
+        </>
       ) : (
         <>
           <h1 className="mb-8 text-3xl font-semibold tracking-tight sm:text-4xl">Mes relais</h1>

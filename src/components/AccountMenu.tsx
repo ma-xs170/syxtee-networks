@@ -57,16 +57,31 @@ export function Avatar({ account, size = 32 }: { account: NonNullable<Account>; 
   );
 }
 
-export type MenuLink = { label: string; href: string };
-/** Entrées du menu sur le site. Le dashboard passe les siennes (Profil, Abonnement, Documentation). */
+export type MenuLink = { label: string; href: string; external?: boolean };
+/** Groupe d'entrées du panneau (libellé mono facultatif). */
+export type MenuGroup = { label?: string; links: MenuLink[] };
+/** Entrées du menu sur le site. Le dashboard passe ses groupes (Compte, Admin, Aide). */
 export const siteAccountLinks: MenuLink[] = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Mon compte", href: "/compte" },
 ];
 
+export function MenuLinkItem({ link, className, onNavigate }: { link: MenuLink; className: string; onNavigate?: () => void }) {
+  return link.external ? (
+    <a role="menuitem" href={link.href} target="_blank" rel="noopener noreferrer" onClick={onNavigate} className={className}>
+      {link.label}
+      <span aria-hidden="true" className="ml-1.5 text-muted">↗</span>
+    </a>
+  ) : (
+    <Link role="menuitem" href={link.href} onClick={onNavigate} className={className}>
+      {link.label}
+    </Link>
+  );
+}
+
 const itemCls = "block w-full rounded-lg px-3 py-2 text-left text-sm text-muted transition-colors hover:bg-white/5 hover:text-foreground";
 
-export default function AccountMenu({ account, links = siteAccountLinks }: { account: Account | undefined; links?: MenuLink[] }) {
+export default function AccountMenu({ account, groups = [{ links: siteAccountLinks }] }: { account: Account | undefined; groups?: MenuGroup[] }) {
   const [open, setOpen] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
 
@@ -105,19 +120,32 @@ export default function AccountMenu({ account, links = siteAccountLinks }: { acc
         <Avatar account={account} />
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 top-full z-50 mt-3 w-64 rounded-xl border border-line bg-black/95 p-1.5 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] backdrop-blur-md">
-          <p className="truncate px-3 pb-2 pt-1.5 text-sm text-foreground">{account.name}</p>
+        <div
+          role="menu"
+          className="absolute right-0 top-full z-50 mt-3 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-line bg-black/95 p-2 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] backdrop-blur-md"
+        >
+          {/* Qui est connecté : avatar, nom, formule, ID support */}
+          <div className="flex items-center gap-3 px-3 pb-3 pt-2">
+            <Avatar account={account} size={40} />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-foreground">{account.name}</p>
+              <p className="mt-0.5 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Formule {account.planName}</p>
+            </div>
+          </div>
           {account.supportId && (
-            <div className="mb-1 border-b border-line px-3 pb-2">
+            <div className="border-b border-line px-3 pb-3">
               <SupportId id={account.supportId} compact />
             </div>
           )}
-          {links.map((l) => (
-            <Link key={l.href} role="menuitem" href={l.href} onClick={() => setOpen(false)} className={itemCls}>
-              {l.label}
-            </Link>
+          {groups.map((g, i) => (
+            <div key={g.label ?? i} className="border-b border-line py-2">
+              {g.label && <p className="px-3 pb-1 pt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">{g.label}</p>}
+              {g.links.map((l) => (
+                <MenuLinkItem key={l.href} link={l} onNavigate={() => setOpen(false)} className={itemCls} />
+              ))}
+            </div>
           ))}
-          <form action={signOut}>
+          <form action={signOut} className="pt-2">
             <button role="menuitem" type="submit" className={itemCls}>
               Déconnexion
             </button>

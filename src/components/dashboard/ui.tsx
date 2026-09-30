@@ -3,12 +3,36 @@ import type { ReactNode } from "react";
 import { Badge } from "../NavTools";
 import Highlight from "../ui/Highlight";
 import DashArt from "./DashArt";
-import type { DashIcon } from "@/lib/dashboard-nav";
+import type { DashIcon, SectionTab } from "@/lib/dashboard-nav";
 
 // Briques communes des pages du dashboard : en-tête de page, tuile, libellé mono, page « bientôt ».
 
 export function DashPage({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <div className={`mx-auto w-full max-w-7xl px-4 pb-20 pt-10 sm:px-6 sm:pt-12 ${className}`}>{children}</div>;
+}
+
+/** Onglets d'une section (Statistiques, Scanner) : une page par onglet, adresse inchangée. */
+export function SectionTabs({ tabs, current, label, className = "mb-8" }: { tabs: SectionTab[]; current: string; label: string; className?: string }) {
+  return (
+    <nav aria-label={label} className={`overflow-x-auto ${className}`}>
+      <ul className="flex w-max gap-1 rounded-full border border-line p-1">
+        {tabs.map((t) => {
+          const on = t.href === current;
+          return (
+            <li key={t.href}>
+              <Link
+                href={t.href}
+                aria-current={on ? "page" : undefined}
+                className={`block whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${on ? "bg-white text-black" : "text-muted hover:text-foreground"}`}
+              >
+                {t.label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
 }
 
 /** Titre de page : `lead` en clair, `hl` surligné (mot-clé). */

@@ -5,49 +5,63 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { signOut } from "@/app/(auth)/actions";
-import { dashboardNav, withLocks } from "@/lib/dashboard-nav";
+import { activeAlso, dashboardNav, withLocks } from "@/lib/dashboard-nav";
 import { nav, site } from "@/lib/site";
-import AccountMenu, { Avatar, siteAccountLinks, useAccount, type MenuLink } from "./AccountMenu";
+import AccountMenu, { Avatar, MenuLinkItem, siteAccountLinks, useAccount, type MenuGroup } from "./AccountMenu";
 import { LivePill } from "./dashboard/LiveStatus";
 import StreamModeToggle from "./dashboard/StreamModeToggle";
 import { restoreStreamMode } from "./dashboard/streamMode";
 import { DesktopMenus, NavAccordion } from "./NavTools";
 import { SupportId } from "./SupportId";
-import { DiscordButton, DiscordIcon } from "./ui";
+import { DiscordButton } from "./ui";
 
 // Barre du site. Sur /dashboard/* (variant « dashboard ») : mêmes logo, hauteur, flou et méga-menus, mais les menus
-// du dashboard au centre et, à droite, le statut du direct, « ← Site », le mode stream, Discord et le compte.
+// du dashboard au centre et, à droite, seulement le statut du direct, le mode stream et l'avatar. Tout le reste
+// (compte, admin, aide, retour au site) est rangé par groupes dans le panneau de l'avatar.
 
-const dashboardAccountLinks: MenuLink[] = [
-  { label: "Profil", href: "/dashboard/profil" },
-  { label: "Abonnement", href: "/dashboard/abonnement" },
-  { label: "Documentation", href: "/docs" },
-];
-
-function DiscordCompact() {
-  return (
-    <a
-      href={site.discord}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Discord SYXTEE"
-      title="Discord"
-      className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-black transition-colors hover:bg-neutral-200"
-    >
-      <DiscordIcon />
-    </a>
-  );
+function dashboardGroups(admin: boolean): MenuGroup[] {
+  return [
+    {
+      label: "Compte",
+      links: [
+        { label: "Profil & réseaux", href: "/dashboard/profil" },
+        { label: "Abonnement", href: "/dashboard/abonnement" },
+        { label: "Paramètres", href: "/dashboard/parametres" },
+      ],
+    },
+    ...(admin
+      ? [
+          {
+            label: "Admin",
+            links: [
+              { label: "Comptes", href: "/admin/comptes" },
+              { label: "Partenaires", href: "/admin/partenaires" },
+              { label: "Sécurité du relais", href: "/admin/securite" },
+            ],
+          },
+        ]
+      : []),
+    {
+      label: "Aide",
+      links: [
+        { label: "Documentation", href: "/docs" },
+        { label: "Discord", href: site.discord, external: true },
+        { label: "Retour au site", href: "/" },
+      ],
+    },
+  ];
 }
 
-export default function Nav({ variant = "site" }: { variant?: "site" | "dashboard" }) {
+export default function Nav({ variant = "site", admin = false }: { variant?: "site" | "dashboard"; admin?: boolean }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const account = useAccount();
   const dash = variant === "dashboard";
   const items = dash ? (account ? withLocks(dashboardNav, account.features) : dashboardNav) : nav;
-  const accountLinks = dash ? dashboardAccountLinks : siteAccountLinks;
-  // « Vue d'ensemble » (/dashboard) n'est active que sur sa propre page.
-  const isActive = (href: string) => pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`));
+  const groups: MenuGroup[] = dash ? dashboardGroups(admin) : [{ links: siteAccountLinks }];
+  // « Vue d'ensemble » (/dashboard) n'est active que sur sa propre page. Statistiques et Scanner : toute leur section.
+  const isActive = (href: string) =>
+    [href, ...(dash ? (activeAlso[href] ?? []) : [])].some((h) => pathname === h || (h !== "/dashboard" && pathname.startsWith(`${h}/`)));
 
   useEffect(() => {
     if (dash) restoreStreamMode();
@@ -67,14 +81,10 @@ export default function Nav({ variant = "site" }: { variant?: "site" | "dashboar
         <DesktopMenus items={items} isActive={isActive} />
 
         {dash ? (
-          <div className="hidden shrink-0 items-center gap-3 justify-self-end lg:flex">
+          <div className="hidden shrink-0 items-center gap-4 justify-self-end lg:flex">
             <LivePill compact />
-            <Link href="/" className="whitespace-nowrap text-sm text-muted transition-colors hover:text-foreground">
-              ← Site
-            </Link>
             <StreamModeToggle />
-            <DiscordCompact />
-            <AccountMenu account={account} links={accountLinks} />
+            <AccountMenu account={account} groups={groups} />
           </div>
         ) : (
           <div className="hidden shrink-0 items-center gap-6 justify-self-end lg:flex">
@@ -124,10 +134,7 @@ export default function Nav({ variant = "site" }: { variant?: "site" | "dashboar
             )}
           </nav>
           {dash && (
-            <div className="flex items-center justify-between gap-4 border-b border-line py-4">
-              <Link href="/" onClick={() => setOpen(false)} className="text-base text-muted hover:text-foreground">
-                ← Retour au site
-              </Link>
+            <div className="flex items-center justify-end border-b border-line py-4">
               <StreamModeToggle withLabel />
             </div>
           )}
@@ -143,10 +150,13 @@ export default function Nav({ variant = "site" }: { variant?: "site" | "dashboar
                     <SupportId id={account.supportId} compact />
                   </div>
                 )}
-                {accountLinks.map((l) => (
-                  <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="border-b border-line py-4 text-base text-muted hover:text-foreground">
-                    {l.label}
-                  </Link>
+                {groups.map((g, i) => (
+                  <div key={g.label ?? i} className="flex flex-col">
+                    {g.label && <p className="pb-1 pt-5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">{g.label}</p>}
+                    {g.links.map((l) => (
+                      <MenuLinkItem key={l.href} link={l} onNavigate={() => setOpen(false)} className="border-b border-line py-4 text-base text-muted hover:text-foreground" />
+                    ))}
+                  </div>
                 ))}
                 <form action={signOut}>
                   <button type="submit" className="w-full border-b border-line py-4 text-left text-base text-muted hover:text-foreground">
@@ -162,9 +172,11 @@ export default function Nav({ variant = "site" }: { variant?: "site" | "dashboar
               )
             )}
           </div>
-          <div className="mt-6">
-            <DiscordButton>Discord</DiscordButton>
-          </div>
+          {!dash && (
+            <div className="mt-6">
+              <DiscordButton>Discord</DiscordButton>
+            </div>
+          )}
         </div>
       )}
     </header>

@@ -39,7 +39,10 @@ export async function updateSession(request: NextRequest) {
     return r;
   };
 
-  if (!signedIn && matches(path, PRIVATE)) return redirectTo("/connexion", path);
+  // Server action (POST avec l'en-tête Next-Action) : pas de redirection ici. Le navigateur recevrait du HTML au lieu
+  // de la réponse de l'action (« This page couldn't load ») ; l'action vérifie elle-même la session et répond.
+  const isAction = request.method === "POST" && request.headers.has("next-action");
+  if (!signedIn && !isAction && matches(path, PRIVATE)) return redirectTo("/connexion", path);
   if (signedIn && matches(path, GUEST_ONLY)) return redirectTo("/dashboard");
   return response;
 }

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DailyBars } from "@/components/dashboard/charts";
-import { ArrowLink, DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
+import { ArrowLink, DashHeader, DashPage, Tile, TileLabel, SectionTabs } from "@/components/dashboard/ui";
+import { statsTabs } from "@/lib/dashboard-nav";
 import { requireUser } from "@/lib/auth/dal";
 import { delta, fmtDuration, fmtInt, isRange } from "@/lib/dashboard-data";
 import { getStats } from "@/lib/dashboard-overview";
@@ -28,6 +29,7 @@ export default async function StatsPage({ searchParams }: PageProps<"/dashboard/
 
   return (
     <DashPage>
+      <SectionTabs tabs={statsTabs} current="/dashboard/stats" label="Statistiques" />
       <PlanGate feature="stats">
       <DashHeader lead="Tes" hl="statistiques" sub={`Tes directs sur les ${days} derniers jours, comparés aux ${days} jours d'avant.`}>
         <div role="radiogroup" aria-label="Période" className="inline-flex rounded-full border border-line p-0.5">

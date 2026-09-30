@@ -340,7 +340,7 @@ function Urls({ data }: { data: OverviewData }) {
 const shortcuts = [
   { label: "Scanner", href: "/dashboard/scanner" },
   { label: "Mes relais", href: "/dashboard/relais" },
-  { label: "Contrôle caméra", href: "/dashboard/controle" },
+  { label: "Statistiques", href: "/dashboard/stats" },
   { label: "Historique", href: "/dashboard/lives" },
 ];
 

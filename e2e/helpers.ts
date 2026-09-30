@@ -12,8 +12,11 @@ export const testEmail = (tag: string) => `e2e+${tag}-${Date.now()}@syxtee.test`
 /** Mot de passe de test : solide, unique, jamais vu dans une fuite. */
 export const testPassword = () => `Syx-e2e-${Date.now().toString(36)}-Rk7!q`;
 
-/** Compte de test confirmé. Prénom/nom par défaut (sinon la modale obligatoire bloque le dashboard) ; `names: false` pour un ancien compte. */
-export async function createUser(email: string, o: { password?: string; first_name?: string; last_name?: string; names?: false } = {}) {
+/**
+ * Compte de test confirmé. Prénom/nom par défaut (sinon la modale obligatoire bloque le dashboard) ; `names: false` pour un ancien compte.
+ * Formule « beta » par défaut (accès complet, comme les comptes d'avant les formules) ; `plan: "free"` pour tester le verrouillage.
+ */
+export async function createUser(email: string, o: { password?: string; first_name?: string; last_name?: string; names?: false; plan?: string } = {}) {
   const { data, error } = await admin().auth.admin.createUser({
     email,
     password: o.password,
@@ -21,6 +24,8 @@ export async function createUser(email: string, o: { password?: string; first_na
     user_metadata: o.names === false ? undefined : { first_name: o.first_name ?? "Camille", last_name: o.last_name ?? "Testeur" },
   });
   if (error || !data.user) throw error ?? new Error("createUser");
+  const { error: planError } = await admin().from("profiles").update({ plan: o.plan ?? "beta" }).eq("id", data.user.id);
+  if (planError) throw planError;
   return data.user;
 }
 

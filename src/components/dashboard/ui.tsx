@@ -17,7 +17,13 @@ export function DashHeader({ lead, hl, sub, children }: { lead: string; hl: stri
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          {lead} <Highlight>{hl}</Highlight>
+          {lead}
+          {hl && (
+            <>
+              {" "}
+              <Highlight>{hl}</Highlight>
+            </>
+          )}
         </h1>
         {sub && <p className="mt-2 max-w-[65ch] text-base text-muted">{sub}</p>}
       </div>

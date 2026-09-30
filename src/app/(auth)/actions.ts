@@ -8,6 +8,7 @@ import { getUser, safeNext } from "@/lib/auth/dal";
 import { AUTH_ERRORS, mapSupabaseError } from "@/lib/auth/errors";
 import { checkNewDevice, sendPasswordChanged } from "@/lib/email/account";
 import { passwordProblem } from "@/lib/auth/password";
+import { personName } from "@/lib/auth/profileSchema";
 import { isPwned } from "@/lib/auth/pwned";
 import { allow, clientIp } from "@/lib/auth/rateLimit";
 import { clearRecovery, hasRecovery } from "@/lib/auth/recovery";
@@ -33,7 +34,7 @@ export type AuthState =
   | { status: "error"; message: string; fields?: Record<string, string> };
 
 const emailSchema = z.string().trim().toLowerCase().pipe(z.email());
-const nameSchema = (label: string) => z.string().trim().min(1, `${label} obligatoire.`).max(50, `${label} : 50 caractères maximum.`);
+const nameSchema = personName;
 
 const str = (f: FormData, k: string) => String(f.get(k) ?? "");
 const fail = (message: string, fields?: Record<string, string>): AuthState => ({ status: "error", message, fields });

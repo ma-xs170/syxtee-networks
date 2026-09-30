@@ -119,6 +119,41 @@ test("ancien compte sans prénom : modale obligatoire, puis « Salut Prénom. »
   await expect(page.getByRole("heading", { name: "Salut Noé." })).toBeVisible();
 });
 
+test("modale prénom/nom : vraies erreurs, puis Mathis / CUSTOS enregistrés tels quels", async ({ page, context }) => {
+  const email = testEmail("custos");
+  const password = testPassword();
+  const user = await createUser(email, { password, names: false });
+  created.push(user.id);
+  await admin().from("profiles").update({ onboarded_at: new Date().toISOString() }).eq("id", user.id);
+
+  await signInWithPassword(page, email, password);
+  await expect(page.locator("h1")).toHaveText("Salut."); // prénom pas encore renseigné
+  const modal = page.getByRole("dialog", { name: "Comment tu t'appelles ?" });
+  await expect(modal).toBeVisible();
+
+  // Nom invalide : la raison exacte, pas « Enregistrement impossible ».
+  await modal.getByLabel("Prénom").fill("Mathis");
+  await modal.getByLabel("Nom", { exact: true }).fill("CUSTOS2");
+  await modal.getByRole("button", { name: "Continuer" }).click();
+  await expect(modal.getByRole("alert")).toHaveText("Nom invalide : lettres, espaces, tirets et apostrophes uniquement.");
+
+  // Session perdue : renvoyé vers la connexion (proxy), jamais un faux « enregistré ».
+  await context.clearCookies();
+  await modal.getByLabel("Nom", { exact: true }).fill("CUSTOS");
+  await modal.getByRole("button", { name: "Continuer" }).click();
+  await expect(page).toHaveURL(/\/connexion/);
+  await signInWithPassword(page, email, password);
+  await expect(modal).toBeVisible();
+
+  await modal.getByLabel("Prénom").fill("  Mathis ");
+  await modal.getByLabel("Nom", { exact: true }).fill("CUSTOS");
+  await modal.getByRole("button", { name: "Continuer" }).click();
+  await expect(modal).toBeHidden();
+  await expect(page.getByRole("heading", { name: "Salut Mathis." })).toBeVisible();
+  const { data } = await admin().from("profiles").select("first_name, last_name").eq("id", user.id).single();
+  expect(data).toEqual({ first_name: "Mathis", last_name: "CUSTOS" }); // trim, casse conservée
+});
+
 test("ID support : généré à la création, visible dans le menu et les paramètres", async ({ page }) => {
   const email = testEmail("support");
   const user = await createUser(email);

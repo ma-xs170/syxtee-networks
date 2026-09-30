@@ -11,9 +11,11 @@ export default async function DashboardPage() {
   const user = await requireUser("/dashboard");
   const profile = (await getProfile())!;
   const initial = await getOverview(user.id, profile, "7d");
+  const first = profile.first_name?.trim();
   return (
     <DashPage>
-      <DashHeader lead="Salut" hl={`${profile.first_name?.trim() || "toi"}.`} />
+      {/* Prénom pas encore renseigné : « Salut. » tout court. */}
+      {first ? <DashHeader lead="Salut" hl={`${first}.`} /> : <DashHeader lead="Salut." hl="" />}
       <Overview initial={initial} />
     </DashPage>
   );

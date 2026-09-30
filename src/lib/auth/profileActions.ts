@@ -9,7 +9,7 @@ import { deleteAllRelays, deleteCoverage, hasCore } from "@/lib/core";
 import { sendPasswordChanged } from "@/lib/email/account";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { getProfile, requireUser, safeNext } from "./dal";
+import { getProfile, getUser, requireUser, safeNext } from "./dal";
 import { AUTH_ERRORS } from "./errors";
 import { passwordProblem } from "./password";
 import { namesSchema, profileSchema } from "./profileSchema";
@@ -44,17 +44,27 @@ export async function saveProfile(mode: "bienvenue" | "compte", _prev: FormState
   return { ok: "Profil enregistré." };
 }
 
-/** Prénom + nom : modale obligatoire des comptes existants, et Paramètres. */
+/** Message affiché pour une erreur Supabase sur profiles : la vraie raison, jamais un message générique. */
+function namesError(e: { code?: string; message: string }) {
+  if (e.code === "PGRST301" || e.code === "PGRST303" || /jwt/i.test(e.message)) return "Session expirée, reconnecte-toi.";
+  if (e.code === "42501") return "Accès refusé à ton profil. Reconnecte-toi, puis réessaie.";
+  if (e.code === "23514") return "Nom invalide : 1 à 50 caractères.";
+  if (e.code === "42703" || e.code === "PGRST204") return "Base de données pas à jour (colonne prénom/nom absente). Préviens-nous sur Discord.";
+  return `Enregistrement refusé par la base (${e.code ?? "erreur inconnue"}). Réessaie ou préviens-nous sur Discord.`;
+}
+
+/** Prénom + nom : modale des comptes existants, et Paramètres. Upsert : marche même sans ligne profiles. */
 export async function saveNames(_prev: FormState, formData: FormData): Promise<FormState> {
-  const user = await requireUser("/dashboard");
   const raw = { first_name: String(formData.get("first_name") ?? ""), last_name: String(formData.get("last_name") ?? "") };
+  const user = await getUser();
+  if (!user) return { error: "Session expirée, reconnecte-toi.", fields: raw };
   const parsed = namesSchema.safeParse(raw);
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide.", fields: raw };
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Nom invalide.", fields: raw };
   const supabase = await createClient();
-  const { error } = await supabase.from("profiles").update(parsed.data).eq("id", user.id);
+  const { error } = await supabase.from("profiles").upsert({ id: user.id, ...parsed.data }, { onConflict: "id" });
   if (error) {
-    console.error("saveNames", error.message);
-    return { error: "Enregistrement impossible. Réessaie.", fields: raw };
+    console.error("saveNames", { user: user.id, code: error.code, message: error.message, details: error.details, hint: error.hint });
+    return { error: namesError(error), fields: raw };
   }
   revalidatePath("/", "layout");
   return { ok: "Nom enregistré." };

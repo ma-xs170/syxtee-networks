@@ -16,8 +16,9 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
   return (
     <LiveStatusProvider coreUrl={publicCoreUrl}>
       <Nav variant="dashboard" />
-      <main className="flex-1">{children}</main>
+      {/* Prénom/nom manquants : modale hors live, bandeau pendant un live (en haut, sous la barre). */}
       {!hasNames(profile) && <NamesModal />}
+      <main className="flex-1">{children}</main>
       {profile.support_id && (
         <footer className="border-t border-line">
           <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-4 px-4 pb-4 pt-5 sm:px-6">

@@ -10,7 +10,17 @@ const handle = (re: RegExp, label: string) =>
     .refine((v) => v === "" || re.test(v), `Pseudo ${label} invalide.`)
     .transform((v) => (v === "" ? null : v));
 
-const name = (label: string) => z.string().trim().min(1, `${label} obligatoire.`).max(50, `${label} : 50 caractères maximum.`);
+/** Prénom ou nom : 1 à 50 caractères après trim, lettres (accents compris), espaces, tirets, apostrophes. Casse conservée. */
+export const personName = (label: string) =>
+  z
+    .string()
+    .trim()
+    .min(1, `${label} obligatoire.`)
+    .max(50, `${label} : 50 caractères maximum.`)
+    .regex(/^[\p{L}\p{M}' ’-]+$/u, `${label} invalide : lettres, espaces, tirets et apostrophes uniquement.`)
+    .refine((v) => /\p{L}/u.test(v), `${label} invalide : au moins une lettre.`);
+
+const name = personName;
 
 /** Prénom + nom (inscription, modale des comptes existants, profil). */
 export const namesSchema = z.object({ first_name: name("Prénom"), last_name: name("Nom") });

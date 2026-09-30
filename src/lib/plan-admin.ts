@@ -1,5 +1,6 @@
 import "server-only";
 import { planChanged } from "@/emails/templates";
+import { hasCore, refreshCore } from "@/lib/core";
 import { sendEmail } from "@/lib/email/send";
 import { ASSIGNABLE, type PlanId } from "@/lib/plans";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -30,6 +31,7 @@ export async function setPlan(actor: string, userId: string, next: { plan: PlanI
   const { error } = await db.from("profiles").update({ ...after, plan_reminded_at: null }).eq("id", userId);
   if (error) throw new Error(`profiles : ${error.message}`);
   await audit(actor, opts.action ?? "plan.set", userId, before, after);
+  if (hasCore) await refreshCore().catch((e) => console.error("refreshCore", e));
   if (opts.notify !== false && next.plan !== before.plan) {
     const email = await emailOf(userId);
     if (email) await sendEmail(email, planChanged({ plan: next.plan, until: next.until }));

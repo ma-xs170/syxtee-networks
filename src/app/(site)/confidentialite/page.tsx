@@ -86,6 +86,14 @@ export default function ConfidentialitePage() {
         </p>
       </LegalBlock>
 
+      <LegalBlock title="Qui peut consulter tes données">
+        <p>
+          Seul le personnel habilité de SYXTEE NETWORKS y accède, pour le support et la sécurité (retrouver ton compte depuis ton ID support, couper un flux abusif,
+          gérer ta formule). Cet accès est protégé par une double authentification, et chaque consultation ou modification est inscrite dans un journal
+          d&apos;audit qui ne peut être ni modifié ni effacé.
+        </p>
+      </LegalBlock>
+
       <LegalBlock title="Sous-traitants">
         <p>
           Supabase (base de données et authentification, hébergée en [À COMPLÉTER : région UE choisie]), Vercel (hébergement du site), Resend (envoi des

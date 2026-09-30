@@ -5,6 +5,7 @@ import { BARS_Y, mireSvg } from "../src/mire.ts";
 import { previewArgs } from "../src/preview.ts";
 import { regieArgs } from "../src/regie.ts";
 import { publicName } from "../src/relays.ts";
+import { readNet } from "../src/sysstats.ts";
 
 test("identifiants : préfixes et 128 bits aléatoires", () => {
   const a = newStreamIds();
@@ -60,4 +61,11 @@ test("nom public (mire, Cam) : chaîne Twitch, sinon Prénom N., sinon pseudo", 
   assert.equal(publicName({ first_name: " Mathis ", last_name: "nicolas" }), "Mathis N.");
   assert.equal(publicName({ username: "djsyxtee" }), "djsyxtee");
   assert.equal(publicName(null), null);
+});
+
+test("santé VPS : octets réseau hors lo et docker", () => {
+  const dev = "Inter-|   Receive\n face |bytes packets\n    lo: 500 1 0 0 0 0 0 0 500 1 0 0 0 0 0 0\n  eth0: 1000 1 0 0 0 0 0 0 2000 1 0 0 0 0 0 0\ndocker0: 99 1 0 0 0 0 0 0 99 1 0 0 0 0 0 0\n  eth1: 10 1 0 0 0 0 0 0 20 1 0 0 0 0 0 0";
+  const n = readNet(dev)!;
+  assert.equal(n.rx, 1010);
+  assert.equal(n.tx, 2020);
 });

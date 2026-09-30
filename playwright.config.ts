@@ -39,6 +39,8 @@ export default defineConfig({
         TWITCH_AUTH_BASE: `${TWITCH}/oauth2`,
         CORE_URL: CORE,
         CORE_API_TOKEN: "e2e-core-token-0123456789abcdef0123",
+        // Admin des tests (espace /admin, TOTP) : compte créé par e2e/admin.spec.ts.
+        ADMIN_EMAILS: "e2e-admin@syxtee.test",
         // Send Email Hook : secret de test (pas de RESEND_API_KEY : aucun email ne part vraiment).
         SEND_EMAIL_HOOK_SECRET: "v1,whsec_c3l4dGVlLWUyZS1ob29rLXNlY3JldC0wMTIzNDU2Nzg5",
       },

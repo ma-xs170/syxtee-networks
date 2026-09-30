@@ -77,3 +77,16 @@ test("navigateur : santé d'un relais seulement pour son propriétaire", async (
   assert.equal((await get(RB.id, "Bearer user-a")).statusCode, 404);
   assert.equal((await get(RA.id, "Bearer user-a")).statusCode, 200);
 });
+
+test("admin : stats et flux en direct réservés au jeton de service", async () => {
+  const a = app();
+  assert.equal((await a.inject({ method: "GET", url: "/v1/admin/stats" })).statusCode, 401);
+  assert.equal((await a.inject({ method: "GET", url: "/v1/admin/live", headers: { authorization: "Bearer mauvais" } })).statusCode, 401);
+  const stats = await a.inject({ method: "GET", url: "/v1/admin/stats", headers: svc });
+  assert.equal(stats.statusCode, 200);
+  const body = stats.json();
+  assert.ok(body.cpu.cores >= 1 && body.memory.totalMb > 0);
+  assert.equal(typeof body.streams_live, "number");
+  const live = await a.inject({ method: "GET", url: "/v1/admin/live", headers: svc });
+  assert.deepEqual(live.json(), { live: [] });
+});

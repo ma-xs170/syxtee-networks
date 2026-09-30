@@ -19,6 +19,11 @@ additional_redirect_urls = [
 # Bouton « Lier mon Twitch » (Profil). Twitch ne sert plus à se connecter.
 enable_manual_linking = true
 
+# Double authentification (TOTP) : obligatoire pour l'espace admin (Google Authenticator, 1Password…).
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
 [auth.email]
 enable_signup = true
 # Le compte n'est actif qu'après le clic sur le lien de vérification.

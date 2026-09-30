@@ -7,6 +7,7 @@ import { z } from "zod";
 import { isServiceToken } from "./auth.ts";
 import type { Config } from "./config.ts";
 import type { HealthMonitor, Live } from "./health.ts";
+import { createSysStats } from "./sysstats.ts";
 import { ForbiddenError, QuotaError, type Relay, type RelayStore } from "./relays.ts";
 import type { Security } from "./security.ts";
 import type { SlsEvent } from "./sls-log.ts";
@@ -224,6 +225,25 @@ export function buildServer(d: Deps) {
       return reply.code(204).send();
     });
   }
+
+  // ───── Admin : vue d'ensemble (santé du VPS, flux en direct) ─────
+  const sys = createSysStats();
+  app.get("/v1/admin/stats", { preHandler: service }, async () => ({
+    ...sys.snapshot(),
+    streams_live: d.health.liveRelays().length,
+    sls: await d.slsHealthy(),
+  }));
+  // Formule, suspension ou clés modifiées par l'admin : réaligne le relais tout de suite (coupe un flux devenu interdit).
+  app.post("/v1/admin/refresh", { preHandler: service }, async (_req, reply) => {
+    d.onKeysChanged();
+    return reply.code(204).send();
+  });
+  app.get("/v1/admin/live", { preHandler: service }, async () => ({
+    live: d.health.liveRelays().map((r) => {
+      const st = d.health.state(r.id);
+      return { relay_id: r.id, user_id: r.user_id, since: st?.since ?? null, bitrate: st?.sample?.bitrate ?? null, links: st?.sample?.links ?? null };
+    }),
+  }));
 
   // Carte de couverture : effacement des mesures d'un compte (bouton dans Paramètres, suppression du compte).
   // Opérateur déclaré modifié (dashboard) : les mesures récentes restées hors carte sont reclassées.

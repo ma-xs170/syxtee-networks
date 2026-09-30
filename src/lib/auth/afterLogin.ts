@@ -14,7 +14,10 @@ const httpsUrl = (v: unknown) => (typeof v === "string" && v.startsWith("https:/
 export async function afterLogin(user: User, next: string | null) {
   if (!hasAdmin) return safeNext(next);
   const admin = createAdminClient();
-  const { data: profile } = await admin.from("profiles").select("avatar_url, twitch_id, onboarded_at, plan").eq("id", user.id).single();
+  // « role » arrive avec 0018_admin.sql : sans la colonne, on relit sans elle (jamais de boucle vers /bienvenue).
+  const first = await admin.from("profiles").select("avatar_url, twitch_id, onboarded_at, plan, role").eq("id", user.id).single();
+  const profile: { avatar_url: string | null; twitch_id: string | null; onboarded_at: string | null; plan: string | null; role?: string } | null =
+    first.error?.code === "42703" ? (await admin.from("profiles").select("avatar_url, twitch_id, onboarded_at, plan").eq("id", user.id).single()).data : first.data;
 
   const patch: Record<string, string> = {};
   const twitch = user.identities?.find((i) => i.provider === "twitch");
@@ -41,6 +44,9 @@ export async function afterLogin(user: User, next: string | null) {
   const admin_ = !!user.email_confirmed_at && isAdminEmail(user.email);
   if (admin_ && profile?.plan !== "admin") patch.plan = "admin";
   else if (!admin_ && profile?.plan === "admin") patch.plan = "free";
+  // Rôle (0018_admin.sql) : même source, ADMIN_EMAILS.
+  const role = admin_ ? "admin" : "user";
+  if (profile && "role" in profile && profile.role !== role) patch.role = role;
 
   if (Object.keys(patch).length > 0) {
     const { error } = await admin.from("profiles").update(patch).eq("id", user.id);

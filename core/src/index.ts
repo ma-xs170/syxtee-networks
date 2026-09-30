@@ -243,6 +243,8 @@ void runBackfill({ db: supabaseBackfillDb(supabase), salt: coverageSalt, aggrega
   .then((r) => (r ? null : runAggregate(true)))
   .catch((e) => log(`couverture, backfill : ${(e as Error).message}`));
 const timers = [
+  // Échéances de formule et suspensions faites hors du dashboard : réalignement du relais toutes les 5 min.
+  setInterval(() => void refreshKeys(), 5 * 60_000),
   setInterval(() => void coverage.flush(), 30_000),
   setInterval(() => void runAggregate(), 10 * 60_000),
   setInterval(() => void runAggregate(true), 24 * 3_600_000),

@@ -104,4 +104,20 @@ export async function listAlerts(userId: string) {
 /** Admin : refus récents et IP bannies. */
 export const getSecurity = () => core<{ events: SecurityEvent[]; bans: IpBan[] }>("/v1/admin/security?limit=300");
 export const banIp = (ip: string, minutes: number, reason: string) => core<IpBan>("/v1/admin/bans", "POST", { ip, minutes, reason });
+// ───── Admin : vue d'ensemble ─────
+export type AdminStats = {
+  cpu: { load1: number; cores: number; percent: number };
+  memory: { totalMb: number; usedMb: number };
+  network: { rxMbps: number; txMbps: number; available: boolean };
+  uptimeS: number;
+  streams_live: number;
+  sls: boolean;
+};
+export type AdminLive = { relay_id: string; user_id: string; since: number | null; bitrate: number | null; links: number | null };
+/** null : Core plus ancien que le dashboard (route absente). */
+export const getAdminStats = () => core<AdminStats>("/v1/admin/stats");
+/** Réaligne le relais (formule, suspension, clés) : un flux devenu interdit est coupé sans attendre. */
+export const refreshCore = () => core<null>("/v1/admin/refresh", "POST");
+export const getAdminLive = async () => (await core<{ live: AdminLive[] }>("/v1/admin/live"))?.live ?? [];
+
 export const unbanIp = (ip: string) => core<null>(`/v1/admin/bans/${encodeURIComponent(ip)}`, "DELETE");

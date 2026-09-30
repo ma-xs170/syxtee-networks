@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArrowLink, DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
+import { Badge } from "@/components/NavTools";
+import { SupportId } from "@/components/SupportId";
 import { requireAdmin } from "@/lib/admin";
 import { liveNow } from "@/lib/admin-data";
 import { audit } from "@/lib/plan-admin";
@@ -33,117 +35,176 @@ export default async function AdminAccountPage({ params }: { params: Promise<{ i
   const liveIds = new Set(live.filter((l) => l.user_id === id).map((l) => l.relay_id));
   const name = [p.first_name, p.last_name].filter(Boolean).join(" ") || "Sans nom";
 
-  const rows: [string, string][] = [
-    ["ID support", p.support_id],
-    ["Email", u.user.email ?? "?"],
-    ["Formule", `${PLANS[p.plan as PlanId]?.name ?? p.plan}${p.plan_until ? ` jusqu'au ${day(p.plan_until)}` : ""}`],
-    ["Statut", p.suspended_at ? `Suspendu le ${day(p.suspended_at)}` : "Actif"],
-    ["Twitch", p.twitch_login ? `@${p.twitch_login}` : "non lié"],
+  const plan = PLANS[p.plan as PlanId]?.name ?? p.plan;
+  const active = (relays ?? []).filter((r) => !r.archived);
+  const archived = (relays ?? []).filter((r) => r.archived);
+  const facts: [string, string][] = [
     ["Inscrit le", day(p.created_at)],
     ["Dernière connexion", day(u.user.last_sign_in_at)],
-    ["ID interne", id],
+    ["Relais", `${active.length} actif${active.length > 1 ? "s" : ""}${liveIds.size ? ` · ${liveIds.size} en direct` : ""}`],
+    ["Twitch", p.twitch_login ? `@${p.twitch_login}` : "non lié"],
   ];
 
+  // Fiche compte : en-tête (qui, statut), repères clés, puis actions à gauche (formule, relais, identité)
+  // et contexte à droite (notes, historique, identifiants). La zone sensible reste seule, en bas.
   return (
     <DashPage>
       <DashHeader lead="Compte" hl={name} sub={u.user.email ?? undefined}>
         <ArrowLink href="/admin/comptes">Tous les comptes</ArrowLink>
       </DashHeader>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Tile>
-          <TileLabel>Profil</TileLabel>
-          <dl className="mt-4 divide-y divide-line text-sm">
-            {rows.map(([k, v]) => (
-              <div key={k} className="flex flex-wrap justify-between gap-x-6 gap-y-1 py-2.5">
-                <dt className="font-mono text-xs uppercase tracking-[0.12em] text-muted">{k}</dt>
-                <dd className="min-w-0 break-all font-mono text-xs" data-sensitive>
-                  {v}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </Tile>
-        <Tile>
-          <TileLabel>Identité</TileLabel>
-          <div className="mt-4">
-            <IdentityForm userId={id} first={p.first_name ?? ""} last={p.last_name ?? ""} email={u.user.email ?? ""} />
-          </div>
-        </Tile>
 
-        <Tile className="lg:col-span-2">
-          <TileLabel>Formule</TileLabel>
-          <div className="mt-4 max-w-2xl">
-            <PlanForms key={`${p.plan}:${p.plan_until}`} userId={id} plan={p.plan} until={p.plan_until} note={p.plan_note} />
-          </div>
-        </Tile>
-
-        <Tile className="lg:col-span-2">
-          <TileLabel>Relais · {relays?.length ?? 0}</TileLabel>
-          {!relays?.length ? (
-            <p className="mt-4 text-sm text-muted">Aucun relais.</p>
-          ) : (
-            <ul className="mt-4 divide-y divide-line">
-              {relays.map((r) => (
-                <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
-                  <span className="flex items-center gap-3">
-                    {liveIds.has(r.id) && <span className="h-2 w-2 rounded-full bg-live" aria-label="En direct" />}
-                    {r.name}
-                    <span className="font-mono text-xs uppercase text-muted">
-                      {r.protocol} · {r.server}
-                      {r.archived ? " · archivé" : ""}
-                    </span>
-                  </span>
-                  {!r.archived && <CutButton userId={id} relayId={r.id} />}
-                </li>
-              ))}
-            </ul>
-          )}
-          <div className="mt-5 border-t border-line pt-5">
-            <KeysForms userId={id} />
-          </div>
-        </Tile>
-
-        <Tile>
-          <TileLabel>Notes internes</TileLabel>
-          <div className="mt-4">
-            <NoteForm userId={id} />
-          </div>
-          <ul className="mt-5 space-y-4">
-            {(notes ?? []).map((n) => (
-              <li key={n.id} className="text-sm">
-                <p className="whitespace-pre-wrap">{n.body}</p>
-                <p className="mt-1 font-mono text-xs text-muted">
-                  {n.author} · {day(n.at)}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </Tile>
-        <Tile>
-          <TileLabel>Historique admin</TileLabel>
-          <ul className="mt-4 divide-y divide-line">
-            {(log ?? []).map((l) => (
-              <li key={l.id} className="flex flex-wrap justify-between gap-3 py-2 text-sm">
-                <span className="font-mono text-xs">{l.action}</span>
-                <span className="font-mono text-xs text-muted">
-                  {l.admin_email} · {day(l.at)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Tile>
-
-        <Tile className="lg:col-span-2">
-          <TileLabel>Zone sensible</TileLabel>
-          <div className="mt-4 grid gap-8 md:grid-cols-2">
-            <div>
-              <p className="mb-3 text-sm text-muted">{p.suspended_at ? "Le compte est suspendu : aucun flux possible." : "Suspendre coupe tous les flux du compte."}</p>
-              <SuspendForm userId={id} suspended={!!p.suspended_at} />
-            </div>
-            <DeleteForm userId={id} supportId={p.support_id} />
-          </div>
-        </Tile>
+      <div className="-mt-4 mb-8 flex flex-wrap items-center gap-2">
+        <Badge>{`Formule ${plan}`}</Badge>
+        <Badge>{p.suspended_at ? `Suspendu le ${day(p.suspended_at)}` : "Actif"}</Badge>
+        {p.plan_until && <Badge>{`Jusqu'au ${day(p.plan_until)}`}</Badge>}
+        {liveIds.size > 0 && (
+          <span className="inline-flex items-center gap-1.5 rounded border border-live/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-foreground">
+            <span className="live-dot" aria-hidden="true" />
+            En direct
+          </span>
+        )}
       </div>
+
+      <dl className="mb-8 grid grid-cols-2 gap-x-6 gap-y-5 rounded-2xl border border-line p-5 sm:p-6 lg:grid-cols-4">
+        {facts.map(([k, v]) => (
+          <div key={k} className="min-w-0">
+            <dt className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">{k}</dt>
+            <dd className="mt-1.5 truncate text-sm" data-sensitive>
+              {v}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        {/* ───── Actions sur le compte ───── */}
+        <div className="grid gap-4">
+          <Tile aria-labelledby="formule">
+            <TileLabel id="formule">Formule</TileLabel>
+            <div className="mt-4">
+              <PlanForms key={`${p.plan}:${p.plan_until}`} userId={id} plan={p.plan} until={p.plan_until} note={p.plan_note} />
+            </div>
+          </Tile>
+
+          <Tile aria-labelledby="relais">
+            <TileLabel id="relais">{`Relais · ${active.length}`}</TileLabel>
+            {!active.length ? (
+              <p className="mt-4 text-sm text-muted">Aucun relais actif.</p>
+            ) : (
+              <ul className="mt-4 grid gap-2">
+                {active.map((r) => (
+                  <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line px-4 py-3">
+                    <div className="min-w-0">
+                      <p className="flex items-center gap-2 text-sm">
+                        {liveIds.has(r.id) && <span className="live-dot" aria-label="En direct" />}
+                        <span className="truncate">{r.name}</span>
+                      </p>
+                      <p className="mt-0.5 font-mono text-xs uppercase text-muted">
+                        {r.protocol} · {r.server} · dernier direct {day(r.last_live_at)}
+                      </p>
+                    </div>
+                    <CutButton userId={id} relayId={r.id} />
+                  </li>
+                ))}
+              </ul>
+            )}
+            {archived.length > 0 && (
+              <details className="mt-3 text-sm">
+                <summary className="cursor-pointer text-muted hover:text-foreground">{`${archived.length} relais archivé${archived.length > 1 ? "s" : ""}`}</summary>
+                <ul className="mt-2 grid gap-1 pl-4 text-muted">
+                  {archived.map((r) => (
+                    <li key={r.id}>
+                      {r.name} <span className="font-mono text-xs uppercase">{r.protocol}</span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+            <div className="mt-6 border-t border-line pt-5">
+              <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">Clés de stream</p>
+              <KeysForms userId={id} />
+            </div>
+          </Tile>
+
+          <Tile aria-labelledby="identite">
+            <TileLabel id="identite">Identité</TileLabel>
+            <div className="mt-4">
+              <IdentityForm userId={id} first={p.first_name ?? ""} last={p.last_name ?? ""} email={u.user.email ?? ""} />
+            </div>
+          </Tile>
+        </div>
+
+        {/* ───── Contexte ───── */}
+        <div className="grid gap-4">
+          <Tile aria-labelledby="notes">
+            <TileLabel id="notes">{`Notes internes · ${notes?.length ?? 0}`}</TileLabel>
+            <div className="mt-4">
+              <NoteForm userId={id} />
+            </div>
+            {!!notes?.length && (
+              <ul className="mt-5 grid gap-3">
+                {notes.map((n) => (
+                  <li key={n.id} className="rounded-xl border border-line px-4 py-3 text-sm">
+                    <p className="whitespace-pre-wrap">{n.body}</p>
+                    <p className="mt-2 font-mono text-xs text-muted">
+                      {n.author} · {day(n.at)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Tile>
+
+          <Tile aria-labelledby="historique">
+            <TileLabel id="historique">Historique admin</TileLabel>
+            {!log?.length ? (
+              <p className="mt-4 text-sm text-muted">Aucune action.</p>
+            ) : (
+              <ol className="mt-4 grid gap-3">
+                {log.slice(0, 8).map((l) => (
+                  <li key={l.id} className="text-sm">
+                    <p className="font-mono text-xs">{l.action}</p>
+                    <p className="mt-0.5 font-mono text-xs text-muted">
+                      {l.admin_email} · {day(l.at)}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            )}
+            {(log?.length ?? 0) > 8 && (
+              <div className="mt-4">
+                <ArrowLink href={`/admin/journal?compte=${id}`}>Tout le journal</ArrowLink>
+              </div>
+            )}
+          </Tile>
+
+          <Tile aria-labelledby="ids">
+            <TileLabel id="ids">Identifiants</TileLabel>
+            <div className="mt-4 grid gap-3 text-sm">
+              <SupportId id={p.support_id} compact />
+              <p className="flex flex-wrap items-center gap-2 text-xs">
+                <span className="font-mono uppercase tracking-[0.1em] text-muted">ID interne</span>
+                <span className="break-all font-mono" data-sensitive>
+                  {id}
+                </span>
+              </p>
+            </div>
+          </Tile>
+        </div>
+      </div>
+
+      <section aria-labelledby="sensible" className="mt-10 rounded-2xl border border-red-400/30 p-5 sm:p-6">
+        <h2 id="sensible" className="font-mono text-xs uppercase tracking-[0.15em] text-red-300">
+          Zone sensible
+        </h2>
+        <div className="mt-4 grid gap-8 md:grid-cols-2">
+          <div>
+            <p className="mb-3 text-sm text-muted">{p.suspended_at ? "Le compte est suspendu : aucun flux possible." : "Suspendre coupe tous les flux du compte."}</p>
+            <SuspendForm userId={id} suspended={!!p.suspended_at} />
+          </div>
+          <DeleteForm userId={id} supportId={p.support_id} />
+        </div>
+      </section>
     </DashPage>
   );
 }

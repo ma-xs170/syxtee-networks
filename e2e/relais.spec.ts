@@ -68,13 +68,16 @@ test("aucun relais d'office, assistant SRTLA puis RTMP, quota atteint", async ({
   await page.getByRole("button", { name: "Renommer", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Osmo Action 5" })).toBeVisible();
 
-  // Relais RTMP : « Configurer une DJI » (assistant Bluetooth). Le lancement réel demande une caméra : pas testé ici.
+  // Relais RTMP : « Configurer une DJI » → Caméras DJI (onglet Ajouter, relais présélectionné). Lancement réel : caméra requise.
   await page.getByRole("link", { name: "Configurer une DJI" }).click();
-  await expect(page.getByRole("heading", { name: /Configurer une DJI/ })).toBeVisible();
+  await expect(page).toHaveURL(/\/dashboard\/dji\?relais=/);
+  await expect(page.getByRole("heading", { name: /Caméras DJI/ })).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Ajouter" })).toHaveAttribute("aria-selected", "true");
   await expect(page.getByRole("button", { name: "Rechercher ma caméra" }).or(page.getByText("Ce navigateur n'a pas accès au Bluetooth"))).toBeVisible();
-  await expect(page.getByRole("radio", { name: "2 Mb/s (conseillé)" })).toHaveAttribute("aria-checked", "true");
-  await expect(page.getByRole("radio", { name: "H.264 (compatible partout)" })).toHaveAttribute("aria-checked", "true");
-  await page.getByRole("link", { name: "Retour au relais" }).click();
+  await expect(page.getByLabel("Relais RTMP")).toHaveValue(/.+/);
+  await expect(page.getByRole("radio", { name: "2 Mb/s" })).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByRole("radio", { name: "H.264" })).toHaveAttribute("aria-checked", "true");
+  await page.goBack();
 
   // Archiver libère une place dans le quota.
   await page.getByRole("button", { name: /Plus d'actions/ }).click();

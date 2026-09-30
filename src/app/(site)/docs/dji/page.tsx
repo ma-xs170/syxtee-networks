@@ -10,14 +10,14 @@ export const metadata: Metadata = {
 };
 
 // Modèles validés sur une vraie caméra avec la page « Configurer une DJI ». Les autres : protocole de Moblin, non testés ici.
-const TESTED: string[] = [];
+const TESTED: string[] = ["osmoPocket3"]; // Osmo Pocket 3 : validée le 30/09/2026 (Android, Chrome).
 
 const steps = [
-  "Crée un relais RTMP dans Mes relais, puis ouvre-le et choisis « Configurer une DJI ».",
-  "Allume la caméra, active son Bluetooth, puis « Rechercher ma caméra ». À la première connexion, valide la demande sur l'écran de la caméra.",
-  "Indique le réseau que la caméra utilisera : le partage de connexion de ton téléphone (nom et mot de passe), ou un Wi-Fi.",
-  "Choisis la qualité : 720p et 2 Mb/s conviennent à une 4G moyenne.",
-  "« Lancer le direct » : la caméra rejoint le réseau et diffuse vers ton relais. Dans OBS, rien ne change : même URL SRT que d'habitude.",
+  "Crée un relais RTMP par caméra dans Mes relais (un relais = un flux).",
+  "Dashboard, Direct, Caméras DJI, onglet Ajouter. Allume la caméra et son Bluetooth, puis « Rechercher ma caméra ». À la première connexion, valide la demande sur l'écran de la caméra.",
+  "Indique le réseau que la caméra utilisera : le partage de connexion de ton téléphone (nom et mot de passe), ou un Wi-Fi. Il est gardé pour les caméras suivantes.",
+  "Choisis le relais et la qualité : 720p et 2 Mb/s conviennent à une 4G moyenne.",
+  "« Enregistrer et lancer le direct » : la caméra rejoint le réseau et diffuse. Tu peux fermer la page, elle continue. Les stats en direct s'affichent en haut de Caméras DJI.",
 ];
 
 export default function DjiDocPage() {

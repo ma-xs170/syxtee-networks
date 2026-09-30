@@ -58,6 +58,7 @@ export type DjiState =
   | "configuring"
   | "starting"
   | "streaming"
+  | "detached"
   | "stopping"
   | "error";
 
@@ -120,7 +121,13 @@ export class DjiSession {
     private onChange: (s: { state: DjiState; error?: DjiError; battery: number | null }) => void,
   ) {
     device.addEventListener("gattserverdisconnected", () => {
-      if (this.state !== "idle" && this.state !== "error") this.fail(this.state === "stopping" ? undefined : "disconnected");
+      // Déjà en direct : la caméra garde son URL RTMP et continue de diffuser sans le téléphone (comme avec Moblin).
+      if (this.state === "streaming") {
+        this.write = null;
+        this.set("detached");
+        return;
+      }
+      if (this.state !== "idle" && this.state !== "error" && this.state !== "detached") this.fail(this.state === "stopping" ? undefined : "disconnected");
     });
   }
 
@@ -181,9 +188,21 @@ export class DjiSession {
     }
   }
 
-  /** Arrête le live (la caméra coupe le RTMP), puis se déconnecte. */
+  /** Lâche le Bluetooth sans arrêter le live (fermeture de la page) : la caméra continue de diffuser. */
+  release() {
+    if (this.state !== "streaming") return;
+    this.clearTimers();
+    try {
+      this.device.gatt?.disconnect();
+    } catch {
+      // déjà déconnecté
+    }
+  }
+
+  /** Arrête le live (la caméra coupe le RTMP), puis se déconnecte. Sans Bluetooth, il faut d'abord se reconnecter. */
   async stop() {
     if (this.state === "idle" || this.state === "error") return;
+    if (this.state === "detached") return this.reconnectAndStop();
     this.clearTimers();
     this.stopTimer = setTimeout(() => this.fail(), 10_000);
     this.set("stopping");
@@ -191,6 +210,28 @@ export class DjiSession {
       await this.send(T.stop, stopPayload());
     } catch {
       this.fail();
+    }
+  }
+
+  /** Live lancé mais Bluetooth perdu : reconnexion + appairage, puis arrêt. */
+  private async reconnectAndStop() {
+    this.clearTimers();
+    this.stopTimer = setTimeout(() => this.fail(), 20_000);
+    this.set("stopping");
+    try {
+      const gatt = await this.device.gatt!.connect();
+      const service = await gatt.getPrimaryService(SERVICE);
+      const notify = await service.getCharacteristic(NOTIFY);
+      this.write = await service.getCharacteristic(WRITE);
+      notify.addEventListener("characteristicvaluechanged", () => {
+        const v = notify.value;
+        const m = v && decodeMessage(new Uint8Array(v.buffer, v.byteOffset, v.byteLength));
+        if (m) void this.onMessage(m);
+      });
+      await notify.startNotifications();
+      await this.send(T.stop, stopPayload());
+    } catch {
+      this.fail("disconnected");
     }
   }
 

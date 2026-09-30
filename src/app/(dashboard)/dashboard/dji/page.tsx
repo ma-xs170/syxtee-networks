@@ -1,46 +1,39 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { ArrowLink, DashHeader, DashPage, Tile } from "@/components/dashboard/ui";
+import { DashHeader, DashPage } from "@/components/dashboard/ui";
+import DjiHub, { type RtmpRelay } from "@/components/dji/DjiHub";
 import PlanGate from "@/components/plans/PlanGate";
 import { requireUser } from "@/lib/auth/dal";
 import { hasCore, listRelays } from "@/lib/core";
 
 export const metadata: Metadata = { title: "Caméras DJI", robots: { index: false } };
 
-// Entrée « Caméras DJI » du menu Direct : ouvre l'assistant sur le premier relais RTMP actif,
-// ou explique qu'il faut d'abord créer un relais RTMP (la caméra diffuse en RTMP).
-export default async function DjiEntryPage() {
+// Caméras DJI (menu Direct) : autant de caméras que tu veux, chacune liée à un relais RTMP, lancées en Bluetooth
+// (protocole de Moblin, licence MIT). ?relais=<id> : relais présélectionné pour l'ajout (lien depuis la fiche relais).
+export default async function DjiPage({ searchParams }: { searchParams: Promise<{ relais?: string }> }) {
   const user = await requireUser("/dashboard/dji");
-  let target: string | null = null;
+  const { relais } = await searchParams;
+  let relays: RtmpRelay[] = [];
   let down = !hasCore;
   if (hasCore) {
     try {
-      target = (await listRelays(user.id)).find((r) => r.protocol === "rtmp" && !r.archived)?.id ?? null;
+      relays = (await listRelays(user.id))
+        .filter((r) => r.protocol === "rtmp" && !r.archived && r.urls.rtmp_url)
+        .map((r) => ({ id: r.id, name: r.name, rtmpUrl: r.urls.rtmp_url! }));
     } catch (e) {
       console.error("dji : Core", e);
       down = true;
     }
   }
-  if (target) redirect(`/dashboard/relais/${target}/dji`);
 
   return (
     <DashPage>
-      <DashHeader lead="Caméras" hl="DJI" sub="Osmo Pocket, Osmo Action, Osmo 360 : la caméra diffuse directement vers ton relais, sans l'app DJI Mimo." />
+      <DashHeader lead="Caméras" hl="DJI" sub="Osmo Pocket, Osmo Action, Osmo 360 : chaque caméra diffuse directement vers son relais, même page fermée." />
       <PlanGate feature="dji">
-        <Tile>
-          {down ? (
-            <p className="text-sm text-muted">Le relais ne répond pas pour le moment. Réessaie dans quelques minutes.</p>
-          ) : (
-            <>
-              <p className="max-w-[60ch] text-sm leading-relaxed">Une caméra DJI diffuse en RTMP : crée d&apos;abord un relais RTMP, puis reviens ici pour la connecter en Bluetooth.</p>
-              <div className="mt-5 flex flex-wrap gap-6">
-                <ArrowLink href="/dashboard/relais">Créer un relais RTMP</ArrowLink>
-                <ArrowLink href="/docs/dji">Voir le guide</ArrowLink>
-              </div>
-            </>
-          )}
-        </Tile>
+        {down ? <p className="text-sm text-muted">Le relais ne répond pas pour le moment. Réessaie dans quelques minutes.</p> : <DjiHub relays={relays} focusRelay={relais} />}
       </PlanGate>
+      <p className="mt-10 max-w-[65ch] text-xs leading-relaxed text-muted">
+        Bluetooth : Android (Chrome) et ordinateur (Chrome, Edge). Protocole issu de Moblin (licence MIT, Erik Moqvist).
+      </p>
     </DashPage>
   );
 }

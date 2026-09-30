@@ -126,6 +126,21 @@ function SettingsArt() {
   );
 }
 
+/** Scanner : ondes autour d'un point, jauge de débit. */
+export function ScanArt() {
+  return (
+    <>
+      {[14, 26, 38].map((r) => (
+        <path key={r} d={`M${48 - r} ${-H + 62}a${r} ${r} 0 0 1 ${2 * r} 0`} strokeOpacity={r === 38 ? 0.4 : 0.8} />
+      ))}
+      <circle cx={48} cy={-H + 62} r={3} />
+      <path d={`M100 ${-H + 62}a22 22 0 0 1 44 0`} strokeOpacity={0.3} />
+      <path d={`M100 ${-H + 62}a22 22 0 0 1 34 -17`} />
+      <path d={`M100 ${-H + 80}h44M100 ${-H + 88}h26`} strokeOpacity={0.5} />
+    </>
+  );
+}
+
 export default function DashArt({ icon, className = "h-full w-full" }: { icon: DashIcon; className?: string }) {
   switch (icon) {
     case "relays":
@@ -151,6 +166,8 @@ export default function DashArt({ icon, className = "h-full w-full" }: { icon: D
       return <Panel className={className}><MapArt /></Panel>;
     case "mire":
       return <Panel className={className}><MireArt /></Panel>;
+    case "scan":
+      return <Panel className={className}><ScanArt /></Panel>;
     case "security":
       return <Panel className={className}><SecurityArt /></Panel>;
     case "settings":
@@ -159,8 +176,8 @@ export default function DashArt({ icon, className = "h-full w-full" }: { icon: D
 }
 
 /** Grande version animée (carte « Découvrir tes statistiques », pages à venir). */
-export function DashIllustration({ icon, className }: { icon: "stats" | "health" | "map" | "mire"; className?: string }) {
-  const art = { stats: <StatsArt />, health: <HealthArt />, map: <MapArt />, mire: <MireArt /> }[icon];
+export function DashIllustration({ icon, className }: { icon: "stats" | "health" | "map" | "mire" | "scan"; className?: string }) {
+  const art = { stats: <StatsArt />, health: <HealthArt />, map: <MapArt />, mire: <MireArt />, scan: <ScanArt /> }[icon];
   return (
     <Panel className={className} animated>
       {art}

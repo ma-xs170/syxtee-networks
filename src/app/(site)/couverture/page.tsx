@@ -31,8 +31,8 @@ export default async function CouverturePage() {
           La carte du réseau, <Highlight>faite par les streamers.</Highlight>
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
-          Débit montant, latence et meilleur opérateur, zone par zone, partout où un streamer est passé. Mesuré en 4G/5G pendant les lives et les scans
-          SYXTEE Cam, de façon anonyme. Le Wi-Fi ne compte jamais.
+          Débit montant, latence et meilleur opérateur, zone par zone, partout où un streamer est passé. Mesuré en 4G/5G pendant les lives et avec le
+          Scanner réseau, de façon anonyme. Le Wi-Fi ne compte jamais.
         </p>
         <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-4">
           {figures.map(([v, l]) => (
@@ -52,7 +52,8 @@ export default async function CouverturePage() {
           <Link href="/dashboard/parametres#couverture" className="text-foreground underline underline-offset-4">
             dashboard
           </Link>
-          , puis lance le mode Scan de SYXTEE Cam. La liste complète des antennes est sur{" "}
+          , puis lance le 
+          <Link href="/dashboard/scanner" className="text-foreground underline underline-offset-4">Scanner réseau</Link>. La liste complète des antennes est sur{" "}
           <Link href="/antennes" className="text-foreground underline underline-offset-4">
             la carte des antennes
           </Link>

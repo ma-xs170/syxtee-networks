@@ -11,8 +11,10 @@ import { createPreviews } from "./preview.ts";
 import { createRegie } from "./regie.ts";
 import { openSamples } from "./samples.ts";
 import { createAsn } from "./asn.ts";
-import { runBackfill, supabaseBackfillDb } from "./backfill.ts";
+import { reclassUser, runBackfill, supabaseBackfillDb } from "./backfill.ts";
 import { createCoverage, supabaseCoverageDb } from "./coverage.ts";
+import { runPending, supabasePendingDb } from "./pending.ts";
+import { createPrivateRelay } from "./privaterelay.ts";
 import { createPrefixes } from "./link.ts";
 import { buildServer } from "./server.ts";
 import { createCam } from "./cam.ts";
@@ -31,6 +33,8 @@ const supabase = createClient(config.SUPABASE_URL, config.SUPABASE_SECRET_KEY, {
 const sls = createSls(config.SLS_API_URL, config.SLS_API_KEY);
 const samples = openSamples(join(config.DATA_DIR, "health.sqlite"));
 const asn = createAsn({ file: join(config.DATA_DIR, "ipinfo_lite.mmdb"), token: config.IPINFO_TOKEN, log });
+// Relais privé iCloud : liste officielle des IP de sortie d'Apple, retéléchargée chaque jour.
+const relay = createPrivateRelay({ file: join(config.DATA_DIR, "icloud_egress.csv"), log });
 
 // Sécurité : clés chiffrées au repos, vérification à chaque connexion, force brute, coupures (Guard).
 const guard = config.GUARD_URL ? createGuardClient(config.GUARD_URL, config.CORE_API_TOKEN) : null;
@@ -176,6 +180,9 @@ const app = buildServer({
   coverage,
   asn,
   prefixes,
+  relay,
+  reclassUser: async (userId: string) =>
+    reclassUser({ db: supabaseBackfillDb(supabase), salt: coverageSalt, userId, declared: await coverage.declared(userId), touch: coverage.touch }),
   cam,
   security,
   profile: async (id) => {
@@ -218,6 +225,7 @@ try {
 }
 await refreshKeys();
 void asn.refresh();
+void relay.refresh();
 void prefixes.load();
 // Couverture : hexagones touchés toutes les 10 min, purge 90 j + recalcul complet chaque jour.
 const runAggregate = async (full = false) => {
@@ -227,7 +235,10 @@ const runAggregate = async (full = false) => {
     log(`couverture : ${(e as Error).message}`);
   }
 };
-// Re-traitement unique des mesures déjà collectées (règles v2), puis carte complète.
+// Mesures prises sans base IPinfo : reclassées dès que la base est là (IP effacée ensuite).
+const runPendingQueue = () =>
+  void runPending({ db: supabasePendingDb(supabase), asn, relay, prefixes, touch: coverage.touch, log }).catch((e) => log(`couverture, file d'attente : ${(e as Error).message}`));
+// Re-traitement unique des mesures déjà collectées (règles v3 : ASN Antilles-Guyane, opérateur déclaré), puis carte complète.
 void runBackfill({ db: supabaseBackfillDb(supabase), salt: coverageSalt, aggregateAll: () => coverage.aggregate(true), log })
   .then((r) => (r ? null : runAggregate(true)))
   .catch((e) => log(`couverture, backfill : ${(e as Error).message}`));
@@ -237,6 +248,8 @@ const timers = [
   setInterval(() => void runAggregate(true), 24 * 3_600_000),
   setInterval(() => void prefixes.flush(), 60_000),
   setInterval(() => void asn.refresh(), 6 * 3_600_000),
+  setInterval(() => void relay.refresh(), 6 * 3_600_000),
+  setInterval(runPendingQueue, 10 * 60_000),
   setInterval(() => void security.flush(), 5_000),
   setInterval(() => void supabase.rpc("security_purge").then(({ error }) => error && log(`security_purge : ${error.message}`)), 24 * 3_600_000),
   setInterval(() => void sessions.tick(), 5_000),

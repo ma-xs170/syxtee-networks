@@ -338,10 +338,10 @@ function Urls({ data }: { data: OverviewData }) {
 }
 
 const shortcuts = [
+  { label: "Scanner", href: "/dashboard/scanner" },
   { label: "Mes relais", href: "/dashboard/relais" },
   { label: "Contrôle caméra", href: "/dashboard/controle" },
   { label: "Historique", href: "/dashboard/lives" },
-  { label: "Documentation", href: "/docs" },
 ];
 
 function GoTo() {
@@ -398,6 +398,25 @@ export default function Overview({ initial }: { initial: OverviewData }) {
     <div className="space-y-4">
       <StatusBanner data={data} onLaunch={() => setGuide(true)} />
       <LaunchGuide open={guide} onClose={() => setGuide(false)} keys={data.keys} />
+
+      <Link
+        href="/dashboard/scanner"
+        className="group grid items-center gap-4 overflow-hidden rounded-2xl border border-line p-5 transition-colors hover:border-white/25 hover:bg-white/[0.02] sm:grid-cols-[minmax(0,1fr)_160px] sm:p-6"
+      >
+        <span>
+          <span className="block text-2xl font-semibold tracking-tight">Scanner réseau</span>
+          <span className="mt-1 block text-sm text-muted">Mesure la 4G / 5G là où tu es et fais avancer la carte communautaire.</span>
+          <span className="mt-4 inline-flex items-center gap-2 text-sm text-foreground">
+            Scanner
+            <span aria-hidden="true" className="transition-transform group-hover:translate-x-1 motion-reduce:transition-none">
+              →
+            </span>
+          </span>
+        </span>
+        <span className="hidden h-28 sm:block">
+          <DashIllustration icon="scan" />
+        </span>
+      </Link>
 
       <Tile aria-labelledby="attention" className="py-4 sm:py-5">
         <TileLabel id="attention">Ce qui demande ton attention</TileLabel>

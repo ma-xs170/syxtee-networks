@@ -48,11 +48,14 @@ export default function ConfidentialitePage() {
         <LegalBlock title="Carte de couverture communautaire (optionnelle)">
           <p>
             <strong className="text-foreground">Finalité :</strong> construire une carte publique de la qualité du réseau mobile (où capter en 4G / 5G). Pendant
-            un direct, ou en mode Scan de SYXTEE Cam, partout dans le monde, nous enregistrons la position GPS, sa précision et la vitesse, les débits
+            un direct, ou avec le Scanner réseau du dashboard, partout dans le monde, nous enregistrons la position GPS, sa précision et la vitesse, les débits
             montant et descendant, la latence, les pertes, l&apos;opérateur et son numéro de réseau (ASN, déduits de l&apos;adresse IP grâce à la base IPinfo
-            Lite) et le type de réseau (4G/5G, Wi-Fi, Starlink ou box, déduit du type de connexion du téléphone et du réseau IP). L&apos;adresse IP
-            elle-même n&apos;est jamais enregistrée avec la mesure ; seul le bloc d&apos;adresses (/24 ou /48) est retenu, sans lien avec toi, pour
-            reconnaître les réseaux Wi-Fi. Les mesures en Wi-Fi ne sont jamais publiées.
+            Lite) et le type de réseau (4G/5G, Wi-Fi, Starlink ou box, déduit du type de connexion du téléphone, du réseau IP et de l&apos;opérateur
+            mobile que tu déclares, facultatif). L&apos;adresse IP elle-même n&apos;est pas enregistrée avec la mesure ; seul le bloc d&apos;adresses
+            (/24 ou /48) est retenu, sans lien avec toi, pour reconnaître les réseaux Wi-Fi. Exception : si la base IPinfo est momentanément
+            indisponible, l&apos;adresse IP est gardée à part, 14 jours au plus, le temps d&apos;identifier l&apos;opérateur, puis effacée. Nous
+            vérifions aussi si l&apos;adresse fait partie des sorties du Relais privé iCloud (liste publique d&apos;Apple), sans rien enregistrer
+            de plus. Les mesures en Wi-Fi ne sont jamais publiées.
           </p>
           <p>
             <strong className="text-foreground">Base légale :</strong> ton consentement, demandé séparément (case « Partager anonymement mes mesures de réseau

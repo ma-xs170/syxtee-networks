@@ -18,7 +18,8 @@ import type { Asn } from "./asn.ts";
 import type { Cam } from "./cam.ts";
 import { median } from "./aggregate.ts";
 import type { Coverage } from "./coverage.ts";
-import { classify, countsOnMap, ipPrefix, netToken, type Prefixes } from "./link.ts";
+import { classify, countsOnMap, DECLARED, declaredName, ipPrefix, isCaribbean, netToken, type Declared, type Prefixes } from "./link.ts";
+import type { PrivateRelay } from "./privaterelay.ts";
 
 // API HTTP du Core (derrière Caddy en HTTPS).
 // /v1/users/:id/*  → serveur Vercel, jeton de service.
@@ -44,6 +45,10 @@ export type Deps = {
   asn?: Asn;
   /** Préfixes IP appris depuis les Android (Wi-Fi / mobile). */
   prefixes?: Prefixes;
+  /** IP de sortie du Relais privé iCloud (liste officielle d'Apple). */
+  relay?: PrivateRelay;
+  /** Reclasse les mesures d'un compte après sa déclaration d'opérateur. Renvoie le nombre passé en 4G/5G. */
+  reclassUser?: (userId: string) => Promise<number>;
   verifyUser: (authorization: string | undefined) => Promise<string | null>;
   previewPath: (relayId: string) => string;
   onKeysChanged: () => void;
@@ -221,6 +226,12 @@ export function buildServer(d: Deps) {
   }
 
   // Carte de couverture : effacement des mesures d'un compte (bouton dans Paramètres, suppression du compte).
+  // Opérateur déclaré modifié (dashboard) : les mesures récentes restées hors carte sont reclassées.
+  app.post("/v1/users/:id/coverage/reclassify", { preHandler: service }, async (req) => {
+    const { id } = uuid.parse(req.params);
+    d.coverage?.forget(id);
+    return { reclassified: d.reclassUser ? await d.reclassUser(id) : 0 };
+  });
   app.delete("/v1/users/:id/coverage", { preHandler: service }, async (req) => {
     const { id } = uuid.parse(req.params);
     return { deleted: d.coverage ? await d.coverage.erase(id) : 0 };
@@ -386,7 +397,8 @@ export function buildServer(d: Deps) {
         const info = d.asn?.lookup(req.ip) ?? { operator: null, asn: null, asName: null };
         const prefix = ipPrefix(req.ip);
         d.prefixes?.learn(prefix, g.ct);
-        const link = classify({ device: g.ct, asn: info.asn, asName: info.asName, prefix: d.prefixes?.get(prefix) });
+        const declared = await d.coverage.declared(row.user_id).catch(() => null);
+        const link = classify({ device: g.ct, asn: info.asn, asName: info.asName, operator: info.operator, prefix: d.prefixes?.get(prefix), relay: d.relay?.has(req.ip), declared });
         d.coverage.setLink(row.user_id, { operator: info.operator, asn: info.asn, link });
       }
       return reply.code(204).send();
@@ -437,14 +449,38 @@ export function buildServer(d: Deps) {
     const who = (s: { user: string | null }, req: FastifyRequest) => s.user ?? `anon:${req.ip}`;
     // iPhone : `from` = réseau à l'ouverture de la page, `cell` = réseau vu juste après « Coupe le Wi-Fi ».
     // Le changement ne compte que tant que le téléphone reste sur ce réseau-là (un nouveau Wi-Fi plus tard ne passe pas).
-    const net = (req: FastifyRequest, device: string | null | undefined, from?: string | null, cell?: string | null) => {
-      const info = d.asn?.lookup(req.ip) ?? { operator: null, asn: null, asName: null };
-      const prefix = ipPrefix(req.ip);
+    // Opérateur déclaré : celui du compte, ou celui envoyé par l'analyseur anonyme (rien n'est gardé pour lui).
+    const net = (
+      req: FastifyRequest,
+      o: { device?: string | null; from?: string | null; cell?: string | null; declared?: Declared | null; lat?: number | null; lng?: number | null },
+    ) => {
+      const ip = req.ip;
+      const prefix = ipPrefix(ip);
+      const raw = d.asn?.lookup(ip) ?? { operator: null, asn: null, asName: null, failed: true };
+      const relay = d.relay?.has(ip) ?? false;
+      // Sans base IPinfo, une IP publique part en file d'attente (reclassée plus tard), jamais en « inconnu » définitif.
+      const pending = !!prefix && !!raw.failed && !relay;
       const token = netToken(d.config.CORE_API_TOKEN, prefix);
-      const switched = !!from && !!token && token !== from && (cell === undefined || token === cell);
-      const link = classify({ device, asn: info.asn, asName: info.asName, prefix: d.prefixes?.get(prefix), switched });
-      return { ...info, prefix, token, link };
+      const switched = !!o.from && !!token && token !== o.from && (o.cell === undefined || token === o.cell);
+      const declared = o.declared ?? null;
+      const link = classify({ device: o.device, asn: raw.asn, asName: raw.asName, operator: raw.operator, prefix: d.prefixes?.get(prefix), switched, relay, pending, declared });
+      const caribbean = isCaribbean(o.lat, o.lng) || /Caraïbe/.test(raw.operator ?? "");
+      // Opérateur masqué (Relais privé) ou inconnu : le nom de la marque déclarée.
+      const usesDeclared = !!link.tags?.includes("declared") && (relay || !raw.operator);
+      const operator = relay ? (usesDeclared ? declaredName(declared, caribbean) : null) : usesDeclared ? declaredName(declared, caribbean) : raw.operator;
+      return {
+        operator,
+        asn: relay ? null : raw.asn,
+        asName: raw.asName,
+        prefix,
+        token,
+        link,
+        relay,
+        pending: pending ? { ip: ip.replace(/^::ffff:/i, ""), ctx: { declared, ct: o.device ?? null, switched, caribbean } } : undefined,
+      };
     };
+    const declaredOf = async (sc: { user: string | null }, given?: string | null) =>
+      sc.user ? await cov.declared(sc.user).catch(() => null) : DECLARED.includes(given as Declared) ? (given as Declared) : null;
     const upTests = new Map<string, { at: number; bytes: number; ms: number }[]>(); // `${user}:${test}:${i}`
     const sweep = () => {
       const old = Date.now() - 120_000;
@@ -456,9 +492,27 @@ export function buildServer(d: Deps) {
     app.get("/v1/cam/coverage", async (req, reply) => {
       const sc = await scanner(req, reply);
       if (!sc) return;
-      const q = z.object({ ct: z.string().max(20).optional(), from: z.string().max(40).optional() }).parse(req.query);
-      const n = net(req, q.ct, q.from);
-      return { consent: sc.user ? await cov.consent(sc.user) : null, operator: n.operator, link_type: n.link.link_type, link_conf: n.link.conf, net: n.token };
+      const q = z
+        .object({
+          ct: z.string().max(20).optional(),
+          from: z.string().max(40).optional(),
+          op: z.string().max(10).optional(),
+          lat: z.coerce.number().min(-90).max(90).optional(),
+          lng: z.coerce.number().min(-180).max(180).optional(),
+        })
+        .parse(req.query);
+      const declared = await declaredOf(sc, q.op);
+      const n = net(req, { device: q.ct, from: q.from, declared, lat: q.lat, lng: q.lng });
+      return {
+        consent: sc.user ? await cov.consent(sc.user) : null,
+        operator: n.operator,
+        link_type: n.link.link_type,
+        link_conf: n.link.conf,
+        tags: n.link.tags ?? [],
+        private_relay: n.relay,
+        declared,
+        net: n.token,
+      };
     });
     app.addContentTypeParser("application/octet-stream", { parseAs: "buffer", bodyLimit: 8 * 1024 * 1024 }, (_req, body, done) => done(null, body));
     // Un morceau de la fenêtre d'envoi de 2 s (le téléphone enchaîne les morceaux).
@@ -521,6 +575,7 @@ export function buildServer(d: Deps) {
       cell: z.string().max(40).nullish(), // jeton réseau lu après « Coupe le Wi-Fi » (iPhone)
       down_kbps: z.array(z.number().min(0).max(10_000_000)).max(3).default([]),
       rtt_ms: z.array(z.number().min(0).max(60_000)).max(3).default([]),
+      op: z.string().max(10).nullish(), // opérateur déclaré (analyseur anonyme ; un compte utilise son profil)
     });
     // Fin d'un point : médiane des 3 micro-tests, classement du lien, filtres (dans coverage).
     app.post("/v1/cam/scan", async (req, reply) => {
@@ -538,7 +593,8 @@ export function buildServer(d: Deps) {
       });
       if (!ups.length) return reply.code(400).send({ error: "no_upload" });
       const med = (xs: number[]) => (xs.length ? Math.round(median(xs)) : null);
-      const n = net(req, b.ct, b.from, b.cell ?? null);
+      const declared = await declaredOf(sc, b.op);
+      const n = net(req, { device: b.ct, from: b.from, cell: b.cell ?? null, declared, lat: b.lat, lng: b.lng });
       // Les préfixes ne s'apprennent que des comptes (un anonyme pourrait déclarer n'importe quel type de réseau).
       if (sc.user) d.prefixes?.learn(n.prefix, b.ct);
       const now = Date.now();
@@ -555,6 +611,7 @@ export function buildServer(d: Deps) {
         operator: n.operator,
         asn: n.asn,
         link: n.link,
+        pending: n.pending,
       };
       const reason = sc.user ? await cov.add(sc.user, "scan", point) : "anonymous";
       const counted = reason === null && countsOnMap(n.link);
@@ -562,10 +619,24 @@ export function buildServer(d: Deps) {
       return {
         accepted: reason === null,
         counted,
-        reason: reason ?? (counted ? null : t === "wifi" || t === "fixed" ? "wifi" : t === "starlink" ? "starlink" : "unknown_link"),
+        reason:
+          reason ??
+          (counted
+            ? null
+            : t === "wifi" || t === "fixed"
+              ? "wifi"
+              : t === "starlink"
+                ? "starlink"
+                : n.pending
+                  ? "pending"
+                  : n.relay
+                    ? "private_relay"
+                    : "unknown_link"),
         operator: n.operator,
         link_type: t,
         link_conf: n.link.conf,
+        tags: n.link.tags ?? [],
+        private_relay: n.relay,
         up_kbps: point.up_kbps,
         down_kbps: point.down_kbps,
         rtt_ms: point.rtt_ms,

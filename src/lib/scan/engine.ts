@@ -1,20 +1,36 @@
-// Moteur de scan réseau, partagé par SYXTEE Cam (mode Scan) et l'Analyseur réseau (dashboard et /analyseur).
+// Moteur de scan réseau, partagé par le Scanner réseau (/dashboard/scanner) et l'Analyseur réseau (dashboard et /analyseur).
 // Un point = 3 micro-tests : 5 pings, envoi pendant 2 s (mesuré par le Core), réception pendant 2 s (mesurée ici),
 // puis POST /v1/cam/scan avec les médianes. Le Core déduit l'opérateur (ASN) et le type de lien (Wi-Fi ou 4G/5G).
 // Authentification : clé caméra (Cam), jeton de session Supabase (dashboard) ou aucune (analyseur public, rien gardé).
 
 export type LinkType = "cellular" | "wifi" | "starlink" | "fixed" | "unknown";
+/** Opérateur mobile déclaré (profil du compte, ou localement pour l'analyseur sans compte). */
+export type Declared = "orange" | "sfr" | "digicel" | "free" | "other";
+export const DECLARED_LABELS: Record<Declared, string> = { orange: "Orange", sfr: "SFR", digicel: "Digicel", free: "Free", other: "Autre" };
 export type ScanResult = {
   accepted: boolean;
   counted: boolean;
   reason: string | null;
   operator: string | null;
   link_type: LinkType;
+  link_conf?: number;
+  /** 'private_relay', 'declared', 'declared_mismatch', 'pending'… */
+  tags?: string[];
+  private_relay?: boolean;
   up_kbps: number | null;
   down_kbps: number | null;
   rtt_ms: number | null;
 };
-export type NetInfo = { consent: boolean | null; operator: string | null; link_type: LinkType; net: string };
+export type NetInfo = {
+  consent: boolean | null;
+  operator: string | null;
+  link_type: LinkType;
+  link_conf?: number;
+  tags?: string[];
+  private_relay?: boolean;
+  declared?: Declared | null;
+  net: string;
+};
 /** Point mesuré : réponse du Core + ce que seul le navigateur voit (gigue, pings perdus). */
 export type Point = ScanResult & { jitter_ms: number | null; loss_pct: number | null };
 
@@ -32,6 +48,8 @@ export const REASONS: Record<string, string> = {
   wifi: "Tu es en Wi-Fi : mesure non comptée.",
   starlink: "Starlink : compté dans la couche Starlink, pas dans la carte 4G/5G.",
   unknown_link: "Réseau non identifié : mesure non comptée sur la carte 4G/5G.",
+  private_relay: "Relais privé iCloud actif : opérateur masqué, mesure non comptée.",
+  pending: "Opérateur en cours d'identification : la mesure sera reclassée sous peu.",
   anonymous: "Test sans compte : résultat affiché, rien n'est gardé.",
 };
 
@@ -68,20 +86,23 @@ export async function precisePosition(get: () => GeolocationPosition | null, sto
   return null;
 }
 
-async function ping(c: ScanClient) {
+async function ping(c: ScanClient, onSample?: MeasureOptions["onSample"]) {
   const rtts: number[] = [];
   let lost = 0;
   for (let i = 0; i < PINGS; i++) {
     const t0 = performance.now();
     const r = await fetch(`${c.coreUrl}/v1/cam/ping`, { cache: "no-store" }).catch(() => null);
-    if (r?.ok) rtts.push(performance.now() - t0);
-    else lost++;
+    if (r?.ok) {
+      const rtt = performance.now() - t0;
+      rtts.push(rtt);
+      onSample?.("ping", rtt);
+    } else lost++;
   }
   return { rtts, lost };
 }
 
 /** Envoi pendant 2 s : morceaux enchaînés, taille ajustée au débit (le Core mesure chaque morceau). */
-async function upload(c: ScanClient, test: string, i: number, cap: number, stopped: () => boolean) {
+async function upload(c: ScanClient, test: string, i: number, cap: number, stopped: () => boolean, onSample?: MeasureOptions["onSample"]) {
   const t0 = performance.now();
   let sent = 0;
   let size = 128 * 1024;
@@ -92,23 +113,31 @@ async function upload(c: ScanClient, test: string, i: number, cap: number, stopp
     sent += body.length + 500;
     if (!r.ok) throw Object.assign(new Error(String(r.status)), { status: r.status });
     const { kbps } = (await r.json()) as { kbps: number | null };
+    if (kbps) onSample?.("up", kbps);
     if (kbps) size = Math.min(2 * 1024 * 1024, Math.max(64 * 1024, Math.round((kbps * 1000 * 0.5) / 8)));
   }
   return sent;
 }
 
 /** Réception pendant 2 s : débit calculé ici, du premier au dernier octet. */
-async function download(c: ScanClient, cap: number) {
+async function download(c: ScanClient, cap: number, onSample?: MeasureOptions["onSample"]) {
   const r = await fetch(`${c.coreUrl}/v1/cam/scan/down?ms=${WINDOW_MS}&max=${cap}`, { headers: await c.auth(), cache: "no-store" });
   if (!r.ok || !r.body) throw Object.assign(new Error(String(r.status)), { status: r.status });
   const reader = r.body.getReader();
   let bytes = 0;
   let t0 = 0;
+  let shown = 0;
   for (;;) {
     const { done, value } = await reader.read();
     if (done) break;
-    if (!t0) t0 = performance.now();
+    const now = performance.now();
+    if (!t0) t0 = now;
     else bytes += value.length; // le premier morceau démarre le chrono
+    // Jauge en direct : au plus 5 valeurs par seconde.
+    if (onSample && t0 && now - t0 > 150 && now - shown > 200) {
+      shown = now;
+      onSample("down", (bytes * 8) / (now - t0));
+    }
   }
   const ms = performance.now() - t0;
   return { bytes, kbps: t0 && ms > 50 && bytes > 0 ? (bytes * 8) / ms : null };
@@ -122,6 +151,10 @@ export type MeasureOptions = {
   cell?: string | null;
   /** Économie de data : tests plus courts. */
   eco?: boolean;
+  /** Analyseur sans compte : opérateur déclaré sur cet appareil (un compte utilise son profil). */
+  declared?: Declared | null;
+  /** Valeurs en direct, pour les jauges : débit descendant / montant (kbit/s), ping (ms). */
+  onSample?: (kind: "down" | "up" | "ping", value: number) => void;
   stopped: () => boolean;
   onPhase?: (phase: string) => void;
   /** Octets consommés (envoi + réception + pings), au fil des micro-tests. */
@@ -139,13 +172,13 @@ export async function measurePoint(c: ScanClient, o: MeasureOptions): Promise<Po
   let lost = 0;
   for (let i = 0; i < MICRO_TESTS && !o.stopped(); i++) {
     o.onPhase?.(`Micro-test ${i + 1}/${MICRO_TESTS}`);
-    const p = await ping(c);
+    const p = await ping(c, o.onSample);
     allRtts.push(...p.rtts);
     lost += p.lost;
     const m = median(p.rtts);
     if (m !== null) rtts.push(m);
-    const sent = await upload(c, test, i, capUp, o.stopped);
-    const d = await download(c, capDown);
+    const sent = await upload(c, test, i, capUp, o.stopped, o.onSample);
+    const d = await download(c, capDown, o.onSample);
     o.onBytes?.(sent + d.bytes + PINGS * 400);
     if (d.kbps) downs.push(d.kbps);
   }
@@ -167,6 +200,7 @@ export async function measurePoint(c: ScanClient, o: MeasureOptions): Promise<Po
       cell: t ? null : (o.cell ?? null),
       down_kbps: downs.map(Math.round),
       rtt_ms: rtts.map(Math.round),
+      op: o.declared ?? null,
     }),
   });
   if (!res.ok) throw Object.assign(new Error(String(res.status)), { status: res.status });

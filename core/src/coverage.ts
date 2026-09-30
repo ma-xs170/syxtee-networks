@@ -2,7 +2,7 @@ import { createHmac } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { cellToLatLng, cellToParent, latLngToCell } from "h3-js";
 import { aggregate, layerOf, MAX_ACCURACY_M, MOVING_KMH, type HexAggregate, type Measurement } from "./aggregate.ts";
-import type { LinkClass } from "./link.ts";
+import type { Declared, LinkClass } from "./link.ts";
 
 // Mesures de couverture pour la carte communautaire (table `measurements`, sans user_id).
 // Règles appliquées ICI, côté Core (jamais seulement dans l'interface) :
@@ -23,7 +23,9 @@ const DAY = 86_400_000;
 
 export type Source = "live" | "scan" | "android";
 export type Zone = { lat: number; lng: number; radius_m: number };
-export type Prefs = { consent: boolean; zones: Zone[] };
+export type Prefs = { consent: boolean; zones: Zone[]; declared?: Declared | null };
+/** Contexte gardé avec l'IP d'une mesure à reclasser (base IPinfo indisponible au moment du scan). */
+export type PendingCtx = { declared: Declared | null; ct: string | null; switched: boolean; caribbean: boolean };
 
 export type Point = {
   t: number;
@@ -40,6 +42,8 @@ export type Point = {
   asn?: number | null;
   tech?: "4g" | "5g" | "inconnu";
   link?: LinkClass;
+  /** Base IPinfo indisponible : IP gardée le temps du reclassement (table measurement_pending). */
+  pending?: { ip: string; ctx: PendingCtx };
 };
 
 export type MeasurementRow = {
@@ -56,6 +60,7 @@ export type MeasurementRow = {
   tech: string;
   link_type: string;
   link_conf: number;
+  tags: string[];
   up_kbps: number | null;
   down_kbps: number | null;
   rtt_ms: number | null;
@@ -66,10 +71,13 @@ export type MeasurementRow = {
   device_hash: string;
 };
 export type ContributionRow = { user_id: string; h3_index: string; ts: string; n: number };
+export type PendingRow = { measurement_id: number; user_id: string; ip: string; ctx: PendingCtx };
 
 export type CoverageDb = {
   prefs(userId: string): Promise<Prefs>;
-  insertMeasurements(rows: MeasurementRow[]): Promise<void>;
+  /** Renvoie les identifiants des lignes, dans l'ordre (nécessaires pour la file de reclassement). */
+  insertMeasurements(rows: MeasurementRow[]): Promise<number[] | void>;
+  insertPending?(rows: PendingRow[]): Promise<void>;
   insertContributions(rows: ContributionRow[]): Promise<void>;
   /** Purge des mesures et contributions de plus de 90 jours. */
   purge(): Promise<void>;
@@ -119,7 +127,7 @@ export function createCoverage(opts: { db: CoverageDb; salt: string; now?: () =>
   const log = opts.log ?? (() => {});
   const tracks = new Map<string, Track>(); // `${userId}:${source}`
   const prefsCache = new Map<string, { at: number; p: Prefs }>();
-  const queue: { userId: string; row: MeasurementRow }[] = [];
+  const queue: { userId: string; row: MeasurementRow; pending?: Point["pending"] }[] = [];
   const dirty = new Set<string>(); // hexagones de rés. 8 à recalculer
   const lastLive = new Map<string, number>();
   const liveLink = new Map<string, { operator: string | null; asn: number | null; link: LinkClass; at: number }>();
@@ -156,6 +164,7 @@ export function createCoverage(opts: { db: CoverageDb; salt: string; now?: () =>
         tech: p.tech ?? "inconnu",
         link_type: link.link_type,
         link_conf: link.conf,
+        tags: link.tags ?? [],
         up_kbps: p.up_kbps === null ? null : Math.round(p.up_kbps),
         down_kbps: p.down_kbps == null ? null : Math.round(p.down_kbps),
         rtt_ms: p.rtt_ms === null ? null : Math.round(p.rtt_ms),
@@ -165,6 +174,7 @@ export function createCoverage(opts: { db: CoverageDb; salt: string; now?: () =>
         source,
         device_hash: deviceHash(salt, userId, p.t),
       },
+      pending: p.pending,
     });
   }
 
@@ -273,8 +283,10 @@ export function createCoverage(opts: { db: CoverageDb; salt: string; now?: () =>
         else contrib.set(k, { user_id: userId, h3_index: row.h3_9, ts: row.ts, n: 1 });
       }
       try {
-        await db.insertMeasurements(kept.map((b) => b.row));
+        const ids = await db.insertMeasurements(kept.map((b) => b.row));
         if (contrib.size) await db.insertContributions([...contrib.values()]);
+        const pending = kept.flatMap((b, i) => (b.pending && ids?.[i] ? [{ measurement_id: ids[i], user_id: b.userId, ...b.pending }] : []));
+        if (pending.length) await db.insertPending?.(pending);
       } catch (e) {
         log(`couverture : écriture impossible (${(e as Error).message})`);
         return 0;
@@ -292,6 +304,14 @@ export function createCoverage(opts: { db: CoverageDb; salt: string; now?: () =>
       const n = await db.erase([...new Set(hashes)], userId);
       await runAggregate(null).catch((e) => log(`couverture : recalcul après effacement impossible (${(e as Error).message})`));
       return n;
+    },
+
+    /** Opérateur mobile déclaré par le compte (profil, cache de 15 s). */
+    declared: async (userId: string) => (await prefs(userId)).declared ?? null,
+
+    /** Hexagones à recalculer (mesure reclassée après coup). */
+    touch(h3_8: string) {
+      dirty.add(h3_8);
     },
 
     /** Consentement actuel (sans cache), pour l'app /cam. */
@@ -327,16 +347,21 @@ export function supabaseCoverageDb(db: SupabaseClient): CoverageDb {
   return {
     async prefs(userId) {
       const [p, z] = await Promise.all([
-        db.from("profiles").select("coverage_consent").eq("id", userId).maybeSingle(),
+        db.from("profiles").select("coverage_consent, mobile_operator").eq("id", userId).maybeSingle(),
         db.from("private_zones").select("lat, lng, radius_m").eq("user_id", userId),
       ]);
       if (p.error) throw new Error(p.error.message);
       if (z.error) throw new Error(z.error.message);
-      return { consent: p.data?.coverage_consent === true, zones: (z.data ?? []) as Zone[] };
+      return { consent: p.data?.coverage_consent === true, zones: (z.data ?? []) as Zone[], declared: (p.data?.mobile_operator as Declared | null) ?? null };
     },
     async insertMeasurements(rows) {
-      const { error } = await db.from("measurements").insert(rows);
+      const { data, error } = await db.from("measurements").insert(rows).select("id");
       if (error) throw new Error(`measurements : ${error.message}`);
+      return (data ?? []).map((r) => r.id as number);
+    },
+    async insertPending(rows) {
+      const { error } = await db.from("measurement_pending").insert(rows);
+      if (error) throw new Error(`measurement_pending : ${error.message}`);
     },
     async insertContributions(rows) {
       const { error } = await db.from("contributions").insert(rows);

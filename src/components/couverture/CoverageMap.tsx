@@ -367,7 +367,7 @@ export default function CoverageMap() {
           <p className="pointer-events-none absolute inset-x-3 bottom-12 rounded-xl border border-line bg-black/85 p-3 text-sm text-muted sm:right-auto sm:max-w-md">
             {layer === "starlink"
               ? "Aucune zone Starlink publiée pour ces filtres."
-              : "Aucune zone publiée pour ces filtres. Une zone apparaît dès 5 mesures en 4G/5G : lance un scan avec SYXTEE Cam."}
+              : "Aucune zone publiée pour ces filtres. Une zone apparaît dès 5 mesures en 4G/5G : lance le Scanner réseau."}
           </p>
         )}
         {geoError && <p className="absolute inset-x-3 top-36 rounded-xl border border-line bg-black/85 p-3 text-sm text-muted">{geoError}</p>}

@@ -325,7 +325,7 @@ test("tranches horaires à l'heure locale (longitude)", () => {
 test("backfill : reclassement, contributions reconstruites, chiffres", () => {
   const u2 = "00000000-0000-0000-0000-000000000002";
   const ts = new Date(NOW - 86_400_000).toISOString();
-  const base = { ts, lat: P0.lat, lng: P0.lng, accuracy_m: 10, up_kbps: 5000, device_hash: deviceHash("s", U, Date.parse(ts)) };
+  const base = { ts, lat: P0.lat, lng: P0.lng, accuracy_m: 10, up_kbps: 5000, asn: null, link_conf: 0.2, coarse: false, device_hash: deviceHash("s", U, Date.parse(ts)) };
   const rows = [
     ...Array.from({ length: 6 }, (_, i) => ({ ...base, id: i, operator: "Free Mobile", link_type: "cell" })),
     { ...base, id: 10, operator: "Starlink", link_type: "cell" },
@@ -336,14 +336,25 @@ test("backfill : reclassement, contributions reconstruites, chiffres", () => {
   const plan = planBackfill(rows, [U, u2], "s", NOW);
   assert.deepEqual(
     { ...plan.report },
-    { total: 10, kept: 6, wifi: 1, starlink: 1, unknown: 1, imprecise: 1, hexes: 1 },
+    {
+      total: 10,
+      kept: 6,
+      wifi: 1,
+      starlink: 1,
+      unknown: 1,
+      imprecise: 1,
+      unknown_to_cellular: 0,
+      unknown_why: { no_asn: 1 },
+      operators: { "Free Mobile": 7 },
+      hexes: 1,
+    },
   );
   assert.equal(plan.updates.length, 10);
   assert.ok(plan.updates.every((u) => u.h3_10 && cellToParent(u.h3_10, 9) === u.h3_9));
   // Contributions : seulement le compte U, 6 mesures cellulaires précises (+ Starlink), jamais le Wi-Fi de u2.
   assert.ok(plan.contributions.every((c) => c.user_id === U));
   assert.equal(plan.contributions.reduce((a, c) => a + c.n, 0), 7);
-  assert.equal(reclassify({ link_type: "cell", operator: null }).link_type, "unknown");
+  assert.equal(reclassify({ link_type: "cell", link_conf: 0.2, operator: null, asn: null }).link_type, "unknown");
 });
 
 // ─────────────── Routes du mode Scan ───────────────
@@ -356,7 +367,7 @@ test("routes /v1/cam/scan : 3 micro-tests, médiane, Wi-Fi signalé, refus sans 
     SLS_API_KEY: "slskeyslskey", RELAY_PUBLIC_HOST: "1.2.3.4",
   } as NodeJS.ProcessEnv);
   const added: Point[] = [];
-  const coverage = { add: async (_u: string, _s: string, p: Point) => (added.push(p), null), consent: async () => true, erase: async () => 0, setLink: () => {} };
+  const coverage = { add: async (_u: string, _s: string, p: Point) => (added.push(p), null), consent: async () => true, declared: async () => null, erase: async () => 0, setLink: () => {} };
   const cam = { lookup: async (k: string) => (k === "cam_ok" ? { user_id: U, cam_key: "cam_ok" } : null), whipUrl: () => "", authorize: async () => false };
   const app = buildServer({
     config, cam, coverage, asn: { operator: () => "Digicel", lookup: () => ({ operator: "Digicel", asn: 3215, asName: "Digicel" }) },

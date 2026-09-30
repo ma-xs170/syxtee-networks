@@ -1,6 +1,6 @@
 // Menus de la barre de navigation sur /dashboard/* (même composant que la nav du site, autres entrées).
 
-export type DashIcon = "relays" | "urls" | "health" | "preview" | "control" | "stats" | "lives" | "map" | "mire" | "cam" | "security" | "profile" | "plan" | "settings";
+export type DashIcon = "relays" | "urls" | "health" | "preview" | "control" | "stats" | "lives" | "map" | "mire" | "scan" | "cam" | "security" | "profile" | "plan" | "settings";
 export type DashLink = { label: string; href: string; badge?: string };
 export type DashTool = DashLink & { desc: string; icon: DashIcon };
 export type DashMenu = { label: string; children: DashTool[]; note?: string; dot?: boolean };
@@ -31,8 +31,9 @@ export const dashboardNav: DashItem[] = [
   {
     label: "Outils",
     children: [
+      { label: "Scanner réseau", href: "/dashboard/scanner", desc: "Scanne la 4G / 5G autour de toi", icon: "scan" },
       { label: "Mire de coupure", href: "/dashboard/mire", desc: "L'écran affiché si tu coupes", icon: "mire" },
-      { label: "SYXTEE Cam", href: "/dashboard/cam", desc: "Ton téléphone en caméra", icon: "cam" },
+      { label: "SYXTEE Cam", href: "/dashboard/cam", desc: "Ton téléphone en caméra", icon: "cam", badge: SOON },
       { label: "Analyseur réseau", href: "/dashboard/analyseur", desc: "Débit, RTT et opérateur ici", icon: "health" },
       { label: "Mes contributions", href: "/dashboard/contributions", desc: "Tes mesures sur la carte 4G / 5G", icon: "map" },
       { label: "Sécurité & clés", href: "/dashboard/securite", desc: "Mode stream, clés", icon: "security" },

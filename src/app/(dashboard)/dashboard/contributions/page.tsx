@@ -57,14 +57,14 @@ export default async function ContributionsPage() {
                 publique.
               </>
             ) : profile?.coverage_consent ? (
-              <span className="text-muted">Pas encore de mesure 4G/5G. Lance le mode Scan de SYXTEE Cam, Wi-Fi coupé.</span>
+              <span className="text-muted">Pas encore de mesure 4G/5G. Lance le <Link href="/dashboard/scanner" className="text-foreground underline underline-offset-4">Scanner réseau</Link>, Wi-Fi coupé.</span>
             ) : (
               <span className="text-muted">
                 Active le partage dans{" "}
                 <Link href="/dashboard/parametres#couverture" className="text-foreground underline underline-offset-4">
                   Paramètres
                 </Link>
-                , puis lance le mode Scan de SYXTEE Cam.
+                , puis lance le <Link href="/dashboard/scanner" className="text-foreground underline underline-offset-4">Scanner réseau</Link>.
               </span>
             )}
           </p>

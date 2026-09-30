@@ -122,7 +122,7 @@ export default function AccountMenu({ account, groups = [{ links: siteAccountLin
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full z-50 mt-3 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-line bg-black/95 p-2 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] backdrop-blur-md"
+          className="absolute right-0 top-full z-50 mt-3 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-line bg-black p-2 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)]"
         >
           {/* Qui est connecté : avatar, nom, formule, ID support */}
           <div className="flex items-center gap-3 px-3 pb-3 pt-2">

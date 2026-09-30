@@ -21,7 +21,7 @@ export default async function ApercuPage({ searchParams }: PageProps<"/dashboard
   return (
     <DashPage>
       <PlanGate feature="apercu">
-      <DashHeader lead="Ton flux en" hl="direct" sub="Une image toutes les 3 s, visible par toi seul." />
+      <DashHeader lead="Ton flux en" hl="direct" sub="La vidéo en temps réel, visible par toi seul." />
       {status !== "ok" ? (
         <p className="text-sm text-muted">{coreStatusText[status]}</p>
       ) : !current ? (

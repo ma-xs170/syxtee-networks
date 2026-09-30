@@ -1,5 +1,7 @@
+import { spawn } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
+import type { Readable } from "node:stream";
 import type { Relay } from "./relays.ts";
 import { supervise, type Supervised } from "./supervisor.ts";
 
@@ -44,5 +46,31 @@ export function createPreviews(o: { dir: string; host: string; port: number; int
       for (const p of running.values()) p.stop();
       running.clear();
     },
+  };
+}
+
+// Aperçu vidéo en direct : le flux du relais remuxé en MPEG-TS (sans réencodage, CPU quasi nul),
+// lu par le navigateur avec mpegts.js. Un ffmpeg par spectateur, tué à la fermeture de la connexion.
+
+export function liveArgs(o: { host: string; port: number; playId: string }) {
+  return [
+    "-hide_banner", "-loglevel", "error",
+    "-fflags", "nobuffer",
+    "-i", `srt://${o.host}:${o.port}?streamid=${o.playId}&mode=caller&latency=200000`,
+    "-map", "0:v:0", "-map", "0:a:0?",
+    "-c", "copy",
+    "-f", "mpegts", "-muxdelay", "0", "-flush_packets", "1",
+    "pipe:1",
+  ];
+}
+
+export type LiveFeed = { stream: Readable; stop: () => void };
+
+export function openLive(o: { host: string; port: number; playId: string }): LiveFeed {
+  const child = spawn("ffmpeg", liveArgs(o), { stdio: ["ignore", "pipe", "ignore"] });
+  child.on("error", () => child.stdout.destroy());
+  return {
+    stream: child.stdout,
+    stop: () => void (child.exitCode === null && child.kill("SIGKILL")),
   };
 }

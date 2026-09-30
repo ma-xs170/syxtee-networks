@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { PassThrough } from "node:stream";
 import { test } from "node:test";
 import { loadConfig } from "../src/config.ts";
 import { QuotaError, type Relay } from "../src/relays.ts";
@@ -17,7 +18,7 @@ const relay = (id: string, user: string, protocol: Relay["protocol"] = "srtla"):
 const RA = relay("10000000-0000-4000-8000-00000000000a", A);
 const RB = relay("10000000-0000-4000-8000-00000000000b", B, "rtmp");
 
-function app() {
+function app(extra: Partial<Deps> = {}, live: string[] = []) {
   const rows = new Map([RA, RB].map((r) => [r.id, r]));
   const relays = {
     get: async (id: string) => rows.get(id) ?? null,
@@ -27,11 +28,12 @@ function app() {
       return { ...relay("10000000-0000-4000-8000-0000000000cc", u, o.protocol), name: o.name };
     },
   };
-  const health = { state: () => null, relay: (id: string) => rows.get(id) ?? null, liveRelays: () => [], byUser: () => [], events: { on() {}, off() {} } };
+  const health = { state: (id: string) => (live.includes(id) ? { live: true } : null), relay: (id: string) => rows.get(id) ?? null, liveRelays: () => [], byUser: () => [], events: { on() {}, off() {} } };
   return buildServer({
     config, relays, health, rtmp: {}, samples: { history: () => [] }, sessions: { current: () => null },
     verifyUser: async (h: string | undefined) => (h === "Bearer user-a" ? A : null),
     previewPath: () => "", onKeysChanged: () => {}, slsHealthy: async () => true,
+    ...extra,
   } as unknown as Deps);
 }
 const svc = { authorization: `Bearer ${TOKEN}`, "content-type": "application/json" };
@@ -89,4 +91,23 @@ test("admin : stats et flux en direct réservés au jeton de service", async () 
   assert.equal(typeof body.streams_live, "number");
   const live = await a.inject({ method: "GET", url: "/v1/admin/live", headers: svc });
   assert.deepEqual(live.json(), { live: [] });
+});
+
+test("aperçu vidéo : propriétaire seulement, flux live seulement, MPEG-TS transmis puis ffmpeg arrêté", async () => {
+  let stopped = 0;
+  const liveFeed = () => {
+    const stream = new PassThrough();
+    setImmediate(() => stream.end(Buffer.from([0x47, 1, 2, 3])));
+    return { stream, stop: () => void stopped++ };
+  };
+  const off = app({ liveFeed } as Partial<Deps>);
+  const get = (a: ReturnType<typeof app>, rid: string) => a.inject({ method: "GET", url: `/v1/me/relays/${rid}/live.ts`, headers: { authorization: "Bearer user-a" } });
+  assert.equal((await get(off, RB.id)).statusCode, 404);
+  assert.equal((await get(off, RA.id)).json().error, "offline");
+  const on = app({ liveFeed } as Partial<Deps>, [RA.id]);
+  const res = await get(on, RA.id);
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.headers["content-type"], "video/mp2t");
+  assert.deepEqual([...res.rawPayload], [0x47, 1, 2, 3]);
+  assert.equal(stopped, 1);
 });

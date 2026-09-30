@@ -7,7 +7,7 @@ import type { Relay } from "./relays.ts";
 import { createRelayStore, publicName } from "./relays.ts";
 import { createRtmp } from "./rtmp.ts";
 import { loadLogo } from "./mire.ts";
-import { createPreviews } from "./preview.ts";
+import { createPreviews, openLive } from "./preview.ts";
 import { createRegie } from "./regie.ts";
 import { openSamples } from "./samples.ts";
 import { createAsn } from "./asn.ts";
@@ -191,6 +191,7 @@ const app = buildServer({
   },
   verifyUser: createUserVerifier(config.SUPABASE_URL),
   previewPath: (id) => previews?.path(id) ?? "",
+  liveFeed: previews ? (r) => openLive({ host: config.SLS_SRT_HOST, port: config.SRT_PLAY_PORT, playId: r.play_id }) : undefined,
   onKeysChanged: () => void refreshKeys(),
   slsHealthy: async () => {
     try {

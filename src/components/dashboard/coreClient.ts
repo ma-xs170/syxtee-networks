@@ -6,11 +6,17 @@ import { createClient } from "@/lib/supabase/client";
 
 let supabase: ReturnType<typeof createClient> | null = null;
 
-export async function coreFetch(coreUrl: string, path: string, init: RequestInit = {}) {
+/** Jeton de session Supabase courant (pour les lecteurs qui ouvrent eux-mêmes la connexion, ex. mpegts.js). */
+export async function coreToken() {
   supabase ??= createClient();
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   if (!token) throw new Error("Session expirée");
+  return token;
+}
+
+export async function coreFetch(coreUrl: string, path: string, init: RequestInit = {}) {
+  const token = await coreToken();
   return fetch(`${coreUrl}${path}`, { ...init, headers: { ...(init.headers ?? {}), Authorization: `Bearer ${token}` }, cache: "no-store" });
 }
 

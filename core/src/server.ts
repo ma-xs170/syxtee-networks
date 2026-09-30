@@ -21,6 +21,7 @@ import { median } from "./aggregate.ts";
 import type { Coverage } from "./coverage.ts";
 import { classify, countsOnMap, DECLARED, declaredName, ipPrefix, isCaribbean, netToken, type Declared, type Prefixes } from "./link.ts";
 import type { PrivateRelay } from "./privaterelay.ts";
+import type { LiveFeed } from "./preview.ts";
 
 // API HTTP du Core (derrière Caddy en HTTPS).
 // /v1/users/:id/*  → serveur Vercel, jeton de service.
@@ -52,6 +53,8 @@ export type Deps = {
   reclassUser?: (userId: string) => Promise<number>;
   verifyUser: (authorization: string | undefined) => Promise<string | null>;
   previewPath: (relayId: string) => string;
+  /** Aperçu vidéo en direct (MPEG-TS) ; absent si les aperçus sont désactivés. */
+  liveFeed?: (r: Relay) => LiveFeed;
   onKeysChanged: () => void;
   slsHealthy: () => Promise<boolean>;
 };
@@ -362,6 +365,39 @@ export function buildServer(d: Deps) {
     const fresh = file !== "" && existsSync(file) && Date.now() - statSync(file).mtimeMs < 15_000;
     if (!fresh) return reply.code(404).send({ error: "no_preview" });
     return reply.header("Content-Type", "image/jpeg").header("Cache-Control", "no-store").send(readFileSync(file));
+  });
+
+  // Aperçu vidéo en direct : MPEG-TS en continu (mpegts.js côté navigateur). 3 spectateurs au plus par relais.
+  const viewers = new Map<string, number>();
+  app.get("/v1/me/relays/:rid/live.ts", async (req, reply) => {
+    const r = await myRelay(req, reply);
+    if (!r) return;
+    if (!d.liveFeed) return reply.code(404).send({ error: "preview_disabled" });
+    if (!d.health.state(r.id)?.live) return reply.code(404).send({ error: "offline" });
+    const n = viewers.get(r.id) ?? 0;
+    if (n >= 3) return reply.code(429).send({ error: "too_many_viewers" });
+    viewers.set(r.id, n + 1);
+    const feed = d.liveFeed(r);
+    reply.hijack();
+    const origin = req.headers.origin;
+    reply.raw.writeHead(200, {
+      "Content-Type": "video/mp2t",
+      "Cache-Control": "no-store, no-transform",
+      "X-Accel-Buffering": "no",
+      ...(origin && origins.includes(origin) ? { "Access-Control-Allow-Origin": origin, Vary: "Origin" } : {}),
+    });
+    let done = false;
+    const close = () => {
+      if (done) return;
+      done = true;
+      feed.stop();
+      const left = (viewers.get(r.id) ?? 1) - 1;
+      if (left > 0) viewers.set(r.id, left);
+      else viewers.delete(r.id);
+      reply.raw.end();
+    };
+    feed.stream.on("error", close).on("end", close).pipe(reply.raw);
+    req.raw.on("close", close);
   });
 
   // ───── SYXTEE Cam ─────

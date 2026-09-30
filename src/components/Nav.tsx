@@ -31,14 +31,8 @@ function dashboardGroups(admin: boolean): MenuGroup[] {
     },
     ...(admin
       ? [
-          {
-            label: "Admin",
-            links: [
-              { label: "Comptes", href: "/admin/comptes" },
-              { label: "Partenaires", href: "/admin/partenaires" },
-              { label: "Sécurité du relais", href: "/admin/securite" },
-            ],
-          },
+          // Une seule entrée : l'admin a sa propre barre d'onglets (admin/layout.tsx).
+          { label: "Admin", links: [{ label: "Administration", href: "/admin" }] },
         ]
       : []),
     {

@@ -68,15 +68,28 @@ test("aucun relais d'office, assistant SRTLA puis RTMP, quota atteint", async ({
   await page.getByRole("button", { name: "Renommer", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Osmo Action 5" })).toBeVisible();
 
-  // Relais RTMP : « Configurer une DJI » → Caméras DJI (onglet Ajouter, relais présélectionné). Lancement réel : caméra requise.
+  // Relais RTMP : « Configurer une DJI » → Caméras DJI, assistant d'ajout ouvert sur ce relais. Lancement réel : caméra requise.
   await page.getByRole("link", { name: "Configurer une DJI" }).click();
   await expect(page).toHaveURL(/\/dashboard\/dji\?relais=/);
-  await expect(page.getByRole("heading", { name: /Caméras DJI/ })).toBeVisible();
-  await expect(page.getByRole("tab", { name: "Ajouter" })).toHaveAttribute("aria-selected", "true");
-  await expect(page.getByRole("button", { name: "Rechercher ma caméra" }).or(page.getByText("Ce navigateur n'a pas accès au Bluetooth"))).toBeVisible();
-  await expect(page.getByLabel("Relais RTMP")).toHaveValue(/.+/);
-  await expect(page.getByRole("radio", { name: "2 Mb/s" })).toHaveAttribute("aria-checked", "true");
-  await expect(page.getByRole("radio", { name: "H.264" })).toHaveAttribute("aria-checked", "true");
+  const wizard = page.getByRole("dialog", { name: /Ajouter une caméra/ });
+  await expect(wizard).toBeVisible();
+  await expect(wizard.getByRole("button", { name: "Rechercher ma caméra" })).toBeVisible();
+  await expect(wizard.getByRole("button", { name: "Suivant" })).toBeDisabled(); // pas de caméra trouvée
+  await wizard.getByRole("button", { name: "Annuler" }).click();
+  await expect(wizard).toBeHidden();
+
+  // Réseaux : plusieurs réseaux, gardés sur ce téléphone.
+  await page.getByRole("tab", { name: /Réseaux/ }).click();
+  for (const ssid of ["iPhone e2e", "Routeur 4G e2e"]) {
+    await page.getByRole("button", { name: "Ajouter un réseau" }).click();
+    const net = page.getByRole("dialog", { name: /Ajouter un réseau/ });
+    await net.getByLabel("Nom du réseau").fill(ssid);
+    await net.getByLabel("Mot de passe", { exact: true }).fill("motdepasse-e2e");
+    await net.getByRole("button", { name: "Ajouter le réseau" }).click();
+    await expect(net).toBeHidden();
+  }
+  await expect(page.getByRole("tab", { name: "Réseaux · 2" })).toBeVisible();
+  await expect(page.getByText("Routeur 4G e2e")).toBeVisible();
   await page.goBack();
 
   // Archiver libère une place dans le quota.

@@ -43,6 +43,15 @@ export async function updateSession(request: NextRequest) {
   // de la réponse de l'action (« This page couldn't load ») ; l'action vérifie elle-même la session et répond.
   const isAction = request.method === "POST" && request.headers.has("next-action");
   if (!signedIn && !isAction && matches(path, PRIVATE)) return redirectTo("/connexion", path);
-  if (signedIn && matches(path, GUEST_ONLY)) return redirectTo("/dashboard");
+  if (signedIn && matches(path, GUEST_ONLY)) {
+    // Déjà connecté : on suit `next` (« Choisir Basique », « Créer mon relais »), seulement vers une adresse du site.
+    const next = request.nextUrl.searchParams.get("next");
+    if (next && next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\")) {
+      const r = NextResponse.redirect(new URL(next, request.url));
+      response.cookies.getAll().forEach((c) => r.cookies.set(c));
+      return r;
+    }
+    return redirectTo("/dashboard");
+  }
   return response;
 }

@@ -140,3 +140,21 @@ test("page Abonnement : offres en Gratuit, gestion une fois abonné", async ({ p
   await expect(page.getByRole("button", { name: /^Choisir / })).toHaveCount(0);
   await expect(page.getByText(/Premium · Mensuel · 14,99 €/)).toBeVisible();
 });
+
+test("déjà connecté : « Choisir » sur /offres suit `next` au lieu de renvoyer sur le dashboard", async ({ page }) => {
+  const email = testEmail("abo-next");
+  const password = testPassword();
+  const user = await createUser(email, { password, plan: "free" });
+  created.push(user.id);
+  await admin().from("profiles").update({ onboarded_at: new Date().toISOString() }).eq("id", user.id);
+
+  await signInWithPassword(page, email, password);
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await page.goto("/offres");
+  await page.getByRole("link", { name: "Choisir Basique" }).click();
+  await expect(page).toHaveURL(/\/dashboard\/abonnement$/);
+
+  // Adresse hors du site : ignorée.
+  await page.goto("/inscription?next=//evil.example");
+  await expect(page).toHaveURL(/\/dashboard$/);
+});

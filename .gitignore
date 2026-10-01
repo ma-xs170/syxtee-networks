@@ -16,6 +16,8 @@
 # next.js
 /.next/
 /out/
+# Builds et captures locales (dist dir alternatifs) : ignorés aussi par Tailwind, qui scanne le dépôt.
+/.next-*/
 
 # production
 /build

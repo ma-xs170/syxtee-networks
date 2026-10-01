@@ -18,7 +18,7 @@ export const CATALOG: Record<Tier, { name: string; pitch: string; points: string
   paid: {
     name: "Premium",
     pitch: "Tout SYXTEE, pour streamer souvent.",
-    points: ["5 relais SRTLA + 5 relais RTMP", "3 flux en même temps", "Aperçu, statistiques, historique des lives", "Caméras DJI"],
+    points: ["5 relais SRTLA + 5 relais RTMP", "3 flux en même temps", "Aperçu, statistiques, historique des lives", "Caméras externes (DJI, GoPro)"],
     prices: { month: { amount: "14,99 €", cents: 1499 }, year: { amount: "149 €", cents: 14900 } },
     featured: true,
   },

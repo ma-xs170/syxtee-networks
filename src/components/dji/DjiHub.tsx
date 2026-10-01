@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import CopyCode from "@/components/CopyCode";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useLiveStatus, useNow, type RelayLive } from "@/components/dashboard/LiveStatus";
 import { DJI_MODELS, type DjiModel } from "@/lib/dji/protocol";
@@ -9,7 +10,7 @@ import CameraWizard from "./CameraWizard";
 import NetworkDialog from "./NetworkDialog";
 import { loadStore, saveStore, type Camera, type DjiStore, type Network } from "./store";
 
-// Caméras DJI : autant de caméras que tu veux, chacune liée à un relais RTMP. Stats en direct en haut, puis onglets.
+// Caméras externes (DJI, GoPro) : autant de caméras que tu veux, chacune liée à un relais RTMP. Stats en direct en haut, puis onglets.
 // Une fois le live lancé, la caméra garde l'URL RTMP et continue de diffuser même page fermée (le Bluetooth ne sert
 // qu'à lancer, suivre la batterie et arrêter). Tout reste sur ce téléphone : rien du Wi-Fi n'est envoyé au serveur.
 
@@ -40,6 +41,7 @@ const ERROR_LABEL: Record<DjiError, string> = {
   unsupported: "Bluetooth indisponible dans ce navigateur.",
 };
 const modelName = (m: DjiModel) => DJI_MODELS.find((x) => x.id === m)?.name ?? "Caméra DJI";
+const camLabel = (c: Camera) => (c.brand === "gopro" ? c.gopro || "GoPro" : modelName(c.model));
 
 const btnPrimary = "h-11 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40";
 const btnGhost = "h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-accent/10 disabled:opacity-40";
@@ -65,7 +67,7 @@ function LiveStats({ cameras, relays, runs, live }: { cameras: Camera[]; relays:
         return (
           <div key={c.id} className={`rounded-2xl border p-4 ${on ? "border-live/50" : "border-line"}`}>
             <p className="flex items-center justify-between gap-3 text-sm">
-              <span className="truncate font-medium">{c.name || modelName(c.model)}</span>
+              <span className="truncate font-medium">{c.name || camLabel(c)}</span>
               {on ? (
                 <span className="flex items-center gap-1.5 rounded bg-live px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.12em] text-white">EN DIRECT</span>
               ) : (
@@ -189,7 +191,7 @@ export default function DjiHub({ relays, focusRelay }: { relays: RtmpRelay[]; fo
   ];
   const noBt = env !== "ok";
   const defaultRelay = relays.find((r) => r.id === focusRelay)?.id ?? relays.find((r) => !store.cameras.some((c) => c.relayId === r.id))?.id ?? relays[0]?.id ?? "";
-  const wizardRelays = relays.map((r) => ({ id: r.id, name: r.name, usedBy: store.cameras.find((c) => c.relayId === r.id)?.name ?? null, live: !!liveRelays.find((x) => x.id === r.id)?.live }));
+  const wizardRelays = relays.map((r) => ({ id: r.id, name: r.name, rtmpUrl: r.rtmpUrl, usedBy: store.cameras.find((c) => c.relayId === r.id)?.name ?? null, live: !!liveRelays.find((x) => x.id === r.id)?.live }));
   const editingCam = wizard && wizard !== "new" ? (store.cameras.find((c) => c.id === wizard) ?? null) : null;
   const editingNet = netDialog && netDialog !== "new" ? (store.networks.find((n) => n.id === netDialog) ?? null) : null;
 
@@ -206,7 +208,7 @@ export default function DjiHub({ relays, focusRelay }: { relays: RtmpRelay[]; fo
       )}
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div role="tablist" aria-label="Caméras DJI" className="flex w-max max-w-full gap-1 overflow-x-auto rounded-full border border-line p-1">
+        <div role="tablist" aria-label="Caméras externes" className="flex w-max max-w-full gap-1 overflow-x-auto rounded-full border border-line p-1">
           {tabs.map((t) => (
             <button
               key={t.id}
@@ -337,15 +339,24 @@ function CameraCard({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <h3 className="truncate text-lg font-medium">{cam.name}</h3>
-          <p className="mt-1 font-mono text-xs uppercase tracking-[0.12em] text-muted">
-            {modelName(cam.model)} · {cam.resolution} · {cam.bitrateKbps / 1000} Mb/s · {cam.codec === "h265" ? "H.265" : "H.264"}
-          </p>
-          <p className="mt-2 text-sm text-muted">
-            {relay ? `Relais ${relay.name}` : "Relais supprimé : modifie la caméra"} · {net ? net.ssid : "réseau à choisir"}
-          </p>
+          {cam.brand === "gopro" ? (
+            <>
+              <p className="mt-1 font-mono text-xs uppercase tracking-[0.12em] text-muted">{camLabel(cam)} · RTMP</p>
+              <p className="mt-2 text-sm text-muted">{relay ? `Relais ${relay.name}` : "Relais supprimé : modifie la caméra"}</p>
+            </>
+          ) : (
+            <>
+              <p className="mt-1 font-mono text-xs uppercase tracking-[0.12em] text-muted">
+                {modelName(cam.model)} · {cam.resolution} · {cam.bitrateKbps / 1000} Mb/s · {cam.codec === "h265" ? "H.265" : "H.264"}
+              </p>
+              <p className="mt-2 text-sm text-muted">
+                {relay ? `Relais ${relay.name}` : "Relais supprimé : modifie la caméra"} · {net ? net.ssid : "réseau à choisir"}
+              </p>
+            </>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
-          {onAir ? (
+          {cam.brand === "gopro" ? null : onAir ? (
             <button type="button" onClick={onStop} disabled={noBt} className={btnDanger}>
               Arrêter le live
             </button>
@@ -364,8 +375,19 @@ function CameraCard({
       </div>
       <p role="status" aria-live="polite" className="mt-4 flex items-center gap-2 text-sm">
         {onAir && <span className="h-2 w-2 rounded-full bg-live" aria-hidden="true" />}
-        {relayLive && state === "idle" ? "En direct (lancé depuis un autre appareil ou avant l'ouverture de la page)" : STATE_LABEL[state]}
+        {cam.brand === "gopro"
+          ? relayLive
+            ? "En direct"
+            : "En attente du flux : lance la diffusion dans l'app GoPro."
+          : relayLive && state === "idle"
+            ? "En direct (lancé depuis un autre appareil ou avant l'ouverture de la page)"
+            : STATE_LABEL[state]}
       </p>
+      {cam.brand === "gopro" && relay && (
+        <div className="mt-3">
+          <CopyCode code={relay.rtmpUrl} />
+        </div>
+      )}
       {run?.error && (
         <p role="alert" className="mt-2 text-sm text-red-400/90">
           {ERROR_LABEL[run.error]}

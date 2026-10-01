@@ -18,6 +18,7 @@ import { DailyBars, Sparkline } from "./charts";
 import { DashIllustration } from "./DashArt";
 import { useLiveClock, useLiveStatus } from "./LiveStatus";
 import MaskedUrl from "./MaskedUrl";
+import LiveNow from "./LiveNow";
 import MiniHealth from "./MiniHealth";
 import { SessionList } from "./sessions";
 import { ArrowLink, Tile, TileLabel } from "./ui";
@@ -398,6 +399,22 @@ export default function Overview({ initial }: { initial: OverviewData }) {
     <div className="space-y-4">
       <StatusBanner data={data} onLaunch={() => setGuide(true)} />
       <LaunchGuide open={guide} onClose={() => setGuide(false)} keys={data.keys} />
+      <LiveNow sources={data.sources} />
+
+      <a
+        href="/studio"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group flex items-center justify-between gap-4 rounded-2xl border border-line p-5 transition-colors hover:border-accent/35 hover:bg-accent/[0.08] sm:p-6"
+      >
+        <span>
+          <span className="block text-2xl font-semibold tracking-tight">SYXTEE STUDIO</span>
+          <span className="mt-1 block text-sm text-muted">Ta régie dans le navigateur : scènes, multiview, secours automatique et mode podcast.</span>
+        </span>
+        <span aria-hidden="true" className="text-xl transition-transform group-hover:translate-x-1 motion-reduce:transition-none">
+          →
+        </span>
+      </a>
 
       <Link
         href="/dashboard/scanner"

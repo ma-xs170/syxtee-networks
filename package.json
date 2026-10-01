@@ -12,6 +12,7 @@
     "maplibre:worker": "cp node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs node_modules/maplibre-gl/dist/maplibre-gl-shared.mjs public/maplibre/ && node -p \"require('maplibre-gl/package.json').version\" > public/maplibre/VERSION"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
     "@react-email/components": "^1.0.12",
     "@react-three/fiber": "^9.8.1",
     "@supabase/ssr": "^0.12.7",

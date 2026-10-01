@@ -11,7 +11,7 @@ export const site = {
 export type ToolIcon = "bag" | "rack" | "phone" | "dish" | "esim" | "route" | "services" | "docs" | "faq" | "tower";
 export type NavLink = { label: string; href: string; badge?: string };
 /** `soon` : produit pas encore sorti, affiché grisé dans les menus (le lien reste cliquable). */
-export type NavTool = NavLink & { desc: string; icon: ToolIcon; soon?: boolean };
+export type NavTool = NavLink & { desc: string; icon: ToolIcon; soon?: boolean; /** Sous-section du menu (titre de colonne). */ group?: string };
 /** Menu déroulant : `dot` = point rouge de nouveauté à côté du libellé, `note` = ligne en pied de panneau. */
 export type NavMenu = { label: string; children: NavTool[]; dot?: boolean; note?: string };
 export type NavItem = NavLink | NavMenu;
@@ -21,6 +21,7 @@ export const nav: NavItem[] = [
     label: "Produits",
     children: [
       { label: "Relais SYXTEE", href: "/relais", desc: "Nos serveurs SRTLA et RTMP", icon: "rack" },
+      { label: "SYXTEE STUDIO", href: "/syxtee-studio", desc: "Ta régie dans le navigateur", icon: "services", badge: "Nouveau" },
       { label: "SYXTEE PRO", href: "/pro", desc: "Le sac encodeur IRL", icon: "bag", badge: "À venir", soon: true },
     ],
   },
@@ -28,20 +29,20 @@ export const nav: NavItem[] = [
     label: "Outils",
     note: "Tous nos outils fonctionnent avec le relais SYXTEE",
     children: [
-      { label: "Moblin", href: "/moblin", desc: "L'app IRL qu'on recommande", icon: "phone" },
-      { label: "Starlink", href: "/starlink", desc: "Le live là où la 4G abandonne", icon: "dish" },
-      { label: "Saily", href: "/saily", desc: "Une 4G de plus en eSIM", icon: "esim", badge: "Partenaire" },
-      { label: "Analyseur réseau", href: "/analyseur", desc: "Teste ta 4G / 5G là où tu es", icon: "tower" },
+      { label: "Moblin", href: "/moblin", desc: "L'app IRL qu'on recommande", icon: "phone", group: "Streamer" },
+      { label: "Saily", href: "/saily", desc: "Une 4G de plus en eSIM", icon: "esim", badge: "Partenaire", group: "Streamer" },
+      { label: "Starlink", href: "/starlink", desc: "Le live là où la 4G abandonne", icon: "dish", group: "Réseau" },
+      { label: "Analyseur réseau", href: "/analyseur", desc: "Teste ta 4G / 5G là où tu es", icon: "tower", group: "Réseau" },
     ],
   },
   {
     label: "Ressources",
     children: [
-      { label: "Fonctionnement", href: "/fonctionnement", desc: "Le trajet d'un live de A à Z", icon: "route" },
-      { label: "Services", href: "/services", desc: "Tout ce que fait le relais", icon: "services" },
-      { label: "Documentation", href: "/docs", desc: "Les guides pour bien démarrer", icon: "docs" },
-      { label: "Où capter", href: "/couverture", desc: "La carte du réseau 4G / 5G", icon: "tower" },
-      { label: "FAQ", href: "/faq", desc: "Les questions qu'on nous pose", icon: "faq" },
+      { label: "Fonctionnement", href: "/fonctionnement", desc: "Le trajet d'un live de A à Z", icon: "route", group: "Comprendre" },
+      { label: "Services", href: "/services", desc: "Tout ce que fait le relais", icon: "services", group: "Comprendre" },
+      { label: "Où capter", href: "/couverture", desc: "La carte du réseau 4G / 5G", icon: "tower", group: "Comprendre" },
+      { label: "Documentation", href: "/docs", desc: "Les guides pour bien démarrer", icon: "docs", group: "Aide" },
+      { label: "FAQ", href: "/faq", desc: "Les questions qu'on nous pose", icon: "faq", group: "Aide" },
     ],
   },
   { label: "Offres", href: "/offres" },

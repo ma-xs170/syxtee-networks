@@ -12,8 +12,8 @@ import StarlinkMini from "./illustrations/StarlinkMini";
 import Streamer from "./illustrations/Streamer";
 import { ProDrawing } from "./pro/ProExploded";
 import DashArt from "./dashboard/DashArt";
-import type { DashIcon, DashItem, DashMenu } from "@/lib/dashboard-nav";
-import type { NavItem, NavMenu, ToolIcon } from "@/lib/site";
+import type { DashIcon, DashItem, DashMenu, DashTool } from "@/lib/dashboard-nav";
+import type { NavItem, NavMenu, NavTool, ToolIcon } from "@/lib/site";
 import { LockIcon } from "./plans/Locked";
 
 // Même composant pour la nav du site et celle du dashboard (autres entrées, autres illustrations).
@@ -172,6 +172,7 @@ function Dropdown({
   const panel = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const grid = menu.children.length > 3; // 4 entrées : grille 2 × 2 compacte
+  const groups = groupTools(menu.children);
 
   const links = () => Array.from(panel.current?.querySelectorAll<HTMLAnchorElement>("a") ?? []);
 
@@ -221,7 +222,34 @@ function Dropdown({
           open ? "visible translate-y-0 opacity-100" : "pointer-events-none invisible -translate-y-2 opacity-0"
         }`}
       >
-        <div className="rounded-2xl border border-accent/20 bg-background/95 p-3 shadow-[0_24px_60px_-12px_var(--shadow-pop)] backdrop-blur-md">
+        <div className="rounded-2xl border border-accent/20 bg-background p-3 shadow-[0_24px_60px_-12px_var(--shadow-pop)] backdrop-blur-md">
+          {groups ? (
+            <div className="flex gap-6 p-1">
+              {groups.map(([title, tools]) => (
+                <div key={title} className="w-[270px]">
+                  <p className="label-mono px-3 pb-2 pt-1">{title}</p>
+                  <ul className="space-y-1">
+                    {tools.map((t) => (
+                      <li key={t.href}>
+                        <Link href={t.href} onClick={onClose} className="group flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-accent/10 focus-visible:bg-accent/10">
+                          <span className="h-14 w-14 shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.06]">
+                            <ItemArt icon={t.icon} />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                              {t.label}
+                              {t.badge && <Badge>{t.badge}</Badge>}
+                            </span>
+                            <span className="mt-0.5 block text-sm leading-snug text-muted">{t.desc}</span>
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          ) : (
           <ul className={grid ? "grid w-[660px] grid-cols-2 gap-1" : "flex gap-2"}>
             {menu.children.map((t) => (
               <li key={t.href}>
@@ -262,6 +290,7 @@ function Dropdown({
               </li>
             ))}
           </ul>
+          )}
           {menu.note && <p className="mt-2 border-t border-line px-4 pb-1 pt-3 text-xs text-muted">{menu.note}</p>}
         </div>
       </div>
@@ -289,8 +318,11 @@ export function NavAccordion({ menu, active, onNavigate }: { menu: AnyMenu; acti
         <Chevron open={open} />
       </button>
       <ul id={id} hidden={!open} className="pb-3">
-        {menu.children.map((t) => (
+        {menu.children.map((t, i) => (
           <li key={t.href}>
+            {t.group && t.group !== (menu.children as (NavTool | DashTool)[])[i - 1]?.group && (
+              <p className="label-mono px-2 pb-1 pt-3">{t.group}</p>
+            )}
             <Link href={t.href} onClick={onNavigate} className={`flex items-center gap-4 rounded-xl px-2 py-3 hover:bg-accent/10${"soon" in t && t.soon ? " opacity-60 hover:opacity-100" : ""}`}>
               <span className="h-12 w-12 shrink-0">
                 <ItemArt icon={t.icon} />
@@ -309,4 +341,15 @@ export function NavAccordion({ menu, active, onNavigate }: { menu: AnyMenu; acti
       </ul>
     </div>
   );
+}
+
+/** Regroupe les entrées d'un menu par sous-section (ordre d'apparition). Null si le menu n'en a pas. */
+function groupTools(children: (NavTool | DashTool)[]): [string, (NavTool | DashTool)[]][] | null {
+  if (!children.some((t) => t.group)) return null;
+  const map = new Map<string, (NavTool | DashTool)[]>();
+  for (const t of children) {
+    const g = t.group || "Autres";
+    map.set(g, [...(map.get(g) ?? []), t]);
+  }
+  return [...map.entries()];
 }

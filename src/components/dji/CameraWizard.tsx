@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import CopyCode from "@/components/CopyCode";
 import Highlight from "@/components/ui/Highlight";
 import { DJI_MODELS, supportsCodecChoice, supportsStabilization, type DjiModel, type Resolution, type Stabilization } from "@/lib/dji/protocol";
 import { detectModel, pickCamera } from "@/lib/dji/session";
@@ -9,9 +10,22 @@ import { defaultCamera, type Camera, type Network } from "./store";
 
 // Assistant plein écran « Ajouter une caméra » (même forme que « Créer un relais ») : caméra, réseau, relais, qualité.
 
-export type WizardRelay = { id: string; name: string; usedBy: string | null; live: boolean };
+export type WizardRelay = { id: string; name: string; usedBy: string | null; live: boolean; rtmpUrl?: string };
 
-const STEPS = ["Caméra", "Réseau", "Relais", "Qualité"];
+type StepId = "cam" | "net" | "relay" | "quality" | "gopro";
+// DJI : lancée par le Bluetooth depuis cette page (réseau, qualité). GoPro : on donne l'URL RTMP à coller dans l'app GoPro.
+const STEPS_DJI: { id: StepId; label: string }[] = [
+  { id: "cam", label: "Caméra" },
+  { id: "net", label: "Réseau" },
+  { id: "relay", label: "Relais" },
+  { id: "quality", label: "Qualité" },
+];
+const STEPS_GOPRO: { id: StepId; label: string }[] = [
+  { id: "cam", label: "Caméra" },
+  { id: "relay", label: "Relais" },
+  { id: "gopro", label: "Réglages" },
+];
+const GOPRO_MODELS = ["HERO13 Black", "HERO12 Black", "HERO11 Black", "HERO11 Black Mini", "HERO10 Black", "HERO9 Black"];
 const PRESETS: { id: string; title: string; text: string; resolution: Resolution; bitrateKbps: number }[] = [
   { id: "eco", title: "Économe", text: "720p · 2 Mb/s. Tient sur une 4G moyenne, conseillé en IRL.", resolution: "720p", bitrateKbps: 2000 },
   { id: "hd", title: "Full HD", text: "1080p · 4 Mb/s. Bonne 4G ou 5G.", resolution: "1080p", bitrateKbps: 4000 },
@@ -98,9 +112,14 @@ export default function CameraWizard({
     }
   }
 
-  const canNext = [!!c.deviceId, networks.some((n) => n.id === c.networkId), relays.some((r) => r.id === c.relayId), true][step];
+  const gopro = c.brand === "gopro";
+  const steps = gopro ? STEPS_GOPRO : STEPS_DJI;
+  const id = steps[step].id;
+  const last = step === steps.length - 1;
+  const canNext = { cam: gopro || !!c.deviceId, net: networks.some((n) => n.id === c.networkId), relay: relays.some((r) => r.id === c.relayId), quality: true, gopro: true }[id];
   const preset = PRESETS.find((p) => p.resolution === c.resolution && p.bitrateKbps === c.bitrateKbps)?.id ?? null;
-  const finish = (launch: boolean) => onSave({ ...c, name: c.name.trim() || c.deviceName || DJI_MODELS.find((m) => m.id === c.model)?.name || "Caméra DJI" }, launch);
+  const finish = (launch: boolean) => onSave({ ...c, name: c.name.trim() || (gopro ? c.gopro || "GoPro" : c.deviceName || DJI_MODELS.find((m) => m.id === c.model)?.name || "Caméra DJI") }, launch && !gopro);
+  const goproRelay = relays.find((r) => r.id === c.relayId);
 
   return (
     <dialog ref={ref} onClose={onClose} aria-labelledby="cam-wizard-title" className="m-0 h-dvh max-h-none w-screen max-w-none bg-background p-0 text-foreground backdrop:bg-background">
@@ -114,8 +133,8 @@ export default function CameraWizard({
           </button>
         </div>
 
-        <ol className="mt-6 grid grid-cols-4 gap-2" aria-label="Étapes">
-          {STEPS.map((label, i) => (
+        <ol className="mt-6 grid gap-2" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }} aria-label="Étapes">
+          {steps.map(({ label }, i) => (
             <li key={label} aria-current={i === step ? "step" : undefined}>
               <span className={`block h-1 rounded-full transition-colors motion-reduce:transition-none ${i <= step ? "bg-accent" : "bg-accent/20"}`} />
               <span className={`mt-2 block font-mono text-[11px] uppercase tracking-[0.12em] ${i === step ? "text-foreground" : "text-muted"}`}>
@@ -126,8 +145,26 @@ export default function CameraWizard({
         </ol>
 
         <div className="mt-8 flex-1">
-          {step === 0 && (
+          {id === "cam" && (
             <div className="grid gap-6">
+              <fieldset>
+                <legend className="text-base text-muted">Quelle marque ?</legend>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {(
+                    [
+                      { v: "dji", t: "DJI", d: "Osmo Pocket, Action, 360. Lancée en Bluetooth depuis cette page." },
+                      { v: "gopro", t: "GoPro", d: "HERO9 et plus récentes. Tu colles l'URL RTMP dans l'app GoPro." },
+                    ] as const
+                  ).map((b) => (
+                    <label key={b.v} className={card((c.brand ?? "dji") === b.v)}>
+                      <input type="radio" name="wiz-brand" checked={(c.brand ?? "dji") === b.v} onChange={() => set("brand", b.v)} className="sr-only" />
+                      <span className="text-base font-medium">{b.t}</span>
+                      <span className="mt-1 text-xs leading-relaxed text-muted">{b.d}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              {!gopro && (
               <div className={`rounded-2xl border p-6 ${c.deviceId ? "border-accent bg-accent/[0.08]" : "border-line"}`}>
                 {c.deviceId ? (
                   <p className="flex flex-wrap items-center justify-between gap-3">
@@ -149,6 +186,7 @@ export default function CameraWizard({
                   </div>
                 )}
               </div>
+              )}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label htmlFor="wiz-name" className="block text-sm text-muted">
@@ -159,7 +197,7 @@ export default function CameraWizard({
                     value={c.name}
                     onChange={(e) => set("name", e.target.value)}
                     maxLength={40}
-                    placeholder="Ex. Osmo principale"
+                    placeholder={gopro ? "Ex. GoPro principale" : "Ex. Osmo principale"}
                     className="h-12 w-full rounded-xl border border-line bg-background px-4 text-base placeholder:text-muted focus:border-accent/70 focus:outline-none"
                   />
                 </div>
@@ -167,24 +205,39 @@ export default function CameraWizard({
                   <label htmlFor="wiz-model" className="block text-sm text-muted">
                     Modèle
                   </label>
-                  <select
-                    id="wiz-model"
-                    value={c.model}
-                    onChange={(e) => set("model", e.target.value as DjiModel)}
-                    className="h-12 w-full rounded-xl border border-line bg-background px-4 text-base focus:border-accent/70 focus:outline-none"
-                  >
-                    {DJI_MODELS.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name}
-                      </option>
-                    ))}
-                  </select>
+                  {gopro ? (
+                    <select
+                      id="wiz-model"
+                      value={c.gopro ?? GOPRO_MODELS[0]}
+                      onChange={(e) => set("gopro", e.target.value)}
+                      className="h-12 w-full rounded-xl border border-line bg-background px-4 text-base focus:border-accent/70 focus:outline-none"
+                    >
+                      {GOPRO_MODELS.map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <select
+                      id="wiz-model"
+                      value={c.model}
+                      onChange={(e) => set("model", e.target.value as DjiModel)}
+                      className="h-12 w-full rounded-xl border border-line bg-background px-4 text-base focus:border-accent/70 focus:outline-none"
+                    >
+                      {DJI_MODELS.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
             </div>
           )}
 
-          {step === 1 && (
+          {id === "net" && (
             <fieldset>
               <legend className="text-base text-muted">Par quel réseau la caméra envoie le direct ?</legend>
               <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -204,7 +257,7 @@ export default function CameraWizard({
             </fieldset>
           )}
 
-          {step === 2 && (
+          {id === "relay" && (
             <fieldset>
               <legend className="text-base text-muted">Vers quel relais RTMP ? Un relais = un flux à la fois.</legend>
               <ul className="mt-4 divide-y divide-accent/10 rounded-2xl border border-line">
@@ -224,7 +277,20 @@ export default function CameraWizard({
             </fieldset>
           )}
 
-          {step === 3 && (
+          {id === "gopro" && (
+            <div className="grid gap-5">
+              <p className="text-base text-muted">Dans l&apos;app GoPro, ouvre ta caméra, choisis la diffusion en direct, puis une URL RTMP personnalisée et colle l&apos;adresse ci-dessous.</p>
+              {goproRelay?.rtmpUrl ? <CopyCode code={goproRelay.rtmpUrl} /> : <p className="text-sm text-muted">Choisis un relais RTMP à l&apos;étape précédente pour voir son adresse.</p>}
+              <ol className="list-decimal space-y-2 pl-5 text-sm leading-relaxed text-muted">
+                <li>Allume la caméra et connecte-la à ton téléphone dans l&apos;app GoPro.</li>
+                <li>Réseau : active le partage de connexion de ton téléphone (ou un Wi-Fi), la GoPro s&apos;y connecte.</li>
+                <li>Résolution conseillée : 720p ou 1080p, 30 images par seconde.</li>
+                <li>Lance la diffusion dans l&apos;app : le relais passe « En direct » ici.</li>
+              </ol>
+            </div>
+          )}
+
+          {id === "quality" && (
             <div className="grid gap-6">
               <fieldset>
                 <legend className="text-base text-muted">Qualité du direct</legend>
@@ -285,18 +351,26 @@ export default function CameraWizard({
           <button type="button" onClick={() => (step === 0 || (initial && step === 1) ? onClose() : setStep(step - 1))} className={ghost}>
             {step === 0 || (initial && step === 1) ? "Annuler" : "Retour"}
           </button>
-          {step < 3 ? (
+          {!last ? (
             <button type="button" disabled={!canNext} onClick={() => setStep(step + 1)} className={primary}>
               Suivant
             </button>
           ) : (
             <span className="flex flex-wrap justify-end gap-3">
-              <button type="button" onClick={() => finish(false)} className={ghost}>
-                Enregistrer
-              </button>
-              <button type="button" onClick={() => finish(true)} className={primary}>
-                Enregistrer et lancer
-              </button>
+              {gopro ? (
+                <button type="button" onClick={() => finish(false)} className={primary}>
+                  Enregistrer
+                </button>
+              ) : (
+                <>
+                  <button type="button" onClick={() => finish(false)} className={ghost}>
+                    Enregistrer
+                  </button>
+                  <button type="button" onClick={() => finish(true)} className={primary}>
+                    Enregistrer et lancer
+                  </button>
+                </>
+              )}
             </span>
           )}
         </div>

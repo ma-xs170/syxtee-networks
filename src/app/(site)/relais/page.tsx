@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import NextStep from "@/components/NextStep";
+import StudioBanner from "@/components/StudioBanner";
 import DetailSection, { Point } from "@/components/blocks/DetailSection";
 import RelayGrid from "@/components/blocks/RelayGrid";
 import RelayStory from "@/components/relay/RelayStory";
@@ -82,6 +83,7 @@ export default function RelaisPage() {
         </Point>
       </DetailSection>
 
+      <StudioBanner />
       <NextStep label="Les offres" href="/offres" />
     </>
   );

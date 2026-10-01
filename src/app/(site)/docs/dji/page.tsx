@@ -5,8 +5,8 @@ import { Container } from "@/components/ui";
 import { DJI_MODELS } from "@/lib/dji/protocol";
 
 export const metadata: Metadata = {
-  title: "Caméras DJI",
-  description: "Connecter une caméra DJI (Osmo Pocket, Osmo Action, Osmo 360) en Bluetooth et la faire diffuser vers ton relais RTMP SYXTEE.",
+  title: "Caméras externes",
+  description: "Connecter une caméra DJI (Bluetooth) ou GoPro (RTMP) et la faire diffuser vers ton relais RTMP SYXTEE.",
   alternates: { canonical: "/docs/dji" },
 };
 
@@ -15,22 +15,30 @@ const TESTED: string[] = ["osmoPocket3"]; // Osmo Pocket 3 : validée le 30/09/2
 
 const steps = [
   "Crée un relais RTMP par caméra dans Mes relais (un relais = un flux).",
-  "Dashboard, Direct, Caméras DJI, onglet Ajouter. Allume la caméra et son Bluetooth, puis « Rechercher ma caméra ». À la première connexion, valide la demande sur l'écran de la caméra.",
+  "Dashboard, Direct, Caméras externes, onglet Ajouter, marque DJI. Allume la caméra et son Bluetooth, puis « Rechercher ma caméra ». À la première connexion, valide la demande sur l'écran de la caméra.",
   "Indique le réseau que la caméra utilisera : le partage de connexion de ton téléphone (nom et mot de passe), ou un Wi-Fi. Il est gardé pour les caméras suivantes.",
   "Choisis le relais et la qualité : 720p et 2 Mb/s conviennent à une 4G moyenne.",
-  "« Enregistrer et lancer le direct » : la caméra rejoint le réseau et diffuse. Tu peux fermer la page, elle continue. Les stats en direct s'affichent en haut de Caméras DJI.",
+  "« Enregistrer et lancer le direct » : la caméra rejoint le réseau et diffuse. Tu peux fermer la page, elle continue. Les stats en direct s'affichent en haut de Caméras externes.",
+];
+
+const goproSteps = [
+  "Crée un relais RTMP par caméra dans Mes relais (un relais = un flux).",
+  "Dashboard, Direct, Caméras externes, onglet Ajouter, marque GoPro. Choisis le modèle et le relais : l'adresse RTMP s'affiche, avec un bouton Copier.",
+  "Dans l'app GoPro, connecte ta caméra, ouvre la diffusion en direct et choisis une URL RTMP personnalisée. Colle l'adresse copiée.",
+  "Donne un réseau à la caméra : le partage de connexion de ton téléphone ou un Wi-Fi. Résolution conseillée : 720p ou 1080p.",
+  "Lance la diffusion dans l'app GoPro : le relais passe « En direct » dans la page Caméras externes.",
 ];
 
 export default function DjiDocPage() {
   return (
     <>
-      <PageHero kicker="Documentation" title="Caméras DJI en Bluetooth." crumb="Caméras DJI">
-        Ta caméra diffuse directement vers ton relais SYXTEE, sans l&apos;app DJI Mimo.
+      <PageHero kicker="Documentation" title="Caméras externes." crumb="Caméras externes">
+        DJI en Bluetooth, GoPro en RTMP : ta caméra diffuse directement vers ton relais SYXTEE.
       </PageHero>
       <section className="border-b border-line py-16 sm:py-20">
         <Container className="grid gap-12 lg:grid-cols-2">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight">Étapes</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">DJI : étapes</h2>
             <ol className="mt-6 space-y-4">
               {steps.map((s, i) => (
                 <li key={s} className="flex gap-4 text-sm leading-relaxed">
@@ -58,7 +66,16 @@ export default function DjiDocPage() {
             </p>
           </div>
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight">Modèles</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">GoPro : étapes</h2>
+            <ol className="mb-12 mt-6 space-y-4">
+              {goproSteps.map((s, i) => (
+                <li key={s} className="flex gap-4 text-sm leading-relaxed">
+                  <span className="font-mono text-xs text-muted">{i + 1}.</span>
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ol>
+            <h2 className="text-2xl font-semibold tracking-tight">Modèles DJI</h2>
             <ul className="mt-6 divide-y divide-line rounded-2xl border border-line">
               {DJI_MODELS.map((m) => (
                 <li key={m.id} className="flex items-center justify-between gap-4 px-5 py-3.5 text-sm">

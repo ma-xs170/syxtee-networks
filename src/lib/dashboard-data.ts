@@ -45,6 +45,8 @@ export type Overview = {
   /** URLs du relais principal (le plus ancien relais SRTLA actif), pour le guide de démarrage. */
   keys: { relay: string; moblin: string; srt: string; obs: string } | null;
   relays: { active: number; max: number };
+  /** Relais actifs (sources de l'aperçu en direct). */
+  sources: { id: string; name: string }[];
   coreStatus: "ok" | "down" | "off";
   plan: { name: string; streams: number };
 };

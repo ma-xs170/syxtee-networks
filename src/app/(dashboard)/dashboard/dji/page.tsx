@@ -5,9 +5,9 @@ import PlanGate from "@/components/plans/PlanGate";
 import { requireUser } from "@/lib/auth/dal";
 import { hasCore, listRelays } from "@/lib/core";
 
-export const metadata: Metadata = { title: "Caméras DJI", robots: { index: false } };
+export const metadata: Metadata = { title: "Caméras externes", robots: { index: false } };
 
-// Caméras DJI (menu Direct) : autant de caméras que tu veux, chacune liée à un relais RTMP, lancées en Bluetooth
+// Caméras externes (menu Direct) : DJI lancées en Bluetooth, GoPro en RTMP. Chacune liée à un relais RTMP
 // (protocole de Moblin, licence MIT). ?relais=<id> : relais présélectionné pour l'ajout (lien depuis la fiche relais).
 export default async function DjiPage({ searchParams }: { searchParams: Promise<{ relais?: string }> }) {
   const user = await requireUser("/dashboard/dji");
@@ -27,7 +27,7 @@ export default async function DjiPage({ searchParams }: { searchParams: Promise<
 
   return (
     <DashPage>
-      <DashHeader lead="Caméras" hl="DJI" sub="Osmo Pocket, Osmo Action, Osmo 360 : chaque caméra diffuse directement vers son relais, même page fermée." />
+      <DashHeader lead="Caméras" hl="externes" sub="DJI Osmo en Bluetooth, GoPro en RTMP : chaque caméra diffuse directement vers son relais." />
       <PlanGate feature="dji">
         {down ? <p className="text-sm text-muted">Le relais ne répond pas pour le moment. Réessaie dans quelques minutes.</p> : <DjiHub relays={relays} focusRelay={relais} />}
       </PlanGate>

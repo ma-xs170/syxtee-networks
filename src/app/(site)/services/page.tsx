@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import NextStep from "@/components/NextStep";
+import StudioBanner from "@/components/StudioBanner";
 import DetailSection, { IllustrationCard, Point } from "@/components/blocks/DetailSection";
 import DiscordChat from "@/components/illustrations/DiscordChat";
 import ObsInterface from "@/components/illustrations/ObsInterface";
@@ -159,6 +160,7 @@ export default function ServicesPage() {
         </Point>
       </DetailSection>
 
+      <StudioBanner />
       <NextStep label="Comment ça marche" href="/fonctionnement" />
     </>
   );

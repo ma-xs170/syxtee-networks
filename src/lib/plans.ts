@@ -17,7 +17,7 @@ export const FEATURES: Record<Feature, string> = {
   carte: "Carte du débit",
   mire: "Mire de coupure",
   cam: "SYXTEE Cam",
-  dji: "Caméras DJI",
+  dji: "Caméras externes",
   cles: "Clés de stream",
 };
 

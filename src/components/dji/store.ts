@@ -10,6 +10,10 @@ export type Camera = {
   name: string;
   deviceId?: string;
   deviceName?: string;
+  /** Marque : DJI (lancée en Bluetooth) ou GoPro (RTMP, lancée depuis l'app GoPro). Absent = DJI. */
+  brand?: "dji" | "gopro";
+  /** GoPro : modèle (texte libre parmi la liste). */
+  gopro?: string;
   model: DjiModel;
   relayId: string;
   networkId: string;
@@ -30,6 +34,7 @@ export const newId = () => (typeof crypto !== "undefined" && "randomUUID" in cry
 export const defaultCamera = (relayId: string, networkId = ""): Camera => ({
   id: newId(),
   name: "",
+  brand: "dji",
   model: "osmoPocket3",
   relayId,
   networkId,

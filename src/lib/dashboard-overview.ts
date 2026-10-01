@@ -139,6 +139,7 @@ export async function getOverview(userId: string, profile: Profile, range: Range
     alerts: buildAlerts({ month, profile, relays, coreOk: status === "ok", hasEverStreamed }),
     keys: mainKeys(relays),
     relays: { active: relays.filter((r) => !r.archived).length, max: relayLimit(plan) },
+    sources: relays.filter((r) => !r.archived).map((r) => ({ id: r.id, name: r.name })),
     coreStatus: status,
     plan: { name: plan.name, streams: Number.isFinite(plan.maxConcurrentStreams) ? plan.maxConcurrentStreams : 99 },
   };

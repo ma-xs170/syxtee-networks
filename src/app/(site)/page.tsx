@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
 import JourneyStory from "@/components/home/JourneyStory";
 import RelayBento from "@/components/home/RelayBento";
+import StudioPromo from "@/components/sections/StudioPromo";
 import CreateSteps from "@/components/home/CreateSteps";
 import Guides from "@/components/sections/Guides";
 import Offers from "@/components/sections/Offers";
@@ -25,6 +26,7 @@ export default async function Home() {
       <Hero />
       <JourneyStory />
       <RelayBento />
+      <StudioPromo />
       <CreateSteps />
       <Guides />
       <Offers />

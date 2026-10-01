@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import StreamPreview from "@/components/dashboard/StreamPreview";
+import LiveStudio from "@/components/dashboard/LiveStudio";
 import { DashHeader, DashPage } from "@/components/dashboard/ui";
-import RelayPicker from "@/components/relais/RelayPicker";
 import { requireUser } from "@/lib/auth/dal";
 import { publicCoreUrl } from "@/lib/core";
 import { defaultRelay } from "@/lib/relay-groups";
@@ -34,10 +33,7 @@ export default async function ApercuPage({ searchParams }: PageProps<"/dashboard
         </p>
       ) : (
         <>
-          <RelayPicker relays={active} current={current.id} base="/dashboard/apercu" />
-          <div className="max-w-4xl">
-            <StreamPreview key={current.id} coreUrl={publicCoreUrl} relayId={current.id} />
-          </div>
+          <LiveStudio sources={active.map((r) => ({ id: r.id, name: r.name, live: r.live }))} coreUrl={publicCoreUrl} initial={current.id} />
         </>
       )}
     </PlanGate>

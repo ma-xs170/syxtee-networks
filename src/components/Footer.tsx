@@ -5,7 +5,7 @@ import ThemeToggle from "./ThemeToggle";
 import { DiscordIcon } from "./ui";
 
 // Mêmes catégories que la nav : Produits (+ Offres), Outils, Ressources, puis Support.
-const columns: { title: string; links: NavLink[] }[] = nav.filter(isMenu).map((m) => ({ title: m.label, links: [...m.children] }));
+const columns: { title: string; links: (NavLink & { group?: string })[] }[] = nav.filter(isMenu).map((m) => ({ title: m.label, links: [...m.children] }));
 const offers = nav.find((item) => !isMenu(item)) as NavLink | undefined;
 if (offers) columns[0]?.links.push(offers);
 
@@ -27,8 +27,11 @@ export default function Footer() {
           <div key={col.title}>
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">{col.title}</p>
             <ul className="mt-4 space-y-3 text-sm">
-              {col.links.map((l) => (
+              {col.links.map((l, i) => (
                 <li key={l.href}>
+                  {l.group && l.group !== col.links[i - 1]?.group && (
+                    <p className="label-mono mb-2 mt-5 text-[10px] first:mt-0">{l.group}</p>
+                  )}
                   <Link href={l.href} className="inline-flex items-center gap-2 text-muted hover:text-foreground">
                     {l.label}
                     {l.badge && <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]">{l.badge}</span>}

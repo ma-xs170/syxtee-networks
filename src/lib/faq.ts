@@ -16,7 +16,7 @@ export const faq: FaqItem[] = [
   },
   {
     q: "Combien ça coûte ?",
-    a: "Les offres arrivent bientôt. Le but est d'être l'option la plus abordable pour les streamers IRL. Rejoins le Discord pour être prévenu à l'ouverture.",
+    a: "Trois formules : Basique 5,99 € par mois, Premium 14,99 € et Extra 34,99 €, avec 2 mois offerts à l'année. Sans engagement. Le détail est sur la page Offres.",
   },
   {
     q: "Comment contacter le support ?",

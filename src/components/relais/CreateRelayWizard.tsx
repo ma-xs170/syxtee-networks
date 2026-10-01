@@ -20,7 +20,7 @@ const PROTOCOLS: { id: RelayProtocol; name: string; badge?: string; pros: string
     badge: "Recommandé",
     pros: ["Bonding : combine 4G, 5G, Wi-Fi et Starlink", "Le live continue quand un réseau lâche", "Idéal pour l'IRL en mouvement"],
     cons: [],
-    foot: "Compatible : Moblin, IRL Pro, BELABOX, SYXTEE PRO",
+    foot: "Compatible : Moblin, IRL Pro, BELABOX",
   },
   {
     id: "rtmp",
@@ -32,7 +32,7 @@ const PROTOCOLS: { id: RelayProtocol; name: string; badge?: string; pros: string
 ];
 
 const SUGGESTIONS: Record<RelayProtocol, string[]> = {
-  srtla: ["iPhone 16", "iPhone 15 Pro", "Galaxy S24", "Pixel 9", "BELABOX", "SYXTEE PRO"],
+  srtla: ["iPhone 16", "iPhone 15 Pro", "Galaxy S24", "Pixel 9", "BELABOX"],
   rtmp: ["Osmo Pocket 3", "Osmo Action 5 Pro", "Osmo 360", "GoPro HERO13", "Insta360 X4", "OBS"],
 };
 

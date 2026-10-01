@@ -20,8 +20,9 @@ async function visitorGeo() {
   return h.get("x-vercel-ip-latitude") && Number.isFinite(lat) && Number.isFinite(lon) ? { lat, lon } : null;
 }
 
-export default async function RelaisPage() {
+export default async function RelaisPage({ searchParams }: PageProps<"/dashboard/relais">) {
   const user = await requireUser("/dashboard/relais");
+  const { nouveau } = await searchParams;
   const [{ relays, status }, geo, alerts] = await Promise.all([loadRelays(user.id), visitorGeo(), listAlerts(user.id).catch(() => [])]);
   const plan = await getPlan();
   const active = relays.filter((r) => !r.archived).length;
@@ -31,7 +32,7 @@ export default async function RelaisPage() {
       <PlanGate feature="relais">
       {status === "ok" ? (
         <>
-          <RelayList relays={relays} active={active} max={relayLimit(plan)} coreUrl={publicCoreUrl} geo={geo} />
+          <RelayList relays={relays} active={active} max={relayLimit(plan)} coreUrl={publicCoreUrl} geo={geo} autoOpen={nouveau === "1"} />
           <SecurityAlerts alerts={alerts} relays={relays} />
         </>
       ) : (

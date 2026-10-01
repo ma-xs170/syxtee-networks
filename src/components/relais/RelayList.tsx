@@ -25,6 +25,8 @@ type Props = {
   max: number;
   coreUrl: string;
   geo: { lat: number; lon: number } | null;
+  /** Ouvre l'assistant au chargement (lien « Créer mon relais » de l'accueil : /dashboard/relais?nouveau=1). */
+  autoOpen?: boolean;
 };
 
 export function ProtocolBadge({ protocol }: { protocol: RelayRow["protocol"] }) {
@@ -80,8 +82,8 @@ function Row({ relay, live }: { relay: RelayRow; live: boolean }) {
   );
 }
 
-export default function RelayList({ relays, active, max, coreUrl, geo }: Props) {
-  const [wizard, setWizard] = useState(false);
+export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen = false }: Props) {
+  const [wizard, setWizard] = useState(autoOpen && active < max);
   const [protocol, setProtocol] = useState<"all" | RelayRow["protocol"]>("all");
   const [server, setServer] = useState("all");
   const [q, setQ] = useState("");

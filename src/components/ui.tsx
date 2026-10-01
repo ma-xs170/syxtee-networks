@@ -54,3 +54,17 @@ export function MoreLink({ href, children = "En savoir plus" }: { href: string; 
     </Link>
   );
 }
+
+/** Inscription, puis l'assistant « Créer un relais » s'ouvre tout seul sur /dashboard/relais?nouveau=1. Même libellé partout. */
+export const CREATE_RELAY_HREF = "/inscription?next=%2Fdashboard%2Frelais%3Fnouveau%3D1";
+
+export function CreateRelayLink({ size = "md" }: { size?: "md" | "sm" }) {
+  return (
+    <Link
+      href={CREATE_RELAY_HREF}
+      className={`inline-flex items-center justify-center whitespace-nowrap rounded-full bg-white text-sm font-medium text-black transition-colors hover:bg-neutral-200 active:scale-[0.98] ${size === "sm" ? "h-9 px-4" : "px-5 py-3"}`}
+    >
+      Créer mon relais
+    </Link>
+  );
+}

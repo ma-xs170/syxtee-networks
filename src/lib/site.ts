@@ -3,14 +3,15 @@ export const site = {
   name: "SYXTEE NETWORKS",
   url: "https://syxtee-networks.vercel.app", // ← remplace par ton domaine final
   description:
-    "Relais IRL SRTLA low-cost : streame en extérieur avec ton téléphone, connexions 4G/5G combinées, compatible Moblin, IRL Pro et OBS.",
+    "Relais SRTLA et RTMP pour streamer en IRL : bonding 4G, 5G, Wi-Fi et Starlink, mire de coupure, santé du flux. Aux Antilles et partout.",
   discord: "https://discord.gg/CD68F8yZuZ",
   year: new Date().getFullYear(),
 };
 
 export type ToolIcon = "bag" | "rack" | "phone" | "dish" | "esim" | "route" | "services" | "docs" | "faq" | "tower";
 export type NavLink = { label: string; href: string; badge?: string };
-export type NavTool = NavLink & { desc: string; icon: ToolIcon };
+/** `soon` : produit pas encore sorti, affiché grisé dans les menus (le lien reste cliquable). */
+export type NavTool = NavLink & { desc: string; icon: ToolIcon; soon?: boolean };
 /** Menu déroulant : `dot` = point rouge de nouveauté à côté du libellé, `note` = ligne en pied de panneau. */
 export type NavMenu = { label: string; children: NavTool[]; dot?: boolean; note?: string };
 export type NavItem = NavLink | NavMenu;
@@ -18,10 +19,9 @@ export type NavItem = NavLink | NavMenu;
 export const nav: NavItem[] = [
   {
     label: "Produits",
-    dot: true,
     children: [
-      { label: "SYXTEE PRO", href: "/pro", desc: "Le sac encodeur IRL", icon: "bag", badge: "Nouveau" },
-      { label: "Relais SYXTEE", href: "/relais", desc: "Nos serveurs SRTLA", icon: "rack" },
+      { label: "Relais SYXTEE", href: "/relais", desc: "Nos serveurs SRTLA et RTMP", icon: "rack" },
+      { label: "SYXTEE PRO", href: "/pro", desc: "Le sac encodeur IRL", icon: "bag", badge: "À venir", soon: true },
     ],
   },
   {
@@ -49,7 +49,7 @@ export const nav: NavItem[] = [
 
 export const isMenu = (item: NavItem): item is NavMenu => "children" in item;
 
-// SYXTEE PRO : sac encodeur IRL (en développement). Prix affichés sur l'accueil et /pro.
+// SYXTEE PRO : sac encodeur IRL (en pause, FEATURE_PRO). Prix gardés pour la fiche produit, non affichés tant que le produit est « À venir ».
 export const pro = {
   launchPrice: "999 €",
   publicPrice: "1 290 €",

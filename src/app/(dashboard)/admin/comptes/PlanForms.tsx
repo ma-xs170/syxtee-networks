@@ -67,7 +67,7 @@ export default function PlanForms({ userId, plan, until, note }: { userId: strin
         <input type="hidden" name="userId" value={userId} />
         <div className="grid gap-2">
           <label htmlFor="days" className={label}>
-            Offrir des jours de Payant
+            Offrir des jours de Premium
           </label>
           <input id="days" name="days" type="number" min={1} max={365} defaultValue={30} className={`${field} w-32`} />
         </div>

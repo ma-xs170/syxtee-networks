@@ -184,5 +184,5 @@ export async function offerDaysAction(_prev: PlanState, form: FormData): Promise
     return { error: "Enregistrement impossible." };
   }
   revalidatePath("/admin/comptes");
-  return { ok: `${parsed.data.days} jours de Payant offerts.` };
+  return { ok: `${parsed.data.days} jours de Premium offerts.` };
 }

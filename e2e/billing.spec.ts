@@ -23,7 +23,10 @@ async function send(request: APIRequestContext, payload: string, signature?: str
   return request.post("/api/stripe/webhook", { data: payload, headers: { "content-type": "application/json", "stripe-signature": header } });
 }
 
-function subscription(customer: string, o: { status: string; interval?: "month" | "year"; end: number; cancel?: boolean }) {
+// Prix factices de playwright.config.ts : premium = formule « paid ».
+const price = (tier: "basic" | "premium" | "extra", interval: "month" | "year") => `price_e2e_${tier}_${interval === "year" ? "yearly" : "monthly"}`;
+
+function subscription(customer: string, o: { status: string; interval?: "month" | "year"; tier?: "basic" | "premium" | "extra"; end: number; cancel?: boolean }) {
   return {
     id: `sub_${customer}`,
     object: "subscription",
@@ -31,7 +34,7 @@ function subscription(customer: string, o: { status: string; interval?: "month" 
     status: o.status,
     cancel_at_period_end: !!o.cancel,
     cancel_at: null,
-    items: { object: "list", data: [{ id: "si_1", object: "subscription_item", current_period_end: o.end, price: { id: "price_x", object: "price", recurring: { interval: o.interval ?? "month" } } }] },
+    items: { object: "list", data: [{ id: "si_1", object: "subscription_item", current_period_end: o.end, price: { id: price(o.tier ?? "premium", o.interval ?? "month"), object: "price", recurring: { interval: o.interval ?? "month" } } }] },
   };
 }
 
@@ -76,6 +79,18 @@ test("webhook : abonnement, doublon, résiliation, paiement, fin", async ({ requ
   expect(p.plan).toBe("paid");
   expect(p.cancel_at_period_end).toBe(true);
 
+  // Changement de formule (portail Stripe) : Premium → Extra, puis retour.
+  expect((await send(request, event("customer.subscription.updated", subscription(customer, { status: "active", interval: "year", tier: "extra", end, cancel: true })))).status()).toBe(200);
+  expect((await profile(id)).plan).toBe("extra");
+  await send(request, event("customer.subscription.updated", subscription(customer, { status: "active", interval: "year", end, cancel: true })));
+  expect((await profile(id)).plan).toBe("paid");
+
+  // Prix inconnu de ce site : formule inchangée.
+  const unknown = subscription(customer, { status: "active", interval: "year", end, cancel: true });
+  unknown.items.data[0].price.id = "price_inconnu";
+  await send(request, event("customer.subscription.updated", unknown));
+  expect((await profile(id)).plan).toBe("paid");
+
   // Facture payée : enregistrée une seule fois pour les revenus.
   const invoice = { id: `in_${id.slice(0, 8)}`, object: "invoice", customer, amount_paid: 9900, amount_due: 9900, currency: "eur", created: end - 30 * DAY, status_transitions: { paid_at: end - 30 * DAY } };
   await send(request, event("invoice.paid", invoice));
@@ -90,7 +105,7 @@ test("webhook : abonnement, doublon, résiliation, paiement, fin", async ({ requ
   expect(p.billing_status).toBe("canceled");
 
   const { data: log } = await admin().from("admin_audit").select("action, admin_email").eq("target_user", id);
-  expect(log?.map((l) => l.action)).toEqual(expect.arrayContaining(["billing.subscribed", "billing.ended"]));
+  expect(log?.map((l) => l.action)).toEqual(expect.arrayContaining(["billing.subscribed", "billing.changed", "billing.ended"]));
   expect(new Set(log?.map((l) => l.admin_email))).toEqual(new Set(["stripe"]));
 });
 
@@ -113,13 +128,15 @@ test("page Abonnement : offres en Gratuit, gestion une fois abonné", async ({ p
   await signInWithPassword(page, email, password);
   await expect(page).toHaveURL(/\/dashboard$/);
   await page.goto("/dashboard/abonnement");
-  await expect(page.getByRole("button", { name: "S'abonner" })).toHaveCount(2);
-  await expect(page.getByText("9,99 €")).toBeVisible();
-  await expect(page.getByText("99 €", { exact: true })).toBeVisible();
+  for (const name of ["Basique", "Premium", "Extra"]) await expect(page.getByRole("button", { name: `Choisir ${name}` })).toBeVisible();
+  await expect(page.getByText("14,99 €")).toBeVisible();
+  await page.getByRole("radio", { name: /Annuel/ }).click();
+  await expect(page.getByText("149 €", { exact: true })).toBeVisible();
 
   await send(request, event("customer.subscription.created", subscription(customer, { status: "active", end: Math.floor(Date.now() / 1000) + 30 * DAY })));
   await page.goto("/dashboard/abonnement?paiement=ok");
   await expect(page.getByRole("button", { name: "Gérer mon abonnement" })).toBeVisible();
   await expect(page.getByText(/Prochain prélèvement le/)).toBeVisible();
-  await expect(page.getByRole("button", { name: "S'abonner" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^Choisir / })).toHaveCount(0);
+  await expect(page.getByText(/Premium · Mensuel · 14,99 €/)).toBeVisible();
 });

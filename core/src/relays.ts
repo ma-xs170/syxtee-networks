@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { newStreamIds, type StreamIds } from "./ids.ts";
 import { hashKey, keyHashes, type Sealer, type SecretKeys } from "./keys.ts";
-import { allowedRelayIds, limitsOf, planOf, type Account } from "./plans.ts";
+import { allowedRelayIds, limitsOf, planOf, roomFor, type Account } from "./plans.ts";
 import type { Sls } from "./sls.ts";
 
 // Relais : table Supabase `relays` (écrite par le Core seulement) + paires déclarées dans le SLS.
@@ -142,6 +142,14 @@ export function createRelayStore(
     return rows.filter((r) => ok.has(r.id));
   }
 
+  /** Relais actifs d'un compte : au total, et du protocole donné. */
+  async function activeCounts(userId: string, protocol: Protocol) {
+    const { data, error } = await table().select("protocol").eq("user_id", userId).eq("archived", false);
+    if (error) throw new Error(`relays : ${error.message}`);
+    const rows = (data ?? []) as { protocol: string }[];
+    return { total: rows.length, sameProtocol: rows.filter((x) => x.protocol === protocol).length };
+  }
+
   /** Nouvelles clés, avec une nouvelle génération si une empreinte existe déjà (contrainte UNIQUE). */
   async function withFreshKeys<T>(fn: (ids: StreamIds) => Promise<T>): Promise<T> {
     for (let attempt = 0; ; attempt++) {
@@ -164,11 +172,10 @@ export function createRelayStore(
     async create(userId: string, p: { name: string; protocol: Protocol; limit: number }): Promise<Relay> {
       const acc = await account(userId);
       if (!acc || acc.suspended) throw new ForbiddenError("account");
-      const limit = Math.min(p.limit, limitsOf(planOf(acc)).maxRelays);
+      const limits = limitsOf(planOf(acc));
+      const limit = Math.min(p.limit, limits.maxRelays);
       if (limit <= 0) throw new ForbiddenError("plan");
-      const { count, error: countError } = await table().select("id", { count: "exact", head: true }).eq("user_id", userId).eq("archived", false);
-      if (countError) throw new Error(`relays : ${countError.message}`);
-      if ((count ?? 0) >= limit) throw new QuotaError("quota");
+      if (!roomFor({ ...limits, maxRelays: limit }, await activeCounts(userId, p.protocol))) throw new QuotaError("quota");
       const id = crypto.randomUUID();
       return withFreshKeys(async (ids) => {
         await register({ id, user_id: userId }, ids);
@@ -223,8 +230,8 @@ export function createRelayStore(
       }
       const acc = await account(r.user_id);
       if (!acc || acc.suspended) throw new ForbiddenError("account");
-      const { count } = await table().select("id", { count: "exact", head: true }).eq("user_id", r.user_id).eq("archived", false);
-      if ((count ?? 0) >= Math.min(limit, limitsOf(planOf(acc)).maxRelays)) throw new QuotaError("quota");
+      const limits = limitsOf(planOf(acc));
+      if (!roomFor({ ...limits, maxRelays: Math.min(limit, limits.maxRelays) }, await activeCounts(r.user_id, r.protocol))) throw new QuotaError("quota");
       await register(r, r);
       try {
         return await update(r.id, { archived: false });

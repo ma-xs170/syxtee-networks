@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { openPortal, startCheckout, type BillingState } from "@/app/(dashboard)/dashboard/abonnement/actions";
-import type { Interval } from "@/lib/billing";
+import type { Interval, Tier } from "@/lib/billing";
 
 // Boutons de la page Abonnement : « S'abonner » (Checkout), « Gérer mon abonnement » (portail), et l'attente
 // de l'activation au retour de Stripe (la page se rafraîchit jusqu'à ce que le webhook ait fait passer le compte en Payant).
@@ -31,11 +31,11 @@ const BillingError = ({ state }: { state: BillingState }) =>
     </p>
   ) : null;
 
-export function SubscribeButton({ interval, primary }: { interval: Interval; primary?: boolean }) {
-  const [state, action] = useActionState<BillingState, FormData>(() => startCheckout(interval), {});
+export function SubscribeButton({ tier, interval, label, primary }: { tier: Tier; interval: Interval; label: string; primary?: boolean }) {
+  const [state, action] = useActionState<BillingState, FormData>(() => startCheckout(tier, interval), {});
   return (
     <form action={action}>
-      <Submit primary={primary}>S&apos;abonner</Submit>
+      <Submit primary={primary}>{label}</Submit>
       <BillingError state={state} />
     </form>
   );

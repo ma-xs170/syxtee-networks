@@ -140,7 +140,7 @@ export function emailChange(o: { to: "old" | "new"; oldEmail: string; newEmail: 
   };
 }
 
-const PLAN: Record<string, string> = { free: "Gratuit", paid: "Payant", partner: "Partenaire", beta: "Bêta" };
+const PLAN: Record<string, string> = { free: "Gratuit", basic: "Basique", paid: "Premium", extra: "Extra", partner: "Partenaire", beta: "Bêta" };
 
 /** g) Formule attribuée ou modifiée, et rappel à J-7 de l'expiration. */
 export function planChanged(o: { plan: string; until?: Date | null; expiring?: boolean }): Email {

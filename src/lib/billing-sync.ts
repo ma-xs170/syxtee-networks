@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import { paymentFailed } from "@/emails/templates";
 import { decide, type Interval } from "@/lib/billing";
 import { sendEmail } from "@/lib/email/send";
+import { tierOfPrice } from "@/lib/stripe";
 import { applyBillingEvent } from "@/lib/plan-admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -26,7 +27,9 @@ async function syncSubscription(sub: Stripe.Subscription) {
   }
   const item = sub.items.data[0];
   const periodEnd = item?.current_period_end ?? null;
-  const interval = item?.price.recurring?.interval;
+  const known = tierOfPrice(item?.price.id);
+  if (!known) console.warn("stripe : prix inconnu (variables STRIPE_PRICE_…)", item?.price.id);
+  const interval = known?.interval ?? item?.price.recurring?.interval;
   const { error } = await createAdminClient()
     .from("profiles")
     .update({
@@ -38,7 +41,7 @@ async function syncSubscription(sub: Stripe.Subscription) {
     })
     .eq("id", user.id);
   if (error) throw new Error(`profiles billing : ${error.message}`);
-  await applyBillingEvent(user.id, decide({ status: sub.status, periodEnd }, user.plan));
+  await applyBillingEvent(user.id, decide({ status: sub.status, periodEnd, tier: known?.tier ?? null }, user.plan));
 }
 
 /** Facture payée : une ligne pour la page Revenus (idempotent sur l'id de facture). */

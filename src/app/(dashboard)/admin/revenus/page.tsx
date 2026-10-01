@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
 import { requireAdmin } from "@/lib/admin";
-import { mrrCents } from "@/lib/billing";
+import { CATALOG, TIERS, isTier, mrrCents, type Interval, type Tier } from "@/lib/billing";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { hasStripe } from "@/lib/stripe";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
@@ -27,23 +27,23 @@ export default async function AdminRevenusPage() {
   const months = last12Months();
   const counts: Partial<Record<PlanId, number>> = {};
   let payments: Payment[] = [];
-  let monthly = 0;
-  let yearly = 0;
+  const subs: Partial<Record<Tier, Partial<Record<Interval, number>>>> = {};
   if (hasAdmin) {
     const db = createAdminClient();
-    const live = (i: string) => db.from("profiles").select("id", { count: "exact", head: true }).in("billing_status", ["active", "past_due"]).eq("billing_interval", i);
-    const [pay, m, y] = await Promise.all([
+    const [pay, live] = await Promise.all([
       db.from("billing_payments").select("invoice_id, user_id, amount_cents, interval, paid_at").gte("paid_at", months[0].start.toISOString()).order("paid_at", { ascending: false }).limit(5000),
-      live("month"),
-      live("year"),
-      ...(["free", "beta", "paid", "partner"] as PlanId[]).map(async (p) => {
+      db.from("profiles").select("plan, billing_interval").in("billing_status", ["active", "past_due"]).limit(10000),
+      ...(["free", "basic", "beta", "paid", "extra", "partner"] as PlanId[]).map(async (p) => {
         const { count } = await db.from("profiles").select("id", { count: "exact", head: true }).eq("plan", p);
         counts[p] = count ?? 0;
       }),
     ]);
     payments = (pay.data ?? []) as Payment[];
-    monthly = m.count ?? 0;
-    yearly = y.count ?? 0;
+    for (const r of (live.data ?? []) as { plan: string; billing_interval: Interval | null }[]) {
+      if (!isTier(r.plan) || !r.billing_interval) continue;
+      const t = (subs[r.plan] ??= {});
+      t[r.billing_interval] = (t[r.billing_interval] ?? 0) + 1;
+    }
   }
 
   const byMonth = new Map(months.map((m) => [m.key, 0]));
@@ -55,6 +55,8 @@ export default async function AdminRevenusPage() {
   const thisMonth = payments.filter((p) => new Date(p.paid_at) >= months[11].start);
   const revenue = thisMonth.reduce((s, p) => s + p.amount_cents, 0);
   const peak = Math.max(1, ...byMonth.values());
+  const subCount = (t: Tier) => (subs[t]?.month ?? 0) + (subs[t]?.year ?? 0);
+  const totalSubs = TIERS.reduce((n, t) => n + subCount(t), 0);
   const day = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short", timeZone: "Europe/Paris" });
 
   return (
@@ -63,8 +65,8 @@ export default async function AdminRevenusPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           ["Chiffre d'affaires du mois", eur(revenue)],
-          ["MRR", eur(mrrCents(monthly, yearly))],
-          ["Abonnés actifs", `${monthly + yearly}`],
+          ["MRR", eur(mrrCents(subs))],
+          ["Abonnés actifs", `${totalSubs}`],
           ["Paiement moyen (mois)", eur(thisMonth.length ? Math.round(revenue / thisMonth.length) : 0)],
         ].map(([label, v]) => (
           <Tile key={label}>
@@ -92,18 +94,20 @@ export default async function AdminRevenusPage() {
         <Tile>
           <TileLabel>Comptes par formule</TileLabel>
           <dl className="mt-4 divide-y divide-line text-sm">
-            {(["paid", "partner", "beta", "free"] as PlanId[]).map((p) => (
+            {(["extra", "paid", "basic", "partner", "beta", "free"] as PlanId[]).map((p) => (
               <div key={p} className="flex justify-between py-2.5">
                 <dt className="text-muted">{PLANS[p].name}</dt>
                 <dd className="font-mono tabular-nums">{counts[p] ?? 0}</dd>
               </div>
             ))}
-            <div className="flex justify-between py-2.5">
-              <dt className="text-muted">dont abonnés mensuels / annuels</dt>
-              <dd className="font-mono tabular-nums">
-                {monthly} / {yearly}
-              </dd>
-            </div>
+            {TIERS.map((t) => (
+              <div key={t} className="flex justify-between py-2.5">
+                <dt className="text-muted">{`Abonnés ${CATALOG[t].name} (mois / an)`}</dt>
+                <dd className="font-mono tabular-nums">
+                  {subs[t]?.month ?? 0} / {subs[t]?.year ?? 0}
+                </dd>
+              </div>
+            ))}
           </dl>
         </Tile>
       </div>

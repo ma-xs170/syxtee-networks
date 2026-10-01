@@ -43,6 +43,10 @@ export default defineConfig({
         ADMIN_EMAILS: "e2e-admin@syxtee.test",
         // Webhook Stripe : secret de test (événements signés par e2e/billing.spec.ts, aucun appel à Stripe).
         STRIPE_WEBHOOK_SECRET: "whsec_syxtee_e2e_0123456789abcdef",
+        // Prix factices : le webhook en déduit la formule (price_e2e_<formule>_<périodicité>).
+        ...Object.fromEntries(
+          ["BASIC", "PREMIUM", "EXTRA"].flatMap((t) => ["MONTHLY", "YEARLY"].map((i) => [`STRIPE_PRICE_${t}_${i}`, `price_e2e_${t.toLowerCase()}_${i.toLowerCase()}`])),
+        ),
         // Send Email Hook : secret de test (pas de RESEND_API_KEY : aucun email ne part vraiment).
         SEND_EMAIL_HOOK_SECRET: "v1,whsec_c3l4dGVlLWUyZS1ob29rLXNlY3JldC0wMTIzNDU2Nzg5",
       },

@@ -1,7 +1,8 @@
 // Formules : source unique de vérité pour les droits (vérifiés côté serveur : actions, pages, API et Core).
 // Copie côté Core : core/src/plans.ts (mêmes limites), qui revérifie formule, échéance et suspension à chaque connexion.
 
-export type PlanId = "free" | "beta" | "paid" | "partner" | "admin";
+// Formules vendues (Stripe) : basic (Basique), paid (Premium, identifiant historique gardé), extra (Extra).
+export type PlanId = "free" | "basic" | "beta" | "paid" | "extra" | "partner" | "admin";
 
 /** Fonctions verrouillées en Gratuit. Scanner et Analyseur restent actifs pour tous (hors liste). */
 export type Feature = "relais" | "sante" | "apercu" | "controle" | "stats" | "lives" | "carte" | "mire" | "cam" | "dji" | "cles";
@@ -29,19 +30,23 @@ export type Plan = {
   maxRelays: number;
   /** Flux en direct en même temps. */
   maxConcurrentStreams: number;
+  /** Relais actifs au plus par protocole (SRTLA, RTMP), en plus du total. Absent : pas de limite. */
+  maxPerProtocol?: number;
   features: Feature[];
 };
 
 export const PLANS: Record<PlanId, Plan> = {
   free: { id: "free", name: "Gratuit", maxRelays: 0, maxConcurrentStreams: 0, features: [] },
   beta: { id: "beta", name: "Bêta", maxRelays: 3, maxConcurrentStreams: 3, features: ALL },
-  paid: { id: "paid", name: "Payant", maxRelays: 3, maxConcurrentStreams: 3, features: ALL },
+  basic: { id: "basic", name: "Basique", maxRelays: 1, maxConcurrentStreams: 1, features: ["relais", "sante", "mire", "cles"] },
+  paid: { id: "paid", name: "Premium", maxRelays: 10, maxConcurrentStreams: 3, maxPerProtocol: 5, features: ALL },
+  extra: { id: "extra", name: "Extra", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: 10, features: ALL },
   partner: { id: "partner", name: "Partenaire", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: Number.POSITIVE_INFINITY, features: ALL },
   admin: { id: "admin", name: "Admin", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: Number.POSITIVE_INFINITY, features: ALL },
 };
 
 /** Formules que l'admin peut attribuer (Admin vient d'ADMIN_EMAILS, Bêta des comptes d'avant les formules). */
-export const ASSIGNABLE: PlanId[] = ["free", "paid", "partner", "beta"];
+export const ASSIGNABLE: PlanId[] = ["free", "basic", "paid", "extra", "partner", "beta"];
 
 export type PlanRow = { plan?: string | null; plan_until?: string | null; suspended_at?: string | null };
 

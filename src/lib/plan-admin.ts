@@ -40,7 +40,7 @@ export async function setPlan(actor: string, userId: string, next: { plan: PlanI
   return true;
 }
 
-/** « Offrir X jours de Payant » : prolonge une formule Payant en cours, sinon part d'aujourd'hui. */
+/** « Offrir X jours de Premium » : prolonge une formule Premium en cours, sinon part d'aujourd'hui. */
 export async function offerPaidDays(actor: string, userId: string, days: number) {
   const { data } = await createAdminClient().from("profiles").select("plan, plan_until, plan_note").eq("id", userId).maybeSingle<PlanFields>();
   if (!data) return false;
@@ -79,7 +79,7 @@ export async function runPlanExpiry(now = new Date()) {
 
 /**
  * Abonnement Stripe → formule (décision prise par `decide`, lib/billing.ts). Acteur « stripe » au journal.
- * Payant : échéance repoussée à chaque renouvellement, email seulement au passage en Payant.
+ * Formule vendue : échéance repoussée à chaque renouvellement, email seulement quand la formule change.
  * Gratuit : abonnement terminé (résiliation arrivée à échéance, ou impayé après les relances).
  */
 export async function applyBillingEvent(userId: string, d: Decision) {
@@ -87,12 +87,12 @@ export async function applyBillingEvent(userId: string, d: Decision) {
   const { data } = await createAdminClient().from("profiles").select("plan, plan_note").eq("id", userId).maybeSingle<{ plan: string; plan_note: string | null }>();
   if (!data) return false;
   if (d.kind === "free") return setPlan("stripe", userId, { plan: "free", until: null, note: data.plan_note }, { action: "billing.ended" });
-  const first = data.plan !== "paid";
-  await setPlan("stripe", userId, { plan: "paid", until: d.until, note: data.plan_note }, { action: first ? "billing.subscribed" : "billing.renewed", notify: false });
-  if (first) {
+  const changed = data.plan !== d.plan;
+  await setPlan("stripe", userId, { plan: d.plan, until: d.until, note: data.plan_note }, { action: changed ? (data.plan === "free" ? "billing.subscribed" : "billing.changed") : "billing.renewed", notify: false });
+  if (changed) {
     const email = await emailOf(userId);
     // Pas de date de fin dans l'email : l'abonnement se renouvelle tout seul.
-    if (email) await sendEmail(email, planChanged({ plan: "paid", until: null }));
+    if (email) await sendEmail(email, planChanged({ plan: d.plan, until: null }));
   }
   return true;
 }

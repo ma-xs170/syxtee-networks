@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { canSubscribe, type Interval } from "@/lib/billing";
+import { canSubscribe, isTier, type Interval, type Tier } from "@/lib/billing";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { hasStripe, priceId, stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -28,10 +28,10 @@ async function customerFor(user: { id: string; email?: string | null }, name: st
   return data?.stripe_customer_id ?? created.id;
 }
 
-export async function startCheckout(interval: Interval): Promise<BillingState> {
+export async function startCheckout(tier: Tier, interval: Interval): Promise<BillingState> {
   const user = await requireUser("/dashboard/abonnement");
   if (!hasStripe) return { error: "Le paiement n'est pas encore ouvert. Réessaie bientôt." };
-  if (interval !== "month" && interval !== "year") return { error: "Formule inconnue." };
+  if (!isTier(tier) || (interval !== "month" && interval !== "year")) return { error: "Formule inconnue." };
   const profile = await getProfile();
   if (!profile) return { error: "Profil introuvable. Recharge la page." };
   if (!canSubscribe(profile)) return { error: "Ton compte a déjà un abonnement ou une formule qui inclut tout." };
@@ -45,7 +45,7 @@ export async function startCheckout(interval: Interval): Promise<BillingState> {
       mode: "subscription",
       customer,
       client_reference_id: user.id,
-      line_items: [{ price: priceId(interval), quantity: 1 }],
+      line_items: [{ price: priceId(tier, interval), quantity: 1 }],
       locale: "fr",
       // Service numérique démarré tout de suite : accord exprès et renonciation au délai de rétractation.
       consent_collection: { terms_of_service: "required" },

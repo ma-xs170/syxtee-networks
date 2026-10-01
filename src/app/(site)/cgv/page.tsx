@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalBlock, LegalPage } from "@/components/LegalPage";
-import { PRICES } from "@/lib/billing";
+import { CATALOG, TIERS } from "@/lib/billing";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Conditions générales de vente", alternates: { canonical: "/cgv" } };
@@ -22,8 +22,12 @@ export default function CgvPage() {
       </LegalBlock>
       <LegalBlock title="2. Objet">
         <p>
-          Ces conditions encadrent la souscription à la formule Payant : accès aux relais SYXTEE (SRTLA et RTMP), à l&apos;aperçu, à la santé du flux, à
-          l&apos;historique des lives et à la mire de coupure, dans la limite de 3 relais et 3 flux simultanés. Elles complètent les{" "}
+          Ces conditions encadrent la souscription aux formules Basique, Premium et Extra : accès aux relais SYXTEE (SRTLA et RTMP) et aux
+          fonctions du dashboard, dans les limites de la formule choisie, décrites sur la page{" "}
+          <Link href="/offres" className="text-foreground underline">
+            Offres
+          </Link>
+          . Elles complètent les{" "}
           <Link href="/cgu" className="text-foreground underline">
             conditions d&apos;utilisation
           </Link>
@@ -32,7 +36,8 @@ export default function CgvPage() {
       </LegalBlock>
       <LegalBlock title="3. Prix">
         <p>
-          {PRICES.month.amount} {PRICES.month.per} ou {PRICES.year.amount} {PRICES.year.per}, prix nets. TVA non applicable [À COMPLÉTER : article du CGI
+          {TIERS.map((t) => `${CATALOG[t].name} : ${CATALOG[t].prices.month.amount} par mois ou ${CATALOG[t].prices.year.amount} par an`).join(" ; ")}. Prix nets, TVA non
+          applicable [À COMPLÉTER : article du CGI
           applicable à l&apos;association]. Toute évolution de prix est annoncée au moins 30 jours avant le renouvellement concerné ; tu peux résilier avant
           qu&apos;elle ne s&apos;applique.
         </p>
@@ -47,7 +52,7 @@ export default function CgvPage() {
         <p>
           L&apos;abonnement est sans engagement et se renouvelle automatiquement. Tu peux le résilier à tout moment depuis Dashboard, puis Abonnement,
           puis « Gérer mon abonnement ». L&apos;accès reste ouvert jusqu&apos;à la fin de la période payée ; aucune période commencée n&apos;est
-          remboursée. Ensuite, le compte repasse en formule Gratuit : les relais sont conservés, mais mis en pause.
+          remboursée. Ensuite, le compte repasse en formule Gratuit : les relais sont conservés, mais mis en pause. Un changement de formule en cours de période est calculé au prorata par Stripe.
         </p>
       </LegalBlock>
       <LegalBlock title="6. Droit de rétractation">

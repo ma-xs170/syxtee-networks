@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
 import NextStep from "@/components/NextStep";
 import Link from "next/link";
-import { PRICES, type Interval } from "@/lib/billing";
+import PlanCards from "@/components/billing/PlanCards";
 import { Container, SectionHeader } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Offres",
   description:
-    "SYXTEE Payant : 9,99 € par mois ou 99 € par an. Relais SRTLA/SRT et RTMP, compatibilité Moblin, IRL Pro et BELABOX, sans engagement, support Discord.",
+    "Formules SYXTEE : Basique 5,99 €, Premium 14,99 €, Extra 34,99 € par mois, 2 mois offerts à l'année. Relais SRTLA/SRT et RTMP, compatibles Moblin, IRL Pro et BELABOX, sans engagement.",
   alternates: { canonical: "/offres" },
 };
 
@@ -47,34 +47,14 @@ export default function OffresPage() {
   return (
     <>
       <PageHero kicker="Offres" title="Du live pro, sans le budget pro." crumb="Offres">
-        Une formule, deux façons de payer. Sans engagement, résiliable en deux clics.
+        Trois formules, au mois ou à l&apos;année. Sans engagement, résiliable en deux clics.
       </PageHero>
 
       <section className="border-b border-line py-20 sm:py-24">
         <Container>
-          <div className="grid gap-4 md:grid-cols-2">
-            {(["month", "year"] as Interval[]).map((i) => (
-              <div key={i} className={`flex flex-col rounded-2xl border p-6 sm:p-8 ${i === "year" ? "border-white/40" : "border-line"}`}>
-                <p className="flex items-center justify-between gap-3">
-                  <span className="font-mono text-xs uppercase tracking-[0.15em]">SYXTEE Payant · {PRICES[i].label}</span>
-                  {PRICES[i].note && <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{PRICES[i].note}</span>}
-                </p>
-                <p className="mt-6 text-5xl font-semibold tracking-tight">{PRICES[i].amount}</p>
-                <p className="mt-1 text-sm text-muted">{PRICES[i].per}, sans engagement</p>
-                <p className="mt-6 text-sm text-muted">3 relais, 3 flux en même temps, aperçu, santé du flux, historique des lives et mire de coupure.</p>
-                <Link
-                  href="/inscription?next=/dashboard/abonnement"
-                  className={`mt-8 inline-flex h-11 items-center justify-center whitespace-nowrap rounded-full px-6 text-sm font-medium transition-colors ${
-                    i === "year" ? "bg-white text-black hover:bg-neutral-200" : "border border-line hover:bg-white/5"
-                  }`}
-                >
-                  Commencer
-                </Link>
-              </div>
-            ))}
-          </div>
+          <PlanCards mode="signup" />
           <p className="mt-6 text-sm text-muted">
-            Déjà un compte ? Passe en Payant depuis{" "}
+            Déjà un compte ? Choisis ta formule depuis{" "}
             <Link href="/dashboard/abonnement" className="text-foreground underline underline-offset-4">
               ton dashboard
             </Link>

@@ -26,7 +26,7 @@ import { SCORE_COLOR, type AroundCell, type Score, type TrackSeg } from "./Scann
 // 3 micro-tests par point, classement Wi-Fi / 4G / 5G par le Core. Jauges en direct, mini-carte de la session,
 // zone de la carte communautaire, points gagnés, puis un résumé en fin de session.
 
-const ScannerMap = dynamic(() => import("./ScannerMap"), { ssr: false, loading: () => <div className="h-full w-full bg-black" aria-hidden="true" /> });
+const ScannerMap = dynamic(() => import("./ScannerMap"), { ssr: false, loading: () => <div className="h-full w-full bg-background" aria-hidden="true" /> });
 
 type Zone = { h3: string; score: Score | null; best: { operator: string; tech: string; median_kbps: number | null } | null };
 type Session = {
@@ -88,7 +88,7 @@ function Banner({ tone = "neutral", children }: { tone?: "neutral" | "warn"; chi
   return (
     <div
       role="status"
-      className={`rounded-xl border px-4 py-3 text-sm leading-relaxed ${tone === "warn" ? "border-[#ff9f0a]/60 bg-[#ff9f0a]/10 text-[#ffd8a0]" : "border-line bg-white/[0.03] text-foreground"}`}
+      className={`rounded-xl border px-4 py-3 text-sm leading-relaxed ${tone === "warn" ? "border-[#ff9f0a]/60 bg-[#ff9f0a]/10 text-[#ffd8a0]" : "border-line bg-accent/[0.08] text-foreground"}`}
     >
       {children}
     </div>
@@ -372,7 +372,7 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
       <div className="flex min-h-[calc(100dvh-9rem)] flex-col gap-4 lg:min-h-0">
         <header className="rounded-2xl border border-line p-5">
           <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Opérateur détecté</p>
-          <p className="mt-1 truncate text-3xl font-semibold tracking-tight sm:text-4xl">{net ? (net.operator ?? "Inconnu") : "…"}</p>
+          <p className="mt-1 truncate h-section">{net ? (net.operator ?? "Inconnu") : "…"}</p>
           <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-xs uppercase tracking-[0.12em]">
             <span className="rounded-full border border-line px-2.5 py-1 text-foreground">{net ? linkLabel(link) : "…"}</span>
             {conf !== null && <span className="text-muted">confiance {conf} %</span>}
@@ -397,7 +397,7 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
                 <p className="font-medium">Wi-Fi détecté : mesures non comptées</p>
                 <p className="mt-1 text-muted">Coupe le Wi-Fi pour scanner la 4G / 5G.</p>
                 {!ct && (
-                  <button type="button" onClick={wifiOff} className="mt-3 h-10 whitespace-nowrap rounded-full border border-line px-4 text-sm transition-colors hover:bg-white/5 active:scale-[0.98]">
+                  <button type="button" onClick={wifiOff} className="mt-3 h-10 whitespace-nowrap rounded-full border border-line px-4 text-sm transition-colors hover:bg-accent/10 active:scale-[0.98]">
                     C&apos;est fait, vérifier le réseau
                   </button>
                 )}
@@ -437,7 +437,7 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
             disabled={!net || consentOff || saving}
             onClick={() => (running ? stop() : start())}
             aria-pressed={running}
-            className="group relative grid aspect-square w-52 place-items-center rounded-full border border-white/25 transition-transform active:scale-[0.98] disabled:opacity-50 sm:w-56"
+            className="group relative grid aspect-square w-52 place-items-center rounded-full border border-accent/35 transition-transform active:scale-[0.98] disabled:opacity-50 sm:w-56"
           >
             {running && (
               <span
@@ -445,8 +445,8 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
                 className="absolute inset-[-6px] animate-[spin_4s_linear_infinite] rounded-full border-2 border-transparent border-t-white motion-reduce:animate-none"
               />
             )}
-            <span className={`absolute inset-3 rounded-full ${running ? "border border-line" : "bg-white"}`} aria-hidden="true" />
-            <span className={`relative px-6 text-center ${running ? "text-foreground" : "text-black"}`}>
+            <span className={`absolute inset-3 rounded-full ${running ? "border border-line" : "bg-accent"}`} aria-hidden="true" />
+            <span className={`relative px-6 text-center ${running ? "text-foreground" : "text-background"}`}>
               {running ? (
                 <>
                   <span className="block font-mono text-4xl tabular-nums">{countdown ?? (session?.valid ?? 0)}</span>
@@ -494,7 +494,7 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
               Économie de data
               <span className="block text-xs text-muted">Un point par minute, tests plus courts.</span>
             </span>
-            <input type="checkbox" checked={eco} onChange={(e) => setEco(e.target.checked)} className="h-5 w-5 accent-white" />
+            <input type="checkbox" checked={eco} onChange={(e) => setEco(e.target.checked)} className="h-5 w-5 accent-accent" />
           </label>
           {!ct && declared && (
             <p className="col-span-2 text-xs text-muted">
@@ -511,10 +511,10 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
       <div className="flex flex-col gap-4">
         <section aria-label="Carte de la session" className="relative h-[42dvh] min-h-[280px] overflow-hidden rounded-2xl border border-line lg:h-[min(62dvh,560px)]">
           <ScannerMap position={here} cells={cells} segments={segments} />
-          <ul className="pointer-events-none absolute bottom-3 left-3 flex flex-wrap gap-x-3 gap-y-1 rounded-lg border border-line bg-black/80 px-3 py-2 font-mono text-[11px] text-muted">
+          <ul className="pointer-events-none absolute bottom-3 left-3 flex flex-wrap gap-x-3 gap-y-1 rounded-lg border border-line bg-background/80 px-3 py-2 font-mono text-[11px] text-muted">
             {(["bonne", "moyenne", "mauvaise", "inconnue"] as Score[]).map((s) => (
               <li key={s} className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-sm border border-white/40" style={{ background: SCORE_COLOR[s] }} aria-hidden="true" />
+                <span className="h-2.5 w-2.5 rounded-sm border border-accent/50" style={{ background: SCORE_COLOR[s] }} aria-hidden="true" />
                 {s[0].toUpperCase() + s.slice(1)}
               </li>
             ))}
@@ -544,8 +544,8 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
 
       {/* ───── Opérateur déclaré (premier scan sur iPhone) ───── */}
       {asking && (
-        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/80 p-4 sm:items-center" role="dialog" aria-modal="true" aria-labelledby="op-title">
-          <div className="w-full max-w-md rounded-2xl border border-line bg-black p-5">
+        <div className="fixed inset-0 z-40 flex items-end justify-center bg-background/80 p-4 sm:items-center" role="dialog" aria-modal="true" aria-labelledby="op-title">
+          <div className="w-full max-w-md rounded-2xl border border-line bg-background p-5">
             <h2 id="op-title" className="text-xl font-semibold tracking-tight">
               Ton opérateur mobile ?
             </h2>
@@ -557,7 +557,7 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
                   type="button"
                   disabled={saving}
                   onClick={() => chooseOperator(o)}
-                  className={`h-14 rounded-xl border px-4 font-mono text-sm uppercase tracking-[0.12em] transition-colors hover:bg-white/5 active:scale-[0.98] disabled:opacity-50 ${declared === o ? "border-white" : "border-line"} ${o === "other" ? "col-span-2" : ""}`}
+                  className={`h-14 rounded-xl border px-4 font-mono text-sm uppercase tracking-[0.12em] transition-colors hover:bg-accent/10 active:scale-[0.98] disabled:opacity-50 ${declared === o ? "border-accent" : "border-line"} ${o === "other" ? "col-span-2" : ""}`}
                 >
                   {DECLARED_LABELS[o]}
                 </button>
@@ -572,8 +572,8 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
 
       {/* ───── Résumé de fin de session ───── */}
       {summary && !running && (
-        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/80 p-4 sm:items-center" role="dialog" aria-modal="true" aria-labelledby="sum-title">
-          <div className="max-h-full w-full max-w-md overflow-y-auto rounded-2xl border border-line bg-black p-5">
+        <div className="fixed inset-0 z-40 flex items-end justify-center bg-background/80 p-4 sm:items-center" role="dialog" aria-modal="true" aria-labelledby="sum-title">
+          <div className="max-h-full w-full max-w-md overflow-y-auto rounded-2xl border border-line bg-background p-5">
             <h2 id="sum-title" className="text-xl font-semibold tracking-tight">
               Session terminée
             </h2>
@@ -616,11 +616,11 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
                 href="/couverture"
-                className="inline-flex h-11 items-center whitespace-nowrap rounded-full bg-white px-5 text-sm font-medium text-black transition-colors hover:bg-neutral-200 active:scale-[0.98]"
+                className="inline-flex h-11 items-center whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98]"
               >
                 Voir sur la carte
               </Link>
-              <button type="button" onClick={() => setSummary(null)} className="h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-white/5">
+              <button type="button" onClick={() => setSummary(null)} className="h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-accent/10">
                 Fermer
               </button>
             </div>

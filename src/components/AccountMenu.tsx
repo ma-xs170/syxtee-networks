@@ -49,9 +49,9 @@ export function useAccount() {
 
 export function Avatar({ account, size = 32 }: { account: NonNullable<Account>; size?: number }) {
   return account.avatar ? (
-    <Image src={account.avatar} alt="" width={size} height={size} className="rounded-full border border-white/15 object-cover" style={{ width: size, height: size }} />
+    <Image src={account.avatar} alt="" width={size} height={size} className="rounded-full border border-accent/25 object-cover" style={{ width: size, height: size }} />
   ) : (
-    <span className="flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] font-mono text-[11px] uppercase" style={{ width: size, height: size }}>
+    <span className="flex items-center justify-center rounded-full border border-accent/25 bg-accent/[0.12] font-mono text-[11px] uppercase" style={{ width: size, height: size }}>
       {account.initials}
     </span>
   );
@@ -79,7 +79,7 @@ export function MenuLinkItem({ link, className, onNavigate }: { link: MenuLink; 
   );
 }
 
-const itemCls = "block w-full rounded-lg px-3 py-2 text-left text-sm text-muted transition-colors hover:bg-white/5 hover:text-foreground";
+const itemCls = "block w-full rounded-lg px-3 py-2 text-left text-sm text-muted transition-colors hover:bg-accent/10 hover:text-foreground";
 
 export default function AccountMenu({ account, groups = [{ links: siteAccountLinks }] }: { account: Account | undefined; groups?: MenuGroup[] }) {
   const [open, setOpen] = useState(false);
@@ -115,14 +115,14 @@ export default function AccountMenu({ account, groups = [{ links: siteAccountLin
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label={`Menu du compte ${account.name}`}
-        className="flex rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+        className="flex rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
       >
         <Avatar account={account} />
       </button>
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full z-50 mt-3 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-line bg-black p-2 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)]"
+          className="absolute right-0 top-full z-50 mt-3 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-line bg-background p-2 shadow-[0_24px_60px_-12px_var(--shadow-pop)]"
         >
           {/* Qui est connecté : avatar, nom, formule, ID support */}
           <div className="flex items-center gap-3 px-3 pb-3 pt-2">

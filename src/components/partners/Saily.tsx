@@ -13,7 +13,7 @@ export const sailyLinkProps = { href: sailyUrl, target: "_blank", rel: "sponsore
 /** Logo officiel (kit partenaire), sinon le nom en texte. */
 export function SailyLogo({ className = "h-5 w-auto" }: { className?: string }) {
   return saily.logo ? (
-    <Image src={saily.logo} alt={saily.name} width={1738} height={1067} className={className} />
+    <Image src={saily.logo} alt={saily.name} width={1738} height={1067} className={`ink-img ${className ?? ""}`} />
   ) : (
     <span className="font-semibold">{saily.name}</span>
   );
@@ -31,7 +31,7 @@ export function PartnerNote({ className = "" }: { className?: string }) {
 /** Bouton « Obtenir une eSIM Saily » + code promo (s'il est rempli et `code`) + mention. */
 export function SailyLink({ variant = "primary", note = true, code = true }: { variant?: "primary" | "ghost"; note?: boolean; code?: boolean }) {
   const styles =
-    variant === "primary" ? "bg-white text-black hover:bg-neutral-200" : "border border-line text-foreground hover:bg-white/5";
+    variant === "primary" ? "bg-accent text-on-accent hover:bg-accent-hover" : "border border-line text-foreground hover:bg-accent/10";
   return (
     <div>
       <div className="flex flex-wrap items-center gap-3">

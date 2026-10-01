@@ -15,7 +15,7 @@ function Pending({ idle, busy, danger = false, disabled = false }: { idle: strin
       type="submit"
       disabled={pending || disabled}
       className={`h-11 rounded-xl px-5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-        danger ? "border border-red-400/40 text-red-300 hover:bg-red-400/10" : "border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+        danger ? "border border-red-400/40 text-red-300 hover:bg-red-400/10" : "border border-accent/20 bg-accent/[0.08] text-foreground hover:bg-accent/[0.12]"
       }`}
     >
       {pending ? busy : idle}
@@ -34,13 +34,13 @@ export function NamesForm({ first, last, submit = "Enregistrer", onSaved }: { fi
     <form action={action} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <label htmlFor="names-first" className="block text-sm font-medium text-white/80">
+          <label htmlFor="names-first" className="block text-sm font-medium text-foreground/80">
             Prénom
           </label>
           <input id="names-first" name="first_name" autoComplete="given-name" required maxLength={50} defaultValue={state.fields?.first_name ?? first} className={inputCls} />
         </div>
         <div className="space-y-2">
-          <label htmlFor="names-last" className="block text-sm font-medium text-white/80">
+          <label htmlFor="names-last" className="block text-sm font-medium text-foreground/80">
             Nom
           </label>
           <input id="names-last" name="last_name" autoComplete="family-name" required maxLength={50} defaultValue={state.fields?.last_name ?? last} className={inputCls} />
@@ -58,15 +58,15 @@ export function EmailForm({ current }: { current: string }) {
   const [state, action] = useActionState<FormState, FormData>(changeEmail, {});
   return (
     <form action={action} className="space-y-4">
-      <p className="text-sm text-white/60">
-        Adresse actuelle : <span data-sensitive className="text-white">{current}</span>
+      <p className="text-sm text-foreground/60">
+        Adresse actuelle : <span data-sensitive className="text-foreground">{current}</span>
       </p>
       <div className="space-y-2">
-        <label htmlFor="new-email" className="block text-sm font-medium text-white/80">
+        <label htmlFor="new-email" className="block text-sm font-medium text-foreground/80">
           Nouvelle adresse
         </label>
         <input id="new-email" name="email" type="email" autoComplete="email" required defaultValue={state.fields?.email} className={inputCls} />
-        <p className="text-xs text-white/45">Un lien de confirmation part vers l&apos;ancienne et la nouvelle adresse.</p>
+        <p className="text-xs text-foreground/45">Un lien de confirmation part vers l&apos;ancienne et la nouvelle adresse.</p>
       </div>
       <div className="flex flex-wrap items-center gap-4">
         <Pending idle="Changer d'email" busy="Envoi…" />
@@ -104,22 +104,22 @@ export function AvatarForm({ url, initials }: { url: string | null; initials: st
   return (
     <form action={action} className="flex flex-wrap items-center gap-5">
       {url ? (
-        <Image src={url} alt="" width={64} height={64} className="h-16 w-16 rounded-full border border-white/10 object-cover" />
+        <Image src={url} alt="" width={64} height={64} className="h-16 w-16 rounded-full border border-accent/20 object-cover" />
       ) : (
-        <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 font-mono text-xl uppercase text-white/70">{initials}</span>
+        <span className="flex h-16 w-16 items-center justify-center rounded-full border border-accent/20 font-mono text-xl uppercase text-foreground/70">{initials}</span>
       )}
       <div className="space-y-2">
-        <label className="block text-sm text-white/70">
+        <label className="block text-sm text-foreground/70">
           <span className="sr-only">Nouvel avatar</span>
           <input
             type="file"
             name="avatar"
             accept="image/jpeg,image/png,image/webp"
             required
-            className="text-sm text-white/60 file:mr-4 file:h-10 file:cursor-pointer file:rounded-xl file:border file:border-white/10 file:bg-white/[0.04] file:px-4 file:text-sm file:text-white hover:file:bg-white/[0.08]"
+            className="text-sm text-foreground/60 file:mr-4 file:h-10 file:cursor-pointer file:rounded-xl file:border file:border-accent/20 file:bg-accent/[0.08] file:px-4 file:text-sm file:text-foreground hover:file:bg-accent/[0.12]"
           />
         </label>
-        <p className="text-xs text-white/45">JPG, PNG ou WebP, 2 Mo maximum.</p>
+        <p className="text-xs text-foreground/45">JPG, PNG ou WebP, 2 Mo maximum.</p>
       </div>
       <Pending idle="Envoyer" busy="Envoi…" />
       <div className="w-full">
@@ -134,11 +134,11 @@ export function DeleteAccountForm() {
   const [text, setText] = useState("");
   return (
     <form action={action} className="space-y-4">
-      <p className="text-sm leading-relaxed text-white/60">
+      <p className="text-sm leading-relaxed text-foreground/60">
         Supprime définitivement ton compte, ton profil, tes réseaux et ton avatar. Ta chaîne disparaît de l&apos;accueil. Cette action est irréversible.
       </p>
-      <label htmlFor="confirm" className="block text-sm text-white/80">
-        Tape <span className="font-mono text-white">SUPPRIMER</span> pour confirmer
+      <label htmlFor="confirm" className="block text-sm text-foreground/80">
+        Tape <span className="font-mono text-foreground">SUPPRIMER</span> pour confirmer
       </label>
       <input id="confirm" name="confirm" value={text} onChange={(e) => setText(e.target.value)} autoComplete="off" className={`${inputCls} max-w-xs`} />
       <div className="flex flex-wrap items-center gap-4">

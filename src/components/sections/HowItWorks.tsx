@@ -8,7 +8,7 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="fonctionnement" className="border-b border-line py-24">
+    <section id="fonctionnement" className="bg-field bg-field-bottom border-b border-line py-24">
       <Container>
         <SectionHeader kicker="Fonctionnement" title="De ta poche à ton live, en 3 étapes." />
 

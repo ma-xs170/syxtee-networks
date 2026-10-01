@@ -6,7 +6,7 @@ export function LegalPage({ title, updated, children }: { title: string; updated
   return (
     <section className="py-20">
       <Container className="max-w-3xl">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
+        <h1 className="h-section">{title}</h1>
         <p className="mt-3 text-sm text-muted">Dernière mise à jour : {updated}</p>
         <div className="mt-10 space-y-10 text-sm leading-relaxed text-muted">{children}</div>
       </Container>

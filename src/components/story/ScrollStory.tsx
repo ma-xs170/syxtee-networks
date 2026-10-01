@@ -152,7 +152,7 @@ function StaticScene({ scene, range }: { scene: StoryScene; range: SceneRange })
         <div>
           {scene.header}
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">{scene.kicker}</p>
-          <Title as={scene.titleAs} className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+          <Title as={scene.titleAs} className="mt-3 h-section">
             {scene.title}
           </Title>
           {scene.subtitle}

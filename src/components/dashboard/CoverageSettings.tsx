@@ -31,7 +31,7 @@ export function ConsentToggle({ initial }: { initial: boolean }) {
               } else setError(null);
             });
           }}
-          className="mt-0.5 h-5 w-5 shrink-0 accent-white"
+          className="mt-0.5 h-5 w-5 shrink-0 accent-accent"
         />
         <span className="text-sm leading-relaxed text-foreground">Partager anonymement mes mesures de réseau pour la carte communautaire</span>
       </label>
@@ -70,7 +70,7 @@ export function PrivateZones({ zones }: { zones: PrivateZone[] }) {
   return (
     <div>
       {zones.length > 0 && (
-        <ul className="mb-5 divide-y divide-white/10 rounded-xl border border-line">
+        <ul className="mb-5 divide-y divide-accent/10 rounded-xl border border-line">
           {zones.map((z) => (
             <li key={z.id} className="flex items-center justify-between gap-4 px-4 py-3">
               <span className="min-w-0">
@@ -124,12 +124,12 @@ export function PrivateZones({ zones }: { zones: PrivateZone[] }) {
             </select>
           </div>
           <div className="flex items-end">
-            <button type="button" onClick={locate} className="h-12 w-full rounded-xl border border-line px-4 text-sm text-muted transition-colors hover:bg-white/5 hover:text-foreground">
+            <button type="button" onClick={locate} className="h-12 w-full rounded-xl border border-line px-4 text-sm text-muted transition-colors hover:bg-accent/10 hover:text-foreground">
               Utiliser ma position
             </button>
           </div>
           <div className="flex flex-wrap items-center gap-4 sm:col-span-2">
-            <button type="submit" disabled={pending} className="h-11 rounded-full bg-white px-5 text-sm font-medium text-black transition-colors hover:bg-neutral-200 disabled:opacity-60">
+            <button type="submit" disabled={pending} className="h-11 rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60">
               {pending ? "Un instant…" : "Ajouter la zone"}
             </button>
             {(state.error || geoError) && (

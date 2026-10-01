@@ -7,7 +7,7 @@ export default function RelayPicker({ relays, current, base, all }: { relays: Pi
   if (relays.length < 2 && !all) return null;
   const pill = (active: boolean) =>
     `inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-full border px-3.5 text-sm transition-colors ${
-      active ? "border-white bg-white text-black" : "border-line text-muted hover:bg-white/5 hover:text-foreground"
+      active ? "border-accent bg-accent text-on-accent" : "border-line text-muted hover:bg-accent/10 hover:text-foreground"
     }`;
   return (
     <nav aria-label="Relais" className="mb-6 flex flex-wrap gap-2">

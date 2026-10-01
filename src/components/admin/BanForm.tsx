@@ -5,7 +5,7 @@ import { banAction, type BanState } from "@/app/(dashboard)/admin/securite/actio
 
 // Bannir une IP à la main (en plus des bannissements automatiques de 15 min après 10 refus en 1 min).
 
-const field = "h-11 w-full rounded-full border border-line bg-black px-4 text-sm text-foreground placeholder:text-neutral-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60";
+const field = "h-11 w-full rounded-full border border-line bg-background px-4 text-sm text-foreground placeholder:text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/60";
 
 export default function BanForm({ ip = "" }: { ip?: string }) {
   const [state, action, pending] = useActionState<BanState, FormData>(banAction, {});
@@ -31,7 +31,7 @@ export default function BanForm({ ip = "" }: { ip?: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="h-11 whitespace-nowrap rounded-full bg-white px-5 text-sm font-medium text-black transition-colors hover:bg-neutral-200 active:scale-[0.98] disabled:opacity-60"
+        className="h-11 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98] disabled:opacity-60"
       >
         {pending ? "…" : "Bannir"}
       </button>

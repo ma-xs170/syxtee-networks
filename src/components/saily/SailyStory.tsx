@@ -51,7 +51,7 @@ function SceneEsim({ progress }: { progress: MotionValue<number> }) {
           </g>
         )}
         <g opacity={ramp(v, 0.62, 0.72)}>
-          <rect x={380} y={150} width={150} height={26} rx={13} fill="#000" strokeWidth={1} />
+          <rect x={380} y={150} width={150} height={26} rx={13} fill="var(--background)" strokeWidth={1} />
           <T x={455} y={168} anchor="middle" size="sm" strong>
             ACTIVÉE · DATA 4G
           </T>
@@ -103,7 +103,7 @@ function SceneJoin({ progress }: { progress: MotionValue<number> }) {
           </T>
         </g>
         <g opacity={connected}>
-          <rect x={336} y={116} width={196} height={28} rx={14} fill="#000" strokeWidth={1.25} />
+          <rect x={336} y={116} width={196} height={28} rx={14} fill="var(--background)" strokeWidth={1.25} />
           <circle cx={354} cy={130} r={3} fill={GREEN} stroke="none" />
           <T x={442} y={135} anchor="middle" size="sm" strong>
             Connected to streamer
@@ -192,11 +192,11 @@ function Breadcrumb() {
             Accueil
           </Link>
         </li>
-        <li aria-hidden="true" className="text-white/20">
+        <li aria-hidden="true" className="text-foreground/20">
           /
         </li>
         <li className="text-muted">Outils</li>
-        <li aria-hidden="true" className="text-white/20">
+        <li aria-hidden="true" className="text-foreground/20">
           /
         </li>
         <li aria-current="page" className="text-foreground">

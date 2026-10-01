@@ -11,8 +11,8 @@ export function SatelliteGlyph() {
     <>
       <defs>
         <radialGradient id={`${id}glow`}>
-          <stop offset="0" stopColor="#fff" stopOpacity="0.35" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          <stop offset="0" stopColor="var(--foreground)" stopOpacity="0.35" />
+          <stop offset="1" stopColor="var(--foreground)" stopOpacity="0" />
         </radialGradient>
       </defs>
       <circle r={26} fill={`url(#${id}glow)`} />
@@ -49,8 +49,10 @@ export function drawSatelliteTrains(
     return [u * u * x0 + 2 * u * t * xc + t * t * x1, u * u * y0 + 2 * u * t * yc + t * t * y1] as const;
   };
 
+  const ink = getComputedStyle(document.documentElement).getPropertyValue("--foreground").trim() || "#fff";
   ctx.lineWidth = 1;
-  ctx.strokeStyle = "#fff";
+  ctx.strokeStyle = ink;
+  ctx.fillStyle = ink;
   for (const o of orbits) {
     // Orbite en pointillés très fins
     ctx.globalAlpha = alpha * 0.14;
@@ -69,8 +71,8 @@ export function drawSatelliteTrains(
       const [x, y] = point(o, t);
       const [tx, ty] = point(o, Math.max(0, t - 0.025));
       const g = ctx.createLinearGradient(tx, ty, x, y);
-      g.addColorStop(0, "rgba(255,255,255,0)");
-      g.addColorStop(1, "rgba(255,255,255,0.55)");
+      g.addColorStop(0, `color-mix(in srgb, ${ink} 0%, transparent)`);
+      g.addColorStop(1, `color-mix(in srgb, ${ink} 55%, transparent)`);
       ctx.globalAlpha = alpha;
       ctx.strokeStyle = g;
       ctx.beginPath();
@@ -80,6 +82,6 @@ export function drawSatelliteTrains(
       ctx.globalAlpha = alpha * 0.95;
       ctx.fillRect(x - 1.1, y - 1.1, 2.2, 2.2);
     }
-    ctx.strokeStyle = "#fff";
+    ctx.strokeStyle = ink;
   }
 }

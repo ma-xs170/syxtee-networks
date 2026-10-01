@@ -65,7 +65,7 @@ function StatusBanner({ data, onLaunch }: { data: OverviewData; onLaunch: () => 
         <button
           type="button"
           onClick={onLaunch}
-          className="inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white px-5 text-sm font-medium text-black transition-colors hover:bg-neutral-200 active:scale-[0.98]"
+          className="inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98]"
         >
           Lancer un direct <span aria-hidden="true">→</span>
         </button>
@@ -91,7 +91,7 @@ function LaunchGuide({ open, onClose, keys }: { open: boolean; onClose: () => vo
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
       aria-labelledby="launch-title"
-      className="m-auto w-[min(560px,calc(100vw-2rem))] rounded-2xl border border-line bg-black p-0 text-foreground backdrop:bg-black/80 backdrop:backdrop-blur-sm"
+      className="m-auto w-[min(560px,calc(100vw-2rem))] rounded-2xl border border-line bg-background p-0 text-foreground backdrop:bg-background/80 backdrop:backdrop-blur-sm"
     >
       <div className="p-6">
         <div className="flex items-start justify-between gap-4">
@@ -154,7 +154,7 @@ function Delta({ current, previous }: { current: number; previous: number }) {
 
 function Kpi({ label, value, children }: { label: string; value: string; children: ReactNode }) {
   return (
-    <div className="bg-black p-4">
+    <div className="bg-background p-4">
       <p className="text-xs text-muted">{label}</p>
       <p className="mt-1.5 font-mono text-2xl tabular-nums tracking-tight text-foreground">{value}</p>
       {children}
@@ -172,7 +172,7 @@ function RangeToggle({ range, onChange, pending }: { range: Range; onChange: (r:
           role="radio"
           aria-checked={range === r}
           onClick={() => onChange(r)}
-          className={`h-7 whitespace-nowrap rounded-full px-3 font-mono text-xs transition-colors ${range === r ? "bg-white text-black" : "text-muted hover:text-foreground"}`}
+          className={`h-7 whitespace-nowrap rounded-full px-3 font-mono text-xs transition-colors ${range === r ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}
         >
           {r === "7d" ? "7 j" : "30 j"}
         </button>
@@ -353,7 +353,7 @@ function GoTo() {
           <li key={s.href}>
             <Link
               href={s.href}
-              className="flex h-full items-center justify-between gap-2 rounded-xl border border-line px-3 py-3 text-sm text-muted transition-colors hover:bg-white/5 hover:text-foreground"
+              className="flex h-full items-center justify-between gap-2 rounded-xl border border-line px-3 py-3 text-sm text-muted transition-colors hover:bg-accent/10 hover:text-foreground"
             >
               {s.label}
               <span aria-hidden="true">→</span>
@@ -401,7 +401,7 @@ export default function Overview({ initial }: { initial: OverviewData }) {
 
       <Link
         href="/dashboard/scanner"
-        className="group grid items-center gap-4 overflow-hidden rounded-2xl border border-line p-5 transition-colors hover:border-white/25 hover:bg-white/[0.02] sm:grid-cols-[minmax(0,1fr)_160px] sm:p-6"
+        className="group grid items-center gap-4 overflow-hidden rounded-2xl border border-line p-5 transition-colors hover:border-accent/35 hover:bg-accent/[0.08] sm:grid-cols-[minmax(0,1fr)_160px] sm:p-6"
       >
         <span>
           <span className="block text-2xl font-semibold tracking-tight">Scanner réseau</span>
@@ -421,7 +421,7 @@ export default function Overview({ initial }: { initial: OverviewData }) {
       <Tile aria-labelledby="attention" className="py-4 sm:py-5">
         <TileLabel id="attention">Ce qui demande ton attention</TileLabel>
         {data.alerts.length ? (
-          <ul className="mt-3 divide-y divide-white/10">
+          <ul className="mt-3 divide-y divide-accent/10">
             {data.alerts.map((a) => (
               <li key={a.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
                 <p className="text-sm text-foreground">{a.text}</p>
@@ -468,7 +468,7 @@ export default function Overview({ initial }: { initial: OverviewData }) {
           )}
           <Link
             href="/dashboard/stats"
-            className="group grid items-center gap-6 overflow-hidden rounded-2xl border border-line p-5 transition-colors hover:border-white/25 hover:bg-white/[0.02] sm:grid-cols-[minmax(0,1fr)_200px] sm:p-6"
+            className="group grid items-center gap-6 overflow-hidden rounded-2xl border border-line p-5 transition-colors hover:border-accent/35 hover:bg-accent/[0.08] sm:grid-cols-[minmax(0,1fr)_200px] sm:p-6"
           >
             <span>
               <span className="block text-2xl font-semibold tracking-tight sm:text-3xl">Découvrir tes statistiques</span>

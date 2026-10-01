@@ -14,7 +14,7 @@ import ProStage from "./ProStage";
 
 export function SoonBadge() {
   return (
-    <p className="mb-3 inline-flex items-center rounded-full sm:mb-5 border border-line bg-white/[0.03] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground">
+    <p className="mb-3 inline-flex items-center rounded-full sm:mb-5 border border-line bg-accent/[0.08] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground">
       Bientôt disponible
     </p>
   );
@@ -49,7 +49,7 @@ function Breadcrumb() {
             Accueil
           </Link>
         </li>
-        <li aria-hidden="true" className="text-white/20">
+        <li aria-hidden="true" className="text-foreground/20">
           /
         </li>
         <li aria-current="page" className="text-foreground">

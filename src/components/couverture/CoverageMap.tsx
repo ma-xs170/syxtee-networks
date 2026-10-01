@@ -59,7 +59,7 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
       type="button"
       aria-pressed={on}
       onClick={onClick}
-      className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs transition-colors ${on ? "border-white/40 bg-white/[0.08] text-foreground" : "border-line text-muted hover:text-foreground"}`}
+      className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs transition-colors ${on ? "border-accent/50 bg-accent/[0.12] text-foreground" : "border-line text-muted hover:text-foreground"}`}
     >
       {children}
     </button>
@@ -341,9 +341,9 @@ export default function CoverageMap() {
       </div>
 
       <div className="relative overflow-hidden rounded-2xl border border-line">
-        <div ref={box} className="h-[min(70dvh,640px)] min-h-[420px] w-full bg-black" />
+        <div ref={box} className="h-[min(70dvh,640px)] min-h-[420px] w-full bg-background" />
         <div className="absolute left-3 top-3 flex flex-col gap-2">
-          <button type="button" onClick={aroundMe} className="h-9 rounded-full bg-white px-4 text-xs font-medium text-black transition-colors hover:bg-neutral-200">
+          <button type="button" onClick={aroundMe} className="h-9 rounded-full bg-accent px-4 text-xs font-medium text-on-accent transition-colors hover:bg-accent-hover">
             Autour de moi
           </button>
           {(
@@ -357,25 +357,25 @@ export default function CoverageMap() {
               type="button"
               aria-pressed={on}
               onClick={toggle}
-              className={`h-9 rounded-full border px-4 text-xs backdrop-blur-sm transition-colors ${on ? "border-white/40 bg-black/80 text-foreground" : "border-line bg-black/60 text-muted hover:text-foreground"}`}
+              className={`h-9 rounded-full border px-4 text-xs backdrop-blur-sm transition-colors ${on ? "border-accent/50 bg-background/80 text-foreground" : "border-line bg-background/60 text-muted hover:text-foreground"}`}
             >
               {label}
             </button>
           ))}
         </div>
         {rows && shown.length === 0 && (
-          <p className="pointer-events-none absolute inset-x-3 bottom-12 rounded-xl border border-line bg-black/85 p-3 text-sm text-muted sm:right-auto sm:max-w-md">
+          <p className="pointer-events-none absolute inset-x-3 bottom-12 rounded-xl border border-line bg-background/85 p-3 text-sm text-muted sm:right-auto sm:max-w-md">
             {layer === "starlink"
               ? "Aucune zone Starlink publiée pour ces filtres."
               : "Aucune zone publiée pour ces filtres. Une zone apparaît dès 5 mesures en 4G/5G : lance le Scanner réseau."}
           </p>
         )}
-        {geoError && <p className="absolute inset-x-3 top-36 rounded-xl border border-line bg-black/85 p-3 text-sm text-muted">{geoError}</p>}
+        {geoError && <p className="absolute inset-x-3 top-36 rounded-xl border border-line bg-background/85 p-3 text-sm text-muted">{geoError}</p>}
 
         {detail && picked && (
           <aside
             aria-label="Détail de la zone"
-            className="absolute inset-x-3 bottom-3 max-h-[60%] overflow-y-auto rounded-2xl border border-line bg-black/95 p-4 backdrop-blur-md sm:inset-x-auto sm:right-3 sm:top-3 sm:bottom-auto sm:max-h-[calc(100%-1.5rem)] sm:w-80"
+            className="absolute inset-x-3 bottom-3 max-h-[60%] overflow-y-auto rounded-2xl border border-line bg-background/95 p-4 backdrop-blur-md sm:inset-x-auto sm:right-3 sm:top-3 sm:bottom-auto sm:max-h-[calc(100%-1.5rem)] sm:w-80"
           >
             <div className="flex items-start justify-between gap-3">
               <p className="text-sm font-medium">
@@ -391,7 +391,7 @@ export default function CoverageMap() {
                 <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em]">
                   <span
                     aria-hidden="true"
-                    className={`h-2.5 w-4 rounded-[2px] border border-white ${a.reliability === "estimation" ? "border-dashed" : ""}`}
+                    className={`h-2.5 w-4 rounded-[2px] border border-accent ${a.reliability === "estimation" ? "border-dashed" : ""}`}
                     style={{ background: `rgba(255,255,255,${RELIABILITY[a.reliability].opacity * 0.6})` }}
                   />
                   {RELIABILITY[a.reliability].label}
@@ -409,7 +409,7 @@ export default function CoverageMap() {
                       </span>
                       <span className="font-mono tabular-nums">{mbps(r.median_kbps)}</span>
                     </span>
-                    <span className="mt-1 block h-1.5 rounded-full bg-white/80" style={{ width: `${((r.median_kbps ?? 0) / maxKbps) * 100}%` }} />
+                    <span className="mt-1 block h-1.5 rounded-full bg-accent/20" style={{ width: `${((r.median_kbps ?? 0) / maxKbps) * 100}%` }} />
                   </li>
                 ))}
               </ul>
@@ -443,8 +443,8 @@ export default function CoverageMap() {
                   <ul className="mt-2 grid grid-cols-4 gap-2">
                     {HOURS.map((h, i) => (
                       <li key={h} className="text-center">
-                        <span className="flex h-10 items-end justify-center rounded-md bg-white/[0.04]">
-                          <span className="w-3 rounded-sm bg-white/80" style={{ height: `${(a.hours[i] / maxHour) * 100}%` }} />
+                        <span className="flex h-10 items-end justify-center rounded-md bg-accent/[0.08]">
+                          <span className="w-3 rounded-sm bg-accent/20" style={{ height: `${(a.hours[i] / maxHour) * 100}%` }} />
                         </span>
                         <span className="mt-1 block text-[10px] text-muted">{h}</span>
                       </li>
@@ -479,16 +479,16 @@ export default function CoverageMap() {
 
       <ul className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted" aria-label="Légende">
         <li className="flex items-center gap-2">
-          <span className="h-3 w-4 rounded-sm bg-white/60" aria-hidden="true" /> Bonne (5 Mbit/s et plus)
+          <span className="h-3 w-4 rounded-sm bg-accent/20" aria-hidden="true" /> Bonne (5 Mbit/s et plus)
         </li>
         <li className="flex items-center gap-2">
           <span className="h-3 w-4 rounded-sm bg-[#8a8a8a]/70" aria-hidden="true" /> Moyenne (2 à 5 Mbit/s)
         </li>
         <li className="flex items-center gap-2">
-          <span className="h-3 w-4 rounded-sm border border-white/40 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.7)_0_1.5px,transparent_1.5px_5px)]" aria-hidden="true" /> Mauvaise (moins de 2 Mbit/s ou pertes)
+          <span className="h-3 w-4 rounded-sm border border-accent/50 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.7)_0_1.5px,transparent_1.5px_5px)]" aria-hidden="true" /> Mauvaise (moins de 2 Mbit/s ou pertes)
         </li>
         <li className="flex items-center gap-2">
-          <span className="h-3 w-4 rounded-sm border border-dashed border-white/80 bg-white/20" aria-hidden="true" /> Estimation (1 contributeur)
+          <span className="h-3 w-4 rounded-sm border border-dashed border-accent/80 bg-accent/20" aria-hidden="true" /> Estimation (1 contributeur)
         </li>
         <li>Plus c&apos;est opaque, plus c&apos;est fiable</li>
       </ul>

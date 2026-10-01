@@ -6,11 +6,15 @@ const features = ["Relais SRTLA / SRT", "Compatible Moblin, IRL Pro, BELABOX", "
 // Bloc « Bientôt disponible » des offres, partagé entre l'accueil et /offres.
 export default function ComingSoon({ children }: { children?: ReactNode }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-line px-6 py-16 text-center sm:px-16">
+    <div className="relative overflow-hidden panel-lg px-6 py-16 text-center sm:px-16">
       <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,color-mix(in_srgb,var(--foreground)_16%,transparent),transparent_70%),radial-gradient(ellipse_50%_40%_at_50%_100%,color-mix(in_srgb,var(--foreground)_8%,transparent),transparent_70%)]"
+        aria-hidden="true"
+      />
       <div className="relative">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Offres</p>
-        <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">Bientôt disponible.</h2>
+        <h2 className="mt-4 h-section">Bientôt disponible.</h2>
         <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted">
           Les tarifs seront dévoilés à l&apos;ouverture. Objectif : le relais IRL le plus accessible du marché.
           Rejoins le Discord pour être prévenu en premier.
@@ -18,7 +22,7 @@ export default function ComingSoon({ children }: { children?: ReactNode }) {
 
         <ul className="mx-auto mt-10 flex max-w-2xl flex-wrap justify-center gap-2">
           {features.map((f) => (
-            <li key={f} className="rounded-full border border-line bg-black px-4 py-2 text-sm text-muted">{f}</li>
+            <li key={f} className="rounded-full border border-line bg-background px-4 py-2 text-sm text-muted">{f}</li>
           ))}
         </ul>
 

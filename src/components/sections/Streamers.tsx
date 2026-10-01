@@ -26,19 +26,19 @@ function StreamerCard({ streamer, hidden = false }: { streamer: HomeStreamer; hi
       rel="noopener noreferrer"
       tabIndex={hidden ? -1 : undefined}
       aria-hidden={hidden || undefined}
-      className={`flex w-[260px] items-center gap-4 rounded-2xl border bg-black p-4 transition-colors hover:bg-white/5 ${live ? "border-live/50" : "border-line"}`}
+      className={`flex w-[260px] items-center gap-4 rounded-2xl border bg-background p-4 transition-colors hover:bg-accent/10 ${live ? "border-live/50" : "border-line"}`}
     >
       <span className="relative">
         <StreamerAvatar s={streamer} />
         {live && <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-black bg-live" aria-hidden="true" />}
       </span>
       <span className="min-w-0">
-        <span className="block truncate font-mono text-sm text-white">
+        <span className="block truncate font-mono text-sm text-foreground">
           @{streamer.handle}
           {streamer.firstName && <span className="font-sans text-muted"> · {streamer.firstName}</span>}
         </span>
         {streamer.partner && (
-          <span className="mt-1 inline-block rounded border border-white/20 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.14em] text-white">PARTENAIRE</span>
+          <span className="mt-1 inline-block rounded border border-accent/30 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.14em] text-foreground">PARTENAIRE</span>
         )}
         {live ? (
           <span className="mt-1 flex items-center gap-2 text-sm">
@@ -78,9 +78,9 @@ export default function Streamers({ streamers }: { streamers: HomeStreamer[] }) 
   while (items.length > 0 && items.length < MIN_PER_ROW) items = [...items, ...rest];
 
   return (
-    <section id="streamers" className="overflow-hidden border-b border-line py-24">
+    <section id="streamers" className="bg-field bg-field-bottom overflow-hidden border-b border-line py-24">
       <Container>
-        <h2 className="text-center text-3xl font-semibold tracking-tight sm:text-5xl">
+        <h2 className="text-center h-section">
           Ils nous font <Highlight>confiance.</Highlight>
         </h2>
       </Container>

@@ -21,13 +21,13 @@ export default function PhoneMockup({
 
   return (
     <div
-      className="relative w-full rounded-[18%/8.3%] border-[1.5px] border-white/80 bg-black p-[3.5%] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.9)]"
+      className="relative w-full rounded-[18%/8.3%] border-[1.5px] border-accent/80 bg-black p-[3.5%] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.9)]"
       style={{ aspectRatio: "9 / 19.5" }}
     >
       {/* Boutons latéraux */}
-      <span className="absolute -left-[3px] top-[18%] h-[7%] w-[3px] rounded-full border border-white/60" aria-hidden="true" />
-      <span className="absolute -left-[3px] top-[27%] h-[7%] w-[3px] rounded-full border border-white/60" aria-hidden="true" />
-      <span className="absolute -right-[3px] top-[22%] h-[11%] w-[3px] rounded-full border border-white/60" aria-hidden="true" />
+      <span className="absolute -left-[3px] top-[18%] h-[7%] w-[3px] rounded-full border border-accent/70" aria-hidden="true" />
+      <span className="absolute -left-[3px] top-[27%] h-[7%] w-[3px] rounded-full border border-accent/70" aria-hidden="true" />
+      <span className="absolute -right-[3px] top-[22%] h-[11%] w-[3px] rounded-full border border-accent/70" aria-hidden="true" />
 
       <div className="relative h-full w-full overflow-hidden rounded-[14%/6.5%] bg-black [container-type:size]">
         {exists ? (
@@ -50,7 +50,7 @@ export default function PhoneMockup({
               <span className="rounded-[1cqw] bg-[var(--live)] px-[1.6cqw] py-[0.3cqw] font-mono text-[4cqw] font-semibold leading-none text-white">LIVE</span>
               <span className="font-mono text-[4cqw] leading-none text-white/85">6 024 kbps</span>
             </div>
-            <p className="absolute inset-x-[8%] bottom-[8%] rounded-[3cqw] border border-white/25 bg-black/70 px-[3cqw] py-[2cqw] text-center font-mono text-[4.2cqw] leading-snug text-white">
+            <p className="absolute inset-x-[8%] bottom-[8%] rounded-[3cqw] border border-accent/35 bg-black/75 px-[3cqw] py-[2cqw] text-center font-mono text-[4.2cqw] leading-snug text-white">
               {alt}
             </p>
           </div>

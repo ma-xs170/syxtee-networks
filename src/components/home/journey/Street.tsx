@@ -18,7 +18,7 @@ const WALK = [90, 470] as const;
 export const streamerX = (w: number) => WALK[0] + (WALK[1] - WALK[0]) * w;
 /** Position du téléphone (repère de la scène) pour une marche de 0 à 1. */
 export const phoneAt = (w: number) => ({
-  x: streamerX(w) + STREAMER_PHONE.x * STREAMER_SCALE,
+  x: streamerX(w) - STREAMER_PHONE.x * STREAMER_SCALE, // figure retournée : il marche vers la droite, perche devant
   y: STREET_GROUND + STREAMER_PHONE.y * STREAMER_SCALE,
 });
 
@@ -65,8 +65,8 @@ function Facade({ x, w, roof, gable = false }: { x: number; w: number; roof: num
     : `M${x - 8} ${eave}L${x + 34} ${roof}H${x + w - 34}L${x + w + 8} ${eave}Z`;
   return (
     <g>
-      <rect x={x} y={eave} width={w} height={STREET_GROUND - eave} fill="#000" />
-      <path d={roofPath} fill="#000" />
+      <rect x={x} y={eave} width={w} height={STREET_GROUND - eave} fill="var(--background)" />
+      <path d={roofPath} fill="var(--background)" />
       {/* Tôle ondulée du toit */}
       <path d={roofPath} />
       {gable ? (
@@ -130,8 +130,8 @@ function Lamppost({ x }: { x: number }) {
   return (
     <g>
       <path d={`M${x} ${STREET_GROUND}V300M${x - 6} ${STREET_GROUND}H${x + 6}M${x} 304c0 -14 12 -18 24 -14`} />
-      <path d={`M${x + 16} 290h16l-3 12h-10z`} fill="#000" />
-      <circle cx={x + 24} cy={298} r={1.8} fill="#fff" stroke="none" />
+      <path d={`M${x + 16} 290h16l-3 12h-10z`} fill="var(--background)" />
+      <circle cx={x + 24} cy={298} r={1.8} fill="var(--foreground)" stroke="none" />
     </g>
   );
 }
@@ -201,7 +201,7 @@ function Bubble({ b, x, y, time }: { b: (typeof BUBBLES)[number]; x: MotionValue
   return (
     <motion.g style={{ opacity }} strokeWidth={1}>
       <MotionTransform transform={transform}>
-        <path d={`M0 0h${b.w}a4 4 0 0 1 4 4v10a4 4 0 0 1 -4 4H10l-6 6v-6H0a4 4 0 0 1 -4 -4V4a4 4 0 0 1 4 -4z`} fill="#000" />
+        <path d={`M0 0h${b.w}a4 4 0 0 1 4 4v10a4 4 0 0 1 -4 4H10l-6 6v-6H0a4 4 0 0 1 -4 -4V4a4 4 0 0 1 4 -4z`} fill="var(--background)" />
         <path d={`M4 7h${b.w - 10}M4 12h${b.w - 22}`} strokeOpacity={0.6} />
       </MotionTransform>
     </motion.g>
@@ -215,7 +215,7 @@ function Bubble({ b, x, y, time }: { b: (typeof BUBBLES)[number]; x: MotionValue
 export default function Street({ walk, waves, time }: { walk: MotionValue<number>; waves: MotionValue<number>; time: MotionValue<number> }) {
   const sx = useTransform(walk, streamerX);
   const bob = useTransform(time, (s) => Math.abs(Math.sin(s * 5)) * -2.5);
-  const streamerT = useTransform([sx, bob], ([x, b]: number[]) => `translate(${x} ${STREET_GROUND + b}) scale(${STREAMER_SCALE})`);
+  const streamerT = useTransform([sx, bob], ([x, b]: number[]) => `translate(${x} ${STREET_GROUND + b}) scale(${-STREAMER_SCALE} ${STREAMER_SCALE})`); // retourné : le dessin regarde à gauche, la marche va à droite
   const phoneX = useTransform(walk, (w) => phoneAt(w).x);
   const phoneY = phoneAt(0).y;
   const wavesT = useTransform(phoneX, (x) => `translate(${x} 0)`);

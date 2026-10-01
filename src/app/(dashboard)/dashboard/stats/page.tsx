@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Statistiques", robots: { index: fals
 
 function Figure({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-black p-4 sm:p-5">
+    <div className="bg-background p-4 sm:p-5">
       <p className="text-xs text-muted">{label}</p>
       <p className="mt-1.5 font-mono text-2xl tabular-nums tracking-tight">{value}</p>
       {sub && <p className="mt-1 font-mono text-xs text-muted">{sub}</p>}
@@ -39,7 +39,7 @@ export default async function StatsPage({ searchParams }: PageProps<"/dashboard/
               href={`/dashboard/stats?range=${x}`}
               role="radio"
               aria-checked={range === x}
-              className={`flex h-8 items-center rounded-full px-4 font-mono text-xs transition-colors ${range === x ? "bg-white text-black" : "text-muted hover:text-foreground"}`}
+              className={`flex h-8 items-center rounded-full px-4 font-mono text-xs transition-colors ${range === x ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}
             >
               {x === "7d" ? "7 jours" : "30 jours"}
             </Link>

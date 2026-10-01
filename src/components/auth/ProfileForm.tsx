@@ -11,7 +11,7 @@ import { COUNTRIES } from "@/lib/auth/profileSchema";
 // Formulaire de profil : /bienvenue (première connexion, version courte) et /compte (complet).
 
 export const inputCls =
-  "h-12 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 text-[15px] text-white placeholder:text-white/35 transition-[border-color,box-shadow] focus:border-white/30 focus:outline-none focus:ring-4 focus:ring-white/[0.06]";
+  "h-12 w-full rounded-xl border border-accent/20 bg-accent/[0.08] px-4 text-[15px] text-foreground placeholder:text-foreground/35 transition-[border-color,box-shadow] focus:border-accent/40 focus:outline-none focus:ring-4 focus:ring-accent/[0.06]";
 
 function Icon({ icon }: { icon: SimpleIcon }) {
   return (
@@ -24,11 +24,11 @@ function Icon({ icon }: { icon: SimpleIcon }) {
 function Field({ id, label, hint, children }: { id: string; label: string; hint?: string; children: ReactNode }) {
   return (
     <div className="space-y-2">
-      <label htmlFor={id} className="block text-sm font-medium text-white/80">
+      <label htmlFor={id} className="block text-sm font-medium text-foreground/80">
         {label}
       </label>
       {children}
-      {hint && <p className="text-xs text-white/45">{hint}</p>}
+      {hint && <p className="text-xs text-foreground/45">{hint}</p>}
     </div>
   );
 }
@@ -36,14 +36,14 @@ function Field({ id, label, hint, children }: { id: string; label: string; hint?
 function Social({ name, label, icon, value }: { name: string; label: string; icon: SimpleIcon; value: string }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 text-white/70" title={label}>
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-accent/20 text-foreground/70" title={label}>
         <Icon icon={icon} />
       </span>
       <label htmlFor={`social-${name}`} className="sr-only">
         {label}
       </label>
       <div className="relative flex-1">
-        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/35">@</span>
+        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-foreground/35">@</span>
         <input id={`social-${name}`} name={name} defaultValue={value} placeholder={`Pseudo ${label}`} autoComplete="off" className={`${inputCls} pl-8`} />
       </div>
     </div>
@@ -56,7 +56,7 @@ function Submit({ children }: { children: ReactNode }) {
     <button
       type="submit"
       disabled={pending}
-      className="h-12 w-full rounded-xl bg-white text-sm font-medium text-black transition-colors hover:bg-neutral-200 active:scale-[0.99] disabled:opacity-60 sm:w-auto sm:px-8"
+      className="h-12 w-full rounded-xl bg-accent text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.99] disabled:opacity-60 sm:w-auto sm:px-8"
     >
       {pending ? "Enregistrement…" : children}
     </button>
@@ -72,7 +72,7 @@ export function Notice({ state }: { state: FormState }) {
     );
   if (state.ok)
     return (
-      <p role="status" className="text-sm text-white/70">
+      <p role="status" className="text-sm text-foreground/70">
         {state.ok}
       </p>
     );
@@ -111,23 +111,23 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
       )}
 
       <fieldset className="space-y-3">
-        <legend className="mb-3 text-sm font-medium text-white/80">Réseaux sociaux</legend>
+        <legend className="mb-3 text-sm font-medium text-foreground/80">Réseaux sociaux</legend>
         {/* Twitch : uniquement via une connexion Twitch vérifiée */}
         <div className="flex items-center gap-3">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 text-white/70" title="Twitch">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-accent/20 text-foreground/70" title="Twitch">
             <Icon icon={siTwitch} />
           </span>
           {twitch ? (
-            <p className="flex h-12 flex-1 items-center rounded-xl border border-white/10 bg-white/[0.02] px-4 text-[15px] text-white">
+            <p className="flex h-12 flex-1 items-center rounded-xl border border-accent/20 bg-accent/[0.08] px-4 text-[15px] text-foreground">
               @{twitch}
-              <span className="ml-auto text-xs text-white/50">Vérifié</span>
+              <span className="ml-auto text-xs text-foreground/50">Vérifié</span>
             </p>
           ) : (
             <button
               type="submit"
               formAction={linkTwitch}
               formNoValidate
-              className="h-12 flex-1 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-left text-sm font-medium text-white transition-colors hover:bg-white/[0.08]"
+              className="h-12 flex-1 rounded-xl border border-accent/20 bg-accent/[0.08] px-4 text-left text-sm font-medium text-foreground transition-colors hover:bg-accent/[0.12]"
             >
               Lier mon Twitch
             </button>
@@ -140,17 +140,17 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
         <Social name="x" label="X" icon={siX} value={v("x")} />
       </fieldset>
 
-      <label className={`flex items-start gap-3 rounded-xl border border-white/10 p-4 ${twitch ? "cursor-pointer" : "opacity-60"}`}>
+      <label className={`flex items-start gap-3 rounded-xl border border-accent/20 p-4 ${twitch ? "cursor-pointer" : "opacity-60"}`}>
         <input
           type="checkbox"
           name="show_on_site"
           defaultChecked={profile.show_on_site}
           disabled={!twitch}
-          className="mt-0.5 h-4 w-4 shrink-0 accent-white"
+          className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
         />
         <span>
-          <span className="block text-sm font-medium text-white">Afficher ma chaîne sur le site SYXTEE</span>
-          <span className="mt-1 block text-xs leading-relaxed text-white/50">
+          <span className="block text-sm font-medium text-foreground">Afficher ma chaîne sur le site SYXTEE</span>
+          <span className="mt-1 block text-xs leading-relaxed text-foreground/50">
             {twitch
               ? "Ta chaîne Twitch apparaît dans « Ils nous font confiance » sur l'accueil, avec un badge quand tu es en live. Tu peux décocher à tout moment."
               : "Disponible une fois ton Twitch lié."}
@@ -158,17 +158,17 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
         </span>
       </label>
 
-      <label className={`flex items-start gap-3 rounded-xl border border-white/10 p-4 ${twitch ? "cursor-pointer" : "opacity-60"}`}>
+      <label className={`flex items-start gap-3 rounded-xl border border-accent/20 p-4 ${twitch ? "cursor-pointer" : "opacity-60"}`}>
         <input
           type="checkbox"
           name="show_first_name"
           defaultChecked={profile.show_first_name === true}
           disabled={!twitch}
-          className="mt-0.5 h-4 w-4 shrink-0 accent-white"
+          className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
         />
         <span>
-          <span className="block text-sm font-medium text-white">Afficher mon prénom sur le site</span>
-          <span className="mt-1 block text-xs leading-relaxed text-white/50">
+          <span className="block text-sm font-medium text-foreground">Afficher mon prénom sur le site</span>
+          <span className="mt-1 block text-xs leading-relaxed text-foreground/50">
             Ton prénom apparaît à côté de ta chaîne dans « Ils nous font confiance ». Jamais ton nom.
           </span>
         </span>

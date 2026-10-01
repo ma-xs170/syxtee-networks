@@ -3,11 +3,9 @@ import Hero from "@/components/sections/Hero";
 import JourneyStory from "@/components/home/JourneyStory";
 import RelayBento from "@/components/home/RelayBento";
 import CreateSteps from "@/components/home/CreateSteps";
-import Compat from "@/components/sections/Compat";
 import Guides from "@/components/sections/Guides";
 import Offers from "@/components/sections/Offers";
 import Streamers from "@/components/sections/Streamers";
-import Faq from "@/components/sections/Faq";
 import FinalCta from "@/components/sections/FinalCta";
 import { getHomeStreamers } from "@/lib/streamers";
 
@@ -26,13 +24,11 @@ export default async function Home() {
     <>
       <Hero />
       <JourneyStory />
-      <Compat />
       <RelayBento />
       <CreateSteps />
       <Guides />
       <Offers />
       <Streamers streamers={streamers} />
-      <Faq />
       <FinalCta />
     </>
   );

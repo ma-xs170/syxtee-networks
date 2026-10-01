@@ -33,7 +33,7 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
     <Container className="py-16 sm:py-20">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Mon compte</h1>
+          <h1 className="h-section">Mon compte</h1>
           <p className="mt-2 text-sm text-muted">{user.email}</p>
         </div>
         <Link href="/dashboard" className="text-sm text-muted hover:text-foreground">
@@ -55,7 +55,7 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
         </Block>
         <Block title="Session">
           <form action={signOut}>
-            <button type="submit" className="h-11 rounded-xl border border-white/10 bg-white/[0.04] px-5 text-sm font-medium hover:bg-white/[0.08]">
+            <button type="submit" className="h-11 rounded-xl border border-accent/20 bg-accent/[0.08] px-5 text-sm font-medium hover:bg-accent/[0.12]">
               Déconnexion
             </button>
           </form>

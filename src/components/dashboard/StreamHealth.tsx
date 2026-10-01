@@ -15,7 +15,7 @@ const nf = new Intl.NumberFormat("fr-FR");
 
 function Metric({ label, value, unit }: { label: string; value: string; unit: string }) {
   return (
-    <div className="bg-black px-4 py-3">
+    <div className="bg-background px-4 py-3">
       <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted">{label}</p>
       <p className="mt-1 font-mono text-lg tabular-nums text-foreground">
         {value} <span className="text-xs text-muted">{unit}</span>
@@ -141,8 +141,8 @@ export default function StreamHealth({ coreUrl, relayId }: { coreUrl: string; re
             {peers.map((p, i) => (
               <li key={p.connection_id} className="flex items-center gap-3 font-mono text-xs">
                 <span className="w-14 text-muted">Lien {i + 1}</span>
-                <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
-                  <span className="block h-full rounded-full bg-white/70" style={{ width: `${(p.bitrate / peerMax) * 100}%` }} />
+                <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-accent/20">
+                  <span className="block h-full rounded-full bg-accent/20" style={{ width: `${(p.bitrate / peerMax) * 100}%` }} />
                 </span>
                 <span className="w-24 text-right tabular-nums text-foreground">{nf.format(p.bitrate)} kbps</span>
               </li>

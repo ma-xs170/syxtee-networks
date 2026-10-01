@@ -37,21 +37,21 @@ const guides: { href: string; kicker: string; title: string; text: string; art: 
 
 export default function Guides() {
   return (
-    <section className="border-b border-line pb-24 pt-40 md:pt-48">
+    <section className="bg-field bg-field-bottom border-b border-line pb-24 pt-40 md:pt-48">
       <Container className="grid gap-x-6 gap-y-36 md:grid-cols-2 lg:grid-cols-3">
         {guides.map((g) => (
-          <div key={g.href}>
-            <Link href={g.href} className="group block">
+          <div key={g.href} className="relative flex flex-col">
+            <Link href={g.href} className="group block flex-1">
               <PopOutImage alt={g.alt} art={g.art}>
                 <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">{g.kicker}</p>
                 <h2 className="mt-4 text-2xl font-semibold tracking-tight">{g.title}</h2>
                 <p className="mt-3 text-sm leading-relaxed text-muted">{g.text}</p>
-                <p className="mt-8 text-sm text-muted transition-colors group-hover:text-foreground">
+                <p className="mt-auto pt-8 text-sm text-muted transition-colors group-hover:text-foreground">
                   Lire le guide <span aria-hidden="true" className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
                 </p>
               </PopOutImage>
             </Link>
-            {g.partner && <PartnerNote className="mt-3" />}
+            {g.partner && <PartnerNote className="absolute inset-x-0 top-full mt-3" />}
           </div>
         ))}
       </Container>

@@ -16,7 +16,7 @@ const syxtee = [
 
 export default function LowCost() {
   return (
-    <section className="border-b border-line py-24">
+    <section className="bg-field border-b border-line py-24">
       <Container>
         <SectionHeader kicker="Low-cost" title="L'IRL ne devrait pas coûter un salaire.">
           On a construit SYXTEE NETWORKS pour les créateurs qui démarrent : l&apos;essentiel pour un live stable, rien de superflu.
@@ -28,14 +28,14 @@ export default function LowCost() {
             <ul className="mt-6 space-y-4">
               {classic.map((t) => (
                 <li key={t} className="flex gap-3 text-sm text-muted">
-                  <span aria-hidden="true" className="text-white/30">—</span>
-                  <span className="line-through decoration-white/20">{t}</span>
+                  <span aria-hidden="true" className="text-foreground/30">—</span>
+                  <span className="line-through decoration-accent/20">{t}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="rounded-2xl border border-white/30 bg-white/[0.04] p-8">
+          <div className="rounded-2xl border border-accent/40 bg-accent/[0.08] p-8">
             <p className="font-mono text-xs uppercase tracking-[0.2em]">Avec SYXTEE</p>
             <ul className="mt-6 space-y-4">
               {syxtee.map((t) => (

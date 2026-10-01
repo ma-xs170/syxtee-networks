@@ -44,7 +44,7 @@ export default async function RelayPage({ params }: PageProps<"/dashboard/relais
         <>
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div className="min-w-0">
-              <h1 className="break-words text-3xl font-semibold tracking-tight sm:text-4xl">
+              <h1 className="break-words h-section">
                 <Highlight>{relay.name}</Highlight>
               </h1>
               <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted">

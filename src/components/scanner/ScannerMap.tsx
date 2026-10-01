@@ -108,5 +108,5 @@ export default function ScannerMap({ position, cells, segments }: { position: [n
     centered.current = true;
   }, [ready, position]);
 
-  return <div ref={box} className="h-full w-full bg-black" role="img" aria-label="Carte de ta position, des zones autour et du tracé de ta session" />;
+  return <div ref={box} className="h-full w-full bg-background" role="img" aria-label="Carte de ta position, des zones autour et du tracé de ta session" />;
 }

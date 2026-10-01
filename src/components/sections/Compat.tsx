@@ -51,7 +51,7 @@ export default function Compat() {
               <Icon kind={kinds[name] ?? "live"} />
               {name}
             </span>
-            <span className="text-white/20">/</span>
+            <span className="text-foreground/20">/</span>
           </span>
         ))}
       </div>

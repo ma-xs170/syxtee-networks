@@ -83,7 +83,7 @@ export default async function AdminRevenusPage() {
               const v = byMonth.get(m.key) ?? 0;
               return (
                 <div key={m.key} className="flex h-full flex-col justify-end gap-2 text-center" title={`${m.label} : ${eur(v)}`}>
-                  <div className="rounded-sm bg-white/80" style={{ height: v ? `${Math.max(2, (v / peak) * 100)}%` : "1px", opacity: v ? 1 : 0.3 }} />
+                  <div className="rounded-sm bg-accent/20" style={{ height: v ? `${Math.max(2, (v / peak) * 100)}%` : "1px", opacity: v ? 1 : 0.3 }} />
                   <span className="font-mono text-[10px] text-muted">{m.label}</span>
                 </div>
               );

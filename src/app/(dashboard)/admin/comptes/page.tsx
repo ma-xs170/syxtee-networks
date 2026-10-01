@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Admin · Comptes", robots: { index: 
 // Réservée à l'admin (404 sinon, TOTP obligatoire). Un ID support exact ouvre directement la fiche.
 
 const PER_PAGE = 50;
-const field = "h-10 rounded-full border border-line bg-black px-4 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60";
+const field = "h-10 rounded-full border border-line bg-background px-4 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/60";
 const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit", timeZone: "Europe/Paris" }) : "jamais");
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
 
@@ -82,10 +82,10 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
           </select>
         </label>
         <label className="flex h-10 items-center gap-2 text-sm">
-          <input type="checkbox" name="live" value="1" defaultChecked={filter.live} className="h-4 w-4 accent-white" />
+          <input type="checkbox" name="live" value="1" defaultChecked={filter.live} className="h-4 w-4 accent-accent" />
           En live
         </label>
-        <button type="submit" className="h-10 whitespace-nowrap rounded-full bg-white px-5 text-sm font-medium text-black transition-colors hover:bg-neutral-200">
+        <button type="submit" className="h-10 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
           Filtrer
         </button>
       </form>
@@ -107,7 +107,7 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
               </thead>
               <tbody className="divide-y divide-line" data-sensitive>
                 {rows.map((r) => (
-                  <tr key={r.id} className="hover:bg-white/[0.02]">
+                  <tr key={r.id} className="hover:bg-accent/[0.08]">
                     <td className="py-2.5 pr-4 font-mono text-xs">
                       <Link href={`/admin/comptes/${r.id}`} className="underline-offset-4 hover:underline">
                         {r.support_id}

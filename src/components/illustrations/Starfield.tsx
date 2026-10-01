@@ -75,7 +75,7 @@ export default function Starfield({
       }
       cleared = false;
       ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = "#fff";
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--foreground").trim() || "#fff";
 
       for (const s of stars) {
         const y = s.y * h + drift * s.z - exit;

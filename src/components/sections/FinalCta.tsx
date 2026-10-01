@@ -4,9 +4,12 @@ import Highlight from "../ui/Highlight";
 
 export default function FinalCta() {
   return (
-    <section className="py-28">
-      <Container className="text-center">
-        <h2 className="mx-auto max-w-3xl text-4xl font-semibold tracking-tight sm:text-6xl">
+    <section className="bg-field bg-field-bottom py-24">
+      <Container>
+        <div className="panel-lg relative overflow-hidden px-6 py-20 text-center sm:py-28">
+        <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />
+        <div className="relative">
+        <h2 className="h-hero mx-auto max-w-3xl">
           Prêt à streamer ? <Highlight>Crée ton relais.</Highlight>
         </h2>
         <div className="mt-10">
@@ -19,6 +22,8 @@ export default function FinalCta() {
           </a>
           .
         </p>
+        </div>
+        </div>
       </Container>
     </section>
   );

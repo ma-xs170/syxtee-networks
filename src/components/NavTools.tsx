@@ -221,12 +221,12 @@ function Dropdown({
           open ? "visible translate-y-0 opacity-100" : "pointer-events-none invisible -translate-y-2 opacity-0"
         }`}
       >
-        <div className="rounded-2xl border border-white/10 bg-black/95 p-3 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.9)] backdrop-blur-md">
+        <div className="rounded-2xl border border-accent/20 bg-background/95 p-3 shadow-[0_24px_60px_-12px_var(--shadow-pop)] backdrop-blur-md">
           <ul className={grid ? "grid w-[660px] grid-cols-2 gap-1" : "flex gap-2"}>
             {menu.children.map((t) => (
               <li key={t.href}>
                 {grid ? (
-                  <Link href={t.href} onClick={onClose} className={`group flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-white/5 focus-visible:bg-white/5${"soon" in t && t.soon ? " opacity-60 hover:opacity-100" : ""}`}>
+                  <Link href={t.href} onClick={onClose} className={`group flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-accent/10 focus-visible:bg-accent/10${"soon" in t && t.soon ? " opacity-60 hover:opacity-100" : ""}`}>
                     <span className="h-16 w-16 shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.06]">
                       <ItemArt icon={t.icon} />
                     </span>
@@ -243,7 +243,7 @@ function Dropdown({
                   <Link
                     href={t.href}
                     onClick={onClose}
-                    className={`group flex w-[220px] flex-col rounded-xl p-4 transition-colors hover:bg-white/5 focus-visible:bg-white/5${"soon" in t && t.soon ? " opacity-60 hover:opacity-100" : ""}`}
+                    className={`group flex w-[220px] flex-col rounded-xl p-4 transition-colors hover:bg-accent/10 focus-visible:bg-accent/10${"soon" in t && t.soon ? " opacity-60 hover:opacity-100" : ""}`}
                   >
                     <div className="h-24 w-full transition-transform duration-300 ease-out group-hover:-translate-y-1 group-hover:scale-[1.04]">
                       <ItemArt icon={t.icon} />
@@ -291,7 +291,7 @@ export function NavAccordion({ menu, active, onNavigate }: { menu: AnyMenu; acti
       <ul id={id} hidden={!open} className="pb-3">
         {menu.children.map((t) => (
           <li key={t.href}>
-            <Link href={t.href} onClick={onNavigate} className={`flex items-center gap-4 rounded-xl px-2 py-3 hover:bg-white/5${"soon" in t && t.soon ? " opacity-60 hover:opacity-100" : ""}`}>
+            <Link href={t.href} onClick={onNavigate} className={`flex items-center gap-4 rounded-xl px-2 py-3 hover:bg-accent/10${"soon" in t && t.soon ? " opacity-60 hover:opacity-100" : ""}`}>
               <span className="h-12 w-12 shrink-0">
                 <ItemArt icon={t.icon} />
               </span>

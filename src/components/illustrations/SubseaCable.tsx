@@ -52,7 +52,7 @@ export function CableSection({ cx, cy, r, labels = true }: { cx: number; cy: num
   );
   return (
     <g>
-      <circle cx={cx} cy={cy} r={r} fill="#000" />
+      <circle cx={cx} cy={cy} r={r} fill="var(--background)" />
       <circle cx={cx} cy={cy} r={r} fill="currentColor" fillOpacity={0.04} />
       <circle cx={cx} cy={cy} r={r * 0.86} strokeWidth={1} />
       {Array.from({ length: armor }, (_, i) => {
@@ -94,8 +94,8 @@ export function OceanScene({ surface = 60, fish = 4, bubbles = 6 }: { surface?: 
   const depth = (
     <defs>
       <radialGradient id="depth-light" cx="0.5" cy="0" r="1">
-        <stop offset="0" stopColor="#fff" stopOpacity="0.05" />
-        <stop offset="0.7" stopColor="#fff" stopOpacity="0" />
+        <stop offset="0" stopColor="var(--foreground)" stopOpacity="0.05" />
+        <stop offset="0.7" stopColor="var(--foreground)" stopOpacity="0" />
       </radialGradient>
     </defs>
   );
@@ -150,7 +150,7 @@ export function OceanScene({ surface = 60, fish = 4, bubbles = 6 }: { surface?: 
       {/* Fond marin et câble */}
       <path d={SEABED} strokeWidth={1} opacity={0.7} />
       <path d={CABLE} strokeWidth={3} />
-      <path d={CABLE} strokeWidth={1.5} stroke="#fff" className={a.pulse} />
+      <path d={CABLE} strokeWidth={1.5} stroke="currentColor" className={a.pulse} />
     </g>
   );
 }

@@ -30,7 +30,7 @@ function MiniBag({ x, y, s: k = 1 }: { x: number; y: number; s?: number }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${k})`}>
       <path d="M8 2C-6 20 -6 50 4 70M52 2C66 20 66 50 56 70" opacity={0.6} />
-      <rect x={0} y={0} width={60} height={76} rx={14} fill="#000" />
+      <rect x={0} y={0} width={60} height={76} rx={14} fill="var(--background)" />
       <rect x={9} y={30} width={42} height={38} rx={9} strokeDasharray="1.5 3" />
       <circle cx={30} cy={16} r={5} />
     </g>
@@ -75,7 +75,7 @@ function IPhone() {
       <path d="M74 72H118" strokeDasharray="2 4" opacity={0.5} />
       <g className={s.plug}>
         <path d="M118 72H176" strokeWidth={2} />
-        <rect x={118} y={66} width={14} height={12} rx={3} fill="#000" />
+        <rect x={118} y={66} width={14} height={12} rx={3} fill="var(--background)" />
       </g>
       <MiniBag x={184} y={34} />
       <circle cx={232} cy={42} r={3} fill="var(--live)" stroke="none" className={s.on} />
@@ -86,10 +86,10 @@ function IPhone() {
 function Starlink() {
   return (
     <Art>
-      <rect x={92} y={14} width={96} height={116} rx={18} fill="#000" />
+      <rect x={92} y={14} width={96} height={116} rx={18} fill="var(--background)" />
       <path d="M98 20C80 50 80 90 96 124M182 20C200 50 200 90 184 124" opacity={0.5} />
       <g className={s.slide}>
-        <rect x={108} y={34} width={64} height={78} rx={6} fill="#000" />
+        <rect x={108} y={34} width={64} height={78} rx={6} fill="var(--background)" />
         <rect x={116} y={42} width={48} height={62} rx={4} opacity={0.4} />
       </g>
       <text x={140} y={138} textAnchor="middle" {...mono}>
@@ -176,7 +176,7 @@ export default function ProBento() {
   return (
     <section className="border-b border-line py-20 sm:py-28" aria-labelledby="pro-bento">
       <Container>
-        <h2 id="pro-bento" className="max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">
+        <h2 id="pro-bento" className="max-w-2xl h-section">
           Ce que tu peux <Highlight>faire avec.</Highlight>
         </h2>
         <ul className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -193,7 +193,7 @@ export default function ProBento() {
               </div>
             </li>
           ))}
-          <li className="relative flex flex-col justify-end overflow-hidden rounded-2xl border border-white/30 bg-white/[0.04] p-6 md:col-span-2 lg:col-span-1">
+          <li className="relative flex flex-col justify-end overflow-hidden rounded-2xl border border-accent/40 bg-accent/[0.08] p-6 md:col-span-2 lg:col-span-1">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Le moins cher du marché</p>
             <p className="mt-4 text-6xl font-semibold tracking-tight tabular-nums sm:text-7xl">{pro.launchPrice}</p>
             <p className="mt-3 text-sm text-muted">Prix de lancement</p>

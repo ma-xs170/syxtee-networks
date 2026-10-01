@@ -89,7 +89,7 @@ export function ObsUI({ t }: { t: number }) {
   return (
     <g>
       {/* Fenêtre */}
-      <rect x={0} y={0} width={OBS_W} height={OBS_H} rx={8} fill="#000" />
+      <rect x={0} y={0} width={OBS_W} height={OBS_H} rx={8} fill="var(--background)" />
       <rect x={0} y={0} width={OBS_W} height={OBS_H} rx={8} fill="currentColor" fillOpacity={0.03} />
       <path d={`M0 18H${OBS_W}`} strokeWidth={1} opacity={0.5} />
       <Txt x={12} y={13} strong size="xs">
@@ -138,21 +138,21 @@ export function ObsUI({ t }: { t: number }) {
           {/* Overlay : nom de la chaîne, heure, mini-carte */}
           {!brb && (
             <g opacity={ramp(t, 0.36, 0.42)}>
-              <rect x={10} y={10} width={112} height={22} rx={3} fill="#000" fillOpacity={0.6} strokeWidth={1} />
+              <rect x={10} y={10} width={112} height={22} rx={3} fill="var(--background)" fillOpacity={0.6} strokeWidth={1} />
               <Txt x={18} y={25} strong>
                 TA CHAÎNE · IRL
               </Txt>
               <Txt x={PV.w - 140} y={24} anchor="end" strong>
                 21:42
               </Txt>
-              <rect x={PV.w - 190} y={PV.h - 62} width={52} height={46} rx={3} fill="#000" fillOpacity={0.6} strokeWidth={1} />
+              <rect x={PV.w - 190} y={PV.h - 62} width={52} height={46} rx={3} fill="var(--background)" fillOpacity={0.6} strokeWidth={1} />
               <path d={`M${PV.w - 184} ${PV.h - 26}q10 -14 18 -8t22 -14`} strokeWidth={1} strokeDasharray="2 2" />
               <circle cx={PV.w - 144} cy={PV.h - 48} r={2.5} fill="var(--live)" stroke="none" />
             </g>
           )}
           {/* Alerte « NOUVEAU FOLLOW » qui glisse */}
           <g transform={`translate(${(PV.w - 128) / 2 - 80} ${-50 + alert * 90})`} opacity={alert}>
-            <rect x={0} y={0} width={160} height={38} rx={6} fill="#000" fillOpacity={0.8} strokeWidth={1.25} />
+            <rect x={0} y={0} width={160} height={38} rx={6} fill="var(--background)" fillOpacity={0.8} strokeWidth={1.25} />
             <Txt x={80} y={16} anchor="middle" strong>
               NOUVEAU FOLLOW
             </Txt>
@@ -253,7 +253,7 @@ export function ObsUI({ t }: { t: number }) {
       {/* Badge LIVE */}
       {live && (
         <g>
-          <rect x={OBS_W - 132} y={30} width={116} height={20} rx={10} fill="#000" stroke="var(--live)" strokeWidth={1.25} />
+          <rect x={OBS_W - 132} y={30} width={116} height={20} rx={10} fill="var(--background)" stroke="var(--live)" strokeWidth={1.25} />
           <circle cx={OBS_W - 120} cy={40} r={3} fill="var(--live)" stroke="none" className="led-blink" />
           <Txt x={OBS_W - 110} y={44} live strong size="xs">
             {`LIVE ${clock}`}
@@ -264,7 +264,7 @@ export function ObsUI({ t }: { t: number }) {
       {/* h) Bascule automatique */}
       {brb && (
         <g>
-          <rect x={16} y={DY - 30} width={176} height={20} rx={3} fill="#000" strokeWidth={1} strokeDasharray="3 3" />
+          <rect x={16} y={DY - 30} width={176} height={20} rx={3} fill="var(--background)" strokeWidth={1} strokeDasharray="3 3" />
           <Txt x={24} y={DY - 16} strong size="xs">
             BASCULE AUTO (ex. NOALBS)
           </Txt>

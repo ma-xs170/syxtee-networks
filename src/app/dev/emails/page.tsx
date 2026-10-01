@@ -32,7 +32,7 @@ export default async function DevEmailsPage() {
               </div>
               <SendTest emailKey={e.key} />
             </div>
-            <iframe title={e.label} srcDoc={e.html} sandbox="" className="h-[640px] w-full rounded-xl border border-line bg-black" />
+            <iframe title={e.label} srcDoc={e.html} sandbox="" className="h-[640px] w-full rounded-xl border border-line bg-background" />
           </section>
         ))}
       </div>

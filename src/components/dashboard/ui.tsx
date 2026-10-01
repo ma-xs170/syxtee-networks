@@ -23,7 +23,7 @@ export function SectionTabs({ tabs, current, label, className = "mb-8" }: { tabs
               <Link
                 href={t.href}
                 aria-current={on ? "page" : undefined}
-                className={`block whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${on ? "bg-white text-black" : "text-muted hover:text-foreground"}`}
+                className={`block whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${on ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}
               >
                 {t.label}
               </Link>
@@ -40,7 +40,7 @@ export function DashHeader({ lead, hl, sub, children }: { lead: string; hl: stri
   return (
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+        <h1 className="h-section">
           {lead}
           {hl && (
             <>
@@ -58,7 +58,7 @@ export function DashHeader({ lead, hl, sub, children }: { lead: string; hl: stri
 
 export function Tile({ children, className = "", as: As = "section", ...rest }: { children: ReactNode; className?: string; as?: "section" | "div"; id?: string; "aria-labelledby"?: string }) {
   return (
-    <As className={`rounded-2xl border border-line bg-black p-5 sm:p-6 ${className}`} {...rest}>
+    <As className={`rounded-2xl border border-line bg-background p-5 sm:p-6 ${className}`} {...rest}>
       {children}
     </As>
   );

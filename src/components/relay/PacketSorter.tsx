@@ -26,7 +26,7 @@ function Packet({ pk, count, p, layout }: { pk: SorterPacket; count: number; p: 
   const opacity = useTransform(p, (v) => clamp01((v - pk.at) / 0.03));
   return (
     <motion.g style={{ x, y, opacity }}>
-      <rect width={18} height={18} rx={2.5} fill="#000" />
+      <rect width={18} height={18} rx={2.5} fill="var(--background)" />
       <text x={9} y={12.5} textAnchor="middle" fill="var(--foreground)" stroke="none" className="font-mono text-[10px]">
         {pk.n}
       </text>
@@ -40,7 +40,7 @@ function Slot({ i, count, p, filledAt, layout }: { i: number; count: number; p: 
   const fill = useTransform(p, (v) => ramp(v, filledAt, filledAt + 0.03) * 0.14);
   return (
     <g>
-      <motion.rect x={x} y={layout.slotY - 11} width={22} height={22} rx={3} fill="#fff" style={{ fillOpacity: fill }} strokeDasharray="2 3" strokeOpacity={0.5} />
+      <motion.rect x={x} y={layout.slotY - 11} width={22} height={22} rx={3} fill="var(--foreground)" style={{ fillOpacity: fill }} strokeDasharray="2 3" strokeOpacity={0.5} />
       <text x={x + 11} y={layout.slotY + 26} textAnchor="middle" fill="var(--muted)" stroke="none" className="font-mono text-[9px]">
         {i + 1}
       </text>

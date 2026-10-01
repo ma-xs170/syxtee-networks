@@ -22,7 +22,7 @@ export default async function DashboardPlanLayout({ children }: LayoutProps<"/da
       {plan.id === "partner" && (
         <div role="region" aria-label="Formule" className="border-b border-line">
           <p className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-3 px-4 py-2.5 text-sm text-muted sm:px-6">
-            <span className="rounded border border-white/20 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.14em] text-foreground">PARTENAIRE</span>
+            <span className="rounded border border-accent/30 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.14em] text-foreground">PARTENAIRE</span>
             <span>Accès illimité{until ? ` jusqu'au ${until}` : ""}. Merci de faire partie de l&apos;aventure.</span>
           </p>
         </div>

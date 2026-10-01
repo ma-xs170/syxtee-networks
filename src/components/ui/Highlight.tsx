@@ -52,7 +52,7 @@ export default function Highlight({ children }: { children: ReactNode }) {
     <span
       ref={ref}
       data-on={on}
-      className="rounded-[2px] bg-[linear-gradient(#fff,#fff)] bg-[length:0%_100%] bg-left bg-no-repeat px-1 text-inherit transition-[background-size,color] duration-[600ms] ease-out [-webkit-box-decoration-break:clone] [box-decoration-break:clone] data-[on=true]:bg-[length:100%_100%] data-[on=true]:text-black motion-reduce:bg-[length:100%_100%] motion-reduce:text-black motion-reduce:transition-none"
+      className="rounded-[2px] bg-[linear-gradient(var(--accent),var(--accent))] bg-[length:0%_100%] bg-left bg-no-repeat px-1 text-inherit transition-[background-size,color] duration-[600ms] ease-out [-webkit-box-decoration-break:clone] [box-decoration-break:clone] data-[on=true]:bg-[length:100%_100%] data-[on=true]:text-on-accent motion-reduce:bg-[length:100%_100%] motion-reduce:text-on-accent motion-reduce:transition-none"
     >
       {children}
     </span>

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { isMenu, nav, site, type NavLink } from "@/lib/site";
+import ThemeToggle from "./ThemeToggle";
 import { DiscordIcon } from "./ui";
 
 // Mêmes catégories que la nav : Produits (+ Offres), Outils, Ressources, puis Support.
@@ -14,7 +15,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-4 py-14 sm:px-6 md:grid-cols-4 lg:grid-cols-6">
         <div className="col-span-2 md:col-span-4 lg:col-span-2">
           <div className="flex items-center gap-3">
-            <Image src="/logo-400.png" alt="" width={32} height={44} />
+            <Image src="/logo-400.png" alt="" width={32} height={44} className="ink-img" />
             <span className="text-sm font-semibold tracking-[0.18em]">SYXTEE <span className="font-normal text-muted">NETWORKS</span></span>
           </div>
           <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted">
@@ -52,9 +53,14 @@ export default function Footer() {
         </div>
       </div>
 
+      <div aria-hidden="true" className="select-none overflow-hidden px-4">
+        <p className="mx-auto max-w-6xl whitespace-nowrap text-center text-[17.5vw] font-semibold leading-[0.8] tracking-tighter text-foreground/[0.06] sm:text-[15vw] lg:text-[190px]">SYXTEE</p>
+      </div>
+
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>© {site.year} {site.name}. Tous droits réservés.</p>
+          <ThemeToggle />
           <div className="flex gap-6">
             <Link href="/mentions-legales" className="hover:text-foreground">Mentions légales</Link>
             <Link href="/credits" className="hover:text-foreground">Crédits</Link>

@@ -15,28 +15,28 @@ function Silk({ id, variant }: { id: string; variant: "main" | "folds" }) {
     <svg viewBox="0 0 800 600" className="h-auto w-full" fill="none" aria-hidden="true">
       <defs>
         <linearGradient id={g("a")} gradientUnits="userSpaceOnUse" x1="820" y1="0" x2="250" y2="280">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.6" />
-          <stop offset="0.45" stopColor="#fff" stopOpacity="0.16" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          <stop offset="0" stopColor="var(--foreground)" stopOpacity="0.6" />
+          <stop offset="0.45" stopColor="var(--foreground)" stopOpacity="0.16" />
+          <stop offset="1" stopColor="var(--foreground)" stopOpacity="0" />
         </linearGradient>
         <linearGradient id={g("b")} gradientUnits="userSpaceOnUse" x1="820" y1="120" x2="320" y2="440">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.42" />
-          <stop offset="0.5" stopColor="#fff" stopOpacity="0.08" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          <stop offset="0" stopColor="var(--foreground)" stopOpacity="0.42" />
+          <stop offset="0.5" stopColor="var(--foreground)" stopOpacity="0.08" />
+          <stop offset="1" stopColor="var(--foreground)" stopOpacity="0" />
         </linearGradient>
         <linearGradient id={g("c")} gradientUnits="userSpaceOnUse" x1="660" y1="-20" x2="120" y2="140">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.5" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          <stop offset="0" stopColor="var(--foreground)" stopOpacity="0.5" />
+          <stop offset="1" stopColor="var(--foreground)" stopOpacity="0" />
         </linearGradient>
         {/* Ombre du pli, en travers du pan : donne le volume de la soie */}
         <linearGradient id={g("shade")} gradientUnits="userSpaceOnUse" x1="560" y1="120" x2="610" y2="230">
-          <stop offset="0" stopColor="#000" stopOpacity="0" />
-          <stop offset="0.55" stopColor="#000" stopOpacity="0.55" />
-          <stop offset="1" stopColor="#000" stopOpacity="0" />
+          <stop offset="0" stopColor="var(--background)" stopOpacity="0" />
+          <stop offset="0.55" stopColor="var(--background)" stopOpacity="0.55" />
+          <stop offset="1" stopColor="var(--background)" stopOpacity="0" />
         </linearGradient>
         <radialGradient id={g("glow")} cx="800" cy="0" r="460" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.16" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          <stop offset="0" stopColor="var(--foreground)" stopOpacity="0.16" />
+          <stop offset="1" stopColor="var(--foreground)" stopOpacity="0" />
         </radialGradient>
         <filter id={g("soft")} x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur stdDeviation="7" />
@@ -62,9 +62,9 @@ function Silk({ id, variant }: { id: string; variant: "main" | "folds" }) {
           </g>
           {/* Arêtes des plis, fines et lumineuses */}
           <g filter={`url(#${g("edge")})`} strokeLinecap="round">
-            <path d="M830 -10C640 110 480 200 200 238" stroke="#fff" strokeOpacity="0.4" strokeWidth="1.8" />
-            <path d="M830 200C690 296 560 380 380 454" stroke="#fff" strokeOpacity="0.22" strokeWidth="1.4" />
-            <path d="M650 -30C540 50 400 98 140 124" stroke="#fff" strokeOpacity="0.22" strokeWidth="1.2" />
+            <path d="M830 -10C640 110 480 200 200 238" stroke="var(--foreground)" strokeOpacity="0.4" strokeWidth="1.8" />
+            <path d="M830 200C690 296 560 380 380 454" stroke="var(--foreground)" strokeOpacity="0.22" strokeWidth="1.4" />
+            <path d="M650 -30C540 50 400 98 140 124" stroke="var(--foreground)" strokeOpacity="0.22" strokeWidth="1.2" />
           </g>
         </>
       )}

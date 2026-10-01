@@ -19,11 +19,11 @@ const list: Variants = { show: { transition: { staggerChildren: 0.05 } } };
 const item: Variants = { hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } } };
 
 export const fieldCls =
-  "h-[52px] w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 text-[15px] text-white placeholder:text-white/35 transition-[border-color,box-shadow] focus:border-white/30 focus:outline-none focus:ring-4 focus:ring-white/[0.06]";
+  "h-[52px] w-full rounded-xl border border-accent/20 bg-accent/[0.08] px-4 text-[15px] text-foreground placeholder:text-foreground/35 transition-[border-color,box-shadow] focus:border-accent/40 focus:outline-none focus:ring-4 focus:ring-accent/[0.06]";
 
 export function LogoTile() {
   return (
-    <motion.div variants={item} className="mx-auto flex h-12 w-12 items-center justify-center rounded-[14px] border border-white/10 bg-[#0a0a0a] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-8px_16px_rgba(0,0,0,0.6)]">
+    <motion.div variants={item} className="mx-auto flex h-12 w-12 items-center justify-center rounded-[14px] border border-accent/20 bg-[#0a0a0a] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-8px_16px_rgba(0,0,0,0.6)]">
       <Image src="/logo-400.png" alt="SYXTEE" width={18} height={25} priority />
     </motion.div>
   );
@@ -37,7 +37,7 @@ function Shell({ title, sub, children }: { title: string; sub?: ReactNode; child
         {title}
       </motion.h1>
       {sub && (
-        <motion.p variants={item} className="mt-3 text-center text-sm leading-relaxed text-white/60">
+        <motion.p variants={item} className="mt-3 text-center text-sm leading-relaxed text-foreground/60">
           {sub}
         </motion.p>
       )}
@@ -50,7 +50,7 @@ function Field({ id, label, aside, children }: { id: string; label: string; asid
   return (
     <div className="space-y-2">
       <div className="flex items-baseline justify-between gap-3">
-        <label htmlFor={id} className="block text-sm font-medium text-white/80">
+        <label htmlFor={id} className="block text-sm font-medium text-foreground/80">
           {label}
         </label>
         {aside}
@@ -66,7 +66,7 @@ function Submit({ idle, busy, disabled = false }: { idle: string; busy: string; 
     <button
       type="submit"
       disabled={disabled || pending}
-      className="h-12 w-full whitespace-nowrap rounded-xl bg-white text-sm font-medium text-black transition-colors hover:bg-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/35"
+      className="h-12 w-full whitespace-nowrap rounded-xl bg-accent text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-accent/20 disabled:text-foreground/35"
     >
       {pending ? busy : idle}
     </button>
@@ -114,7 +114,7 @@ export function PasswordInput({ id, name, label, autoComplete, value, onChange, 
           type="button"
           onClick={() => setShown((s) => !s)}
           aria-pressed={shown}
-          className="absolute right-2 top-1/2 h-9 -translate-y-1/2 rounded-lg px-3 text-xs font-medium text-white/60 transition-colors hover:bg-white/[0.06] hover:text-white"
+          className="absolute right-2 top-1/2 h-9 -translate-y-1/2 rounded-lg px-3 text-xs font-medium text-foreground/60 transition-colors hover:bg-accent/[0.12] hover:text-foreground"
         >
           {shown ? "Masquer" : "Afficher"}
         </button>
@@ -123,13 +123,13 @@ export function PasswordInput({ id, name, label, autoComplete, value, onChange, 
         <div id={hintId} className="space-y-1.5" aria-live="polite">
           <div className="grid grid-cols-3 gap-1.5" aria-hidden="true">
             {[0, 1, 2].map((i) => (
-              <span key={i} className={`h-1 rounded-full transition-colors ${value && i <= strength ? (strength === 0 ? "bg-white/40" : strength === 1 ? "bg-white/70" : "bg-white") : "bg-white/10"}`} />
+              <span key={i} className={`h-1 rounded-full transition-colors ${value && i <= strength ? (strength === 0 ? "bg-accent/20" : strength === 1 ? "bg-accent/20" : "bg-accent") : "bg-accent/20"}`} />
             ))}
           </div>
-          <p className="text-xs text-white/50">
+          <p className="text-xs text-foreground/50">
             {value ? (
               <>
-                Solidité : <span className="text-white/80">{STRENGTH_LABEL[strength]}</span>
+                Solidité : <span className="text-foreground/80">{STRENGTH_LABEL[strength]}</span>
                 {value.length < PASSWORD_MIN && ` · ${PASSWORD_MIN - value.length} caractère${PASSWORD_MIN - value.length > 1 ? "s" : ""} de plus`}
               </>
             ) : (
@@ -154,7 +154,7 @@ function ResendButton({ at }: { at: number }) {
     <button
       type="submit"
       disabled={left > 0 || pending}
-      className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.04] text-sm font-medium text-white transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:text-white/40 disabled:hover:bg-white/[0.04]"
+      className="h-12 w-full rounded-xl border border-accent/20 bg-accent/[0.08] text-sm font-medium text-foreground transition-colors hover:bg-accent/[0.12] disabled:cursor-not-allowed disabled:text-foreground/40 disabled:hover:bg-accent/[0.08]"
     >
       <span className="tabular-nums">{pending ? "Envoi…" : left > 0 ? `Renvoyer l'email (${left} s)` : "Renvoyer l'email"}</span>
     </button>
@@ -167,10 +167,10 @@ function CheckMail({ email, at, lead, resend, next, onBack }: { email: string; a
   const sentAt = state.status === "sent" ? state.at : at;
   return (
     <Shell title="Vérifie ta boîte mail" sub={lead}>
-      <motion.p variants={item} className="mt-2 text-center text-sm text-white/60">
-        <span className="font-medium text-white">{email}</span>
+      <motion.p variants={item} className="mt-2 text-center text-sm text-foreground/60">
+        <span className="font-medium text-foreground">{email}</span>
       </motion.p>
-      <motion.p variants={item} className="mt-4 text-center text-xs leading-relaxed text-white/45">
+      <motion.p variants={item} className="mt-4 text-center text-xs leading-relaxed text-foreground/45">
         Rien reçu ? Regarde dans les spams, ou vérifie l&apos;adresse.
       </motion.p>
       {resend && (
@@ -186,7 +186,7 @@ function CheckMail({ email, at, lead, resend, next, onBack }: { email: string; a
         </motion.div>
       )}
       <motion.div variants={item} className="mt-4 text-center">
-        <button type="button" onClick={onBack} className="text-sm text-white/60 underline-offset-4 transition-colors hover:text-white hover:underline">
+        <button type="button" onClick={onBack} className="text-sm text-foreground/60 underline-offset-4 transition-colors hover:text-foreground hover:underline">
           Changer d&apos;email
         </button>
       </motion.div>
@@ -197,11 +197,11 @@ function CheckMail({ email, at, lead, resend, next, onBack }: { email: string; a
 function Legal() {
   return (
     <>
-      <Link href="/cgu" target="_blank" className="underline underline-offset-2 hover:text-white">
+      <Link href="/cgu" target="_blank" className="underline underline-offset-2 hover:text-foreground">
         Conditions d&apos;utilisation
       </Link>{" "}
       et la{" "}
-      <Link href="/confidentialite" target="_blank" className="underline underline-offset-2 hover:text-white">
+      <Link href="/confidentialite" target="_blank" className="underline underline-offset-2 hover:text-foreground">
         Politique de confidentialité
       </Link>
     </>
@@ -223,7 +223,7 @@ export function SignInCard({ next = "", error }: { next?: string; error?: string
       sub={
         <>
           Pas encore de compte ?{" "}
-          <Link href={`/inscription${nextQ}`} className="font-medium text-white hover:underline">
+          <Link href={`/inscription${nextQ}`} className="font-medium text-foreground hover:underline">
             Inscris-toi.
           </Link>
         </>
@@ -242,7 +242,7 @@ export function SignInCard({ next = "", error }: { next?: string; error?: string
           value={password}
           onChange={setPassword}
           aside={
-            <Link href={`/mot-de-passe-oublie${email ? `?email=${encodeURIComponent(email)}` : ""}`} className="text-xs text-white/60 hover:text-white hover:underline">
+            <Link href={`/mot-de-passe-oublie${email ? `?email=${encodeURIComponent(email)}` : ""}`} className="text-xs text-foreground/60 hover:text-foreground hover:underline">
               Mot de passe oublié ?
             </Link>
           }
@@ -258,9 +258,9 @@ export function SignInCard({ next = "", error }: { next?: string; error?: string
         </motion.div>
       )}
 
-      <motion.p variants={item} className="mt-10 rounded-xl border border-white/10 bg-white/[0.02] p-4 text-center text-xs leading-relaxed text-white/55">
+      <motion.p variants={item} className="mt-10 rounded-xl border border-accent/20 bg-accent/[0.08] p-4 text-center text-xs leading-relaxed text-foreground/55">
         Compte créé avec Twitch, Discord, Google ou un lien par email ?{" "}
-        <Link href={`/mot-de-passe-oublie${email ? `?email=${encodeURIComponent(email)}` : ""}`} className="font-medium text-white hover:underline">
+        <Link href={`/mot-de-passe-oublie${email ? `?email=${encodeURIComponent(email)}` : ""}`} className="font-medium text-foreground hover:underline">
           Définis ton mot de passe
         </Link>{" "}
         avec la même adresse : tu retrouves tout ton compte.
@@ -299,7 +299,7 @@ export function SignUpCard({ next = "", error }: { next?: string; error?: string
       sub={
         <>
           Déjà un compte ?{" "}
-          <Link href={`/connexion${nextQ}`} className="font-medium text-white hover:underline">
+          <Link href={`/connexion${nextQ}`} className="font-medium text-foreground hover:underline">
             Connecte-toi.
           </Link>
         </>
@@ -323,8 +323,8 @@ export function SignUpCard({ next = "", error }: { next?: string; error?: string
           <PasswordInput id="password_confirm" name="password_confirm" label="Confirmer le mot de passe" autoComplete="new-password" value={confirm} onChange={setConfirm} />
           {mismatch && <p className="text-xs text-red-400/90">Les deux mots de passe ne correspondent pas.</p>}
         </div>
-        <label className="flex cursor-pointer items-start gap-3 text-xs leading-relaxed text-white/60">
-          <input type="checkbox" name="cgu" required className="mt-0.5 h-4 w-4 shrink-0 accent-white" />
+        <label className="flex cursor-pointer items-start gap-3 text-xs leading-relaxed text-foreground/60">
+          <input type="checkbox" name="cgu" required className="mt-0.5 h-4 w-4 shrink-0 accent-accent" />
           <span>
             J&apos;accepte les <Legal />.
           </span>
@@ -374,7 +374,7 @@ export function ForgotCard({ email: initial = "", error }: { email?: string; err
         </motion.div>
       )}
       <motion.p variants={item} className="mt-8 text-center text-sm">
-        <Link href="/connexion" className="text-white/60 hover:text-white hover:underline">
+        <Link href="/connexion" className="text-foreground/60 hover:text-foreground hover:underline">
           Retour à la connexion
         </Link>
       </motion.p>
@@ -390,7 +390,7 @@ export function ResetCard({ email }: { email: string }) {
   const [confirm, setConfirm] = useState("");
   const mismatch = confirm.length > 0 && confirm !== password;
   return (
-    <Shell title="Nouveau mot de passe" sub={<>Pour le compte <span className="font-medium text-white">{email}</span>.</>}>
+    <Shell title="Nouveau mot de passe" sub={<>Pour le compte <span className="font-medium text-foreground">{email}</span>.</>}>
       <motion.form variants={item} action={action} className="mt-10 space-y-5">
         {/* Aide les gestionnaires de mots de passe à associer le nouveau mot de passe au bon compte. */}
         <input type="email" name="username" autoComplete="username" value={email} readOnly hidden />

@@ -45,7 +45,7 @@ function Chip({ on, onClick, children, color }: { on: boolean; onClick: () => vo
       aria-pressed={on}
       onClick={onClick}
       className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-colors ${
-        on ? "border-white/30 bg-white/[0.08] text-foreground" : "border-line text-muted hover:text-foreground"
+        on ? "border-accent/40 bg-accent/[0.12] text-foreground" : "border-line text-muted hover:text-foreground"
       }`}
     >
       {color && <span className="h-2.5 w-2.5 rounded-full" style={{ background: color, opacity: on ? 1 : 0.35 }} aria-hidden="true" />}
@@ -194,14 +194,14 @@ export default function AntennaMap() {
       {/* Filtres + légende (sous la carte sur mobile) */}
       <div className="order-2 space-y-6 lg:order-1">
         <div>
-          <label htmlFor="territoire" className="block text-sm font-medium text-white/80">
+          <label htmlFor="territoire" className="block text-sm font-medium text-foreground/80">
             Territoire
           </label>
           <select
             id="territoire"
             value={territory}
             onChange={(e) => selectTerritory(e.target.value as TerritoryId)}
-            className="mt-2 h-11 w-full appearance-none rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white focus:border-white/30 focus:outline-none"
+            className="mt-2 h-11 w-full appearance-none rounded-xl border border-accent/20 bg-accent/[0.08] px-4 text-sm text-foreground focus:border-accent/40 focus:outline-none"
           >
             {TERRITORIES.map((t) => (
               <option key={t.id} value={t.id}>
@@ -212,7 +212,7 @@ export default function AntennaMap() {
         </div>
 
         <fieldset>
-          <legend className="text-sm font-medium text-white/80">Opérateurs</legend>
+          <legend className="text-sm font-medium text-foreground/80">Opérateurs</legend>
           <div className="mt-2 flex flex-wrap gap-2">
             {file?.operators.map((o, i) => (
               <Chip key={o.name} color={opColor(i)} on={!ops || ops.has(i)} onClick={() => setOps(toggle(ops ?? new Set(file.operators.map((_, k) => k)), i))}>
@@ -224,7 +224,7 @@ export default function AntennaMap() {
         </fieldset>
 
         <fieldset>
-          <legend className="text-sm font-medium text-white/80">Technologie</legend>
+          <legend className="text-sm font-medium text-foreground/80">Technologie</legend>
           <div className="mt-2 flex flex-wrap gap-2">
             {(["all", "4g", "5g"] as const).map((t) => (
               <Chip key={t} on={tech === t} onClick={() => setTech(t)}>
@@ -235,7 +235,7 @@ export default function AntennaMap() {
         </fieldset>
 
         <fieldset>
-          <legend className="text-sm font-medium text-white/80">Statut</legend>
+          <legend className="text-sm font-medium text-foreground/80">Statut</legend>
           <div className={`mt-2 flex flex-wrap gap-2 ${file && !published ? "hidden" : ""}`}>
             {STATUS.filter((s) => s.id !== 3).map((s) => (
               <Chip key={s.id} on={statuses.has(s.id)} onClick={() => setStatuses(toggle(statuses, s.id))}>
@@ -266,10 +266,10 @@ export default function AntennaMap() {
       {/* Carte */}
       <div className="relative order-1 overflow-hidden rounded-2xl border border-line lg:order-2">
         <div ref={box} className="h-[62dvh] min-h-[420px] w-full bg-[#0a0a0a] lg:h-[70dvh]" />
-        {error && <p className="absolute inset-x-4 top-4 rounded-xl bg-black/85 p-4 text-sm text-red-400/90">{error}</p>}
+        {error && <p className="absolute inset-x-4 top-4 rounded-xl bg-background/85 p-4 text-sm text-red-400/90">{error}</p>}
 
         {site && file && (
-          <div className="absolute bottom-3 left-3 right-3 max-w-sm rounded-2xl border border-line bg-black/90 p-4 backdrop-blur-md sm:right-auto" role="dialog" aria-label="Détail du site">
+          <div className="absolute bottom-3 left-3 right-3 max-w-sm rounded-2xl border border-line bg-background/90 p-4 backdrop-blur-md sm:right-auto" role="dialog" aria-label="Détail du site">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="flex items-center gap-2 text-sm font-medium">

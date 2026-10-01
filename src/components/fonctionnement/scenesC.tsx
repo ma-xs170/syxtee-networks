@@ -37,7 +37,7 @@ export function SceneHome({ progress }: { progress: MotionValue<number> }) {
             </g>
             {/* Câble sous-marin avec impulsions */}
             <path d="M480 200Q400 230 320 200T140 200" strokeWidth={2} />
-            <path d="M480 200Q400 230 320 200T140 200" stroke="#fff" strokeWidth={1.5} className={anim.pulseBack} />
+            <path d="M480 200Q400 230 320 200T140 200" stroke="var(--foreground)" strokeWidth={1.5} className={anim.pulseBack} />
             <T x={310} y={250} anchor="middle" size="sm">
               CÂBLE SOUS-MARIN
             </T>
@@ -49,7 +49,7 @@ export function SceneHome({ progress }: { progress: MotionValue<number> }) {
                 ANTILLES
               </T>
             </g>
-            <circle cx={lerp(500, 90, dot)} cy={200 + Math.sin(dot * Math.PI * 2) * 8} r={4} fill="#fff" stroke="none" />
+            <circle cx={lerp(500, 90, dot)} cy={200 + Math.sin(dot * Math.PI * 2) * 8} r={4} fill="var(--foreground)" stroke="none" />
           </g>
         )}
 
@@ -66,7 +66,7 @@ export function SceneHome({ progress }: { progress: MotionValue<number> }) {
             <g opacity={flux}>
               <path d={fluxPath} strokeWidth={4} opacity={0.3} />
               <path d={fluxPath} strokeWidth={2} className={anim.stream} />
-              <rect x={24} y={538} width={250} height={24} rx={12} fill="#000" strokeWidth={1} />
+              <rect x={24} y={538} width={250} height={24} rx={12} fill="var(--background)" strokeWidth={1} />
               <T x={149} y={555} anchor="middle" size="sm" strong>
                 SRT · srt://relais-nyc…
               </T>
@@ -123,7 +123,7 @@ export function SceneLive({ progress, narrow }: { progress: MotionValue<number>;
       <SceneG>
         {/* Le PC, qui dézoome */}
         <g transform={`translate(${PC[0]} ${PC[1]}) scale(${lerp(2.2, 1, dezoom).toFixed(3)})`} opacity={lerp(0.4, 1, dezoom)}>
-          <rect x={-60} y={-40} width={96} height={60} rx={4} fill="#000" />
+          <rect x={-60} y={-40} width={96} height={60} rx={4} fill="var(--background)" />
           <rect x={-60} y={-40} width={96} height={60} rx={4} fill="currentColor" fillOpacity={0.05} />
           <rect x={-54} y={-34} width={84} height={48} rx={2} strokeWidth={1} />
           <circle cx={-46} cy={-27} r={2} fill="var(--live)" stroke="none" className="led-blink" />
@@ -146,7 +146,7 @@ export function SceneLive({ progress, narrow }: { progress: MotionValue<number>;
             <g key={p.name} opacity={lines}>
               <path d={`M${a[0]} ${a[1]}Q${c[0]} ${c[1]} ${b[0]} ${b[1]}`} strokeWidth={1.5} opacity={0.6} />
               <Flow a={a} c={c} b={b} count={narrow ? 3 : 5} duration={1.8 + i * 0.3} size={6} />
-              <rect x={404} y={p.y - 20} width={160} height={40} rx={8} fill="#000" />
+              <rect x={404} y={p.y - 20} width={160} height={40} rx={8} fill="var(--background)" />
               <rect x={404} y={p.y - 20} width={160} height={40} rx={8} fill="currentColor" fillOpacity={0.05} />
               <circle cx={422} cy={p.y} r={3.5} fill="var(--live)" stroke="none" className="led-blink" style={{ animationDelay: `${i * 0.3}s` }} />
               <T x={434} y={p.y + 5} size="md" strong>
@@ -171,7 +171,7 @@ export function SceneLive({ progress, narrow }: { progress: MotionValue<number>;
                   <path d={`M${x} ${y}c-6 -6 -12 -1 -8 5l8 7l8 -7c4 -6 -2 -11 -8 -5Z`} fill="var(--live)" fillOpacity={0.25} stroke="var(--live)" strokeWidth={1} />
                 ) : (
                   <g strokeWidth={1}>
-                    <rect x={x - 22} y={y - 12} width={44} height={18} rx={9} fill="#000" />
+                    <rect x={x - 22} y={y - 12} width={44} height={18} rx={9} fill="var(--background)" />
                     <path d={`M${x - 14} ${y - 3}h28`} opacity={0.6} />
                   </g>
                 )}
@@ -182,7 +182,7 @@ export function SceneLive({ progress, narrow }: { progress: MotionValue<number>;
 
         {/* Tout le trajet : quelques secondes */}
         <g opacity={outro}>
-          <rect x={80} y={530} width={440} height={40} rx={20} fill="#000" strokeWidth={1.25} />
+          <rect x={80} y={530} width={440} height={40} rx={20} fill="var(--background)" strokeWidth={1.25} />
           <T x={300} y={555} anchor="middle" size="md" strong>
             Téléphone → Live : quelques secondes.
           </T>

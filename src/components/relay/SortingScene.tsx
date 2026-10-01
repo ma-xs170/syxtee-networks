@@ -53,7 +53,7 @@ function Packet({ pk, s }: { pk: Pk; s: MotionValue<number> }) {
   const opacity = useTransform(s, (v) => (pk.lost ? band(v, pk.at, pk.at + 0.01, pk.at + lane.dur * 0.45, pk.at + lane.dur * 0.55) : ramp(v, pk.at, pk.at + 0.01)));
   return (
     <motion.g style={{ x, y, opacity }}>
-      <rect width={18} height={18} rx={2.5} fill="#000" />
+      <rect width={18} height={18} rx={2.5} fill="var(--background)" />
       <text x={9} y={12.5} textAnchor="middle" fill="var(--foreground)" stroke="none" className="font-mono text-[10px]">
         {pk.n}
       </text>
@@ -67,7 +67,7 @@ function Slot({ n, s }: { n: number; s: MotionValue<number> }) {
   const x = slotX(n) - SLOT.size / 2;
   return (
     <g>
-      <motion.rect x={x} y={SLOT.y - SLOT.size / 2} width={SLOT.size} height={SLOT.size} rx={3} fill="#fff" strokeDasharray="2 3" strokeOpacity={0.5} style={{ fillOpacity: filled }} />
+      <motion.rect x={x} y={SLOT.y - SLOT.size / 2} width={SLOT.size} height={SLOT.size} rx={3} fill="var(--foreground)" strokeDasharray="2 3" strokeOpacity={0.5} style={{ fillOpacity: filled }} />
       <text x={slotX(n)} y={SLOT.y + 26} textAnchor="middle" fill="var(--muted)" stroke="none" className="font-mono text-[9px]">
         {n}
       </text>
@@ -96,7 +96,7 @@ function StreamDot({ k, lane, lanes, time, cut }: { k: number; lane: (typeof LAN
     const u = (t * speed * 0.55 * boost + k / 4) % 1;
     return lerp(LANE_X[0], LANE_X[1], u) - 4;
   });
-  return <motion.rect x={x} y={lane.y - 4} width={8} height={8} rx={1.5} fill="#fff" stroke="none" opacity={0.85} />;
+  return <motion.rect x={x} y={lane.y - 4} width={8} height={8} rx={1.5} fill="var(--foreground)" stroke="none" opacity={0.85} />;
 }
 
 export default function SortingScene({ s, time, latencyMs = 2000 }: { s: MotionValue<number>; time: MotionValue<number>; latencyMs?: number }) {
@@ -177,7 +177,7 @@ export default function SortingScene({ s, time, latencyMs = 2000 }: { s: MotionV
 
       {/* Buffer de latence */}
       <rect x={BUFFER.x0} y={BUFFER.y + 30} width={BUFFER.x1 - BUFFER.x0} height={8} rx={4} strokeOpacity={0.5} />
-      <motion.rect x={BUFFER.x0} y={BUFFER.y + 30} width={bufferW} height={8} rx={4} fill="#fff" fillOpacity={0.8} stroke="none" />
+      <motion.rect x={BUFFER.x0} y={BUFFER.y + 30} width={bufferW} height={8} rx={4} fill="var(--foreground)" fillOpacity={0.8} stroke="none" />
       <text x={BUFFER.x0} y={BUFFER.y + 58} fill="var(--muted)" stroke="none" className="font-mono text-[13px] lg:text-[11px]">
         BUFFER · LATENCE · {latencyMs} MS
       </text>

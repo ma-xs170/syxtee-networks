@@ -35,7 +35,7 @@ export function SupportId({ id, compact = false }: { id: string; compact?: boole
         type="button"
         onClick={copy}
         aria-label="Copier l'ID support"
-        className="rounded-md px-1.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.1em] text-muted transition-colors hover:bg-white/5 hover:text-foreground"
+        className="rounded-md px-1.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.1em] text-muted transition-colors hover:bg-accent/10 hover:text-foreground"
       >
         <span aria-live="polite">{copied ? "Copié" : "Copier"}</span>
       </button>
@@ -56,7 +56,7 @@ export function DiscordTicketButton({ id, size = "md" }: { id: string; size?: "m
       <button
         type="button"
         onClick={open}
-        className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white text-sm font-medium text-black transition-colors hover:bg-neutral-200 ${size === "sm" ? "h-9 px-4" : "h-11 px-5"}`}
+        className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-accent text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover ${size === "sm" ? "h-9 px-4" : "h-11 px-5"}`}
       >
         <DiscordIcon />
         Ouvrir un ticket Discord

@@ -7,7 +7,7 @@ import { sendTest, type TestState } from "./actions";
 function Button({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className="h-10 whitespace-nowrap rounded-full border border-line px-4 text-sm font-medium transition-colors hover:bg-white/5 disabled:opacity-50">
+    <button type="submit" disabled={pending} className="h-10 whitespace-nowrap rounded-full border border-line px-4 text-sm font-medium transition-colors hover:bg-accent/10 disabled:opacity-50">
       {pending ? "Envoi…" : label}
     </button>
   );

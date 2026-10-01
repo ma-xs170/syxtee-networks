@@ -31,7 +31,7 @@ export default function ModeSwitch({ relayId, mode, available }: { relayId: stri
                 })
               }
               className={`rounded-xl border p-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                mode === o.id ? "border-white bg-white/[0.04]" : "border-line hover:bg-white/5"
+                mode === o.id ? "border-accent bg-accent/[0.08]" : "border-line hover:bg-accent/10"
               }`}
             >
               <span className="flex items-center justify-between gap-2 text-sm font-medium">

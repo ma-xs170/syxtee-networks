@@ -32,9 +32,9 @@ export default function MaskedUrl({ url, label, size = "md" }: { url: string; la
     }
   }
 
-  const btn = "shrink-0 border-l border-line px-3 text-muted transition-colors hover:bg-white/5 hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent";
+  const btn = "shrink-0 border-l border-line px-3 text-muted transition-colors hover:bg-accent/10 hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent";
   return (
-    <div className="flex items-stretch overflow-hidden rounded-xl border border-line bg-black">
+    <div className="flex items-stretch overflow-hidden rounded-xl border border-line bg-background">
       <code data-sensitive className={`min-w-0 flex-1 break-all font-mono ${size === "sm" ? "p-3 text-xs" : "p-4 text-sm"}`}>
         {visible ? url : maskUrl(url)}
       </code>

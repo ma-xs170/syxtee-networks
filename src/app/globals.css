@@ -1,11 +1,60 @@
 @import "tailwindcss";
 
-:root {
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
   --background: #000000;
   --foreground: #f5f5f5;
   --muted: #8a8a8a;
   --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.2);
+  --surface: #0a0a0a;
+  --surface-2: #141414;
+  --accent: #ffffff;
+  --accent-hover: #e5e5e5;
+  --on-accent: #000000;
   --live: #ff3b30;
+  --img-filter: none;
+  --shadow-pop: rgba(0, 0, 0, 0.9);
+  --glow: rgba(255, 255, 255, 0.25);
+}
+
+/* Clair : explicite, ou automatique quand le système est en clair et qu'aucun choix n'est mémorisé. */
+[data-theme="light"] {
+  color-scheme: light;
+  --background: #fafafa;
+  --foreground: #0a0a0a;
+  --muted: #5c5c5c;
+  --line: rgba(0, 0, 0, 0.12);
+  --line-strong: rgba(0, 0, 0, 0.25);
+  --surface: #f0f0f0;
+  --surface-2: #e6e6e6;
+  --accent: #0a0a0a;
+  --accent-hover: #2b2b2b;
+  --on-accent: #fafafa;
+  --live: #d92b20;
+  --img-filter: invert(1);
+  --shadow-pop: rgba(0, 0, 0, 0.18);
+  --glow: rgba(0, 0, 0, 0.18);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+    --background: #fafafa;
+    --foreground: #0a0a0a;
+    --muted: #5c5c5c;
+    --line: rgba(0, 0, 0, 0.12);
+    --line-strong: rgba(0, 0, 0, 0.25);
+    --surface: #f0f0f0;
+    --surface-2: #e6e6e6;
+    --accent: #0a0a0a;
+    --accent-hover: #2b2b2b;
+    --on-accent: #fafafa;
+    --live: #d92b20;
+    --img-filter: invert(1);
+    --shadow-pop: rgba(0, 0, 0, 0.18);
+    --glow: rgba(0, 0, 0, 0.18);
+  }
 }
 
 @theme inline {
@@ -14,6 +63,12 @@
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-live: var(--live);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line-strong: var(--line-strong);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -21,7 +76,6 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 80px;
-  color-scheme: dark;
 }
 
 body {
@@ -31,16 +85,17 @@ body {
 }
 
 ::selection {
-  background: #fff;
-  color: #000;
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 /* Grille décorative */
 .bg-grid {
   background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    linear-gradient(to right, color-mix(in srgb, var(--foreground) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--foreground) 6%, transparent) 1px, transparent 1px);
   background-size: 48px 48px;
+  background-position: 50% 0;
   mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 40%, transparent 100%);
 }
 
@@ -88,7 +143,7 @@ body {
 
 /* Flux animé dans le schéma */
 .flow-line {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.8), transparent);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--foreground) 80%, transparent), transparent);
   background-size: 50% 100%;
   background-repeat: no-repeat;
   animation: flow 2.2s linear infinite;
@@ -210,7 +265,7 @@ body {
 
 /* Teaser SYXTEE PRO (accueil) : effets « vidéo » */
 .teaser-glow {
-  background: radial-gradient(ellipse 34% 46% at var(--glow-x, 50%) 40%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04) 55%, transparent 75%);
+  background: radial-gradient(ellipse 34% 46% at var(--glow-x, 50%) 40%, color-mix(in srgb, var(--foreground) 16%, transparent), color-mix(in srgb, var(--foreground) 4%, transparent) 55%, transparent 75%);
 }
 /* Suit le décalage du sujet vers la droite en paysage */
 @media (min-aspect-ratio: 6/5) {
@@ -258,4 +313,109 @@ html[data-stream-mode="on"] [data-sensitive] {
   [data-sensitive] {
     transition: none;
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Direction artistique SYXTEE (voir docs/design-system.md)
+   Rayons : boutons et pastilles = full, cartes = 2xl, grands cadres = 3xl.
+   Accent = encre du thème (blanc en sombre, noir en clair). --live est réservé aux états en direct.
+--------------------------------------------------------------------------- */
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  border-radius: 9999px;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  transition: background-color 0.15s, border-color 0.15s, transform 0.15s;
+  &:active { transform: scale(0.98); }
+  &:focus-visible { outline: 2px solid var(--foreground); outline-offset: 3px; }
+}
+@utility btn-primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  &:hover { background: var(--accent-hover); }
+}
+@utility btn-secondary {
+  border: 1px solid var(--line-strong);
+  color: var(--foreground);
+  &:hover { background: color-mix(in srgb, var(--foreground) 6%, transparent); }
+}
+@utility btn-sm { padding: 0 1rem; height: 2.25rem; }
+@utility label-mono {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+}
+@utility h-hero {
+  font-size: clamp(2.5rem, 7vw, 4.5rem);
+  line-height: 1.02;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+@utility h-section {
+  font-size: clamp(1.875rem, 4.5vw, 3rem);
+  line-height: 1.08;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+@utility panel {
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--foreground) 4%, var(--surface)), var(--surface));
+}
+@utility panel-lg {
+  border: 1px solid var(--line-strong);
+  border-radius: 1.5rem;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--foreground) 5%, transparent), transparent);
+}
+
+/* Images blanches (logos) : inversées en thème clair */
+.ink-img { filter: var(--img-filter); }
+
+/* Fond « champ » : grille filaire fondue + halo de dégradé. S'applique sur une section (position: relative ajoutée). */
+.bg-field {
+  position: relative;
+  isolation: isolate;
+}
+.bg-field::before,
+.bg-field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.bg-field::before {
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--foreground) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--foreground) 7%, transparent) 1px, transparent 1px);
+  /* Grille centrée comme le contenu (max-w-6xl, 1152 px = 24 x 48) : les lignes tombent pile sur les bords gauche et droit des cartes. */
+  background-size: 48px 48px;
+  background-position: 50% 0;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, #000 20%, transparent 100%);
+}
+.bg-field::after {
+  background: radial-gradient(ellipse 60% 45% at 50% 0%, color-mix(in srgb, var(--foreground) 11%, transparent), transparent 70%);
+}
+.bg-field-bottom::before { background-position: 50% 100%; mask-image: radial-gradient(ellipse 80% 70% at 50% 100%, #000 20%, transparent 100%); }
+.bg-field-bottom::after { background: radial-gradient(ellipse 60% 45% at 50% 100%, color-mix(in srgb, var(--foreground) 11%, transparent), transparent 70%); }
+
+/* Halo ambiant de la page : un dégradé doux en haut, fixe derrière tout le contenu. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 40% at 50% -5%, color-mix(in srgb, var(--foreground) 9%, transparent), transparent 70%),
+    radial-gradient(ellipse 40% 30% at 100% 100%, color-mix(in srgb, var(--foreground) 5%, transparent), transparent 70%);
 }

@@ -10,7 +10,7 @@ export default function TeaserStill() {
       <SceneG>
         {/* Contour discret : corps, bretelle dans le dos, poignée, poche avant */}
         <g opacity={0.3}>
-          <rect x={238} y={124} width={124} height={352} rx={46} fill="#000" />
+          <rect x={238} y={124} width={124} height={352} rx={46} fill="var(--background)" />
           <path d="M246 160C196 214 188 330 230 452" />
           <path d="M272 124C276 92 316 92 322 124" />
           <path d="M362 262C374 300 374 420 356 458" />

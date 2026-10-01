@@ -100,8 +100,8 @@ export default function ServerRack({ className, animated = true }: { className?:
     <Illustration viewBox="-10 -10 240 370" className={className} animated={animated}>
       <defs>
         <radialGradient id="plate-glow">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.18" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          <stop offset="0" stopColor="var(--foreground)" stopOpacity="0.18" />
+          <stop offset="1" stopColor="var(--foreground)" stopOpacity="0" />
         </radialGradient>
       </defs>
       <RackFront x={10} y={10} />

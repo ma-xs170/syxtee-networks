@@ -18,7 +18,7 @@ export default function HeroStreet() {
   const opacity = useTransform(walk, (w) => Math.min(ramp(w, 0, 0.06), 1 - ramp(w, 0.94, 1)));
 
   return (
-    <div ref={ref} className="relative overflow-hidden rounded-3xl border border-line bg-gradient-to-b from-white/[0.06] to-transparent">
+    <div ref={ref} className="relative overflow-hidden rounded-3xl border border-line bg-gradient-to-b from-accent/[0.06] to-transparent">
       <svg viewBox="0 120 600 420" className="h-auto w-full text-foreground" fill="none" role="img" aria-label="Un streamer IRL marche dans une rue des Antilles, son téléphone envoie la vidéo en 4G, 5G et Wi-Fi.">
         <motion.g style={{ opacity }}>
           <Street walk={walk} waves={waves} time={time} />

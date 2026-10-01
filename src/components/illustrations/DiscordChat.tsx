@@ -38,7 +38,7 @@ export default function DiscordChat({ className, animated = true }: { className?
           <path d="M100 94h72M100 110h56M100 126h64" strokeWidth={1} />
           <path d="M100 150h36" strokeWidth={1} strokeDasharray="1 3" />
           {/* Notification */}
-          <circle cx={190} cy={70} r={9} fill="#000" />
+          <circle cx={190} cy={70} r={9} fill="var(--background)" />
           <Led x={190} y={70} r={5.5} />
         </g>
       </g>

@@ -26,7 +26,7 @@ function Finale() {
     <div>
       <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-4 lg:grid-cols-2">
         {keyFigures.map((k) => (
-          <div key={k.v} className="bg-black px-4 py-3">
+          <div key={k.v} className="bg-background px-4 py-3">
             <dt className="sr-only">{k.l}</dt>
             <dd className="font-mono text-base text-foreground sm:text-lg">{k.v}</dd>
             <dd className="mt-0.5 text-xs text-muted">{k.l}</dd>
@@ -47,7 +47,7 @@ const breadcrumb = (
       <li>
         <Link href="/" className="hover:text-foreground">Accueil</Link>
       </li>
-      <li aria-hidden="true" className="text-white/20">/</li>
+      <li aria-hidden="true" className="text-foreground/20">/</li>
       <li aria-current="page" className="text-foreground">Starlink</li>
     </ol>
   </nav>
@@ -119,7 +119,7 @@ function SkyVeil({ p }: { p: MotionValue<number> }) {
   return (
     <motion.div
       style={{ opacity }}
-      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-black/70 via-40% to-transparent to-55% lg:bg-gradient-to-r lg:from-black/85 lg:via-black/50 lg:via-35% lg:to-transparent lg:to-55%"
+      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/70 via-40% to-transparent to-55% lg:bg-gradient-to-r lg:from-background/85 lg:via-background/50 lg:via-35% lg:to-transparent lg:to-55%"
     />
   );
 }

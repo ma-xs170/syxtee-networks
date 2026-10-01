@@ -30,26 +30,26 @@ export function UpgradeModal({ open, feature, onClose }: { open: boolean; featur
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
       aria-labelledby="upgrade-title"
-      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-white/10 bg-[#0a0a0a] p-6 text-white backdrop:bg-black/80 sm:p-8"
+      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-accent/20 bg-[#0a0a0a] p-6 text-foreground backdrop:bg-background/80 sm:p-8"
     >
-      <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 text-white/80">
+      <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-accent/25 text-foreground/80">
         <LockIcon />
       </span>
       <h2 id="upgrade-title" className="mt-5 text-xl font-semibold tracking-tight">
         Fonction réservée aux abonnés
       </h2>
-      <p className="mt-2 text-sm leading-relaxed text-white/60">
-        {feature ? <span className="text-white">{feature}</span> : "Cette fonction"} fait partie des formules payantes. Le Scanner réseau reste gratuit.
+      <p className="mt-2 text-sm leading-relaxed text-foreground/60">
+        {feature ? <span className="text-foreground">{feature}</span> : "Cette fonction"} fait partie des formules payantes. Le Scanner réseau reste gratuit.
       </p>
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <Link href="/dashboard/abonnement" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full bg-white px-5 text-sm font-medium text-black transition-colors hover:bg-neutral-200">
+        <Link href="/dashboard/abonnement" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
           Passer à la formule payante
         </Link>
-        <Link href="/offres" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-white/15 px-5 text-sm font-medium transition-colors hover:bg-white/5">
+        <Link href="/offres" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-accent/25 px-5 text-sm font-medium transition-colors hover:bg-accent/10">
           Voir les offres
         </Link>
       </div>
-      <button type="button" onClick={onClose} className="mt-4 text-sm text-white/50 hover:text-white">
+      <button type="button" onClick={onClose} className="mt-4 text-sm text-foreground/50 hover:text-foreground">
         Fermer
       </button>
     </dialog>
@@ -69,9 +69,9 @@ export default function Locked({ locked, feature, children, className = "" }: { 
         type="button"
         onClick={() => setOpen(true)}
         aria-label={`${feature ?? "Fonction"} : réservé aux abonnés`}
-        className="absolute inset-0 cursor-not-allowed rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+        className="absolute inset-0 cursor-not-allowed rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
       >
-        <span className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-black text-white/80">
+        <span className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-accent/25 bg-background text-foreground/80">
           <LockIcon />
         </span>
       </button>

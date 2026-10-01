@@ -24,7 +24,7 @@ function Bag({ x, y, w, h, faded = false }: { x: number; y: number; w: number; h
       <path d={`M${x + w * 0.2} ${y + 4}C${x - w * 0.14} ${y + h * 0.3} ${x - w * 0.12} ${y + h * 0.75} ${x + w * 0.08} ${y + h - 4}`} />
       <path d={`M${x + w * 0.8} ${y + 4}C${x + w * 1.14} ${y + h * 0.3} ${x + w * 1.12} ${y + h * 0.75} ${x + w * 0.92} ${y + h - 4}`} />
       <path d={`M${x + w * 0.38} ${y}Q${x + w / 2} ${y - h * 0.1} ${x + w * 0.62} ${y}`} />
-      <rect x={x} y={y} width={w} height={h} rx={w * 0.2} fill="#000" />
+      <rect x={x} y={y} width={w} height={h} rx={w * 0.2} fill="var(--background)" />
       <rect x={x + px} y={y + h * 0.38} width={w - 2 * px} height={h * 0.54} rx={w * 0.12} fill="url(#pro-mesh)" />
       <rect x={x + px} y={y + h * 0.38} width={w - 2 * px} height={h * 0.54} rx={w * 0.12} />
       <path d={`M${x + px + 6} ${y + h * 0.3}H${x + w - px - 6}`} strokeDasharray="1 4" opacity={0.6} />
@@ -37,7 +37,7 @@ function Encoder({ x, y, s }: { x: number; y: number; s: number }) {
     <g>
       <path d={`M${x + s * 0.14} ${y}L${x + s * 0.02} ${y - s * 0.34}`} strokeWidth={2} />
       <path d={`M${x + s * 0.86} ${y}L${x + s * 0.98} ${y - s * 0.34}`} strokeWidth={2} />
-      <rect x={x} y={y} width={s} height={s} rx={s * 0.15} fill="#000" />
+      <rect x={x} y={y} width={s} height={s} rx={s * 0.15} fill="var(--background)" />
       <text x={x + s / 2} y={y + s * 0.5} textAnchor="middle" stroke="none" fill="currentColor" fontSize={s * 0.34} fontWeight={600}>
         S
       </text>
@@ -52,7 +52,7 @@ function Encoder({ x, y, s }: { x: number; y: number; s: number }) {
 function Battery({ x, y }: { x: number; y: number }) {
   return (
     <g>
-      <rect x={x} y={y} width={48} height={112} rx={10} fill="#000" />
+      <rect x={x} y={y} width={48} height={112} rx={10} fill="var(--background)" />
       <rect x={x + 16} y={y - 5} width={16} height={5} rx={2} />
       {[0, 1, 2].map((k) => (
         <rect key={k} x={x + 12} y={y + 64 - k * 22} width={24} height={14} rx={3} fill="currentColor" fillOpacity={0.35 - k * 0.1} stroke="none" />
@@ -74,7 +74,7 @@ function Exploded() {
       </g>
 
       {/* Compartiment Starlink Mini */}
-      <rect x={40} y={160} width={120} height={150} rx={10} fill="#000" />
+      <rect x={40} y={160} width={120} height={150} rx={10} fill="var(--background)" />
       <rect x={52} y={172} width={96} height={126} rx={6} opacity={0.4} />
       <T x={100} y={340} anchor="middle" size="sm" strong>
         COMPARTIMENT STARLINK MINI

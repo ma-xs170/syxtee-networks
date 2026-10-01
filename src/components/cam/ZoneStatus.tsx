@@ -99,7 +99,7 @@ export default function ZoneStatus({ live, enabled }: { live: boolean; enabled: 
   return (
     <div className="pointer-events-none absolute inset-x-3 top-16 z-10 flex flex-col items-center gap-2">
       {alert && (
-        <p role="alert" className="pointer-events-auto rounded-xl border border-white/30 bg-black/85 px-4 py-2.5 text-sm font-medium text-white backdrop-blur-md">
+        <p role="alert" className="pointer-events-auto rounded-xl border border-accent/40 bg-black/85 px-4 py-2.5 text-sm font-medium text-white backdrop-blur-md">
           {alert}
         </p>
       )}
@@ -108,7 +108,7 @@ export default function ZoneStatus({ live, enabled }: { live: boolean; enabled: 
           type="button"
           onClick={() => setHidden(true)}
           aria-label="Masquer le statut de la zone"
-          className="pointer-events-auto max-w-sm rounded-xl border border-white/15 bg-black/80 px-4 py-2.5 text-left text-xs text-white/80 backdrop-blur-md"
+          className="pointer-events-auto max-w-sm rounded-xl border border-accent/25 bg-black/80 px-4 py-2.5 text-left text-xs text-white/80 backdrop-blur-md"
         >
           {zone.score ? (
             <>

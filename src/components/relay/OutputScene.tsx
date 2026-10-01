@@ -34,7 +34,7 @@ export function OutputLine({ o }: { o: MotionValue<number> }) {
 
 function Metric({ label, value, unit }: { label: string; value: MotionValue<string>; unit: string }) {
   return (
-    <div className="bg-black px-3 py-2.5 sm:px-4 sm:py-3">
+    <div className="bg-background px-3 py-2.5 sm:px-4 sm:py-3">
       <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-muted sm:text-[10px]">{label}</p>
       <p className="mt-1 font-mono text-sm text-foreground sm:text-lg">
         <motion.span>{value}</motion.span> <span className="text-[10px] text-muted sm:text-xs">{unit}</span>
@@ -62,7 +62,7 @@ export function OutputOverlay({ o, time }: { o: MotionValue<number>; time: Motio
         <ObsScreen />
       </motion.div>
       <motion.div
-        className="absolute rounded-2xl border border-line bg-black/85 p-3 sm:p-4"
+        className="absolute rounded-2xl border border-line bg-background/85 p-3 sm:p-4"
         style={{ left: pct(20), top: pct(400), width: pct(560), opacity: dashO }}
       >
         <div className="flex items-center justify-between">

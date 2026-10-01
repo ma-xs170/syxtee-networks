@@ -26,14 +26,14 @@ export default function NamesModal() {
       {onAir && (
         <div role="region" aria-label="Profil incomplet" className="border-b border-line">
           <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-            <p className="text-sm text-white/70">
-              <span className="font-mono text-xs uppercase tracking-wider text-white/45">Profil</span>
+            <p className="text-sm text-foreground/70">
+              <span className="font-mono text-xs uppercase tracking-wider text-foreground/45">Profil</span>
               <span className="ml-3">Complète ton profil : prénom et nom.</span>
             </p>
             <button
               type="button"
               onClick={() => setAsked(true)}
-              className="h-9 whitespace-nowrap rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm font-medium text-white transition-colors hover:bg-white/[0.08]"
+              className="h-9 whitespace-nowrap rounded-xl border border-accent/20 bg-accent/[0.08] px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent/[0.12]"
             >
               Compléter mon profil
             </button>
@@ -47,19 +47,19 @@ export default function NamesModal() {
           e.preventDefault();
           if (onAir) setAsked(false); // pendant un live, Échap referme la modale
         }}
-        className="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-white/10 bg-[#0a0a0a] p-6 text-white backdrop:bg-black/80 sm:p-8"
+        className="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-accent/20 bg-[#0a0a0a] p-6 text-foreground backdrop:bg-background/80 sm:p-8"
       >
         <h2 id="names-title" className="text-xl font-semibold tracking-tight">
           Comment tu t&apos;appelles ?
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-white/60">
+        <p className="mt-2 text-sm leading-relaxed text-foreground/60">
           Ton prénom et ton nom remplacent le pseudo dans ton espace. Ils restent privés : sur le site, on n&apos;affiche que ta chaîne Twitch.
         </p>
         <div className="mt-6">
           <NamesForm first="" last="" submit="Continuer" />
         </div>
         {onAir && (
-          <button type="button" onClick={() => setAsked(false)} className="mt-4 text-sm text-white/60 underline-offset-4 hover:text-white hover:underline">
+          <button type="button" onClick={() => setAsked(false)} className="mt-4 text-sm text-foreground/60 underline-offset-4 hover:text-foreground hover:underline">
             Plus tard
           </button>
         )}

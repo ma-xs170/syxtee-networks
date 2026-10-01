@@ -27,8 +27,8 @@ export default function Ground({
     <>
       <defs>
         <linearGradient id={`${id}fade`} gradientUnits="userSpaceOnUse" x1="-250" y1="0" x2="120" y2="0">
-          <stop offset="0" stopColor="#fff" stopOpacity="0" />
-          <stop offset="1" stopColor="#fff" stopOpacity="1" />
+          <stop offset="0" stopColor="var(--foreground)" stopOpacity="0" />
+          <stop offset="1" stopColor="var(--foreground)" stopOpacity="1" />
         </linearGradient>
       </defs>
       <g stroke={`url(#${id}fade)`} strokeWidth={1}>

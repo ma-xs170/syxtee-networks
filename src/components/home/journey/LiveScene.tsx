@@ -60,7 +60,7 @@ export function LiveOverlay({ draw, viewers, social }: { draw: MotionValue<numbe
           {CHAT.map((m, i) => (
             <p
               key={m}
-              className="float-up absolute left-0 whitespace-nowrap rounded-full border border-line bg-black/80 px-2 py-0.5 font-mono text-[9px] text-foreground sm:text-[10px]"
+              className="float-up absolute left-0 whitespace-nowrap rounded-full border border-line bg-background/80 px-2 py-0.5 font-mono text-[9px] text-foreground sm:text-[10px]"
               style={{ animationDelay: `${i * 0.9}s`, bottom: 0 }}
             >
               {m}
@@ -79,7 +79,7 @@ export function LiveOverlay({ draw, viewers, social }: { draw: MotionValue<numbe
       </div>
       {/* Compteur de viewers */}
       <motion.p
-        className="absolute -translate-x-1/2 whitespace-nowrap rounded-full border border-line bg-black/80 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-foreground sm:text-xs"
+        className="absolute -translate-x-1/2 whitespace-nowrap rounded-full border border-line bg-background/80 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-foreground sm:text-xs"
         style={{ left: pct(325), top: pct(88), opacity: labelsO }}
       >
         <span className="live-dot mr-2 align-middle" />
@@ -88,7 +88,7 @@ export function LiveOverlay({ draw, viewers, social }: { draw: MotionValue<numbe
       {PLATFORMS.map((pl) => (
         <motion.p
           key={pl.name}
-          className="absolute -translate-y-1/2 rounded-full border border-line bg-black px-2 py-1 font-mono text-[9px] tracking-[0.1em] text-foreground sm:px-2.5 sm:text-xs sm:tracking-[0.12em]"
+          className="absolute -translate-y-1/2 rounded-full border border-line bg-background px-2 py-1 font-mono text-[9px] tracking-[0.1em] text-foreground sm:px-2.5 sm:text-xs sm:tracking-[0.12em]"
           style={{ left: pct(LABEL_X), top: pct(pl.y), opacity: labelsO }}
         >
           {pl.name}

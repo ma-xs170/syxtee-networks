@@ -5,13 +5,13 @@ import { useFormStatus } from "react-dom";
 import { ASSIGNABLE, PLANS, type PlanId } from "@/lib/plans";
 import { offerDaysAction, setPlanAction, type PlanState } from "./actions";
 
-const field = "h-11 w-full rounded-xl border border-line bg-black px-4 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60";
+const field = "h-11 w-full rounded-xl border border-line bg-background px-4 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/60";
 const label = "font-mono text-xs uppercase tracking-[0.15em] text-muted";
 
 function Submit({ idle }: { idle: string }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className="h-11 whitespace-nowrap rounded-full bg-white px-5 text-sm font-medium text-black transition-colors hover:bg-neutral-200 disabled:opacity-60">
+    <button type="submit" disabled={pending} className="h-11 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60">
       {pending ? "Enregistrement…" : idle}
     </button>
   );

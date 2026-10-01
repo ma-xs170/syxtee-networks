@@ -115,14 +115,14 @@ export default function StreamPreview({ coreUrl, relayId }: { coreUrl: string; r
         {message && <p className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-muted">{message}</p>}
         {state === "playing" && (
           <>
-            <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded bg-black/70 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-white">
+            <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded bg-black/75 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-white">
               <span className="h-1.5 w-1.5 rounded-full bg-live" aria-hidden="true" />
               Direct
             </span>
             <button
               type="button"
               onClick={() => setMuted((m) => !m)}
-              className="absolute bottom-3 right-3 rounded-full bg-black/70 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-white transition-colors hover:bg-black"
+              className="absolute bottom-3 right-3 rounded-full bg-black/75 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-white transition-colors hover:bg-black"
               aria-pressed={!muted}
             >
               {muted ? "Activer le son" : "Couper le son"}

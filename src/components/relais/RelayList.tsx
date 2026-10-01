@@ -49,7 +49,7 @@ export function ServerLabel({ id }: { id: string }) {
 
 function Row({ relay, live }: { relay: RelayRow; live: boolean }) {
   return (
-    <li className="grid gap-4 rounded-2xl border border-line p-4 transition-colors hover:border-white/20 sm:p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+    <li className="grid gap-4 rounded-2xl border border-line p-4 transition-colors hover:border-accent/30 sm:p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2.5">
           {live ? <span className="live-dot" aria-label="En live" /> : <span className="h-2 w-2 rounded-full border border-muted" aria-hidden="true" />}
@@ -110,7 +110,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
     <div>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="h-section">
             Mes <Highlight>relais</Highlight>
           </h1>
           <p className="mt-2 font-mono text-sm tabular-nums text-muted">
@@ -118,14 +118,14 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
           </p>
         </div>
         {full ? (
-          <Link href="/offres" className="inline-flex h-12 items-center whitespace-nowrap rounded-full border border-line px-6 text-sm font-medium transition-colors hover:bg-white/5">
+          <Link href="/offres" className="inline-flex h-12 items-center whitespace-nowrap rounded-full border border-line px-6 text-sm font-medium transition-colors hover:bg-accent/10">
             Limite atteinte · Voir les offres
           </Link>
         ) : (
           <button
             type="button"
             onClick={() => setWizard(true)}
-            className="h-12 whitespace-nowrap rounded-full bg-white px-6 text-sm font-medium text-black transition-colors hover:bg-neutral-200 active:scale-[0.98]"
+            className="h-12 whitespace-nowrap rounded-full bg-accent px-6 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98]"
           >
             + Créer un relais
           </button>
@@ -143,7 +143,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
               <button
                 type="button"
                 onClick={() => setWizard(true)}
-                className="mt-6 h-11 whitespace-nowrap rounded-full bg-white px-5 text-sm font-medium text-black transition-colors hover:bg-neutral-200 active:scale-[0.98]"
+                className="mt-6 h-11 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98]"
               >
                 Créer mon premier relais
               </button>
@@ -164,7 +164,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
                   role="radio"
                   aria-checked={protocol === p}
                   onClick={() => setProtocol(p)}
-                  className={`h-8 rounded-full px-3 font-mono text-xs uppercase tracking-[0.1em] transition-colors ${protocol === p ? "bg-white text-black" : "text-muted hover:text-foreground"}`}
+                  className={`h-8 rounded-full px-3 font-mono text-xs uppercase tracking-[0.1em] transition-colors ${protocol === p ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}
                 >
                   {p === "all" ? "Tous" : p}
                 </button>
@@ -173,7 +173,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
             {servers.length > 1 && (
               <label className="flex items-center gap-2 text-sm text-muted">
                 <span className="sr-only">Serveur</span>
-                <select value={server} onChange={(e) => setServer(e.target.value)} className="h-10 rounded-full border border-line bg-black px-3 text-sm text-foreground">
+                <select value={server} onChange={(e) => setServer(e.target.value)} className="h-10 rounded-full border border-line bg-background px-3 text-sm text-foreground">
                   <option value="all">Tous les serveurs</option>
                   {servers.map((s) => (
                     <option key={s} value={s}>
@@ -190,7 +190,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Rechercher par nom"
-                className="h-10 w-full rounded-full border border-line bg-black px-4 text-sm text-foreground placeholder:text-neutral-500 focus:border-white/60 focus:outline-none"
+                className="h-10 w-full rounded-full border border-line bg-background px-4 text-sm text-foreground placeholder:text-muted focus:border-accent/70 focus:outline-none"
               />
             </label>
           </div>

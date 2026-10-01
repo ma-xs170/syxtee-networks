@@ -19,11 +19,11 @@ export function DiscordButton({
   variant?: "primary" | "ghost";
   size?: "md" | "sm";
 }) {
-  const base = `inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-colors ${size === "sm" ? "h-9 px-4" : "px-5 py-3"}`;
+  const base = `btn ${size === "sm" ? "btn-sm" : ""}`;
   const styles =
     variant === "primary"
-      ? "bg-white text-black hover:bg-neutral-200"
-      : "border border-line text-foreground hover:bg-white/5";
+      ? "btn-primary"
+      : "btn-secondary";
   return (
     <a href={site.discord} target="_blank" rel="noopener noreferrer" className={`${base} ${styles}`}>
       <DiscordIcon />
@@ -35,8 +35,8 @@ export function DiscordButton({
 export function SectionHeader({ kicker, title, children }: { kicker: string; title: ReactNode; children?: ReactNode }) {
   return (
     <div className="max-w-2xl">
-      <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">{kicker}</p>
-      <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h2>
+      <p className="label-mono inline-flex rounded-full border border-line px-3 py-1">{kicker}</p>
+      <h2 className="h-section mt-5">{title}</h2>
       {children && <p className="mt-4 text-base leading-relaxed text-muted">{children}</p>}
     </div>
   );
@@ -62,7 +62,7 @@ export function CreateRelayLink({ size = "md" }: { size?: "md" | "sm" }) {
   return (
     <Link
       href={CREATE_RELAY_HREF}
-      className={`inline-flex items-center justify-center whitespace-nowrap rounded-full bg-white text-sm font-medium text-black transition-colors hover:bg-neutral-200 active:scale-[0.98] ${size === "sm" ? "h-9 px-4" : "px-5 py-3"}`}
+      className={`btn btn-primary ${size === "sm" ? "btn-sm" : ""}`}
     >
       Créer mon relais
     </Link>

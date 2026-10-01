@@ -115,16 +115,16 @@ export function SceneDefs() {
   return (
     <defs>
       <radialGradient id="packet-glow">
-        <stop offset="0" stopColor="#fff" stopOpacity="0.45" />
-        <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        <stop offset="0" stopColor="var(--foreground)" stopOpacity="0.45" />
+        <stop offset="1" stopColor="var(--foreground)" stopOpacity="0" />
       </radialGradient>
       <radialGradient id="plate-glow">
-        <stop offset="0" stopColor="#fff" stopOpacity="0.18" />
-        <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        <stop offset="0" stopColor="var(--foreground)" stopOpacity="0.18" />
+        <stop offset="1" stopColor="var(--foreground)" stopOpacity="0" />
       </radialGradient>
       <linearGradient id="fade-down" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#fff" stopOpacity="0.07" />
-        <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        <stop offset="0" stopColor="var(--foreground)" stopOpacity="0.07" />
+        <stop offset="1" stopColor="var(--foreground)" stopOpacity="0" />
       </linearGradient>
     </defs>
   );

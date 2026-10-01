@@ -59,7 +59,7 @@ export function SceneCapture({ progress }: { progress: MotionValue<number> }) {
 
         {/* Vue éclatée : capteur → encodeur → bande vidéo */}
         <g opacity={sensor}>
-          <rect x={60} y={262} width={76} height={76} rx={8} fill="#000" />
+          <rect x={60} y={262} width={76} height={76} rx={8} fill="var(--background)" />
           <rect x={60} y={262} width={76} height={76} rx={8} fill="currentColor" fillOpacity={0.05} />
           {[30, 22, 13].map((r) => (
             <circle key={r} cx={98} cy={300} r={r} strokeWidth={1} />
@@ -72,7 +72,7 @@ export function SceneCapture({ progress }: { progress: MotionValue<number> }) {
         <g opacity={chip}>
           <path d="M140 300H196" strokeDasharray="3 4" />
           <path d="M190 295l6 5l-6 5" />
-          <rect x={202} y={262} width={124} height={76} rx={6} fill="#000" />
+          <rect x={202} y={262} width={124} height={76} rx={6} fill="var(--background)" />
           <rect x={202} y={262} width={124} height={76} rx={6} fill="currentColor" fillOpacity={0.08} />
           {[0, 1, 2, 3, 4, 5, 6].map((k) => (
             <path key={k} d={`M${214 + k * 16} 262v-8M${214 + k * 16} 338v8`} strokeWidth={1} />
@@ -122,7 +122,7 @@ const ROUTES: { key: string; to: P; c: P; label: string; sub: string }[] = [
 function SmallPhone({ x, y }: { x: number; y: number }) {
   return (
     <g>
-      <rect x={x - 17} y={y - 30} width={34} height={62} rx={6} fill="#000" />
+      <rect x={x - 17} y={y - 30} width={34} height={62} rx={6} fill="var(--background)" />
       <rect x={x - 17} y={y - 30} width={34} height={62} rx={6} fill="currentColor" fillOpacity={0.06} />
       <rect x={x - 13} y={y - 24} width={26} height={46} rx={3} strokeWidth={1} />
       <circle cx={x - 7} cy={y - 18} r={1.8} fill="var(--live)" stroke="none" className="led-blink" />
@@ -181,7 +181,7 @@ export function SceneAntennas({ progress, narrow }: { progress: MotionValue<numb
             OPÉRATEUR A
           </T>
           <g opacity={weak} className="led-blink">
-            <rect x={332} y={96} width={128} height={22} rx={11} fill="#000" stroke="var(--live)" strokeWidth={1.25} />
+            <rect x={332} y={96} width={128} height={22} rx={11} fill="var(--background)" stroke="var(--live)" strokeWidth={1.25} />
             <T x={396} y={112} anchor="middle" size="sm" live>
               SIGNAL FAIBLE
             </T>
@@ -300,7 +300,7 @@ export function SceneInternet({ progress }: { progress: MotionValue<number> }) {
                 const lit = flashNode && flashNode[0] === i && flashNode[1] === j;
                 return (
                   <g key={`n${i}-${j}`}>
-                    <rect x={x - s / 2} y={y - s / 2} width={s} height={s} rx={1.5} fill="#000" />
+                    <rect x={x - s / 2} y={y - s / 2} width={s} height={s} rx={1.5} fill="var(--background)" />
                     <rect x={x - s / 2} y={y - s / 2} width={s} height={s} rx={1.5} fill="currentColor" fillOpacity={lit ? 0.9 : 0.08} />
                     {lit && <circle cx={x} cy={y} r={s * (1 + frac * 8)} strokeWidth={1} opacity={1 - frac * 4} />}
                   </g>
@@ -344,7 +344,7 @@ export function SceneInternet({ progress }: { progress: MotionValue<number> }) {
           {v > 0.1 && <Packet x={px} y={py} hero size={13} />}
           {labelHop !== undefined && (
             <g>
-              <rect x={px - 72} y={py - 58} width={144} height={22} rx={11} fill="#000" strokeWidth={1} />
+              <rect x={px - 72} y={py - 58} width={144} height={22} rx={11} fill="var(--background)" strokeWidth={1} />
               <T x={px} y={py - 42} anchor="middle" size="sm" strong>
                 {HOP_LABELS[labelHop]}
               </T>

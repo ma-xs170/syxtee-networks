@@ -14,7 +14,7 @@ type Pending = "rename" | "rotate" | "archive" | "delete" | null;
 /** URL que l'encodeur colle : SRTLA pour Moblin, URL RTMP complète pour une caméra. */
 export const ingestUrl = (r: Pick<RelayView, "protocol" | "urls">) => (r.protocol === "rtmp" ? r.urls.rtmp_url : r.urls.srtla_url) ?? "";
 
-const btn = "h-10 whitespace-nowrap rounded-full border border-line px-4 text-sm transition-colors hover:bg-white/5 disabled:opacity-40";
+const btn = "h-10 whitespace-nowrap rounded-full border border-line px-4 text-sm transition-colors hover:bg-accent/10 disabled:opacity-40";
 
 export default function RelayActions({ relay, showView = true }: { relay: RelayView; showView?: boolean }) {
   const router = useRouter();
@@ -121,7 +121,7 @@ export default function RelayActions({ relay, showView = true }: { relay: RelayV
           Plus
         </button>
         {menu && (
-          <div role="menu" className="absolute right-0 top-12 z-20 w-56 overflow-hidden rounded-xl border border-line bg-black py-1 shadow-[0_18px_40px_rgba(0,0,0,0.6)]">
+          <div role="menu" className="absolute right-0 top-12 z-20 w-56 overflow-hidden rounded-xl border border-line bg-background py-1 shadow-[0_18px_40px_rgba(0,0,0,0.6)]">
             {(
               [
                 ["rename", "Renommer"],
@@ -135,7 +135,7 @@ export default function RelayActions({ relay, showView = true }: { relay: RelayV
                 type="button"
                 role="menuitem"
                 onClick={() => open(k)}
-                className={`block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-white/5 ${k === "delete" ? "text-red-300" : ""}`}
+                className={`block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-accent/10 ${k === "delete" ? "text-red-300" : ""}`}
               >
                 {label}
               </button>
@@ -149,7 +149,7 @@ export default function RelayActions({ relay, showView = true }: { relay: RelayV
         onClose={() => setAsk(null)}
         onClick={(e) => e.target === dialog.current && setAsk(null)}
         aria-labelledby={`ask-${relay.id}`}
-        className="m-auto w-[min(480px,calc(100vw-2rem))] rounded-2xl border border-line bg-black p-0 text-foreground backdrop:bg-black/80 backdrop:backdrop-blur-sm"
+        className="m-auto w-[min(480px,calc(100vw-2rem))] rounded-2xl border border-line bg-background p-0 text-foreground backdrop:bg-background/80 backdrop:backdrop-blur-sm"
       >
         {t && (
           <form
@@ -175,7 +175,7 @@ export default function RelayActions({ relay, showView = true }: { relay: RelayV
                   onChange={(e) => setName(e.target.value)}
                   maxLength={40}
                   autoFocus
-                  className="mt-2 h-11 w-full rounded-xl border border-line bg-black px-4 text-sm text-foreground focus:border-white/60 focus:outline-none"
+                  className="mt-2 h-11 w-full rounded-xl border border-line bg-background px-4 text-sm text-foreground focus:border-accent/70 focus:outline-none"
                 />
               </div>
             )}
@@ -189,7 +189,7 @@ export default function RelayActions({ relay, showView = true }: { relay: RelayV
                 type="submit"
                 disabled={pending || (ask === "rename" && !name.trim())}
                 className={`h-11 whitespace-nowrap rounded-full px-5 text-sm font-medium transition-colors disabled:opacity-60 ${
-                  t.danger ? "border border-red-400/40 text-red-300 hover:bg-red-400/10" : "bg-white text-black hover:bg-neutral-200"
+                  t.danger ? "border border-red-400/40 text-red-300 hover:bg-red-400/10" : "bg-accent text-on-accent hover:bg-accent-hover"
                 }`}
               >
                 {pending ? "Un instant…" : t.cta}

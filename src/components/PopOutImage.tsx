@@ -59,13 +59,13 @@ export default function PopOutImage({
   return (
     <div
       data-popout-card
-      className={`relative overflow-visible rounded-3xl border border-line bg-gradient-to-b from-white/[0.06] to-transparent p-6 sm:p-10 ${padding}`}
+      className={`relative h-full overflow-visible rounded-3xl border border-line bg-gradient-to-b from-accent/[0.06] to-transparent p-6 sm:p-10 ${padding}`}
     >
       <div className={`pointer-events-none absolute z-10 ${position}`}>
         <PopOutArt src={src} alt={alt} art={art} fallback={fallback} sizes={sizes} eager={eager} />
       </div>
 
-      <div className="relative">{children}</div>
+      <div className="relative flex h-full flex-col">{children}</div>
     </div>
   );
 }
@@ -92,8 +92,8 @@ export function PopOutArt({
   return (
     <PopOutParallax>
       <div className="relative h-full w-full">
-        <div className="absolute inset-[15%] rounded-full bg-white/5 blur-3xl" aria-hidden="true" />
-        <div className="relative h-full w-full drop-shadow-[0_30px_40px_rgba(0,0,0,0.8)]">
+        <div className="absolute inset-[15%] rounded-full bg-accent/10 blur-3xl" aria-hidden="true" />
+        <div className="relative h-full w-full drop-shadow-[0_30px_40px_var(--shadow-pop)]">
           {art ? (
             art
           ) : exists ? (

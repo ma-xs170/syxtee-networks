@@ -371,7 +371,7 @@ export default function ProScene3D({ p, active }: { p: MotionValue<number>; acti
               labels.current[i] = el;
             }}
             style={{ opacity: 0 }}
-            className="absolute left-0 top-0 whitespace-nowrap rounded-full border border-white/25 bg-black/80 px-2.5 py-1 font-mono text-[9px] tracking-[0.12em] text-foreground sm:text-[10px]"
+            className="absolute left-0 top-0 whitespace-nowrap rounded-full border border-accent/35 bg-background/80 px-2.5 py-1 font-mono text-[9px] tracking-[0.12em] text-foreground sm:text-[10px]"
           >
             {l.text}
           </div>

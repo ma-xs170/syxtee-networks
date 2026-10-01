@@ -41,8 +41,8 @@ const ERROR_LABEL: Record<DjiError, string> = {
 };
 const modelName = (m: DjiModel) => DJI_MODELS.find((x) => x.id === m)?.name ?? "Caméra DJI";
 
-const btnPrimary = "h-11 whitespace-nowrap rounded-full bg-white px-5 text-sm font-medium text-black transition-colors hover:bg-neutral-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40";
-const btnGhost = "h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-white/5 disabled:opacity-40";
+const btnPrimary = "h-11 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40";
+const btnGhost = "h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-accent/10 disabled:opacity-40";
 const btnDanger = "h-11 whitespace-nowrap rounded-full border border-red-400/40 px-5 text-sm text-red-300 transition-colors hover:bg-red-400/10";
 
 function fmtDuration(ms: number) {
@@ -214,7 +214,7 @@ export default function DjiHub({ relays, focusRelay }: { relays: RtmpRelay[]; fo
               role="tab"
               aria-selected={tab === t.id}
               onClick={() => setTab(t.id)}
-              className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${tab === t.id ? "bg-white text-black" : "text-muted hover:text-foreground"}`}
+              className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${tab === t.id ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}
             >
               {t.label}
             </button>
@@ -242,7 +242,7 @@ export default function DjiHub({ relays, focusRelay }: { relays: RtmpRelay[]; fo
             </div>
           )}
           {relays.length > 0 && !store.cameras.length && (
-            <div className="rounded-2xl border border-dashed border-white/25 p-6 text-sm">
+            <div className="rounded-2xl border border-dashed border-accent/35 p-6 text-sm">
               <p className="text-base">Aucune caméra liée sur ce téléphone.</p>
               <p className="mt-1 text-muted">Ajoute ta première DJI : recherche Bluetooth, réseau, relais, qualité.</p>
             </div>
@@ -380,7 +380,7 @@ function Networks({ store, onEdit, onChange }: { store: DjiStore; onEdit: (id: s
   return (
     <div role="tabpanel" className="grid gap-3 md:grid-cols-2">
       {!store.networks.length && (
-        <div className="rounded-2xl border border-dashed border-white/25 p-6 text-sm md:col-span-2">
+        <div className="rounded-2xl border border-dashed border-accent/35 p-6 text-sm md:col-span-2">
           <p className="text-base">Aucun réseau enregistré.</p>
           <p className="mt-1 text-muted">Ajoute le partage de connexion de ton téléphone, ton routeur 4G ou un Wi-Fi : chaque caméra choisit le sien.</p>
         </div>

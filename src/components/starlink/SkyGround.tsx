@@ -31,8 +31,8 @@ export function SkyLayer({ p }: { p: MotionValue<number> }) {
     <g>
       <defs>
         <linearGradient id={`${id}beam`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.3" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0.02" />
+          <stop offset="0" stopColor="var(--foreground)" stopOpacity="0.3" />
+          <stop offset="1" stopColor="var(--foreground)" stopOpacity="0.02" />
         </linearGradient>
       </defs>
       <motion.path d={beam} fill={`url(#${id}beam)`} style={{ opacity: beamO }} />
@@ -67,8 +67,8 @@ export function GroundLayer({ p }: { p: MotionValue<number> }) {
     <motion.g style={{ y, opacity: o }}>
       <defs>
         <radialGradient id={`${id}hit`}>
-          <stop offset="0" stopColor="#fff" stopOpacity="0.45" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          <stop offset="0" stopColor="var(--foreground)" stopOpacity="0.45" />
+          <stop offset="1" stopColor="var(--foreground)" stopOpacity="0" />
         </radialGradient>
       </defs>
 
@@ -127,7 +127,7 @@ export function FlowOverlay({ p }: { p: MotionValue<number> }) {
         Bonding SRTLA
       </p>
       <p
-        className="absolute right-0 -translate-y-[calc(100%+22px)] whitespace-nowrap rounded-full border border-line bg-black/80 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-foreground sm:text-xs"
+        className="absolute right-0 -translate-y-[calc(100%+22px)] whitespace-nowrap rounded-full border border-line bg-background/80 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-foreground sm:text-xs"
         style={{ top }}
       >
         Relais SYXTEE → OBS → LIVE

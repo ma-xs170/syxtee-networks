@@ -84,7 +84,7 @@ const breadcrumb = (
       <li>
         <Link href="/" className="hover:text-foreground">Accueil</Link>
       </li>
-      <li aria-hidden="true" className="text-white/20">/</li>
+      <li aria-hidden="true" className="text-foreground/20">/</li>
       <li aria-current="page" className="text-foreground">Relais</li>
     </ol>
   </nav>

@@ -8,16 +8,15 @@ export default function Hero() {
   const online = relays.filter((r) => r.status === "online");
 
   return (
-    <section className="relative overflow-hidden border-b border-line">
-      <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />
-      <Container className="relative grid items-center gap-14 py-16 sm:pb-24 sm:pt-20 lg:grid-cols-[1.05fr_0.95fr]">
+    <section className="bg-field overflow-hidden border-b border-line">
+            <Container className="relative grid items-center gap-14 pb-16 pt-12 sm:pb-24 sm:pt-16 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
-          <p className="inline-flex items-center gap-3 rounded-full border border-line bg-white/[0.03] px-4 py-1.5 font-mono text-xs uppercase tracking-[0.15em] text-muted">
+          <p className="inline-flex items-center gap-3 rounded-full border border-line bg-accent/[0.08] px-4 py-1.5 font-mono text-xs uppercase tracking-[0.15em] text-muted">
             <span className="live-dot" />
             {online.length > 0 ? `Relais ${online.map((r) => r.city).join(" · ")} en ligne` : "Bientôt en ligne"}
           </p>
 
-          <h1 className="mt-8 text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
+          <h1 className="mt-8 h-hero">
             Le live IRL pro.
             <br />
             <Highlight>Sans le budget pro.</Highlight>
@@ -31,14 +30,20 @@ export default function Hero() {
             <CreateRelayLink />
             <Link
               href="/offres"
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-full border border-line px-5 py-3 text-sm font-medium transition-colors hover:bg-white/5"
+              className="btn btn-secondary"
             >
               Voir les offres
             </Link>
           </div>
         </div>
 
-        <div className="relative">
+        <div className="relative overflow-hidden panel-lg shadow-[0_0_80px_-30px_var(--glow)]">
+          <div className="flex items-center gap-2 border-b border-line px-4 py-3" aria-hidden="true">
+            <span className="h-2.5 w-2.5 rounded-full border border-accent/40" />
+            <span className="h-2.5 w-2.5 rounded-full border border-accent/40" />
+            <span className="h-2.5 w-2.5 rounded-full border border-accent/40" />
+            <span className="ml-3 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">relais / srtla</span>
+          </div>
           <HeroStreet />
         </div>
       </Container>

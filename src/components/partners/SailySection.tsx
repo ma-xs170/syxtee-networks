@@ -35,7 +35,7 @@ function Step({ n, title, visual, children }: { n: string; title: string; visual
 
 function Box({ kicker, children, art }: { kicker: string; children: ReactNode; art?: ReactNode }) {
   return (
-    <div className="grid items-center gap-6 rounded-2xl border border-line bg-white/[0.02] p-6 sm:grid-cols-[1fr_auto] sm:p-8">
+    <div className="grid items-center gap-6 rounded-2xl border border-line bg-accent/[0.08] p-6 sm:grid-cols-[1fr_auto] sm:p-8">
       <div>
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">{kicker}</p>
         <div className="mt-3 text-base leading-relaxed">{children}</div>
@@ -77,7 +77,7 @@ export default function SailySection({ header = "full" }: { header?: "full" | "c
         {/* a) Les 3 atouts */}
         <div className={`grid gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3 mt-14`}>
           {cards.map((c) => (
-            <article key={c.t} className="bg-black p-8">
+            <article key={c.t} className="bg-background p-8">
               <h3 className="text-base font-semibold">{c.t}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted">{c.d}</p>
             </article>
@@ -120,7 +120,7 @@ export default function SailySection({ header = "full" }: { header?: "full" | "c
               <div className="grid h-full grid-cols-[1fr_auto_1fr] items-center">
                 <PhoneMoblin waves={false} className="h-full w-full" />
                 <div className="flex w-16 flex-col items-center gap-2" aria-hidden="true">
-                  <div className="w-full border-t border-dashed border-white/60" />
+                  <div className="w-full border-t border-dashed border-accent/70" />
                   <p className="text-center font-mono text-[9px] uppercase leading-tight tracking-[0.12em] text-muted">
                     Réseau
                     <br />

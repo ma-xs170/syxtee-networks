@@ -35,7 +35,7 @@ export default function DocsPage() {
           <ul className="grid gap-4 md:grid-cols-2">
             {guides.map((g) => (
               <li key={g.href}>
-                <Link href={g.href} className="group flex items-center gap-6 rounded-2xl border border-line p-5 transition-colors hover:bg-white/[0.03] sm:p-6">
+                <Link href={g.href} className="group flex items-center gap-6 rounded-2xl border border-line p-5 transition-colors hover:bg-accent/[0.08] sm:p-6">
                   <span className="h-20 w-20 shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.05]">
                     <ToolArt icon={g.icon} />
                   </span>

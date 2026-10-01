@@ -47,14 +47,14 @@ export function SceneSubsea({ progress, narrow }: { progress: MotionValue<number
         {/* Le paquet #0427 devient une impulsion de lumière */}
         {run > 0 && run < 1 && (
           <g>
-            <path d={`M${lerp(-60, 560, run)} 480H${lerp(-60, 560, run) + 60}`} stroke="#fff" strokeWidth={3} opacity={0.9} />
+            <path d={`M${lerp(-60, 560, run)} 480H${lerp(-60, 560, run) + 60}`} stroke="var(--foreground)" strokeWidth={3} opacity={0.9} />
             <Packet x={lerp(-60, 560, run) + 66} y={480} hero size={10} />
           </g>
         )}
 
         {/* Petite carte : Antilles → côte Est des USA */}
         <g opacity={ramp(v, 0.15, 0.25)}>
-          <rect x={440} y={488} width={146} height={100} rx={6} fill="#000" />
+          <rect x={440} y={488} width={146} height={100} rx={6} fill="var(--background)" />
           <rect x={440} y={488} width={146} height={100} rx={6} strokeWidth={1} opacity={0.6} />
           <path d="M540 492q10 14 4 30t18 30" strokeWidth={1} opacity={0.5} />
           <path d={`M${A[0]} ${A[1]}Q${C[0]} ${C[1]} ${B[0]} ${B[1]}`} strokeWidth={1} strokeDasharray="2 3" />
@@ -110,7 +110,7 @@ export function SceneDataCenter({ progress }: { progress: MotionValue<number> })
         {/* LE rack SYXTEE */}
         {rack > 0.01 && (
           <g opacity={rack} transform={`translate(0 ${lerp(30, 0, rack).toFixed(1)})`}>
-            <rect x={196} y={130} width={208} height={338} fill="#000" stroke="none" />
+            <rect x={196} y={130} width={208} height={338} fill="var(--background)" stroke="none" />
             <RackFront x={200} y={134} glow={glow} />
           </g>
         )}
@@ -220,7 +220,7 @@ export function SceneServer({ progress }: { progress: MotionValue<number> }) {
             <g opacity={nak}>
               <path d={`M${slotPos(HERO_SLOT)[0] - 24} ${slotPos(HERO_SLOT)[1]}Q240 ${LANES[1].y + 60} 30 ${LANES[1].y + 14}`} stroke="var(--live)" strokeWidth={1.25} strokeDasharray="4 4" />
               <path d={`M38 ${LANES[1].y + 8}l-8 6l9 4`} stroke="var(--live)" />
-              <rect x={96} y={LANES[1].y + 30} width={54} height={20} rx={10} fill="#000" stroke="var(--live)" strokeWidth={1} />
+              <rect x={96} y={LANES[1].y + 30} width={54} height={20} rx={10} fill="var(--background)" stroke="var(--live)" strokeWidth={1} />
               <T x={123} y={LANES[1].y + 44} anchor="middle" size="sm" live>
                 NAK
               </T>

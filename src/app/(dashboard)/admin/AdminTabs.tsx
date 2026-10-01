@@ -28,7 +28,7 @@ export default function AdminTabs() {
               <Link
                 href={t.href}
                 aria-current={active ? "page" : undefined}
-                className={`block whitespace-nowrap border-b-2 px-3 py-3 text-sm transition-colors ${active ? "border-white text-foreground" : "border-transparent text-muted hover:text-foreground"}`}
+                className={`block whitespace-nowrap border-b-2 px-3 py-3 text-sm transition-colors ${active ? "border-accent text-foreground" : "border-transparent text-muted hover:text-foreground"}`}
               >
                 {t.label}
               </Link>

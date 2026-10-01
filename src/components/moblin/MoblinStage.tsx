@@ -45,7 +45,7 @@ function Bar({ k, level }: { k: number; level: MotionValue<number> }) {
 
 function Icon({ d }: { d: string }) {
   return (
-    <span className="flex h-[11cqh] w-[11cqh] items-center justify-center rounded-full border border-white/60 bg-black/30">
+    <span className="flex h-[11cqh] w-[11cqh] items-center justify-center rounded-full border border-accent/70 bg-black/30">
       <svg viewBox="0 0 24 24" className="h-[5.5cqh] w-[5.5cqh]" fill="none" stroke="#fff" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d={d} />
       </svg>
@@ -99,7 +99,7 @@ function PanelRow({ label, value, max }: { label: string; value: MotionValue<num
   return (
     <div className="grid grid-cols-[22cqh_1fr_18cqh] items-center gap-[2cqh]">
       <span className="font-mono text-[3.4cqh] text-white/80">{label}</span>
-      <span className="h-[2.2cqh] overflow-hidden rounded-full bg-white/15">
+      <span className="h-[2.2cqh] overflow-hidden rounded-full bg-accent/20">
         <motion.span className="block h-full rounded-full bg-white" style={{ width }} />
       </span>
       <motion.span className="text-right font-mono text-[3.4cqh] text-white">{text}</motion.span>
@@ -120,7 +120,7 @@ function BondingPanel({ p, time }: { p: MotionValue<number>; time: MotionValue<n
   const marginColor = useTransform(margin, (m) => (m > 0.6 ? "#4ade80" : "#ffffff"));
   const marginO = useTransform(p, (v) => ramp(v, 0.84, 0.88));
   return (
-    <motion.div className="absolute inset-x-[10cqw] top-[12cqh] rounded-[4cqh] border border-white/25 bg-black/75 p-[4cqh] backdrop-blur-sm" style={{ opacity }}>
+    <motion.div className="absolute inset-x-[10cqw] top-[12cqh] rounded-[4cqh] border border-accent/35 bg-black/75 p-[4cqh] backdrop-blur-sm" style={{ opacity }}>
       <div className="flex items-baseline justify-between">
         <span className="font-mono text-[3.4cqh] uppercase tracking-[0.15em] text-white/70">Bonding</span>
         <span className="font-mono text-[3.4cqh] text-white/60">kbps</span>
@@ -137,7 +137,7 @@ function BondingPanel({ p, time }: { p: MotionValue<number>; time: MotionValue<n
       </div>
       <motion.div className="mt-[3cqh] flex items-center gap-[2cqh]" style={{ opacity: marginO }}>
         <span className="font-mono text-[3.2cqh] text-white/70">MARGE</span>
-        <span className="h-[1.6cqh] flex-1 overflow-hidden rounded-full bg-white/15">
+        <span className="h-[1.6cqh] flex-1 overflow-hidden rounded-full bg-accent/20">
           <motion.span className="block h-full rounded-full" style={{ width: marginW, backgroundColor: marginColor }} />
         </span>
       </motion.div>
@@ -157,7 +157,7 @@ function SettingsScreen({ p }: { p: MotionValue<number> }) {
     <motion.div className="absolute inset-0 bg-[#05070d] p-[6cqh] pl-[9cqw]" style={{ opacity }}>
       <p className="font-mono text-[3.4cqh] uppercase tracking-[0.15em] text-white/60">Réglages › Streams › SYXTEE</p>
       <p className="mt-[4cqh] font-mono text-[3.4cqh] text-white/60">URL</p>
-      <p className="mt-[1.5cqh] max-w-[62cqw] overflow-hidden whitespace-nowrap rounded-[2cqh] border border-white/40 px-[2.5cqh] py-[2cqh] font-mono text-[3.6cqh] text-white">
+      <p className="mt-[1.5cqh] max-w-[62cqw] overflow-hidden whitespace-nowrap rounded-[2cqh] border border-accent/50 px-[2.5cqh] py-[2cqh] font-mono text-[3.6cqh] text-white">
         <motion.span>{typed}</motion.span>
         <span className="ml-[0.3cqh] inline-block h-[4cqh] w-[0.5cqh] translate-y-[0.6cqh] animate-pulse bg-white" />
       </p>
@@ -166,7 +166,7 @@ function SettingsScreen({ p }: { p: MotionValue<number> }) {
         <span>Bitrate adaptatif · activé</span>
       </div>
       <div className="absolute right-[7cqw] top-1/2 -translate-y-1/2">
-        <motion.span className="absolute inset-0 rounded-full border-2 border-white" style={{ scale: rippleScale, opacity: rippleO }} aria-hidden="true" />
+        <motion.span className="absolute inset-0 rounded-full border-2 border-accent" style={{ scale: rippleScale, opacity: rippleO }} aria-hidden="true" />
         <motion.span
           className="relative flex h-[34cqh] w-[34cqh] items-center justify-center rounded-full bg-[var(--live)] font-mono text-[5cqh] font-semibold text-white"
           style={{ scale: press }}

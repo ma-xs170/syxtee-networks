@@ -208,7 +208,7 @@ export default function Analyzer({
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
-      <section className="rounded-2xl border border-line bg-black p-5 sm:p-6 lg:col-span-2" aria-labelledby="an-live">
+      <section className="rounded-2xl border border-line bg-background p-5 sm:p-6 lg:col-span-2" aria-labelledby="an-live">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 id="an-live" className="font-mono text-xs uppercase tracking-[0.15em]">
             Mesure en direct
@@ -237,7 +237,7 @@ export default function Analyzer({
               <div className="mt-6 rounded-xl border border-line p-4 text-sm leading-relaxed">
                 <p>Tu es en Wi-Fi : le test mesure ta box, pas le réseau mobile. Coupe le Wi-Fi pour mesurer la 4G/5G.</p>
                 {!ct && (
-                  <button type="button" onClick={wifiOff} disabled={busy} className="mt-3 h-10 rounded-full border border-line px-4 text-sm transition-colors hover:bg-white/5 disabled:opacity-50">
+                  <button type="button" onClick={wifiOff} disabled={busy} className="mt-3 h-10 rounded-full border border-line px-4 text-sm transition-colors hover:bg-accent/10 disabled:opacity-50">
                     C&apos;est fait, vérifier le réseau
                   </button>
                 )}
@@ -255,7 +255,7 @@ export default function Analyzer({
                 type="button"
                 disabled={!net || (busy && mode !== "once")}
                 onClick={() => setMode(mode === "once" ? "idle" : "once")}
-                className="h-11 whitespace-nowrap rounded-full bg-white px-5 text-sm font-medium text-black transition-colors hover:bg-neutral-200 active:scale-[0.98] disabled:opacity-50"
+                className="h-11 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98] disabled:opacity-50"
               >
                 {mode === "once" ? "Arrêter le test" : "Lancer un test"}
               </button>
@@ -264,12 +264,12 @@ export default function Analyzer({
                   type="button"
                   disabled={!net || !consent || (busy && mode !== "continuous")}
                   onClick={() => setMode(mode === "continuous" ? "idle" : "continuous")}
-                  className="h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm font-medium transition-colors hover:bg-white/5 disabled:opacity-50"
+                  className="h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm font-medium transition-colors hover:bg-accent/10 disabled:opacity-50"
                 >
                   {mode === "continuous" ? "Arrêter le scan" : "Scanner en continu"}
                 </button>
               ) : (
-                <Link href="/connexion?next=/dashboard/analyseur" className="inline-flex h-11 items-center whitespace-nowrap rounded-full border border-line px-5 text-sm font-medium transition-colors hover:bg-white/5">
+                <Link href="/connexion?next=/dashboard/analyseur" className="inline-flex h-11 items-center whitespace-nowrap rounded-full border border-line px-5 text-sm font-medium transition-colors hover:bg-accent/10">
                   Scanner en continu
                 </Link>
               )}
@@ -289,7 +289,7 @@ export default function Analyzer({
       </section>
 
       <div className="grid gap-4">
-        <section className="rounded-2xl border border-line bg-black p-5 sm:p-6" aria-labelledby="an-zone">
+        <section className="rounded-2xl border border-line bg-background p-5 sm:p-6" aria-labelledby="an-zone">
           <h2 id="an-zone" className="font-mono text-xs uppercase tracking-[0.15em]">
             Ta zone
           </h2>
@@ -306,7 +306,7 @@ export default function Analyzer({
           </Link>
         </section>
 
-        <section className="rounded-2xl border border-line bg-black p-5 sm:p-6" aria-labelledby="an-points">
+        <section className="rounded-2xl border border-line bg-background p-5 sm:p-6" aria-labelledby="an-points">
           <h2 id="an-points" className="font-mono text-xs uppercase tracking-[0.15em]">
             Scanne ta zone
           </h2>
@@ -332,7 +332,7 @@ export default function Analyzer({
         </section>
       </div>
 
-      <section className="rounded-2xl border border-line bg-black p-5 sm:p-6 lg:col-span-3" aria-labelledby="an-history">
+      <section className="rounded-2xl border border-line bg-background p-5 sm:p-6 lg:col-span-3" aria-labelledby="an-history">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 id="an-history" className="font-mono text-xs uppercase tracking-[0.15em]">
             Historique de mes tests

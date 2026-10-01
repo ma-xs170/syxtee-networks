@@ -17,7 +17,7 @@ const SUMMARY: Record<string, string> = {
 export default function Offers() {
   if (!hasStripe) {
     return (
-      <section id="offres" className="border-b border-line py-24">
+      <section id="offres" className="bg-field border-b border-line py-24">
         <Container>
           <ComingSoon>
             <MoreLink href="/offres">Ce qui sera inclus</MoreLink>
@@ -35,14 +35,14 @@ export default function Offers() {
   return (
     <section id="offres" aria-labelledby="offres-titre" className="border-b border-line py-24">
       <Container>
-        <h2 id="offres-titre" className="max-w-2xl text-3xl font-semibold tracking-tight sm:text-5xl">
+        <h2 id="offres-titre" className="max-w-2xl h-section">
           Des offres pour <Highlight>chaque live.</Highlight>
         </h2>
         <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">Sans engagement. 2 mois offerts si tu paies à l&apos;année.</p>
 
         <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
           {plans.map((p) => (
-            <div key={p.id} className={`flex flex-col p-6 sm:p-8 ${p.featured ? "bg-neutral-950" : "bg-black"}`}>
+            <div key={p.id} className={`flex flex-col p-6 sm:p-8 ${p.featured ? "bg-surface" : "bg-background"}`}>
               <p className="text-sm font-medium">{p.name}</p>
               <p className="mt-5 text-4xl font-semibold tracking-tight tabular-nums">{p.price}</p>
               <p className="text-sm text-muted">{p.id === "free" ? "pour toujours" : "par mois"}</p>

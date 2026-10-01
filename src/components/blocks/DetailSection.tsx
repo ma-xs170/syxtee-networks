@@ -22,7 +22,7 @@ export default function DetailSection({
       <Container className={`grid items-center gap-12 ${visual ? "lg:grid-cols-2 lg:gap-16" : ""}`}>
         <div className={visual ? (reverse ? "lg:order-2" : undefined) : "max-w-3xl"}>
           <p className="font-mono text-sm text-muted">{n}</p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h2>
+          <h2 className="mt-4 h-section">{title}</h2>
           <div className="mt-8 space-y-8">{children}</div>
         </div>
         {visual && <div className={`min-w-0 ${reverse ? "lg:order-1" : ""}`}>{visual}</div>}
@@ -46,7 +46,7 @@ export function Point({ label, children }: { label: string; children: ReactNode 
 // Cadre d'une illustration filaire dans une DetailSection.
 export function IllustrationCard({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <figure className="rounded-3xl border border-line bg-gradient-to-b from-white/[0.06] to-transparent p-6 sm:p-10">
+    <figure className="rounded-3xl border border-line bg-gradient-to-b from-accent/[0.06] to-transparent p-6 sm:p-10">
       <div className="mx-auto aspect-[4/3] max-w-md">{children}</div>
       <figcaption className="mt-4 text-center font-mono text-xs text-muted">{label}</figcaption>
     </figure>

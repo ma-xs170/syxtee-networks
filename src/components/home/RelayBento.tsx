@@ -23,30 +23,31 @@ const cells: Cell[] = [
 ];
 
 const TONE: Record<Cell["tone"], string> = {
-  plain: "bg-black",
-  grid: "bg-black",
-  glow: "bg-gradient-to-br from-white/[0.07] via-black to-black",
+  plain: "bg-background",
+  grid: "bg-background",
+  glow: "bg-gradient-to-br from-accent/[0.07] via-background to-background",
 };
 
 export default function RelayBento() {
   return (
-    <section id="relais" aria-labelledby="bento-titre" className="border-b border-line py-24">
+    <section id="relais" aria-labelledby="bento-titre" className="bg-field border-b border-line py-24">
       <Container>
-        <h2 id="bento-titre" className="max-w-2xl text-3xl font-semibold tracking-tight sm:text-5xl">
+        <h2 id="bento-titre" className="max-w-2xl h-section">
           Ce que ton relais fait <Highlight>pour toi.</Highlight>
         </h2>
 
         <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3">
-          {cells.map((c) => (
+          {cells.map((c, i) => (
             <article
               key={c.title}
-              className={`group relative flex flex-col gap-6 p-6 transition-colors hover:bg-neutral-950 sm:p-8 ${TONE[c.tone]} ${c.wide ? "md:col-span-2 md:flex-row md:items-center" : ""}`}
+              className={`group relative flex flex-col gap-6 p-6 transition-colors hover:bg-surface sm:p-8 ${TONE[c.tone]} ${c.wide ? "md:col-span-2 md:flex-row md:items-center" : ""}`}
             >
               {c.tone === "grid" && <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />}
               <div className={`hover-play relative h-36 w-full transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-[1.03] ${c.wide ? "md:h-44 md:w-1/2" : ""}`}>
                 {c.art}
               </div>
               <div className={`relative ${c.wide ? "md:w-1/2" : ""}`}>
+                <p className="mb-3 font-mono text-xs tabular-nums text-accent">{String(i + 1).padStart(2, "0")}</p>
                 <h3 className="text-xl font-semibold">{c.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-muted">{c.text}</p>
               </div>

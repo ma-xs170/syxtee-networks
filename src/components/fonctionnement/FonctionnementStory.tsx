@@ -28,7 +28,7 @@ function Breadcrumb() {
             Accueil
           </Link>
         </li>
-        <li aria-hidden="true" className="text-white/20">
+        <li aria-hidden="true" className="text-foreground/20">
           /
         </li>
         <li aria-current="page" className="text-foreground">
@@ -127,7 +127,7 @@ export default function FonctionnementStory() {
           <DiscordButton />
           <Link
             href="/relais"
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-line px-5 py-3 text-sm font-medium text-foreground transition-colors hover:bg-white/5"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-line px-5 py-3 text-sm font-medium text-foreground transition-colors hover:bg-accent/10"
           >
             Voir les relais <span aria-hidden="true">→</span>
           </Link>

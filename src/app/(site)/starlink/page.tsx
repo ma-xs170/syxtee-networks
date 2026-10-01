@@ -77,7 +77,7 @@ export default function StarlinkPage() {
           <SectionHeader kicker="Pourquoi le Mini" title="Pensé pour bouger." />
           <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
             {specs.map((s) => (
-              <article key={s.big} className="bg-black p-8 transition-colors hover:bg-neutral-950">
+              <article key={s.big} className="bg-background p-8 transition-colors hover:bg-surface">
                 <p className="font-mono text-3xl tracking-tight text-foreground sm:text-4xl">{s.big}</p>
                 <h3 className="mt-6 text-base font-semibold">{s.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{s.text}</p>
@@ -162,7 +162,7 @@ export default function StarlinkPage() {
             <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />
             <div className="relative">
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Forfaits</p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Les prix changent souvent.</h2>
+              <h2 className="mt-4 h-section">Les prix changent souvent.</h2>
               <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-muted">
                 On ne les affiche pas ici : consulte directement les forfaits à jour, et choisis-en un qui autorise
                 l&apos;itinérance.
@@ -172,7 +172,7 @@ export default function StarlinkPage() {
                   href={roamUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-medium text-black transition-colors hover:bg-neutral-200"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover"
                 >
                   Voir les forfaits Starlink <span aria-hidden="true">↗</span>
                 </a>

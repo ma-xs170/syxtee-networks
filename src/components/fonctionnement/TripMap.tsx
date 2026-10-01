@@ -18,11 +18,11 @@ function Marker({ state }: { state: "past" | "now" | "next" }) {
     );
   if (state === "now")
     return (
-      <span className="relative flex h-2.5 w-2.5 shrink-0 items-center justify-center rounded-full border border-foreground bg-black">
+      <span className="relative flex h-2.5 w-2.5 shrink-0 items-center justify-center rounded-full border border-foreground bg-background">
         <span className="h-1 w-1 rounded-full bg-live" />
       </span>
     );
-  return <span className="h-2.5 w-2.5 shrink-0 rounded-full border border-white/25 bg-black" />;
+  return <span className="h-2.5 w-2.5 shrink-0 rounded-full border border-accent/35 bg-background" />;
 }
 
 export default function TripMap({ p }: { p: MotionValue<number> }) {
@@ -39,8 +39,8 @@ export default function TripMap({ p }: { p: MotionValue<number> }) {
       <div className="absolute left-4 top-1/2 z-10 hidden -translate-y-1/2 min-[1400px]:block">
         <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Le trajet</p>
         <div className="relative">
-          <div className="absolute bottom-1 left-[4.5px] top-1 w-px bg-white/15" />
-          <div className="absolute left-[2px] h-1.5 w-1.5 rounded-[1px] bg-white shadow-[0_0_10px_3px_rgba(255,255,255,0.45)]" style={{ top: `calc(${pct} - 3px)` }} />
+          <div className="absolute bottom-1 left-[4.5px] top-1 w-px bg-accent/20" />
+          <div className="absolute left-[2px] h-1.5 w-1.5 rounded-[1px] bg-accent shadow-[0_0_10px_3px_rgba(255,255,255,0.45)]" style={{ top: `calc(${pct} - 3px)` }} />
           <ol className="relative space-y-4">
             {TRIP.map((s, i) => {
               const st = state(i);
@@ -64,8 +64,8 @@ export default function TripMap({ p }: { p: MotionValue<number> }) {
       {/* En bande, en haut (mobile et écrans moyens) */}
       <div className="absolute inset-x-4 top-1.5 z-10 flex items-center gap-3 sm:inset-x-6 min-[1400px]:hidden">
         <div className="relative flex flex-1 items-center justify-between">
-          <div className="absolute inset-x-1 top-1/2 h-px bg-white/15" />
-          <div className="absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-[1px] bg-white shadow-[0_0_8px_2px_rgba(255,255,255,0.45)]" style={{ left: `calc(${pct} - 3px)` }} />
+          <div className="absolute inset-x-1 top-1/2 h-px bg-accent/20" />
+          <div className="absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-[1px] bg-accent shadow-[0_0_8px_2px_rgba(255,255,255,0.45)]" style={{ left: `calc(${pct} - 3px)` }} />
           {TRIP.map((s, i) => (
             <span key={s} className="relative">
               <Marker state={state(i)} />

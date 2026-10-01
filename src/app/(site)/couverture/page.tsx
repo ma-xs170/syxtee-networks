@@ -27,7 +27,7 @@ export default async function CouverturePage() {
   return (
     <section className="py-14 sm:py-20">
       <Container>
-        <h1 className="max-w-3xl text-3xl font-semibold tracking-tight sm:text-5xl">
+        <h1 className="max-w-3xl h-section">
           La carte du réseau, <Highlight>faite par les streamers.</Highlight>
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">

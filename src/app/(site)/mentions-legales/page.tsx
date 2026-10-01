@@ -10,7 +10,7 @@ export default function MentionsLegales() {
   return (
     <section className="py-20">
       <Container className="max-w-3xl">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Mentions légales</h1>
+        <h1 className="h-section">Mentions légales</h1>
 
         <div className="mt-10 space-y-10 text-sm leading-relaxed text-muted">
           <div>

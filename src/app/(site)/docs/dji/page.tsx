@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import { Container } from "@/components/ui";
 import { DJI_MODELS } from "@/lib/dji/protocol";
@@ -45,6 +46,15 @@ export default function DjiDocPage() {
             <p className="mt-4 rounded-2xl border border-line p-5 text-sm leading-relaxed text-muted">
               <span className="font-medium text-foreground">Astuce :</span> coche « Mémoriser sur ce téléphone » : la fois suivante, un seul bouton
               « Relancer le direct ». Le mot de passe Wi-Fi reste dans ton navigateur, il n&apos;est jamais envoyé à SYXTEE.
+            </p>
+            <p className="mt-4 rounded-2xl border border-line p-5 text-sm leading-relaxed text-muted">
+              <span className="font-medium text-foreground">Pas de bonding :</span> la caméra diffuse en RTMP sur un seul réseau à la fois, sans SRTLA.
+              Pour combiner plusieurs connexions, branche la caméra en HDMI ou USB-C à un iPhone avec Moblin (bonding SRTLA), ou fais passer son Wi-Fi par un
+              routeur multi-SIM comme{" "}
+              <Link href="/pro" className="underline underline-offset-4 hover:text-foreground">
+                SYXTEE PRO
+              </Link>
+              .
             </p>
           </div>
           <div>

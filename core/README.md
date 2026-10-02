@@ -203,7 +203,8 @@ Réencode chaque flux en mode Régie (x264) : ~1,5–2 vCPU par flux 1080p, ~0,7
 Après passage à 4 Go / 2 vCPU minimum :
 
 ```bash
-nano /opt/syxtee/.env      # REGIE_ENABLED=true et CORE_DOCKERFILE=Dockerfile.regie
+bash core/deploy/enable-regie.sh   # après git pull : vérifie 4 Go / 2 vCPU, écrit .env, construit et relance le Core
+# (à la main : nano /opt/syxtee/.env avec REGIE_ENABLED=true et CORE_DOCKERFILE=Dockerfile.regie)
 docker compose up -d --build   # compile le plugin fallbackswitch (~10 min la première fois)
 ```
 

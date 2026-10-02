@@ -114,6 +114,7 @@ export class DjiSession {
   private settings: LiveSettings | null = null;
   private startTimer: ReturnType<typeof setTimeout> | null = null;
   private stopTimer: ReturnType<typeof setTimeout> | null = null;
+  private prepareSent = false;
   battery: number | null = null;
 
   constructor(
@@ -248,21 +249,18 @@ export class DjiSession {
         // Validée sur la caméra : le message suivant, quel qu'il soit, confirme l'appairage (comme Moblin).
         return this.afterPairing();
       case "preparing":
-        if (m.id === T.stop.id) {
-          await this.send(T.prepare, preparePayload());
-          return;
-        }
+        if (m.id === T.stop.id) return this.sendPrepare();
         if (m.id === T.prepare.id) {
-          await this.send(T.wifi, wifiPayload(s.ssid, s.password));
           this.set("wifi");
+          await this.send(T.wifi, wifiPayload(s.ssid, s.password));
         }
         return;
       case "wifi":
         if (m.id !== T.wifi.id) return;
         if (m.payload.length < 2 || m.payload[0] !== 0 || m.payload[1] !== 0) return this.fail("wifi");
         if (supportsStabilization(s.model)) {
-          await this.send(T.configure, configurePayload(s.stabilization, s.model === "osmoAction5Pro" || s.model === "osmo360"));
           this.set("configuring");
+          await this.send(T.configure, configurePayload(s.stabilization, s.model === "osmoAction5Pro" || s.model === "osmo360"));
         } else await this.sendStart();
         return;
       case "configuring":
@@ -290,15 +288,26 @@ export class DjiSession {
 
   /** Appairé : on arrête un éventuel live en cours, puis préparation (réponse attendue à l'arrêt). */
   private async afterPairing() {
-    await this.send(T.stop, stopPayload());
+    // L'état passe à « preparing » AVANT l'envoi : la caméra peut répondre avant la fin de l'écriture Bluetooth, et la
+    // réponse serait alors ignorée (état encore « pairing »), ce qui bloquait la préparation.
     this.set("preparing");
+    this.prepareSent = false;
+    await this.send(T.stop, stopPayload());
+    // Secours : si la caméra ne répond pas à l'arrêt (aucun live en cours), on enchaîne quand même la préparation.
+    setTimeout(() => void this.sendPrepare(), 3000);
+  }
+
+  private async sendPrepare() {
+    if (this.state !== "preparing" || this.prepareSent) return;
+    this.prepareSent = true;
+    await this.send(T.prepare, preparePayload());
   }
 
   private async sendStart() {
     const s = this.settings!;
+    this.set("starting");
     await this.send(T.start, startPayload(s, s.model));
     // Nouveaux modèles : confirmation nécessaire pour lancer réellement le flux (voir Moblin).
     if (hasNewProtocol(s.model)) await this.send(T.stop, confirmStartPayload());
-    this.set("starting");
   }
 }

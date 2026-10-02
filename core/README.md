@@ -210,6 +210,8 @@ bash core/deploy/enable-regie.sh   # après git pull : vérifie 4 Go / 2 vCPU, �
 docker compose up -d --build   # compile le plugin fallbackswitch (~10 min la première fois)
 ```
 
+Sortie fixe **1920 x 1080, 30 images/s, 6 Mb/s** par défaut : l'entrée (quel que soit son format) et la mire sont mises à cette taille, donc OBS lit toujours le même format. Compte ~1,5 à 2 vCPU par relais en direct en 1080p (mire statique : très peu). Pour alléger : `REGIE_WIDTH=1280 REGIE_HEIGHT=720 REGIE_BITRATE_KBPS=4000`.
+
 Réglages : `REGIE_WIDTH/HEIGHT/FPS/BITRATE_KBPS`, `REGIE_TIMEOUT_MS` (1500), `REGIE_BEEP` (bip 1 kHz discret), `REGIE_TZ` (fuseau de l’heure de la mire, `Europe/Paris` par défaut).
 La bascule direct ↔ mire a été validée en local (GStreamer 1.28, gst-plugins-rs) ; l'image `Dockerfile.regie` est à valider au premier build.
 

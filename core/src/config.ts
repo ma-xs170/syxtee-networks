@@ -57,10 +57,11 @@ const schema = z.object({
   PREVIEW_INTERVAL_S: z.coerce.number().default(3),
   // Régie (mire automatique) : réencodage, ~1,5–2 vCPU par flux 1080p. Désactivée par défaut.
   REGIE_ENABLED: bool.default(false),
-  REGIE_WIDTH: z.coerce.number().default(1280),
-  REGIE_HEIGHT: z.coerce.number().default(720),
+  // Sortie fixe 1920 x 1080 : quel que soit le format reçu (ou la mire), OBS lit toujours la même résolution.
+  REGIE_WIDTH: z.coerce.number().default(1920),
+  REGIE_HEIGHT: z.coerce.number().default(1080),
   REGIE_FPS: z.coerce.number().default(30),
-  REGIE_BITRATE_KBPS: z.coerce.number().default(4000),
+  REGIE_BITRATE_KBPS: z.coerce.number().default(6000),
   REGIE_BEEP: bool.default(false),
   // Fuseau de l'heure affichée sur la mire (le conteneur tourne en UTC).
   REGIE_TZ: z.string().default("Europe/Paris"),

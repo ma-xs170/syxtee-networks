@@ -18,6 +18,7 @@ import {
   SignOut,
   SlidersHorizontal,
   SquaresFour,
+  VideoCamera,
   X,
   type IconProps,
 } from "@phosphor-icons/react";
@@ -39,8 +40,7 @@ import { restoreStreamMode } from "./streamMode";
 type Item = { label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean };
 type Group = { title?: string; items: Item[] };
 
-// Barre épurée : une seule liste. Statistiques et Scanner regroupent leurs pages en onglets ; les caméras externes
-// s'ouvrent depuis « Mes relais » ; Discord et le retour au site sont dans le menu du compte.
+// Barre épurée : une seule liste. Statistiques et Scanner regroupent leurs pages en onglets ; Discord et le retour au site sont dans le menu du compte.
 const GROUPS: Group[] = [
   {
     items: [
@@ -48,6 +48,7 @@ const GROUPS: Group[] = [
       { label: "Mes relais", href: "/dashboard/relais", icon: Radio, feature: "relais" },
       { label: "Santé du flux", href: "/dashboard/sante", icon: Heartbeat, feature: "sante" },
       { label: "Aperçu", href: "/dashboard/apercu", icon: Eye, feature: "apercu" },
+      { label: "Caméras externes", href: "/dashboard/dji", icon: VideoCamera, feature: "dji" },
       { label: "SYXTEE Studio", href: "/studio", icon: SlidersHorizontal, external: true },
       { label: "Scanner", href: "/dashboard/scanner", icon: MapTrifold },
       { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },

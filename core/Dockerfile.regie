@@ -1,8 +1,9 @@
 # SYXTEE Core avec la régie (mire automatique) : ajoute GStreamer + le plugin fallbackswitch (gst-plugins-rs),
 # compilé ici car absent des paquets Debian. Compilation Rust : ~10 min, 4 Go de RAM conseillés.
 # Mire : polices Geist (assets/fonts) installées pour librsvg et clockoverlay ; heure au fuseau REGIE_TZ.
-# À construire seulement sur un VPS 4 Go+ (REGIE_ENABLED=true). Non testé en conteneur : validé en local (macOS, GStreamer 1.28).
-ARG GST_RS_VERSION=0.14.5
+# À construire seulement sur un VPS 4 Go+ (REGIE_ENABLED=true). Validé en local (macOS, GStreamer 1.28, gst-plugins-rs 0.15.3).
+# 0.15.x obligatoire : fallbacksrc y a la propriété enable-dummy utilisée par la mire (absente en 0.14). Version validée en local : 0.15.3.
+ARG GST_RS_VERSION=0.15.3
 
 FROM rust:1-slim-trixie AS gstrs
 ARG GST_RS_VERSION

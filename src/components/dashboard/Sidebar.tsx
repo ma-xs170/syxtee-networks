@@ -5,29 +5,25 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import {
-  ArrowSquareOut,
   CaretUpDown,
-  CellSignalFull,
   ChartBar,
   Eye,
   Heartbeat,
   List,
   Lifebuoy,
   Lock,
-  MapPinArea,
   MapTrifold,
   Question,
   Radio,
   SignOut,
   SlidersHorizontal,
   SquaresFour,
-  Television,
-  VideoCamera,
   X,
   type IconProps,
 } from "@phosphor-icons/react";
 import { signOut } from "@/app/(auth)/actions";
 import type { Feature } from "@/lib/plans";
+import { activeAlso } from "@/lib/dashboard-nav";
 import { site } from "@/lib/site";
 import { Avatar, useAccount } from "../AccountMenu";
 import CloudBackdrop from "../home/CloudBackdrop";
@@ -43,31 +39,18 @@ import { restoreStreamMode } from "./streamMode";
 type Item = { label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean };
 type Group = { title?: string; items: Item[] };
 
+// Barre épurée : une seule liste. Statistiques et Scanner regroupent leurs pages en onglets ; les caméras externes
+// s'ouvrent depuis « Mes relais » ; Discord et le retour au site sont dans le menu du compte.
 const GROUPS: Group[] = [
-  { items: [{ label: "Vue d'ensemble", href: "/dashboard", icon: SquaresFour }] },
   {
-    title: "Direct",
     items: [
+      { label: "Vue d'ensemble", href: "/dashboard", icon: SquaresFour },
       { label: "Mes relais", href: "/dashboard/relais", icon: Radio, feature: "relais" },
       { label: "Santé du flux", href: "/dashboard/sante", icon: Heartbeat, feature: "sante" },
       { label: "Aperçu", href: "/dashboard/apercu", icon: Eye, feature: "apercu" },
-      { label: "Caméras externes", href: "/dashboard/dji", icon: VideoCamera, feature: "dji" },
       { label: "SYXTEE Studio", href: "/studio", icon: SlidersHorizontal, external: true },
-    ],
-  },
-  {
-    title: "Réseau",
-    items: [
-      { label: "Scan de zone", href: "/dashboard/scanner", icon: MapTrifold },
-      { label: "Test ponctuel", href: "/dashboard/analyseur", icon: CellSignalFull },
-    ],
-  },
-  {
-    title: "Statistiques",
-    items: [
-      { label: "Vue globale", href: "/dashboard/stats", icon: ChartBar },
-      { label: "Lives", href: "/dashboard/lives", icon: Television },
-      { label: "Couverture", href: "/dashboard/contributions", icon: MapPinArea },
+      { label: "Scanner", href: "/dashboard/scanner", icon: MapTrifold },
+      { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },
     ],
   },
 ];
@@ -75,8 +58,6 @@ const GROUPS: Group[] = [
 const HELP: Item[] = [
   { label: "Support", href: "/dashboard/support", icon: Lifebuoy },
   { label: "Documentation", href: "/docs", icon: Question },
-  { label: "Discord", href: site.discord, icon: ArrowSquareOut, external: true },
-  { label: "Retour au site", href: "/", icon: ArrowSquareOut },
 ];
 
 function NavLink({ item, active, locked, onNavigate }: { item: Item; active: boolean; locked?: boolean; onNavigate: () => void }) {
@@ -125,6 +106,10 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
     { label: "Paramètres", href: "/dashboard/parametres" },
     ...(admin ? [{ label: "Administration", href: "/admin" }] : []),
   ];
+  const more: { label: string; href: string; external?: boolean }[] = [
+    { label: "Discord", href: site.discord, external: true },
+    { label: "Retour au site", href: "/" },
+  ];
   const item = "block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-foreground/10";
 
   return (
@@ -161,6 +146,19 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
                 {l.label}
               </Link>
             ))}
+            <div className="border-t border-line">
+              {more.map((l) =>
+                l.external ? (
+                  <a key={l.href} role="menuitem" href={l.href} target="_blank" rel="noopener noreferrer" className={item}>
+                    {l.label} <span aria-hidden="true" className="text-muted">↗</span>
+                  </a>
+                ) : (
+                  <Link key={l.href} role="menuitem" href={l.href} onClick={() => setOpen(false)} className={item}>
+                    {l.label}
+                  </Link>
+                ),
+              )}
+            </div>
             <form action={signOut} className="border-t border-line">
               <button type="submit" role="menuitem" className={`${item} flex items-center gap-2 text-red-400`}>
                 <SignOut size={16} aria-hidden="true" />
@@ -178,7 +176,10 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
 function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void }) {
   const pathname = usePathname();
   const account = useAccount();
-  const isActive = (href: string) => (href === "/dashboard" || href === "/" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`));
+  const isActive = (href: string) =>
+    href === "/dashboard" || href === "/"
+      ? pathname === href
+      : [href, ...(activeAlso[href] ?? [])].some((h) => pathname === h || pathname.startsWith(`${h}/`));
   const locked = (i: Item) => !!i.feature && !!account && !account.features.includes(i.feature);
 
   return (
@@ -211,7 +212,6 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
         ))}
 
         <div>
-          <p className="px-3 pb-2 text-xs font-medium text-muted">Aide</p>
           <ul className="space-y-0.5">
             {HELP.map((it) => (
               <li key={it.href}>

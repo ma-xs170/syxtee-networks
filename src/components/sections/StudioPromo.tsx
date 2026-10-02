@@ -5,11 +5,11 @@ import Wordmark from "../Wordmark";
 import { Container } from "../ui";
 import Highlight from "../ui/Highlight";
 
-// Accueil : SYXTEE STUDIO, la régie de diffusion dans le navigateur (page /syxtee-studio, outil /studio).
+// Accueil : SYXTEE STUDIO, l'interface d'OBS sur le site, pilotée à distance via le plugin SYXTEE Link (page /syxtee-studio, outil /studio).
 const points = [
-  { t: "Multiview de régie TV", d: "**Aperçu, programme** et toutes tes scènes en direct." },
-  { t: "Secours automatique", d: "Il bascule **seulement si l'image se fige**, jamais pour un simple bas débit." },
-  { t: "Mode podcast", d: "Flux **synchronisés**, même en latence haute, et **scène qui suit la voix**." },
+  { t: "Ton OBS, à distance", d: "**Live, enregistrement, scènes et audio** : chaque bouton agit sur ton PC, depuis ton téléphone ou ton navigateur." },
+  { t: "Scènes sauvegardées", d: "Tes scènes et leurs médias, **5 Go par compte**, restaurables sur n'importe quel PC." },
+  { t: "Secours automatique", d: "Il bascule **seulement si l'image se fige**, jamais pour un simple bas débit. Le stream tourne sur ton ordinateur." },
 ];
 
 export default function StudioPromo() {
@@ -19,7 +19,7 @@ export default function StudioPromo() {
         <div>
           <Wordmark name="STUDIO" />
           <h2 id="studio-titre" className="h-section mt-5">
-            <Highlight>SYXTEE STUDIO, ta régie sans OBS.</Highlight>
+            <Highlight>SYXTEE STUDIO, ton OBS partout.</Highlight>
           </h2>
           <ul className="mt-8 space-y-5">
             {points.map((p) => (

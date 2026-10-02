@@ -1,8 +1,7 @@
 import { createReadStream, createWriteStream, mkdirSync } from "node:fs";
 import { rename, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
-import { Transform, type Readable } from "node:stream";
-import { pipeline } from "node:stream/promises";
+import type { Readable } from "node:stream";
 
 // Sauvegardes de scènes (SYXTEE Link) : une archive .tgz par sauvegarde (collection OBS + médias), sur le disque du serveur,
 // avec 5 Go de quota par compte. Les métadonnées sont dans la table link_backups (migration 0025).
@@ -50,14 +49,38 @@ export function createBackups(o: { db: DbLike; dir: string; quota?: number; log?
       try {
         mkdirSync(join(o.dir, userId), { recursive: true });
         let seen = 0;
-        const count = new Transform({
-          transform(chunk: Buffer, _e, cb) {
+        // Copie à la main plutôt qu'avec pipeline() : en cas de taille mensongère on vide le flux entrant au lieu de le détruire,
+        // pour pouvoir répondre proprement à l'agent.
+        await new Promise<void>((resolve, reject) => {
+          const out = createWriteStream(part, { flags: "wx" });
+          let failed: Error | null = null;
+          let ended = false;
+          out.on("error", (e) => {
+            failed ??= e;
+          });
+          body.on("data", (chunk: Buffer) => {
+            if (failed) return;
             seen += chunk.length;
-            if (seen > length) return cb(new Error("too_long"));
-            cb(null, chunk);
-          },
+            if (seen > length) {
+              failed = new Error("too_long");
+              out.destroy();
+              return;
+            }
+            if (!out.write(chunk)) {
+              body.pause();
+              out.once("drain", () => body.resume());
+            }
+          });
+          body.on("end", () => {
+            ended = true;
+            if (failed) return reject(failed);
+            out.end(() => resolve());
+          });
+          body.on("error", reject);
+          body.on("close", () => {
+            if (!ended) reject(new Error("aborted"));
+          });
         });
-        await pipeline(body, count, createWriteStream(part, { flags: "wx" }));
         if (seen !== length) throw new Error("short");
         await rename(part, dest);
         const { error } = await o.db.from("link_backups").insert({

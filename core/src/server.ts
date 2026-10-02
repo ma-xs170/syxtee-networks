@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 import { Readable } from "node:stream";
 import cors from "@fastify/cors";
 import Fastify, { type FastifyReply, type FastifyRequest } from "fastify";
@@ -710,6 +711,20 @@ export function buildServer(d: Deps) {
       };
     });
   }
+
+  // ───── Téléchargements publics (installeurs de SYXTEE Link), posés à la main dans DATA_DIR/downloads ─────
+  app.get("/dl/:file", async (req, reply) => {
+    const f = z.object({ file: z.string().regex(/^SYXTEE-Link-(mac|windows)\.(pkg|exe)$/) }).safeParse(req.params);
+    if (!f.success) return reply.code(404).send({ error: "not_found" });
+    const path = join(d.config.DATA_DIR, "downloads", f.data.file);
+    if (!existsSync(path)) return reply.code(404).send({ error: "not_found" });
+    return reply
+      .header("content-type", "application/octet-stream")
+      .header("content-disposition", `attachment; filename="${f.data.file}"`)
+      .header("content-length", String(statSync(path).size))
+      .header("cache-control", "public, max-age=300")
+      .send(createReadStream(path));
+  });
 
   // ───── SYXTEE Link : télécommande d'OBS (les WebSocket sont gérées par remote.upgrade, voir index.ts) ─────
   if (d.remote) {

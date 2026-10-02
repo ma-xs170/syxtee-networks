@@ -27,7 +27,7 @@ export default function NamesModal() {
         <div role="region" aria-label="Profil incomplet" className="border-b border-line">
           <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
             <p className="text-sm text-foreground/70">
-              <span className="font-mono text-xs uppercase tracking-wider text-foreground/45">Profil</span>
+              <span className="text-xs text-foreground/45">Profil</span>
               <span className="ml-3">Complète ton profil : prénom et nom.</span>
             </p>
             <button

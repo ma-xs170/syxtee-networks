@@ -193,7 +193,7 @@ export default function CreateRelayWizard({
             {STEPS.map((label, i) => (
               <li key={label} aria-current={i === step ? "step" : undefined}>
                 <span className={`block h-1 rounded-full transition-colors motion-reduce:transition-none ${i <= step ? "bg-accent" : "bg-foreground/20"}`} />
-                <span className={`mt-2 block font-mono text-[11px] uppercase tracking-[0.12em] ${i === step ? "text-foreground" : "text-muted"}`}>
+                <span className={`mt-2 block text-xs ${i === step ? "text-foreground" : "text-muted"}`}>
                   {i + 1} {label}
                 </span>
               </li>
@@ -334,7 +334,7 @@ export default function CreateRelayWizard({
                   ["Serveur", srv ? `${flag(srv.cc)} ${srv.city} (${srv.id})` : server],
                 ].map(([k, v]) => (
                   <div key={k} className="bg-background p-5">
-                    <dt className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">{k}</dt>
+                    <dt className="text-xs text-muted">{k}</dt>
                     <dd className="mt-2 break-words text-base">{v}</dd>
                   </div>
                 ))}
@@ -421,7 +421,7 @@ function Success({ relay }: { relay: RelayView }) {
       </p>
       <RelayUrls relay={relay} />
       <div>
-        <h3 className="font-mono text-xs uppercase tracking-[0.15em]">Comment configurer</h3>
+        <h3 className="text-xs">Comment configurer</h3>
         <ul className="mt-4 grid gap-3 md:grid-cols-2">
           {GUIDES[relay.protocol].map((g) => (
             <li key={g.title} className="rounded-2xl border border-line p-5">

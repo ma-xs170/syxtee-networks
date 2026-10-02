@@ -77,7 +77,7 @@ function Gauge({ label, value, unit, max, invert = false }: { label: string; val
       <p className="-mt-3 font-mono text-xl tabular-nums sm:text-2xl" aria-live="off">
         {value == null ? "–" : unit === "ms" ? nf.format(Math.round(value)) : mbit(value)}
       </p>
-      <p className="mt-0.5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+      <p className="mt-0.5 text-xs text-muted">
         {label} <span className="normal-case tracking-normal">{unit === "ms" ? "ms" : "Mbit/s"}</span>
       </p>
     </div>
@@ -371,9 +371,9 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
       {/* ───── Colonne scan ───── */}
       <div className="flex min-h-[calc(100dvh-9rem)] flex-col gap-4 lg:min-h-0">
         <header className="rounded-2xl border border-line p-5">
-          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">Opérateur détecté</p>
-          <p className="mt-1 truncate h-section">{net ? (net.operator ?? "Inconnu") : "…"}</p>
-          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-xs uppercase tracking-[0.12em]">
+          <p className="text-xs text-muted">Opérateur détecté</p>
+          <p className="mt-1 truncate text-2xl font-semibold tracking-tight sm:text-3xl">{net ? (net.operator ?? "Inconnu") : "…"}</p>
+          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
             <span className="rounded-full border border-line px-2.5 py-1 text-foreground">{net ? linkLabel(link) : "…"}</span>
             {conf !== null && <span className="text-muted">confiance {conf} %</span>}
             {net?.tags?.includes("declared") && <span className="normal-case tracking-normal text-muted">opérateur déclaré</span>}
@@ -451,10 +451,10 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
                 <>
                   <span className="block font-mono text-4xl tabular-nums">{countdown ?? (session?.valid ?? 0)}</span>
                   <span className="mt-1 block text-xs text-muted">{phase ?? (countdown !== null ? "prochain point (s)" : "mesure…")}</span>
-                  <span className="mt-3 block font-mono text-[11px] uppercase tracking-[0.14em]">Arrêter</span>
+                  <span className="mt-3 block text-xs">Arrêter</span>
                 </>
               ) : (
-                <span className="block font-mono text-sm font-medium uppercase tracking-[0.14em]">Démarrer le scan</span>
+                <span className="block text-sm font-medium">Démarrer le scan</span>
               )}
             </span>
           </button>
@@ -477,14 +477,14 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
         {/* ───── Points, data, économie ───── */}
         <section aria-label="Session" className="grid grid-cols-2 gap-4 rounded-2xl border border-line p-5">
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">Scanne ta zone</p>
+            <p className="text-xs text-muted">Scanne ta zone</p>
             <p className="mt-1 font-mono text-2xl tabular-nums">
               +{nf.format(session?.points ?? 0)} <span className="text-sm text-muted">pts</span>
             </p>
             <p className="mt-0.5 text-xs text-muted">{nf.format(session?.valid ?? 0)} mesures comptées</p>
           </div>
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">Data consommée</p>
+            <p className="text-xs text-muted">Data consommée</p>
             <p className="mt-1 font-mono text-2xl tabular-nums">
               {nf.format(Math.round(((session?.bytes ?? 0) / 1e6) * 10) / 10)} <span className="text-sm text-muted">Mo</span>
             </p>
@@ -557,7 +557,7 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
                   type="button"
                   disabled={saving}
                   onClick={() => chooseOperator(o)}
-                  className={`h-14 rounded-xl border px-4 font-mono text-sm uppercase tracking-[0.12em] transition-colors hover:bg-foreground/10 active:scale-[0.98] disabled:opacity-50 ${declared === o ? "border-accent" : "border-line"} ${o === "other" ? "col-span-2" : ""}`}
+                  className={`h-14 rounded-xl border px-4 text-sm font-medium transition-colors hover:bg-foreground/10 active:scale-[0.98] disabled:opacity-50 ${declared === o ? "border-accent" : "border-line"} ${o === "other" ? "col-span-2" : ""}`}
                 >
                   {DECLARED_LABELS[o]}
                 </button>
@@ -579,19 +579,19 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
             </h2>
             <dl className="mt-5 grid grid-cols-2 gap-4 font-mono">
               <div>
-                <dt className="text-[11px] uppercase tracking-[0.14em] text-muted">Distance</dt>
+                <dt className="text-xs text-muted">Distance</dt>
                 <dd className="mt-1 text-2xl tabular-nums">{summary.distance >= 1000 ? `${nf.format(Math.round(summary.distance / 100) / 10)} km` : `${nf.format(Math.round(summary.distance))} m`}</dd>
               </div>
               <div>
-                <dt className="text-[11px] uppercase tracking-[0.14em] text-muted">Points gagnés</dt>
+                <dt className="text-xs text-muted">Points gagnés</dt>
                 <dd className="mt-1 text-2xl tabular-nums">+{nf.format(summary.points)}</dd>
               </div>
               <div>
-                <dt className="text-[11px] uppercase tracking-[0.14em] text-muted">Mesures valides</dt>
+                <dt className="text-xs text-muted">Mesures valides</dt>
                 <dd className="mt-1 text-2xl tabular-nums">{nf.format(summary.valid)}</dd>
               </div>
               <div>
-                <dt className="text-[11px] uppercase tracking-[0.14em] text-muted">Zones découvertes</dt>
+                <dt className="text-xs text-muted">Zones découvertes</dt>
                 <dd className="mt-1 text-2xl tabular-nums">{nf.format(summary.discovered.length)}</dd>
               </div>
             </dl>

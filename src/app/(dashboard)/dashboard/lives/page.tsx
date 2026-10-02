@@ -25,7 +25,7 @@ export default async function LivesPage({ searchParams }: PageProps<"/dashboard/
       <Tile>
         {sessions.length ? (
           <>
-            <div className="hidden grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_120px_auto] gap-x-4 border-b border-line px-2 pb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted md:grid">
+            <div className="hidden grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_120px_auto] gap-x-4 border-b border-line px-2 pb-2 text-xs text-muted md:grid">
               <span>Direct</span>
               <span>Moyen / crête</span>
               <span>Débit</span>

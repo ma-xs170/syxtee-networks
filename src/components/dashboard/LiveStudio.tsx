@@ -57,7 +57,7 @@ export default function LiveStudio({ sources, coreUrl, initial }: { sources: Sou
                   }`}
                 >
                   <span className="truncate">{s.name}</span>
-                  {isLive(s.id) ? <span className="live-dot shrink-0" aria-label="En direct" /> : <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em]">Hors ligne</span>}
+                  {isLive(s.id) ? <span className="live-dot shrink-0" aria-label="En direct" /> : <span className="shrink-0 text-xs">Hors ligne</span>}
                 </button>
               </li>
             );

@@ -49,7 +49,7 @@ export default function MaskedUrl({ url, label, size = "md" }: { url: string; la
       >
         <Eye open={visible} />
       </button>
-      <button type="button" onClick={copy} className={`${btn} font-mono text-xs uppercase tracking-[0.1em]`} aria-label={`Copier l'URL ${label}`}>
+      <button type="button" onClick={copy} className={`${btn} text-xs`} aria-label={`Copier l'URL ${label}`}>
         <span aria-live="polite">{copied ? "Copié" : "Copier"}</span>
       </button>
     </div>

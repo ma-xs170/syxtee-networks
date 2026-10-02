@@ -137,7 +137,7 @@ export default function CameraWizard({
           {steps.map(({ label }, i) => (
             <li key={label} aria-current={i === step ? "step" : undefined}>
               <span className={`block h-1 rounded-full transition-colors motion-reduce:transition-none ${i <= step ? "bg-accent" : "bg-foreground/20"}`} />
-              <span className={`mt-2 block font-mono text-[11px] uppercase tracking-[0.12em] ${i === step ? "text-foreground" : "text-muted"}`}>
+              <span className={`mt-2 block text-xs ${i === step ? "text-foreground" : "text-muted"}`}>
                 {i + 1} {label}
               </span>
             </li>
@@ -246,7 +246,7 @@ export default function CameraWizard({
                   <label key={n.id} className={card(c.networkId === n.id)}>
                     <input type="radio" name="wiz-net" checked={c.networkId === n.id} onChange={() => set("networkId", n.id)} className="sr-only" />
                     <span className="text-base font-medium">{n.ssid}</span>
-                    <span className="mt-1 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">{n.kind === "hotspot" ? "Partage de connexion" : "Wi-Fi"}</span>
+                    <span className="mt-1 text-xs text-muted">{n.kind === "hotspot" ? "Partage de connexion" : "Wi-Fi"}</span>
                     <span className="mt-3 text-xs text-muted">{n.remember ? "Mot de passe mémorisé" : "Mot de passe demandé au lancement"}</span>
                   </label>
                 ))}

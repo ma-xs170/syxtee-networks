@@ -74,7 +74,7 @@ function LiveStats({ cameras, relays, runs, live }: { cameras: Camera[]; relays:
               {on ? (
                 <span className="flex items-center gap-1.5 rounded bg-live px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.12em] text-white">EN DIRECT</span>
               ) : (
-                <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">Hors ligne</span>
+                <span className="text-xs text-muted">Hors ligne</span>
               )}
             </p>
             <p className="mt-1 truncate text-xs text-muted">{relays.find((x) => x.id === c.relayId)?.name ?? "Relais supprimé"}</p>
@@ -350,12 +350,12 @@ function CameraCard({
           </h3>
           {cam.brand === "gopro" ? (
             <>
-              <p className="mt-1 font-mono text-xs uppercase tracking-[0.12em] text-muted">{camLabel(cam)} · RTMP</p>
+              <p className="mt-1 text-xs text-muted">{camLabel(cam)} · RTMP</p>
               <p className="mt-2 text-sm text-muted">{relay ? `Relais ${relay.name}` : "Relais supprimé : modifie la caméra"}</p>
             </>
           ) : (
             <>
-              <p className="mt-1 font-mono text-xs uppercase tracking-[0.12em] text-muted">
+              <p className="mt-1 text-xs text-muted">
                 {modelName(cam.model)} · {cam.resolution} · {cam.bitrateKbps / 1000} Mb/s · {cam.codec === "h265" ? "H.265" : "H.264"}
               </p>
               <p className="mt-2 text-sm text-muted">
@@ -423,7 +423,7 @@ function Networks({ store, onEdit, onChange }: { store: DjiStore; onEdit: (id: s
             <p className="flex items-start justify-between gap-3">
               <span className="min-w-0">
                 <span className="block truncate text-base font-medium">{n.ssid}</span>
-                <span className="mt-1 block font-mono text-[11px] uppercase tracking-[0.12em] text-muted">{n.kind === "hotspot" ? "Partage de connexion" : "Wi-Fi"}</span>
+                <span className="mt-1 block text-xs text-muted">{n.kind === "hotspot" ? "Partage de connexion" : "Wi-Fi"}</span>
               </span>
             </p>
             <p className="mt-3 text-xs text-muted">

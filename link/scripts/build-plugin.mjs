@@ -86,7 +86,12 @@ run("codesign", ["--force", "--deep", "--sign", "-", bundle]);
 const payload = join(work, "payload", "Library", "Application Support", "obs-studio", "plugins");
 rmSync(join(work, "payload"), { recursive: true, force: true });
 mkdirSync(payload, { recursive: true });
-run("ditto", [bundle, join(payload, "syxtee-link.plugin")]);
+run("ditto", ["--norsrc", "--noextattr", "--noqtn", bundle, join(payload, "syxtee-link.plugin")]);
+try {
+  run("xattr", ["-cr", join(work, "payload")]); // pas d'attributs étendus dans l'installeur (pkgbuild les écrirait en fichiers « ._ »)
+} catch {
+  // rien à nettoyer
+}
 const component = join(work, "component.pkg");
 run("pkgbuild", ["--root", join(work, "payload"), "--identifier", "fr.syxtee.obs-plugin.pkg", "--version", VERSION, "--install-location", "/", component]);
 writeFileSync(

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import ModeSwitch from "@/components/dashboard/ModeSwitch";
+import MireStatus from "@/components/dashboard/MireStatus";
 import { SessionList } from "@/components/dashboard/sessions";
 import StreamHealth from "@/components/dashboard/StreamHealth";
 import StreamPreview from "@/components/dashboard/StreamPreview";
@@ -80,9 +80,9 @@ export default async function RelayPage({ params }: PageProps<"/dashboard/relais
                   </Tile>
                 )}
                 <Tile>
-                  <TileLabel>Mode de sortie</TileLabel>
+                  <TileLabel>Mire de coupure</TileLabel>
                   <div className="mt-4">
-                    <ModeSwitch relayId={relay.id} mode={relay.mode} available={relay.regie_available} />
+                    <MireStatus available={relay.regie_available} />
                   </div>
                 </Tile>
               </div>

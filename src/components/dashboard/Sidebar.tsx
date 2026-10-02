@@ -53,7 +53,7 @@ const GROUPS: Group[] = [
       { label: "Santé du flux", href: "/dashboard/sante", icon: Heartbeat, feature: "sante" },
       { label: "Aperçu", href: "/dashboard/apercu", icon: Eye, feature: "apercu" },
       { label: "Caméras externes", href: "/dashboard/dji", icon: VideoCamera, feature: "dji" },
-      { label: "Mire de coupure", href: "/dashboard/mire", icon: TelevisionSimple, feature: "mire" },
+      { label: "Mire de coupure", href: "/dashboard/mire", icon: TelevisionSimple },
       { label: "SYXTEE Studio", href: "/studio", icon: SlidersHorizontal, external: true },
     ],
   },

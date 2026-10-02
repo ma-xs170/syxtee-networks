@@ -73,9 +73,9 @@ export function createRegie(o: RegieOptions & { dir: string; tz: string; relay: 
   }
 
   return {
-    /** Une régie par relais en mode « regie » (clé changée : la régie redémarre). */
+    /** Une régie par relais autorisé : la mire est native, pas une option (clé changée : la régie redémarre). */
     async sync(keys: Relay[]) {
-      const want = new Map(keys.filter((k) => k.mode === "regie").map((k) => [k.id, k]));
+      const want = new Map(keys.map((k) => [k.id, k]));
       for (const [id, r] of running) {
         const k = want.get(id);
         if (!k || k.out_publish_id !== r.outPublishId) {

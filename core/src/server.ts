@@ -65,7 +65,8 @@ export type Deps = {
 /** Ce que voit le dashboard (jamais l'identifiant de publication de la régie, interne au Core). */
 export function relayView(r: Relay, c: Config, live = false) {
   const host = c.RELAY_PUBLIC_HOST;
-  const regie = r.mode === "regie" && c.REGIE_ENABLED;
+  // Mire native : dès que la régie est activée sur le serveur, tous les relais passent par elle (la colonne `mode` n'est plus un choix).
+  const regie = c.REGIE_ENABLED;
   return {
     id: r.id,
     name: r.name,
@@ -74,7 +75,7 @@ export function relayView(r: Relay, c: Config, live = false) {
     host,
     archived: r.archived,
     live: !r.archived && live,
-    mode: r.mode,
+    mode: regie ? ("regie" as const) : r.mode,
     regie_available: c.REGIE_ENABLED,
     urls:
       r.protocol === "rtmp"
@@ -173,6 +174,7 @@ export function buildServer(d: Deps) {
       })
       .parse(req.body);
     if (body.mode === "regie" && !d.config.REGIE_ENABLED) return reply.code(409).send({ error: "regie_disabled" });
+    if (body.mode === "direct" && d.config.REGIE_ENABLED) return reply.code(409).send({ error: "regie_native" });
     try {
       if (body.name !== undefined) r = await d.relays.rename(r, body.name);
       if (body.mode !== undefined) r = await d.relays.setMode(r, body.mode);

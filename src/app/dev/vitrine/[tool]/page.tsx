@@ -7,6 +7,7 @@ import { SessionList } from "@/components/dashboard/sessions";
 import { Tile, TileLabel } from "@/components/dashboard/ui";
 import StreamerWall from "@/components/home/StreamerWall";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
+import AdminShell from "@/app/(admin)/admin/AdminShell";
 import StudioDemo from "@/components/studio/StudioDemo";
 import RelayList from "@/components/relais/RelayList";
 import type { Overview as OverviewData, LiveSession } from "@/lib/dashboard-data";
@@ -124,6 +125,23 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
         </div>
       )}
       {tool === "studio" && <StudioDemo />}
+      {tool === "admin" && (
+        <div className="-m-8">
+          <AdminShell openTickets={3} pendingAccess={2} name="admin@syxtee.fr">
+            <div className="mx-auto max-w-7xl px-6 pb-20 pt-12">
+              <h1 className="mb-8 text-2xl font-semibold tracking-tight sm:text-3xl">Demandes d&apos;accès</h1>
+              <ul className="space-y-4">
+                {["Inès Marlot", "Kairo Duval"].map((n) => (
+                  <li key={n} className="rounded-2xl border border-line bg-surface p-6">
+                    <p className="text-lg font-semibold">{n}</p>
+                    <p className="mt-1 text-sm text-muted">demo@exemple.net · il y a 12 min</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </AdminShell>
+        </div>
+      )}
       {tool === "fond" && (
         <div className="dash-surface relative -m-8 min-h-[900px] p-8">
           <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[26rem] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_30%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_30%,transparent_100%)]">
@@ -154,7 +172,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           }))}
         />
       )}
-      {!["relais", "sante", "accueil", "studio", "mur", "fond"].includes(tool) && notFound()}
+      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin"].includes(tool) && notFound()}
     </div>
   );
 }

@@ -29,7 +29,7 @@ export default async function AdminCartePage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] text-left text-sm">
-              <thead className="font-mono text-xs uppercase tracking-[0.12em] text-muted">
+              <thead className="text-xs text-muted">
                 <tr>
                   {["Compte", "Mesures", "Hexagones", "Dernière", ""].map((h) => (
                     <th key={h} className="py-2 pr-4 font-normal">

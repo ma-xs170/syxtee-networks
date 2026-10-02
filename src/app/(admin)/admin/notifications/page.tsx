@@ -39,7 +39,7 @@ export default async function AdminNotificationsPage() {
                   <div className="min-w-0">
                     <p className="text-sm font-medium">{n.title}</p>
                     {n.body && <p className="mt-1 line-clamp-2 text-sm text-muted">{n.body}</p>}
-                    <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+                    <p className="mt-1.5 text-xs text-muted">
                       {when(n.created_at)} · {n.user_id ? "un compte" : "tous"}
                     </p>
                   </div>

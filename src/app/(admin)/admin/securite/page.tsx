@@ -118,7 +118,7 @@ export default async function AdminSecuritePage({ searchParams }: { searchParams
             ) : (
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full min-w-[720px] text-left text-sm">
-                  <thead className="font-mono text-xs uppercase tracking-[0.12em] text-muted">
+                  <thead className="text-xs text-muted">
                     <tr>
                       <th className="py-2 pr-4 font-normal">Date</th>
                       <th className="py-2 pr-4 font-normal">Événement</th>

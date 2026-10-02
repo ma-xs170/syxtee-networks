@@ -69,7 +69,7 @@ export default async function AdminAccountPage({ params }: { params: Promise<{ i
       <dl className="mb-8 grid grid-cols-2 gap-x-6 gap-y-5 rounded-2xl border border-line p-5 sm:p-6 lg:grid-cols-4">
         {facts.map(([k, v]) => (
           <div key={k} className="min-w-0">
-            <dt className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">{k}</dt>
+            <dt className="text-xs text-muted">{k}</dt>
             <dd className="mt-1.5 truncate text-sm" data-sensitive>
               {v}
             </dd>
@@ -122,7 +122,7 @@ export default async function AdminAccountPage({ params }: { params: Promise<{ i
               </details>
             )}
             <div className="mt-6 border-t border-line pt-5">
-              <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">Clés de stream</p>
+              <p className="mb-3 text-xs text-muted">Clés de stream</p>
               <KeysForms userId={id} />
             </div>
           </Tile>
@@ -227,7 +227,7 @@ export default async function AdminAccountPage({ params }: { params: Promise<{ i
       </div>
 
       <section aria-labelledby="sensible" className="mt-10 rounded-2xl border border-red-400/30 p-5 sm:p-6">
-        <h2 id="sensible" className="font-mono text-xs uppercase tracking-[0.15em] text-red-300">
+        <h2 id="sensible" className="text-xs text-red-300">
           Zone sensible
         </h2>
         <div className="mt-4 grid gap-8 md:grid-cols-2">

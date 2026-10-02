@@ -7,7 +7,7 @@ import { addNoteAction, cutRelayAction, deleteAccountAction, keysAction, suspend
 type Action = (prev: PlanState, form: FormData) => Promise<PlanState>;
 
 const field = "h-11 w-full rounded-xl border border-line bg-background px-4 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60";
-const label = "font-mono text-xs uppercase tracking-[0.15em] text-muted";
+const label = "text-xs text-muted";
 
 function Button({ children, danger = false, disabled = false }: { children: ReactNode; danger?: boolean; disabled?: boolean }) {
   const { pending } = useFormStatus();

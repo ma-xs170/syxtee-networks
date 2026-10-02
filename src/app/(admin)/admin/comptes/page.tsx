@@ -51,11 +51,11 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
 
       <form method="get" className="mb-4 flex flex-wrap items-end gap-3">
         <label className="grid gap-1.5">
-          <span className="font-mono text-xs uppercase tracking-[0.15em] text-muted">Recherche</span>
+          <span className="text-xs text-muted">Recherche</span>
           <input name="q" defaultValue={filter.q} placeholder="Email, prénom, nom, SYX-…" className={`${field} w-72`} />
         </label>
         <label className="grid gap-1.5">
-          <span className="font-mono text-xs uppercase tracking-[0.15em] text-muted">Formule</span>
+          <span className="text-xs text-muted">Formule</span>
           <select name="plan" defaultValue={filter.plan} className={field}>
             <option value="">Toutes</option>
             {(Object.keys(PLANS) as PlanId[]).map((p) => (
@@ -66,7 +66,7 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
           </select>
         </label>
         <label className="grid gap-1.5">
-          <span className="font-mono text-xs uppercase tracking-[0.15em] text-muted">Statut</span>
+          <span className="text-xs text-muted">Statut</span>
           <select name="status" defaultValue={filter.status} className={field}>
             <option value="">Tous</option>
             <option value="active">Actifs</option>
@@ -74,7 +74,7 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
           </select>
         </label>
         <label className="grid gap-1.5">
-          <span className="font-mono text-xs uppercase tracking-[0.15em] text-muted">Tri</span>
+          <span className="text-xs text-muted">Tri</span>
           <select name="sort" defaultValue={filter.sort} className={field}>
             <option value="created">Inscription récente</option>
             <option value="last_sign_in">Dernière connexion</option>
@@ -96,7 +96,7 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[820px] text-left text-sm">
-              <thead className="font-mono text-xs uppercase tracking-[0.12em] text-muted">
+              <thead className="text-xs text-muted">
                 <tr>
                   {["ID support", "Nom", "Email", "Formule", "Statut", "Inscrit", "Connexion"].map((h) => (
                     <th key={h} className="py-2 pr-4 font-normal">

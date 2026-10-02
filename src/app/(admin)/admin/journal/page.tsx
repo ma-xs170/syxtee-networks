@@ -40,7 +40,7 @@ export default async function AdminJournalPage({ searchParams }: { searchParams:
       <DashHeader lead="Journal" hl="d'audit" sub="Chaque action admin : date, admin, cible, avant et après. Lecture seule." />
       <form method="get" className="mb-4 flex flex-wrap items-end gap-3">
         <label className="grid gap-1.5">
-          <span className="font-mono text-xs uppercase tracking-[0.15em] text-muted">Action</span>
+          <span className="text-xs text-muted">Action</span>
           <input name="action" defaultValue={action} placeholder="plan., account., keys.…" className="h-10 w-64 rounded-full border border-line bg-background px-4 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60" />
         </label>
         {compte && <input type="hidden" name="compte" value={compte} />}
@@ -54,7 +54,7 @@ export default async function AdminJournalPage({ searchParams }: { searchParams:
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-left text-sm">
-              <thead className="font-mono text-xs uppercase tracking-[0.12em] text-muted">
+              <thead className="text-xs text-muted">
                 <tr>
                   {["Date", "Admin", "Action", "Cible", "Avant", "Après"].map((h) => (
                     <th key={h} className="py-2 pr-4 font-normal">

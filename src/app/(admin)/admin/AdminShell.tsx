@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { signOut } from "@/app/(auth)/actions";
+import CloudBackdrop from "@/components/home/CloudBackdrop";
 import ThemeToggle from "@/components/ThemeToggle";
 
 // Espace admin : sa propre barre latérale, séparée du dashboard client (autre fond de logo, autre titre). Sur la page
@@ -52,7 +53,7 @@ export default function AdminShell({ openTickets, pendingAccess, name, children 
   const active = (href: string) => (href === "/admin" ? path === "/admin" : path === href || path.startsWith(`${href}/`));
 
   return (
-    <div className="min-h-dvh lg:grid lg:grid-cols-[250px_1fr]">
+    <div className="dash-surface min-h-dvh lg:grid lg:grid-cols-[250px_1fr]">
       <aside className="sticky top-0 hidden h-dvh flex-col border-r border-line bg-surface lg:flex">
         <Link href="/admin" className="flex items-center gap-3 px-5 pb-4 pt-5" aria-label="Espace admin SYXTEE">
           <Image src="/logo-400.png" alt="" width={18} height={25} className="ink-img" priority />
@@ -85,19 +86,20 @@ export default function AdminShell({ openTickets, pendingAccess, name, children 
           <Link href="/dashboard" className="block text-sm text-muted transition-colors hover:text-foreground">
             ← Retour au dashboard
           </Link>
-          <div className="flex items-center justify-between gap-2">
-            <ThemeToggle />
-            <form action={signOut}>
-              <button type="submit" className="text-sm text-muted transition-colors hover:text-foreground">
-                Déconnexion
-              </button>
-            </form>
-          </div>
+          <ThemeToggle />
+          <form action={signOut}>
+            <button type="submit" className="text-sm text-muted transition-colors hover:text-foreground">
+              Déconnexion
+            </button>
+          </form>
           <p className="truncate text-xs text-muted">{name}</p>
         </div>
       </aside>
 
-      <div className="min-w-0">
+      <div className="relative min-w-0">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[40rem] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_35%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_35%,transparent_100%)]">
+          <CloudBackdrop tone="theme" />
+        </div>
         <nav aria-label="Navigation admin" className="sticky top-0 z-40 flex gap-1 overflow-x-auto border-b border-line bg-background/95 px-3 py-2 backdrop-blur lg:hidden">
           <Link href="/dashboard" className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm text-muted">
             ← Dashboard
@@ -114,7 +116,7 @@ export default function AdminShell({ openTickets, pendingAccess, name, children 
             </Link>
           ))}
         </nav>
-        {children}
+        <div className="relative">{children}</div>
       </div>
     </div>
   );

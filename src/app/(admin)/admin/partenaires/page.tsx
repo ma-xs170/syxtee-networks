@@ -38,7 +38,7 @@ export default async function AdminPartenairesPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="font-mono text-xs uppercase tracking-[0.12em] text-muted">
+              <thead className="text-xs text-muted">
                 <tr>
                   <th className="py-2 pr-4 font-normal">ID support</th>
                   <th className="py-2 pr-4 font-normal">Nom</th>

@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { sendNotificationAction, type NotifState } from "./actions";
 
 const field = "w-full rounded-xl border border-line bg-background px-4 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60";
-const label = "font-mono text-xs uppercase tracking-[0.15em] text-muted";
+const label = "text-xs text-muted";
 
 export default function NotifForm() {
   const [state, action, pending] = useActionState<NotifState, FormData>(sendNotificationAction, {});

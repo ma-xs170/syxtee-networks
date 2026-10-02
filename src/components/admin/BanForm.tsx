@@ -12,11 +12,11 @@ export default function BanForm({ ip = "" }: { ip?: string }) {
   return (
     <form action={action} className="grid gap-4 sm:grid-cols-[1.4fr_0.8fr_2fr_auto] sm:items-end">
       <div className="grid gap-2">
-        <label htmlFor="ban-ip" className="font-mono text-xs uppercase tracking-[0.15em] text-muted">IP</label>
+        <label htmlFor="ban-ip" className="text-xs text-muted">IP</label>
         <input id="ban-ip" name="ip" required defaultValue={ip} placeholder="203.0.113.7" className={`${field} font-mono`} />
       </div>
       <div className="grid gap-2">
-        <label htmlFor="ban-min" className="font-mono text-xs uppercase tracking-[0.15em] text-muted">Durée</label>
+        <label htmlFor="ban-min" className="text-xs text-muted">Durée</label>
         <select id="ban-min" name="minutes" defaultValue="1440" className={field}>
           <option value="60">1 h</option>
           <option value="1440">24 h</option>
@@ -25,7 +25,7 @@ export default function BanForm({ ip = "" }: { ip?: string }) {
         </select>
       </div>
       <div className="grid gap-2">
-        <label htmlFor="ban-reason" className="font-mono text-xs uppercase tracking-[0.15em] text-muted">Raison</label>
+        <label htmlFor="ban-reason" className="text-xs text-muted">Raison</label>
         <input id="ban-reason" name="reason" required maxLength={200} placeholder="Essais répétés sur des clés inventées" className={field} />
       </div>
       <button

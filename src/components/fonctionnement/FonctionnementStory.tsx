@@ -75,7 +75,7 @@ export default function FonctionnementStory() {
         </>
       ),
       paragraphs: [
-        "Des câbles en fibre optique posés au fond de l'océan relient les Antilles au continent.",
+        "Des câbles en fibre optique posés au fond de l'océan relient les continents entre eux.",
         "Tes paquets y voyagent sous forme d'impulsions de lumière.",
       ],
       render: (p) => stage(<SceneSubsea progress={p} narrow={narrow} />),
@@ -126,7 +126,7 @@ export default function FonctionnementStory() {
           <DiscordButton />
           <Link
             href="/relais"
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-line px-5 py-3 text-sm font-medium text-foreground transition-colors hover:bg-accent/10"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-line px-5 py-3 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
           >
             Voir les relais <span aria-hidden="true">→</span>
           </Link>

@@ -73,7 +73,7 @@ export default function NotificationsBell() {
         onClick={toggle}
         aria-expanded={open}
         aria-label={unread.length ? `Notifications, ${unread.length} non lue${unread.length > 1 ? "s" : ""}` : "Notifications"}
-        className="relative grid h-10 w-10 place-items-center rounded-lg border border-transparent text-muted transition-colors hover:bg-accent/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+        className="relative grid h-10 w-10 place-items-center rounded-lg border border-transparent text-muted transition-colors hover:bg-foreground/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60"
       >
         <Bell size={20} aria-hidden="true" />
         {unread.length > 0 && <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-accent" aria-hidden="true" />}

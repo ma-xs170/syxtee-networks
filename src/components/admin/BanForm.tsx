@@ -5,7 +5,7 @@ import { banAction, type BanState } from "@/app/(dashboard)/admin/securite/actio
 
 // Bannir une IP à la main (en plus des bannissements automatiques de 15 min après 10 refus en 1 min).
 
-const field = "h-11 w-full rounded-full border border-line bg-background px-4 text-sm text-foreground placeholder:text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/60";
+const field = "h-11 w-full rounded-full border border-line bg-background px-4 text-sm text-foreground placeholder:text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60";
 
 export default function BanForm({ ip = "" }: { ip?: string }) {
   const [state, action, pending] = useActionState<BanState, FormData>(banAction, {});

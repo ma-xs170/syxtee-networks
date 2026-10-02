@@ -32,7 +32,7 @@ export function SceneHome({ progress }: { progress: MotionValue<number> }) {
             <g strokeWidth={1}>
               <path d="M500 220V160H520V220M524 220V140H546V220M550 220V176H566V220" />
               <T x={532} y={244} anchor="middle" size="sm">
-                NEW YORK
+                RELAIS
               </T>
             </g>
             {/* Câble sous-marin avec impulsions */}
@@ -46,7 +46,7 @@ export function SceneHome({ progress }: { progress: MotionValue<number> }) {
               <path d="M40 220q30 -26 70 0" />
               <path d="M72 212q-2 -24 6 -40M78 172q-10 -4 -16 4M78 172q10 -6 16 2M78 172q-2 -10 -10 -12" />
               <T x={74} y={244} anchor="middle" size="sm">
-                ANTILLES
+                TOI
               </T>
             </g>
             <circle cx={lerp(500, 90, dot)} cy={200 + Math.sin(dot * Math.PI * 2) * 8} r={4} fill="var(--foreground)" stroke="none" />
@@ -68,7 +68,7 @@ export function SceneHome({ progress }: { progress: MotionValue<number> }) {
               <path d={fluxPath} strokeWidth={2} className={anim.stream} />
               <rect x={24} y={538} width={250} height={24} rx={12} fill="var(--background)" strokeWidth={1} />
               <T x={149} y={555} anchor="middle" size="sm" strong>
-                SRT · srt://relais-nyc…
+                SRT · srt://relais…
               </T>
               <Packet x={lerp(-20, 330, clamp01(flux * 1.2))} y={520} hero size={12} />
             </g>

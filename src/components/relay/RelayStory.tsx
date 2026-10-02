@@ -98,7 +98,7 @@ const scenes: StoryScene[] = [
     titleAs: "h1",
     paragraphs: [
       "Il attend ton flux en permanence : tu te connectes quand tu veux.",
-      "Placé sur la côte Est, il est bien relié aux Antilles et aux serveurs des plateformes.",
+      "Nos serveurs sont répartis dans le monde entier : choisis le plus proche de toi, bien relié aux plateformes.",
     ],
     staticAt: 0.22,
     render: (_, { global }) => <RelayStage p={global} layers={["rack"]} />,

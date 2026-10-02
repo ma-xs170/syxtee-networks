@@ -31,9 +31,9 @@ export function UpgradeModal({ open, feature, onClose }: { open: boolean; featur
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
       aria-labelledby="upgrade-title"
-      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-accent/20 bg-[#0a0a0a] p-6 text-foreground backdrop:bg-background/80 sm:p-8"
+      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-foreground/20 bg-[#0a0a0a] p-6 text-foreground backdrop:bg-background/80 sm:p-8"
     >
-      <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-accent/25 text-foreground/80">
+      <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-foreground/25 text-foreground/80">
         <LockIcon />
       </span>
       <h2 id="upgrade-title" className="mt-5 text-xl font-semibold tracking-tight">
@@ -46,7 +46,7 @@ export function UpgradeModal({ open, feature, onClose }: { open: boolean; featur
         <a href={site.discord} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
           Demander une invitation
         </a>
-        <Link href="/offres" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-accent/25 px-5 text-sm font-medium transition-colors hover:bg-accent/10">
+        <Link href="/offres" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-foreground/25 px-5 text-sm font-medium transition-colors hover:bg-foreground/10">
           Comment ça marche
         </Link>
       </div>
@@ -70,9 +70,9 @@ export default function Locked({ locked, feature, children, className = "" }: { 
         type="button"
         onClick={() => setOpen(true)}
         aria-label={`${feature ?? "Fonction"} : réservé aux abonnés`}
-        className="absolute inset-0 cursor-not-allowed rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+        className="absolute inset-0 cursor-not-allowed rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40"
       >
-        <span className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-accent/25 bg-background text-foreground/80">
+        <span className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-foreground/25 bg-background text-foreground/80">
           <LockIcon />
         </span>
       </button>

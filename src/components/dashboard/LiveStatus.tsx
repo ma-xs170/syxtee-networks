@@ -12,7 +12,7 @@ export type RelayLive = { id: string; name: string; live: boolean; reconnecting:
 export type LiveState = Omit<RelayLive, "id" | "name"> & { relay_id?: string | null; relays?: RelayLive[] };
 type Ctx = { state: LiveState | null; link: "off" | "connecting" | "ok" | "error"; coreUrl: string };
 
-const LiveContext = createContext<Ctx>({ state: null, link: "off", coreUrl: "" });
+export const LiveContext = createContext<Ctx>({ state: null, link: "off", coreUrl: "" });
 export const useLiveStatus = () => useContext(LiveContext);
 
 export function LiveStatusProvider({ coreUrl, children }: { coreUrl: string; children: ReactNode }) {

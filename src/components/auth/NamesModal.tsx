@@ -33,7 +33,7 @@ export default function NamesModal() {
             <button
               type="button"
               onClick={() => setAsked(true)}
-              className="h-9 whitespace-nowrap rounded-xl border border-accent/20 bg-accent/[0.08] px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent/[0.12]"
+              className="h-9 whitespace-nowrap rounded-xl border border-foreground/20 bg-foreground/[0.08] px-4 text-sm font-medium text-foreground transition-colors hover:bg-foreground/[0.12]"
             >
               Compléter mon profil
             </button>
@@ -47,7 +47,7 @@ export default function NamesModal() {
           e.preventDefault();
           if (onAir) setAsked(false); // pendant un live, Échap referme la modale
         }}
-        className="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-accent/20 bg-[#0a0a0a] p-6 text-foreground backdrop:bg-background/80 sm:p-8"
+        className="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-foreground/20 bg-[#0a0a0a] p-6 text-foreground backdrop:bg-background/80 sm:p-8"
       >
         <h2 id="names-title" className="text-xl font-semibold tracking-tight">
           Comment tu t&apos;appelles ?

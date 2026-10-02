@@ -17,7 +17,7 @@ export default function FlowDiagram({ large = false }: { large?: boolean }) {
         <div key={label} className="flex flex-1 flex-col items-stretch gap-3 lg:flex-row lg:items-center">
           <div
             className={`flex-1 rounded-2xl border bg-gradient-to-b from-accent/[0.06] to-transparent text-center ${
-              i === 1 ? "border-accent/50" : "border-line"
+              i === 1 ? "border-foreground/50" : "border-line"
             } ${large ? "p-6 sm:p-8" : "p-5"}`}
           >
             <div className={`mx-auto ${large ? "h-44 sm:h-52" : "h-36"}`}>

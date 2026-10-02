@@ -192,7 +192,7 @@ export default function ProBento() {
               </div>
             </li>
           ))}
-          <li className="relative flex flex-col justify-end overflow-hidden rounded-2xl border border-accent/40 bg-accent/[0.08] p-6 md:col-span-2 lg:col-span-1">
+          <li className="relative flex flex-col justify-end overflow-hidden rounded-2xl border border-foreground/40 bg-foreground/[0.08] p-6 md:col-span-2 lg:col-span-1">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Le moins cher du marché</p>
             <p className="mt-4 text-6xl font-semibold tracking-tight tabular-nums sm:text-7xl">{pro.launchPrice}</p>
             <p className="mt-3 text-sm text-muted">Prix de lancement</p>

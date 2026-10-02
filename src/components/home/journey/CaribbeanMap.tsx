@@ -157,12 +157,12 @@ export default function CaribbeanMap({ draw, weak, time }: { draw: MotionValue<n
         <circle cx={gx} cy={gy} r={4} fill="#fff" stroke="none" />
         <circle cx={gx} cy={gy} r={10} strokeOpacity={0.5} className="wave-out" style={{ transformOrigin: `${gx}px ${gy}px` }} />
         <text x={gx - 12} y={gy + 26} textAnchor="middle" fill="var(--foreground)" stroke="none" className="font-mono text-[14px] lg:text-[11px]">
-          GUADELOUPE
+          TOI
         </text>
         <circle cx={nx} cy={ny} r={4} fill="#fff" stroke="none" />
         <circle cx={nx} cy={ny} r={3} fill="var(--live)" stroke="none" className="led-blink" />
         <text x={nx + 12} y={ny - 10} fill="var(--foreground)" stroke="none" className="font-mono text-[14px] lg:text-[11px]">
-          NEW YORK · RELAIS
+          SERVEUR RELAIS
         </text>
       </g>
 

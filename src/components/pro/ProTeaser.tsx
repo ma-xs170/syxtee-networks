@@ -76,7 +76,7 @@ export default function ProTeaser() {
           <div
             ref={(el) => void (ui.current.label = el)}
             style={{ opacity: 0 }}
-            className="pointer-events-none absolute left-0 top-0 whitespace-nowrap rounded-full border border-accent/35 bg-background/80 px-2.5 py-1 font-mono text-[10px] tracking-[0.14em] text-foreground sm:text-[11px]"
+            className="pointer-events-none absolute left-0 top-0 whitespace-nowrap rounded-full border border-foreground/35 bg-background/80 px-2.5 py-1 font-mono text-[10px] tracking-[0.14em] text-foreground sm:text-[11px]"
             aria-hidden="true"
           >
             <span ref={(el) => void (ui.current.labelText = el)} />
@@ -88,7 +88,7 @@ export default function ProTeaser() {
 
       {/* Effets « vidéo » : grain, ligne de scan, bandes cinéma (desktop), timecode */}
       <div className="teaser-grain pointer-events-none absolute" aria-hidden="true" />
-      {live && <div className="teaser-scan pointer-events-none absolute inset-x-0 top-0 h-px bg-accent/[0.12]" aria-hidden="true" />}
+      {live && <div className="teaser-scan pointer-events-none absolute inset-x-0 top-0 h-px bg-foreground/[0.12]" aria-hidden="true" />}
       <div className="pointer-events-none absolute inset-x-0 top-0 hidden h-[7%] bg-background lg:block" aria-hidden="true" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-[7%] bg-background lg:block" aria-hidden="true" />
 
@@ -103,7 +103,7 @@ export default function ProTeaser() {
       </span>
       <div className="absolute inset-x-0 bottom-0 pb-10 sm:pb-14 lg:pb-[calc(7%+2.5rem)]">
         <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-          <p className="inline-flex items-center rounded-full border border-line bg-accent/[0.08] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground sm:text-[11px]">
+          <p className="inline-flex items-center rounded-full border border-line bg-foreground/[0.08] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground sm:text-[11px]">
             Nouveau · Bientôt disponible
           </p>
           <h2 className="mt-5 text-5xl font-semibold leading-none tracking-tight sm:text-7xl">SYXTEE PRO</h2>

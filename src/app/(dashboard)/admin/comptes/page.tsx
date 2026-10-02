@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Admin · Comptes", robots: { index: 
 // Réservée à l'admin (404 sinon, TOTP obligatoire). Un ID support exact ouvre directement la fiche.
 
 const PER_PAGE = 50;
-const field = "h-10 rounded-full border border-line bg-background px-4 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/60";
+const field = "h-10 rounded-full border border-line bg-background px-4 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60";
 const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit", timeZone: "Europe/Paris" }) : "jamais");
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
 
@@ -107,7 +107,7 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
               </thead>
               <tbody className="divide-y divide-line" data-sensitive>
                 {rows.map((r) => (
-                  <tr key={r.id} className="hover:bg-accent/[0.08]">
+                  <tr key={r.id} className="hover:bg-foreground/[0.08]">
                     <td className="py-2.5 pr-4 font-mono text-xs">
                       <Link href={`/admin/comptes/${r.id}`} className="underline-offset-4 hover:underline">
                         {r.support_id}

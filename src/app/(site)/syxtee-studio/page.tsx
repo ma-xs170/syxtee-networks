@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import PageHero from "@/components/PageHero";
 import StudioWire from "@/components/illustrations/StudioWire";
+import StudioDemo from "@/components/studio/StudioDemo";
+import CloudBackdrop from "@/components/home/CloudBackdrop";
 import NextStep from "@/components/NextStep";
 import { Container } from "@/components/ui";
 import Highlight from "@/components/ui/Highlight";
@@ -11,6 +12,9 @@ export const metadata: Metadata = {
   description: "Une régie de diffusion dans ton navigateur : scènes, multiview, mixeur audio, secours automatique si l'image se fige et mode podcast qui suit la voix.",
   alternates: { canonical: "/syxtee-studio" },
 };
+
+const cta =
+  "inline-flex h-12 items-center justify-center gap-3 whitespace-nowrap rounded-xl px-7 text-base font-medium transition-[background-color,transform] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 
 const features = [
   { title: "Scènes et sources", text: "Tes relais SYXTEE, une webcam, un micro, une capture d'écran, des images, du texte. Tu déplaces tout à la souris, avec aperçu et programme comme sur OBS.", wide: true },
@@ -23,27 +27,31 @@ const features = [
 export default function StudioPage() {
   return (
     <>
-      <PageHero
-        kicker="Produit"
-        crumb="SYXTEE STUDIO"
-        title={
-          <>
-            Ta régie, <Highlight>dans le navigateur.</Highlight>
-          </>
-        }
-        actions={
-          <>
-            <Link href="/studio" className="btn btn-primary">
-              Ouvrir le studio
-            </Link>
-            <Link href="/offres" className="btn btn-secondary">
-              Demander une invitation
-            </Link>
-          </>
-        }
-      >
-        Un vrai studio de diffusion, sans OBS. Compose tes scènes, surveille tout dans un multiview, laisse le studio gérer les coupures.
-      </PageHero>
+      <section data-theme="light" className="relative -mt-[4.75rem] overflow-hidden border-b border-line bg-background text-foreground">
+        <CloudBackdrop />
+        <Container className="relative pb-16 pt-[8.5rem] sm:pb-24 sm:pt-[10rem]">
+          <div className="mx-auto max-w-3xl text-center">
+            <h1 className="rise h-hero">
+              Ta régie, <Highlight>dans le navigateur.</Highlight>
+            </h1>
+            <p className="rise mx-auto mt-6 max-w-xl text-base leading-relaxed text-foreground/75 sm:text-lg" style={{ "--i": 1 } as React.CSSProperties}>
+              Un vrai studio de diffusion, sans OBS. Compose tes scènes et laisse le studio gérer les coupures.
+            </p>
+            <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={{ "--i": 2 } as React.CSSProperties}>
+              <Link href="/studio" className={`${cta} bg-foreground text-background hover:bg-foreground/85`}>
+                Ouvrir le studio
+                <span aria-hidden="true">↗</span>
+              </Link>
+              <Link href="/offres" className={`${cta} border border-foreground/20 bg-background/60 text-foreground backdrop-blur-sm hover:bg-background/90`}>
+                Demander une invitation
+              </Link>
+            </div>
+          </div>
+          <div className="mx-auto mt-14 max-w-5xl">
+            <StudioDemo />
+          </div>
+        </Container>
+      </section>
 
       <section className="bg-field border-b border-line py-20">
         <Container className="grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">

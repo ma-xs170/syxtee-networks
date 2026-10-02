@@ -79,7 +79,7 @@ export function DataCenterBuilding() {
       ))}
       <g transform={m.front}>
         <text x={W / 2} y={-H - 8} textAnchor="middle" stroke="none" fill="var(--foreground)" fontSize={10} className="font-mono" letterSpacing="0.1em">
-          DATA CENTER · NYC
+          DATA CENTER
         </text>
       </g>
     </g>

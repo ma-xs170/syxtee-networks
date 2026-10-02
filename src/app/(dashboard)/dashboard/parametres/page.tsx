@@ -56,7 +56,7 @@ export default async function ParametresPage({ searchParams }: PageProps<"/dashb
             Connecté avec <span data-sensitive className="text-foreground">{user.email}</span>
           </p>
           <form action={signOut} className="mt-5">
-            <button type="submit" className="h-11 rounded-full border border-line px-5 text-sm font-medium transition-colors hover:bg-accent/10">
+            <button type="submit" className="h-11 rounded-full border border-line px-5 text-sm font-medium transition-colors hover:bg-foreground/10">
               Déconnexion
             </button>
           </form>

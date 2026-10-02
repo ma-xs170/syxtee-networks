@@ -88,7 +88,7 @@ function Banner({ tone = "neutral", children }: { tone?: "neutral" | "warn"; chi
   return (
     <div
       role="status"
-      className={`rounded-xl border px-4 py-3 text-sm leading-relaxed ${tone === "warn" ? "border-[#ff9f0a]/60 bg-[#ff9f0a]/10 text-[#ffd8a0]" : "border-line bg-accent/[0.08] text-foreground"}`}
+      className={`rounded-xl border px-4 py-3 text-sm leading-relaxed ${tone === "warn" ? "border-[#ff9f0a]/60 bg-[#ff9f0a]/10 text-[#ffd8a0]" : "border-line bg-foreground/[0.08] text-foreground"}`}
     >
       {children}
     </div>
@@ -397,7 +397,7 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
                 <p className="font-medium">Wi-Fi détecté : mesures non comptées</p>
                 <p className="mt-1 text-muted">Coupe le Wi-Fi pour scanner la 4G / 5G.</p>
                 {!ct && (
-                  <button type="button" onClick={wifiOff} className="mt-3 h-10 whitespace-nowrap rounded-full border border-line px-4 text-sm transition-colors hover:bg-accent/10 active:scale-[0.98]">
+                  <button type="button" onClick={wifiOff} className="mt-3 h-10 whitespace-nowrap rounded-full border border-line px-4 text-sm transition-colors hover:bg-foreground/10 active:scale-[0.98]">
                     C&apos;est fait, vérifier le réseau
                   </button>
                 )}
@@ -437,7 +437,7 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
             disabled={!net || consentOff || saving}
             onClick={() => (running ? stop() : start())}
             aria-pressed={running}
-            className="group relative grid aspect-square w-52 place-items-center rounded-full border border-accent/35 transition-transform active:scale-[0.98] disabled:opacity-50 sm:w-56"
+            className="group relative grid aspect-square w-52 place-items-center rounded-full border border-foreground/35 transition-transform active:scale-[0.98] disabled:opacity-50 sm:w-56"
           >
             {running && (
               <span
@@ -514,7 +514,7 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
           <ul className="pointer-events-none absolute bottom-3 left-3 flex flex-wrap gap-x-3 gap-y-1 rounded-lg border border-line bg-background/80 px-3 py-2 font-mono text-[11px] text-muted">
             {(["bonne", "moyenne", "mauvaise", "inconnue"] as Score[]).map((s) => (
               <li key={s} className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-sm border border-accent/50" style={{ background: SCORE_COLOR[s] }} aria-hidden="true" />
+                <span className="h-2.5 w-2.5 rounded-sm border border-foreground/50" style={{ background: SCORE_COLOR[s] }} aria-hidden="true" />
                 {s[0].toUpperCase() + s.slice(1)}
               </li>
             ))}
@@ -557,7 +557,7 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
                   type="button"
                   disabled={saving}
                   onClick={() => chooseOperator(o)}
-                  className={`h-14 rounded-xl border px-4 font-mono text-sm uppercase tracking-[0.12em] transition-colors hover:bg-accent/10 active:scale-[0.98] disabled:opacity-50 ${declared === o ? "border-accent" : "border-line"} ${o === "other" ? "col-span-2" : ""}`}
+                  className={`h-14 rounded-xl border px-4 font-mono text-sm uppercase tracking-[0.12em] transition-colors hover:bg-foreground/10 active:scale-[0.98] disabled:opacity-50 ${declared === o ? "border-accent" : "border-line"} ${o === "other" ? "col-span-2" : ""}`}
                 >
                   {DECLARED_LABELS[o]}
                 </button>
@@ -620,7 +620,7 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
               >
                 Voir sur la carte
               </Link>
-              <button type="button" onClick={() => setSummary(null)} className="h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-accent/10">
+              <button type="button" onClick={() => setSummary(null)} className="h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-foreground/10">
                 Fermer
               </button>
             </div>

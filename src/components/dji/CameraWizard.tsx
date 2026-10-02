@@ -40,9 +40,9 @@ const STABS: { v: Stabilization; l: string }[] = [
 ];
 
 const card = (on: boolean) =>
-  `relative flex cursor-pointer flex-col rounded-2xl border p-5 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent/60 ${on ? "border-accent bg-accent/[0.08]" : "border-line hover:bg-accent/[0.08]"}`;
+  `relative flex cursor-pointer flex-col rounded-2xl border p-5 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-foreground/60 ${on ? "border-accent bg-foreground/[0.08]" : "border-line hover:bg-foreground/[0.08]"}`;
 const primary = "h-11 whitespace-nowrap rounded-full bg-accent px-6 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40";
-const ghost = "h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-accent/10 disabled:opacity-40";
+const ghost = "h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-foreground/10 disabled:opacity-40";
 
 function Pills<T extends string | number>({ value, options, onChange, label }: { value: T; options: { v: T; l: string }[]; onChange: (v: T) => void; label: string }) {
   return (
@@ -54,7 +54,7 @@ function Pills<T extends string | number>({ value, options, onChange, label }: {
           role="radio"
           aria-checked={value === o.v}
           onClick={() => onChange(o.v)}
-          className={`h-9 whitespace-nowrap rounded-full border px-4 text-sm transition-colors ${value === o.v ? "border-accent bg-accent text-on-accent" : "border-line text-muted hover:bg-accent/10 hover:text-foreground"}`}
+          className={`h-9 whitespace-nowrap rounded-full border px-4 text-sm transition-colors ${value === o.v ? "border-accent bg-accent text-on-accent" : "border-line text-muted hover:bg-foreground/10 hover:text-foreground"}`}
         >
           {o.l}
         </button>
@@ -128,7 +128,7 @@ export default function CameraWizard({
           <h2 id="cam-wizard-title" className="text-xl font-semibold tracking-tight sm:text-2xl">
             {initial ? "Modifier la" : "Ajouter une"} caméra
           </h2>
-          <button type="button" onClick={onClose} className="h-10 rounded-full px-4 text-sm text-muted transition-colors hover:bg-accent/10 hover:text-foreground">
+          <button type="button" onClick={onClose} className="h-10 rounded-full px-4 text-sm text-muted transition-colors hover:bg-foreground/10 hover:text-foreground">
             Fermer
           </button>
         </div>
@@ -136,7 +136,7 @@ export default function CameraWizard({
         <ol className="mt-6 grid gap-2" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }} aria-label="Étapes">
           {steps.map(({ label }, i) => (
             <li key={label} aria-current={i === step ? "step" : undefined}>
-              <span className={`block h-1 rounded-full transition-colors motion-reduce:transition-none ${i <= step ? "bg-accent" : "bg-accent/20"}`} />
+              <span className={`block h-1 rounded-full transition-colors motion-reduce:transition-none ${i <= step ? "bg-accent" : "bg-foreground/20"}`} />
               <span className={`mt-2 block font-mono text-[11px] uppercase tracking-[0.12em] ${i === step ? "text-foreground" : "text-muted"}`}>
                 {i + 1} {label}
               </span>
@@ -166,7 +166,7 @@ export default function CameraWizard({
                 </div>
               </fieldset>
               {!gopro && (
-              <div className={`rounded-2xl border p-6 ${c.deviceId ? "border-accent bg-accent/[0.08]" : "border-line"}`}>
+              <div className={`rounded-2xl border p-6 ${c.deviceId ? "border-accent bg-foreground/[0.08]" : "border-line"}`}>
                 {c.deviceId ? (
                   <p className="flex flex-wrap items-center justify-between gap-3">
                     <span>
@@ -199,7 +199,7 @@ export default function CameraWizard({
                     onChange={(e) => set("name", e.target.value)}
                     maxLength={40}
                     placeholder={gopro ? "Ex. GoPro principale" : "Ex. Osmo principale"}
-                    className="h-12 w-full rounded-xl border border-line bg-background px-4 text-base placeholder:text-muted focus:border-accent/70 focus:outline-none"
+                    className="h-12 w-full rounded-xl border border-line bg-background px-4 text-base placeholder:text-muted focus:border-foreground/70 focus:outline-none"
                   />
                 </div>
                 <div className="space-y-2">
@@ -211,7 +211,7 @@ export default function CameraWizard({
                       id="wiz-model"
                       value={c.gopro ?? GOPRO_MODELS[0]}
                       onChange={(e) => set("gopro", e.target.value)}
-                      className="h-12 w-full rounded-xl border border-line bg-background px-4 text-base focus:border-accent/70 focus:outline-none"
+                      className="h-12 w-full rounded-xl border border-line bg-background px-4 text-base focus:border-foreground/70 focus:outline-none"
                     >
                       {GOPRO_MODELS.map((m) => (
                         <option key={m} value={m}>
@@ -224,7 +224,7 @@ export default function CameraWizard({
                       id="wiz-model"
                       value={c.model}
                       onChange={(e) => set("model", e.target.value as DjiModel)}
-                      className="h-12 w-full rounded-xl border border-line bg-background px-4 text-base focus:border-accent/70 focus:outline-none"
+                      className="h-12 w-full rounded-xl border border-line bg-background px-4 text-base focus:border-foreground/70 focus:outline-none"
                     >
                       {DJI_MODELS.map((m) => (
                         <option key={m.id} value={m.id}>
@@ -250,7 +250,7 @@ export default function CameraWizard({
                     <span className="mt-3 text-xs text-muted">{n.remember ? "Mot de passe mémorisé" : "Mot de passe demandé au lancement"}</span>
                   </label>
                 ))}
-                <button type="button" onClick={() => setNetOpen((k) => k + 1)} className="flex min-h-[112px] flex-col items-start justify-center rounded-2xl border border-dashed border-accent/35 p-5 text-left transition-colors hover:bg-accent/[0.08]">
+                <button type="button" onClick={() => setNetOpen((k) => k + 1)} className="flex min-h-[112px] flex-col items-start justify-center rounded-2xl border border-dashed border-foreground/35 p-5 text-left transition-colors hover:bg-foreground/[0.08]">
                   <span className="text-base font-medium">+ Nouveau réseau</span>
                   <span className="mt-1 text-xs text-muted">Partage de connexion ou Wi-Fi</span>
                 </button>
@@ -261,10 +261,10 @@ export default function CameraWizard({
           {id === "relay" && (
             <fieldset>
               <legend className="text-base text-muted">Vers quel relais RTMP ? Un relais = un flux à la fois.</legend>
-              <ul className="mt-4 divide-y divide-accent/10 rounded-2xl border border-line">
+              <ul className="mt-4 divide-y divide-foreground/10 rounded-2xl border border-line">
                 {relays.map((r) => (
                   <li key={r.id}>
-                    <label className="flex cursor-pointer items-center gap-4 px-4 py-3.5 hover:bg-accent/[0.08] sm:px-5">
+                    <label className="flex cursor-pointer items-center gap-4 px-4 py-3.5 hover:bg-foreground/[0.08] sm:px-5">
                       <input type="radio" name="wiz-relay" checked={c.relayId === r.id} onChange={() => set("relayId", r.id)} className="h-4 w-4 accent-accent" />
                       <span className="min-w-0 flex-1">
                         <span className="block text-sm font-medium">{r.name}</span>
@@ -307,7 +307,7 @@ export default function CameraWizard({
                       />
                       <span className="flex items-center justify-between gap-2 text-base font-medium">
                         {p.title}
-                        {p.id === "eco" && <span className="rounded border border-accent/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]">Conseillé</span>}
+                        {p.id === "eco" && <span className="rounded border border-foreground/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]">Conseillé</span>}
                       </span>
                       <span className="mt-2 text-xs leading-relaxed text-muted">{p.text}</span>
                     </label>

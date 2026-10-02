@@ -11,7 +11,7 @@ import { COUNTRIES } from "@/lib/auth/profileSchema";
 // Formulaire de profil : /bienvenue (première connexion, version courte) et /compte (complet).
 
 export const inputCls =
-  "h-12 w-full rounded-xl border border-accent/20 bg-accent/[0.08] px-4 text-[15px] text-foreground placeholder:text-foreground/35 transition-[border-color,box-shadow] focus:border-accent/40 focus:outline-none focus:ring-4 focus:ring-accent/[0.06]";
+  "h-12 w-full rounded-xl border border-foreground/20 bg-foreground/[0.08] px-4 text-[15px] text-foreground placeholder:text-foreground/35 transition-[border-color,box-shadow] focus:border-foreground/40 focus:outline-none focus:ring-4 focus:ring-foreground/[0.06]";
 
 function Icon({ icon }: { icon: SimpleIcon }) {
   return (
@@ -36,7 +36,7 @@ function Field({ id, label, hint, children }: { id: string; label: string; hint?
 function Social({ name, label, icon, value }: { name: string; label: string; icon: SimpleIcon; value: string }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-accent/20 text-foreground/70" title={label}>
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-foreground/20 text-foreground/70" title={label}>
         <Icon icon={icon} />
       </span>
       <label htmlFor={`social-${name}`} className="sr-only">
@@ -114,11 +114,11 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
         <legend className="mb-3 text-sm font-medium text-foreground/80">Réseaux sociaux</legend>
         {/* Twitch : uniquement via une connexion Twitch vérifiée */}
         <div className="flex items-center gap-3">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-accent/20 text-foreground/70" title="Twitch">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-foreground/20 text-foreground/70" title="Twitch">
             <Icon icon={siTwitch} />
           </span>
           {twitch ? (
-            <p className="flex h-12 flex-1 items-center rounded-xl border border-accent/20 bg-accent/[0.08] px-4 text-[15px] text-foreground">
+            <p className="flex h-12 flex-1 items-center rounded-xl border border-foreground/20 bg-foreground/[0.08] px-4 text-[15px] text-foreground">
               @{twitch}
               <span className="ml-auto text-xs text-foreground/50">Vérifié</span>
             </p>
@@ -127,7 +127,7 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
               type="submit"
               formAction={linkTwitch}
               formNoValidate
-              className="h-12 flex-1 rounded-xl border border-accent/20 bg-accent/[0.08] px-4 text-left text-sm font-medium text-foreground transition-colors hover:bg-accent/[0.12]"
+              className="h-12 flex-1 rounded-xl border border-foreground/20 bg-foreground/[0.08] px-4 text-left text-sm font-medium text-foreground transition-colors hover:bg-foreground/[0.12]"
             >
               Lier mon Twitch
             </button>
@@ -140,7 +140,7 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
         <Social name="x" label="X" icon={siX} value={v("x")} />
       </fieldset>
 
-      <label className={`flex items-start gap-3 rounded-xl border border-accent/20 p-4 ${twitch ? "cursor-pointer" : "opacity-60"}`}>
+      <label className={`flex items-start gap-3 rounded-xl border border-foreground/20 p-4 ${twitch ? "cursor-pointer" : "opacity-60"}`}>
         <input
           type="checkbox"
           name="show_on_site"
@@ -158,7 +158,7 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
         </span>
       </label>
 
-      <label className={`flex items-start gap-3 rounded-xl border border-accent/20 p-4 ${twitch ? "cursor-pointer" : "opacity-60"}`}>
+      <label className={`flex items-start gap-3 rounded-xl border border-foreground/20 p-4 ${twitch ? "cursor-pointer" : "opacity-60"}`}>
         <input
           type="checkbox"
           name="show_first_name"

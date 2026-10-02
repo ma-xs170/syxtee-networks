@@ -6,7 +6,7 @@ import { addNoteAction, cutRelayAction, deleteAccountAction, keysAction, suspend
 
 type Action = (prev: PlanState, form: FormData) => Promise<PlanState>;
 
-const field = "h-11 w-full rounded-xl border border-line bg-background px-4 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/60";
+const field = "h-11 w-full rounded-xl border border-line bg-background px-4 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60";
 const label = "font-mono text-xs uppercase tracking-[0.15em] text-muted";
 
 function Button({ children, danger = false, disabled = false }: { children: ReactNode; danger?: boolean; disabled?: boolean }) {
@@ -16,7 +16,7 @@ function Button({ children, danger = false, disabled = false }: { children: Reac
       type="submit"
       disabled={pending || disabled}
       className={`h-11 whitespace-nowrap rounded-full px-5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-        danger ? "border border-red-400/40 text-red-300 hover:bg-red-400/10" : "border border-line hover:bg-accent/10"
+        danger ? "border border-red-400/40 text-red-300 hover:bg-red-400/10" : "border border-line hover:bg-foreground/10"
       }`}
     >
       {pending ? "…" : children}

@@ -15,7 +15,7 @@ function Pending({ idle, busy, danger = false, disabled = false }: { idle: strin
       type="submit"
       disabled={pending || disabled}
       className={`h-11 rounded-xl px-5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-        danger ? "border border-red-400/40 text-red-300 hover:bg-red-400/10" : "border border-accent/20 bg-accent/[0.08] text-foreground hover:bg-accent/[0.12]"
+        danger ? "border border-red-400/40 text-red-300 hover:bg-red-400/10" : "border border-foreground/20 bg-foreground/[0.08] text-foreground hover:bg-foreground/[0.12]"
       }`}
     >
       {pending ? busy : idle}
@@ -104,9 +104,9 @@ export function AvatarForm({ url, initials }: { url: string | null; initials: st
   return (
     <form action={action} className="flex flex-wrap items-center gap-5">
       {url ? (
-        <Image src={url} alt="" width={64} height={64} className="h-16 w-16 rounded-full border border-accent/20 object-cover" />
+        <Image src={url} alt="" width={64} height={64} className="h-16 w-16 rounded-full border border-foreground/20 object-cover" />
       ) : (
-        <span className="flex h-16 w-16 items-center justify-center rounded-full border border-accent/20 font-mono text-xl uppercase text-foreground/70">{initials}</span>
+        <span className="flex h-16 w-16 items-center justify-center rounded-full border border-foreground/20 font-mono text-xl uppercase text-foreground/70">{initials}</span>
       )}
       <div className="space-y-2">
         <label className="block text-sm text-foreground/70">
@@ -116,7 +116,7 @@ export function AvatarForm({ url, initials }: { url: string | null; initials: st
             name="avatar"
             accept="image/jpeg,image/png,image/webp"
             required
-            className="text-sm text-foreground/60 file:mr-4 file:h-10 file:cursor-pointer file:rounded-xl file:border file:border-accent/20 file:bg-accent/[0.08] file:px-4 file:text-sm file:text-foreground hover:file:bg-accent/[0.12]"
+            className="text-sm text-foreground/60 file:mr-4 file:h-10 file:cursor-pointer file:rounded-xl file:border file:border-foreground/20 file:bg-foreground/[0.08] file:px-4 file:text-sm file:text-foreground hover:file:bg-foreground/[0.12]"
           />
         </label>
         <p className="text-xs text-foreground/45">JPG, PNG ou WebP, 2 Mo maximum.</p>

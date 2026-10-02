@@ -32,10 +32,10 @@ export default function PlanCards({ mode }: { mode: "signup" | "subscribe" }) {
         {TIERS.map((t) => {
           const c = CATALOG[t];
           return (
-            <div key={t} className={`flex flex-col rounded-2xl border p-6 ${c.featured ? "border-accent/60" : "border-line"}`}>
+            <div key={t} className={`flex flex-col rounded-2xl border p-6 ${c.featured ? "border-foreground/60" : "border-line"}`}>
               <p className="flex items-center justify-between gap-3">
                 <span className="font-mono text-xs uppercase tracking-[0.15em]">{c.name}</span>
-                {c.featured && <span className="rounded border border-accent/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]">Recommandé</span>}
+                {c.featured && <span className="rounded border border-foreground/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]">Recommandé</span>}
               </p>
               <p className="mt-2 text-sm text-muted">{c.pitch}</p>
               <p className="mt-6 text-4xl font-semibold tracking-tight tabular-nums">{c.prices[interval].amount}</p>
@@ -57,7 +57,7 @@ export default function PlanCards({ mode }: { mode: "signup" | "subscribe" }) {
                   <Link
                     href="/inscription?next=/dashboard/abonnement"
                     className={`inline-flex h-11 w-full items-center justify-center whitespace-nowrap rounded-full px-5 text-sm font-medium transition-colors ${
-                      c.featured ? "bg-accent text-on-accent hover:bg-accent-hover" : "border border-line hover:bg-accent/10"
+                      c.featured ? "bg-accent text-on-accent hover:bg-accent-hover" : "border border-line hover:bg-foreground/10"
                     }`}
                   >
                     {`Choisir ${c.name}`}

@@ -3,7 +3,7 @@
 export default function FlowLine({ left, top }: { left: string; top: string }) {
   return (
     <>
-      <div className="absolute h-px w-[100vw] bg-accent/20" style={{ left, top }} />
+      <div className="absolute h-px w-[100vw] bg-foreground/20" style={{ left, top }} />
       <div className="flow-line absolute h-px w-[100vw]" style={{ left, top }} />
     </>
   );

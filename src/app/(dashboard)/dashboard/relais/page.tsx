@@ -37,7 +37,7 @@ export default async function RelaisPage({ searchParams }: PageProps<"/dashboard
         </>
       ) : (
         <>
-          <h1 className="mb-8 h-section">Mes relais</h1>
+          <h1 className="mb-8 text-2xl font-semibold tracking-tight sm:text-3xl">Mes relais</h1>
           <p className="text-sm text-muted">
             {coreStatusText[status]}
           </p>

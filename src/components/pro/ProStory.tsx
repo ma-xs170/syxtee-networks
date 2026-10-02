@@ -14,7 +14,7 @@ import ProStage from "./ProStage";
 
 export function SoonBadge() {
   return (
-    <p className="mb-3 inline-flex items-center rounded-full sm:mb-5 border border-line bg-accent/[0.08] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground">
+    <p className="mb-3 inline-flex items-center rounded-full sm:mb-5 border border-line bg-foreground/[0.08] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground">
       Bientôt disponible
     </p>
   );

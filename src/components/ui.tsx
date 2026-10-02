@@ -64,7 +64,7 @@ export function CreateRelayLink({ size = "md" }: { size?: "md" | "sm" }) {
       href={CREATE_RELAY_HREF}
       className={`btn btn-primary ${size === "sm" ? "btn-sm" : ""}`}
     >
-      Créer mon compte
+      Commencer
     </Link>
   );
 }

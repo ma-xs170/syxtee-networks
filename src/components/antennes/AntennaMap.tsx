@@ -45,7 +45,7 @@ function Chip({ on, onClick, children, color }: { on: boolean; onClick: () => vo
       aria-pressed={on}
       onClick={onClick}
       className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-colors ${
-        on ? "border-accent/40 bg-accent/[0.12] text-foreground" : "border-line text-muted hover:text-foreground"
+        on ? "border-foreground/40 bg-foreground/[0.12] text-foreground" : "border-line text-muted hover:text-foreground"
       }`}
     >
       {color && <span className="h-2.5 w-2.5 rounded-full" style={{ background: color, opacity: on ? 1 : 0.35 }} aria-hidden="true" />}
@@ -201,7 +201,7 @@ export default function AntennaMap() {
             id="territoire"
             value={territory}
             onChange={(e) => selectTerritory(e.target.value as TerritoryId)}
-            className="mt-2 h-11 w-full appearance-none rounded-xl border border-accent/20 bg-accent/[0.08] px-4 text-sm text-foreground focus:border-accent/40 focus:outline-none"
+            className="mt-2 h-11 w-full appearance-none rounded-xl border border-foreground/20 bg-foreground/[0.08] px-4 text-sm text-foreground focus:border-foreground/40 focus:outline-none"
           >
             {TERRITORIES.map((t) => (
               <option key={t.id} value={t.id}>

@@ -10,7 +10,7 @@ export default function StoryProgress({ p, ranges }: { p: MotionValue<number>; r
   useMotionValueEvent(p, "change", (v) => setActive(activeScene(v, ranges)));
   return (
     <div className="pointer-events-none absolute bottom-6 right-4 z-10 flex gap-3 sm:right-6 lg:bottom-10 lg:right-8" aria-hidden="true">
-      <div className="relative w-px bg-accent/20">
+      <div className="relative w-px bg-foreground/20">
         <motion.div className="absolute inset-0 origin-top bg-accent" style={{ scaleY: p }} />
       </div>
       <ol className="flex flex-col gap-5 font-mono text-xs">

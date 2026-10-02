@@ -37,7 +37,7 @@ const scenes: StoryScene[] = [
         href={APP_STORE}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center justify-center gap-2 rounded-full border border-line px-5 py-3 text-sm font-medium transition-colors hover:bg-accent/10"
+        className="inline-flex items-center justify-center gap-2 rounded-full border border-line px-5 py-3 text-sm font-medium transition-colors hover:bg-foreground/10"
       >
         Télécharger sur l&apos;App Store <span aria-hidden="true">↗</span>
       </a>
@@ -59,7 +59,7 @@ const scenes: StoryScene[] = [
     footer: (
       <a
         href="#tutoriel"
-        className="inline-flex items-center justify-center gap-2 rounded-full border border-line px-5 py-3 text-sm font-medium transition-colors hover:bg-accent/10"
+        className="inline-flex items-center justify-center gap-2 rounded-full border border-line px-5 py-3 text-sm font-medium transition-colors hover:bg-foreground/10"
       >
         Configurer pas à pas <span aria-hidden="true">↓</span>
       </a>

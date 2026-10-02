@@ -19,11 +19,11 @@ const list: Variants = { show: { transition: { staggerChildren: 0.05 } } };
 const item: Variants = { hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } } };
 
 export const fieldCls =
-  "h-[52px] w-full rounded-xl border border-accent/20 bg-accent/[0.08] px-4 text-[15px] text-foreground placeholder:text-foreground/35 transition-[border-color,box-shadow] focus:border-accent/40 focus:outline-none focus:ring-4 focus:ring-accent/[0.06]";
+  "h-[52px] w-full rounded-xl border border-foreground/20 bg-foreground/[0.08] px-4 text-[15px] text-foreground placeholder:text-foreground/35 transition-[border-color,box-shadow] focus:border-foreground/40 focus:outline-none focus:ring-4 focus:ring-foreground/[0.06]";
 
 export function LogoTile() {
   return (
-    <motion.div variants={item} className="mx-auto flex h-12 w-12 items-center justify-center rounded-[14px] border border-accent/20 bg-[#0a0a0a] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-8px_16px_rgba(0,0,0,0.6)]">
+    <motion.div variants={item} className="mx-auto flex h-12 w-12 items-center justify-center rounded-[14px] border border-foreground/20 bg-[#0a0a0a] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-8px_16px_rgba(0,0,0,0.6)]">
       <Image src="/logo-400.png" alt="SYXTEE" width={18} height={25} priority />
     </motion.div>
   );
@@ -66,7 +66,7 @@ function Submit({ idle, busy, disabled = false }: { idle: string; busy: string; 
     <button
       type="submit"
       disabled={disabled || pending}
-      className="h-12 w-full whitespace-nowrap rounded-xl bg-accent text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-accent/20 disabled:text-foreground/35"
+      className="h-12 w-full whitespace-nowrap rounded-xl bg-accent text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-foreground/20 disabled:text-foreground/35"
     >
       {pending ? busy : idle}
     </button>
@@ -114,7 +114,7 @@ export function PasswordInput({ id, name, label, autoComplete, value, onChange, 
           type="button"
           onClick={() => setShown((s) => !s)}
           aria-pressed={shown}
-          className="absolute right-2 top-1/2 h-9 -translate-y-1/2 rounded-lg px-3 text-xs font-medium text-foreground/60 transition-colors hover:bg-accent/[0.12] hover:text-foreground"
+          className="absolute right-2 top-1/2 h-9 -translate-y-1/2 rounded-lg px-3 text-xs font-medium text-foreground/60 transition-colors hover:bg-foreground/[0.12] hover:text-foreground"
         >
           {shown ? "Masquer" : "Afficher"}
         </button>
@@ -123,7 +123,7 @@ export function PasswordInput({ id, name, label, autoComplete, value, onChange, 
         <div id={hintId} className="space-y-1.5" aria-live="polite">
           <div className="grid grid-cols-3 gap-1.5" aria-hidden="true">
             {[0, 1, 2].map((i) => (
-              <span key={i} className={`h-1 rounded-full transition-colors ${value && i <= strength ? (strength === 0 ? "bg-accent/20" : strength === 1 ? "bg-accent/20" : "bg-accent") : "bg-accent/20"}`} />
+              <span key={i} className={`h-1 rounded-full transition-colors ${value && i <= strength ? (strength === 0 ? "bg-foreground/20" : strength === 1 ? "bg-foreground/20" : "bg-accent") : "bg-foreground/20"}`} />
             ))}
           </div>
           <p className="text-xs text-foreground/50">
@@ -154,7 +154,7 @@ function ResendButton({ at }: { at: number }) {
     <button
       type="submit"
       disabled={left > 0 || pending}
-      className="h-12 w-full rounded-xl border border-accent/20 bg-accent/[0.08] text-sm font-medium text-foreground transition-colors hover:bg-accent/[0.12] disabled:cursor-not-allowed disabled:text-foreground/40 disabled:hover:bg-accent/[0.08]"
+      className="h-12 w-full rounded-xl border border-foreground/20 bg-foreground/[0.08] text-sm font-medium text-foreground transition-colors hover:bg-foreground/[0.12] disabled:cursor-not-allowed disabled:text-foreground/40 disabled:hover:bg-foreground/[0.08]"
     >
       <span className="tabular-nums">{pending ? "Envoi…" : left > 0 ? `Renvoyer l'email (${left} s)` : "Renvoyer l'email"}</span>
     </button>
@@ -258,7 +258,7 @@ export function SignInCard({ next = "", error }: { next?: string; error?: string
         </motion.div>
       )}
 
-      <motion.p variants={item} className="mt-10 rounded-xl border border-accent/20 bg-accent/[0.08] p-4 text-center text-xs leading-relaxed text-foreground/55">
+      <motion.p variants={item} className="mt-10 rounded-xl border border-foreground/20 bg-foreground/[0.08] p-4 text-center text-xs leading-relaxed text-foreground/55">
         Compte créé avec Twitch, Discord, Google ou un lien par email ?{" "}
         <Link href={`/mot-de-passe-oublie${email ? `?email=${encodeURIComponent(email)}` : ""}`} className="font-medium text-foreground hover:underline">
           Définis ton mot de passe

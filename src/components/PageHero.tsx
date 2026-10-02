@@ -28,7 +28,7 @@ export default function PageHero({
           </ol>
         </nav>
 
-        <p className="label-mono mt-10 inline-flex rounded-full border border-line bg-accent/[0.08] px-3 py-1">{kicker}</p>
+        <p className="label-mono mt-10 inline-flex rounded-full border border-line bg-foreground/[0.08] px-3 py-1">{kicker}</p>
         <h1 className="rise h-hero mt-5 max-w-4xl" style={{ "--i": 1 } as React.CSSProperties}>
           {title}
         </h1>

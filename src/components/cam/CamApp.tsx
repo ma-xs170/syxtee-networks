@@ -544,7 +544,7 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
           {torch === null ? <span className="text-white/40">TORCHE</span> : "TORCHE"}
         </Pill>
         <Pill active={rec} onClick={toggleRec} label="Enregistrer sur le téléphone">
-          <span className={`h-2 w-2 rounded-full ${rec ? "bg-live" : "bg-accent/20"}`} /> REC
+          <span className={`h-2 w-2 rounded-full ${rec ? "bg-live" : "bg-foreground/20"}`} /> REC
         </Pill>
         <button
           type="button"
@@ -567,7 +567,7 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
       {/* Réglages */}
       {showSettings && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/75 p-4" role="dialog" aria-label="Réglages">
-          <div className="max-h-full w-full max-w-md overflow-y-auto rounded-2xl border border-accent/20 bg-black p-5">
+          <div className="max-h-full w-full max-w-md overflow-y-auto rounded-2xl border border-foreground/20 bg-black p-5">
             <div className="flex items-center justify-between">
               <p className="font-mono text-xs tracking-[0.18em]">RÉGLAGES</p>
               <button type="button" onClick={() => setShowSettings(false)} className="text-white/60" aria-label="Fermer">
@@ -606,7 +606,7 @@ export default function CamApp({ coreUrl }: { coreUrl: string }) {
               </label>
             </div>
             {/* Le scan de couverture a quitté SYXTEE Cam : il vit dans le Scanner réseau du dashboard. */}
-            <a href="/dashboard/scanner" className="mt-5 flex h-11 w-full items-center justify-center rounded-full border border-accent/30 text-sm">
+            <a href="/dashboard/scanner" className="mt-5 flex h-11 w-full items-center justify-center rounded-full border border-foreground/30 text-sm">
               Scanner réseau (carte de couverture)
             </a>
             <p className="mt-5 text-xs leading-relaxed text-white/50">

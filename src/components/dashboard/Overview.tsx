@@ -15,11 +15,9 @@ import {
 } from "@/lib/dashboard-data";
 import PhoneMoblin from "../illustrations/PhoneMoblin";
 import { DailyBars, Sparkline } from "./charts";
-import { DashIllustration } from "./DashArt";
 import { useLiveClock, useLiveStatus } from "./LiveStatus";
 import MaskedUrl from "./MaskedUrl";
 import LiveNow from "./LiveNow";
-import MiniHealth from "./MiniHealth";
 import { SessionList } from "./sessions";
 import { ArrowLink, Tile, TileLabel } from "./ui";
 
@@ -39,7 +37,7 @@ function StatusBanner({ data, onLaunch }: { data: OverviewData; onLaunch: () => 
       aria-label="Statut du direct"
       className={`flex flex-col gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 ${live || reconnecting ? "border-live/40" : "border-line"}`}
     >
-      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-sm uppercase tracking-[0.12em]" aria-live="polite">
+      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium" aria-live="polite">
         {live || reconnecting ? (
           <>
             <span className="live-dot" aria-hidden="true" />
@@ -155,7 +153,7 @@ function Delta({ current, previous }: { current: number; previous: number }) {
 
 function Kpi({ label, value, children }: { label: string; value: string; children: ReactNode }) {
   return (
-    <div className="bg-background p-4">
+    <div className="bg-surface p-4">
       <p className="text-xs text-muted">{label}</p>
       <p className="mt-1.5 font-mono text-2xl tabular-nums tracking-tight text-foreground">{value}</p>
       {children}
@@ -339,10 +337,10 @@ function Urls({ data }: { data: OverviewData }) {
 }
 
 const shortcuts = [
-  { label: "Scanner", href: "/dashboard/scanner" },
+  { label: "SYXTEE Studio", href: "/studio" },
   { label: "Mes relais", href: "/dashboard/relais" },
+  { label: "Scanner réseau", href: "/dashboard/scanner" },
   { label: "Statistiques", href: "/dashboard/stats" },
-  { label: "Historique", href: "/dashboard/lives" },
 ];
 
 function GoTo() {
@@ -354,7 +352,7 @@ function GoTo() {
           <li key={s.href}>
             <Link
               href={s.href}
-              className="flex h-full items-center justify-between gap-2 rounded-xl border border-line px-3 py-3 text-sm text-muted transition-colors hover:bg-accent/10 hover:text-foreground"
+              className="flex h-full items-center justify-between gap-2 rounded-xl border border-line px-3 py-3 text-sm text-muted transition-colors hover:bg-foreground/10 hover:text-foreground"
             >
               {s.label}
               <span aria-hidden="true">→</span>
@@ -401,44 +399,10 @@ export default function Overview({ initial }: { initial: OverviewData }) {
       <LaunchGuide open={guide} onClose={() => setGuide(false)} keys={data.keys} />
       <LiveNow sources={data.sources} />
 
-      <a
-        href="/studio"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="group flex items-center justify-between gap-4 rounded-2xl border border-line p-5 transition-colors hover:border-accent/35 hover:bg-accent/[0.08] sm:p-6"
-      >
-        <span>
-          <span className="block text-2xl font-semibold tracking-tight">SYXTEE STUDIO</span>
-          <span className="mt-1 block text-sm text-muted">Ta régie dans le navigateur : scènes, multiview, secours automatique et mode podcast.</span>
-        </span>
-        <span aria-hidden="true" className="text-xl transition-transform group-hover:translate-x-1 motion-reduce:transition-none">
-          →
-        </span>
-      </a>
-
-      <Link
-        href="/dashboard/scanner"
-        className="group grid items-center gap-4 overflow-hidden rounded-2xl border border-line p-5 transition-colors hover:border-accent/35 hover:bg-accent/[0.08] sm:grid-cols-[minmax(0,1fr)_160px] sm:p-6"
-      >
-        <span>
-          <span className="block text-2xl font-semibold tracking-tight">Scanner réseau</span>
-          <span className="mt-1 block text-sm text-muted">Mesure la 4G / 5G là où tu es et fais avancer la carte communautaire.</span>
-          <span className="mt-4 inline-flex items-center gap-2 text-sm text-foreground">
-            Scanner
-            <span aria-hidden="true" className="transition-transform group-hover:translate-x-1 motion-reduce:transition-none">
-              →
-            </span>
-          </span>
-        </span>
-        <span className="hidden h-28 sm:block">
-          <DashIllustration icon="scan" />
-        </span>
-      </Link>
-
       <Tile aria-labelledby="attention" className="py-4 sm:py-5">
         <TileLabel id="attention">Ce qui demande ton attention</TileLabel>
         {data.alerts.length ? (
-          <ul className="mt-3 divide-y divide-accent/10">
+          <ul className="mt-3 divide-y divide-foreground/10">
             {data.alerts.map((a) => (
               <li key={a.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
                 <p className="text-sm text-foreground">{a.text}</p>
@@ -483,30 +447,11 @@ export default function Overview({ initial }: { initial: OverviewData }) {
           ) : (
             <Onboarding keys={data.keys} />
           )}
-          <Link
-            href="/dashboard/stats"
-            className="group grid items-center gap-6 overflow-hidden rounded-2xl border border-line p-5 transition-colors hover:border-accent/35 hover:bg-accent/[0.08] sm:grid-cols-[minmax(0,1fr)_200px] sm:p-6"
-          >
-            <span>
-              <span className="block text-2xl font-semibold tracking-tight sm:text-3xl">Découvrir tes statistiques</span>
-              <span className="mt-2 block text-sm text-muted">Durées, débit, coupures : tes directs sur 7 et 30 jours.</span>
-              <span className="mt-5 inline-flex items-center gap-2 text-sm text-foreground">
-                Ouvrir
-                <span aria-hidden="true" className="transition-transform group-hover:translate-x-1 motion-reduce:transition-none">
-                  →
-                </span>
-              </span>
-            </span>
-            <span className="hidden h-36 sm:block">
-              <DashIllustration icon="stats" />
-            </span>
-          </Link>
         </div>
 
         <div className="space-y-4">
           <Subscription data={data} />
           <Urls data={data} />
-          <MiniHealth />
           <GoTo />
         </div>
       </div>

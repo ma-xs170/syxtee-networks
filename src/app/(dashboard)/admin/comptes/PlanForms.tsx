@@ -5,7 +5,7 @@ import { useFormStatus } from "react-dom";
 import { ASSIGNABLE, PLANS, type PlanId } from "@/lib/plans";
 import { offerDaysAction, setPlanAction, type PlanState } from "./actions";
 
-const field = "h-11 w-full rounded-xl border border-line bg-background px-4 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/60";
+const field = "h-11 w-full rounded-xl border border-line bg-background px-4 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60";
 const label = "font-mono text-xs uppercase tracking-[0.15em] text-muted";
 
 function Submit({ idle }: { idle: string }) {

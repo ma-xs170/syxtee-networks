@@ -209,7 +209,7 @@ export default function MoblinPage() {
         <Container>
           <Link
             href="/saily"
-            className="group grid items-center gap-6 rounded-3xl border border-line bg-gradient-to-b from-accent/[0.06] to-transparent p-6 transition-colors hover:bg-accent/[0.08] sm:grid-cols-[auto_1fr_auto] sm:p-8"
+            className="group grid items-center gap-6 rounded-3xl border border-line bg-gradient-to-b from-accent/[0.06] to-transparent p-6 transition-colors hover:bg-foreground/[0.08] sm:grid-cols-[auto_1fr_auto] sm:p-8"
           >
             <span className="mx-auto h-32 w-28 transition-transform duration-300 group-hover:-translate-y-1 sm:mx-0">
               <PhoneAndroid screen="moblink" />
@@ -248,7 +248,7 @@ export default function MoblinPage() {
 
       <section className="py-20 sm:py-24">
         <Container>
-          <aside className="rounded-2xl border border-line bg-accent/[0.08] p-8">
+          <aside className="rounded-2xl border border-line bg-foreground/[0.08] p-8">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Android</p>
             <h2 className="mt-4 text-2xl font-semibold tracking-tight">Sur Android ?</h2>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">

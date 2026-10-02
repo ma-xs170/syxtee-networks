@@ -15,7 +15,7 @@ const STEPS: { id: string; title: string; text: string }[] = [
 
 function Choice({ name, note, selected }: { name: string; note?: string; selected?: boolean }) {
   return (
-    <div className={`rounded-xl border p-4 ${selected ? "border-accent/60 bg-accent/[0.12]" : "border-line"}`}>
+    <div className={`rounded-xl border p-4 ${selected ? "border-foreground/60 bg-foreground/[0.12]" : "border-line"}`}>
       <p className="flex items-center justify-between gap-3 text-sm font-medium">
         {name}
         {note && <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{note}</span>}
@@ -27,7 +27,7 @@ function Choice({ name, note, selected }: { name: string; note?: string; selecte
 const PANES: Record<string, ReactNode> = {
   protocole: (
     <div className="grid gap-3 sm:grid-cols-2">
-      <div className="rounded-xl border border-accent/60 bg-accent/[0.12] p-4">
+      <div className="rounded-xl border border-foreground/60 bg-foreground/[0.12] p-4">
         <p className="flex items-center justify-between gap-3 text-sm font-medium">
           SRTLA
           <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">Recommandé</span>
@@ -58,7 +58,7 @@ const PANES: Record<string, ReactNode> = {
     <div>
       <ul className="grid gap-2">
         {RELAY_SERVERS.slice(0, 5).map((s) => (
-          <li key={s.id} className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm ${s.available ? "border-accent/60 bg-accent/[0.12]" : "border-line text-muted"}`}>
+          <li key={s.id} className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm ${s.available ? "border-foreground/60 bg-foreground/[0.12]" : "border-line text-muted"}`}>
             <span className={`h-2 w-2 shrink-0 rounded-full ${s.available ? "bg-emerald-400" : "bg-muted"}`} aria-hidden="true" />
             <span className="font-medium text-foreground">{s.city}</span>
             <span className="font-mono text-[11px] uppercase tracking-[0.12em]">{s.cc}</span>
@@ -90,7 +90,7 @@ export default function CreateSteps() {
                 type="button"
                 aria-pressed={step === s.id}
                 onClick={() => setStep(s.id)}
-                className={`flex gap-4 rounded-2xl border p-5 text-left transition-colors ${step === s.id ? "border-accent/50 bg-accent/[0.08]" : "border-line hover:bg-accent/[0.08]"}`}
+                className={`flex gap-4 rounded-2xl border p-5 text-left transition-colors ${step === s.id ? "border-foreground/50 bg-foreground/[0.08]" : "border-line hover:bg-foreground/[0.08]"}`}
               >
                 <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border font-mono text-sm ${step === s.id ? "border-accent bg-accent text-on-accent" : "border-line text-muted"}`}>{i + 1}</span>
                 <span>

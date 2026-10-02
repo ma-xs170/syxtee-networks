@@ -32,7 +32,7 @@ export default function RelayGrid() {
         href={site.discord}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex flex-col justify-between rounded-2xl border border-dashed border-line p-6 transition-colors hover:bg-accent/[0.08]"
+        className="flex flex-col justify-between rounded-2xl border border-dashed border-line p-6 transition-colors hover:bg-foreground/[0.08]"
       >
         <p className="text-lg font-semibold text-muted">Ta région ?</p>
         <p className="mt-6 text-sm text-muted">

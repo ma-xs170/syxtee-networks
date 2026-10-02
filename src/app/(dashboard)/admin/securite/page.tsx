@@ -100,7 +100,7 @@ export default async function AdminSecuritePage({ searchParams }: { searchParams
                       </div>
                       <form action={unbanAction}>
                         <input type="hidden" name="ip" value={b.ip} />
-                        <button type="submit" className="h-9 whitespace-nowrap rounded-full border border-line px-4 text-sm transition-colors hover:bg-accent/10">
+                        <button type="submit" className="h-9 whitespace-nowrap rounded-full border border-line px-4 text-sm transition-colors hover:bg-foreground/10">
                           Débannir
                         </button>
                       </form>

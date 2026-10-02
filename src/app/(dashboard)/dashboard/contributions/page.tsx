@@ -36,7 +36,7 @@ export default async function ContributionsPage() {
           <TileLabel
             right={
               contributor ? (
-                <span className="rounded-full border border-accent/50 px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.14em] text-foreground">Contributeur</span>
+                <span className="rounded-full border border-foreground/50 px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.14em] text-foreground">Contributeur</span>
               ) : null
             }
           >

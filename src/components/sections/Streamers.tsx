@@ -25,7 +25,7 @@ function StreamerCard({ streamer, hidden = false }: { streamer: HomeStreamer; hi
       rel="noopener noreferrer"
       tabIndex={hidden ? -1 : undefined}
       aria-hidden={hidden || undefined}
-      className={`flex w-[260px] items-center gap-4 rounded-2xl border bg-background p-4 transition-colors hover:bg-accent/10 ${live ? "border-live/50" : "border-line"}`}
+      className={`flex w-[260px] items-center gap-4 rounded-2xl border bg-background p-4 transition-colors hover:bg-foreground/10 ${live ? "border-live/50" : "border-line"}`}
     >
       <span className="relative">
         <StreamerAvatar s={streamer} />
@@ -37,7 +37,7 @@ function StreamerCard({ streamer, hidden = false }: { streamer: HomeStreamer; hi
           {streamer.firstName && <span className="font-sans text-muted"> · {streamer.firstName}</span>}
         </span>
         {streamer.partner && (
-          <span className="mt-1 inline-block rounded border border-accent/30 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.14em] text-foreground">PARTENAIRE</span>
+          <span className="mt-1 inline-block rounded border border-foreground/30 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.14em] text-foreground">PARTENAIRE</span>
         )}
         {live ? (
           <span className="mt-1 flex items-center gap-2 text-sm">

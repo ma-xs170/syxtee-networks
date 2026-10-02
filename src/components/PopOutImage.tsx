@@ -92,7 +92,7 @@ export function PopOutArt({
   return (
     <PopOutParallax>
       <div className="relative h-full w-full">
-        <div className="absolute inset-[15%] rounded-full bg-accent/10 blur-3xl" aria-hidden="true" />
+        <div className="absolute inset-[15%] rounded-full bg-foreground/10 blur-3xl" aria-hidden="true" />
         <div className="relative h-full w-full drop-shadow-[0_30px_40px_var(--shadow-pop)]">
           {art ? (
             art

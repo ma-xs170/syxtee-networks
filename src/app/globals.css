@@ -3,60 +3,60 @@
 :root,
 [data-theme="dark"] {
   color-scheme: dark;
-  --background: #0e0e11;
-  --foreground: #f5f5f5;
-  --muted: #9a9aa3;
-  --line: rgba(255, 255, 255, 0.09);
-  --line-strong: rgba(255, 255, 255, 0.18);
-  --surface: #141418;
-  --surface-2: #1b1b20;
-  --accent: #ffffff;
-  --accent-hover: #e5e5e5;
-  --on-accent: #0e0e11;
+  --background: #15171c;
+  --foreground: #f2f3f5;
+  --muted: #9aa0ab;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --surface: #1b1e24;
+  --surface-2: #23262d;
+  --accent: #d92d2d;
+  --accent-hover: #c42525;
+  --on-accent: #ffffff;
   --live: #ff3b30;
   --img-filter: none;
   --img-filter-rev: invert(1);
   --shadow-pop: rgba(0, 0, 0, 0.9);
-  --glow: rgba(255, 255, 255, 0.25);
+  --glow: rgba(217, 45, 45, 0.28);
 }
 
 /* Clair : explicite, ou automatique quand le système est en clair et qu'aucun choix n'est mémorisé. */
 [data-theme="light"] {
   color-scheme: light;
-  --background: #fafafa;
-  --foreground: #0a0a0a;
-  --muted: #5c5c5c;
-  --line: rgba(0, 0, 0, 0.12);
-  --line-strong: rgba(0, 0, 0, 0.25);
-  --surface: #f0f0f0;
-  --surface-2: #e6e6e6;
-  --accent: #0a0a0a;
-  --accent-hover: #2b2b2b;
-  --on-accent: #fafafa;
+  --background: #f4f5f7;
+  --foreground: #14161b;
+  --muted: #596070;
+  --line: rgba(20, 22, 27, 0.12);
+  --line-strong: rgba(20, 22, 27, 0.25);
+  --surface: #eceef1;
+  --surface-2: #e1e4e8;
+  --accent: #d92d2d;
+  --accent-hover: #c42525;
+  --on-accent: #ffffff;
   --live: #d92b20;
   --img-filter: invert(1);
   --img-filter-rev: none;
   --shadow-pop: rgba(0, 0, 0, 0.18);
-  --glow: rgba(0, 0, 0, 0.18);
+  --glow: rgba(217, 45, 45, 0.2);
 }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
     color-scheme: light;
-    --background: #fafafa;
-    --foreground: #0a0a0a;
-    --muted: #5c5c5c;
-    --line: rgba(0, 0, 0, 0.12);
-    --line-strong: rgba(0, 0, 0, 0.25);
-    --surface: #f0f0f0;
-    --surface-2: #e6e6e6;
-    --accent: #0a0a0a;
-    --accent-hover: #2b2b2b;
-    --on-accent: #fafafa;
+    --background: #f4f5f7;
+    --foreground: #14161b;
+    --muted: #596070;
+    --line: rgba(20, 22, 27, 0.12);
+    --line-strong: rgba(20, 22, 27, 0.25);
+    --surface: #eceef1;
+    --surface-2: #e1e4e8;
+    --accent: #d92d2d;
+    --accent-hover: #c42525;
+    --on-accent: #ffffff;
     --live: #d92b20;
     --img-filter: invert(1);
-  --img-filter-rev: none;
+    --img-filter-rev: none;
     --shadow-pop: rgba(0, 0, 0, 0.18);
-    --glow: rgba(0, 0, 0, 0.18);
+    --glow: rgba(217, 45, 45, 0.2);
   }
 }
 
@@ -72,8 +72,8 @@
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-line-strong: var(--line-strong);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 html {
@@ -91,7 +91,7 @@ li strong {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
 }
 
 ::selection {
@@ -107,6 +107,63 @@ body {
   background-size: 48px 48px;
   background-position: 50% 0;
   mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 40%, transparent 100%);
+}
+
+/* Capture plus haute que son cadre : elle défile jusqu'en bas, marque une pause, puis remonte. */
+@media (prefers-reduced-motion: no-preference) {
+  .fe-pan { animation: fe-pan 18s ease-in-out infinite; }
+}
+@keyframes fe-pan {
+  0%, 14% { transform: translateY(0); }
+  50%, 64% { transform: translateY(calc(var(--pan) * -1)); }
+  100% { transform: translateY(0); }
+}
+
+/* Nuages du hero (CloudBackdrop) : dérive très lente, transform seulement. */
+@media (prefers-reduced-motion: no-preference) {
+  .cloud-a { animation: cloud-a 18s ease-in-out infinite alternate; }
+  .cloud-b { animation: cloud-b 24s ease-in-out infinite alternate; }
+  .cloud-c { animation: cloud-c 21s ease-in-out infinite alternate; }
+  .aurora { animation: aurora 38s linear infinite; }
+}
+@keyframes aurora { from { transform: translateX(-50%) rotate(0deg); } to { transform: translateX(-50%) rotate(360deg); } }
+.aurora-mask { -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 92%); mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 92%); }
+@keyframes cloud-a { to { transform: translate3d(14%, 9%, 0) scale(1.14); } }
+@keyframes cloud-b { to { transform: translate3d(-13%, -8%, 0) scale(1.16); } }
+@keyframes cloud-c { to { transform: translate3d(10%, -10%, 0) scale(0.9); } }
+
+/* Barre de progression de la liste des fonctionnalités (accueil). */
+@keyframes fe-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Texte flouté qui se précise au survol (hero). Seulement avec une souris et sans « réduire les animations » :
+   sur écran tactile ou en mouvement réduit, le texte reste net en permanence. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .blur-reveal-text {
+    filter: blur(7px);
+    transition: filter 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .blur-reveal:hover .blur-reveal-text,
+  .blur-reveal:focus-within .blur-reveal-text,
+  .blur-reveal:focus-visible .blur-reveal-text {
+    filter: blur(0);
+  }
+}
+
+/* Trame de points façon impression : l'image grise est percée de points réguliers. */
+.halftone {
+  filter: grayscale(1) contrast(1.35) brightness(0.95);
+  -webkit-mask-image: radial-gradient(circle at center, #000 0 52%, transparent 58%);
+  mask-image: radial-gradient(circle at center, #000 0 52%, transparent 58%);
+  -webkit-mask-size: 4px 4px;
+  mask-size: 4px 4px;
+}
+/* Fondu vers le bas : la rangée de portraits disparaît dans la page. */
+.halftone-fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 35%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 35%, transparent 100%);
 }
 
 /* Point "live" qui pulse */
@@ -357,7 +414,7 @@ html[data-stream-mode="on"] [data-sensitive] {
 }
 @utility btn-sm { padding: 0 1rem; height: 2.25rem; }
 @utility label-mono {
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   font-size: 0.75rem;
   line-height: 1rem;
   text-transform: uppercase;
@@ -451,4 +508,35 @@ body::before {
     animation: reveal-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
     animation-delay: calc(var(--i, 0) * 90ms);
   }
+}
+
+
+/* ───── Site animé ─────
+   Chaque bloc du site (enfant direct d'une section de <main>) apparaît en montant quand il entre dans l'écran, par animation
+   liée au défilement (CSS pur, sans JavaScript ; ignoré par les navigateurs qui ne la gèrent pas). Les cartes se soulèvent au
+   survol, les boutons pleins brillent, les portraits du hero flottent. Tout est coupé en prefers-reduced-motion. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    main > section > :not(.no-reveal) {
+      animation: rv-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 45%;
+    }
+    @keyframes rv-up {
+      from { opacity: 0; transform: translateY(48px); filter: blur(6px); }
+      to { opacity: 1; transform: none; filter: none; }
+    }
+  }
+  .panel, .panel-lg { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s; }
+  .panel:hover, .panel-lg:hover { transform: translateY(-4px); }
+  .btn-primary { position: relative; overflow: hidden; }
+  .btn-primary::after {
+    content: ""; position: absolute; inset: 0; transform: translateX(-120%);
+    background: linear-gradient(105deg, transparent 30%, rgb(255 255 255 / 0.35) 50%, transparent 70%);
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none;
+  }
+  .btn-primary:hover::after { transform: translateX(120%); }
+  .float-slow { animation: float-slow 7s ease-in-out infinite alternate; }
+  .float-slow:nth-child(even) { animation-duration: 9s; animation-delay: -3s; }
+  @keyframes float-slow { from { transform: translateY(0); } to { transform: translateY(-14px); } }
 }

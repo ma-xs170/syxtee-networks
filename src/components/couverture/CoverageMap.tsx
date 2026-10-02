@@ -59,7 +59,7 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
       type="button"
       aria-pressed={on}
       onClick={onClick}
-      className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs transition-colors ${on ? "border-accent/50 bg-accent/[0.12] text-foreground" : "border-line text-muted hover:text-foreground"}`}
+      className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs transition-colors ${on ? "border-foreground/50 bg-foreground/[0.12] text-foreground" : "border-line text-muted hover:text-foreground"}`}
     >
       {children}
     </button>
@@ -357,7 +357,7 @@ export default function CoverageMap() {
               type="button"
               aria-pressed={on}
               onClick={toggle}
-              className={`h-9 rounded-full border px-4 text-xs backdrop-blur-sm transition-colors ${on ? "border-accent/50 bg-background/80 text-foreground" : "border-line bg-background/60 text-muted hover:text-foreground"}`}
+              className={`h-9 rounded-full border px-4 text-xs backdrop-blur-sm transition-colors ${on ? "border-foreground/50 bg-background/80 text-foreground" : "border-line bg-background/60 text-muted hover:text-foreground"}`}
             >
               {label}
             </button>
@@ -409,7 +409,7 @@ export default function CoverageMap() {
                       </span>
                       <span className="font-mono tabular-nums">{mbps(r.median_kbps)}</span>
                     </span>
-                    <span className="mt-1 block h-1.5 rounded-full bg-accent/20" style={{ width: `${((r.median_kbps ?? 0) / maxKbps) * 100}%` }} />
+                    <span className="mt-1 block h-1.5 rounded-full bg-foreground/20" style={{ width: `${((r.median_kbps ?? 0) / maxKbps) * 100}%` }} />
                   </li>
                 ))}
               </ul>
@@ -443,8 +443,8 @@ export default function CoverageMap() {
                   <ul className="mt-2 grid grid-cols-4 gap-2">
                     {HOURS.map((h, i) => (
                       <li key={h} className="text-center">
-                        <span className="flex h-10 items-end justify-center rounded-md bg-accent/[0.08]">
-                          <span className="w-3 rounded-sm bg-accent/20" style={{ height: `${(a.hours[i] / maxHour) * 100}%` }} />
+                        <span className="flex h-10 items-end justify-center rounded-md bg-foreground/[0.08]">
+                          <span className="w-3 rounded-sm bg-foreground/20" style={{ height: `${(a.hours[i] / maxHour) * 100}%` }} />
                         </span>
                         <span className="mt-1 block text-[10px] text-muted">{h}</span>
                       </li>
@@ -479,16 +479,16 @@ export default function CoverageMap() {
 
       <ul className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted" aria-label="Légende">
         <li className="flex items-center gap-2">
-          <span className="h-3 w-4 rounded-sm bg-accent/20" aria-hidden="true" /> Bonne (5 Mbit/s et plus)
+          <span className="h-3 w-4 rounded-sm bg-foreground/20" aria-hidden="true" /> Bonne (5 Mbit/s et plus)
         </li>
         <li className="flex items-center gap-2">
           <span className="h-3 w-4 rounded-sm bg-[#8a8a8a]/70" aria-hidden="true" /> Moyenne (2 à 5 Mbit/s)
         </li>
         <li className="flex items-center gap-2">
-          <span className="h-3 w-4 rounded-sm border border-accent/50 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.7)_0_1.5px,transparent_1.5px_5px)]" aria-hidden="true" /> Mauvaise (moins de 2 Mbit/s ou pertes)
+          <span className="h-3 w-4 rounded-sm border border-foreground/50 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.7)_0_1.5px,transparent_1.5px_5px)]" aria-hidden="true" /> Mauvaise (moins de 2 Mbit/s ou pertes)
         </li>
         <li className="flex items-center gap-2">
-          <span className="h-3 w-4 rounded-sm border border-dashed border-accent/80 bg-accent/20" aria-hidden="true" /> Estimation (1 contributeur)
+          <span className="h-3 w-4 rounded-sm border border-dashed border-foreground/80 bg-foreground/20" aria-hidden="true" /> Estimation (1 contributeur)
         </li>
         <li>Plus c&apos;est opaque, plus c&apos;est fiable</li>
       </ul>

@@ -154,7 +154,7 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
             key={item.href}
             href={item.href}
             aria-current={isActive(item.href) ? "page" : undefined}
-            className={`whitespace-nowrap text-sm transition-colors hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-muted"}`}
+            className={`whitespace-nowrap text-sm transition-colors hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-foreground/75"}`}
           >
             {item.label}
           </Link>
@@ -223,7 +223,7 @@ function Dropdown({
         aria-expanded={open}
         aria-controls={panelId}
         onClick={onToggle}
-        className={`flex items-center gap-1.5 whitespace-nowrap text-sm transition-colors hover:text-foreground ${active || open ? "text-foreground" : "text-muted"}`}
+        className={`flex items-center gap-1.5 whitespace-nowrap text-sm transition-colors hover:text-foreground ${active || open ? "text-foreground" : "text-foreground/75"}`}
       >
         {menu.label}
         {menu.dot && <NewDot />}
@@ -237,7 +237,7 @@ function Dropdown({
           open ? "visible translate-y-0 opacity-100" : "pointer-events-none invisible -translate-y-2 opacity-0"
         }`}
       >
-        <div className="rounded-2xl border border-accent/20 bg-background p-3 shadow-[0_24px_60px_-12px_var(--shadow-pop)] backdrop-blur-md">
+        <div className="rounded-2xl border border-foreground/20 bg-background p-3 shadow-[0_24px_60px_-12px_var(--shadow-pop)] backdrop-blur-md">
           {groups ? (
             <div className="flex gap-6 p-1">
               {groups.map(([title, tools]) => (
@@ -246,7 +246,7 @@ function Dropdown({
                   <ul className="space-y-1">
                     {tools.map((t) => (
                       <li key={t.href}>
-                        <Link href={t.href} onClick={onClose} className="group flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-accent/10 focus-visible:bg-accent/10">
+                        <Link href={t.href} onClick={onClose} className="group flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-foreground/10 focus-visible:bg-foreground/10">
                           <span className="h-14 w-14 shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.06]">
                             <ItemArt icon={t.icon} />
                           </span>
@@ -269,7 +269,7 @@ function Dropdown({
             {menu.children.map((t) => (
               <li key={t.href}>
                 {grid ? (
-                  <Link href={t.href} onClick={onClose} className={`group flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-accent/10 focus-visible:bg-accent/10${"soon" in t && t.soon ? " opacity-60 hover:opacity-100" : ""}`}>
+                  <Link href={t.href} onClick={onClose} className={`group flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-foreground/10 focus-visible:bg-foreground/10${"soon" in t && t.soon ? " opacity-60 hover:opacity-100" : ""}`}>
                     <span className="h-16 w-16 shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.06]">
                       <ItemArt icon={t.icon} />
                     </span>
@@ -286,7 +286,7 @@ function Dropdown({
                   <Link
                     href={t.href}
                     onClick={onClose}
-                    className={`group flex w-[220px] flex-col rounded-xl p-4 transition-colors hover:bg-accent/10 focus-visible:bg-accent/10${"soon" in t && t.soon ? " opacity-60 hover:opacity-100" : ""}`}
+                    className={`group flex w-[220px] flex-col rounded-xl p-4 transition-colors hover:bg-foreground/10 focus-visible:bg-foreground/10${"soon" in t && t.soon ? " opacity-60 hover:opacity-100" : ""}`}
                   >
                     <div className="h-24 w-full transition-transform duration-300 ease-out group-hover:-translate-y-1 group-hover:scale-[1.04]">
                       <ItemArt icon={t.icon} />
@@ -338,7 +338,7 @@ export function NavAccordion({ menu, active, onNavigate }: { menu: AnyMenu; acti
             {t.group && t.group !== (menu.children as (NavTool | DashTool)[])[i - 1]?.group && (
               <p className="label-mono px-2 pb-1 pt-3">{t.group}</p>
             )}
-            <Link href={t.href} onClick={onNavigate} className={`flex items-center gap-4 rounded-xl px-2 py-3 hover:bg-accent/10${"soon" in t && t.soon ? " opacity-60 hover:opacity-100" : ""}`}>
+            <Link href={t.href} onClick={onNavigate} className={`flex items-center gap-4 rounded-xl px-2 py-3 hover:bg-foreground/10${"soon" in t && t.soon ? " opacity-60 hover:opacity-100" : ""}`}>
               <span className="h-12 w-12 shrink-0">
                 <ItemArt icon={t.icon} />
               </span>

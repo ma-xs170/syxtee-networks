@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 const latency = [
-  { k: "Téléphone → relais", v: "quelques dizaines de ms", note: "Plus si le relais est sur un autre continent (≈ 100 ms entre l'Europe et New York)." },
+  { k: "Téléphone → relais", v: "quelques dizaines de ms", note: "Plus si le relais est sur un autre continent (≈ 100 ms entre l'Europe et l'Amérique du Nord)." },
   { k: "Réserve SRT", v: "1 à 3 s", note: "Le tampon qui laisse le temps de récupérer les paquets perdus. Plus ton réseau est instable, plus il doit être grand." },
   { k: "Relais → OBS", v: "très faible", note: "Ton PC est en général sur une connexion fixe, stable et rapide." },
   { k: "OBS → viewers", v: "quelques secondes", note: "La latence de la plateforme elle-même, la même que pour tes lives à la maison." },

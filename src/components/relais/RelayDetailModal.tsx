@@ -43,7 +43,7 @@ export default function RelayDetailModal({ relay, coreUrl, onClose }: { relay: R
                 <span>{relay.archived ? "Archivé" : relay.live ? "En live" : relay.last_live_at ? `Dernier live ${fmtAgo(relay.last_live_at)}` : "Jamais utilisé"}</span>
               </p>
             </div>
-            <button type="button" onClick={onClose} aria-label="Fermer" className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-accent/10 hover:text-foreground">
+            <button type="button" onClick={onClose} aria-label="Fermer" className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-foreground/10 hover:text-foreground">
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
                 <path d="M6 6l12 12M18 6L6 18" />
               </svg>

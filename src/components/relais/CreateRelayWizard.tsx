@@ -183,7 +183,7 @@ export default function CreateRelayWizard({
               </>
             )}
           </h2>
-          <button type="button" onClick={close} className="h-10 rounded-full px-4 text-sm text-muted transition-colors hover:bg-accent/10 hover:text-foreground">
+          <button type="button" onClick={close} className="h-10 rounded-full px-4 text-sm text-muted transition-colors hover:bg-foreground/10 hover:text-foreground">
             Fermer
           </button>
         </div>
@@ -192,7 +192,7 @@ export default function CreateRelayWizard({
           <ol className="mt-6 grid grid-cols-4 gap-2" aria-label="Étapes">
             {STEPS.map((label, i) => (
               <li key={label} aria-current={i === step ? "step" : undefined}>
-                <span className={`block h-1 rounded-full transition-colors motion-reduce:transition-none ${i <= step ? "bg-accent" : "bg-accent/20"}`} />
+                <span className={`block h-1 rounded-full transition-colors motion-reduce:transition-none ${i <= step ? "bg-accent" : "bg-foreground/20"}`} />
                 <span className={`mt-2 block font-mono text-[11px] uppercase tracking-[0.12em] ${i === step ? "text-foreground" : "text-muted"}`}>
                   {i + 1} {label}
                 </span>
@@ -211,14 +211,14 @@ export default function CreateRelayWizard({
                 {PROTOCOLS.map((p) => (
                   <label
                     key={p.id}
-                    className={`relative flex cursor-pointer flex-col rounded-2xl border p-5 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent/60 ${
-                      protocol === p.id ? "border-accent bg-accent/[0.08]" : "border-line hover:bg-accent/[0.08]"
+                    className={`relative flex cursor-pointer flex-col rounded-2xl border p-5 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-foreground/60 ${
+                      protocol === p.id ? "border-accent bg-foreground/[0.08]" : "border-line hover:bg-foreground/[0.08]"
                     }`}
                   >
                     <input type="radio" name="protocol" value={p.id} checked={protocol === p.id} onChange={() => setProtocol(p.id)} className="sr-only" />
                     <span className="flex items-center justify-between gap-3">
                       <span className="font-mono text-lg tracking-[0.08em]">{p.name}</span>
-                      {p.badge && <span className="rounded border border-accent/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]">{p.badge}</span>}
+                      {p.badge && <span className="rounded border border-foreground/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]">{p.badge}</span>}
                     </span>
                     <ul className="mt-4 space-y-2 text-sm">
                       {p.pros.map((t) => (
@@ -252,7 +252,7 @@ export default function CreateRelayWizard({
                 autoFocus
                 autoComplete="off"
                 placeholder={protocol === "rtmp" ? "Ex. Osmo Pocket 3" : "Ex. iPhone 16"}
-                className="mt-3 h-12 w-full rounded-xl border border-line bg-background px-4 text-base text-foreground placeholder:text-muted focus:border-accent/70 focus:outline-none"
+                className="mt-3 h-12 w-full rounded-xl border border-line bg-background px-4 text-base text-foreground placeholder:text-muted focus:border-foreground/70 focus:outline-none"
                 onKeyDown={(e) => e.key === "Enter" && canNext && (e.preventDefault(), setStep(2))}
               />
               <p className="mt-2 text-xs text-muted">Tu le retrouveras dans ta liste de relais. 40 caractères au plus.</p>
@@ -262,7 +262,7 @@ export default function CreateRelayWizard({
                     key={s}
                     type="button"
                     onClick={() => setName(s)}
-                    className={`h-9 rounded-full border px-3 text-sm transition-colors ${name === s ? "border-accent bg-accent/[0.12]" : "border-line text-muted hover:bg-accent/10 hover:text-foreground"}`}
+                    className={`h-9 rounded-full border px-3 text-sm transition-colors ${name === s ? "border-accent bg-foreground/[0.12]" : "border-line text-muted hover:bg-foreground/10 hover:text-foreground"}`}
                   >
                     {s}
                   </button>
@@ -279,13 +279,13 @@ export default function CreateRelayWizard({
                 geo={geo}
                 onSelect={(id) => rows.find((r) => r.id === id)?.available && setServer(id)}
               />
-              <ul className="mt-4 divide-y divide-accent/10 rounded-2xl border border-line">
+              <ul className="mt-4 divide-y divide-foreground/10 rounded-2xl border border-line">
                 {rows.map((r) => {
                   const shown = r.available ? r.measured : r.estimated;
                   const tone = r.available ? (r.measured === undefined ? "none" : latencyTone(r.measured ?? null)) : "none";
                   return (
                     <li key={r.id}>
-                      <label className={`flex items-center gap-4 px-4 py-3.5 sm:px-5 ${r.available ? "cursor-pointer hover:bg-accent/[0.08]" : "cursor-not-allowed opacity-50"}`}>
+                      <label className={`flex items-center gap-4 px-4 py-3.5 sm:px-5 ${r.available ? "cursor-pointer hover:bg-foreground/[0.08]" : "cursor-not-allowed opacity-50"}`}>
                         <input
                           type="radio"
                           name="server"
@@ -371,7 +371,7 @@ export default function CreateRelayWizard({
               <button
                 type="button"
                 onClick={() => (step === 0 ? close() : setStep(step - 1))}
-                className="h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-accent/10"
+                className="h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-foreground/10"
               >
                 {step === 0 ? "Annuler" : "Retour"}
               </button>

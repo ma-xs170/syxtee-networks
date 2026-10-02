@@ -4,7 +4,7 @@ import { useActionState, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
 import { enrollTotp, verifyTotp, type EnrollState, type VerifyState } from "./actions";
 
-const field = "h-12 w-full rounded-xl border border-accent/20 bg-accent/[0.08] px-4 text-center font-mono text-xl tracking-[0.4em] text-foreground focus:border-accent/40 focus:outline-none focus:ring-4 focus:ring-accent/[0.06]";
+const field = "h-12 w-full rounded-xl border border-foreground/20 bg-foreground/[0.08] px-4 text-center font-mono text-xl tracking-[0.4em] text-foreground focus:border-foreground/40 focus:outline-none focus:ring-4 focus:ring-foreground/[0.06]";
 
 function Submit() {
   const { pending } = useFormStatus();

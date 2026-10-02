@@ -48,7 +48,7 @@ export default function CamPanel({ link, qrSvg }: { link: string; qrSvg: string 
             </button>
           </form>
         ) : (
-          <button type="button" onClick={() => setConfirm(true)} className="h-11 rounded-full border border-line px-5 text-sm font-medium hover:bg-accent/10">
+          <button type="button" onClick={() => setConfirm(true)} className="h-11 rounded-full border border-line px-5 text-sm font-medium hover:bg-foreground/10">
             Nouveau lien caméra
           </button>
         )}

@@ -80,10 +80,10 @@ export default function MyCoverageMap({ cells }: { cells: MyCell[] }) {
       </div>
       <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted" aria-label="Légende">
         <li className="flex items-center gap-2">
-          <span className="h-3 w-4 rounded-sm bg-accent/20" aria-hidden="true" /> Publiée sur la carte
+          <span className="h-3 w-4 rounded-sm bg-foreground/20" aria-hidden="true" /> Publiée sur la carte
         </li>
         <li className="flex items-center gap-2">
-          <span className="h-3 w-4 rounded-sm border border-dashed border-accent/80" aria-hidden="true" /> Pas encore publiée (moins de 5 mesures)
+          <span className="h-3 w-4 rounded-sm border border-dashed border-foreground/80" aria-hidden="true" /> Pas encore publiée (moins de 5 mesures)
         </li>
       </ul>
     </div>

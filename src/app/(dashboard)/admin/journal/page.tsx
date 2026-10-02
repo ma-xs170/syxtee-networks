@@ -41,7 +41,7 @@ export default async function AdminJournalPage({ searchParams }: { searchParams:
       <form method="get" className="mb-4 flex flex-wrap items-end gap-3">
         <label className="grid gap-1.5">
           <span className="font-mono text-xs uppercase tracking-[0.15em] text-muted">Action</span>
-          <input name="action" defaultValue={action} placeholder="plan., account., keys.…" className="h-10 w-64 rounded-full border border-line bg-background px-4 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/60" />
+          <input name="action" defaultValue={action} placeholder="plan., account., keys.…" className="h-10 w-64 rounded-full border border-line bg-background px-4 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60" />
         </label>
         {compte && <input type="hidden" name="compte" value={compte} />}
         <button type="submit" className="h-10 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent hover:bg-accent-hover">

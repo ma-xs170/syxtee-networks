@@ -6,12 +6,12 @@ import { Sparkline } from "./charts";
 
 export function SessionList({ sessions, spark = false }: { sessions: LiveSession[]; spark?: boolean }) {
   return (
-    <ul className="divide-y divide-accent/10">
+    <ul className="divide-y divide-foreground/10">
       {sessions.map((s) => (
         <li key={s.id}>
           <Link
             href={`/dashboard/lives/${s.id}`}
-            className={`group grid items-center gap-x-4 gap-y-1 py-3 transition-colors hover:bg-accent/[0.08] sm:px-2 ${
+            className={`group grid items-center gap-x-4 gap-y-1 py-3 transition-colors hover:bg-foreground/[0.08] sm:px-2 ${
               spark ? "grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_120px_auto]" : "grid-cols-[minmax(0,1fr)_auto]"
             }`}
           >

@@ -35,7 +35,7 @@ export default function LowCost() {
             </ul>
           </div>
 
-          <div className="rounded-2xl border border-accent/40 bg-accent/[0.08] p-8">
+          <div className="rounded-2xl border border-foreground/40 bg-foreground/[0.08] p-8">
             <p className="font-mono text-xs uppercase tracking-[0.2em]">Avec SYXTEE</p>
             <ul className="mt-6 space-y-4">
               {syxtee.map((t) => (

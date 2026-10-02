@@ -237,7 +237,7 @@ export default function Analyzer({
               <div className="mt-6 rounded-xl border border-line p-4 text-sm leading-relaxed">
                 <p>Tu es en Wi-Fi : le test mesure ta box, pas le réseau mobile. Coupe le Wi-Fi pour mesurer la 4G/5G.</p>
                 {!ct && (
-                  <button type="button" onClick={wifiOff} disabled={busy} className="mt-3 h-10 rounded-full border border-line px-4 text-sm transition-colors hover:bg-accent/10 disabled:opacity-50">
+                  <button type="button" onClick={wifiOff} disabled={busy} className="mt-3 h-10 rounded-full border border-line px-4 text-sm transition-colors hover:bg-foreground/10 disabled:opacity-50">
                     C&apos;est fait, vérifier le réseau
                   </button>
                 )}
@@ -264,12 +264,12 @@ export default function Analyzer({
                   type="button"
                   disabled={!net || !consent || (busy && mode !== "continuous")}
                   onClick={() => setMode(mode === "continuous" ? "idle" : "continuous")}
-                  className="h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm font-medium transition-colors hover:bg-accent/10 disabled:opacity-50"
+                  className="h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm font-medium transition-colors hover:bg-foreground/10 disabled:opacity-50"
                 >
                   {mode === "continuous" ? "Arrêter le scan" : "Scanner en continu"}
                 </button>
               ) : (
-                <Link href="/connexion?next=/dashboard/analyseur" className="inline-flex h-11 items-center whitespace-nowrap rounded-full border border-line px-5 text-sm font-medium transition-colors hover:bg-accent/10">
+                <Link href="/connexion?next=/dashboard/analyseur" className="inline-flex h-11 items-center whitespace-nowrap rounded-full border border-line px-5 text-sm font-medium transition-colors hover:bg-foreground/10">
                   Scanner en continu
                 </Link>
               )}

@@ -13,7 +13,7 @@ export default function StreamModeToggle({ withLabel = false }: { withLabel?: bo
       onClick={() => setStreamMode(!on)}
       title={on ? "Mode stream actif : infos sensibles floutées" : "Mode stream : flouter les infos sensibles"}
       className={`inline-flex h-8 items-center justify-center gap-2 whitespace-nowrap rounded-full border text-xs ${withLabel ? "px-3" : "w-8"} transition-colors ${
-        on ? "border-accent bg-accent text-on-accent hover:bg-accent-hover" : "border-line text-muted hover:bg-accent/10 hover:text-foreground"
+        on ? "border-accent bg-accent text-on-accent hover:bg-accent-hover" : "border-line text-muted hover:bg-foreground/10 hover:text-foreground"
       }`}
     >
       <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">

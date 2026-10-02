@@ -79,7 +79,7 @@ const HELP: Item[] = [
 function NavLink({ item, active, locked, onNavigate }: { item: Item; active: boolean; locked?: boolean; onNavigate: () => void }) {
   const Icon = item.icon;
   const cls = `group flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm transition-colors ${
-    active ? "border border-line-strong bg-accent/10 text-foreground" : "border border-transparent text-muted hover:bg-accent/[0.06] hover:text-foreground"
+    active ? "border border-line-strong bg-foreground/10 text-foreground" : "border border-transparent text-muted hover:bg-foreground/[0.06] hover:text-foreground"
   }`;
   const inner = (
     <>
@@ -122,7 +122,7 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
     { label: "Paramètres", href: "/dashboard/parametres" },
     ...(admin ? [{ label: "Administration", href: "/admin" }] : []),
   ];
-  const item = "block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-accent/10";
+  const item = "block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-foreground/10";
 
   return (
     <div className="flex items-center gap-1">
@@ -132,7 +132,7 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-haspopup="menu"
-          className="flex w-full items-center gap-3 rounded-lg p-1.5 text-left transition-colors hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+          className="flex w-full items-center gap-3 rounded-lg p-1.5 text-left transition-colors hover:bg-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60"
         >
           <Avatar account={account} size={36} />
           <span className="min-w-0 flex-1">
@@ -143,7 +143,7 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
         </button>
         {open && (
           <div role="menu" className="absolute bottom-full left-0 z-50 mb-2 w-[calc(100%+3rem)] overflow-hidden rounded-xl border border-line bg-background py-1 shadow-[0_18px_40px_rgba(0,0,0,0.6)]">
-            <p className="label-mono px-4 pb-1 pt-2 text-[10px]">Mon compte</p>
+            <p className="px-4 pb-1 pt-2 text-xs font-medium text-muted">Mon compte</p>
             {links.map((l) => (
               <Link
                 key={l.href}
@@ -196,7 +196,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
       <nav aria-label="Navigation du dashboard" className="flex-1 space-y-4 overflow-y-auto px-3 pb-3">
         {GROUPS.map((g, i) => (
           <div key={g.title ?? i}>
-            {g.title && <p className="label-mono px-3 pb-2 text-[10px]">{g.title}</p>}
+            {g.title && <p className="px-3 pb-2 text-xs font-medium text-muted">{g.title}</p>}
             <ul className="space-y-0.5">
               {g.items.map((it) => (
                 <li key={it.href}>
@@ -208,7 +208,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
         ))}
 
         <div>
-          <p className="label-mono px-3 pb-2 text-[10px]">Aide</p>
+          <p className="px-3 pb-2 text-xs font-medium text-muted">Aide</p>
           <ul className="space-y-0.5">
             {HELP.map((it) => (
               <li key={it.href}>
@@ -253,7 +253,7 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
         </Link>
         <div className="flex items-center gap-2">
           <LivePill compact />
-          <button type="button" onClick={() => setOpen(true)} aria-label="Ouvrir le menu" aria-expanded={open} className="rounded-lg p-2 hover:bg-accent/10">
+          <button type="button" onClick={() => setOpen(true)} aria-label="Ouvrir le menu" aria-expanded={open} className="rounded-lg p-2 hover:bg-foreground/10">
             <List size={22} />
           </button>
         </div>
@@ -263,7 +263,7 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu du dashboard">
           <button type="button" aria-label="Fermer le menu" className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
           <div className="relative h-full w-[280px] max-w-[85vw] border-r border-line bg-surface">
-            <button type="button" onClick={() => setOpen(false)} aria-label="Fermer le menu" className="absolute right-3 top-4 rounded-lg p-2 hover:bg-accent/10">
+            <button type="button" onClick={() => setOpen(false)} aria-label="Fermer le menu" className="absolute right-3 top-4 rounded-lg p-2 hover:bg-foreground/10">
               <X size={18} />
             </button>
             <Content admin={admin} onNavigate={() => setOpen(false)} />

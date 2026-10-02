@@ -74,7 +74,7 @@ export default function RelayWorld({ coreUrl, geo = null, initial = "bhs1", onSe
                 type="button"
                 onClick={() => pick(s.id)}
                 aria-pressed={on}
-                className={`flex w-full items-center gap-4 px-4 py-3.5 text-left transition-colors hover:bg-accent/[0.06] sm:px-5 ${on ? "bg-accent/10" : ""}`}
+                className={`flex w-full items-center gap-4 px-4 py-3.5 text-left transition-colors hover:bg-foreground/[0.06] sm:px-5 ${on ? "bg-foreground/10" : ""}`}
               >
                 <span className="text-lg" aria-hidden="true">
                   {flag(s.cc)}

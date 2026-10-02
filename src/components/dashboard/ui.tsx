@@ -41,7 +41,7 @@ export function DashHeader({ lead, hl, sub, children, highlight = false }: { lea
   return (
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="h-section">
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           {lead}
           {hl && (
             <>
@@ -50,7 +50,7 @@ export function DashHeader({ lead, hl, sub, children, highlight = false }: { lea
             </>
           )}
         </h1>
-        {sub && <p className="mt-2 max-w-[65ch] text-base text-muted">{sub}</p>}
+        {sub && <p className="mt-2 max-w-[65ch] text-sm text-muted">{sub}</p>}
       </div>
       {children}
     </div>
@@ -59,7 +59,7 @@ export function DashHeader({ lead, hl, sub, children, highlight = false }: { lea
 
 export function Tile({ children, className = "", as: As = "section", ...rest }: { children: ReactNode; className?: string; as?: "section" | "div"; id?: string; "aria-labelledby"?: string }) {
   return (
-    <As className={`rounded-2xl border border-line bg-background p-5 sm:p-6 ${className}`} {...rest}>
+    <As className={`rounded-2xl border border-line bg-surface p-5 sm:p-6 ${className}`} {...rest}>
       {children}
     </As>
   );
@@ -69,7 +69,7 @@ export function Tile({ children, className = "", as: As = "section", ...rest }: 
 export function TileLabel({ id, children, right }: { id?: string; children: ReactNode; right?: ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <h2 id={id} className="font-mono text-xs uppercase tracking-[0.15em] text-foreground">
+      <h2 id={id} className="text-sm font-semibold tracking-tight text-foreground">
         {children}
       </h2>
       {right}

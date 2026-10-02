@@ -35,7 +35,7 @@ export function SupportId({ id, compact = false }: { id: string; compact?: boole
         type="button"
         onClick={copy}
         aria-label="Copier l'ID support"
-        className="rounded-md px-1.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.1em] text-muted transition-colors hover:bg-accent/10 hover:text-foreground"
+        className="rounded-md px-1.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.1em] text-muted transition-colors hover:bg-foreground/10 hover:text-foreground"
       >
         <span aria-live="polite">{copied ? "Copié" : "Copier"}</span>
       </button>

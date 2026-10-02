@@ -19,7 +19,7 @@ export function RackFront({ x, y, w = 200, h = 330, glow = 1 }: { x: number; y: 
         SYXTEE NETWORKS
       </text>
       <text x={62} y={62} stroke="none" fill="var(--muted)" fontSize={10} className="font-mono" letterSpacing="0.08em">
-        RELAIS NYC
+        RELAIS
       </text>
       {Array.from({ length: units }, (_, i) => {
         const uy = 94 + i * uh;

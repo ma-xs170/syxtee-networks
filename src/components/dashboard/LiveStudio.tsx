@@ -53,7 +53,7 @@ export default function LiveStudio({ sources, coreUrl, initial }: { sources: Sou
                   }}
                   aria-pressed={active}
                   className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
-                    active ? "border border-line-strong bg-accent/10 text-foreground" : "border border-transparent text-muted hover:bg-accent/[0.06] hover:text-foreground"
+                    active ? "border border-line-strong bg-foreground/10 text-foreground" : "border border-transparent text-muted hover:bg-foreground/[0.06] hover:text-foreground"
                   }`}
                 >
                   <span className="truncate">{s.name}</span>

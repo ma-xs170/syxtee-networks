@@ -13,7 +13,7 @@ type Pending = "rename" | "rotate" | "archive" | "delete" | null;
 /** URL que l'encodeur colle : SRTLA pour Moblin, URL RTMP complète pour une caméra. */
 export const ingestUrl = (r: Pick<RelayView, "protocol" | "urls">) => (r.protocol === "rtmp" ? r.urls.rtmp_url : r.urls.srtla_url) ?? "";
 
-const btn = "h-10 whitespace-nowrap rounded-full border border-line px-4 text-sm transition-colors hover:bg-accent/10 disabled:opacity-40";
+const btn = "h-10 whitespace-nowrap rounded-full border border-line px-4 text-sm transition-colors hover:bg-foreground/10 disabled:opacity-40";
 
 export default function RelayActions({ relay, showView = true, onView }: { relay: RelayView; showView?: boolean; onView?: () => void }) {
   const router = useRouter();
@@ -132,7 +132,7 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
                 type="button"
                 role="menuitem"
                 onClick={() => open(k)}
-                className={`block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-accent/10 ${k === "delete" ? "text-red-300" : ""}`}
+                className={`block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-foreground/10 ${k === "delete" ? "text-red-300" : ""}`}
               >
                 {label}
               </button>
@@ -172,7 +172,7 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
                   onChange={(e) => setName(e.target.value)}
                   maxLength={40}
                   autoFocus
-                  className="mt-2 h-11 w-full rounded-xl border border-line bg-background px-4 text-sm text-foreground focus:border-accent/70 focus:outline-none"
+                  className="mt-2 h-11 w-full rounded-xl border border-line bg-background px-4 text-sm text-foreground focus:border-foreground/70 focus:outline-none"
                 />
               </div>
             )}

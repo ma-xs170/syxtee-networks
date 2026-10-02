@@ -46,7 +46,7 @@ export function DailyBars({ days }: { days: { day: string; minutes: number }[] }
         </div>
         <div className="relative h-44 flex-1">
           {ticks.map((t) => (
-            <span key={t} aria-hidden="true" className="absolute inset-x-0 border-t border-accent/20" style={{ top: `${100 - (t / max) * 100}%` }} />
+            <span key={t} aria-hidden="true" className="absolute inset-x-0 border-t border-foreground/20" style={{ top: `${100 - (t / max) * 100}%` }} />
           ))}
           <div className="absolute inset-0 grid items-end gap-[3px]" style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }} onMouseLeave={() => setHover(null)}>
             {days.map((d, i) => (
@@ -60,7 +60,7 @@ export function DailyBars({ days }: { days: { day: string; minutes: number }[] }
                 aria-label={`${fmtDay(d.day)} : ${d.minutes ? fmtDuration(d.minutes * 60) : "pas de direct"}`}
               >
                 <span
-                  className={`block w-full rounded-t-[2px] transition-colors ${d.minutes ? (hover === i ? "bg-accent" : "bg-accent/20") : "bg-accent/20"} group-focus-visible:ring-2 group-focus-visible:ring-accent/50`}
+                  className={`block w-full rounded-t-[2px] transition-colors ${d.minutes ? (hover === i ? "bg-accent" : "bg-foreground/20") : "bg-foreground/20"} group-focus-visible:ring-2 group-focus-visible:ring-foreground/50`}
                   style={{ height: d.minutes ? `${Math.max(2, (d.minutes / max) * 100)}%` : "2px" }}
                 />
               </button>
@@ -107,7 +107,7 @@ export function BitrateChart({ points, durationS }: { points: number[]; duration
         </div>
         <div className="relative h-56 flex-1">
           {ticks.map((t) => (
-            <span key={t} aria-hidden="true" className="absolute inset-x-0 border-t border-accent/20" style={{ top: `${100 - (t / max) * 100}%` }} />
+            <span key={t} aria-hidden="true" className="absolute inset-x-0 border-t border-foreground/20" style={{ top: `${100 - (t / max) * 100}%` }} />
           ))}
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full text-foreground" aria-hidden="true">
             <path d={`${d}L100 100L0 100Z`} fill="currentColor" fillOpacity={0.05} />

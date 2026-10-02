@@ -16,7 +16,7 @@ function Submit({ children, primary }: { children: string; primary?: boolean }) 
       type="submit"
       disabled={pending}
       className={`h-11 w-full whitespace-nowrap rounded-full px-5 text-sm font-medium transition-colors active:scale-[0.98] disabled:opacity-60 ${
-        primary ? "bg-accent text-on-accent hover:bg-accent-hover" : "border border-line text-foreground hover:bg-accent/10"
+        primary ? "bg-accent text-on-accent hover:bg-accent-hover" : "border border-line text-foreground hover:bg-foreground/10"
       }`}
     >
       {pending ? "Ouverture de Stripe…" : children}

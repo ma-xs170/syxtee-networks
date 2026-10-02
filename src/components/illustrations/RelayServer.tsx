@@ -56,7 +56,7 @@ export default function RelayServer({ className, animated = true }: { className?
               {/* Plaque d'identification */}
               <rect x={8} y={-H + 8} width={W - 16} height={18} rx={2} strokeWidth={1} />
               <text x={W / 2} y={-H + 20.5} textAnchor="middle" fontSize={9} stroke="none" fill="var(--foreground)" className="font-mono" letterSpacing="0.08em">
-                SYXTEE · NYC
+                SYXTEE · RELAIS
               </text>
             </g>
           }

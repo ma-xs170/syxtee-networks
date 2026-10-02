@@ -6,9 +6,9 @@ import { coreFetch, sleep } from "./coreClient";
 // Santé du flux en direct (Server-Sent Events du Core) : débit, RTT, congestion, pertes, liens SRTLA,
 // et courbe de débit sur les 15 dernières minutes. Se reconnecte seul si le Core ou le réseau décroche.
 
-type Sample = { t: number; bitrate: number; rtt: number; dropped: number; congestion: number; links: number };
+export type Sample = { t: number; bitrate: number; rtt: number; dropped: number; congestion: number; links: number };
 type Peer = { connection_id: string; bitrate: number };
-type Live = { live: boolean; since: number; sample: Sample | null; peers?: Peer[] };
+export type Live = { live: boolean; since: number; sample: Sample | null; peers?: Peer[] };
 
 const WINDOW = 15 * 60_000;
 const nf = new Intl.NumberFormat("fr-FR");
@@ -16,7 +16,7 @@ const nf = new Intl.NumberFormat("fr-FR");
 function Metric({ label, value, unit }: { label: string; value: string; unit: string }) {
   return (
     <div className="bg-background px-4 py-3">
-      <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted">{label}</p>
+      <p className="text-xs text-muted">{label}</p>
       <p className="mt-1 font-mono text-lg tabular-nums text-foreground">
         {value} <span className="text-xs text-muted">{unit}</span>
       </p>
@@ -40,12 +40,16 @@ function Curve({ samples }: { samples: Sample[] }) {
   );
 }
 
-export default function StreamHealth({ coreUrl, relayId }: { coreUrl: string; relayId: string }) {
-  const [live, setLive] = useState<Live | null>(null);
-  const [history, setHistory] = useState<Sample[]>([]);
-  const [link, setLink] = useState<"connecting" | "ok" | "error">("connecting");
+export type HealthDemo = { live: Live; history: Sample[] };
+
+/** `demo` : données fixes (pages de démo des captures du site), sans connexion au Core. */
+export default function StreamHealth({ coreUrl, relayId, demo }: { coreUrl: string; relayId: string; demo?: HealthDemo }) {
+  const [live, setLive] = useState<Live | null>(demo?.live ?? null);
+  const [history, setHistory] = useState<Sample[]>(demo?.history ?? []);
+  const [link, setLink] = useState<"connecting" | "ok" | "error">(demo ? "ok" : "connecting");
 
   useEffect(() => {
+    if (demo) return;
     let stopped = false;
     const ctrl = new AbortController();
     (async () => {
@@ -90,7 +94,7 @@ export default function StreamHealth({ coreUrl, relayId }: { coreUrl: string; re
       stopped = true;
       ctrl.abort();
     };
-  }, [coreUrl, relayId]);
+  }, [coreUrl, relayId, demo]);
 
   const s = live?.live ? live.sample : null;
   const now = s?.t ?? Date.now();
@@ -101,10 +105,10 @@ export default function StreamHealth({ coreUrl, relayId }: { coreUrl: string; re
   return (
     <section className="rounded-2xl border border-line p-5 sm:p-6" aria-labelledby="sante">
       <div className="flex items-center justify-between gap-4">
-        <h2 id="sante" className="font-mono text-xs uppercase tracking-[0.15em] text-foreground">
+        <h2 id="sante" className="text-sm font-semibold">
           Santé du flux
         </h2>
-        <p className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-muted" aria-live="polite">
+        <p className="flex items-center gap-2 text-xs text-muted" aria-live="polite">
           {link === "error" ? (
             "Relais injoignable, reconnexion…"
           ) : live?.live ? (
@@ -136,13 +140,13 @@ export default function StreamHealth({ coreUrl, relayId }: { coreUrl: string; re
 
       {peers.length > 0 && (
         <div className="mt-5">
-          <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted">Liens SRTLA · {peers.length}</p>
+          <p className="text-xs text-muted">Liens SRTLA · {peers.length}</p>
           <ul className="mt-2 space-y-2">
             {peers.map((p, i) => (
               <li key={p.connection_id} className="flex items-center gap-3 font-mono text-xs">
                 <span className="w-14 text-muted">Lien {i + 1}</span>
-                <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-accent/20">
-                  <span className="block h-full rounded-full bg-accent/20" style={{ width: `${(p.bitrate / peerMax) * 100}%` }} />
+                <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-foreground/20">
+                  <span className="block h-full rounded-full bg-foreground/20" style={{ width: `${(p.bitrate / peerMax) * 100}%` }} />
                 </span>
                 <span className="w-24 text-right tabular-nums text-foreground">{nf.format(p.bitrate)} kbps</span>
               </li>

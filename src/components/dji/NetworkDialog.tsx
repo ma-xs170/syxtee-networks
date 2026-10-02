@@ -40,7 +40,7 @@ export default function NetworkDialog({ open, initial, onClose, onSave }: { open
         <h2 id={`${uid}-title`} className="text-xl font-semibold tracking-tight">
           {initial ? "Modifier le" : "Ajouter un"} réseau
         </h2>
-        <button type="button" onClick={onClose} className="h-10 rounded-full px-4 text-sm text-muted transition-colors hover:bg-accent/10 hover:text-foreground">
+        <button type="button" onClick={onClose} className="h-10 rounded-full px-4 text-sm text-muted transition-colors hover:bg-foreground/10 hover:text-foreground">
           Fermer
         </button>
       </div>
@@ -51,7 +51,7 @@ export default function NetworkDialog({ open, initial, onClose, onSave }: { open
           {KINDS.map((k) => (
             <label
               key={k.id}
-              className={`flex cursor-pointer flex-col rounded-2xl border p-4 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent/60 ${n.kind === k.id ? "border-accent bg-accent/[0.08]" : "border-line hover:bg-accent/[0.08]"}`}
+              className={`flex cursor-pointer flex-col rounded-2xl border p-4 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-foreground/60 ${n.kind === k.id ? "border-accent bg-foreground/[0.08]" : "border-line hover:bg-foreground/[0.08]"}`}
             >
               <input type="radio" name={`${uid}-kind`} checked={n.kind === k.id} onChange={() => setN({ ...n, kind: k.id })} className="sr-only" />
               <span className="text-sm font-medium">{k.title}</span>
@@ -72,7 +72,7 @@ export default function NetworkDialog({ open, initial, onClose, onSave }: { open
             onChange={(e) => setN({ ...n, ssid: e.target.value })}
             autoComplete="off"
             placeholder={n.kind === "hotspot" ? "Ex. iPhone de Mathis" : "Ex. Livebox-E740"}
-            className="h-12 w-full rounded-xl border border-line bg-background px-4 text-base text-foreground placeholder:text-muted focus:border-accent/70 focus:outline-none"
+            className="h-12 w-full rounded-xl border border-line bg-background px-4 text-base text-foreground placeholder:text-muted focus:border-foreground/70 focus:outline-none"
           />
           {n.kind === "hotspot" && <p className="text-xs text-muted">Nom affiché dans Réglages → Partage de connexion (respecte les majuscules).</p>}
         </div>
@@ -87,7 +87,7 @@ export default function NetworkDialog({ open, initial, onClose, onSave }: { open
       </div>
 
       <div className="mt-8 flex justify-end gap-3">
-        <button type="button" onClick={onClose} className="h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-accent/10">
+        <button type="button" onClick={onClose} className="h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-foreground/10">
           Annuler
         </button>
         <button

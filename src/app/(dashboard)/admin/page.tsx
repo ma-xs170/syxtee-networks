@@ -31,7 +31,7 @@ function Meter({ label, value, detail }: { label: string; value: number; detail:
         <span className="text-muted">{label}</span>
         <span className="font-mono text-xs tabular-nums">{detail}</span>
       </div>
-      <div className="mt-2 h-1.5 rounded-full bg-accent/20" aria-hidden="true">
+      <div className="mt-2 h-1.5 rounded-full bg-foreground/20" aria-hidden="true">
         <div className="h-full rounded-full bg-accent" style={{ width: `${Math.min(100, Math.max(2, value))}%` }} />
       </div>
     </div>

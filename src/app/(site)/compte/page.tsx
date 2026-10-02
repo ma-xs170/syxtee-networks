@@ -55,7 +55,7 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
         </Block>
         <Block title="Session">
           <form action={signOut}>
-            <button type="submit" className="h-11 rounded-xl border border-accent/20 bg-accent/[0.08] px-5 text-sm font-medium hover:bg-accent/[0.12]">
+            <button type="submit" className="h-11 rounded-xl border border-foreground/20 bg-foreground/[0.08] px-5 text-sm font-medium hover:bg-foreground/[0.12]">
               Déconnexion
             </button>
           </form>

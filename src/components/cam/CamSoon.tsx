@@ -22,7 +22,7 @@ export default function CamSoon({ scanner = true }: { scanner?: boolean }) {
             Rejoins le Discord pour être prévenu
           </a>
           {scanner && (
-            <Link href="/dashboard/scanner" className="inline-flex h-11 items-center whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-accent/10">
+            <Link href="/dashboard/scanner" className="inline-flex h-11 items-center whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-foreground/10">
               Ouvrir le Scanner réseau
             </Link>
           )}

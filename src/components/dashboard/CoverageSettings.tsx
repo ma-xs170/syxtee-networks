@@ -70,7 +70,7 @@ export function PrivateZones({ zones }: { zones: PrivateZone[] }) {
   return (
     <div>
       {zones.length > 0 && (
-        <ul className="mb-5 divide-y divide-accent/10 rounded-xl border border-line">
+        <ul className="mb-5 divide-y divide-foreground/10 rounded-xl border border-line">
           {zones.map((z) => (
             <li key={z.id} className="flex items-center justify-between gap-4 px-4 py-3">
               <span className="min-w-0">
@@ -124,7 +124,7 @@ export function PrivateZones({ zones }: { zones: PrivateZone[] }) {
             </select>
           </div>
           <div className="flex items-end">
-            <button type="button" onClick={locate} className="h-12 w-full rounded-xl border border-line px-4 text-sm text-muted transition-colors hover:bg-accent/10 hover:text-foreground">
+            <button type="button" onClick={locate} className="h-12 w-full rounded-xl border border-line px-4 text-sm text-muted transition-colors hover:bg-foreground/10 hover:text-foreground">
               Utiliser ma position
             </button>
           </div>

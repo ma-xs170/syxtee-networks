@@ -28,7 +28,7 @@ export default function PromoCode({ className = "" }: { className?: string }) {
       <button
         type="button"
         onClick={copy}
-        className="border-l border-line px-4 font-mono text-xs uppercase tracking-[0.1em] text-muted transition-colors hover:bg-accent/10 hover:text-foreground"
+        className="border-l border-line px-4 font-mono text-xs uppercase tracking-[0.1em] text-muted transition-colors hover:bg-foreground/10 hover:text-foreground"
         aria-label={`Copier le code promo ${code}`}
       >
         <span aria-live="polite">{copied ? "Copié" : "Copier"}</span>

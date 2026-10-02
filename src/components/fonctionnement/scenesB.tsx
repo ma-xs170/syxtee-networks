@@ -62,10 +62,10 @@ export function SceneSubsea({ progress, narrow }: { progress: MotionValue<number
           <circle cx={B[0]} cy={B[1]} r={2.5} strokeWidth={1} />
           <circle cx={dot[0]} cy={dot[1]} r={3} fill="var(--live)" stroke="none" />
           <text x={456} y={584} stroke="none" fill="var(--muted)" fontSize={9} className="font-mono">
-            ANTILLES
+            TOI
           </text>
           <text x={582} y={502} textAnchor="end" stroke="none" fill="var(--muted)" fontSize={9} className="font-mono">
-            NEW YORK
+            RELAIS
           </text>
         </g>
       </SceneG>

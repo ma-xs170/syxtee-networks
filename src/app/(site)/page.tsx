@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
+import FeatureExplorer from "@/components/home/FeatureExplorer";
 import JourneyStory from "@/components/home/JourneyStory";
 import RelayBento from "@/components/home/RelayBento";
 import StudioPromo from "@/components/sections/StudioPromo";
@@ -13,7 +14,7 @@ import { getHomeStreamers } from "@/lib/streamers";
 export const metadata: Metadata = {
   title: { absolute: "Relais SRTLA et RTMP pour streamer en IRL · SYXTEE NETWORKS" },
   description:
-    "Relais SRTLA et RTMP pour streamer en IRL : bonding 4G/5G, Wi-Fi et Starlink, santé du flux. Aux Antilles et partout.",
+    "Relais SRTLA et RTMP pour streamer en IRL : bonding 4G/5G, Wi-Fi et Starlink, santé du flux. Des serveurs dans le monde entier.",
   alternates: { canonical: "/" },
 };
 
@@ -23,7 +24,8 @@ export default async function Home() {
   const streamers = await getHomeStreamers();
   return (
     <>
-      <Hero />
+      <Hero streamers={streamers} />
+      <FeatureExplorer />
       <StudioPromo />
       <JourneyStory />
       <RelayBento />

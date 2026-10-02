@@ -7,7 +7,7 @@ const links = [
 // 3 connexions qui convergent vers le relais : le principe du bonding.
 export default function BondingDiagram() {
   return (
-    <figure className="rounded-2xl border border-line bg-accent/[0.08] p-6 sm:p-8">
+    <figure className="rounded-2xl border border-line bg-foreground/[0.08] p-6 sm:p-8">
       <svg viewBox="0 0 420 240" className="h-auto w-full" role="img" aria-labelledby="bonding-title">
         <title id="bonding-title">Les connexions 4G, 5G et Wi-Fi convergent vers le relais SYXTEE, qui sort un seul flux SRT.</title>
         {links.map((l) => {

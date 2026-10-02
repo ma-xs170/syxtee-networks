@@ -3,7 +3,7 @@ export const site = {
   name: "SYXTEE NETWORKS",
   url: "https://syxtee-networks.vercel.app", // ← remplace par ton domaine final
   description:
-    "Relais SRTLA et RTMP pour streamer en IRL : bonding 4G, 5G, Wi-Fi et Starlink, mire de coupure, santé du flux. Aux Antilles et partout.",
+    "Relais SRTLA et RTMP pour streamer en IRL : bonding 4G, 5G, Wi-Fi et Starlink, santé du flux. Aux Antilles et partout.",
   discord: "https://discord.gg/CD68F8yZuZ",
   year: new Date().getFullYear(),
 };

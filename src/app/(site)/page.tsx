@@ -13,7 +13,7 @@ import { getHomeStreamers } from "@/lib/streamers";
 export const metadata: Metadata = {
   title: { absolute: "Relais SRTLA et RTMP pour streamer en IRL · SYXTEE NETWORKS" },
   description:
-    "Relais SRTLA et RTMP pour streamer en IRL : bonding 4G/5G, Wi-Fi et Starlink, mire de coupure, santé du flux. Aux Antilles et partout.",
+    "Relais SRTLA et RTMP pour streamer en IRL : bonding 4G/5G, Wi-Fi et Starlink, santé du flux. Aux Antilles et partout.",
   alternates: { canonical: "/" },
 };
 

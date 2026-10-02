@@ -14,7 +14,7 @@ const count = (n: number, one: string, many: string) => (Number.isFinite(n) ? `$
 const longDate = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { dateStyle: "long", timeZone: "Europe/Paris" });
 
 const TEXT: Record<Plan["id"], string> = {
-  free: "Tu as accès à l'interface et au Scanner réseau. Les relais, l'aperçu, les statistiques et la mire sont réservés aux formules payantes.",
+  free: "Tu as accès à l'interface et au Scanner réseau. Les relais, l'aperçu et les statistiques sont réservés aux formules payantes.",
   basic: "Un relais et l'essentiel pour streamer en IRL.",
   beta: "Merci d'être là depuis la bêta : ton accès complet est conservé, sans rien payer. Ta formule inclut déjà tout.",
   paid: "Tout SYXTEE : 5 relais SRTLA + 5 RTMP, 3 flux en même temps.",

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import MireStatus from "@/components/dashboard/MireStatus";
 import { SessionList } from "@/components/dashboard/sessions";
 import StreamHealth from "@/components/dashboard/StreamHealth";
 import StreamPreview from "@/components/dashboard/StreamPreview";
@@ -79,12 +78,6 @@ export default async function RelayPage({ params }: PageProps<"/dashboard/relais
                     </div>
                   </Tile>
                 )}
-                <Tile>
-                  <TileLabel>Mire de coupure</TileLabel>
-                  <div className="mt-4">
-                    <MireStatus available={relay.regie_available} />
-                  </div>
-                </Tile>
               </div>
               <div className="lg:col-span-3">
                 <StreamHealth coreUrl={publicCoreUrl} relayId={relay.id} />

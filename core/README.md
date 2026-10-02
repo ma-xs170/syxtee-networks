@@ -199,6 +199,8 @@ du -sh /opt/syxtee/data           # historique santé (24 h) + aperçus
 
 ## Régie (mire automatique)
 
+> **Désactivée en production (2026-10-02)** : en 1080p, chaque relais en direct ré-encode la vidéo (~1,5 à 2 vCPU) et 4 relais saturaient 6 vCPU (600 %). Le code reste, désactivé par défaut (`REGIE_ENABLED=false`) ; ne la réactiver qu'avec une machine bien plus grosse ou une régie qui ne ré-encode pas le direct.
+
 **La mire est native** : dès que `REGIE_ENABLED=true`, **tous** les relais autorisés passent par la régie (plus de choix Direct / Régie). Le Core ignore la colonne `mode` (migration `0022_regie_native.sql` pour l'aligner). L'URL OBS d'un relais est toujours celle de sortie de la régie (`out_play_id`) ; l'ancienne URL de lecture directe continue de marcher, mais sans mire. Une régie tourne en permanence par relais autorisé, même hors direct (mire statique : peu de CPU) ; compte ~0,7 vCPU de plus pendant un direct en 720p.
 
 Réencode chaque flux en mode Régie (x264) : ~1,5–2 vCPU par flux 1080p, ~0,7 en 720p. **Pas sur le droplet 1 Go.**

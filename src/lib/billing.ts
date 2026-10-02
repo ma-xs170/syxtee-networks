@@ -12,7 +12,7 @@ export const CATALOG: Record<Tier, { name: string; pitch: string; points: string
   basic: {
     name: "Basique",
     pitch: "Pour débuter en IRL avec un seul setup.",
-    points: ["1 relais SRTLA ou RTMP", "1 flux en direct", "Santé du flux et mire de coupure"],
+    points: ["1 relais SRTLA ou RTMP", "1 flux en direct", "Santé du flux"],
     prices: { month: { amount: "5,99 €", cents: 599 }, year: { amount: "59 €", cents: 5900 } },
   },
   paid: {

@@ -14,7 +14,7 @@ type Cell = { title: string; text: string; art: ReactNode; wide?: boolean; tone:
 const cells: Cell[] = [
   { title: "SRTLA ou RTMP, au choix", text: "SRTLA pour le bonding en mouvement. RTMP pour une caméra DJI, GoPro ou OBS.", art: <RelayServer />, wide: true, tone: "grid" },
   { title: "Bonding multi-réseaux", text: "4G, 5G, Wi-Fi et Starlink combinés. Si un réseau lâche, les autres continuent.", art: <PhoneMoblin />, tone: "plain" },
-  { title: "Mire de coupure", text: "OBS ne voit jamais de noir : une mire prend le relais quand le signal tombe.", art: <ObsScreen />, tone: "glow" },
+  { title: "Studio dans le navigateur", text: "Compose tes scènes, enregistre et diffuse vers Twitch, Kick ou YouTube, sans OBS.", art: <ObsScreen />, tone: "glow" },
   { title: "Santé du flux", text: "Débit, pertes et latence en direct, dans ton dashboard.", art: <HealthArt />, tone: "plain" },
   { title: "Aperçu et stats", text: "Ton flux en temps réel, et l'historique de tes lives.", art: <PreviewArt />, tone: "grid" },
   { title: "Clés uniques et sécurisées", text: "Une clé par relais, chiffrée côté serveur. Un second publieur est refusé.", art: <KeyArt />, tone: "plain" },

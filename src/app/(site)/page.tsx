@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
 import FeatureExplorer from "@/components/home/FeatureExplorer";
-import JourneyStory from "@/components/home/JourneyStory";
+import StreamerWall from "@/components/home/StreamerWall";
 import RelayBento from "@/components/home/RelayBento";
 import StudioPromo from "@/components/sections/StudioPromo";
 import CreateSteps from "@/components/home/CreateSteps";
 import Guides from "@/components/sections/Guides";
 import Offers from "@/components/sections/Offers";
-import Streamers from "@/components/sections/Streamers";
 import FinalCta from "@/components/sections/FinalCta";
 import { getHomeStreamers } from "@/lib/streamers";
 
@@ -27,12 +26,11 @@ export default async function Home() {
       <Hero streamers={streamers} />
       <FeatureExplorer />
       <StudioPromo />
-      <JourneyStory />
+      <StreamerWall streamers={streamers} />
       <RelayBento />
       <CreateSteps />
       <Guides />
       <Offers />
-      <Streamers streamers={streamers} />
       <FinalCta />
     </>
   );

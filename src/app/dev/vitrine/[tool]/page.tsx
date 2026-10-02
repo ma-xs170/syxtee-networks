@@ -5,6 +5,7 @@ import StreamHealth, { type Sample } from "@/components/dashboard/StreamHealth";
 import { DailyBars } from "@/components/dashboard/charts";
 import { SessionList } from "@/components/dashboard/sessions";
 import { Tile, TileLabel } from "@/components/dashboard/ui";
+import StreamerWall from "@/components/home/StreamerWall";
 import StudioDemo from "@/components/studio/StudioDemo";
 import RelayList from "@/components/relais/RelayList";
 import type { Overview as OverviewData, LiveSession } from "@/lib/dashboard-data";
@@ -127,7 +128,19 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           <Overview initial={OVERVIEW} />
         </DemoLive>
       )}
-      {!["relais", "sante", "accueil", "studio"].includes(tool) && notFound()}
+      {tool === "mur" && (
+        <StreamerWall
+          streamers={Array.from({ length: 70 }, (_, i) => ({
+            handle: ["lunaplay", "nokta_tv", "kairo", "mellow", "zeph", "orbitfr", "tiki", "vexa", "dolmen", "sorbet"][i % 10] + (i >= 10 ? i : ""),
+            firstName: i === 1 ? "Inès" : null,
+            partner: i === 2,
+            url: "https://twitch.tv",
+            avatar: null,
+            live: i === 0 ? { viewers: 1284 } : null,
+          }))}
+        />
+      )}
+      {!["relais", "sante", "accueil", "studio", "mur"].includes(tool) && notFound()}
     </div>
   );
 }

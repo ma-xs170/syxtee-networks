@@ -13,12 +13,13 @@ import ThemeToggle from "@/components/ThemeToggle";
 type Item = { label: string; href: string; badge?: number };
 type Group = { title?: string; items: Item[] };
 
-function groups(openTickets: number): Group[] {
+function groups(openTickets: number, pending: number): Group[] {
   return [
     { items: [{ label: "Vue d'ensemble", href: "/admin" }] },
     {
       title: "Clients",
       items: [
+        { label: "Demandes d'accès", href: "/admin/acces", badge: pending },
         { label: "Support", href: "/admin/support", badge: openTickets },
         { label: "Comptes", href: "/admin/comptes" },
         { label: "Partenaires", href: "/admin/partenaires" },
@@ -44,10 +45,10 @@ function groups(openTickets: number): Group[] {
   ];
 }
 
-export default function AdminShell({ openTickets, name, children }: { openTickets: number; name: string; children: ReactNode }) {
+export default function AdminShell({ openTickets, pendingAccess, name, children }: { openTickets: number; pendingAccess: number; name: string; children: ReactNode }) {
   const path = usePathname();
   if (path === "/admin/2fa") return <>{children}</>;
-  const all = groups(openTickets);
+  const all = groups(openTickets, pendingAccess);
   const active = (href: string) => (href === "/admin" ? path === "/admin" : path === href || path.startsWith(`${href}/`));
 
   return (

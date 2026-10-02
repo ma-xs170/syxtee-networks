@@ -1,14 +1,42 @@
 import Image from "next/image";
 import Link from "next/link";
-import { isMenu, nav, site, type NavLink } from "@/lib/site";
+import { site, type NavLink } from "@/lib/site";
 import ThemeToggle from "./ThemeToggle";
 import Wordmark from "./Wordmark";
 import { DiscordIcon } from "./ui";
 
-// Mêmes catégories que la nav : Produits (+ Offres), Outils, Ressources, puis Support.
-const columns: { title: string; links: (NavLink & { group?: string; wordmark?: string })[] }[] = nav.filter(isMenu).map((m) => ({ title: m.label, links: [...m.children] }));
-const offers = nav.find((item) => !isMenu(item)) as NavLink | undefined;
-if (offers) columns[0]?.links.push(offers);
+// Le menu du site ne garde que trois entrées : le pied de page garde le plan complet du site.
+type FooterLink = NavLink & { wordmark?: string; group?: string };
+const columns: { title: string; links: FooterLink[] }[] = [
+  {
+    title: "Produits",
+    links: [
+      { label: "Relais SYXTEE", href: "/relais", wordmark: "RELAIS" },
+      { label: "SYXTEE STUDIO", href: "/syxtee-studio", badge: "Nouveau", wordmark: "STUDIO" },
+      { label: "SYXTEE PRO", href: "/pro", badge: "À venir", wordmark: "PRO" },
+      { label: "Demander l'accès", href: "/acces" },
+    ],
+  },
+  {
+    title: "Outils",
+    links: [
+      { label: "Moblin", href: "/moblin" },
+      { label: "Saily", href: "/saily", badge: "Partenaire" },
+      { label: "Starlink", href: "/starlink" },
+      { label: "Analyseur réseau", href: "/analyseur" },
+    ],
+  },
+  {
+    title: "Ressources",
+    links: [
+      { label: "Documentation", href: "/docs" },
+      { label: "Fonctionnement", href: "/fonctionnement" },
+      { label: "Services", href: "/services" },
+      { label: "Où capter", href: "/couverture" },
+      { label: "FAQ", href: "/faq" },
+    ],
+  },
+];
 
 export default function Footer() {
   return (
@@ -16,7 +44,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-4 py-14 sm:px-6 md:grid-cols-4 lg:grid-cols-6">
         <div className="col-span-2 md:col-span-4 lg:col-span-2">
           <div className="flex items-center gap-3">
-            <Image src="/logo-400.png" alt="" width={22} height={31} className="ink-img" />
+            <Image src="/logo-400.png" alt="" width={22} height={31} style={{ width: 22, height: "auto" }} className="ink-img" />
             <span className="text-sm font-semibold tracking-[0.18em]">SYXTEE <span className="font-normal text-muted">NETWORKS</span></span>
           </div>
           <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted">
@@ -45,14 +73,17 @@ export default function Footer() {
 
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Support</p>
-          <p className="mt-4 text-sm text-muted">Toutes les demandes passent uniquement par Discord.</p>
+          <p className="mt-4 text-sm text-muted">Ouvre une demande depuis ton espace, ou rejoins la communauté sur Discord.</p>
+          <Link href="/dashboard/support" className="mt-4 inline-block text-sm text-foreground hover:underline">
+            Ouvrir une demande
+          </Link>
           <a
             href={site.discord}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 inline-flex items-center gap-2 text-sm text-foreground hover:underline"
+            className="mt-3 flex items-center gap-2 text-sm text-muted hover:text-foreground"
           >
-            <DiscordIcon /> Ouvrir un ticket
+            <DiscordIcon /> Discord
           </a>
         </div>
       </div>

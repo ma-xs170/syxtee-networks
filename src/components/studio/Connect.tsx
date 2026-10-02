@@ -29,7 +29,7 @@ export default function Connect({ coreUrl, link, agent, obsDown, compact }: { co
 
   const message =
     link === "denied"
-      ? "Le Studio est réservé aux comptes invités. Demande ton invitation sur le Discord."
+      ? "Le Studio est réservé aux comptes invités. Demande ton accès."
       : link === "connecting"
         ? "Connexion au serveur…"
         : link === "off"
@@ -47,8 +47,8 @@ export default function Connect({ coreUrl, link, agent, obsDown, compact }: { co
           <h2 className="text-lg font-semibold tracking-tight">{link === "denied" ? "Accès sur invitation" : "Relie ton OBS"}</h2>
           <p className="mt-2 max-w-[60ch] text-sm text-muted">{message}</p>
           {link === "denied" && (
-            <a href={site.discord} target="_blank" rel="noopener noreferrer" className={`${btn} mt-4 bg-accent text-on-accent hover:bg-accent-hover`}>
-              Demander une invitation
+            <a href="/acces" className={`${btn} mt-4 bg-accent text-on-accent hover:bg-accent-hover`}>
+              Demander l\'accès
             </a>
           )}
         </section>

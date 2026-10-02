@@ -52,7 +52,7 @@ export default async function AccesPage() {
         </Tile>
 
         <Tile aria-labelledby="invitation">
-          <TileLabel id="invitation">{plan.id === "free" ? "Demander une invitation" : "Besoin de plus ?"}</TileLabel>
+          <TileLabel id="invitation">{plan.id === "free" ? "Demander l'accès" : "Besoin de plus ?"}</TileLabel>
           <p className="mt-4 text-sm leading-relaxed text-muted">
             {plan.id === "free" ? "Écris-nous sur le Discord, avec ton identifiant de support (en bas du dashboard)." : "Plus de relais ou plus de flux simultanés : demande-le sur le Discord."}
           </p>

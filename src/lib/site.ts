@@ -9,43 +9,18 @@ export const site = {
 };
 
 export type ToolIcon = "bag" | "rack" | "phone" | "dish" | "esim" | "route" | "services" | "docs" | "faq" | "tower" | "studio" | "map";
-export type NavLink = { label: string; href: string; badge?: string };
+export type NavLink = { label: string; href: string; badge?: string; /** Flèche ↗ à droite : page à part (documentation). */ arrow?: boolean };
 /** `soon` : produit pas encore sorti, affiché grisé dans les menus (le lien reste cliquable). */
 export type NavTool = NavLink & { desc: string; icon: ToolIcon; soon?: boolean; /** Produit SYXTEE : affiché « (S) SYXTEE <fonction> » avec le logo. */ wordmark?: string; /** Sous-section du menu (titre de colonne). */ group?: string };
 /** Menu déroulant : `dot` = point rouge de nouveauté à côté du libellé, `note` = ligne en pied de panneau. */
 export type NavMenu = { label: string; children: NavTool[]; dot?: boolean; note?: string };
 export type NavItem = NavLink | NavMenu;
 
+// Menu du site : trois entrées. Produits, Outils et Ressources vivent dans la documentation (/docs).
 export const nav: NavItem[] = [
-  {
-    label: "Produits",
-    children: [
-      { label: "Relais SYXTEE", href: "/relais", desc: "Nos serveurs SRTLA et RTMP", icon: "rack", wordmark: "RELAIS" },
-      { label: "SYXTEE STUDIO", href: "/syxtee-studio", desc: "Ta régie dans le navigateur", icon: "studio", badge: "Nouveau", wordmark: "STUDIO" },
-      { label: "SYXTEE PRO", href: "/pro", desc: "Le sac encodeur IRL", icon: "bag", badge: "À venir", soon: true, wordmark: "PRO" },
-    ],
-  },
-  {
-    label: "Outils",
-    note: "Tous nos outils fonctionnent avec le relais SYXTEE",
-    children: [
-      { label: "Moblin", href: "/moblin", desc: "L'app IRL qu'on recommande", icon: "phone", group: "Streamer" },
-      { label: "Saily", href: "/saily", desc: "Une 4G de plus en eSIM", icon: "esim", badge: "Partenaire", group: "Streamer" },
-      { label: "Starlink", href: "/starlink", desc: "Le live là où la 4G abandonne", icon: "dish", group: "Réseau" },
-      { label: "Analyseur réseau", href: "/analyseur", desc: "Teste ta 4G / 5G là où tu es", icon: "tower", group: "Réseau" },
-    ],
-  },
-  {
-    label: "Ressources",
-    children: [
-      { label: "Fonctionnement", href: "/fonctionnement", desc: "Le trajet d'un live de A à Z", icon: "route", group: "Comprendre" },
-      { label: "Services", href: "/services", desc: "Tout ce que fait le relais", icon: "services", group: "Comprendre" },
-      { label: "Où capter", href: "/couverture", desc: "La carte du réseau 4G / 5G", icon: "map", group: "Comprendre" },
-      { label: "Documentation", href: "/docs", desc: "Les guides pour bien démarrer", icon: "docs", group: "Aide" },
-      { label: "FAQ", href: "/faq", desc: "Les questions qu'on nous pose", icon: "faq", group: "Aide" },
-    ],
-  },
-  { label: "Invitation", href: "/offres" },
+  { label: "Relais", href: "/relais" },
+  { label: "Documentation", href: "/docs", arrow: true },
+  { label: "Demander l'accès", href: "/acces" },
 ];
 
 export const isMenu = (item: NavItem): item is NavMenu => "children" in item;

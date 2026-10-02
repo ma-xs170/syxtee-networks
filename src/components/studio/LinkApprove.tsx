@@ -66,9 +66,9 @@ export default function LinkApprove({ code: initial, coreUrl }: { code: string; 
       ) : state === "denied" ? (
         <>
           <h1 className="mt-3 text-2xl font-semibold tracking-tight">Accès sur invitation</h1>
-          <p className="mt-3 text-sm text-muted">Ton compte n&apos;a pas encore l&apos;accès à SYXTEE Link et au Studio. Demande ton invitation sur le Discord.</p>
-          <a href={site.discord} target="_blank" rel="noopener noreferrer" className={`${btn} mt-6 bg-accent text-on-accent hover:bg-accent-hover`}>
-            Demander une invitation
+          <p className="mt-3 text-sm text-muted">Ton compte n&apos;a pas encore l&apos;accès à SYXTEE Link et au Studio. Demande ton accès.</p>
+          <a href="/acces" className={`${btn} mt-6 bg-accent text-on-accent hover:bg-accent-hover`}>
+            Demander l\'accès
           </a>
         </>
       ) : info ? (

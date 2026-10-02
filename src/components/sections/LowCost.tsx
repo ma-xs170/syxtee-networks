@@ -51,7 +51,7 @@ export default function LowCost() {
         </div>
 
         <div className="mt-10">
-          <MoreLink href="/offres" />
+          <MoreLink href="/acces" />
         </div>
       </Container>
     </section>

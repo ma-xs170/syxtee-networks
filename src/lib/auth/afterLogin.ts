@@ -3,6 +3,7 @@ import type { User } from "@supabase/supabase-js";
 import { isAdminEmail } from "@/lib/admin";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 import { getTwitchUser } from "@/lib/twitch";
+import { grantInvitedPlan } from "@/lib/access";
 import { safeNext } from "./dal";
 
 const httpsUrl = (v: unknown) => (typeof v === "string" && v.startsWith("https://") ? v : null);
@@ -13,6 +14,7 @@ const httpsUrl = (v: unknown) => (typeof v === "string" && v.startsWith("https:/
  */
 export async function afterLogin(user: User, next: string | null) {
   if (!hasAdmin) return safeNext(next);
+  await grantInvitedPlan(user);
   const admin = createAdminClient();
   // « role » arrive avec 0018_admin.sql : sans la colonne, on relit sans elle (jamais de boucle vers /bienvenue).
   const first = await admin.from("profiles").select("avatar_url, twitch_id, onboarded_at, plan, role").eq("id", user.id).single();

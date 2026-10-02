@@ -42,8 +42,8 @@ export default function StudioPage() {
                 Ouvrir le studio
                 <span aria-hidden="true">↗</span>
               </Link>
-              <Link href="/offres" className={`${cta} border border-foreground/20 bg-background/60 text-foreground backdrop-blur-sm hover:bg-background/90`}>
-                Demander une invitation
+              <Link href="/acces" className={`${cta} border border-foreground/20 bg-background/60 text-foreground backdrop-blur-sm hover:bg-background/90`}>
+                Demander l'accès
               </Link>
             </div>
           </div>
@@ -118,7 +118,7 @@ export default function StudioPage() {
         </Container>
       </section>
 
-      <NextStep label="Demander une invitation" href="/offres" />
+      <NextStep label="Demander l'accès" href="/acces" />
     </>
   );
 }

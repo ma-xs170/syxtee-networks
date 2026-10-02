@@ -5,6 +5,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: site.url, changeFrequency: "weekly", priority: 1 },
     ...navLinks.map((item) => ({ url: `${site.url}${item.href}`, changeFrequency: "monthly" as const, priority: 0.8 })),
+    // Pages rangées dans la documentation (plus dans le menu) : toujours publiques.
+    ...["/syxtee-studio", "/fonctionnement", "/services", "/moblin", "/starlink", "/saily", "/analyseur", "/couverture", "/faq"].map((href) => ({
+      url: `${site.url}${href}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
     // Hors menu (remplacée par « Où capter ») mais toujours publique.
     { url: `${site.url}/antennes`, changeFrequency: "weekly", priority: 0.6 },
     { url: `${site.url}/mentions-legales`, changeFrequency: "yearly", priority: 0.2 },

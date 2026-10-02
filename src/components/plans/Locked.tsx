@@ -43,10 +43,10 @@ export function UpgradeModal({ open, feature, onClose }: { open: boolean; featur
         {feature ? <span className="text-foreground">{feature}</span> : "Cette fonction"} est réservé aux comptes invités. Le Scanner réseau reste ouvert à tous.
       </p>
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <a href={site.discord} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
-          Demander une invitation
+        <a href="/acces" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
+          Demander l\'accès
         </a>
-        <Link href="/offres" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-foreground/25 px-5 text-sm font-medium transition-colors hover:bg-foreground/10">
+        <Link href="/acces" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-foreground/25 px-5 text-sm font-medium transition-colors hover:bg-foreground/10">
           Comment ça marche
         </Link>
       </div>

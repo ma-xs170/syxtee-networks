@@ -29,11 +29,59 @@ export function verifyEmail(o: { url: string; firstName?: string | null }): Emai
   };
 }
 
+/** Accès approuvé (demande d'accès) : le bouton mène à la création du compte, qui reçoit la formule Partenaire. */
+export function accessApproved(o: { firstName?: string | null; email: string }): Email {
+  const url = `${site.url}/inscription?email=${encodeURIComponent(o.email)}`;
+  return {
+    subject: "Ta demande est approuvée : bienvenue chez SYXTEE NETWORKS",
+    element: (
+      <Layout preview="Ta demande d'accès est approuvée. Crée ton compte." kicker="Accès approuvé" reason="Tu reçois cet email car tu as demandé l'accès à SYXTEE NETWORKS avec cette adresse.">
+        <Title lead="Tu as été" hl="approuvé." />
+        <Hi name={o.firstName} />
+        <Text style={p}>
+          Bonne nouvelle : ta demande d&apos;accès est acceptée. SYXTEE NETWORKS te souhaite la bienvenue. Ton accès partenaire inclut les relais SRTLA et RTMP, SYXTEE STUDIO et toutes les fonctions.
+        </Text>
+        <Text style={p}>Clique sur le bouton, crée ton compte avec cette adresse (celle de cet email) et ton accès s&apos;active tout seul.</Text>
+        <Cta href={url}>Créer mon compte</Cta>
+        <RawLink href={url} />
+      </Layout>
+    ),
+  };
+}
+
+/** Prévient l'équipe d'une nouvelle demande d'accès (détail complet dans l'admin). */
+export function accessRequested(o: { name: string; email: string; channel: string; platform: string; audience: string; devices: string; message: string; adminUrl: string }): Email {
+  const rows: [string, string][] = [
+    ["Nom", o.name],
+    ["Email", o.email],
+    ["Chaîne", `${o.channel} (${o.platform})`],
+    ["Audience", o.audience || "non précisée"],
+    ["Matériel", o.devices || "non précisé"],
+  ];
+  return {
+    subject: `Demande d'accès : ${o.name}`,
+    element: (
+      <Layout preview={`${o.name} demande l'accès.`} kicker="Admin" reason="Tu reçois cet email car tu es administrateur SYXTEE NETWORKS.">
+        <Title lead="Nouvelle demande" hl="d'accès." />
+        {rows.map(([k, v]) => (
+          <Text key={k} style={{ ...p, margin: "0 0 8px" }}>
+            <span style={{ ...mono, color: C.muted, fontSize: "12px" }}>{k}</span>
+            <br />
+            {v}
+          </Text>
+        ))}
+        {o.message && <Text style={{ ...p, whiteSpace: "pre-wrap", borderLeft: `2px solid ${C.line}`, paddingLeft: "12px" }}>{o.message}</Text>}
+        <Cta href={o.adminUrl}>Traiter la demande</Cta>
+      </Layout>
+    ),
+  };
+}
+
 /** b) Bienvenue, après la vérification. */
 export function welcome(o: { firstName?: string | null; lastName?: string | null }): Email {
   const full = [o.firstName, o.lastName].filter(Boolean).join(" ");
   const steps: [string, string, string][] = [
-    ["Demande ton invitation", "Relais SRTLA, URLs Moblin et OBS, santé du flux, sur invitation.", `${site.url}/offres`],
+    ["Demande ton accès", "Relais SRTLA, URLs Moblin et OBS, santé du flux : ouvert aux partenaires.", `${site.url}/offres`],
     ["Scanne ton réseau", "L'analyseur mesure ta 4G/5G et alimente la carte de couverture.", `${site.url}/dashboard/analyseur`],
     ["Rejoins le Discord", "Réglages, entraide et support.", site.discord],
   ];

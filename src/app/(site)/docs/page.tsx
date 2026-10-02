@@ -1,63 +1,60 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import NextStep from "@/components/NextStep";
-import StudioBanner from "@/components/StudioBanner";
-import PageHero from "@/components/PageHero";
-import { ToolArt } from "@/components/NavTools";
-import { Container } from "@/components/ui";
-import type { ToolIcon } from "@/lib/site";
+import CloudBackdrop from "@/components/home/CloudBackdrop";
+import DocsBrowser, { type Section } from "@/components/docs/DocsBrowser";
+import Highlight from "@/components/ui/Highlight";
 
 export const metadata: Metadata = {
   title: "Documentation",
-  description: "Les guides SYXTEE NETWORKS pour démarrer en IRL : Moblin, Starlink, eSIM Saily, relais SRTLA, trajet d'un live et FAQ.",
+  description: "La documentation SYXTEE NETWORKS : démarrer en IRL, relais SRTLA et RTMP, Moblin, Starlink, eSIM Saily, SYXTEE STUDIO, caméras DJI, analyseur réseau et FAQ.",
   alternates: { canonical: "/docs" },
 };
 
-// Point d'entrée de la documentation : renvoie vers les guides existants.
-const guides: { href: string; title: string; text: string; icon: ToolIcon }[] = [
-  { href: "/fonctionnement", title: "Fonctionnement", text: "Le trajet d'un live de A à Z, du téléphone à ton OBS.", icon: "route" },
-  { href: "/moblin", title: "Moblin", text: "Installer l'app et la brancher sur le relais SYXTEE.", icon: "phone" },
-  { href: "/relais", title: "Relais SYXTEE", text: "Choisir ton serveur SRTLA et savoir à quelle latence t'attendre.", icon: "rack" },
-  { href: "/starlink", title: "Starlink", text: "Streamer là où la 4G ne passe plus.", icon: "dish" },
-  { href: "/saily", title: "Saily", text: "Ajouter une 4G de plus à ton bonding avec une eSIM.", icon: "esim" },
-  { href: "/docs/dji", title: "Caméras externes", text: "DJI Osmo en Bluetooth, GoPro en RTMP : diffuser vers ton relais.", icon: "phone" },
-  { href: "/faq", title: "FAQ", text: "Batterie, data, OBS, Android : les réponses aux questions fréquentes.", icon: "faq" },
+// Point d'entrée unique : les anciens menus du site (Produits, Outils, Ressources) sont rangés ici par thème.
+const sections: Section[] = [
+  {
+    title: "Démarrer",
+    guides: [
+      { href: "/fonctionnement", title: "Fonctionnement", text: "Le trajet d'un live de A à Z, du téléphone à ton OBS.", icon: "route", keywords: "trajet live bonding srt obs" },
+      { href: "/relais", title: "Relais SYXTEE", text: "Choisir ton serveur SRTLA ou RTMP et savoir à quelle latence t'attendre.", icon: "rack", keywords: "serveur srtla rtmp latence url" },
+      { href: "/services", title: "Services", text: "Tout ce que fait le relais pour ton direct.", icon: "services", keywords: "fonctions relais" },
+      { href: "/moblin", title: "Moblin", text: "Installer l'app IRL et la brancher sur le relais SYXTEE.", icon: "phone", keywords: "iphone app irl srtla" },
+    ],
+  },
+  {
+    title: "Réseau",
+    guides: [
+      { href: "/starlink", title: "Starlink", text: "Streamer là où la 4G ne passe plus, avec une antenne satellite.", icon: "dish", keywords: "satellite mini antenne forfait" },
+      { href: "/saily", title: "Saily", text: "Ajouter une 4G de plus à ton bonding avec une eSIM.", icon: "esim", keywords: "esim 4g operateur", badge: "Partenaire" },
+      { href: "/analyseur", title: "Analyseur réseau", text: "Teste ta 4G et ta 5G là où tu es, en quelques secondes.", icon: "tower", keywords: "test debit 4g 5g mesure scanner" },
+      { href: "/couverture", title: "Où capter", text: "La carte du réseau 4G et 5G.", icon: "map", keywords: "carte couverture antennes" },
+    ],
+  },
+  {
+    title: "Produits et matériel",
+    guides: [
+      { href: "/syxtee-studio", title: "SYXTEE STUDIO", text: "Pilote ton OBS depuis ton navigateur ou ton téléphone.", icon: "studio", keywords: "regie obs telecommande scenes", badge: "Nouveau" },
+      { href: "/docs/dji", title: "Caméras externes", text: "DJI Osmo en Bluetooth, GoPro en RTMP : diffuser vers ton relais.", icon: "phone", keywords: "dji osmo gopro insta360 camera rtmp bluetooth" },
+    ],
+  },
+  {
+    title: "Aide",
+    guides: [{ href: "/faq", title: "FAQ", text: "Batterie, data, OBS, Android : les réponses aux questions fréquentes.", icon: "faq", keywords: "questions batterie data android" }],
+  },
 ];
 
 export default function DocsPage() {
   return (
-    <>
-      <PageHero kicker="Documentation" title="Les guides pour bien démarrer." crumb="Documentation">
-        Tout ce qu&apos;il faut pour passer du premier réglage au premier live.
-      </PageHero>
-
-      <section className="border-b border-line py-20 sm:py-24">
-        <Container>
-          <ul className="grid gap-4 md:grid-cols-2">
-            {guides.map((g) => (
-              <li key={g.href}>
-                <Link href={g.href} className="group flex items-center gap-6 rounded-2xl border border-line p-5 transition-colors hover:bg-foreground/[0.08] sm:p-6">
-                  <span className="h-20 w-20 shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.05]">
-                    <ToolArt icon={g.icon} />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="flex items-center gap-2 text-lg font-medium">
-                      {g.title}
-                      <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">
-                        →
-                      </span>
-                    </span>
-                    <span className="mt-1 block text-sm leading-relaxed text-muted">{g.text}</span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Container>
-      </section>
-
-      <StudioBanner />
-      <NextStep label="Retour à l'accueil" href="/" />
-    </>
+    <DocsBrowser
+      sections={sections}
+      backdrop={<CloudBackdrop />}
+      title={
+        <>
+          <h1 className="h-hero mx-auto max-w-3xl">
+            La <Highlight>documentation.</Highlight>
+          </h1>
+          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-foreground/75 sm:text-lg">Tout pour passer du premier réglage au premier live.</p>
+        </>
+      }
+    />
   );
 }

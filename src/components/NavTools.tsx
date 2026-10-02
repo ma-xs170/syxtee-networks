@@ -157,6 +157,11 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
             className={`whitespace-nowrap text-sm transition-colors hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-foreground/75"}`}
           >
             {item.label}
+            {"arrow" in item && item.arrow && (
+              <span aria-hidden="true" className="ml-1 inline-block text-foreground/60">
+                ↗
+              </span>
+            )}
           </Link>
         ),
       )}

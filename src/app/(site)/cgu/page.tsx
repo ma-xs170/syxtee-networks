@@ -36,7 +36,7 @@ export default function CguPage() {
       <LegalBlock title="5. Services et disponibilité">
         <p>
           Les services (relais, dashboard, outils) sont fournis en l&apos;état. Nous faisons notre possible pour qu&apos;ils restent disponibles, sans
-          garantie de continuité. Les conditions tarifaires des offres payantes sont précisées sur la page <Link href="/offres" className="text-foreground underline">Offres</Link>. [À COMPLÉTER si vente en ligne : conditions générales de vente]
+          garantie de continuité. Les conditions tarifaires des offres payantes sont précisées sur la page <Link href="/acces" className="text-foreground underline">Offres</Link>. [À COMPLÉTER si vente en ligne : conditions générales de vente]
         </p>
       </LegalBlock>
       <LegalBlock title="6. Usages interdits">

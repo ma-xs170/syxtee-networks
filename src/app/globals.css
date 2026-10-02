@@ -69,7 +69,8 @@
   --surface-2: #212328;
   --line: rgba(255, 255, 255, 0.11);
   --line-strong: rgba(255, 255, 255, 0.2);
-  --muted: #9a9ea8;
+  --foreground: #ffffff;
+  --muted: #bcc0ca;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) .dash-surface {
@@ -78,8 +79,29 @@
     --surface-2: #212328;
     --line: rgba(255, 255, 255, 0.11);
     --line-strong: rgba(255, 255, 255, 0.2);
-    --muted: #9a9ea8;
+    --foreground: #ffffff;
+    --muted: #bcc0ca;
   }
+}
+
+/* Lisibilité du dashboard et de l'admin : textes courants plus clairs (thème sombre) ou plus foncés (thème clair),
+   titres et mots en gras toujours à la couleur principale, jamais en gris. */
+[data-theme="light"] .dash-surface {
+  --foreground: #050505;
+  --muted: #3f4652;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .dash-surface {
+    --foreground: #050505;
+    --muted: #3f4652;
+  }
+}
+.dash-surface :is(h1, h2, h3, h4, strong, b):not([class*="text-on-accent"]) {
+  color: var(--foreground);
+}
+.dash-surface .font-semibold:not([class*="text-on-accent"]):not([class*="text-accent"]):not([class*="text-red"]),
+.dash-surface .font-medium:not([class*="text-on-accent"]):not([class*="text-accent"]):not([class*="text-red"]):not([class*="text-muted"]) {
+  color: var(--foreground);
 }
 
 @theme inline {

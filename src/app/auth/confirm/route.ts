@@ -37,6 +37,6 @@ export async function GET(request: NextRequest) {
   if (type === "email_change") return NextResponse.redirect(`${origin}/dashboard/parametres?email=ok`);
   // Adresse vérifiée (inscription) : appareil mémorisé et email de bienvenue (une seule fois).
   await checkNewDevice(data.user);
-  sendWelcomeOnce(data.user, (data.user.user_metadata?.first_name as string | undefined) ?? null);
+  sendWelcomeOnce(data.user, (data.user.user_metadata?.first_name as string | undefined) ?? null, (data.user.user_metadata?.last_name as string | undefined) ?? null);
   return NextResponse.redirect(`${origin}${await afterLogin(data.user, next)}`);
 }

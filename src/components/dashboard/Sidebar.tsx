@@ -182,7 +182,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between gap-2 px-4 pb-3 pt-4">
         <Link href="/dashboard" onClick={onNavigate} className="flex items-center gap-3" aria-label="Dashboard SYXTEE">
-          <Image src="/logo-400.png" alt="" width={24} height={33} className="ink-img" priority />
+          <Image src="/logo-400.png" alt="" width={18} height={25} className="ink-img" priority />
           <span className="text-sm font-semibold tracking-[0.18em]">
             SYXTEE<span className="font-normal text-muted"> DASHBOARD</span>
           </span>

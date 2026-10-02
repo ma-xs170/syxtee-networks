@@ -30,19 +30,20 @@ export function verifyEmail(o: { url: string; firstName?: string | null }): Emai
 }
 
 /** b) Bienvenue, après la vérification. */
-export function welcome(o: { firstName?: string | null }): Email {
+export function welcome(o: { firstName?: string | null; lastName?: string | null }): Email {
+  const full = [o.firstName, o.lastName].filter(Boolean).join(" ");
   const steps: [string, string, string][] = [
     ["Demande ton invitation", "Relais SRTLA, URLs Moblin et OBS, santé du flux, sur invitation.", `${site.url}/offres`],
     ["Scanne ton réseau", "L'analyseur mesure ta 4G/5G et alimente la carte de couverture.", `${site.url}/dashboard/analyseur`],
     ["Rejoins le Discord", "Réglages, entraide et support.", site.discord],
   ];
   return {
-    subject: "Bienvenue sur SYXTEE",
+    subject: full ? `Bienvenue ${full} sur SYXTEE NETWORKS` : "Bienvenue sur SYXTEE NETWORKS",
     element: (
       <Layout preview="Ton compte est actif : les 3 prochaines étapes." kicker="Bienvenue" reason="Tu reçois cet email car tu viens d'activer ton compte SYXTEE.">
-        <Title lead="Ton compte est" hl="actif." />
+        <Title lead="Bienvenue" hl={full ? `${full}.` : "sur SYXTEE."} />
         <Hi name={o.firstName} />
-        <Text style={p}>Trois étapes pour ton premier live :</Text>
+        <Text style={p}>Ton compte SYXTEE NETWORKS est actif. Trois étapes pour ton premier live :</Text>
         {steps.map(([t, d, href], i) => (
           <Text key={t} style={{ ...p, margin: "0 0 14px" }}>
             <span style={{ ...mono, color: C.muted, fontSize: "12px" }}>{i + 1}.</span>{" "}
@@ -54,6 +55,18 @@ export function welcome(o: { firstName?: string | null }): Email {
           </Text>
         ))}
         <Cta href={`${site.url}/dashboard`}>Ouvrir mon dashboard</Cta>
+        <Text style={{ ...p, borderTop: `1px solid ${C.line}`, paddingTop: "18px", margin: "0 0 6px", fontWeight: 600 }}>Besoin d&apos;aide ?</Text>
+        <Text style={{ ...muted, margin: "0 0 18px" }}>
+          Lis la{" "}
+          <Link href={`${site.url}/docs`} style={{ color: C.fg, textDecoration: "underline" }}>
+            documentation
+          </Link>
+          , ou ouvre une demande depuis ton{" "}
+          <Link href={`${site.url}/dashboard/support`} style={{ color: C.fg, textDecoration: "underline" }}>
+            espace support
+          </Link>
+          . On te répond là-bas.
+        </Text>
       </Layout>
     ),
   };

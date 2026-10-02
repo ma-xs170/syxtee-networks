@@ -48,13 +48,13 @@ export async function checkNewDevice(user: User) {
 }
 
 /** Bienvenue : une seule fois par compte, après la vérification de l'adresse. */
-export function sendWelcomeOnce(user: User, firstName: string | null) {
+export function sendWelcomeOnce(user: User, firstName: string | null, lastName: string | null = null) {
   if (!hasAdmin || !user.email || !user.email_confirmed_at) return;
   const email = user.email;
   after(async () => {
     const { data, error } = await createAdminClient().rpc("mark_welcomed", { p_user: user.id });
     if (error) return console.error("mark_welcomed", error.message);
-    if (data === true) await sendEmail(email, welcome({ firstName }));
+    if (data === true) await sendEmail(email, welcome({ firstName, lastName }));
   });
 }
 

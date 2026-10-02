@@ -16,7 +16,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-4 py-14 sm:px-6 md:grid-cols-4 lg:grid-cols-6">
         <div className="col-span-2 md:col-span-4 lg:col-span-2">
           <div className="flex items-center gap-3">
-            <Image src="/logo-400.png" alt="" width={32} height={44} className="ink-img" />
+            <Image src="/logo-400.png" alt="" width={22} height={31} className="ink-img" />
             <span className="text-sm font-semibold tracking-[0.18em]">SYXTEE <span className="font-normal text-muted">NETWORKS</span></span>
           </div>
           <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted">

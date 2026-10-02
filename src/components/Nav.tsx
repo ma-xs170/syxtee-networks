@@ -66,7 +66,7 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
       {/* 3 zones : logo à gauche, menus centrés, compte + Discord à droite */}
       <div className={`mx-auto flex h-16 items-center justify-between gap-6 px-4 sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] ${dash ? "max-w-[1400px]" : "max-w-6xl rounded-full border border-foreground/20 bg-background shadow-[0_10px_30px_-12px_rgba(0,0,0,0.55)]"}`}>
         <Link href={dash ? "/dashboard" : "/"} onClick={() => setOpen(false)} className="flex shrink-0 items-center gap-3 justify-self-start" aria-label={dash ? "Dashboard SYXTEE" : "SYXTEE NETWORKS, accueil"}>
-          <Image src="/logo-400.png" alt="" width={26} height={36} priority className="ink-img" />
+          <Image src="/logo-400.png" alt="" width={20} height={28} priority className="ink-img" />
           <span className="whitespace-nowrap text-sm font-semibold tracking-[0.18em]">
             SYXTEE<span className="hidden font-normal text-muted xl:inline"> {dash ? "DASHBOARD" : "NETWORKS"}</span>
           </span>

@@ -32,7 +32,7 @@ export function verifyEmail(o: { url: string; firstName?: string | null }): Emai
 /** b) Bienvenue, après la vérification. */
 export function welcome(o: { firstName?: string | null }): Email {
   const steps: [string, string, string][] = [
-    ["Choisis ta formule", "Relais SRTLA, URLs Moblin et OBS, santé du flux.", `${site.url}/offres`],
+    ["Demande ton invitation", "Relais SRTLA, URLs Moblin et OBS, santé du flux, sur invitation.", `${site.url}/offres`],
     ["Scanne ton réseau", "L'analyseur mesure ta 4G/5G et alimente la carte de couverture.", `${site.url}/dashboard/analyseur`],
     ["Rejoins le Discord", "Réglages, entraide et support.", site.discord],
   ];

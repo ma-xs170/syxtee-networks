@@ -74,7 +74,7 @@ const GROUPS: Group[] = [
 
 const ACCOUNT: Item[] = [
   { label: "Profil & réseaux", href: "/dashboard/profil", icon: UserCircle },
-  { label: "Abonnement", href: "/dashboard/abonnement", icon: CreditCard },
+  { label: "Mon accès", href: "/dashboard/abonnement", icon: CreditCard },
   { label: "Paramètres", href: "/dashboard/parametres", icon: Gear },
 ];
 

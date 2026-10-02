@@ -89,7 +89,7 @@ export default function RelaisPage() {
       </DetailSection>
 
       <StudioBanner />
-      <NextStep label="Les offres" href="/offres" />
+      <NextStep label="Demander une invitation" href="/offres" />
     </>
   );
 }

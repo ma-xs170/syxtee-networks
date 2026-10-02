@@ -117,9 +117,9 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
           </p>
         </div>
         {full ? (
-          <Link href="/offres" className="inline-flex h-12 items-center whitespace-nowrap rounded-full border border-line px-6 text-sm font-medium transition-colors hover:bg-accent/10">
-            Limite atteinte · Voir les offres
-          </Link>
+          <a href="https://discord.gg/CD68F8yZuZ" target="_blank" rel="noopener noreferrer" className="inline-flex h-12 items-center whitespace-nowrap rounded-full border border-line px-6 text-sm font-medium transition-colors hover:bg-accent/10">
+            Limite atteinte · Demander plus de relais
+          </a>
         ) : (
           <button
             type="button"

@@ -37,7 +37,7 @@ export default function StudioPage() {
               Ouvrir le studio
             </Link>
             <Link href="/offres" className="btn btn-secondary">
-              Voir les offres
+              Demander une invitation
             </Link>
           </>
         }
@@ -110,7 +110,7 @@ export default function StudioPage() {
         </Container>
       </section>
 
-      <NextStep label="Les offres" href="/offres" />
+      <NextStep label="Demander une invitation" href="/offres" />
     </>
   );
 }

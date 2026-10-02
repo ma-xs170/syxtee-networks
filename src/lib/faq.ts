@@ -15,8 +15,8 @@ export const faq: FaqItem[] = [
     a: "Oui : OBS tourne sur ton PC (à la maison, par exemple). C'est lui qui récupère le flux du relais et l'envoie sur ta plateforme, avec tes scènes et overlays.",
   },
   {
-    q: "Combien ça coûte ?",
-    a: "Trois formules : Basique 5,99 € par mois, Premium 14,99 € et Extra 34,99 €, avec 2 mois offerts à l'année. Sans engagement. Le détail est sur la page Offres.",
+    q: "Comment avoir accès ?",
+    a: "Il n'y a pas d'abonnement : l'accès aux relais et au studio en direct se fait sur invitation, comme le Partner Program. Demande la tienne sur le Discord.",
   },
   {
     q: "Comment contacter le support ?",

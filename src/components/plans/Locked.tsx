@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { site } from "@/lib/site";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 // Formule Gratuit : le bloc reste visible mais grisé et inutilisable ; un clic ouvre la modale d'upgrade.
@@ -39,14 +40,14 @@ export function UpgradeModal({ open, feature, onClose }: { open: boolean; featur
         Fonction réservée aux abonnés
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-foreground/60">
-        {feature ? <span className="text-foreground">{feature}</span> : "Cette fonction"} fait partie des formules payantes. Le Scanner réseau reste gratuit.
+        {feature ? <span className="text-foreground">{feature}</span> : "Cette fonction"} est réservé aux comptes invités. Le Scanner réseau reste ouvert à tous.
       </p>
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <Link href="/dashboard/abonnement" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
-          Passer à la formule payante
-        </Link>
+        <a href={site.discord} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
+          Demander une invitation
+        </a>
         <Link href="/offres" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-accent/25 px-5 text-sm font-medium transition-colors hover:bg-accent/10">
-          Voir les offres
+          Comment ça marche
         </Link>
       </div>
       <button type="button" onClick={onClose} className="mt-4 text-sm text-foreground/50 hover:text-foreground">

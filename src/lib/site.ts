@@ -45,7 +45,7 @@ export const nav: NavItem[] = [
       { label: "FAQ", href: "/faq", desc: "Les questions qu'on nous pose", icon: "faq", group: "Aide" },
     ],
   },
-  { label: "Offres", href: "/offres" },
+  { label: "Invitation", href: "/offres" },
 ];
 
 export const isMenu = (item: NavItem): item is NavMenu => "children" in item;

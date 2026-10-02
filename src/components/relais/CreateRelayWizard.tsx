@@ -348,9 +348,9 @@ export default function CreateRelayWizard({
                 <p role="alert" className="mt-4 text-sm text-red-400">
                   {error}{" "}
                   {error.startsWith("Limite") && (
-                    <Link href="/offres" className="text-foreground underline underline-offset-4">
-                      Voir les offres
-                    </Link>
+                    <a href="https://discord.gg/CD68F8yZuZ" target="_blank" rel="noopener noreferrer" className="text-foreground underline underline-offset-4">
+                      Demander plus de relais
+                    </a>
                   )}
                 </p>
               )}

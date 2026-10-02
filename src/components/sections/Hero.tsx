@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { relays } from "@/lib/site";
+import { relays, site } from "@/lib/site";
 import HeroStreet from "../home/HeroStreet";
 import { Container, CreateRelayLink } from "../ui";
 import Highlight from "../ui/Highlight";
@@ -31,10 +31,12 @@ export default function Hero() {
           <div className="rise mt-10 flex flex-col gap-3 sm:flex-row" style={{ "--i": 3 } as React.CSSProperties}>
             <CreateRelayLink />
             <Link
-              href="/offres"
+              href={site.discord}
+              target="_blank"
+              rel="noopener noreferrer"
               className="btn btn-secondary"
             >
-              Voir les offres
+              Demander une invitation
             </Link>
           </div>
         </div>

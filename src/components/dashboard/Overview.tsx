@@ -282,7 +282,7 @@ function Subscription({ data }: { data: OverviewData }) {
   const used = state?.relays ? state.relays.filter((r) => r.live || r.reconnecting).length : state?.live || state?.reconnecting ? 1 : 0;
   return (
     <Tile aria-labelledby="abonnement">
-      <TileLabel id="abonnement">Ton abonnement</TileLabel>
+      <TileLabel id="abonnement">Ton accès</TileLabel>
       <p className="mt-4 text-xl font-semibold tracking-tight">{data.plan.name}</p>
       <div className="mt-4 flex items-center justify-between text-sm">
         <span className="text-muted">Relais</span>
@@ -297,7 +297,7 @@ function Subscription({ data }: { data: OverviewData }) {
         </span>
       </div>
       <div className="mt-5">
-        <ArrowLink href="/offres">Voir les offres</ArrowLink>
+        <ArrowLink href="/dashboard/abonnement">Mon accès</ArrowLink>
       </div>
     </Tile>
   );

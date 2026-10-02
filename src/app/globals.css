@@ -60,6 +60,28 @@
   }
 }
 
+/* Dashboard en thème sombre : un gris ardoise plus clair que le fond du site (plus de quasi-noir), cartes un cran au-dessus.
+   Le thème clair garde ses tokens. S'applique à la coque du dashboard (classe dash-surface). */
+.dash-surface { background: var(--background); }
+[data-theme="dark"] .dash-surface {
+  --background: #232832;
+  --surface: #2b313c;
+  --surface-2: #343b48;
+  --line: rgba(255, 255, 255, 0.11);
+  --line-strong: rgba(255, 255, 255, 0.2);
+  --muted: #a4abb8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .dash-surface {
+    --background: #232832;
+    --surface: #2b313c;
+    --surface-2: #343b48;
+    --line: rgba(255, 255, 255, 0.11);
+    --line-strong: rgba(255, 255, 255, 0.2);
+    --muted: #a4abb8;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

@@ -244,7 +244,7 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
   useEffect(() => setOpen(false), [pathname]);
 
   return (
-    <div className="min-h-dvh lg:grid lg:grid-cols-[264px_1fr]">
+    <div className="dash-surface min-h-dvh lg:grid lg:grid-cols-[264px_1fr]">
       <aside className="sticky top-0 hidden h-dvh border-r border-line bg-surface lg:block">
         <Content admin={admin} onNavigate={() => {}} />
       </aside>
@@ -276,7 +276,7 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
 
       <div className="relative min-w-0">
         {/* Fond de la page : même principe que l'accueil (dégradé rouge et nuages animés), qui se fond dans le thème vers le bas. */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[26rem] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_30%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_30%,transparent_100%)]">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[40rem] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_35%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_35%,transparent_100%)]">
           <CloudBackdrop tone="theme" />
         </div>
         <div className="relative">{children}</div>

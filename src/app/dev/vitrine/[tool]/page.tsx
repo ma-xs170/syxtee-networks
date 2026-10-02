@@ -125,7 +125,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
       )}
       {tool === "studio" && <StudioDemo />}
       {tool === "fond" && (
-        <div className="relative -m-8 min-h-[900px] p-8">
+        <div className="dash-surface relative -m-8 min-h-[900px] p-8">
           <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[26rem] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_30%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_30%,transparent_100%)]">
             <CloudBackdrop tone="theme" />
           </div>

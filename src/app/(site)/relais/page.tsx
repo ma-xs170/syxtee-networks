@@ -5,7 +5,8 @@ import DetailSection, { Point } from "@/components/blocks/DetailSection";
 import RelayGrid from "@/components/blocks/RelayGrid";
 import RelayWorld from "@/components/globe/RelayWorld";
 import { publicCoreUrl } from "@/lib/core";
-import RelayStory from "@/components/relay/RelayStory";
+import CloudBackdrop from "@/components/home/CloudBackdrop";
+import Highlight from "@/components/ui/Highlight";
 import { Container, SectionHeader } from "@/components/ui";
 
 export const metadata: Metadata = {
@@ -25,7 +26,15 @@ const latency = [
 export default function RelaisPage() {
   return (
     <>
-      <RelayStory />
+      <section data-theme="light" className="relative -mt-[4.75rem] overflow-hidden border-b border-line bg-background pb-16 pt-[9rem] text-foreground sm:pb-20 sm:pt-[10.5rem]">
+        <CloudBackdrop />
+        <Container className="relative text-center">
+          <h1 className="h-hero mx-auto max-w-3xl">
+            Nos <Highlight>relais.</Highlight>
+          </h1>
+          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-foreground/75 sm:text-lg">Des serveurs SRTLA et RTMP dans le monde entier. Choisis le plus proche de toi.</p>
+        </Container>
+      </section>
 
       <section className="border-b border-line py-20 sm:py-24">
         <Container>

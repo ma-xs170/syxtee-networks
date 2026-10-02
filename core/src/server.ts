@@ -19,6 +19,7 @@ import type { Asn } from "./asn.ts";
 import type { Cam } from "./cam.ts";
 import type { Studio } from "./studio.ts";
 import type { Remote } from "./remote.ts";
+import type { Backups } from "./backups.ts";
 import { median } from "./aggregate.ts";
 import type { Coverage } from "./coverage.ts";
 import { classify, countsOnMap, DECLARED, declaredName, ipPrefix, isCaribbean, netToken, type Declared, type Prefixes } from "./link.ts";
@@ -37,6 +38,8 @@ export type Deps = {
   studio?: Studio | null;
   /** SYXTEE Link : télécommande d'OBS (null si désactivée). */
   remote?: Remote | null;
+  /** Sauvegardes de scènes (5 Go par compte). */
+  backups?: Backups | null;
   /** Pseudo et Twitch vérifié, pour l'app /cam (chat en superposition). */
   /** username : nom public (chaîne Twitch, sinon « Prénom N. ») ; le champ garde son nom pour les anciens clients. */
   profile?: (userId: string) => Promise<{ username: string | null; twitch_login: string | null }>;
@@ -728,6 +731,77 @@ export function buildServer(d: Deps) {
       const did = z.object({ did: z.uuid() }).safeParse(req.params);
       if (!did.success) return reply.code(400).send({ error: "invalid" });
       return (await remote.revoke(id, did.data.did)) ? { ok: true } : reply.code(404).send({ error: "no_device" });
+    });
+    if (d.backups) {
+      const backups = d.backups;
+      app.get("/v1/me/link/backups", async (req, reply) => {
+        const id = await userId(req, reply);
+        if (!id) return;
+        const rows = await backups.list(id);
+        return { backups: rows.map(({ user_id: _u, ...r }) => r), used: rows.reduce((n, r) => n + r.size, 0), quota: backups.quota };
+      });
+      app.delete("/v1/me/link/backups/:id", async (req, reply) => {
+        const id = await userId(req, reply);
+        if (!id) return;
+        const p = uuid.safeParse(req.params);
+        if (!p.success) return reply.code(400).send({ error: "invalid" });
+        return (await backups.remove(id, p.data.id)) ? { ok: true } : reply.code(404).send({ error: "not_found" });
+      });
+      // Archive envoyée par l'agent (flux brut, taille annoncée) : jamais lue en mémoire.
+      app.addContentTypeParser("application/gzip", (_req, payload, done) => done(null, payload));
+      app.post("/v1/link/backups", { bodyLimit: backups.quota + 1024 * 1024 }, async (req, reply) => {
+        const id = await remote.deviceUser(req.headers.authorization);
+        if (!id) return reply.code(401).send({ error: "unauthorized" });
+        const q = z.object({ name: z.string().max(60).optional(), collection: z.string().max(80).optional(), media: z.coerce.number().optional(), obs: z.string().max(20).optional(), host: z.string().max(60).optional() }).safeParse(req.query);
+        if (!q.success) return reply.code(400).send({ error: "invalid" });
+        const length = Number(req.headers["content-length"]);
+        const r = await backups.put(id, { name: q.data.name ?? "", collection: q.data.collection ?? "", media: q.data.media ?? 0, obs: q.data.obs ?? "", host: q.data.host ?? "" }, req.body as import("node:stream").Readable, length);
+        if ("error" in r) return reply.code(r.error === "quota" ? 413 : r.error === "length_required" ? 411 : r.error === "server" ? 500 : 400).send({ error: r.error });
+        return r;
+      });
+      app.get("/v1/link/backups", async (req, reply) => {
+        const id = await remote.deviceUser(req.headers.authorization);
+        if (!id) return reply.code(401).send({ error: "unauthorized" });
+        const rows = await backups.list(id);
+        return { backups: rows.map(({ user_id: _u, ...r }) => r), used: rows.reduce((n, r) => n + r.size, 0), quota: backups.quota };
+      });
+      app.get("/v1/link/backups/:id", async (req, reply) => {
+        const id = await remote.deviceUser(req.headers.authorization);
+        if (!id) return reply.code(401).send({ error: "unauthorized" });
+        const p = uuid.safeParse(req.params);
+        if (!p.success) return reply.code(400).send({ error: "invalid" });
+        const f = await backups.open(id, p.data.id);
+        if (!f) return reply.code(404).send({ error: "not_found" });
+        return reply.header("content-type", "application/gzip").header("content-length", String(f.size)).send(f.stream);
+      });
+    }
+    // Connexion depuis le plugin (sans taper de code) : démarrer, approuver depuis le site, interroger.
+    app.post("/v1/link/device/start", async (req, reply) => {
+      const b = z.object({ name: z.string().max(40).optional(), platform: z.string().max(20).optional() }).safeParse(req.body ?? {});
+      if (!b.success) return reply.code(400).send({ error: "invalid" });
+      const r = remote.deviceStart(req.ip, b.data.name, b.data.platform);
+      return "error" in r ? reply.code(429).send(r) : r;
+    });
+    app.post("/v1/link/device/poll", async (req, reply) => {
+      const b = z.object({ device_code: z.string().max(100) }).safeParse(req.body ?? {});
+      if (!b.success) return reply.code(400).send({ error: "invalid" });
+      return remote.devicePoll(b.data.device_code);
+    });
+    app.get("/v1/me/link/approve", async (req, reply) => {
+      const id = await userId(req, reply);
+      if (!id) return;
+      const q = z.object({ code: z.string().max(20) }).safeParse(req.query);
+      if (!q.success) return reply.code(400).send({ error: "invalid" });
+      if (!remote.canUse(id)) return reply.code(403).send({ error: "not_allowed" });
+      return remote.deviceLookup(q.data.code) ?? reply.code(404).send({ error: "invalid_code" });
+    });
+    app.post("/v1/me/link/approve", async (req, reply) => {
+      const id = await userId(req, reply);
+      if (!id) return;
+      const b = z.object({ code: z.string().max(20) }).safeParse(req.body ?? {});
+      if (!b.success) return reply.code(400).send({ error: "invalid" });
+      if (!remote.canUse(id)) return reply.code(403).send({ error: "not_allowed" });
+      return remote.deviceApprove(id, b.data.code) ?? reply.code(404).send({ error: "invalid_code" });
     });
     // L'agent présente son code d'appairage (pas de jeton : le code est le secret, à usage unique, 5 min, limité par IP).
     app.post("/v1/link/claim", async (req, reply) => {

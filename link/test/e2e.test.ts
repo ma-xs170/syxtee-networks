@@ -25,6 +25,7 @@ const until = async (f: () => boolean, ms = 3000) => {
 
 test("télécommande de bout en bout : scène, backup enregistré, commande interdite", async () => {
   process.env.SYXTEE_LINK_HOME = mkdtempSync(join(tmpdir(), "syxtee-link-"));
+  process.env.OBS_CONFIG_DIR = mkdtempSync(join(tmpdir(), "obs-cfg-")); // pas de réglages OBS détectés : on utilise ceux du test
 
   // Faux OBS
   const obsHttp = createServer();

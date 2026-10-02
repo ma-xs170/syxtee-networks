@@ -1,0 +1,186 @@
+// Plugin OBS « SYXTEE Link ».
+//
+// Ce module reste volontairement minimal : à l'ouverture d'OBS, il lance l'agent SYXTEE Link (livré dans le même paquet) et le
+// referme avec OBS. L'agent pilote OBS par son serveur WebSocket intégré, sauvegarde les scènes dans l'espace du compte et
+// obéit aux commandes de SYXTEE Studio. Le menu Outils d'OBS reçoit « SYXTEE Link » pour ouvrir ses réglages.
+//
+// Aucune dépendance à Qt : seule l'API d'OBS (libobs et obs-frontend-api) est utilisée.
+
+#include <obs-module.h>
+#include <obs-frontend-api.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define PANEL_URL "http://127.0.0.1:47831/"
+
+OBS_DECLARE_MODULE()
+OBS_MODULE_AUTHOR("SYXTEE NETWORKS")
+
+const char *obs_module_name(void)
+{
+	return "SYXTEE Link";
+}
+
+const char *obs_module_description(void)
+{
+	return "Pilote OBS depuis SYXTEE Studio et sauvegarde tes scènes sur ton espace SYXTEE.";
+}
+
+#ifdef _WIN32
+#include <windows.h>
+#include <shellapi.h>
+
+static PROCESS_INFORMATION helper;
+static bool helper_running = false;
+
+static bool helper_path(char *out, size_t cap)
+{
+	const char *mod = obs_get_module_binary_path(obs_current_module());
+	if (!mod)
+		return false;
+	snprintf(out, cap, "%s", mod);
+	char *slash = strrchr(out, '\\');
+	char *fwd = strrchr(out, '/');
+	if (fwd && (!slash || fwd > slash))
+		slash = fwd;
+	if (!slash)
+		return false;
+	snprintf(slash + 1, cap - (size_t)(slash + 1 - out), "syxtee-link-helper.exe");
+	return true;
+}
+
+static void start_helper(void)
+{
+	char path[MAX_PATH * 2];
+	if (!helper_path(path, sizeof(path))) {
+		blog(LOG_WARNING, "[syxtee-link] chemin de l'agent introuvable");
+		return;
+	}
+	char cmd[MAX_PATH * 2 + 64];
+	snprintf(cmd, sizeof(cmd), "\"%s\" run --parent-pid %lu", path, (unsigned long)GetCurrentProcessId());
+	STARTUPINFOA si;
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	ZeroMemory(&helper, sizeof(helper));
+	if (CreateProcessA(NULL, cmd, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &helper)) {
+		helper_running = true;
+		blog(LOG_INFO, "[syxtee-link] agent lancé");
+	} else {
+		blog(LOG_WARNING, "[syxtee-link] impossible de lancer l'agent (%lu)", (unsigned long)GetLastError());
+	}
+}
+
+static void stop_helper(void)
+{
+	if (!helper_running)
+		return;
+	TerminateProcess(helper.hProcess, 0);
+	CloseHandle(helper.hProcess);
+	CloseHandle(helper.hThread);
+	helper_running = false;
+}
+
+static void open_panel(void *data)
+{
+	(void)data;
+	ShellExecuteA(NULL, "open", PANEL_URL, NULL, NULL, SW_SHOWNORMAL);
+}
+
+#else
+#include <errno.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <spawn.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+extern char **environ;
+
+static pid_t helper_pid = 0;
+
+/* <plugin>.plugin/Contents/MacOS/syxtee-link  →  <plugin>.plugin/Contents/Resources/syxtee-link-helper */
+static bool helper_path(char *out, size_t cap)
+{
+	const char *mod = obs_get_module_binary_path(obs_current_module());
+	if (!mod)
+		return false;
+	char tmp[4096];
+	snprintf(tmp, sizeof(tmp), "%s", mod);
+	for (int i = 0; i < 2; i++) { /* retire le nom puis MacOS (ou bin/64bit) */
+		char *slash = strrchr(tmp, '/');
+		if (!slash)
+			return false;
+		*slash = '\0';
+	}
+	snprintf(out, cap, "%s/Resources/syxtee-link-helper", tmp);
+	return true;
+}
+
+static void start_helper(void)
+{
+	char path[4096];
+	if (!helper_path(path, sizeof(path)) || access(path, X_OK) != 0) {
+		blog(LOG_WARNING, "[syxtee-link] agent introuvable ou non exécutable");
+		return;
+	}
+	char pid[32];
+	snprintf(pid, sizeof(pid), "%d", (int)getpid());
+	char *argv[] = {path, (char *)"run", (char *)"--parent-pid", pid, NULL};
+
+	/* Journal de l'agent : ~/.syxtee-link/helper.log */
+	posix_spawn_file_actions_t fa;
+	posix_spawn_file_actions_init(&fa);
+	const char *home = getenv("HOME");
+	if (home) {
+		char dir[4096], log[4096];
+		snprintf(dir, sizeof(dir), "%s/.syxtee-link", home);
+		mkdir(dir, 0700);
+		snprintf(log, sizeof(log), "%s/helper.log", dir);
+		posix_spawn_file_actions_addopen(&fa, 1, log, O_WRONLY | O_CREAT | O_APPEND, 0600);
+		posix_spawn_file_actions_adddup2(&fa, 1, 2);
+	}
+	int rc = posix_spawn(&helper_pid, path, &fa, NULL, argv, environ);
+	posix_spawn_file_actions_destroy(&fa);
+	if (rc != 0) {
+		helper_pid = 0;
+		blog(LOG_WARNING, "[syxtee-link] impossible de lancer l'agent (%d)", rc);
+		return;
+	}
+	blog(LOG_INFO, "[syxtee-link] agent lancé (pid %d)", (int)helper_pid);
+}
+
+static void stop_helper(void)
+{
+	if (helper_pid <= 0)
+		return;
+	kill(helper_pid, SIGTERM);
+	int status;
+	waitpid(helper_pid, &status, 0);
+	helper_pid = 0;
+}
+
+static void open_panel(void *data)
+{
+	(void)data;
+	pid_t p;
+	char *argv[] = {(char *)"/usr/bin/open", (char *)PANEL_URL, NULL};
+	posix_spawn(&p, "/usr/bin/open", NULL, NULL, argv, environ);
+}
+#endif
+
+bool obs_module_load(void)
+{
+	blog(LOG_INFO, "[syxtee-link] chargé");
+	start_helper();
+	obs_frontend_add_tools_menu_item("SYXTEE Link", open_panel, NULL);
+	return true;
+}
+
+void obs_module_unload(void)
+{
+	stop_helper();
+	blog(LOG_INFO, "[syxtee-link] déchargé");
+}

@@ -1,14 +1,21 @@
+import { rm } from "node:fs/promises";
+import { hostname, tmpdir } from "node:os";
+import { join } from "node:path";
 import { BackupWatcher, cleanBackup } from "./backup.ts";
+import { downloadArchive, uploadArchive } from "./cloud.ts";
 import { save, type LinkConfig } from "./config.ts";
 import { ObsClient } from "./obs.ts";
+import { listCollections, readObsWebsocket } from "./obsconfig.ts";
+import { createArchive, plan, restoreArchive } from "./scenesync.ts";
 
-export const VERSION = "0.1.0";
+export const VERSION = "0.2.0";
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
 export const OBS_METHODS = new Set([
   "GetVersion", "GetStats", "GetSceneList", "GetCurrentProgramScene", "GetCurrentPreviewScene", "GetSceneItemList", "GetInputList",
   "GetInputMute", "GetInputVolume", "GetStreamStatus", "GetRecordStatus", "GetStudioModeEnabled", "GetMediaInputStatus", "GetSourceScreenshot",
-  "SetCurrentProgramScene", "SetCurrentPreviewScene", "SetStudioModeEnabled", "TriggerStudioModeTransition", "SetSceneItemEnabled",
+  "GetSceneTransitionList", "GetCurrentSceneTransition", "GetVideoSettings",
+  "SetCurrentProgramScene", "SetCurrentSceneTransition", "SetCurrentPreviewScene", "SetStudioModeEnabled", "TriggerStudioModeTransition", "SetSceneItemEnabled",
   "SetInputMute", "SetInputVolume", "StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord",
 ]);
 
@@ -18,13 +25,15 @@ const EVENTS = new Set([
   "InputMuteStateChanged", "InputVolumeChanged", "SceneItemEnableStateChanged", "StudioModeStateChanged", "ExitStarted",
 ]);
 
-export type Status = { core: "off" | "connecting" | "on"; obs: "off" | "connecting" | "on"; obsVersion: string; backup: BackupWatcher["state"]; lastError: string };
+export type Job = { kind: "backup" | "restore"; state: "running" | "done" | "error"; progress: number; message: string } | null;
+
+export type Status = { core: "off" | "connecting" | "on"; obs: "off" | "connecting" | "on"; obsVersion: string; backup: BackupWatcher["state"]; lastError: string; viewers: number; job: Job };
 
 /**
  * Relie OBS (local) et le Core (sortant). Se reconnecte seul aux deux. N'ouvre aucun port : la connexion part du PC.
  */
 export class Agent {
-  status: Status = { core: "off", obs: "off", obsVersion: "", backup: "idle", lastError: "" };
+  status: Status = { core: "off", obs: "off", obsVersion: "", backup: "idle", lastError: "", viewers: 0, job: null };
   onStatus: (s: Status) => void = () => {};
   private obs = new ObsClient();
   private core: WebSocket | null = null;
@@ -34,6 +43,8 @@ export class Agent {
   private tickTimer: ReturnType<typeof setInterval> | null = null;
   private lastMeters = 0;
   private obsBusy = false;
+  private previewTimer: ReturnType<typeof setInterval> | null = null;
+  private previewBusy = false;
 
   private cfg: LinkConfig;
   private log: (m: string) => void;
@@ -55,12 +66,14 @@ export class Agent {
     void this.connectObs();
     this.connectCore();
     this.tickTimer = setInterval(() => void this.watcher.tick(), 1000);
+    this.previewTimer = setInterval(() => void this.preview(), 700);
   }
 
   stop() {
     this.stopped = true;
     this.timers.forEach(clearTimeout);
     if (this.tickTimer) clearInterval(this.tickTimer);
+    if (this.previewTimer) clearInterval(this.previewTimer);
     this.core?.close();
     this.obs.close();
   }
@@ -74,6 +87,77 @@ export class Agent {
   /** Requête directe à OBS (listes de scènes et de sources pour l'interface). */
   obsRequest(type: string, data?: Record<string, unknown>) {
     return this.obs.request(type, data);
+  }
+
+  // ───── Sauvegarde et restauration des scènes ─────
+  private setJob(j: Job) {
+    this.status.job = j;
+    this.send({ type: "event", name: "link.job", data: j });
+    this.emit();
+  }
+
+  /** Sauvegarde une collection (scènes + médias) dans l'espace du compte. Un seul travail à la fois. */
+  async runBackup(collection: string): Promise<boolean> {
+    if (this.status.job?.state === "running") return false;
+    const file = join(tmpdir(), `syxtee-link-${Date.now()}.tgz`);
+    try {
+      this.setJob({ kind: "backup", state: "running", progress: 0, message: "Préparation de l'archive…" });
+      let last = 0;
+      const tick = (p: number, message: string) => {
+        if (Date.now() - last < 500) return;
+        last = Date.now();
+        this.setJob({ kind: "backup", state: "running", progress: p, message });
+      };
+      const a = await createArchive(collection, file, { obs: this.status.obsVersion, host: hostName(), onProgress: (d, t) => tick(t ? (d / t) * 0.5 : 0, "Compression des scènes et médias…") });
+      await uploadArchive(this.cfg.core, this.cfg.token, file, a.size, { name: collection, collection, media: a.media, obs: this.status.obsVersion, host: hostName() }, (s, t) => tick(0.5 + (s / t) * 0.5, "Envoi vers ton espace…"));
+      this.setJob({ kind: "backup", state: "done", progress: 1, message: `« ${collection} » sauvegardée (${a.media} média${a.media > 1 ? "s" : ""}).` });
+      this.log(`sauvegarde « ${collection} » terminée`);
+      return true;
+    } catch (e) {
+      this.setJob({ kind: "backup", state: "error", progress: 0, message: (e as Error).message });
+      this.log(`sauvegarde échouée : ${(e as Error).message}`);
+      return false;
+    } finally {
+      await rm(file, { force: true });
+    }
+  }
+
+  /** Restaure une sauvegarde de l'espace du compte : ajoute une collection « … (SYXTEE) » à OBS. */
+  async runRestore(id: string): Promise<boolean> {
+    if (this.status.job?.state === "running") return false;
+    try {
+      this.setJob({ kind: "restore", state: "running", progress: 0, message: "Téléchargement…" });
+      const stream = await downloadArchive(this.cfg.core, this.cfg.token, id);
+      let last = 0;
+      const r = await restoreArchive(stream, id, (b) => {
+        if (Date.now() - last < 500) return;
+        last = Date.now();
+        this.setJob({ kind: "restore", state: "running", progress: 0.5, message: `Restauration… ${(b / 1e6).toFixed(0)} Mo` });
+      });
+      this.setJob({ kind: "restore", state: "done", progress: 1, message: `Collection « ${r.collection} » ajoutée. Dans OBS : menu Collection de scènes.` });
+      this.log(`restauration → ${r.collection}`);
+      return true;
+    } catch (e) {
+      this.setJob({ kind: "restore", state: "error", progress: 0, message: (e as Error).message });
+      return false;
+    }
+  }
+
+  /** Aperçu du programme pour le navigateur : une image réduite toutes les 0,7 s, seulement si quelqu'un regarde. */
+  private async preview() {
+    if (this.status.viewers <= 0 || !this.obs.connected || this.previewBusy) return;
+    this.previewBusy = true;
+    try {
+      const cur = (await this.obs.request("GetCurrentProgramScene")) as { currentProgramSceneName?: string };
+      const name = String(cur.currentProgramSceneName ?? "");
+      if (!name) return;
+      const shot = (await this.obs.request("GetSourceScreenshot", { sourceName: name, imageFormat: "jpg", imageWidth: 640, imageHeight: 360, imageCompressionQuality: 50 })) as { imageData?: string };
+      if (shot.imageData) this.send({ type: "event", name: "link.preview", data: { scene: name, image: shot.imageData } });
+    } catch {
+      // OBS occupé ou scène en cours de changement : on réessaie au prochain tour.
+    } finally {
+      this.previewBusy = false;
+    }
   }
 
   private emit() {
@@ -98,7 +182,12 @@ export class Agent {
     this.status.obs = "connecting";
     this.emit();
     try {
-      const { host, port, password } = this.cfg.obs;
+      // Réglages OBS : ceux d'OBS lui-même (lus dans sa configuration) tant que l'utilisateur n'en a pas imposé d'autres.
+      const found = readObsWebsocket();
+      const host = this.cfg.obs.host;
+      const port = this.cfg.obs.password || !found ? this.cfg.obs.port : found.port;
+      const password = this.cfg.obs.password || found?.password || "";
+      if (found && !found.enabled) throw new Error("Active le serveur WebSocket d'OBS : Outils, Paramètres du serveur WebSocket.");
       const { wsVersion } = await this.obs.connect(host, port, password);
       const v = await this.obs.request<{ obsVersion?: string }>("GetVersion");
       this.status.obs = "on";
@@ -169,12 +258,15 @@ export class Agent {
         this.status.core = "on";
         this.status.lastError = "";
         this.emit();
+      } else if (m.type === "viewers") {
+        this.status.viewers = Number((m as { n?: number }).n) || 0;
+        this.emit();
       } else if (m.type === "req" && typeof m.id === "string" && typeof m.method === "string") void this.handle(m.id, m.method, m.params ?? {});
     };
     ws.onclose = (e) => {
       this.status.core = "off";
       if (e.code === 4003 || e.code === 4005) {
-        this.err("Appareil refusé ou révoqué : refais l'appairage (syxtee-link pair CODE).");
+        this.err("Appareil refusé ou révoqué : reconnecte-le à ton compte.");
         this.stopped = true;
         return;
       }
@@ -196,6 +288,21 @@ export class Agent {
         save(this.cfg);
         return reply(true, { ...this.cfg.backup, state: this.watcher.state });
       }
+      if (method === "link.collections") {
+        const names = listCollections();
+        const rows = await Promise.all(names.map(async (name) => ({ name, ...(await plan(name).then((p) => ({ media: p.media.length, bytes: p.bytes })).catch(() => ({ media: 0, bytes: 0 }))) })));
+        return reply(true, { collections: rows });
+      }
+      if (method === "link.backupNow") {
+        const c = String(params.collection ?? "");
+        void this.runBackup(c);
+        return reply(true, { started: true });
+      }
+      if (method === "link.restore") {
+        void this.runRestore(String(params.id ?? ""));
+        return reply(true, { started: true });
+      }
+      if (method === "link.preview") return reply(true, {});
       if (!OBS_METHODS.has(method)) return reply(false, undefined, "method_not_allowed");
       reply(true, await this.obs.request(method, params));
     } catch (e) {
@@ -206,7 +313,7 @@ export class Agent {
 
 function hostName() {
   try {
-    return String(process.env.COMPUTERNAME || process.env.HOSTNAME || process.env.USER || "OBS").slice(0, 40);
+    return String(hostname() || process.env.COMPUTERNAME || "OBS").slice(0, 40);
   } catch {
     return "OBS";
   }

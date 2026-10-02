@@ -20,6 +20,7 @@ import { buildServer } from "./server.ts";
 import { createCam } from "./cam.ts";
 import { createStudio } from "./studio.ts";
 import { createRemote } from "./remote.ts";
+import { createBackups } from "./backups.ts";
 import { createSessionTracker, supabaseSessionDb } from "./sessions.ts";
 import { createSls } from "./sls.ts";
 import { createSealer, parseSecret } from "./keys.ts";
@@ -132,6 +133,7 @@ const cam =
 const verifyUser = createUserVerifier(config.SUPABASE_URL);
 const linkUsers = new Set<string>();
 const remote = config.LINK_ENABLED ? createRemote({ db: supabase as never, canUse: (id) => linkUsers.has(id), verifyUser, log }) : null;
+const backups = remote ? createBackups({ db: supabase as never, dir: join(config.DATA_DIR, "link-backups"), log }) : null;
 
 // SYXTEE STUDIO : le navigateur publie en WebRTC (même WHIP que la Cam), le Core diffuse en RTMP vers les plateformes.
 const studio =
@@ -208,6 +210,7 @@ const app = buildServer({
   },
   verifyUser,
   remote,
+  backups,
   previewPath: (id) => previews?.path(id) ?? "",
   liveFeed: previews ? (r) => openLive({ host: config.SLS_SRT_HOST, port: config.SRT_PLAY_PORT, playId: r.play_id }) : undefined,
   onKeysChanged: () => void refreshKeys(),

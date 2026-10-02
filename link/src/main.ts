@@ -1,24 +1,18 @@
-import { Agent, VERSION } from "./agent.ts";
 import { dir, load, save } from "./config.ts";
+import { startHelper } from "./helper.ts";
 import { claimCode } from "./pair.ts";
+import { openUrl } from "./system.ts";
 
-// SYXTEE Link : agent du PC d'OBS.
-//   syxtee-link pair CODE        associe ce PC à ton compte (code affiché dans SYXTEE Studio, onglet Télécommande)
-//   syxtee-link obs [hôte:port] [mot de passe]   règle la connexion à OBS (défaut 127.0.0.1:4455)
-//   syxtee-link run              lance l'agent (par défaut)
-//   syxtee-link unpair           oublie l'appairage de ce PC
+// Agent SYXTEE Link. Lancé par le plugin OBS (syxtee-link --parent-pid <pid>), ou à la main :
+//   syxtee-link run            lance l'agent (par défaut), page de réglages sur http://127.0.0.1:47831
+//   syxtee-link pair CODE      associe ce PC avec un code généré dans SYXTEE Studio (alternative à la connexion par le navigateur)
+//   syxtee-link unpair         oublie la connexion de ce PC
+//   syxtee-link panel          ouvre la page de réglages
 
-const [cmd = "run", ...args] = process.argv.slice(2);
-const cfg = load();
-
-async function pair(code?: string) {
-  if (!code) return fail("Usage : syxtee-link pair CODE (le code s'affiche dans SYXTEE Studio, onglet Télécommande).");
-  const r = await claimCode(cfg.core, code);
-  if ("error" in r) return fail(r.error);
-  cfg.token = r.token;
-  save(cfg);
-  console.log(`Appairé. Configuration dans ${dir()}. Lance maintenant : syxtee-link run`);
-}
+const argv = process.argv.slice(2);
+const pidAt = argv.indexOf("--parent-pid");
+const parentPid = pidAt >= 0 ? Number(argv[pidAt + 1]) || undefined : undefined;
+const cmd = argv.find((a, i) => !a.startsWith("--") && argv[i - 1] !== "--parent-pid") ?? "run";
 
 function fail(m: string): never {
   console.error(m);
@@ -26,34 +20,32 @@ function fail(m: string): never {
 }
 
 async function main() {
-if (cmd === "pair") await pair(args[0]);
-else if (cmd === "unpair") {
-  cfg.token = "";
-  save(cfg);
-  console.log("Appairage supprimé sur ce PC. Retire aussi l'appareil dans SYXTEE Studio.");
-} else if (cmd === "obs") {
-  const [hp = "127.0.0.1:4455", password] = args;
-  const [host, port] = hp.split(":");
-  cfg.obs = { host: host || "127.0.0.1", port: Number(port) || 4455, password: password ?? cfg.obs.password };
-  save(cfg);
-  console.log(`OBS : ${cfg.obs.host}:${cfg.obs.port}${cfg.obs.password ? " (mot de passe enregistré)" : ""}`);
-} else if (cmd === "run") {
-  if (!cfg.token) fail("Pas encore appairé. Lance : syxtee-link pair CODE");
-  const stamp = () => new Date().toLocaleTimeString("fr-FR");
-  const agent = new Agent(cfg, (m) => console.log(`${stamp()}  ${m}`));
-  let line = "";
-  agent.onStatus = (s) => {
-    const next = `Serveur ${s.core} · OBS ${s.obs}${s.obsVersion ? ` ${s.obsVersion}` : ""} · backup ${s.backup}`;
-    if (next !== line) console.log(`${stamp()}  ${(line = next)}`);
-  };
-  console.log(`SYXTEE Link ${VERSION}`);
-  agent.start();
-  for (const sig of ["SIGINT", "SIGTERM"] as const)
-    process.on(sig, () => {
-      agent.stop();
-      process.exit(0);
-    });
-} else fail(`Commande inconnue : ${cmd}`);
+  const cfg = load();
+  if (cmd === "pair") {
+    const code = argv[argv.indexOf("pair") + 1];
+    if (!code) return fail("Usage : syxtee-link pair CODE");
+    const r = await claimCode(cfg.core, code);
+    if ("error" in r) return fail(r.error);
+    cfg.token = r.token;
+    cfg.onboarded = false;
+    save(cfg);
+    console.log(`Connecté. Configuration dans ${dir()}.`);
+  } else if (cmd === "unpair") {
+    cfg.token = "";
+    save(cfg);
+    console.log("Ce PC est déconnecté. Retire aussi l'appareil dans SYXTEE Studio.");
+  } else if (cmd === "panel") {
+    openUrl("http://127.0.0.1:47831/");
+  } else if (cmd === "run") {
+    const stamp = () => new Date().toLocaleTimeString("fr-FR");
+    const h = startHelper({ parentPid, log: (m) => console.log(`${stamp()}  ${m}`) });
+    console.log("SYXTEE Link : réglages sur http://127.0.0.1:47831");
+    for (const sig of ["SIGINT", "SIGTERM"] as const)
+      process.on(sig, () => {
+        h.stop();
+        process.exit(0);
+      });
+  } else fail(`Commande inconnue : ${cmd}`);
 }
 
-main().catch((e) => fail(String(e?.message ?? e)));
+main().catch((e) => fail(String((e as Error)?.message ?? e)));

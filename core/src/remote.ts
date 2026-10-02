@@ -18,11 +18,12 @@ export const ALLOWED = new Set([
   // OBS : lecture
   "GetVersion", "GetStats", "GetSceneList", "GetCurrentProgramScene", "GetCurrentPreviewScene", "GetSceneItemList", "GetInputList",
   "GetInputMute", "GetInputVolume", "GetStreamStatus", "GetRecordStatus", "GetStudioModeEnabled", "GetMediaInputStatus", "GetSourceScreenshot",
+  "GetSceneTransitionList", "GetCurrentSceneTransition", "GetVideoSettings",
   // OBS : actions
   "SetCurrentProgramScene", "SetCurrentPreviewScene", "SetStudioModeEnabled", "TriggerStudioModeTransition", "SetSceneItemEnabled",
-  "SetInputMute", "SetInputVolume", "StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord",
+  "SetInputMute", "SetInputVolume", "SetCurrentSceneTransition", "StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord",
   // SYXTEE Link : bascule automatique sur une scène de secours, état de l'agent
-  "link.getBackup", "link.setBackup", "link.getInfo",
+  "link.getBackup", "link.setBackup", "link.getInfo", "link.preview", "link.collections", "link.backupNow", "link.restore",
 ]);
 
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -62,6 +63,14 @@ export function createRemote(o: {
   const remotes = new Map<string, Set<Conn>>(); // compte → navigateurs connectés
   const pending = new Map<string, Pending>(); // id routé → demande en attente
   let seq = 0;
+  // Connexion depuis le plugin : l'agent demande un code, ouvre le site, l'utilisateur (connecté) l'approuve, l'agent récupère son jeton.
+  type Auth = { userCode: string; expires: number; name: string; platform: string; userId: string | null };
+  const auths = new Map<string, Auth>(); // clé : code secret de l'agent (device_code)
+  const starts = new Map<string, { n: number; since: number }>();
+  const AUTH_TTL_MS = 10 * 60_000;
+  const gcAuths = () => {
+    for (const [k, v] of auths) if (v.expires < now()) auths.delete(k);
+  };
 
   const send = (ws: WebSocket, msg: unknown) => ws.readyState === ws.OPEN && ws.send(JSON.stringify(msg));
   const toRemotes = (userId: string, msg: unknown) => remotes.get(userId)?.forEach((c) => send(c.ws, msg));
@@ -250,6 +259,57 @@ export function createRemote(o: {
       return true;
     },
 
+    /** L'agent démarre une connexion : renvoie le code à montrer (user_code) et son code secret (device_code). 10 démarrages par minute et par IP. */
+    deviceStart(ip: string, name: unknown, platform: unknown): { device_code: string; user_code: string; expires_in: number; interval: number } | { error: "too_many" } {
+      const s = starts.get(ip);
+      if (!s || now() - s.since > 60_000) starts.set(ip, { n: 1, since: now() });
+      else if (++s.n > 10) return { error: "too_many" };
+      gcAuths();
+      const device_code = randomBytes(32).toString("hex");
+      const user_code = newPairCode();
+      auths.set(device_code, { userCode: user_code, expires: now() + AUTH_TTL_MS, name: String(name ?? "OBS").slice(0, 40) || "OBS", platform: String(platform ?? "").slice(0, 20), userId: null });
+      return { device_code, user_code, expires_in: AUTH_TTL_MS / 1000, interval: 2 };
+    },
+
+    /** Le navigateur (utilisateur connecté et invité) approuve le code affiché par l'agent. Renvoie le nom de l'appareil, ou null. */
+    deviceApprove(userId: string, userCode: unknown): { name: string; platform: string } | null {
+      if (!o.canUse(userId)) return null;
+      const code = typeof userCode === "string" ? userCode.toUpperCase().replace(/[^A-Z0-9]/g, "") : "";
+      gcAuths();
+      for (const a of auths.values()) {
+        if (a.userCode === code && a.userId === null) {
+          a.userId = userId;
+          return { name: a.name, platform: a.platform };
+        }
+      }
+      return null;
+    },
+
+    /** Infos affichées sur la page d'approbation (nom du PC) sans rien approuver. */
+    deviceLookup(userCode: unknown): { name: string; platform: string } | null {
+      const code = typeof userCode === "string" ? userCode.toUpperCase().replace(/[^A-Z0-9]/g, "") : "";
+      gcAuths();
+      for (const a of auths.values()) if (a.userCode === code && a.userId === null) return { name: a.name, platform: a.platform };
+      return null;
+    },
+
+    /** L'agent interroge : en attente, expiré, ou jeton d'appareil (donné une seule fois). */
+    async devicePoll(deviceCode: unknown): Promise<{ status: "pending" | "expired" | "error" } | { status: "approved"; token: string; device_id: string }> {
+      const key = typeof deviceCode === "string" ? deviceCode : "";
+      const a = auths.get(key);
+      if (!a || a.expires < now()) {
+        auths.delete(key);
+        return { status: "expired" };
+      }
+      if (a.userId === null) return { status: "pending" };
+      auths.delete(key);
+      if (!o.canUse(a.userId)) return { status: "expired" };
+      const token = newDeviceToken();
+      const { data, error } = await o.db.from("link_devices").insert({ user_id: a.userId, token_hash: hashToken(token), name: a.name, platform: a.platform }).select("id").single();
+      if (error || !data) return { status: "error" };
+      return { status: "approved", token, device_id: (data as { id: string }).id };
+    },
+
     /** Nouveau code d'appairage pour le compte (un seul code actif par compte). */
     newCode(userId: string) {
       for (const [c, v] of codes) if (v.userId === userId || v.expires < now()) codes.delete(c);
@@ -292,6 +352,13 @@ export function createRemote(o: {
     },
 
     canUse: o.canUse,
+    /** Compte propriétaire du jeton d'appareil (en-tête Authorization), ou null. Sert aux envois et téléchargements de sauvegardes. */
+    async deviceUser(authorization: string | undefined): Promise<string | null> {
+      const t = authorization?.startsWith("Bearer ") ? authorization.slice(7) : "";
+      if (!isDeviceToken(t)) return null;
+      const dev = await findDevice(t);
+      return dev && o.canUse(dev.user_id) ? dev.user_id : null;
+    },
     status: (userId: string) => ({ agent: agentInfo(userId), remotes: remotes.get(userId)?.size ?? 0 }),
 
     close() {

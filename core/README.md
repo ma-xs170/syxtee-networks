@@ -211,6 +211,24 @@ docker compose up -d --build   # compile le plugin fallbackswitch (~10 min la pr
 Réglages : `REGIE_WIDTH/HEIGHT/FPS/BITRATE_KBPS`, `REGIE_TIMEOUT_MS` (1500), `REGIE_BEEP` (bip 1 kHz discret), `REGIE_TZ` (fuseau de l’heure de la mire, `Europe/Paris` par défaut).
 La bascule direct ↔ mire a été validée en local (GStreamer 1.28, gst-plugins-rs) ; l'image `Dockerfile.regie` est à valider au premier build.
 
+## SYXTEE STUDIO : diffusion vers les plateformes
+
+Le studio (page `/studio` du site) compose le programme dans le navigateur. Le bouton **Diffuser** l'envoie au Core, qui le retransmet en RTMP :
+
+```
+navigateur ──WebRTC (WHIP)──► Caddy ► MediaMTX ──RTSP local──► ffmpeg (1 encodage) ──RTMP(S) tee──► Twitch / Kick / YouTube…
+              cam.<domaine>/stu_<hex>/whip        (média sur 8189 UDP + TCP)
+```
+
+- `POST /v1/me/studio/session` (jeton de session Supabase) : ouvre une session avec 1 à 5 destinations `{ name, url }` et un débit (1 000 à 8 000 kb/s). Renvoie `whip_url`. Réservé aux comptes qui ont au moins un relais autorisé (formule payante, non suspendu). Une session par compte : une nouvelle remplace l'ancienne.
+- `GET /v1/me/studio/status` : `idle`, `waiting` (en attente du navigateur) ou `live`. `DELETE /v1/me/studio/session` : arrête.
+- **Les adresses RTMP avec clés de stream ne sont jamais enregistrées** : elles restent en mémoire du Core le temps de la session et sont retirées des logs (`rtmp://***`).
+- **Protection SSRF** : seules des adresses `rtmp://` ou `rtmps://` vers des IP publiques sont acceptées (IP privées, locales, `localhost`, identifiants dans l'URL refusés ; le nom est résolu et toutes ses adresses doivent être publiques).
+- Un seul `ffmpeg` par session (H.264 `veryfast`, images clés toutes les 2 s, AAC 160 kb/s) en sortie `tee` avec `onfail=ignore` : une plateforme en panne n'arrête pas les autres. Compte environ 0,5 à 1 vCPU par direct 720p30.
+- Le chemin MediaMTX `stu_<32 hex>` est secret. MediaMTX n'accepte la publication que sur un chemin de session ouvert (`/internal/mediamtx/auth`), en WebRTC. Une session sans publication expire après 10 minutes ; si le navigateur se déconnecte, la session se ferme.
+- **Pare-feu : le média WebRTC passe par le port `8189` en UDP et en TCP** (déjà nécessaire à SYXTEE Cam) : `ufw allow 8189/udp && ufw allow 8189/tcp`, et le même dans le pare-feu réseau de l'hébergeur.
+- Désactiver : `STUDIO_ENABLED=false` dans `.env`. Variables communes avec la Cam : `CAM_ENABLED`, `CAM_WHIP_BASE`, `MEDIAMTX_*`.
+
 ## Limites connues
 
 - Le SLS limite `/stats` à 300 requêtes/min par IP : le Core relève chaque flux live toutes les secondes jusqu'à ~4 flux,

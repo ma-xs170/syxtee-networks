@@ -17,7 +17,7 @@ const features = [
   { title: "Mixeur audio", text: "Un curseur et un niveau en direct par source, une coupure en un clic, et l'écoute de la sortie.", wide: true },
   { title: "Secours automatique", text: "Si l'image d'un flux se fige, le studio bascule seul sur ta scène de secours. Il revient quand l'image repart." },
   { title: "Mode podcast", text: "Plusieurs flux alignés en image et en son, même avec une latence haute. La scène suit celui qui parle." },
-  { title: "Enregistrement", text: "Ton programme (image et son) dans un fichier, sans rien installer." },
+  { title: "Diffusion et enregistrement", text: "Ton programme part en direct vers Twitch, Kick ou YouTube, ou s'enregistre dans un fichier, sans rien installer." },
 ];
 
 export default function StudioPage() {

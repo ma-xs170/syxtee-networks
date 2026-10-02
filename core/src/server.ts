@@ -17,6 +17,7 @@ import type { SampleStore } from "./samples.ts";
 import type { SessionTracker } from "./sessions.ts";
 import type { Asn } from "./asn.ts";
 import type { Cam } from "./cam.ts";
+import type { Studio } from "./studio.ts";
 import { median } from "./aggregate.ts";
 import type { Coverage } from "./coverage.ts";
 import { classify, countsOnMap, DECLARED, declaredName, ipPrefix, isCaribbean, netToken, type Declared, type Prefixes } from "./link.ts";
@@ -31,6 +32,8 @@ import type { LiveFeed } from "./preview.ts";
 export type Deps = {
   /** SYXTEE Cam (null si désactivée). */
   cam?: Cam | null;
+  /** Diffusion depuis SYXTEE STUDIO (null si désactivée). */
+  studio?: Studio | null;
   /** Pseudo et Twitch vérifié, pour l'app /cam (chat en superposition). */
   /** username : nom public (chaîne Twitch, sinon « Prénom N. ») ; le champ garde son nom pour les anciens clients. */
   profile?: (userId: string) => Promise<{ username: string | null; twitch_login: string | null }>;
@@ -98,7 +101,7 @@ export function buildServer(d: Deps) {
       done(e as Error, undefined);
     }
   });
-  app.register(cors, { origin: origins, methods: ["GET", "POST", "PUT"], allowedHeaders: ["Authorization", "Content-Type"] });
+  app.register(cors, { origin: origins, methods: ["GET", "POST", "PUT", "DELETE"], allowedHeaders: ["Authorization", "Content-Type"] });
 
   const service = async (req: FastifyRequest, reply: FastifyReply) => {
     if (!isServiceToken(req.headers.authorization, d.config.CORE_API_TOKEN)) return reply.code(401).send({ error: "unauthorized" });
@@ -700,14 +703,46 @@ export function buildServer(d: Deps) {
     });
   }
 
+  // ───── SYXTEE STUDIO : diffusion du programme vers des plateformes RTMP ─────
+  if (d.studio) {
+    const studio = d.studio;
+    const body = z.object({
+      destinations: z.array(z.object({ name: z.string().trim().min(1).max(40), url: z.string().max(600) })).min(1).max(5),
+      bitrate_kbps: z.number().int().min(1000).max(8000).default(4500),
+    });
+    app.post("/v1/me/studio/session", async (req, reply) => {
+      const id = await userId(req, reply);
+      if (!id) return;
+      const p = body.safeParse(req.body);
+      if (!p.success) return reply.code(400).send({ error: "invalid" });
+      const r = await studio.open(id, p.data.destinations, p.data.bitrate_kbps);
+      if ("error" in r) return reply.code(r.error === "not_allowed" ? 403 : 400).send({ error: r.error });
+      return r;
+    });
+    app.get("/v1/me/studio/status", async (req, reply) => {
+      const id = await userId(req, reply);
+      if (!id) return;
+      return { ...studio.status(id), allowed: studio.canStream(id) };
+    });
+    app.delete("/v1/me/studio/session", async (req, reply) => {
+      const id = await userId(req, reply);
+      if (!id) return;
+      return { ok: studio.close(id) };
+    });
+  }
+
   // MediaMTX → Core : autorisation d'une publication (Cam en WebRTC, caméras en RTMP). Jamais accessible de
   // l'extérieur (bloqué dans Caddy, et refusé ici dès qu'une requête arrive par un proxy).
-  if (cam || d.rtmp) {
+  if (cam || d.rtmp || d.studio) {
     app.post("/internal/mediamtx/auth", async (req, reply) => {
       const local = ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(req.socket.remoteAddress ?? "");
       if (!local || req.headers["x-forwarded-for"]) return reply.code(404).send();
       const p = req.body as Record<string, string>;
-      const ok = p.path?.startsWith(`${RTMP_APP}/`) ? !!(await d.rtmp?.authorize(p)) : !!(await cam?.authorize(p));
+      const ok = p.path?.startsWith(`${RTMP_APP}/`)
+        ? !!(await d.rtmp?.authorize(p))
+        : p.path?.startsWith("stu_")
+          ? !!d.studio?.authorize(p)
+          : !!(await cam?.authorize(p));
       return reply.code(ok ? 200 : 401).send();
     });
   }

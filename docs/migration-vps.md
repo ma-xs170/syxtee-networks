@@ -42,6 +42,8 @@ ufw allow 5000/udp   # SRTLA (Moblin)
 ufw allow 4000/udp   # SRT lecture (OBS)
 ufw allow 4001/udp   # SRT publication (IRL Pro, encodeurs)
 ufw allow 1935/tcp   # RTMP (DJI, GoPro, OBS)
+ufw allow 8189/udp   # WebRTC (SYXTEE Cam, SYXTEE STUDIO en direct)
+ufw allow 8189/tcp   # WebRTC, secours TCP
 ufw --force enable
 systemctl enable --now fail2ban
 ```

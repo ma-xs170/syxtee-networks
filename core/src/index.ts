@@ -18,6 +18,7 @@ import { createPrivateRelay } from "./privaterelay.ts";
 import { createPrefixes } from "./link.ts";
 import { buildServer } from "./server.ts";
 import { createCam } from "./cam.ts";
+import { createStudio } from "./studio.ts";
 import { createSessionTracker, supabaseSessionDb } from "./sessions.ts";
 import { createSls } from "./sls.ts";
 import { createSealer, parseSecret } from "./keys.ts";
@@ -126,6 +127,12 @@ const cam =
       })
     : null;
 
+// SYXTEE STUDIO : le navigateur publie en WebRTC (même WHIP que la Cam), le Core diffuse en RTMP vers les plateformes.
+const studio =
+  config.STUDIO_ENABLED && camWhipBase
+    ? createStudio({ apiUrl: config.MEDIAMTX_API_URL, rtspUrl: config.MEDIAMTX_RTSP_URL, whipBase: camWhipBase, log, security })
+    : null;
+
 // Entrée RTMP : même MediaMTX que la Cam.
 rtmp = config.RTMP_ENABLED
   ? createRtmp({ apiUrl: config.MEDIAMTX_API_URL, rtspUrl: config.MEDIAMTX_RTSP_URL, output: srtOut, log, security })
@@ -142,6 +149,7 @@ async function refreshKeys() {
       health.setKeys(ok);
       security.setRelays(ok);
       cam?.setKeys(ok);
+      studio?.setUsers(new Set(ok.map((r) => r.user_id)));
       rtmp?.setKeys(ok);
       await regie?.sync(ok);
     } catch (e) {
@@ -184,6 +192,7 @@ const app = buildServer({
   reclassUser: async (userId: string) =>
     reclassUser({ db: supabaseBackfillDb(supabase), salt: coverageSalt, userId, declared: await coverage.declared(userId), touch: coverage.touch }),
   cam,
+  studio,
   security,
   profile: async (id) => {
     const { data } = await supabase.from("profiles").select("username, first_name, last_name, twitch_display_name, twitch_login").eq("id", id).maybeSingle();
@@ -259,18 +268,20 @@ const timers = [
   setInterval(() => void health.tick(), 200),
   setInterval(() => void refreshKeys(), 30_000),
   ...(cam ? [setInterval(() => void cam.syncRelays(), 1_000)] : []),
+  ...(studio ? [setInterval(() => void studio.sync(), 1_000)] : []),
   ...(rtmp ? [setInterval(() => void rtmp.sync(), 1_000)] : []),
   setInterval(() => log(`purge santé : ${samples.purge()} points supprimés`), 3_600_000),
 ];
 
 await app.listen({ port: config.PORT, host: config.HOST });
-log(`prêt sur :${config.PORT} · relais ${config.RELAY_NAME} (${config.RELAY_PUBLIC_HOST}) · aperçus ${previews ? "oui" : "non"} · régie ${regie ? "oui" : "non"} · cam ${cam ? camWhipBase : "non"} · rtmp ${rtmp ? `:${config.RTMP_PORT}` : "non"}`);
+log(`prêt sur :${config.PORT} · relais ${config.RELAY_NAME} (${config.RELAY_PUBLIC_HOST}) · aperçus ${previews ? "oui" : "non"} · régie ${regie ? "oui" : "non"} · cam ${cam ? camWhipBase : "non"} · studio ${studio ? "oui" : "non"} · rtmp ${rtmp ? `:${config.RTMP_PORT}` : "non"}`);
 
 const shutdown = async () => {
   timers.forEach(clearInterval);
   previews?.stopAll();
   regie?.stopAll();
   cam?.stopAll();
+  studio?.stopAll();
   rtmp?.stopAll();
   await sessions.closeAll();
   await coverage.flush();

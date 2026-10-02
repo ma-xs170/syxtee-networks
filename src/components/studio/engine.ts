@@ -1,3 +1,4 @@
+import { whipPublish, whipStop, type WhipSession } from "../cam/whip";
 import { coreToken } from "../dashboard/coreClient";
 import { H, MAX_DELAY_MS, W, defaultSettings, hasAudio, saveProject, uid, type Item, type Project, type Settings, type Source } from "./model";
 
@@ -64,6 +65,11 @@ export class StudioEngine {
   private lastTrack = 0;
   private lastFailCheck = 0;
   private lvl = new Map<string, number>();
+  /** Diffusion : le programme et le mixage partent en WebRTC (WHIP) vers le Core, qui les envoie aux plateformes. */
+  live: "idle" | "connecting" | "live" | "error" = "idle";
+  liveError: string | null = null;
+  private whip: WhipSession | null = null;
+  private ticker: Worker | null = null;
   private spk: { cur?: string; cand?: string; since: number; last: number } = { since: 0, last: 0 };
 
   constructor(project: Project, coreUrl: string) {
@@ -130,7 +136,10 @@ export class StudioEngine {
 
   private loop = () => {
     this.raf = requestAnimationFrame(this.loop);
-    const now = performance.now();
+    this.renderFrame(performance.now());
+  };
+
+  private renderFrame(now: number) {
     if (this.transition && now - this.transition.start >= this.transition.dur) {
       const to = this.transition.to;
       this.transition = undefined;
@@ -154,7 +163,7 @@ export class StudioEngine {
       this.lastWatch = now;
       this.watch(now);
     }
-  };
+  }
 
   /** Dessine une scène dans un canvas de n'importe quelle taille. */
   private scaled(cv: HTMLCanvasElement, sceneId: string) {
@@ -647,6 +656,52 @@ export class StudioEngine {
     }
   }
 
+  // ---------- diffusion ----------
+  /** Publie le programme vers `whipUrl` (donnée par le Core). H.264 imposé par le client WHIP. */
+  async goLive(whipUrl: string, kbps: number) {
+    if (this.live === "connecting" || this.live === "live") return;
+    this.live = "connecting";
+    this.liveError = null;
+    this.onChange();
+    try {
+      await this.audio().resume();
+      const v = this.out.captureStream(30).getVideoTracks()[0];
+      const a = this.recDest!.stream.getAudioTracks()[0];
+      const stream = new MediaStream(a ? [v, a] : [v]);
+      this.whip = await whipPublish(whipUrl, stream, kbps * 1000);
+      const pc = this.whip.pc;
+      pc.onconnectionstatechange = () => {
+        if (pc.connectionState === "connected") this.live = "live";
+        else if (this.live !== "idle" && (pc.connectionState === "failed" || pc.connectionState === "disconnected" || pc.connectionState === "closed")) {
+          this.live = "error";
+          this.liveError = "La connexion avec le serveur est perdue.";
+        }
+        this.onChange();
+      };
+      this.live = pc.connectionState === "connected" ? "live" : "connecting";
+      // Onglet en arrière-plan : requestAnimationFrame s'arrête, l'image figerait. Un Worker, lui, n'est pas ralenti.
+      if (!this.ticker) {
+        this.ticker = new Worker(URL.createObjectURL(new Blob(["setInterval(()=>postMessage(0),33)"], { type: "text/javascript" })));
+        this.ticker.onmessage = () => document.hidden && this.renderFrame(performance.now());
+      }
+    } catch (e) {
+      this.live = "error";
+      this.liveError = e instanceof Error && e.message ? e.message : "Impossible de se connecter au serveur.";
+      whipStop(this.whip);
+      this.whip = null;
+    }
+    this.onChange();
+  }
+  stopLive() {
+    whipStop(this.whip);
+    this.whip = null;
+    this.ticker?.terminate();
+    this.ticker = null;
+    this.live = "idle";
+    this.liveError = null;
+    this.onChange();
+  }
+
   // ---------- enregistrement ----------
   startRecording() {
     if (this.recording) return;
@@ -679,6 +734,7 @@ export class StudioEngine {
     cancelAnimationFrame(this.raf);
     this.raf = 0;
     if (this.recording) this.stopRecording();
+    this.stopLive();
     for (const rt of this.runtimes.values()) {
       this.clean(rt);
       rt.stop();

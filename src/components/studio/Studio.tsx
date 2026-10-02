@@ -6,6 +6,7 @@ import Link from "next/link";
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { StudioEngine } from "./engine";
 import AutoPanel from "./AutoPanel";
+import GoLive from "./GoLive";
 import Multiview from "./Multiview";
 import { H, KIND_LABEL, W, defaultBox, hasAudio, loadProject, uid, type Item, type Source, type SourceKind } from "./model";
 
@@ -46,6 +47,7 @@ export default function Studio({ relays, coreUrl }: { relays: Relay[]; coreUrl: 
   const [elapsed, setElapsed] = useState(0);
   const [view, setView] = useState<"studio" | "multiview">("studio");
   const [auto, setAuto] = useState(false);
+  const [golive, setGolive] = useState(false);
   const drag = useRef<{ handle: Handle; id: string; sx: number; sy: number; box: Item } | null>(null);
 
   useEffect(() => {
@@ -204,8 +206,23 @@ export default function Studio({ relays, coreUrl }: { relays: Relay[]; coreUrl: 
           )}
           <button
             type="button"
+            aria-pressed={golive}
+            onClick={() => {
+              setGolive((v) => !v);
+              setAuto(false);
+            }}
+            className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1 text-xs font-semibold transition-colors ${e.live === "live" || e.live === "connecting" ? "bg-live text-white" : "bg-accent text-on-accent hover:bg-accent-hover"}`}
+          >
+            {(e.live === "live" || e.live === "connecting") && <span className="h-1.5 w-1.5 rounded-full bg-white" aria-hidden="true" />}
+            {e.live === "live" ? "En direct" : e.live === "connecting" ? "Connexion…" : "Diffuser"}
+          </button>
+          <button
+            type="button"
             aria-pressed={auto}
-            onClick={() => setAuto((v) => !v)}
+            onClick={() => {
+              setAuto((v) => !v);
+              setGolive(false);
+            }}
             className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${auto || e.settings.failover.on || e.settings.podcast.on ? "border-line-strong text-foreground" : "border-line text-muted hover:text-foreground"}`}
           >
             Automatisation{e.settings.podcast.on ? " · Podcast" : e.settings.failover.on ? " · Secours" : ""}
@@ -472,8 +489,8 @@ export default function Studio({ relays, coreUrl }: { relays: Relay[]; coreUrl: 
               {e.recording ? <Stop size={16} weight="fill" /> : <RecordIcon size={16} weight="fill" />}
               {e.recording ? `Arrêter (${clock})` : "Enregistrer"}
             </button>
-            <button type="button" disabled className={`${btn} btn-secondary w-full cursor-not-allowed opacity-50`} title="L'envoi du studio vers Twitch, Kick ou YouTube arrive bientôt.">
-              Diffuser (bientôt)
+            <button type="button" onClick={() => setGolive(true)} className={`${btn} btn-secondary w-full`}>
+              Diffuser vers Twitch, Kick…
             </button>
             <p className="text-xs leading-relaxed text-muted">L&apos;enregistrement est un fichier .webm téléchargé à l&apos;arrêt. Garde cet onglet ouvert pendant que le studio tourne.</p>
           </div>
@@ -482,6 +499,7 @@ export default function Studio({ relays, coreUrl }: { relays: Relay[]; coreUrl: 
         </>
       )}
       {auto && <AutoPanel e={e} levels={levels} onClose={() => setAuto(false)} />}
+      {golive && <GoLive e={e} coreUrl={coreUrl} onClose={() => setGolive(false)} />}
     </div>
   );
 }

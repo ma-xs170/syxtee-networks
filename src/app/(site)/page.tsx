@@ -4,9 +4,6 @@ import FeatureExplorer from "@/components/home/FeatureExplorer";
 import StreamerWall from "@/components/home/StreamerWall";
 import RelayBento from "@/components/home/RelayBento";
 import StudioPromo from "@/components/sections/StudioPromo";
-import CreateSteps from "@/components/home/CreateSteps";
-import Guides from "@/components/sections/Guides";
-import Offers from "@/components/sections/Offers";
 import FinalCta from "@/components/sections/FinalCta";
 import { getHomeStreamers } from "@/lib/streamers";
 
@@ -28,9 +25,6 @@ export default async function Home() {
       <StudioPromo />
       <StreamerWall streamers={streamers} />
       <RelayBento />
-      <CreateSteps />
-      <Guides />
-      <Offers />
       <FinalCta />
     </>
   );

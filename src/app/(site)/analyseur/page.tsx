@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import AnalyzerClient from "@/components/analyseur/AnalyzerClient";
 import { Container } from "@/components/ui";
-import Highlight from "@/components/ui/Highlight";
 import { hasCore, publicCoreUrl } from "@/lib/core";
 
 export const metadata: Metadata = {
@@ -16,7 +15,7 @@ export default function AnalyseurPublicPage() {
     <section className="py-14 sm:py-20">
       <Container>
         <h1 className="max-w-3xl h-section">
-          Ton réseau, <Highlight>mesuré ici.</Highlight>
+          Ton réseau, mesuré ici.
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
           Débit montant (celui qui compte pour streamer), latence, gigue, opérateur et note de la zone sur la carte communautaire. Coupe le Wi-Fi pour

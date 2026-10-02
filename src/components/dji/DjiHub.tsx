@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import BrandLogo from "@/components/BrandLogo";
 import CopyCode from "@/components/CopyCode";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useLiveStatus, useNow, type RelayLive } from "@/components/dashboard/LiveStatus";
@@ -338,7 +339,10 @@ function CameraCard({
     <article className="rounded-2xl border border-line p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <h3 className="truncate text-lg font-medium">{cam.name}</h3>
+          <h3 className="flex items-center gap-3 truncate text-lg font-medium">
+            <BrandLogo brand={cam.brand === "gopro" ? "gopro" : "dji"} className="h-5 w-auto shrink-0 text-muted" />
+            <span className="truncate">{cam.name}</span>
+          </h3>
           {cam.brand === "gopro" ? (
             <>
               <p className="mt-1 font-mono text-xs uppercase tracking-[0.12em] text-muted">{camLabel(cam)} · RTMP</p>

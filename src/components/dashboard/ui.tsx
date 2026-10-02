@@ -36,7 +36,8 @@ export function SectionTabs({ tabs, current, label, className = "mb-8" }: { tabs
 }
 
 /** Titre de page : `lead` en clair, `hl` surligné (mot-clé). */
-export function DashHeader({ lead, hl, sub, children }: { lead: string; hl: string; sub?: ReactNode; children?: ReactNode }) {
+/** `highlight` : surligne `hl` (réservé à l'accueil du dashboard). Ailleurs, le titre reste simple. */
+export function DashHeader({ lead, hl, sub, children, highlight = false }: { lead: string; hl: string; sub?: ReactNode; children?: ReactNode; highlight?: boolean }) {
   return (
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
@@ -45,7 +46,7 @@ export function DashHeader({ lead, hl, sub, children }: { lead: string; hl: stri
           {hl && (
             <>
               {" "}
-              <Highlight>{hl}</Highlight>
+              {highlight ? <Highlight>{hl}</Highlight> : hl}
             </>
           )}
         </h1>

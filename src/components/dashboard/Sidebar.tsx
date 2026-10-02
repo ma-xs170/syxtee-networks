@@ -14,6 +14,7 @@ import {
   Heartbeat,
   List,
   Lock,
+  MapPinArea,
   MapTrifold,
   Question,
   Radio,
@@ -21,6 +22,7 @@ import {
   SignOut,
   SlidersHorizontal,
   SquaresFour,
+  TelevisionSimple,
   Television,
   UserCircle,
   VideoCamera,
@@ -51,6 +53,7 @@ const GROUPS: Group[] = [
       { label: "Santé du flux", href: "/dashboard/sante", icon: Heartbeat, feature: "sante" },
       { label: "Aperçu", href: "/dashboard/apercu", icon: Eye, feature: "apercu" },
       { label: "Caméras externes", href: "/dashboard/dji", icon: VideoCamera, feature: "dji" },
+      { label: "Mire de coupure", href: "/dashboard/mire", icon: TelevisionSimple, feature: "mire" },
       { label: "SYXTEE Studio", href: "/studio", icon: SlidersHorizontal, external: true },
     ],
   },
@@ -66,7 +69,7 @@ const GROUPS: Group[] = [
     items: [
       { label: "Vue globale", href: "/dashboard/stats", icon: ChartBar },
       { label: "Lives", href: "/dashboard/lives", icon: Television },
-      { label: "Couverture", href: "/dashboard/contributions", icon: MapTrifold },
+      { label: "Couverture", href: "/dashboard/contributions", icon: MapPinArea },
     ],
   },
 ];
@@ -118,7 +121,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
         <Link href="/dashboard" onClick={onNavigate} className="flex items-center gap-3" aria-label="Dashboard SYXTEE">
           <Image src="/logo-400.png" alt="" width={24} height={33} className="ink-img" priority />
           <span className="text-sm font-semibold tracking-[0.18em]">
-            SYXTEE<span className="font-normal text-muted"> DASH</span>
+            SYXTEE<span className="font-normal text-muted"> DASHBOARD</span>
           </span>
         </Link>
       </div>

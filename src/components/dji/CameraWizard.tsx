@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import BrandLogo from "@/components/BrandLogo";
 import CopyCode from "@/components/CopyCode";
-import Highlight from "@/components/ui/Highlight";
 import { DJI_MODELS, supportsCodecChoice, supportsStabilization, type DjiModel, type Resolution, type Stabilization } from "@/lib/dji/protocol";
 import { detectModel, pickCamera } from "@/lib/dji/session";
 import NetworkDialog from "./NetworkDialog";
@@ -126,7 +126,7 @@ export default function CameraWizard({
       <div className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-4 pb-8 pt-6 sm:px-6">
         <div className="flex items-center justify-between gap-4">
           <h2 id="cam-wizard-title" className="text-xl font-semibold tracking-tight sm:text-2xl">
-            {initial ? "Modifier la" : "Ajouter une"} <Highlight>caméra</Highlight>
+            {initial ? "Modifier la" : "Ajouter une"} caméra
           </h2>
           <button type="button" onClick={onClose} className="h-10 rounded-full px-4 text-sm text-muted transition-colors hover:bg-accent/10 hover:text-foreground">
             Fermer
@@ -158,6 +158,7 @@ export default function CameraWizard({
                   ).map((b) => (
                     <label key={b.v} className={card((c.brand ?? "dji") === b.v)}>
                       <input type="radio" name="wiz-brand" checked={(c.brand ?? "dji") === b.v} onChange={() => set("brand", b.v)} className="sr-only" />
+                      <BrandLogo brand={b.v} className={b.v === "gopro" ? "mb-3 h-6 w-auto" : "mb-3 h-6 w-auto"} />
                       <span className="text-base font-medium">{b.t}</span>
                       <span className="mt-1 text-xs leading-relaxed text-muted">{b.d}</span>
                     </label>

@@ -28,7 +28,7 @@
     "react-dom": "19.2.8",
     "resend": "^6.31.0",
     "server-only": "^0.0.1",
-    "simple-icons": "^16.32.0",
+    "simple-icons": "^16.33.0",
     "standardwebhooks": "^1.1.1",
     "stripe": "^22.6.2",
     "three": "^0.186.1",

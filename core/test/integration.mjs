@@ -26,7 +26,7 @@ try {
 
   ok((await api(`/v1/users/${uid}/relays`, { headers: { Authorization: "Bearer mauvais" } })).status === 401, "jeton de service invalide → 401");
   ok((await (await api(`/v1/users/${uid}/relays`)).json()).relays.length === 0, "aucun relais créé d'office");
-  const create = (body) => api(`/v1/users/${uid}/relays`, { method: "POST", body: JSON.stringify({ server: "nyc1", limit: 2, ...body }) });
+  const create = (body) => api(`/v1/users/${uid}/relays`, { method: "POST", body: JSON.stringify({ server: process.env.RELAY_NAME ?? "nyc1", limit: 2, ...body }) });
   const k1 = await (await create({ name: "iPhone 16", protocol: "srtla" })).json();
   ok(/^srtla:\/\/relais\.test:5000\?streamid=live_[0-9a-f]{32}$/.test(k1.urls.srtla_url), `URL Moblin : ${k1.urls.srtla_url.replace(/[0-9a-f]{32}/, "…")}`);
   ok(/^srt:\/\/relais\.test:4000\?streamid=play_[0-9a-f]{32}$/.test(k1.obs_srt_url), "URL OBS (mode Direct)");

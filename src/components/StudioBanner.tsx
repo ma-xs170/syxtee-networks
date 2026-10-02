@@ -1,5 +1,6 @@
 import Link from "next/link";
 import StudioWire from "./illustrations/StudioWire";
+import Wordmark from "./Wordmark";
 import { Container } from "./ui";
 
 // Bandeau « SYXTEE STUDIO » en bas des pages principales : le studio de diffusion, dans le navigateur.
@@ -9,7 +10,7 @@ export default function StudioBanner() {
       <Container>
         <div className="panel-lg grid items-center gap-8 p-6 sm:p-10 md:grid-cols-[1.1fr_0.9fr]">
           <div>
-            <p className="label-mono">Nouveau</p>
+            <Wordmark name="STUDIO" />
             <h2 id="studio-banner" className="h-section mt-3">
               SYXTEE STUDIO, ta régie dans le navigateur.
             </h2>

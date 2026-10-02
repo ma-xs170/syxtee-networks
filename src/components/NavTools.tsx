@@ -10,6 +10,8 @@ import PhoneMoblin from "./illustrations/PhoneMoblin";
 import RelayServer from "./illustrations/RelayServer";
 import StarlinkMini from "./illustrations/StarlinkMini";
 import Streamer from "./illustrations/Streamer";
+import StudioWire from "./illustrations/StudioWire";
+import Wordmark from "./Wordmark";
 import { ProDrawing } from "./pro/ProExploded";
 import DashArt from "./dashboard/DashArt";
 import type { DashIcon, DashItem, DashMenu, DashTool } from "@/lib/dashboard-nav";
@@ -53,6 +55,19 @@ export function ToolArt({ icon, className = "h-full w-full" }: { icon: ToolIcon;
       return <ObsScreen animated={false} className={className} />;
     case "faq":
       return <DiscordChat animated={false} className={className} />;
+    case "studio":
+      return <StudioWire animated={false} className={className} />;
+    case "map":
+      // Carte de couverture filaire : fond de carte, hexagones mesurés et repère
+      return (
+        <svg viewBox="0 0 120 90" className={`${className} text-foreground`} fill="none" stroke="currentColor" strokeWidth={1.25} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M14 22l30-8 32 10 30-9v52l-30 9-32-10-30 8z" />
+          <path d="M44 14v52M76 24v52" opacity={0.5} />
+          <path d="M26 40l6-3.5 6 3.5v7l-6 3.5-6-3.5zM54 52l6-3.5 6 3.5v7l-6 3.5-6-3.5zM84 36l6-3.5 6 3.5v7l-6 3.5-6-3.5z" opacity={0.7} />
+          <path d="M60 18a8 8 0 0 1 8 8c0 6-8 14-8 14s-8-8-8-14a8 8 0 0 1 8-8z" fill="currentColor" fillOpacity={0.12} />
+          <circle cx="60" cy="26" r="2.5" />
+        </svg>
+      );
     case "tower":
       // Antenne relais filaire (carte /antennes)
       return (
@@ -74,7 +89,7 @@ function Chevron({ open }: { open: boolean }) {
 }
 
 export function Badge({ children }: { children: string }) {
-  return <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{children}</span>;
+  return <span className="whitespace-nowrap rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{children}</span>;
 }
 
 /** Point rouge de nouveauté (pas de badge texte dans la barre). */
@@ -237,7 +252,7 @@ function Dropdown({
                           </span>
                           <span className="min-w-0">
                             <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-                              {t.label}
+                              <ToolLabel t={t} />
                               {t.badge && <Badge>{t.badge}</Badge>}
                             </span>
                             <span className="mt-0.5 block text-sm leading-snug text-muted">{t.desc}</span>
@@ -260,7 +275,7 @@ function Dropdown({
                     </span>
                     <span className="min-w-0">
                       <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-                        {t.label}
+                        <ToolLabel t={t} />
                         {t.badge && <Badge>{t.badge}</Badge>}
                         {"locked" in t && t.locked && <LockIcon className="h-3.5 w-3.5 shrink-0 text-muted" />}
                       </span>
@@ -276,8 +291,8 @@ function Dropdown({
                     <div className="h-24 w-full transition-transform duration-300 ease-out group-hover:-translate-y-1 group-hover:scale-[1.04]">
                       <ItemArt icon={t.icon} />
                     </div>
-                    <div className="mt-3 flex items-center gap-2">
-                      <span className="whitespace-nowrap text-sm font-medium text-foreground">{t.label}</span>
+                    <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="whitespace-nowrap text-sm font-medium text-foreground"><ToolLabel t={t} /></span>
                       {t.badge && <Badge>{t.badge}</Badge>}
                         {"locked" in t && t.locked && <LockIcon className="h-3.5 w-3.5 shrink-0 text-muted" />}
                       <span aria-hidden="true" className="ml-auto text-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
@@ -329,7 +344,7 @@ export function NavAccordion({ menu, active, onNavigate }: { menu: AnyMenu; acti
               </span>
               <span className="min-w-0">
                 <span className="flex items-center gap-2">
-                  <span className="text-base text-foreground">{t.label}</span>
+                  <span className="text-base text-foreground"><ToolLabel t={t} /></span>
                   {t.badge && <Badge>{t.badge}</Badge>}
                         {"locked" in t && t.locked && <LockIcon className="h-3.5 w-3.5 shrink-0 text-muted" />}
                 </span>
@@ -352,4 +367,9 @@ function groupTools(children: (NavTool | DashTool)[]): [string, (NavTool | DashT
     map.set(g, [...(map.get(g) ?? []), t]);
   }
   return [...map.entries()];
+}
+
+/** Nom d'une entrée : logo S + « SYXTEE FONCTION » pour les produits SYXTEE, texte simple sinon. */
+function ToolLabel({ t }: { t: { label: string; wordmark?: string } }) {
+  return t.wordmark ? <Wordmark name={t.wordmark} size="sm" /> : <>{t.label}</>;
 }

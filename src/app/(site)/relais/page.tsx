@@ -3,6 +3,8 @@ import NextStep from "@/components/NextStep";
 import StudioBanner from "@/components/StudioBanner";
 import DetailSection, { Point } from "@/components/blocks/DetailSection";
 import RelayGrid from "@/components/blocks/RelayGrid";
+import RelayWorld from "@/components/globe/RelayWorld";
+import { publicCoreUrl } from "@/lib/core";
 import RelayStory from "@/components/relay/RelayStory";
 import { Container, SectionHeader } from "@/components/ui";
 
@@ -31,6 +33,9 @@ export default function RelaisPage() {
             Les relais SYXTEE tournent 24h/24. De nouvelles régions ouvrent selon la demande de la communauté : vote pour la
             tienne sur le Discord.
           </SectionHeader>
+          <div className="mt-14">
+            <RelayWorld coreUrl={publicCoreUrl} />
+          </div>
           <div className="mt-14">
             <RelayGrid />
           </div>

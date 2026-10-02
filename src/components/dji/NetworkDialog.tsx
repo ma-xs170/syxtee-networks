@@ -2,7 +2,6 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { PasswordInput } from "@/components/auth/AuthCard";
-import Highlight from "@/components/ui/Highlight";
 import { newId, type Network } from "./store";
 
 // Ajouter ou modifier un réseau Internet pour les caméras (partage de connexion du téléphone ou Wi-Fi).
@@ -39,7 +38,7 @@ export default function NetworkDialog({ open, initial, onClose, onSave }: { open
     >
       <div className="flex items-center justify-between gap-4">
         <h2 id={`${uid}-title`} className="text-xl font-semibold tracking-tight">
-          {initial ? "Modifier le" : "Ajouter un"} <Highlight>réseau</Highlight>
+          {initial ? "Modifier le" : "Ajouter un"} réseau
         </h2>
         <button type="button" onClick={onClose} className="h-10 rounded-full px-4 text-sm text-muted transition-colors hover:bg-accent/10 hover:text-foreground">
           Fermer

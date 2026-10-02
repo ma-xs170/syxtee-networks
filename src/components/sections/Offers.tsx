@@ -1,6 +1,5 @@
 import ComingSoon from "../blocks/ComingSoon";
 import { Container, MoreLink } from "../ui";
-import Highlight from "../ui/Highlight";
 import { CATALOG, TIERS } from "@/lib/billing";
 import { hasStripe } from "@/lib/stripe";
 
@@ -36,7 +35,7 @@ export default function Offers() {
     <section id="offres" aria-labelledby="offres-titre" className="border-b border-line py-24">
       <Container>
         <h2 id="offres-titre" className="max-w-2xl h-section">
-          Des offres pour <Highlight>chaque live.</Highlight>
+          Des offres pour chaque live.
         </h2>
         <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">Sans engagement. 2 mois offerts si tu paies à l&apos;année.</p>
 

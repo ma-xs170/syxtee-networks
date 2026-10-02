@@ -2,10 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { isMenu, nav, site, type NavLink } from "@/lib/site";
 import ThemeToggle from "./ThemeToggle";
+import Wordmark from "./Wordmark";
 import { DiscordIcon } from "./ui";
 
 // Mêmes catégories que la nav : Produits (+ Offres), Outils, Ressources, puis Support.
-const columns: { title: string; links: (NavLink & { group?: string })[] }[] = nav.filter(isMenu).map((m) => ({ title: m.label, links: [...m.children] }));
+const columns: { title: string; links: (NavLink & { group?: string; wordmark?: string })[] }[] = nav.filter(isMenu).map((m) => ({ title: m.label, links: [...m.children] }));
 const offers = nav.find((item) => !isMenu(item)) as NavLink | undefined;
 if (offers) columns[0]?.links.push(offers);
 
@@ -32,8 +33,8 @@ export default function Footer() {
                   {l.group && l.group !== col.links[i - 1]?.group && (
                     <p className="label-mono mb-2 mt-5 text-[10px] first:mt-0">{l.group}</p>
                   )}
-                  <Link href={l.href} className="inline-flex items-center gap-2 text-muted hover:text-foreground">
-                    {l.label}
+                  <Link href={l.href} className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-muted hover:text-foreground">
+                    {l.wordmark ? <Wordmark name={l.wordmark} size="sm" /> : <span className="whitespace-nowrap">{l.label}</span>}
                     {l.badge && <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]">{l.badge}</span>}
                   </Link>
                 </li>

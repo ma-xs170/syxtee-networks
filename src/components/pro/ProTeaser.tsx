@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useReducedMotion } from "@/components/story/StoryContext";
-import Highlight from "@/components/ui/Highlight";
 import TeaserStill from "./TeaserStill";
 import type { TeaserEls } from "./TeaserScene3D";
 
@@ -109,7 +108,7 @@ export default function ProTeaser() {
           </p>
           <h2 className="mt-5 text-5xl font-semibold leading-none tracking-tight sm:text-7xl">SYXTEE PRO</h2>
           <p className="mt-4 text-xl text-muted sm:text-2xl">
-            Le live pro. <Highlight>Partout.</Highlight>
+            Le live pro. Partout.
           </p>
           <Link
             href="/pro"

@@ -9,7 +9,6 @@ import PromoCode from "@/components/partners/PromoCode";
 import { SailyLink } from "@/components/partners/Saily";
 import ScrollStory, { type StoryScene } from "@/components/story/ScrollStory";
 import StoryStage from "@/components/story/StoryStage";
-import Highlight from "@/components/ui/Highlight";
 
 // Mini ScrollStory de /saily : l'eSIM s'installe dans le 2e téléphone → il rejoint le bonding → CELL 2 · SAILY.
 
@@ -213,7 +212,7 @@ const scenes: StoryScene[] = [
     titleAs: "h1",
     title: (
       <>
-        Une 4G de plus, <Highlight>en quelques minutes.</Highlight>
+        Une 4G de plus, en quelques minutes.
       </>
     ),
     header: <Breadcrumb />,

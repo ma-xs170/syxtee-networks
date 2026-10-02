@@ -29,9 +29,19 @@ export default function PageHero({
         </nav>
 
         <p className="label-mono mt-10 inline-flex rounded-full border border-line bg-accent/[0.08] px-3 py-1">{kicker}</p>
-        <h1 className="h-hero mt-5 max-w-4xl">{title}</h1>
-        {children && <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">{children}</p>}
-        {actions && <div className="mt-10 flex flex-col gap-3 sm:flex-row">{actions}</div>}
+        <h1 className="rise h-hero mt-5 max-w-4xl" style={{ "--i": 1 } as React.CSSProperties}>
+          {title}
+        </h1>
+        {children && (
+          <p className="rise mt-6 max-w-2xl text-base leading-relaxed text-muted sm:text-lg" style={{ "--i": 2 } as React.CSSProperties}>
+            {children}
+          </p>
+        )}
+        {actions && (
+          <div className="rise mt-10 flex flex-col gap-3 sm:flex-row" style={{ "--i": 3 } as React.CSSProperties}>
+            {actions}
+          </div>
+        )}
       </Container>
     </section>
   );

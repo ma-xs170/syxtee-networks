@@ -5,7 +5,6 @@ import type { ReactNode } from "react";
 import ScrollStory, { type StoryScene } from "@/components/story/ScrollStory";
 import StoryStage from "@/components/story/StoryStage";
 import { DiscordButton } from "@/components/ui";
-import Highlight from "@/components/ui/Highlight";
 import { useNarrow } from "./kit";
 import { SceneAntennas, SceneCapture, SceneInternet } from "./scenesA";
 import { SceneDataCenter, SceneServer, SceneSubsea } from "./scenesB";
@@ -72,7 +71,7 @@ export default function FonctionnementStory() {
       kicker: "04 · Sous l'océan",
       title: (
         <>
-          Ta vidéo traverse la mer… <Highlight>en lumière.</Highlight>
+          Ta vidéo traverse la mer… en lumière.
         </>
       ),
       paragraphs: [
@@ -83,9 +82,9 @@ export default function FonctionnementStory() {
       staticAt: at(3, 0.6),
     },
     {
-      kicker: "05 · New York",
+      kicker: "05 · Canada",
       title: "Arrivée au data center.",
-      paragraphs: ["Ton relais SYXTEE tourne 24h/24 dans un data center à New York.", "Tes 3 flux y arrivent… mais pas dans l'ordre."],
+      paragraphs: ["Ton relais SYXTEE tourne 24h/24 dans un data center à Beauharnois, au Canada.", "Tes 3 flux y arrivent… mais pas dans l'ordre."],
       render: (p) => stage(<SceneDataCenter progress={p} />),
       staticAt: at(4, 0.86),
     },
@@ -107,7 +106,7 @@ export default function FonctionnementStory() {
       kicker: "08 · OBS",
       title: (
         <>
-          Tu gardes <Highlight>le contrôle total.</Highlight>
+          Tu gardes le contrôle total.
         </>
       ),
       paragraphs: [

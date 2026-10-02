@@ -6,7 +6,7 @@ import type { Feature } from "./plans";
 export type DashIcon = "relays" | "urls" | "health" | "preview" | "control" | "stats" | "lives" | "map" | "mire" | "scan" | "cam" | "security" | "profile" | "plan" | "settings";
 export type DashLink = { label: string; href: string; badge?: string };
 /** `locked` : posé par la nav selon la formule du compte (affiche le cadenas). */
-export type DashTool = DashLink & { desc: string; icon: DashIcon; feature?: Feature; locked?: boolean; group?: string };
+export type DashTool = DashLink & { desc: string; icon: DashIcon; feature?: Feature; locked?: boolean; group?: string; wordmark?: string };
 export type DashMenu = { label: string; children: DashTool[]; note?: string; dot?: boolean };
 export type DashItem = DashLink | DashMenu;
 

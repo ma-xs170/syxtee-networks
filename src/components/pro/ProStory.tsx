@@ -92,7 +92,7 @@ function scenes(page: "home" | "pro"): StoryScene[] {
         <>
           N&apos;importe quelle caméra.
           <br />
-          <Highlight>N&apos;importe où.</Highlight>
+          N&apos;importe où.
         </>
       ),
       paragraphs: [

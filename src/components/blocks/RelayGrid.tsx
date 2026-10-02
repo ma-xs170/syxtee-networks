@@ -13,7 +13,7 @@ export default function RelayGrid() {
                 <span className="live-dot" /> En ligne
               </span>
             ) : (
-              <span className="font-mono text-xs uppercase text-muted">Bientôt</span>
+              <span className="font-mono text-xs uppercase text-muted">{r.status === "maintenance" ? "Maintenance" : "Bientôt"}</span>
             )}
           </div>
           <p className="mt-1 text-sm text-muted">{r.region}</p>

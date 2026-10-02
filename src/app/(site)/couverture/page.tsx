@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CoverageMap from "@/components/couverture/CoverageMap";
 import { Container } from "@/components/ui";
-import Highlight from "@/components/ui/Highlight";
 import { coverageStats } from "@/lib/coverage/public";
 
 export const metadata: Metadata = {
@@ -28,7 +27,7 @@ export default async function CouverturePage() {
     <section className="py-14 sm:py-20">
       <Container>
         <h1 className="max-w-3xl h-section">
-          La carte du réseau, <Highlight>faite par les streamers.</Highlight>
+          La carte du réseau, faite par les streamers.
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
           Débit montant, latence et meilleur opérateur, zone par zone, partout où un streamer est passé. Mesuré en 4G/5G pendant les lives et avec le

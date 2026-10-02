@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import AntennaMap from "@/components/antennes/AntennaMap";
 import { Container } from "@/components/ui";
-import Highlight from "@/components/ui/Highlight";
 
 export const metadata: Metadata = {
   title: "Carte des antennes 4G/5G",
@@ -16,7 +15,7 @@ export default function AntennesPage() {
     <section className="py-14 sm:py-20">
       <Container>
         <h1 className="max-w-3xl h-section">
-          Où capter en <Highlight>4G et 5G.</Highlight>
+          Où capter en 4G et 5G.
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
           Chaque antenne mobile par opérateur, avec ses technologies. En métropole, les pannes et maintenances du jour sont signalées.

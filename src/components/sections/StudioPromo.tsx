@@ -1,5 +1,6 @@
 import Link from "next/link";
 import StudioWire from "../illustrations/StudioWire";
+import Wordmark from "../Wordmark";
 import { Container } from "../ui";
 import Highlight from "../ui/Highlight";
 
@@ -15,9 +16,9 @@ export default function StudioPromo() {
     <section id="studio" aria-labelledby="studio-titre" className="bg-field border-b border-line py-24">
       <Container className="grid items-center gap-14 lg:grid-cols-[1fr_1.05fr]">
         <div>
-          <p className="label-mono inline-flex rounded-full border border-line px-3 py-1">Nouveau</p>
+          <Wordmark name="STUDIO" />
           <h2 id="studio-titre" className="h-section mt-5">
-            SYXTEE STUDIO, ta régie <Highlight>sans OBS.</Highlight>
+            <Highlight>SYXTEE STUDIO, ta régie sans OBS.</Highlight>
           </h2>
           <ul className="mt-8 space-y-5">
             {points.map((p) => (

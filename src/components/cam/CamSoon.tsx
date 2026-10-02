@@ -1,6 +1,5 @@
 import Link from "next/link";
 import PhoneAndroid from "../illustrations/PhoneAndroid";
-import Highlight from "../ui/Highlight";
 import { site } from "@/lib/site";
 
 // SYXTEE Cam en pause (FEATURE_CAM=false) : page d'attente sur /cam et /dashboard/cam.
@@ -10,7 +9,7 @@ export default function CamSoon({ scanner = true }: { scanner?: boolean }) {
       <div>
         <p className="font-mono text-xs uppercase tracking-[0.16em] text-muted">Bientôt disponible</p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-          SYXTEE <Highlight>Cam</Highlight>
+          SYXTEE Cam
         </h1>
         <p className="mt-4 max-w-[48ch] text-base leading-relaxed text-muted">Ton téléphone en caméra du direct, sans app à installer. On la peaufine avant de la rouvrir.</p>
         <div className="mt-8 flex flex-wrap gap-3">

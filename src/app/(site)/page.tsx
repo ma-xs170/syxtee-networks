@@ -24,9 +24,9 @@ export default async function Home() {
   return (
     <>
       <Hero />
+      <StudioPromo />
       <JourneyStory />
       <RelayBento />
-      <StudioPromo />
       <CreateSteps />
       <Guides />
       <Offers />

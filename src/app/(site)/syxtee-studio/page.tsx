@@ -49,7 +49,7 @@ export default function StudioPage() {
         <Container className="grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <h2 className="h-section">
-              Un <Highlight>multiview</Highlight> de régie TV.
+              Un multiview de régie TV.
             </h2>
             <p className="mt-5 max-w-[52ch] text-base leading-relaxed text-muted">
               Aperçu et programme en grand, toutes tes scènes en vignettes vivantes, l&apos;heure, le format et l&apos;enregistrement. Tally vert pour ce qui est prêt, rouge pour ce qui est à l&apos;antenne.

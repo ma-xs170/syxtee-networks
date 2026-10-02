@@ -4,7 +4,6 @@ import ObsScreen from "../illustrations/ObsScreen";
 import PhoneMoblin from "../illustrations/PhoneMoblin";
 import RelayServer from "../illustrations/RelayServer";
 import { Container } from "../ui";
-import Highlight from "../ui/Highlight";
 import { HealthArt, KeyArt, PreviewArt } from "./BentoArt";
 
 // « Ce que ton relais fait pour toi » : 7 cases, 7 contenus. Desktop : 3 colonnes (2+1, 1+1+1, 1+2). Mobile : une colonne.
@@ -19,7 +18,7 @@ const cells: Cell[] = [
   { title: "Santé du flux", text: "Débit, pertes et latence en direct, dans ton dashboard.", art: <HealthArt />, tone: "plain" },
   { title: "Aperçu et stats", text: "Ton flux en temps réel, et l'historique de tes lives.", art: <PreviewArt />, tone: "grid" },
   { title: "Clés uniques et sécurisées", text: "Une clé par relais, chiffrée côté serveur. Un second publieur est refusé.", art: <KeyArt />, tone: "plain" },
-  { title: "Serveur à New York", text: "D'autres villes arrivent bientôt, avec la latence affichée avant de choisir.", art: <DataCenter />, wide: true, tone: "glow" },
+  { title: "Serveur à Beauharnois", text: "D'autres villes arrivent bientôt, avec la latence affichée avant de choisir.", art: <DataCenter />, wide: true, tone: "glow" },
 ];
 
 const TONE: Record<Cell["tone"], string> = {
@@ -33,7 +32,7 @@ export default function RelayBento() {
     <section id="relais" aria-labelledby="bento-titre" className="bg-field border-b border-line py-24">
       <Container>
         <h2 id="bento-titre" className="max-w-2xl h-section">
-          Ce que ton relais fait <Highlight>pour toi.</Highlight>
+          Ce que ton relais fait pour toi.
         </h2>
 
         <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3">

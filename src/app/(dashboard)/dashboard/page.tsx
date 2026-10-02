@@ -16,7 +16,7 @@ export default async function DashboardPage() {
   return (
     <DashPage>
       {/* Prénom pas encore renseigné : « Salut. » tout court. */}
-      {first ? <DashHeader lead="Salut" hl={`${first}.`} /> : <DashHeader lead="Salut." hl="" />}
+      {first ? <DashHeader lead="Salut" hl={`${first}.`} highlight /> : <DashHeader lead="Salut." hl="" />}
       <Overview initial={initial} />
     </DashPage>
   );

@@ -3,7 +3,6 @@
 import { useState, type ReactNode } from "react";
 import { RELAY_SERVERS } from "@/lib/relay-servers";
 import { Container, CreateRelayLink } from "../ui";
-import Highlight from "../ui/Highlight";
 
 // « Crée ton relais en 3 étapes » : aperçu de l'assistant du dashboard (Protocole, Appareil, Serveur).
 // Une étape à la fois, au clic. Même vocabulaire que l'assistant : pastilles de latence vert / orange / gris.
@@ -80,7 +79,7 @@ export default function CreateSteps() {
     <section id="creer" aria-labelledby="creer-titre" className="bg-field bg-field-bottom border-b border-line py-24">
       <Container>
         <h2 id="creer-titre" className="max-w-2xl h-section">
-          Crée ton relais en <Highlight>3 étapes.</Highlight>
+          Crée ton relais en 3 étapes.
         </h2>
 
         <div className="mt-14 grid items-start gap-10 lg:grid-cols-[0.8fr_1.2fr]">

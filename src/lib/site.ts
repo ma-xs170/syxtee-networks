@@ -8,10 +8,10 @@ export const site = {
   year: new Date().getFullYear(),
 };
 
-export type ToolIcon = "bag" | "rack" | "phone" | "dish" | "esim" | "route" | "services" | "docs" | "faq" | "tower";
+export type ToolIcon = "bag" | "rack" | "phone" | "dish" | "esim" | "route" | "services" | "docs" | "faq" | "tower" | "studio" | "map";
 export type NavLink = { label: string; href: string; badge?: string };
 /** `soon` : produit pas encore sorti, affiché grisé dans les menus (le lien reste cliquable). */
-export type NavTool = NavLink & { desc: string; icon: ToolIcon; soon?: boolean; /** Sous-section du menu (titre de colonne). */ group?: string };
+export type NavTool = NavLink & { desc: string; icon: ToolIcon; soon?: boolean; /** Produit SYXTEE : affiché « (S) SYXTEE <fonction> » avec le logo. */ wordmark?: string; /** Sous-section du menu (titre de colonne). */ group?: string };
 /** Menu déroulant : `dot` = point rouge de nouveauté à côté du libellé, `note` = ligne en pied de panneau. */
 export type NavMenu = { label: string; children: NavTool[]; dot?: boolean; note?: string };
 export type NavItem = NavLink | NavMenu;
@@ -20,9 +20,9 @@ export const nav: NavItem[] = [
   {
     label: "Produits",
     children: [
-      { label: "Relais SYXTEE", href: "/relais", desc: "Nos serveurs SRTLA et RTMP", icon: "rack" },
-      { label: "SYXTEE STUDIO", href: "/syxtee-studio", desc: "Ta régie dans le navigateur", icon: "services", badge: "Nouveau" },
-      { label: "SYXTEE PRO", href: "/pro", desc: "Le sac encodeur IRL", icon: "bag", badge: "À venir", soon: true },
+      { label: "Relais SYXTEE", href: "/relais", desc: "Nos serveurs SRTLA et RTMP", icon: "rack", wordmark: "RELAIS" },
+      { label: "SYXTEE STUDIO", href: "/syxtee-studio", desc: "Ta régie dans le navigateur", icon: "studio", badge: "Nouveau", wordmark: "STUDIO" },
+      { label: "SYXTEE PRO", href: "/pro", desc: "Le sac encodeur IRL", icon: "bag", badge: "À venir", soon: true, wordmark: "PRO" },
     ],
   },
   {
@@ -40,7 +40,7 @@ export const nav: NavItem[] = [
     children: [
       { label: "Fonctionnement", href: "/fonctionnement", desc: "Le trajet d'un live de A à Z", icon: "route", group: "Comprendre" },
       { label: "Services", href: "/services", desc: "Tout ce que fait le relais", icon: "services", group: "Comprendre" },
-      { label: "Où capter", href: "/couverture", desc: "La carte du réseau 4G / 5G", icon: "tower", group: "Comprendre" },
+      { label: "Où capter", href: "/couverture", desc: "La carte du réseau 4G / 5G", icon: "map", group: "Comprendre" },
       { label: "Documentation", href: "/docs", desc: "Les guides pour bien démarrer", icon: "docs", group: "Aide" },
       { label: "FAQ", href: "/faq", desc: "Les questions qu'on nous pose", icon: "faq", group: "Aide" },
     ],
@@ -62,12 +62,13 @@ export const navLinks: NavLink[] = nav.flatMap((item) => (isMenu(item) ? item.ch
 export type Relay = {
   city: string;
   region: string;
-  status: "online" | "soon";
+  status: "online" | "soon" | "maintenance";
   protocols: string[];
 };
 
 export const relays: Relay[] = [
-  { city: "New York", region: "USA · Côte Est", status: "online", protocols: ["SRTLA", "SRT"] },
+  { city: "Beauharnois", region: "Canada · Québec", status: "online", protocols: ["SRTLA", "SRT", "RTMP"] },
+  { city: "New York", region: "USA · Côte Est", status: "maintenance", protocols: ["SRTLA", "SRT"] },
 ];
 
 export const compat = ["Moblin", "IRL Pro", "BELABOX", "OBS Studio", "Twitch", "Kick", "YouTube", "TikTok Live"];

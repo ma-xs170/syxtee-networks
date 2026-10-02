@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { Container } from "@/components/ui";
-import Highlight from "@/components/ui/Highlight";
 import { pro } from "@/lib/site";
 import s from "./pro.module.css";
 
@@ -177,7 +176,7 @@ export default function ProBento() {
     <section className="border-b border-line py-20 sm:py-28" aria-labelledby="pro-bento">
       <Container>
         <h2 id="pro-bento" className="max-w-2xl h-section">
-          Ce que tu peux <Highlight>faire avec.</Highlight>
+          Ce que tu peux faire avec.
         </h2>
         <ul className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {cards.map((c) => (

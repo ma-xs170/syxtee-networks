@@ -3,7 +3,6 @@ import PhoneAndroid from "@/components/illustrations/PhoneAndroid";
 import PhoneMoblin from "@/components/illustrations/PhoneMoblin";
 import PocketRouter from "@/components/illustrations/PocketRouter";
 import { Container, SectionHeader } from "@/components/ui";
-import Highlight from "@/components/ui/Highlight";
 import { partners } from "@/lib/site";
 import PromoCode from "./PromoCode";
 import { PartnerNote, SailyLink, SailyLogo, sailyLinkProps } from "./Saily";
@@ -56,7 +55,7 @@ export default function SailySection({ header = "full" }: { header?: "full" | "c
               kicker="4G en plus avec Saily"
               title={
                 <>
-                  Une 4G de plus, <Highlight>en quelques minutes.</Highlight>
+                  Une 4G de plus, en quelques minutes.
                 </>
               }
             >

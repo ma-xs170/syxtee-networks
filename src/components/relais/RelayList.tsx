@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useLiveStatus } from "@/components/dashboard/LiveStatus";
-import Highlight from "@/components/ui/Highlight";
 import { fmtAgo, fmtInt } from "@/lib/dashboard-data";
 import { relayGroup, type RelayGroup, type RelayRow } from "@/lib/relay-groups";
 import { flag, serverById } from "@/lib/relay-servers";
@@ -111,7 +110,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="h-section">
-            Mes <Highlight>relais</Highlight>
+            Mes relais
           </h1>
           <p className="mt-2 font-mono text-sm tabular-nums text-muted">
             {active} / {unlimited ? "∞" : max} relais

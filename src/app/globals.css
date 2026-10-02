@@ -15,6 +15,7 @@
   --on-accent: #000000;
   --live: #ff3b30;
   --img-filter: none;
+  --img-filter-rev: invert(1);
   --shadow-pop: rgba(0, 0, 0, 0.9);
   --glow: rgba(255, 255, 255, 0.25);
 }
@@ -34,6 +35,7 @@
   --on-accent: #fafafa;
   --live: #d92b20;
   --img-filter: invert(1);
+  --img-filter-rev: none;
   --shadow-pop: rgba(0, 0, 0, 0.18);
   --glow: rgba(0, 0, 0, 0.18);
 }
@@ -52,6 +54,7 @@
     --on-accent: #fafafa;
     --live: #d92b20;
     --img-filter: invert(1);
+  --img-filter-rev: none;
     --shadow-pop: rgba(0, 0, 0, 0.18);
     --glow: rgba(0, 0, 0, 0.18);
   }
@@ -379,6 +382,8 @@ html[data-stream-mode="on"] [data-sensitive] {
 
 /* Images blanches (logos) : inversées en thème clair */
 .ink-img { filter: var(--img-filter); }
+/* Logo posé sur un fond « encre » (bouton plein) : l'inverse de ink-img. */
+.ink-img-rev { filter: var(--img-filter-rev); }
 
 /* Fond « champ » : grille filaire fondue + halo de dégradé. S'applique sur une section (position: relative ajoutée). */
 .bg-field {
@@ -418,4 +423,25 @@ body::before {
   background:
     radial-gradient(ellipse 70% 40% at 50% -5%, color-mix(in srgb, var(--foreground) 9%, transparent), transparent 70%),
     radial-gradient(ellipse 40% 30% at 100% 100%, color-mix(in srgb, var(--foreground) 5%, transparent), transparent 70%);
+}
+
+/* Textes animés, légers : transform et opacité seulement, sans JavaScript.
+   .h-section : monte et apparaît quand le titre entre dans l'écran (animation liée au défilement, si le navigateur sait faire).
+   .rise : apparition au chargement, avec un décalage (--i) entre les éléments du hero. */
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .h-section {
+      animation: reveal-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 22%;
+    }
+  }
+  .rise {
+    animation: reveal-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--i, 0) * 90ms);
+  }
 }

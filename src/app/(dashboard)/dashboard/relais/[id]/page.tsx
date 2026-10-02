@@ -8,7 +8,6 @@ import { ArrowLink, DashPage, Tile, TileLabel } from "@/components/dashboard/ui"
 import RelayActions from "@/components/relais/RelayActions";
 import { ProtocolBadge, ServerLabel } from "@/components/relais/RelayList";
 import RelayUrls from "@/components/relais/RelayUrls";
-import Highlight from "@/components/ui/Highlight";
 import { requireUser } from "@/lib/auth/dal";
 import { getRelay, hasCore, publicCoreUrl, type RelayView } from "@/lib/core";
 import { fmtAgo } from "@/lib/dashboard-data";
@@ -45,7 +44,7 @@ export default async function RelayPage({ params }: PageProps<"/dashboard/relais
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div className="min-w-0">
               <h1 className="break-words h-section">
-                <Highlight>{relay.name}</Highlight>
+                {relay.name}
               </h1>
               <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted">
                 <ProtocolBadge protocol={relay.protocol} />

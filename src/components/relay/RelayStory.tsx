@@ -94,7 +94,7 @@ const scenes: StoryScene[] = [
   {
     header: breadcrumb,
     kicker: "01 · Le serveur",
-    title: "Un relais qui tourne 24h/24 à New York.",
+    title: "Un relais qui tourne 24h/24 au Canada.",
     titleAs: "h1",
     paragraphs: [
       "Il attend ton flux en permanence : tu te connectes quand tu veux.",

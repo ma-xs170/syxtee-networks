@@ -1,7 +1,6 @@
 import Image from "next/image";
 import type { HomeStreamer } from "@/lib/streamers";
 import { Container } from "../ui";
-import Highlight from "../ui/Highlight";
 
 // « Ils nous font confiance » : comptes qui ont coché « Afficher ma chaîne » avec un Twitch vérifié.
 // Les chaînes en live passent en premier (rangée fixe, badge EN LIVE + viewers), les autres défilent dessous.
@@ -81,7 +80,7 @@ export default function Streamers({ streamers }: { streamers: HomeStreamer[] }) 
     <section id="streamers" className="bg-field bg-field-bottom overflow-hidden border-b border-line py-24">
       <Container>
         <h2 className="text-center h-section">
-          Ils nous font <Highlight>confiance.</Highlight>
+          Ils nous font confiance.
         </h2>
       </Container>
 

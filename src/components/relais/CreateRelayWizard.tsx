@@ -1,10 +1,10 @@
 "use client";
 
+import RelayGlobe from "@/components/globe/RelayGlobe";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { createRelayAction } from "@/app/(dashboard)/dashboard/relais/actions";
-import Highlight from "@/components/ui/Highlight";
 import type { RelayProtocol, RelayView } from "@/lib/core";
 import { RELAY_SERVERS, distanceKm, estimateRtt, flag, latencyTone, type LatencyTone } from "@/lib/relay-servers";
 import RelayUrls from "./RelayUrls";
@@ -85,7 +85,7 @@ export default function CreateRelayWizard({
   const [step, setStep] = useState(0);
   const [protocol, setProtocol] = useState<RelayProtocol>("srtla");
   const [name, setName] = useState("");
-  const [server, setServer] = useState("nyc1");
+  const [server, setServer] = useState("bhs1");
   const [latency, setLatency] = useState<Record<string, number | null>>({});
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<RelayView | null>(null);
@@ -106,7 +106,7 @@ export default function CreateRelayWizard({
     const run = async () => {
       const ms = await measure(coreUrl, ctrl.signal);
       if (ctrl.signal.aborted) return;
-      setLatency((l) => ({ ...l, nyc1: ms }));
+      setLatency((l) => ({ ...l, bhs1: ms }));
       timer = setTimeout(run, 5000);
     };
     void run();
@@ -137,7 +137,7 @@ export default function CreateRelayWizard({
     setStep(0);
     setProtocol("srtla");
     setName("");
-    setServer("nyc1");
+    setServer("bhs1");
     setError(null);
     setCreated(null);
     fastestRef.current = undefined;
@@ -175,11 +175,11 @@ export default function CreateRelayWizard({
           <h2 id="create-relay-title" className="text-xl font-semibold tracking-tight sm:text-2xl">
             {created ? (
               <>
-                Relais <Highlight>créé.</Highlight>
+                Relais créé.
               </>
             ) : (
               <>
-                Créer un <Highlight>relais</Highlight>
+                Créer un relais
               </>
             )}
           </h2>
@@ -272,6 +272,13 @@ export default function CreateRelayWizard({
           ) : step === 2 ? (
             <fieldset>
               <legend className="text-base text-muted">Serveur de proximité : plus il est proche, plus la latence est basse.</legend>
+              <RelayGlobe
+                className="mx-auto mt-4 max-w-[340px]"
+                servers={rows.map((r) => ({ id: r.id, city: r.city, lat: r.lat, lon: r.lon, available: r.available, ping: r.available ? (r.measured ?? null) : r.estimated, estimated: !r.available }))}
+                selected={server}
+                geo={geo}
+                onSelect={(id) => rows.find((r) => r.id === id)?.available && setServer(id)}
+              />
               <ul className="mt-4 divide-y divide-accent/10 rounded-2xl border border-line">
                 {rows.map((r) => {
                   const shown = r.available ? r.measured : r.estimated;
@@ -294,7 +301,7 @@ export default function CreateRelayWizard({
                         <span className="min-w-0 flex-1">
                           <span className="block text-sm font-medium">{r.city}</span>
                           <span className="block text-xs text-muted">
-                            {r.available ? (r.id === fastest ? "Le plus proche de toi" : r.country) : "Bientôt disponible"}
+                            {r.available ? (r.id === fastest ? "Le plus proche de toi" : r.country) : r.maintenance ? "En maintenance" : "Bientôt disponible"}
                           </span>
                         </span>
                         <span className="flex items-center gap-2 font-mono text-sm tabular-nums" aria-live={r.available ? "polite" : undefined}>

@@ -10,10 +10,13 @@ export type RelayServer = {
   lat: number;
   lon: number;
   available: boolean;
+  /** Serveur temporairement arrêté (migration, entretien) : affiché « Maintenance » et non « Bientôt ». */
+  maintenance?: boolean;
 };
 
 export const RELAY_SERVERS: RelayServer[] = [
-  { id: "nyc1", city: "New York", country: "États-Unis", cc: "US", lat: 40.71, lon: -74.01, available: true },
+  { id: "bhs1", city: "Beauharnois", country: "Canada", cc: "CA", lat: 45.32, lon: -73.87, available: true },
+  { id: "nyc1", city: "New York", country: "États-Unis", cc: "US", lat: 40.71, lon: -74.01, available: false, maintenance: true },
   { id: "mia1", city: "Miami", country: "États-Unis", cc: "US", lat: 25.76, lon: -80.19, available: false },
   { id: "par1", city: "Paris", country: "France", cc: "FR", lat: 48.86, lon: 2.35, available: false },
   { id: "gp1", city: "Guadeloupe", country: "France", cc: "GP", lat: 16.24, lon: -61.53, available: false },

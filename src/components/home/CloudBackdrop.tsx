@@ -5,13 +5,20 @@
 const GRAIN =
   "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")";
 
-export default function CloudBackdrop() {
+/** `flip` : blanc en haut, rouge soutenu en bas (appel final de la page). */
+export default function CloudBackdrop({ flip = false }: { flip?: boolean }) {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--accent)_62%,white)_0%,color-mix(in_srgb,var(--accent)_36%,white)_40%,color-mix(in_srgb,var(--accent)_12%,white)_74%,var(--background)_100%)]" />
+      <div
+        className={`absolute inset-0 ${
+          flip
+            ? "bg-[linear-gradient(to_top,color-mix(in_srgb,var(--accent)_62%,white)_0%,color-mix(in_srgb,var(--accent)_36%,white)_40%,color-mix(in_srgb,var(--accent)_12%,white)_74%,var(--background)_100%)]"
+            : "bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--accent)_62%,white)_0%,color-mix(in_srgb,var(--accent)_36%,white)_40%,color-mix(in_srgb,var(--accent)_12%,white)_74%,var(--background)_100%)]"
+        }`}
+      />
 
       {/* Aurore : un grand dégradé conique qui tourne lentement et fait changer toutes les couleurs du fond */}
-      <div className="aurora-mask absolute inset-0">
+      <div className={`${flip ? "aurora-mask-flip" : "aurora-mask"} absolute inset-0`}>
         <div className="aurora absolute left-1/2 top-[-45%] h-[190%] w-[190%] rounded-full opacity-80 blur-[70px] [background:conic-gradient(from_0deg,color-mix(in_srgb,var(--accent)_70%,white),white,color-mix(in_srgb,var(--accent)_96%,black),color-mix(in_srgb,var(--accent)_40%,white),white,color-mix(in_srgb,var(--accent)_70%,white))]" />
       </div>
 

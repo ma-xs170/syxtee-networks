@@ -128,6 +128,7 @@ body {
 }
 @keyframes aurora { from { transform: translateX(-50%) rotate(0deg); } to { transform: translateX(-50%) rotate(360deg); } }
 .aurora-mask { -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 92%); mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 92%); }
+.aurora-mask-flip { -webkit-mask-image: linear-gradient(to top, #000 0%, #000 55%, transparent 92%); mask-image: linear-gradient(to top, #000 0%, #000 55%, transparent 92%); }
 @keyframes cloud-a { to { transform: translate3d(14%, 9%, 0) scale(1.14); } }
 @keyframes cloud-b { to { transform: translate3d(-13%, -8%, 0) scale(1.16); } }
 @keyframes cloud-c { to { transform: translate3d(10%, -10%, 0) scale(0.9); } }

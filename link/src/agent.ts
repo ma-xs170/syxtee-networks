@@ -65,6 +65,17 @@ export class Agent {
     this.obs.close();
   }
 
+  /** Nouveau réglage du backup (appelé par l'application). */
+  setBackup(b: LinkConfig["backup"]) {
+    this.cfg.backup = b;
+    this.watcher.set(b);
+  }
+
+  /** Requête directe à OBS (listes de scènes et de sources pour l'interface). */
+  obsRequest(type: string, data?: Record<string, unknown>) {
+    return this.obs.request(type, data);
+  }
+
   private emit() {
     this.onStatus({ ...this.status });
   }

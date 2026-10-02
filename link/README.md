@@ -10,7 +10,11 @@ navigateur (Studio) ──WS──► Core ◄──WS (sortant)── SYXTEE Li
 
 Aucun port à ouvrir sur le PC : la connexion part de l'agent.
 
-## Utilisation
+## Application (fenêtre)
+
+`npm run app` construit l'application SYXTEE Link (Electron) : fenêtre avec les onglets Direct, Collections et Réglages, et une icône dans la barre de menu. Sortie dans `~/syxtee-link-app/release` (macOS : `.dmg` et `.zip`, Windows : `.exe`). `npm run app:dev` la lance directement pour tester. Le processus de build assemble tout hors du dossier du projet.
+
+## Ligne de commande
 
 1. OBS : Outils, Paramètres du serveur WebSocket, activer (port 4455). Noter le mot de passe s'il y en a un.
 2. SYXTEE Studio, onglet « Télécommande OBS » : « Générer un code ».

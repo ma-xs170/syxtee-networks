@@ -40,6 +40,8 @@ const ERROR_LABEL: Record<DjiError, string> = {
   service: "Cette caméra ne répond pas comme une DJI compatible. Vérifie le modèle.",
   cancelled: "Recherche annulée.",
   unsupported: "Bluetooth indisponible dans ce navigateur.",
+  relay: "Le relais lié à cette caméra n'existe plus. Clique sur « Modifier » et choisis un relais.",
+  network: "Le réseau Wi-Fi de cette caméra n'existe plus. Clique sur « Modifier » et choisis un réseau.",
 };
 const modelName = (m: DjiModel) => DJI_MODELS.find((x) => x.id === m)?.name ?? "Caméra DJI";
 const camLabel = (c: Camera) => (c.brand === "gopro" ? c.gopro || "GoPro" : modelName(c.model));
@@ -149,7 +151,10 @@ export default function DjiHub({ relays, focusRelay }: { relays: RtmpRelay[]; fo
   async function launch(cam: Camera, networks = store.networks, cameras = store.cameras) {
     const relay = relays.find((r) => r.id === cam.relayId);
     const net = networks.find((n) => n.id === cam.networkId);
-    if (!relay || !net) return;
+    if (!relay || !net) {
+      setRuns((r) => ({ ...r, [cam.id]: { state: "error", error: relay ? "network" : "relay", battery: null } }));
+      return;
+    }
     let password = net.password;
     if (!password && !net.remember) password = window.prompt(`Mot de passe du réseau « ${net.ssid} »`) ?? "";
     setBusy(true);

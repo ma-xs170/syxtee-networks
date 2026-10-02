@@ -62,7 +62,7 @@ export type DjiState =
   | "stopping"
   | "error";
 
-export type DjiError = "wifi" | "timeout" | "disconnected" | "service" | "cancelled" | "unsupported";
+export type DjiError = "wifi" | "timeout" | "disconnected" | "service" | "cancelled" | "unsupported" | "relay" | "network";
 
 export type LiveSettings = StartOptions & { ssid: string; password: string; model: DjiModel; stabilization: Stabilization };
 

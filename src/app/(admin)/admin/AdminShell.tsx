@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
+import { ChartLineUp, ClockCounterClockwise, Globe, Key, Lifebuoy, MapTrifold, Radio, ShieldWarning, SquaresFour, Users, UsersThree, Bell, type IconProps } from "@phosphor-icons/react";
 import { signOut } from "@/app/(auth)/actions";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -11,36 +12,37 @@ import ThemeToggle from "@/components/ThemeToggle";
 // Espace admin : sa propre barre latérale, séparée du dashboard client (autre fond de logo, autre titre). Sur la page
 // /admin/2fa (double authentification) la barre est masquée. Mobile : navigation en rangée défilante.
 
-type Item = { label: string; href: string; badge?: number };
+type Icon = ComponentType<IconProps>;
+type Item = { label: string; href: string; badge?: number; icon: Icon };
 type Group = { title?: string; items: Item[] };
 
 function groups(openTickets: number, pending: number): Group[] {
   return [
-    { items: [{ label: "Vue d'ensemble", href: "/admin" }] },
+    { items: [{ icon: SquaresFour, label: "Vue d'ensemble", href: "/admin" }] },
     {
       title: "Clients",
       items: [
-        { label: "Demandes d'accès", href: "/admin/acces", badge: pending },
-        { label: "Support", href: "/admin/support", badge: openTickets },
-        { label: "Comptes", href: "/admin/comptes" },
-        { label: "Partenaires", href: "/admin/partenaires" },
-        { label: "Notifications", href: "/admin/notifications" },
+        { icon: Key, label: "Demandes d'accès", href: "/admin/acces", badge: pending },
+        { icon: Lifebuoy, label: "Support", href: "/admin/support", badge: openTickets },
+        { icon: Users, label: "Comptes", href: "/admin/comptes" },
+        { icon: UsersThree, label: "Partenaires", href: "/admin/partenaires" },
+        { icon: Bell, label: "Notifications", href: "/admin/notifications" },
       ],
     },
     {
       title: "Infrastructure",
       items: [
-        { label: "Relais", href: "/admin/relais" },
-        { label: "Carte", href: "/admin/carte" },
-        { label: "Revenus", href: "/admin/revenus" },
+        { icon: Radio, label: "Relais", href: "/admin/relais" },
+        { icon: MapTrifold, label: "Carte", href: "/admin/carte" },
+        { icon: ChartLineUp, label: "Revenus", href: "/admin/revenus" },
       ],
     },
     {
       title: "Sécurité",
       items: [
-        { label: "Alertes", href: "/admin/securite" },
-        { label: "Journal", href: "/admin/journal" },
-        { label: "Équipe", href: "/admin/equipe" },
+        { icon: ShieldWarning, label: "Alertes", href: "/admin/securite" },
+        { icon: ClockCounterClockwise, label: "Journal", href: "/admin/journal" },
+        { icon: Globe, label: "Équipe", href: "/admin/equipe" },
       ],
     },
   ];
@@ -61,23 +63,29 @@ export default function AdminShell({ openTickets, pendingAccess, name, children 
             SYXTEE<span className="font-normal text-muted"> ADMIN</span>
           </span>
         </Link>
-        <nav aria-label="Navigation admin" className="flex-1 space-y-5 overflow-y-auto px-3 pb-3">
+        <nav aria-label="Navigation admin" className="flex-1 overflow-y-auto px-3 pb-3">
           {all.map((g, i) => (
-            <div key={g.title ?? i}>
-              {g.title && <p className="px-3 pb-2 text-xs font-medium text-muted">{g.title}</p>}
-              <ul className="space-y-0.5">
-                {g.items.map((it) => (
-                  <li key={it.href}>
-                    <Link
-                      href={it.href}
-                      aria-current={active(it.href) ? "page" : undefined}
-                      className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm transition-colors ${active(it.href) ? "border-line-strong bg-foreground/10 text-foreground" : "border-transparent text-muted hover:bg-foreground/[0.06] hover:text-foreground"}`}
-                    >
-                      {it.label}
-                      {!!it.badge && <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-medium tabular-nums text-on-accent">{it.badge}</span>}
-                    </Link>
-                  </li>
-                ))}
+            <div key={g.title ?? i} className={i > 0 ? "mt-4 border-t border-line pt-4" : ""}>
+              {g.title && <p className="px-3 pb-2 text-[13px] font-semibold text-foreground">{g.title}</p>}
+              <ul className="space-y-1">
+                {g.items.map((it) => {
+                  const on = active(it.href);
+                  const Icon = it.icon;
+                  return (
+                    <li key={it.href}>
+                      <Link
+                        href={it.href}
+                        aria-current={on ? "page" : undefined}
+                        className={`relative flex items-center gap-3 rounded-lg border px-3 py-2 text-sm transition-colors ${on ? "border-line-strong bg-foreground/10 font-semibold text-foreground" : "border-transparent text-muted hover:bg-foreground/[0.06] hover:text-foreground"}`}
+                      >
+                        {on && <span aria-hidden="true" className="absolute -left-3 top-2 h-5 w-1 rounded-r bg-accent" />}
+                        <Icon size={18} weight={on ? "fill" : "regular"} className="shrink-0" aria-hidden="true" />
+                        <span className="flex-1">{it.label}</span>
+                        {!!it.badge && <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold tabular-nums text-on-accent">{it.badge}</span>}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}

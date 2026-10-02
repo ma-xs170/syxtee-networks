@@ -6,6 +6,7 @@ import { DailyBars } from "@/components/dashboard/charts";
 import { SessionList } from "@/components/dashboard/sessions";
 import { Tile, TileLabel } from "@/components/dashboard/ui";
 import StreamerWall from "@/components/home/StreamerWall";
+import CloudBackdrop from "@/components/home/CloudBackdrop";
 import StudioDemo from "@/components/studio/StudioDemo";
 import RelayList from "@/components/relais/RelayList";
 import type { Overview as OverviewData, LiveSession } from "@/lib/dashboard-data";
@@ -123,6 +124,19 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
         </div>
       )}
       {tool === "studio" && <StudioDemo />}
+      {tool === "fond" && (
+        <div className="relative -m-8 min-h-[900px] p-8">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[26rem] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_30%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_30%,transparent_100%)]">
+            <CloudBackdrop tone="theme" />
+          </div>
+          <div className="relative">
+            <h1 className="mb-8 text-2xl font-semibold tracking-tight sm:text-3xl">Salut Mathis.</h1>
+            <DemoLive state={LIVE_STATE}>
+              <Overview initial={OVERVIEW} />
+            </DemoLive>
+          </div>
+        </div>
+      )}
       {tool === "accueil" && (
         <DemoLive state={LIVE_STATE}>
           <Overview initial={OVERVIEW} />
@@ -140,7 +154,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           }))}
         />
       )}
-      {!["relais", "sante", "accueil", "studio", "mur"].includes(tool) && notFound()}
+      {!["relais", "sante", "accueil", "studio", "mur", "fond"].includes(tool) && notFound()}
     </div>
   );
 }

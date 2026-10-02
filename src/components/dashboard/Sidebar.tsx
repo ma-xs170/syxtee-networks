@@ -30,6 +30,7 @@ import { signOut } from "@/app/(auth)/actions";
 import type { Feature } from "@/lib/plans";
 import { site } from "@/lib/site";
 import { Avatar, useAccount } from "../AccountMenu";
+import CloudBackdrop from "../home/CloudBackdrop";
 import ThemeToggle from "../ThemeToggle";
 import { LivePill } from "./LiveStatus";
 import NotificationsBell from "./NotificationsBell";
@@ -273,7 +274,13 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
         </div>
       )}
 
-      <div className="min-w-0">{children}</div>
+      <div className="relative min-w-0">
+        {/* Fond de la page : même principe que l'accueil (dégradé rouge et nuages animés), qui se fond dans le thème vers le bas. */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[26rem] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_30%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_30%,transparent_100%)]">
+          <CloudBackdrop tone="theme" />
+        </div>
+        <div className="relative">{children}</div>
+      </div>
     </div>
   );
 }

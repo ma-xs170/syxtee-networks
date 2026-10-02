@@ -6,7 +6,9 @@ const GRAIN =
   "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")";
 
 /** `flip` : blanc en haut, rouge soutenu en bas (appel final de la page). */
-export default function CloudBackdrop({ flip = false }: { flip?: boolean }) {
+/** `tone="theme"` : version du dashboard, teintée avec le fond du thème (rouge profond sur anthracite, rosé en thème clair). */
+export default function CloudBackdrop({ flip = false, tone = "sky" }: { flip?: boolean; tone?: "sky" | "theme" }) {
+  if (tone === "theme") return <ThemeClouds />;
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
       <div
@@ -36,6 +38,21 @@ export default function CloudBackdrop({ flip = false }: { flip?: boolean }) {
 
       {/* Grain */}
       <div className="absolute inset-0 opacity-[0.22] mix-blend-multiply" style={{ backgroundImage: GRAIN }} />
+    </div>
+  );
+}
+
+function ThemeClouds() {
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--accent)_42%,var(--background))_0%,color-mix(in_srgb,var(--accent)_18%,var(--background))_48%,var(--background)_100%)]" />
+      <div className="aurora-mask absolute inset-0">
+        <div className="aurora absolute left-1/2 top-[-60%] h-[220%] w-[160%] rounded-full opacity-50 blur-[80px] [background:conic-gradient(from_0deg,color-mix(in_srgb,var(--accent)_75%,var(--background)),var(--background),color-mix(in_srgb,var(--accent)_95%,black),color-mix(in_srgb,var(--accent)_35%,var(--background)),var(--background),color-mix(in_srgb,var(--accent)_75%,var(--background)))]" />
+      </div>
+      <div className="cloud-a absolute -left-[10%] top-[0%] h-[70%] w-[50%] rounded-full bg-accent/30 blur-[90px]" />
+      <div className="cloud-b absolute right-[-6%] top-[8%] h-[60%] w-[46%] rounded-full bg-[color-mix(in_srgb,var(--accent)_90%,black)]/35 blur-[100px]" />
+      <div className="cloud-c absolute left-[30%] top-[-10%] h-[50%] w-[40%] rounded-full bg-foreground/10 blur-[90px]" />
+      <div className="absolute inset-0 opacity-[0.12] mix-blend-soft-light" style={{ backgroundImage: GRAIN }} />
     </div>
   );
 }

@@ -12,6 +12,7 @@ import {
   Eye,
   Heartbeat,
   List,
+  Lifebuoy,
   Lock,
   MapPinArea,
   MapTrifold,
@@ -71,6 +72,7 @@ const GROUPS: Group[] = [
 ];
 
 const HELP: Item[] = [
+  { label: "Support", href: "/dashboard/support", icon: Lifebuoy },
   { label: "Documentation", href: "/docs", icon: Question },
   { label: "Discord", href: site.discord, icon: ArrowSquareOut, external: true },
   { label: "Retour au site", href: "/", icon: ArrowSquareOut },

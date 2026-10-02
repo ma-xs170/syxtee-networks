@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { banAction, type BanState } from "@/app/(dashboard)/admin/securite/actions";
+import { banAction, type BanState } from "@/app/(admin)/admin/securite/actions";
 
 // Bannir une IP à la main (en plus des bannissements automatiques de 15 min après 10 refus en 1 min).
 

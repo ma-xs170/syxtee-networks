@@ -33,7 +33,17 @@ export function supportsH264() {
   return !!caps?.codecs.some((c) => c.mimeType.toLowerCase() === "video/h264");
 }
 
-export async function whipPublish(url: string, stream: MediaStream, maxBitrate: number): Promise<WhipSession> {
+/** Opus stéréo : par défaut, WebRTC envoie de l'Opus mono. On demande stéréo et 192 kb/s dans l'offre (stereo=1, sprop-stereo=1). */
+export function opusStereo(sdp: string): string {
+  const pt = /a=rtpmap:(\d+) opus\/48000\/2/i.exec(sdp)?.[1];
+  if (!pt) return sdp;
+  const params = "stereo=1;sprop-stereo=1;maxaveragebitrate=192000;useinbandfec=1";
+  const fmtp = new RegExp(`a=fmtp:${pt} ([^\\r\\n]*)`);
+  if (fmtp.test(sdp)) return sdp.replace(fmtp, (_m, rest: string) => `a=fmtp:${pt} ${rest.replace(/;?(stereo|sprop-stereo|maxaveragebitrate|useinbandfec)=\d+/g, "")};${params}`);
+  return sdp.replace(new RegExp(`(a=rtpmap:${pt} opus\\/48000\\/2\\r?\\n)`, "i"), `$1a=fmtp:${pt} ${params}\r\n`);
+}
+
+export async function whipPublish(url: string, stream: MediaStream, maxBitrate: number, opts: { stereo?: boolean } = {}): Promise<WhipSession> {
   const pc = new RTCPeerConnection({ bundlePolicy: "max-bundle" });
   try {
     for (const track of stream.getTracks()) {
@@ -46,7 +56,8 @@ export async function whipPublish(url: string, stream: MediaStream, maxBitrate: 
         tr.setCodecPreferences?.([...h264, ...codecs.filter((c) => /rtx|red|ulpfec/i.test(c.mimeType))]);
       }
     }
-    await pc.setLocalDescription(await pc.createOffer());
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(opts.stereo && offer.sdp ? { type: "offer", sdp: opusStereo(offer.sdp) } : offer);
     await gathered(pc, 2500);
 
     const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/sdp" }, body: pc.localDescription!.sdp });

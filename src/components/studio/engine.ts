@@ -668,7 +668,7 @@ export class StudioEngine {
       const v = this.out.captureStream(30).getVideoTracks()[0];
       const a = this.recDest!.stream.getAudioTracks()[0];
       const stream = new MediaStream(a ? [v, a] : [v]);
-      this.whip = await whipPublish(whipUrl, stream, kbps * 1000);
+      this.whip = await whipPublish(whipUrl, stream, kbps * 1000, { stereo: true });
       const pc = this.whip.pc;
       pc.onconnectionstatechange = () => {
         if (pc.connectionState === "connected") this.live = "live";

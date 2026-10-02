@@ -23,7 +23,8 @@ export function relayArgs(rtspUrl: string, path: string, output: string) {
     "-i", `${rtspUrl}/${path}`,
     "-map", "0:v:0", "-map", "0:a:0?",
     "-c:v", "copy",
-    "-c:a", "aac", "-b:a", "128k", "-ar", "48000",
+    // Toujours en stéréo : une source mono est doublée sur les deux canaux, une source stéréo reste telle quelle.
+    "-c:a", "aac", "-b:a", "160k", "-ar", "48000", "-ac", "2",
     "-f", "mpegts", output,
   ];
 }

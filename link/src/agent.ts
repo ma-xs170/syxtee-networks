@@ -1,0 +1,202 @@
+import { BackupWatcher, cleanBackup } from "./backup.ts";
+import { save, type LinkConfig } from "./config.ts";
+import { ObsClient } from "./obs.ts";
+
+export const VERSION = "0.1.0";
+
+/** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
+export const OBS_METHODS = new Set([
+  "GetVersion", "GetStats", "GetSceneList", "GetCurrentProgramScene", "GetCurrentPreviewScene", "GetSceneItemList", "GetInputList",
+  "GetInputMute", "GetInputVolume", "GetStreamStatus", "GetRecordStatus", "GetStudioModeEnabled", "GetMediaInputStatus", "GetSourceScreenshot",
+  "SetCurrentProgramScene", "SetCurrentPreviewScene", "SetStudioModeEnabled", "TriggerStudioModeTransition", "SetSceneItemEnabled",
+  "SetInputMute", "SetInputVolume", "StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord",
+]);
+
+/** Événements OBS relayés vers le navigateur (les niveaux audio sont limités à 5 images par seconde). */
+const EVENTS = new Set([
+  "CurrentProgramSceneChanged", "CurrentPreviewSceneChanged", "SceneListChanged", "StreamStateChanged", "RecordStateChanged",
+  "InputMuteStateChanged", "InputVolumeChanged", "SceneItemEnableStateChanged", "StudioModeStateChanged", "ExitStarted",
+]);
+
+export type Status = { core: "off" | "connecting" | "on"; obs: "off" | "connecting" | "on"; obsVersion: string; backup: BackupWatcher["state"]; lastError: string };
+
+/**
+ * Relie OBS (local) et le Core (sortant). Se reconnecte seul aux deux. N'ouvre aucun port : la connexion part du PC.
+ */
+export class Agent {
+  status: Status = { core: "off", obs: "off", obsVersion: "", backup: "idle", lastError: "" };
+  onStatus: (s: Status) => void = () => {};
+  private obs = new ObsClient();
+  private core: WebSocket | null = null;
+  private stopped = false;
+  private watcher: BackupWatcher;
+  private timers: ReturnType<typeof setTimeout>[] = [];
+  private tickTimer: ReturnType<typeof setInterval> | null = null;
+  private lastMeters = 0;
+  private obsBusy = false;
+
+  private cfg: LinkConfig;
+  private log: (m: string) => void;
+
+  constructor(cfg: LinkConfig, log: (m: string) => void = () => {}) {
+    this.cfg = cfg;
+    this.log = log;
+    this.watcher = new BackupWatcher((t, d) => this.obs.request(t, d), log);
+    this.watcher.set(cfg.backup);
+    this.watcher.onChange = (s) => {
+      this.status.backup = s;
+      this.emit();
+      this.send({ type: "event", name: "link.backupState", data: { state: s } });
+    };
+  }
+
+  start() {
+    this.stopped = false;
+    void this.connectObs();
+    this.connectCore();
+    this.tickTimer = setInterval(() => void this.watcher.tick(), 1000);
+  }
+
+  stop() {
+    this.stopped = true;
+    this.timers.forEach(clearTimeout);
+    if (this.tickTimer) clearInterval(this.tickTimer);
+    this.core?.close();
+    this.obs.close();
+  }
+
+  private emit() {
+    this.onStatus({ ...this.status });
+  }
+  private err(m: string) {
+    this.status.lastError = m;
+    this.log(m);
+    this.emit();
+  }
+  private later(fn: () => void, ms: number) {
+    if (!this.stopped) this.timers.push(setTimeout(fn, ms));
+  }
+  private send(m: unknown) {
+    if (this.core?.readyState === WebSocket.OPEN) this.core.send(JSON.stringify(m));
+  }
+
+  // ───── OBS ─────
+  private async connectObs() {
+    if (this.stopped || this.obsBusy || this.obs.connected) return;
+    this.obsBusy = true;
+    this.status.obs = "connecting";
+    this.emit();
+    try {
+      const { host, port, password } = this.cfg.obs;
+      const { wsVersion } = await this.obs.connect(host, port, password);
+      const v = await this.obs.request<{ obsVersion?: string }>("GetVersion");
+      this.status.obs = "on";
+      this.status.obsVersion = String(v.obsVersion ?? wsVersion);
+      this.status.lastError = "";
+      this.log(`OBS ${this.status.obsVersion} connecté`);
+      this.obs.onEvent = (name, data) => {
+        if (name === "InputVolumeMeters") return this.meters(data);
+        if (EVENTS.has(name)) this.send({ type: "event", name, data });
+      };
+      this.obs.onClose = () => {
+        this.status.obs = "off";
+        this.watcher.set({ ...this.watcher.cfg, enabled: false });
+        this.emit();
+        this.send({ type: "event", name: "link.obsClosed", data: {} });
+        this.later(() => void this.connectObs(), 3000);
+      };
+      this.watcher.set(this.cfg.backup);
+      this.send({ type: "event", name: "link.obsOpened", data: {} });
+    } catch (e) {
+      this.status.obs = "off";
+      this.err((e as Error).message);
+      this.later(() => void this.connectObs(), 5000);
+    } finally {
+      this.obsBusy = false;
+      this.emit();
+    }
+  }
+
+  /** Niveaux audio : 5 fois par seconde au plus, en dB, par entrée. */
+  private meters(data: Record<string, unknown>) {
+    const t = Date.now();
+    if (t - this.lastMeters < 200) return;
+    this.lastMeters = t;
+    const inputs = (data.inputs as { inputName: string; inputLevelsMul: number[][] }[]) ?? [];
+    const levels: Record<string, number> = {};
+    for (const i of inputs) {
+      const peak = Math.max(0, ...i.inputLevelsMul.map((ch) => ch[1] ?? 0));
+      levels[i.inputName] = peak > 0 ? Math.round(20 * Math.log10(peak)) : -100;
+    }
+    this.send({ type: "event", name: "link.levels", data: levels });
+  }
+
+  // ───── Core ─────
+  private connectCore() {
+    if (this.stopped) return;
+    this.status.core = "connecting";
+    this.emit();
+    const url = `${this.cfg.core.replace(/^http/, "ws")}/v1/link/agent`;
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(url);
+    } catch {
+      this.err("Adresse du serveur invalide.");
+      return;
+    }
+    this.core = ws;
+    let delay = 3000;
+    ws.onopen = () => ws.send(JSON.stringify({ type: "hello", token: this.cfg.token, name: hostName(), platform: process.platform, version: VERSION }));
+    ws.onmessage = (ev) => {
+      let m: { type?: string; id?: string; method?: string; params?: Record<string, unknown> };
+      try {
+        m = JSON.parse(String(ev.data));
+      } catch {
+        return;
+      }
+      if (m.type === "ready") {
+        this.status.core = "on";
+        this.status.lastError = "";
+        this.emit();
+      } else if (m.type === "req" && typeof m.id === "string" && typeof m.method === "string") void this.handle(m.id, m.method, m.params ?? {});
+    };
+    ws.onclose = (e) => {
+      this.status.core = "off";
+      if (e.code === 4003 || e.code === 4005) {
+        this.err("Appareil refusé ou révoqué : refais l'appairage (syxtee-link pair CODE).");
+        this.stopped = true;
+        return;
+      }
+      if (e.code === 4000) delay = 30_000; // remplacé par un autre agent du même compte : n'insiste pas
+      this.emit();
+      this.later(() => this.connectCore(), delay);
+    };
+    ws.onerror = () => {};
+  }
+
+  private async handle(id: string, method: string, params: Record<string, unknown>) {
+    const reply = (ok: boolean, result?: unknown, error?: string) => this.send({ type: "res", id, ok, result, error });
+    try {
+      if (method === "link.getInfo") return reply(true, { version: VERSION, platform: process.platform, ...this.status });
+      if (method === "link.getBackup") return reply(true, { ...this.watcher.cfg, state: this.watcher.state });
+      if (method === "link.setBackup") {
+        this.cfg.backup = cleanBackup(params, this.cfg.backup);
+        this.watcher.set(this.cfg.backup);
+        save(this.cfg);
+        return reply(true, { ...this.cfg.backup, state: this.watcher.state });
+      }
+      if (!OBS_METHODS.has(method)) return reply(false, undefined, "method_not_allowed");
+      reply(true, await this.obs.request(method, params));
+    } catch (e) {
+      reply(false, undefined, (e as Error).message);
+    }
+  }
+}
+
+function hostName() {
+  try {
+    return String(process.env.COMPUTERNAME || process.env.HOSTNAME || process.env.USER || "OBS").slice(0, 40);
+  } catch {
+    return "OBS";
+  }
+}

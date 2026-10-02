@@ -1,0 +1,35 @@
+# Workflow GitHub Actions pour construire SYXTEE Link (macOS arm64 et x64, Windows).
+# À copier dans .github/workflows/link.yml (le jeton de push de l'assistant n'a pas le droit « workflow »).
+name: SYXTEE Link
+
+on:
+  push:
+    paths: ["link/**", "core/src/remote.ts", ".github/workflows/link.yml"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-14, name: macos-arm64 }
+          - { os: macos-13, name: macos-x64 }
+          - { os: windows-latest, name: windows-x64 }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: link
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - run: npm ci --prefix ../core
+      - run: npm ci
+      - run: npm test
+      - run: npm run sea
+      - uses: actions/upload-artifact@v4
+        with:
+          name: syxtee-link-${{ matrix.name }}
+          path: link/dist/syxtee-link*
+          if-no-files-found: error

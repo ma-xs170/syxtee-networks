@@ -1,0 +1,5 @@
+{
+  "main": "dist/syxtee-link.cjs",
+  "output": "dist/syxtee-link",
+  "disableExperimentalSEAWarning": true
+}

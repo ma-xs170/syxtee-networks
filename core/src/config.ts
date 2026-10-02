@@ -72,6 +72,8 @@ const schema = z.object({
   CAM_ENABLED: bool.default(true),
   /** Diffusion depuis SYXTEE STUDIO (WebRTC vers MediaMTX, puis RTMP vers les plateformes). Nécessite la Cam (même MediaMTX et même WHIP). */
   STUDIO_ENABLED: bool.default(true),
+  /** SYXTEE Link : télécommande d'OBS (agent sur le PC, WebSocket vers le Core). */
+  LINK_ENABLED: bool.default(true),
   MEDIAMTX_API_URL: z.string().default("http://127.0.0.1:9997"),
   MEDIAMTX_RTSP_URL: z.string().default("rtsp://127.0.0.1:8554"),
   // Adresse publique du WHIP (Caddy → MediaMTX). Par défaut : https://cam.<CORE_DOMAIN>

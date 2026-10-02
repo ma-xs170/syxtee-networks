@@ -7,6 +7,7 @@ import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { StudioEngine } from "./engine";
 import AutoPanel from "./AutoPanel";
 import GoLive from "./GoLive";
+import Remote from "./Remote";
 import Multiview from "./Multiview";
 import { H, KIND_LABEL, W, defaultBox, hasAudio, loadProject, uid, type Item, type Source, type SourceKind } from "./model";
 
@@ -45,7 +46,7 @@ export default function Studio({ relays, coreUrl }: { relays: Relay[]; coreUrl: 
   const [fadeMode, setFadeMode] = useState(true);
   const [listen, setListen] = useState(true);
   const [elapsed, setElapsed] = useState(0);
-  const [view, setView] = useState<"studio" | "multiview">("studio");
+  const [view, setView] = useState<"studio" | "multiview" | "remote">("studio");
   const [auto, setAuto] = useState(false);
   const [golive, setGolive] = useState(false);
   const drag = useRef<{ handle: Handle; id: string; sx: number; sy: number; box: Item } | null>(null);
@@ -232,6 +233,7 @@ export default function Studio({ relays, coreUrl }: { relays: Relay[]; coreUrl: 
               [
                 ["studio", "Studio"],
                 ["multiview", "Multiview"],
+                ["remote", "Télécommande OBS"],
               ] as const
             ).map(([v, l]) => (
               <button
@@ -254,7 +256,9 @@ export default function Studio({ relays, coreUrl }: { relays: Relay[]; coreUrl: 
         </div>
       </header>
       {/* Aperçu / programme */}
-      {view === "multiview" ? (
+      {view === "remote" ? (
+        <Remote coreUrl={coreUrl} />
+      ) : view === "multiview" ? (
         <Multiview e={e} levels={levels} recClock={clock} fade={fadeMode} />
       ) : (
         <>

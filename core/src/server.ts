@@ -18,6 +18,7 @@ import type { SessionTracker } from "./sessions.ts";
 import type { Asn } from "./asn.ts";
 import type { Cam } from "./cam.ts";
 import type { Studio } from "./studio.ts";
+import type { Remote } from "./remote.ts";
 import { median } from "./aggregate.ts";
 import type { Coverage } from "./coverage.ts";
 import { classify, countsOnMap, DECLARED, declaredName, ipPrefix, isCaribbean, netToken, type Declared, type Prefixes } from "./link.ts";
@@ -34,6 +35,8 @@ export type Deps = {
   cam?: Cam | null;
   /** Diffusion depuis SYXTEE STUDIO (null si désactivée). */
   studio?: Studio | null;
+  /** SYXTEE Link : télécommande d'OBS (null si désactivée). */
+  remote?: Remote | null;
   /** Pseudo et Twitch vérifié, pour l'app /cam (chat en superposition). */
   /** username : nom public (chaîne Twitch, sinon « Prénom N. ») ; le champ garde son nom pour les anciens clients. */
   profile?: (userId: string) => Promise<{ username: string | null; twitch_login: string | null }>;
@@ -702,6 +705,37 @@ export function buildServer(d: Deps) {
         down_kbps: point.down_kbps,
         rtt_ms: point.rtt_ms,
       };
+    });
+  }
+
+  // ───── SYXTEE Link : télécommande d'OBS (les WebSocket sont gérées par remote.upgrade, voir index.ts) ─────
+  if (d.remote) {
+    const remote = d.remote;
+    app.post("/v1/me/link/pair", async (req, reply) => {
+      const id = await userId(req, reply);
+      if (!id) return;
+      if (!remote.canUse(id)) return reply.code(403).send({ error: "not_allowed" });
+      return remote.newCode(id);
+    });
+    app.get("/v1/me/link/devices", async (req, reply) => {
+      const id = await userId(req, reply);
+      if (!id) return;
+      return { devices: await remote.devices(id), ...remote.status(id) };
+    });
+    app.delete("/v1/me/link/devices/:did", async (req, reply) => {
+      const id = await userId(req, reply);
+      if (!id) return;
+      const did = z.object({ did: z.uuid() }).safeParse(req.params);
+      if (!did.success) return reply.code(400).send({ error: "invalid" });
+      return (await remote.revoke(id, did.data.did)) ? { ok: true } : reply.code(404).send({ error: "no_device" });
+    });
+    // L'agent présente son code d'appairage (pas de jeton : le code est le secret, à usage unique, 5 min, limité par IP).
+    app.post("/v1/link/claim", async (req, reply) => {
+      const b = z.object({ code: z.string().max(20), name: z.string().max(40).optional(), platform: z.string().max(20).optional() }).safeParse(req.body);
+      if (!b.success) return reply.code(400).send({ error: "invalid" });
+      const r = await remote.claim(req.ip, b.data.code, b.data.name, b.data.platform);
+      if ("error" in r) return reply.code(r.error === "too_many" ? 429 : r.error === "server" ? 500 : 400).send({ error: r.error });
+      return r;
     });
   }
 

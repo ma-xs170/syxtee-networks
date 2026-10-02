@@ -19,6 +19,7 @@ import { createPrefixes } from "./link.ts";
 import { buildServer } from "./server.ts";
 import { createCam } from "./cam.ts";
 import { createStudio } from "./studio.ts";
+import { createRemote } from "./remote.ts";
 import { createSessionTracker, supabaseSessionDb } from "./sessions.ts";
 import { createSls } from "./sls.ts";
 import { createSealer, parseSecret } from "./keys.ts";
@@ -127,6 +128,11 @@ const cam =
       })
     : null;
 
+// SYXTEE Link : télécommande d'OBS. Comptes autorisés = ceux qui ont un relais autorisé (accès sur invitation), mis à jour avec les clés.
+const verifyUser = createUserVerifier(config.SUPABASE_URL);
+const linkUsers = new Set<string>();
+const remote = config.LINK_ENABLED ? createRemote({ db: supabase as never, canUse: (id) => linkUsers.has(id), verifyUser, log }) : null;
+
 // SYXTEE STUDIO : le navigateur publie en WebRTC (même WHIP que la Cam), le Core diffuse en RTMP vers les plateformes.
 const studio =
   config.STUDIO_ENABLED && camWhipBase
@@ -150,6 +156,8 @@ async function refreshKeys() {
       security.setRelays(ok);
       cam?.setKeys(ok);
       studio?.setUsers(new Set(ok.map((r) => r.user_id)));
+      linkUsers.clear();
+      for (const r of ok) linkUsers.add(r.user_id);
       rtmp?.setKeys(ok);
       await regie?.sync(ok);
     } catch (e) {
@@ -198,7 +206,8 @@ const app = buildServer({
     const { data } = await supabase.from("profiles").select("username, first_name, last_name, twitch_display_name, twitch_login").eq("id", id).maybeSingle();
     return { username: publicName(data), twitch_login: (data?.twitch_login as string | null) ?? null };
   },
-  verifyUser: createUserVerifier(config.SUPABASE_URL),
+  verifyUser,
+  remote,
   previewPath: (id) => previews?.path(id) ?? "",
   liveFeed: previews ? (r) => openLive({ host: config.SLS_SRT_HOST, port: config.SRT_PLAY_PORT, playId: r.play_id }) : undefined,
   onKeysChanged: () => void refreshKeys(),
@@ -274,7 +283,11 @@ const timers = [
 ];
 
 await app.listen({ port: config.PORT, host: config.HOST });
-log(`prêt sur :${config.PORT} · relais ${config.RELAY_NAME} (${config.RELAY_PUBLIC_HOST}) · aperçus ${previews ? "oui" : "non"} · régie ${regie ? "oui" : "non"} · cam ${cam ? camWhipBase : "non"} · studio ${studio ? "oui" : "non"} · rtmp ${rtmp ? `:${config.RTMP_PORT}` : "non"}`);
+// WebSocket de SYXTEE Link (agent et navigateur) : tout autre « upgrade » est refusé.
+app.server.on("upgrade", (req, socket, head) => {
+  if (!remote?.upgrade(req, socket, head)) socket.destroy();
+});
+log(`prêt sur :${config.PORT} · relais ${config.RELAY_NAME} (${config.RELAY_PUBLIC_HOST}) · aperçus ${previews ? "oui" : "non"} · régie ${regie ? "oui" : "non"} · cam ${cam ? camWhipBase : "non"} · studio ${studio ? "oui" : "non"} · link ${remote ? "oui" : "non"} · rtmp ${rtmp ? `:${config.RTMP_PORT}` : "non"}`);
 
 const shutdown = async () => {
   timers.forEach(clearInterval);
@@ -282,6 +295,7 @@ const shutdown = async () => {
   regie?.stopAll();
   cam?.stopAll();
   studio?.stopAll();
+  remote?.close();
   rtmp?.stopAll();
   await sessions.closeAll();
   await coverage.flush();

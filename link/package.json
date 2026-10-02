@@ -1,0 +1,23 @@
+{
+  "name": "syxtee-link",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "SYXTEE Link : agent installé sur le PC d'OBS. Pilote OBS en local (obs-websocket) et se laisse commander depuis SYXTEE Studio, sans faire passer la vidéo par le serveur.",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "node --experimental-strip-types src/main.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "sea": "node scripts/build-sea.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.0",
+    "ws": "^8.18.0",
+    "@types/ws": "^8.18.0"
+  }
+}

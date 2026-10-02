@@ -12,7 +12,7 @@ export default function ComingSoon({ children }: { children?: ReactNode }) {
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Accès</p>
         <h2 className="mt-4 h-section">Sur invitation.</h2>
         <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted">
-          Il n&apos;y a pas d&apos;abonnement. L&apos;accès aux relais et au studio en direct est ouvert sur invitation, comme le Partner Program. Demande la tienne sur le Discord.
+          <strong>Il n&apos;y a pas d&apos;abonnement.</strong> L&apos;accès aux relais et au studio en direct est ouvert <strong>sur invitation</strong>, comme le Partner Program. Demande la tienne sur le Discord.
         </p>
 
         <ul className="mx-auto mt-10 flex max-w-2xl flex-wrap justify-center gap-2">

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useLiveStatus } from "@/components/dashboard/LiveStatus";
 import { fmtAgo, fmtInt } from "@/lib/dashboard-data";
@@ -9,6 +8,7 @@ import { flag, serverById } from "@/lib/relay-servers";
 import RelayServer from "../illustrations/RelayServer";
 import CreateRelayWizard from "./CreateRelayWizard";
 import RelayActions from "./RelayActions";
+import RelayDetailModal from "./RelayDetailModal";
 
 // Page « Mes relais » : compteur, bouton de création, filtres, et relais classés (en live, actifs, inactifs, archivés).
 
@@ -46,15 +46,15 @@ export function ServerLabel({ id }: { id: string }) {
   );
 }
 
-function Row({ relay, live }: { relay: RelayRow; live: boolean }) {
+function Row({ relay, live, onOpen }: { relay: RelayRow; live: boolean; onOpen: (r: RelayRow) => void }) {
   return (
     <li className="grid gap-4 rounded-2xl border border-line p-4 transition-colors hover:border-accent/30 sm:p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2.5">
           {live ? <span className="live-dot" aria-label="En live" /> : <span className="h-2 w-2 rounded-full border border-muted" aria-hidden="true" />}
-          <Link href={`/dashboard/relais/${relay.id}`} className="truncate text-base font-medium underline-offset-4 hover:underline">
+          <button type="button" onClick={() => onOpen(relay)} className="truncate text-left text-base font-medium underline-offset-4 hover:underline">
             {relay.name}
-          </Link>
+          </button>
           <ProtocolBadge protocol={relay.protocol} />
         </div>
         <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:flex sm:flex-wrap">
@@ -76,7 +76,7 @@ function Row({ relay, live }: { relay: RelayRow; live: boolean }) {
           </div>
         </dl>
       </div>
-      <RelayActions relay={relay} />
+      <RelayActions relay={relay} onView={() => onOpen(relay)} />
     </li>
   );
 }
@@ -87,6 +87,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
   const [server, setServer] = useState("all");
   const [q, setQ] = useState("");
   const [showArchived, setShowArchived] = useState(false);
+  const [openId, setOpenId] = useState<string | null>(null);
   const { state } = useLiveStatus();
 
   // Statut en direct : le flux SSE du Core prime sur l'état lu au chargement de la page.
@@ -96,6 +97,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
   }, [state]);
   const withLive = relays.map((r) => ({ ...r, live: !r.archived && (liveIds ? liveIds.has(r.id) : r.live) }));
 
+  const opened = withLive.find((r) => r.id === openId) ?? null;
   const servers = [...new Set(relays.map((r) => r.server))];
   const needle = q.trim().toLowerCase();
   const shown = withLive.filter(
@@ -209,7 +211,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
                   </h2>
                   <ul className="space-y-3">
                     {items.map((r) => (
-                      <Row key={r.id} relay={r} live={g.id === "live"} />
+                      <Row key={r.id} relay={r} live={g.id === "live"} onOpen={(x) => setOpenId(x.id)} />
                     ))}
                   </ul>
                 </section>
@@ -233,7 +235,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
                 {showArchived && (
                   <ul className="mt-3 space-y-3 opacity-70">
                     {archived.map((r) => (
-                      <Row key={r.id} relay={r} live={false} />
+                      <Row key={r.id} relay={r} live={false} onOpen={(x) => setOpenId(x.id)} />
                     ))}
                   </ul>
                 )}
@@ -243,6 +245,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
         </>
       )}
 
+      <RelayDetailModal relay={opened} coreUrl={coreUrl} onClose={() => setOpenId(null)} />
       <CreateRelayWizard open={wizard} onClose={() => setWizard(false)} coreUrl={coreUrl} geo={geo} />
     </div>
   );

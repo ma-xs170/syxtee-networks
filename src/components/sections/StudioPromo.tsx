@@ -1,3 +1,4 @@
+import { rich } from "@/lib/rich";
 import Link from "next/link";
 import StudioWire from "../illustrations/StudioWire";
 import Wordmark from "../Wordmark";
@@ -6,9 +7,9 @@ import Highlight from "../ui/Highlight";
 
 // Accueil : SYXTEE STUDIO, la régie de diffusion dans le navigateur (page /syxtee-studio, outil /studio).
 const points = [
-  { t: "Multiview de régie TV", d: "Aperçu, programme et toutes tes scènes en direct." },
-  { t: "Secours automatique", d: "Il bascule seulement si l'image se fige, jamais pour un simple bas débit." },
-  { t: "Mode podcast", d: "Flux synchronisés, même en latence haute, et scène qui suit la voix." },
+  { t: "Multiview de régie TV", d: "**Aperçu, programme** et toutes tes scènes en direct." },
+  { t: "Secours automatique", d: "Il bascule **seulement si l'image se fige**, jamais pour un simple bas débit." },
+  { t: "Mode podcast", d: "Flux **synchronisés**, même en latence haute, et **scène qui suit la voix**." },
 ];
 
 export default function StudioPromo() {
@@ -24,7 +25,7 @@ export default function StudioPromo() {
             {points.map((p) => (
               <li key={p.t}>
                 <p className="text-base font-medium">{p.t}</p>
-                <p className="mt-1 text-sm leading-relaxed text-muted">{p.d}</p>
+                <p className="mt-1 text-sm leading-relaxed text-muted">{rich(p.d)}</p>
               </li>
             ))}
           </ul>

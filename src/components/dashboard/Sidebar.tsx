@@ -3,14 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ComponentType } from "react";
+import { useEffect, useRef, useState, type ComponentType } from "react";
 import {
   ArrowSquareOut,
+  CaretUpDown,
   CellSignalFull,
   ChartBar,
-  CreditCard,
   Eye,
-  Gear,
   Heartbeat,
   List,
   Lock,
@@ -18,12 +17,10 @@ import {
   MapTrifold,
   Question,
   Radio,
-  ShieldCheck,
   SignOut,
   SlidersHorizontal,
   SquaresFour,
   Television,
-  UserCircle,
   VideoCamera,
   X,
   type IconProps,
@@ -34,6 +31,7 @@ import { site } from "@/lib/site";
 import { Avatar, useAccount } from "../AccountMenu";
 import ThemeToggle from "../ThemeToggle";
 import { LivePill } from "./LiveStatus";
+import NotificationsBell from "./NotificationsBell";
 import StreamModeToggle from "./StreamModeToggle";
 import { restoreStreamMode } from "./streamMode";
 
@@ -72,12 +70,6 @@ const GROUPS: Group[] = [
   },
 ];
 
-const ACCOUNT: Item[] = [
-  { label: "Profil & réseaux", href: "/dashboard/profil", icon: UserCircle },
-  { label: "Mon accès", href: "/dashboard/abonnement", icon: CreditCard },
-  { label: "Paramètres", href: "/dashboard/parametres", icon: Gear },
-];
-
 const HELP: Item[] = [
   { label: "Documentation", href: "/docs", icon: Question },
   { label: "Discord", href: site.discord, icon: ArrowSquareOut, external: true },
@@ -104,6 +96,79 @@ function NavLink({ item, active, locked, onNavigate }: { item: Item; active: boo
     <Link href={item.href} aria-current={active ? "page" : undefined} className={cls} onClick={onNavigate}>
       {inner}
     </Link>
+  );
+}
+
+function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<ReturnType<typeof useAccount>>; admin: boolean; onNavigate: () => void }) {
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent | KeyboardEvent) => {
+      if (e instanceof KeyboardEvent ? e.key === "Escape" : !box.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", close);
+    };
+  }, [open]);
+
+  const links: { label: string; href: string }[] = [
+    { label: "Profil & réseaux", href: "/dashboard/profil" },
+    { label: "Mon accès", href: "/dashboard/abonnement" },
+    { label: "Paramètres", href: "/dashboard/parametres" },
+    ...(admin ? [{ label: "Administration", href: "/admin" }] : []),
+  ];
+  const item = "block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-accent/10";
+
+  return (
+    <div className="flex items-center gap-1">
+      <div ref={box} className="relative min-w-0 flex-1">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-haspopup="menu"
+          className="flex w-full items-center gap-3 rounded-lg p-1.5 text-left transition-colors hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+        >
+          <Avatar account={account} size={36} />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-medium">{account.name}</span>
+            <span className="mt-0.5 inline-block rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{account.planName}</span>
+          </span>
+          <CaretUpDown size={16} className="shrink-0 text-muted" aria-hidden="true" />
+        </button>
+        {open && (
+          <div role="menu" className="absolute bottom-full left-0 z-50 mb-2 w-[calc(100%+3rem)] overflow-hidden rounded-xl border border-line bg-background py-1 shadow-[0_18px_40px_rgba(0,0,0,0.6)]">
+            <p className="label-mono px-4 pb-1 pt-2 text-[10px]">Mon compte</p>
+            {links.map((l) => (
+              <Link
+                key={l.href}
+                role="menuitem"
+                href={l.href}
+                onClick={() => {
+                  setOpen(false);
+                  onNavigate();
+                }}
+                className={item}
+              >
+                {l.label}
+              </Link>
+            ))}
+            <form action={signOut} className="border-t border-line">
+              <button type="submit" role="menuitem" className={`${item} flex items-center gap-2 text-red-400`}>
+                <SignOut size={16} aria-hidden="true" />
+                Se déconnecter
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+      <NotificationsBell />
+    </div>
   );
 }
 
@@ -143,22 +208,6 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
         ))}
 
         <div>
-          <p className="label-mono px-3 pb-2 text-[10px]">Compte</p>
-          <ul className="space-y-0.5">
-            {ACCOUNT.map((it) => (
-              <li key={it.href}>
-                <NavLink item={it} active={isActive(it.href)} onNavigate={onNavigate} />
-              </li>
-            ))}
-            {admin && (
-              <li>
-                <NavLink item={{ label: "Administration", href: "/admin", icon: ShieldCheck }} active={isActive("/admin")} onNavigate={onNavigate} />
-              </li>
-            )}
-          </ul>
-        </div>
-
-        <div>
           <p className="label-mono px-3 pb-2 text-[10px]">Aide</p>
           <ul className="space-y-0.5">
             {HELP.map((it) => (
@@ -175,20 +224,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
           <ThemeToggle />
           <StreamModeToggle />
         </div>
-        {account && (
-          <div className="flex items-center gap-3">
-            <Avatar account={account} size={36} />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{account.name}</p>
-              <span className="mt-0.5 inline-block rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{account.planName}</span>
-            </div>
-            <form action={signOut}>
-              <button type="submit" aria-label="Déconnexion" title="Déconnexion" className="rounded-lg p-2 text-muted transition-colors hover:bg-accent/10 hover:text-foreground">
-                <SignOut size={18} />
-              </button>
-            </form>
-          </div>
-        )}
+        {account && <AccountFooter account={account} admin={admin} onNavigate={onNavigate} />}
       </div>
     </div>
   );

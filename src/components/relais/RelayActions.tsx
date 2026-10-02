@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { archiveRelayAction, deleteRelayAction, renameRelayAction, rotateRelayAction, type RelayActionState } from "@/app/(dashboard)/dashboard/relais/actions";
@@ -16,7 +15,7 @@ export const ingestUrl = (r: Pick<RelayView, "protocol" | "urls">) => (r.protoco
 
 const btn = "h-10 whitespace-nowrap rounded-full border border-line px-4 text-sm transition-colors hover:bg-accent/10 disabled:opacity-40";
 
-export default function RelayActions({ relay, showView = true }: { relay: RelayView; showView?: boolean }) {
+export default function RelayActions({ relay, showView = true, onView }: { relay: RelayView; showView?: boolean; onView?: () => void }) {
   const router = useRouter();
   const [menu, setMenu] = useState(false);
   const [ask, setAsk] = useState<Pending>(null);
@@ -72,10 +71,8 @@ export default function RelayActions({ relay, showView = true }: { relay: RelayV
       if (ask === "archive") r = await archiveRelayAction(relay.id, !relay.archived);
       if (ask === "delete") r = await deleteRelayAction(relay.id);
       if (r.error) return setError(r.error);
-      const wasDelete = ask === "delete";
       setAsk(null);
-      if (wasDelete && !showView) router.push("/dashboard/relais");
-      else router.refresh();
+      router.refresh();
     });
   }
 
@@ -112,9 +109,9 @@ export default function RelayActions({ relay, showView = true }: { relay: RelayV
         </button>
       )}
       {showView && (
-        <Link href={`/dashboard/relais/${relay.id}`} className={`${btn} inline-flex items-center`}>
+        <button type="button" onClick={onView} className={btn}>
           Voir
-        </Link>
+        </button>
       )}
       <div ref={menuRef} className="relative">
         <button type="button" onClick={() => setMenu((v) => !v)} aria-expanded={menu} aria-haspopup="menu" className={btn} aria-label={`Plus d'actions pour ${relay.name}`}>

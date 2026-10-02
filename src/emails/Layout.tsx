@@ -8,7 +8,7 @@ import { site } from "@/lib/site";
 
 const MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 const SANS = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
-export const C = { bg: "#000000", card: "#0a0a0a", line: "#1f1f1f", fg: "#f5f5f5", muted: "#8a8a8a" };
+export const C = { bg: "#0e0e11", card: "#141418", line: "#26262c", fg: "#f5f5f5", muted: "#8a8a8a" };
 
 export const p = { color: C.fg, fontFamily: SANS, fontSize: "15px", lineHeight: "24px", margin: "0 0 16px" } as const;
 export const muted = { ...p, color: C.muted, fontSize: "13px", lineHeight: "20px" } as const;

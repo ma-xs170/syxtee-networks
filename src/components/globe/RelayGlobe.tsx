@@ -46,7 +46,7 @@ export default function RelayGlobe({ servers, selected, onSelect, geo, className
     let ink = "#fff";
     let live = "#ff3b30";
     let muted = "#888";
-    let bg = "#000";
+    let bg = "#0e0e11";
 
     import("./land").then(({ LAND }) => {
       land = LAND.map((r) => Float32Array.from(r, (v) => v * RAD));

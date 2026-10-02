@@ -1,3 +1,4 @@
+import { rich } from "@/lib/rich";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import PhoneAndroid from "../illustrations/PhoneAndroid";
@@ -12,7 +13,7 @@ const guides: { href: string; kicker: string; title: string; text: string; art: 
     href: "/moblin",
     kicker: "Application",
     title: "Moblin, l'app qu'on recommande",
-    text: "Gratuite sur iPhone, pensée pour l'IRL et compatible SRTLA. Ce qu'elle fait, et comment la brancher sur le relais.",
+    text: "**Gratuite sur iPhone**, pensée pour l'IRL et **compatible SRTLA**. Ce qu'elle fait, et comment la brancher sur le relais.",
     art: <PhoneMoblin />,
     alt: "iPhone avec l'app Moblin en live",
   },
@@ -20,7 +21,7 @@ const guides: { href: string; kicker: string; title: string; text: string; art: 
     href: "/starlink",
     kicker: "Connexion",
     title: "Starlink en IRL",
-    text: "Quand la 4G ne suffit plus : streamer depuis la campagne, la mer ou un festival saturé avec une antenne satellite.",
+    text: "Quand la 4G ne suffit plus : streamer depuis **la campagne, la mer ou un festival saturé** avec une antenne satellite.",
     art: <StarlinkMini />,
     alt: "Antenne Starlink Mini sur sa béquille",
   },
@@ -28,7 +29,7 @@ const guides: { href: string; kicker: string; title: string; text: string; art: 
     href: "/saily",
     kicker: "Partenaire",
     title: "+ 4G avec Saily",
-    text: "Une eSIM Saily sur un 2e téléphone avec Moblink : une 4G de plus dans ton bonding, chez un autre opérateur.",
+    text: "Une **eSIM Saily** sur un 2e téléphone avec Moblink : **une 4G de plus** dans ton bonding, chez un autre opérateur.",
     art: <PhoneAndroid />,
     alt: "Téléphone Android avec l'app Moblink et une puce eSIM",
     partner: true,
@@ -45,7 +46,7 @@ export default function Guides() {
               <PopOutImage alt={g.alt} art={g.art}>
                 <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">{g.kicker}</p>
                 <h2 className="mt-4 text-2xl font-semibold tracking-tight">{g.title}</h2>
-                <p className="mt-3 text-sm leading-relaxed text-muted">{g.text}</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted">{rich(g.text)}</p>
                 <p className="mt-auto pt-8 text-sm text-muted transition-colors group-hover:text-foreground">
                   Lire le guide <span aria-hidden="true" className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
                 </p>

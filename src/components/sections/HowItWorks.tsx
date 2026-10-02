@@ -1,9 +1,10 @@
+import { rich } from "@/lib/rich";
 import { Container, MoreLink, SectionHeader } from "../ui";
 
 const steps = [
-  { n: "1", title: "Rejoins le Discord", text: "Tu demandes ton accès dans le salon dédié. On te donne l'adresse du relais et ton identifiant de stream." },
-  { n: "2", title: "Configure ton app", text: "Dans Moblin ou IRL Pro, tu colles l'adresse SRTLA et tu actives le bonding sur tes connexions." },
-  { n: "3", title: "Ajoute la source dans OBS", text: "Une source média SRT, et tu passes en live. Le relais tourne 24h/24, tu te connectes quand tu veux." },
+  { n: "1", title: "Rejoins le Discord", text: "Tu demandes ton **accès sur invitation** dans le salon dédié. On te donne **l'adresse du relais** et ton identifiant de stream." },
+  { n: "2", title: "Configure ton app", text: "Dans **Moblin** ou **IRL Pro**, tu colles l'adresse SRTLA et tu actives le **bonding** sur tes connexions." },
+  { n: "3", title: "Ajoute la source dans OBS", text: "Une **source média SRT**, et tu passes en live. Le relais tourne **24h/24**, tu te connectes quand tu veux." },
 ];
 
 export default function HowItWorks() {
@@ -17,7 +18,7 @@ export default function HowItWorks() {
             <li key={s.n}>
               <span className="flex h-10 w-10 items-center justify-center rounded-full border border-line font-mono text-sm">{s.n}</span>
               <h3 className="mt-5 text-lg font-semibold">{s.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{s.text}</p>
+              <p className="mt-2 text-sm leading-relaxed text-muted">{rich(s.text)}</p>
             </li>
           ))}
         </ol>

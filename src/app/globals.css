@@ -3,16 +3,16 @@
 :root,
 [data-theme="dark"] {
   color-scheme: dark;
-  --background: #000000;
+  --background: #0e0e11;
   --foreground: #f5f5f5;
-  --muted: #8a8a8a;
-  --line: rgba(255, 255, 255, 0.1);
-  --line-strong: rgba(255, 255, 255, 0.2);
-  --surface: #0a0a0a;
-  --surface-2: #141414;
+  --muted: #9a9aa3;
+  --line: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --surface: #141418;
+  --surface-2: #1b1b20;
   --accent: #ffffff;
   --accent-hover: #e5e5e5;
-  --on-accent: #000000;
+  --on-accent: #0e0e11;
   --live: #ff3b30;
   --img-filter: none;
   --img-filter-rev: invert(1);
@@ -79,6 +79,13 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 80px;
+}
+
+/* Mots clés dans un texte gris : plus clairs et en gras. */
+p strong,
+li strong {
+  color: var(--foreground);
+  font-weight: 600;
 }
 
 body {

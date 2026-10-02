@@ -1,51 +1,48 @@
 # SYXTEE Link
 
-Agent à installer sur le PC où tourne OBS Studio. Il pilote OBS en local (obs-websocket, intégré à OBS 28+) et se laisse commander depuis **SYXTEE Studio, onglet « Télécommande OBS »** : lancer le live, enregistrer, changer de scène, régler l'audio, backup de scène.
+Plugin OBS (macOS, Windows à suivre) qui relie OBS à SYXTEE Studio.
 
-OBS diffuse lui-même depuis le PC. Le serveur SYXTEE ne voit **jamais la vidéo** : seuls des messages de contrôle (et les niveaux audio) passent par lui.
-
-```
-navigateur (Studio) ──WS──► Core ◄──WS (sortant)── SYXTEE Link (PC) ──obs-websocket local──► OBS
-```
-
-Aucun port à ouvrir sur le PC : la connexion part de l'agent.
-
-## Application (fenêtre)
-
-`npm run app` construit l'application SYXTEE Link (Electron) : fenêtre avec les onglets Direct, Collections et Réglages, et une icône dans la barre de menu. Sortie dans `~/syxtee-link-app/release` (macOS : `.dmg` et `.zip`, Windows : `.exe`). `npm run app:dev` la lance directement pour tester. Le processus de build assemble tout hors du dossier du projet.
-
-## Ligne de commande
-
-1. OBS : Outils, Paramètres du serveur WebSocket, activer (port 4455). Noter le mot de passe s'il y en a un.
-2. SYXTEE Studio, onglet « Télécommande OBS » : « Générer un code ».
-3. Sur le PC :
+- **Contrôle à distance** : SYXTEE Studio (sur le site, même depuis un téléphone) affiche l'interface d'OBS ; chaque bouton agit sur ton PC (live, enregistrement, scènes, sources, audio, transitions, secours automatique).
+- **Sauvegarde des scènes** : collections de scènes avec leurs médias (scripts exclus), sur ton espace SYXTEE, **5 Go par compte**. Restauration sur n'importe quel PC, sans toucher aux collections existantes.
+- Le live et le stream **tournent sur l'ordinateur** : la vidéo ne passe jamais par le serveur. Seuls des ordres, des niveaux audio et un aperçu réduit circulent.
 
 ```
-syxtee-link pair CODE
-syxtee-link obs 127.0.0.1:4455 MOT_DE_PASSE     # seulement si OBS a un mot de passe
-syxtee-link run
+téléphone / navigateur (Studio) ──WS──► Core ◄──WS (sortant)── agent (dans le plugin) ──obs-websocket local──► OBS
 ```
 
-`syxtee-link unpair` oublie l'appairage. Un appareil se révoque aussi depuis le Studio.
+## Fonctionnement
 
-## Backup de scène
+Le plugin (`plugin/syxtee-link.c`, C, sans Qt) est minimal : il lance l'agent livré dans le même paquet quand OBS s'ouvre et le ferme avec lui. Il ajoute « SYXTEE Link » au menu Outils d'OBS (page de réglages locale sur `http://127.0.0.1:47831`).
 
-Dans le Studio : choisir la source surveillée (celle qui lit le relais), la scène de secours (BRB) et le délai. Si l'image de la source reste figée (ou que la capture échoue) pendant ce délai, l'agent passe OBS sur la scène de secours, puis revient à la scène d'origine quand l'image repart. Si tu changes de scène à la main pendant le secours, l'agent ne touche à rien. Le réglage est enregistré sur le PC, donc le backup continue même navigateur fermé.
+L'agent (`src/`, Node, exécutable autonome) :
 
-## Sécurité
+1. **Connexion** : au premier lancement, il ouvre `/link?code=…` sur le site. L'utilisateur, connecté à son compte (invité), confirme ; l'agent reçoit un jeton d'appareil (seule l'empreinte SHA-256 est stockée côté serveur).
+2. **Proposition de sauvegarde** avant utilisation (boîte native sur macOS, sinon écran de la page locale).
+3. **OBS** : lit les réglages du serveur WebSocket d'OBS (`plugin_config/obs-websocket/config.json`), sans rien demander. Le serveur WebSocket doit être activé (Outils, Paramètres du serveur WebSocket).
+4. **Commandes** : liste blanche de méthodes OBS (scènes, flux, enregistrement, audio, transitions, lecture), appliquée par le Core **et** par l'agent. Pas de suppression de scène, pas de réglages, pas de commande arbitraire.
 
-- Appairage : code de 8 caractères, 5 minutes, usage unique, 10 essais ratés par minute et par IP. Le jeton d'appareil (`slk_…`) n'est stocké qu'en empreinte SHA-256 côté serveur.
-- Le Core et l'agent n'acceptent qu'une liste blanche de commandes OBS (scènes, flux, enregistrement, audio, lecture). Pas de suppression de scène, pas de modification de paramètres, pas de commande arbitraire.
-- Configuration locale dans `~/.syxtee-link/config.json` (droits 600) : jeton d'appareil et mot de passe OBS.
-- Accès réservé aux comptes invités, comme les relais.
+## Installer (macOS)
 
-## Développement
+Installeur `SYXTEE-Link-<version>.pkg` : s'installe dans `~/Library/Application Support/obs-studio/plugins/syxtee-link.plugin`, sans mot de passe. Il n'est pas notarisé (pas de compte Apple Developer) : au premier lancement, clic droit sur le `.pkg`, Ouvrir. Puis ouvrir OBS.
+
+Pour le distribuer depuis le site : copier le fichier sur le serveur sous `DATA_DIR/downloads/SYXTEE-Link-mac.pkg` (et `SYXTEE-Link-windows.exe`). Le Core le sert sur `/dl/`.
+
+## Construire
 
 ```
 npm install
-npm test            # tests unitaires + bout en bout (Core réel, agent réel, faux OBS)
-npm run dev -- run  # lance l'agent depuis les sources (Node 24+)
-npm run sea         # exécutable autonome pour la plateforme courante (dist/)
+npm test             # agent, sauvegardes (archive et restauration), page locale, bout en bout avec le Core
+npm run plugin       # macOS : syxtee-link.plugin et SYXTEE-Link-<version>.pkg dans ~/syxtee-link-plugin
 ```
 
-Les exécutables macOS et Windows se construisent chacun sur leur système (modèle : `link/github-workflow.yml`, à copier dans `.github/workflows/`). Sous macOS, l'exécutable est signé ad hoc ; pour le distribuer au public, il faut le signer et le notariser avec un compte Apple Developer.
+`npm run plugin` télécharge les en-têtes de l'API d'OBS (`OBS_TAG`), compile le module (universel arm64 et x86_64, symboles d'OBS résolus au chargement), construit l'agent (Node « single executable » de la machine de build) et signe ad hoc. Sur un Mac Intel, construire sur un Mac Intel pour que l'agent soit en x86_64.
+
+**Windows** : le code du plugin gère déjà Windows (`CreateProcess`), mais le build n'est pas fait : `cl` avec les bibliothèques d'OBS (obs.lib, obs-frontend-api.lib) ou le gabarit `obs-plugintemplate` sur une machine Windows, et un agent construit avec `node --build-sea` sur Windows.
+
+## Sécurité
+
+- Appairage : code de 8 caractères, 10 minutes, approbation par le compte connecté et invité ; 10 démarrages par minute et par IP.
+- Page locale : écoute 127.0.0.1 uniquement, en-tête `Host` contrôlé (anti DNS rebinding), jeton propre à chaque exécution pour toute requête.
+- Archives : lecture stricte (noms de fichiers sûrs, tailles bornées), médias écrits sous `~/SYXTEE Link/Médias/<id>/` seulement.
+- Configuration locale dans `~/.syxtee-link/config.json` (droits 600).
+- Accès réservé aux comptes invités, comme les relais.

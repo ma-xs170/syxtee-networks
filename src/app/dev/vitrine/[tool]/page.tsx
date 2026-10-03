@@ -9,6 +9,8 @@ import StreamerWall from "@/components/home/StreamerWall";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import AdminShell from "@/app/(admin)/admin/AdminShell";
 import StudioDemo from "@/components/studio/StudioDemo";
+import MixApp from "@/components/mix/MixApp";
+import { LiveStatusProvider } from "@/components/dashboard/LiveStatus";
 import RelayList from "@/components/relais/RelayList";
 import type { Overview as OverviewData, LiveSession } from "@/lib/dashboard-data";
 import type { RelayRow } from "@/lib/relay-groups";
@@ -99,7 +101,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
   if (process.env.NODE_ENV === "production") notFound();
   const { tool } = await params;
   return (
-    <div id="capture" data-theme="dark" className={`mx-auto bg-background p-8 text-foreground ${tool === "accueil" ? "w-[1500px]" : "w-[1100px]"}`}>
+    <div id="capture" data-theme="dark" className={`mx-auto bg-background p-8 text-foreground ${tool === "accueil" ? "w-[1500px]" : tool === "commutateur" ? "w-[1440px] !p-0" : "w-[1100px]"}`}>
       {tool === "relais" && <RelayList relays={RELAYS} active={6} max={10} coreUrl="" geo={null} />}
       {tool === "sante" && (
         <div className="space-y-4">
@@ -126,6 +128,13 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
         </div>
       )}
       {tool === "studio" && <StudioDemo />}
+      {tool === "commutateur" && (
+        <LiveStatusProvider coreUrl="">
+          <div className="p-2">
+            <MixApp account="demo@syxtee.fr" real={[]} coreUrl="" />
+          </div>
+        </LiveStatusProvider>
+      )}
       {tool === "admin" && (
         <div className="-m-8">
           <AdminShell openTickets={3} pendingAccess={2} name="admin@syxtee.fr">
@@ -173,7 +182,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           }))}
         />
       )}
-      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin"].includes(tool) && notFound()}
+      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "commutateur"].includes(tool) && notFound()}
     </div>
   );
 }

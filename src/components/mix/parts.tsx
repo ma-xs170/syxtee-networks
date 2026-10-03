@@ -9,6 +9,7 @@ import StreamerDesk from "../illustrations/StreamerDesk";
 import HeroStreet from "../home/HeroStreet";
 import RelayServer from "../illustrations/RelayServer";
 import StreamPreview from "../dashboard/StreamPreview";
+import TestPattern from "./TestPattern";
 import { isOn, type MixRelay, type RelayStatus } from "@/lib/mix-sim";
 
 // Briques communes de SYXTEE MIX : image simulée d'une caméra, VU-mètre, pastille d'état.
@@ -24,10 +25,10 @@ const SCENES: Record<MixRelay["scene"], Art> = {
 };
 
 /** Image d'une caméra (simulée). Hors ligne : écran « SIGNAL PERDU ». */
-export function Feed({ relay, className = "", coreUrl }: { relay: MixRelay; className?: string; coreUrl?: string }) {
+export function Feed({ relay, className = "", coreUrl, compact = false }: { relay: MixRelay; className?: string; coreUrl?: string; compact?: boolean }) {
   const Scene = SCENES[relay.scene];
   return (
-    <div className={`relative overflow-hidden bg-background ${className}`}>
+    <div className={`overflow-hidden bg-background ${className || "relative"}`}>
       {isOn(relay) && relay.real && coreUrl ? (
         <div className="absolute inset-0 bg-background [&_section]:h-full [&_section]:rounded-none [&_section]:border-0 [&>section>div]:h-full">
           <StreamPreview coreUrl={coreUrl} relayId={relay.id} />
@@ -37,7 +38,7 @@ export function Feed({ relay, className = "", coreUrl }: { relay: MixRelay; clas
           <Scene animated={false} className="h-full w-full" />
         </div>
       ) : (
-        <Slate label="SIGNAL PERDU" />
+        <TestPattern label={`CAM ${relay.n} - ${relay.name.toUpperCase()}`} compact={compact} />
       )}
     </div>
   );

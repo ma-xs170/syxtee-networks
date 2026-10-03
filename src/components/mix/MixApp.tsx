@@ -4,9 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLiveStatus } from "../dashboard/LiveStatus";
 import AudioMixer from "./AudioMixer";
 import ControlPanel, { type LiveState } from "./ControlPanel";
-import Multiview, { type Layout, type TransitionKind } from "./Multiview";
+import Multiview, { type TransitionKind } from "./Multiview";
 import ObsLinkCard from "./ObsLinkCard";
-import RelayList from "./RelayList";
+import RelayRows from "./RelayRows";
 import TopBar from "./TopBar";
 import { INITIAL_RELAYS, isOn, stepStats, type MixRelay, type Protocol } from "@/lib/mix-sim";
 
@@ -61,7 +61,6 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
   const [selected, setSelected] = useState("r1");
   const [protection, setProtection] = useState(false);
   const [askUnlock, setAskUnlock] = useState(false);
-  const [layout, setLayout] = useState<Layout>("auto");
   const [transition, setTransition] = useState<TransitionKind>("mix");
   const [duration, setDuration] = useState(500);
   const [fade, setFade] = useState<{ from: string; to: string; ms: number } | null>(null);
@@ -174,49 +173,39 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
   const mockOnly = (what: string) => say(`${what} : disponible quand le serveur MIX sera branché (maquette).`);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <TopBar protection={protection} onProtection={() => (protection ? setAskUnlock(true) : setProtection(true))} online={online} total={relays.length} ping={ping} account={account} demo={demo} />
 
       {protection && (
-        <p role="status" className="rounded-xl border border-live bg-live/15 px-4 py-2.5 text-center font-mono text-xs font-semibold tracking-[0.2em]">
+        <p role="status" className="rounded-md border border-live bg-live/15 px-3 py-1 text-center font-mono text-[11px] font-semibold tracking-[0.2em]">
           PROTECTION ACTIVE · changements de caméras verrouillés
         </p>
       )}
-      {real.length > 0 && (
-        <label className="flex w-fit items-center gap-2.5 text-sm text-muted">
-          <input type="checkbox" checked={useReal} onChange={(e) => setUseReal(e.target.checked)} className="h-4 w-4 accent-[var(--accent)]" />
-          Utiliser mes vrais relais (sinon : démonstration)
-        </label>
-      )}
 
-      <div className="grid gap-4 lg:grid-cols-[17rem_minmax(0,1fr)] xl:grid-cols-[17rem_minmax(0,1fr)_20rem]">
-        <RelayList relays={relays} program={program} preview={preview} selected={selected} locked={locked} onSelect={setSelected} onPreview={doPreview} onProgram={(id) => !locked && (setPreview(program), setProgram(id))} />
-        <div className="min-w-0 space-y-4 lg:col-start-2">
-          <Multiview
-            ref={view}
-            relays={relays}
-            program={program}
-            preview={preview}
-            slate={slate}
-            fade={fade}
-            locked={locked}
-            layout={layout}
-            onLayout={setLayout}
-            transition={transition}
-            onTransition={setTransition}
-            duration={duration}
-            onDuration={setDuration}
-            onPreview={doPreview}
-            onCut={doCut}
-            onAuto={doAuto}
-            clock={clock}
-            fullscreen={fullscreen}
-            onFullscreen={toggleFullscreen}
-            coreUrl={useReal ? coreUrl : ""}
-          />
-          <AudioMixer relays={relays} program={program} locked={locked || !demo} master={master} onMaster={setMaster} onPatch={(id, p) => patchRelay(id, p)} />
-        </div>
-        <div className="lg:col-span-2 xl:col-span-1 xl:col-start-3 xl:row-start-1">
+      {/* La largeur du multiview suit la HAUTEUR de l'écran (16:9 + le reste de la page) : tout tient sans défiler. */}
+      <div className="grid gap-2 lg:grid-cols-[minmax(0,min(calc((100dvh_-_20.5rem)*16/9),calc(100%_-_16.75rem)))_16.25rem] lg:justify-center">
+        <Multiview
+          ref={view}
+          relays={relays}
+          program={program}
+          preview={preview}
+          slate={slate}
+          fade={fade}
+          locked={locked}
+          transition={transition}
+          onTransition={setTransition}
+          duration={duration}
+          onDuration={setDuration}
+          onPreview={doPreview}
+          onProgram={(id) => !locked && (setPreview(program), setProgram(id))}
+          onCut={doCut}
+          onAuto={doAuto}
+          clock={clock}
+          fullscreen={fullscreen}
+          onFullscreen={toggleFullscreen}
+          coreUrl={useReal ? coreUrl : ""}
+        />
+        <div className="space-y-2">
           <ControlPanel
             locked={locked}
             live={live}
@@ -227,16 +216,31 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
             onRec={toggleRec}
             slate={slate}
             onSlate={() => setSlate((v) => !v)}
-            onShot={() => say("Capture du PROGRAM enregistrée (simulation).")}
+            onShot={() => say("Capture du PROGRAMME enregistrée (simulation).")}
             onMarker={() => say("Marqueur posé à cet instant (simulation).")}
             selected={sel}
             onRename={(name) => (demo ? patchRelay(selected, { name }) : mockOnly("Renommer un relais ici"))}
             onDisconnect={() => (demo ? patchRelay(selected, { status: "offline", kbps: 0, fps: 0, links: 0, mute: true }) : mockOnly("Déconnecter"))}
             onRegenerate={() => mockOnly("Régénérer la clé d'un relais ici")}
           />
+          <RelayRows
+            relays={relays}
+            program={program}
+            preview={preview}
+            selected={selected}
+            locked={locked}
+            onSelect={(id) => {
+              setSelected(id);
+              doPreview(id);
+            }}
+            realCount={real.length}
+            useReal={useReal}
+            onUseReal={setUseReal}
+          />
         </div>
       </div>
 
+      <AudioMixer relays={relays} program={program} locked={locked || !demo} master={master} onMaster={setMaster} onPatch={(id, p) => patchRelay(id, p)} />
       <ObsLinkCard token={token} host={HOST} locked={locked} onRegenerate={() => setToken(newToken())} cams={relays.map((r) => r.n).sort((a, b) => a - b)} />
 
       {askUnlock && (
@@ -272,7 +276,7 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
       )}
 
       {toast && (
-        <p role="status" className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full border border-line-strong bg-background px-5 py-2.5 text-sm shadow-lg lg:bottom-6">
+        <p role="status" className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-full border border-line-strong bg-background px-5 py-2.5 text-sm shadow-lg lg:bottom-6">
           {toast}
         </p>
       )}

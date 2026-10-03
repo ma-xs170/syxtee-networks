@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
 import StreamerWall from "@/components/home/StreamerWall";
+import DashboardShowcase from "@/components/sections/DashboardShowcase";
 import RistPromo from "@/components/sections/RistPromo";
 import StudioPromo from "@/components/sections/StudioPromo";
 import MultichatPromo from "@/components/sections/MultichatPromo";
@@ -21,6 +22,7 @@ export default async function Home() {
   return (
     <>
       <Hero streamers={streamers} />
+      <DashboardShowcase />
       <RistPromo />
       <StudioPromo />
       <MultichatPromo />

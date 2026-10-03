@@ -8,6 +8,8 @@ import { ChartLineUp, ClockCounterClockwise, Globe, Key, Lifebuoy, MapTrifold, R
 import { signOut } from "@/app/(auth)/actions";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import ThemeToggle from "@/components/ThemeToggle";
+import GlidePill from "@/components/ui/GlidePill";
+import { useState } from "react";
 
 // Espace admin : sa propre barre latérale, séparée du dashboard client (autre fond de logo, autre titre). Sur la page
 // /admin/2fa (double authentification) la barre est masquée. Mobile : navigation en rangée défilante.
@@ -50,6 +52,7 @@ function groups(openTickets: number, pending: number): Group[] {
 
 export default function AdminShell({ openTickets, pendingAccess, name, children }: { openTickets: number; pendingAccess: number; name: string; children: ReactNode }) {
   const path = usePathname();
+  const [hover, setHover] = useState<string | null>(null);
   if (path === "/admin/2fa") return <>{children}</>;
   const all = groups(openTickets, pendingAccess);
   const active = (href: string) => (href === "/admin" ? path === "/admin" : path === href || path.startsWith(`${href}/`));
@@ -63,7 +66,7 @@ export default function AdminShell({ openTickets, pendingAccess, name, children 
             SYXTEE<span className="font-normal text-muted"> ADMIN</span>
           </span>
         </Link>
-        <nav aria-label="Navigation admin" className="flex-1 overflow-y-auto px-3 pb-3">
+        <nav aria-label="Navigation admin" className="flex-1 overflow-y-auto px-3 pb-3" onMouseLeave={() => setHover(null)}>
           {all.map((g, i) => (
             <div key={g.title ?? i} className={i > 0 ? "mt-4 border-t border-line pt-4" : ""}>
               {g.title && <p className="px-3 pb-2 text-[13px] font-semibold text-foreground">{g.title}</p>}
@@ -76,12 +79,15 @@ export default function AdminShell({ openTickets, pendingAccess, name, children 
                       <Link
                         href={it.href}
                         aria-current={on ? "page" : undefined}
+                        onMouseEnter={() => setHover(it.href)}
+                        onFocus={() => setHover(it.href)}
                         className={`relative flex items-center gap-3 rounded-lg border px-3 py-2 text-sm transition-colors ${on ? "border-line-strong bg-foreground/10 font-semibold text-foreground" : "border-transparent text-muted hover:bg-foreground/[0.06] hover:text-foreground"}`}
                       >
+                        <GlidePill show={hover === it.href && !on} id="admin-nav-pill" />
                         {on && <span aria-hidden="true" className="absolute -left-3 top-2 h-5 w-1 rounded-r bg-accent" />}
-                        <Icon size={18} weight={on ? "fill" : "regular"} className="shrink-0" aria-hidden="true" />
-                        <span className="flex-1">{it.label}</span>
-                        {!!it.badge && <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold tabular-nums text-on-accent">{it.badge}</span>}
+                        <Icon size={18} weight={on ? "fill" : "regular"} className="relative z-10 shrink-0" aria-hidden="true" />
+                        <span className="relative z-10 flex-1">{it.label}</span>
+                        {!!it.badge && <span className="relative z-10 rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold tabular-nums text-on-accent">{it.badge}</span>}
                       </Link>
                     </li>
                   );

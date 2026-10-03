@@ -7,7 +7,7 @@ import HeroCrowd, { hasCrowd } from "../home/HeroCrowd";
 import CloudBackdrop from "../home/CloudBackdrop";
 import StudioDemo from "../studio/StudioDemo";
 import { CREATE_RELAY_HREF, Container } from "../ui";
-import Highlight from "../ui/Highlight";
+import RotatingHighlight from "../home/RotatingHighlight";
 
 // Accueil : hero clair (rouge, blanc, noir) quel que soit le thème du site, comme les sites de streaming : fond rouge
 // qui s'éclaircit vers le bas, portraits de streamers en trame de points, boutons noirs, et un panneau sombre
@@ -33,7 +33,7 @@ export default function Hero({ streamers = [] }: { streamers?: HomeStreamer[] })
           <h1 className="rise h-hero" style={{ "--i": 1 } as React.CSSProperties}>
             Le live IRL pro.
             <br />
-            <Highlight>Sans le budget pro.</Highlight>
+            <RotatingHighlight />
           </h1>
 
           <p className="rise mx-auto mt-6 max-w-xl text-base leading-relaxed text-foreground/75 sm:text-lg" style={{ "--i": 2 } as React.CSSProperties}>

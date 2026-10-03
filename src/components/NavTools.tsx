@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
+import GlidePill from "./ui/GlidePill";
 import DataCenter from "./illustrations/DataCenter";
 import DiscordChat from "./illustrations/DiscordChat";
 import ObsScreen from "./illustrations/ObsScreen";
@@ -121,12 +122,14 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
   }, [open]);
 
   useEffect(() => () => clearTimeout(leaveTimer.current), []);
+  const [hover, setHover] = useState<string | null>(null);
 
   return (
     <nav
       ref={wrap}
       aria-label="Navigation principale"
-      className="hidden items-center gap-7 lg:flex"
+      className="hidden items-center gap-1 lg:flex"
+      onMouseLeave={() => setHover(null)}
       onBlur={(e) => {
         if (!wrap.current?.contains(e.relatedTarget as Node)) setOpen(null);
       }}
@@ -154,14 +157,20 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
             key={item.href}
             href={item.href}
             aria-current={isActive(item.href) ? "page" : undefined}
-            className={`whitespace-nowrap text-sm transition-colors hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-foreground/75"}`}
+            onMouseEnter={() => setHover(item.href)}
+            onFocus={() => setHover(item.href)}
+            onBlur={() => setHover(null)}
+            className={`relative whitespace-nowrap rounded-full px-4 py-2 text-sm transition-colors hover:text-foreground ${isActive(item.href) ? "font-medium text-foreground" : "text-foreground/75"}`}
           >
-            {item.label}
-            {"arrow" in item && item.arrow && (
-              <span aria-hidden="true" className="ml-1 inline-block text-foreground/60">
-                ↗
-              </span>
-            )}
+            <GlidePill show={hover === item.href} id="site-nav-pill" className="rounded-full" />
+            <span className="relative z-10">
+              {item.label}
+              {"arrow" in item && item.arrow && (
+                <span aria-hidden="true" className="ml-1 inline-block text-foreground/60">
+                  ↗
+                </span>
+              )}
+            </span>
           </Link>
         ),
       )}

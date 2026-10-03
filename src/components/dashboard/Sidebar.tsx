@@ -29,6 +29,7 @@ import { site } from "@/lib/site";
 import { Avatar, useAccount } from "../AccountMenu";
 import CloudBackdrop from "../home/CloudBackdrop";
 import ThemeToggle from "../ThemeToggle";
+import GlidePill from "../ui/GlidePill";
 import { LivePill } from "./LiveStatus";
 import NotificationsBell from "./NotificationsBell";
 import StreamModeToggle from "./StreamModeToggle";
@@ -61,24 +62,25 @@ const HELP: Item[] = [
   { label: "Documentation", href: "/docs", icon: Question },
 ];
 
-function NavLink({ item, active, locked, onNavigate }: { item: Item; active: boolean; locked?: boolean; onNavigate: () => void }) {
+function NavLink({ item, active, locked, onNavigate, hovered, onHover }: { item: Item; active: boolean; locked?: boolean; onNavigate: () => void; hovered?: boolean; onHover?: () => void }) {
   const Icon = item.icon;
-  const cls = `group flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm transition-colors ${
+  const cls = `group relative flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm transition-colors ${
     active ? "border border-line-strong bg-foreground/10 text-foreground" : "border border-transparent text-muted hover:bg-foreground/[0.06] hover:text-foreground"
   }`;
   const inner = (
     <>
-      <Icon size={20} weight={active ? "fill" : "regular"} className="shrink-0" aria-hidden="true" />
-      <span className="truncate">{item.label}</span>
-      {locked && <Lock size={14} className="ml-auto shrink-0 text-muted" aria-label="Verrouillé dans ta formule" />}
+      <GlidePill show={!!hovered && !active} id="dash-nav-pill" />
+      <Icon size={20} weight={active ? "fill" : "regular"} className="relative z-10 shrink-0" aria-hidden="true" />
+      <span className="relative z-10 truncate">{item.label}</span>
+      {locked && <Lock size={14} className="relative z-10 ml-auto shrink-0 text-muted" aria-label="Verrouillé dans ta formule" />}
     </>
   );
   return item.external ? (
-    <a href={item.href} target="_blank" rel="noopener noreferrer" className={cls} onClick={onNavigate}>
+    <a href={item.href} target="_blank" rel="noopener noreferrer" className={cls} onClick={onNavigate} onMouseEnter={onHover} onFocus={onHover}>
       {inner}
     </a>
   ) : (
-    <Link href={item.href} aria-current={active ? "page" : undefined} className={cls} onClick={onNavigate}>
+    <Link href={item.href} aria-current={active ? "page" : undefined} className={cls} onClick={onNavigate} onMouseEnter={onHover} onFocus={onHover}>
       {inner}
     </Link>
   );
@@ -182,6 +184,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
       ? pathname === href
       : [href, ...(activeAlso[href] ?? [])].some((h) => pathname === h || pathname.startsWith(`${h}/`));
   const locked = (i: Item) => !!i.feature && !!account && !account.features.includes(i.feature);
+  const [hover, setHover] = useState<string | null>(null);
 
   return (
     <div className="flex h-full flex-col">
@@ -198,14 +201,14 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
         <LivePill />
       </div>
 
-      <nav aria-label="Navigation du dashboard" className="flex-1 space-y-4 overflow-y-auto px-3 pb-3">
+      <nav aria-label="Navigation du dashboard" className="flex-1 space-y-4 overflow-y-auto px-3 pb-3" onMouseLeave={() => setHover(null)}>
         {GROUPS.map((g, i) => (
           <div key={g.title ?? i}>
             {g.title && <p className="px-3 pb-2 text-xs font-medium text-muted">{g.title}</p>}
             <ul className="space-y-0.5">
               {g.items.map((it) => (
                 <li key={it.href}>
-                  <NavLink item={it} active={isActive(it.href)} locked={locked(it)} onNavigate={onNavigate} />
+                  <NavLink item={it} active={isActive(it.href)} locked={locked(it)} onNavigate={onNavigate} hovered={hover === it.href} onHover={() => setHover(it.href)} />
                 </li>
               ))}
             </ul>
@@ -216,7 +219,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
           <ul className="space-y-0.5">
             {HELP.map((it) => (
               <li key={it.href}>
-                <NavLink item={it} active={false} onNavigate={onNavigate} />
+                <NavLink item={it} active={false} onNavigate={onNavigate} hovered={hover === it.href} onHover={() => setHover(it.href)} />
               </li>
             ))}
           </ul>

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import {
   CaretUpDown,
+  ChatsCircle,
   ChartBar,
   Eye,
   List,
@@ -44,11 +45,18 @@ type Group = { title?: string; items: Item[] };
 // Barre épurée : une seule liste. Statistiques et Scanner regroupent leurs pages en onglets ; Discord et le retour au site sont dans le menu du compte.
 const GROUPS: Group[] = [
   {
+    title: "Direct",
     items: [
       { label: "Vue d'ensemble", href: "/dashboard", icon: SquaresFour },
       { label: "Mes relais", href: "/dashboard/relais", icon: Radio, feature: "relais" },
       { label: "Aperçu", href: "/dashboard/apercu", icon: Eye, feature: "apercu" },
+      { label: "Multichat", href: "/dashboard/multichat", icon: ChatsCircle },
       { label: "Caméras externes", href: "/dashboard/dji", icon: VideoCamera, feature: "dji" },
+    ],
+  },
+  {
+    title: "Outils",
+    items: [
       { label: "SYXTEE Studio", href: "/studio", icon: SlidersHorizontal, external: true, wordmark: "STUDIO" },
       { label: "Scanner", href: "/dashboard/scanner", icon: MapTrifold },
       { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },
@@ -63,12 +71,13 @@ const HELP: Item[] = [
 
 function NavLink({ item, active, locked, onNavigate, hovered, onHover }: { item: Item; active: boolean; locked?: boolean; onNavigate: () => void; hovered?: boolean; onHover?: () => void }) {
   const Icon = item.icon;
-  const cls = `group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors lg:py-1.5 ${
-    active ? "border border-line-strong bg-foreground/10 text-foreground" : "border border-transparent text-muted hover:bg-foreground/[0.06] hover:text-foreground"
+  const cls = `group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium tracking-[0.01em] transition-colors lg:py-1.5 ${
+    active ? "bg-foreground/10 text-foreground" : "text-muted hover:text-foreground"
   }`;
   const inner = (
     <>
       <GlidePill show={!!hovered && !active} id="dash-nav-pill" />
+      {active && <span aria-hidden="true" className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-accent" />}
       {item.wordmark ? (
         <span className="relative z-10 min-w-0" aria-label={item.label}>
           <Wordmark name={item.wordmark} className="gap-3" />
@@ -208,10 +217,10 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
         <LivePill />
       </div>
 
-      <nav aria-label="Navigation du dashboard" className="flex-1 space-y-4 overflow-y-auto px-3 pb-3" onMouseLeave={() => setHover(null)}>
+      <nav aria-label="Navigation du dashboard" className="flex-1 space-y-6 overflow-y-auto px-3 pb-3" onMouseLeave={() => setHover(null)}>
         {GROUPS.map((g, i) => (
           <div key={g.title ?? i}>
-            {g.title && <p className="px-3 pb-2 text-xs font-medium text-muted">{g.title}</p>}
+            {g.title && <p className="px-3 pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-muted">{g.title}</p>}
             <ul className="space-y-0.5">
               {g.items.map((it) => (
                 <li key={it.href}>
@@ -223,6 +232,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
         ))}
 
         <div>
+          <p className="px-3 pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-muted">Aide</p>
           <ul className="space-y-0.5">
             {HELP.map((it) => (
               <li key={it.href}>
@@ -245,7 +255,8 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
 }
 
 // Barre d'onglets du bas (mobile) : les 4 pages du quotidien à portée de pouce, le reste dans le tiroir.
-const TABS: Item[] = [GROUPS[0].items[0], GROUPS[0].items[1], GROUPS[0].items[2], GROUPS[0].items[3]];
+const TAB_HREFS = ["/dashboard", "/dashboard/relais", "/dashboard/apercu", "/dashboard/dji"];
+const TABS: Item[] = TAB_HREFS.map((h) => GROUPS[0].items.find((i) => i.href === h)!);
 
 function MobileTabs({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolean }) {
   const pathname = usePathname();

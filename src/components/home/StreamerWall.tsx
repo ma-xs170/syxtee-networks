@@ -43,9 +43,9 @@ function Card({ c }: { c: Card }) {
   );
 }
 
-/** Rangée en boucle : la liste est répétée jusqu'à remplir l'écran, puis doublée (la moitié sort pendant que l'autre entre). */
+/** Rangée en boucle : la liste est doublée (la moitié sort pendant que l'autre entre). */
 function Row({ items, reverse }: { items: Card[]; reverse?: boolean }) {
-  const base = Array.from({ length: Math.max(1, Math.ceil(8 / items.length)) }, () => items).flat();
+  const base = items;
   return (
     <div className="marquee-wrap overflow-x-auto motion-reduce:overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <div className={`marquee ${reverse ? "marquee-r" : "marquee-l"}`}>
@@ -66,6 +66,9 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
   const ranked = [...streamers].sort((a, b) => Number(!!b.live) - Number(!!a.live) || Number(b.partner) - Number(a.partner));
   // Une carte par chaîne vérifiée de chaque streamer.
   const cards: Card[] = ranked.flatMap((s) => s.channels.map((ch) => ({ key: `${s.handle}-${ch.platform}`, s, platform: ch.platform, handle: ch.handle, url: ch.url })));
+  // Assez de chaînes pour remplir deux rangées : elles défilent (la boucle recopie la liste une fois, hors écran).
+  // Sinon : une rangée fixe, centrée, sans aucune carte répétée.
+  const scroll = cards.length >= 10;
   const top = cards.filter((_, i) => i % 2 === 0);
   const bottom = cards.filter((_, i) => i % 2 === 1);
 
@@ -74,10 +77,20 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
       <h2 id="mur-titre" className="h-section px-4 text-center">
         Ils streament avec SYXTEE.
       </h2>
-      <div className="mt-14 space-y-3">
-        <Row items={top} />
-        <Row items={bottom.length ? bottom : top} reverse />
-      </div>
+      {scroll ? (
+        <div className="mt-14 space-y-3">
+          <Row items={top} />
+          <Row items={bottom} reverse />
+        </div>
+      ) : (
+        <ul className="mx-auto mt-14 flex max-w-6xl flex-wrap justify-center gap-y-3 px-4">
+          {cards.map((c) => (
+            <li key={c.key}>
+              <Card c={c} />
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }

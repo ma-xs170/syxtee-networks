@@ -43,8 +43,11 @@ export class Agent {
   private tickTimer: ReturnType<typeof setInterval> | null = null;
   private lastMeters = 0;
   private obsBusy = false;
-  private previewTimer: ReturnType<typeof setInterval> | null = null;
-  private previewBusy = false;
+  private previewTimer: ReturnType<typeof setTimeout> | null = null;
+  private previewScene = "";
+  private previewSceneAt = 0;
+  private studioScene = "";
+  private previewTick = 0;
 
   private cfg: LinkConfig;
   private log: (m: string) => void;
@@ -66,14 +69,14 @@ export class Agent {
     void this.connectObs();
     this.connectCore();
     this.tickTimer = setInterval(() => void this.watcher.tick(), 1000);
-    this.previewTimer = setInterval(() => void this.preview(), 700);
+    void this.previewLoop();
   }
 
   stop() {
     this.stopped = true;
     this.timers.forEach(clearTimeout);
     if (this.tickTimer) clearInterval(this.tickTimer);
-    if (this.previewTimer) clearInterval(this.previewTimer);
+    if (this.previewTimer) clearTimeout(this.previewTimer);
     this.core?.close();
     this.obs.close();
   }
@@ -143,21 +146,45 @@ export class Agent {
     }
   }
 
-  /** Aperçu du programme pour le navigateur : une image réduite toutes les 0,7 s, seulement si quelqu'un regarde. */
-  private async preview() {
-    if (this.status.viewers <= 0 || !this.obs.connected || this.previewBusy) return;
-    this.previewBusy = true;
+  /** Aperçu du programme pour le navigateur : environ 10 images par seconde, seulement si quelqu'un regarde.
+   *  Boucle auto-cadencée : l'image suivante part dès que la précédente est faite, sans jamais en empiler. */
+  private async previewLoop() {
+    if (this.stopped) return;
+    const t0 = Date.now();
+    let delay = 100;
     try {
-      const cur = (await this.obs.request("GetCurrentProgramScene")) as { currentProgramSceneName?: string };
-      const name = String(cur.currentProgramSceneName ?? "");
-      if (!name) return;
-      const shot = (await this.obs.request("GetSourceScreenshot", { sourceName: name, imageFormat: "jpg", imageWidth: 640, imageHeight: 360, imageCompressionQuality: 50 })) as { imageData?: string };
-      if (shot.imageData) this.send({ type: "event", name: "link.preview", data: { scene: name, image: shot.imageData } });
+      delay = (await this.preview()) ? Math.max(0, 100 - (Date.now() - t0)) : 400;
     } catch {
       // OBS occupé ou scène en cours de changement : on réessaie au prochain tour.
-    } finally {
-      this.previewBusy = false;
+      delay = 300;
     }
+    this.previewTimer = setTimeout(() => void this.previewLoop(), delay);
+  }
+
+  /** Envoie une image. Renvoie false si rien n'a été envoyé (personne ne regarde, OBS fermé, réseau saturé). */
+  private async preview(): Promise<boolean> {
+    if (this.status.viewers <= 0 || !this.obs.connected) return false;
+    // Réseau lent : on saute des images plutôt que d'accumuler du retard.
+    if ((this.core?.bufferedAmount ?? 0) > 256 * 1024) return false;
+    // La scène du programme change rarement : on la relit une fois par seconde, et dès qu'OBS la change.
+    if (!this.previewScene || Date.now() - this.previewSceneAt > 1000) {
+      const cur = (await this.obs.request("GetCurrentProgramScene")) as { currentProgramSceneName?: string };
+      this.previewScene = String(cur.currentProgramSceneName ?? "");
+      // Mode Studio : OBS a deux scènes, le programme (en direct) et l'aperçu (préparé hors antenne).
+      const sm = (await this.obs.request("GetStudioModeEnabled")) as { studioModeEnabled?: boolean };
+      this.studioScene = sm.studioModeEnabled ? String(((await this.obs.request("GetCurrentPreviewScene")) as { currentPreviewSceneName?: string }).currentPreviewSceneName ?? "") : "";
+      this.previewSceneAt = Date.now();
+    }
+    if (!this.previewScene) return false;
+    const shot = (await this.obs.request("GetSourceScreenshot", { sourceName: this.previewScene, imageFormat: "jpg", imageWidth: 800, imageHeight: 450, imageCompressionQuality: 55 })) as { imageData?: string };
+    if (!shot.imageData) return false;
+    this.send({ type: "event", name: "link.preview", data: { scene: this.previewScene, image: shot.imageData } });
+    // Aperçu du Mode Studio : une image sur deux, pour ne pas doubler le débit.
+    if (this.studioScene && ++this.previewTick % 2 === 0) {
+      const pv = (await this.obs.request("GetSourceScreenshot", { sourceName: this.studioScene, imageFormat: "jpg", imageWidth: 640, imageHeight: 360, imageCompressionQuality: 50 })) as { imageData?: string };
+      if (pv.imageData) this.send({ type: "event", name: "link.studioPreview", data: { scene: this.studioScene, image: pv.imageData } });
+    }
+    return true;
   }
 
   private emit() {
@@ -196,6 +223,10 @@ export class Agent {
       this.log(`OBS ${this.status.obsVersion} connecté`);
       this.obs.onEvent = (name, data) => {
         if (name === "InputVolumeMeters") return this.meters(data);
+        if (name === "CurrentProgramSceneChanged") this.previewScene = String(data.sceneName ?? "");
+        if (name === "CurrentPreviewSceneChanged") this.studioScene = String(data.sceneName ?? "");
+        if (name === "StudioModeStateChanged" && !data.studioModeEnabled) this.studioScene = "";
+        if (name === "StudioModeStateChanged" && data.studioModeEnabled) this.previewSceneAt = 0;
         if (EVENTS.has(name)) this.send({ type: "event", name, data });
       };
       this.obs.onClose = () => {

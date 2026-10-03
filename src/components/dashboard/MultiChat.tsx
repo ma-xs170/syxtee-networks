@@ -13,7 +13,6 @@ type Msg = { id: string; platform: Platform; user: string; color: string | null;
 type Link = "idle" | "connecting" | "ok" | "error";
 export type ChatDefaults = { twitch: string; kick: string; youtube: string };
 
-const STORE = "syxtee.multichat";
 const KEEP = 150;
 const PLATFORM = {
   twitch: { label: "Twitch", icon: siTwitch },
@@ -22,14 +21,6 @@ const PLATFORM = {
 } as const;
 
 const clean = (v: string) => v.trim().replace(/^@/, "").replace(/^https?:\/\/(www\.)?(twitch\.tv|kick\.com)\//i, "").split(/[/?#]/)[0].toLowerCase();
-/** Identifiant d'une vidéo YouTube à partir d'une adresse (watch, live, youtu.be) ou de l'identifiant seul. */
-function youtubeId(v: string) {
-  const t = v.trim();
-  if (/^[\w-]{11}$/.test(t)) return t;
-  const m = t.match(/(?:v=|youtu\.be\/|\/live\/|\/embed\/)([\w-]{11})/);
-  return m ? m[1] : "";
-}
-
 function Icon({ p, size = 14 }: { p: keyof typeof PLATFORM; size?: number }) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} fill={`#${PLATFORM[p].icon.hex}`} aria-label={PLATFORM[p].label} role="img" className="shrink-0">
@@ -106,9 +97,8 @@ const SEND_ERRORS: Record<string, string> = {
 };
 
 export default function MultiChat({ defaults, height = "h-[34rem]", compact = false, notice }: { defaults: ChatDefaults; height?: string; compact?: boolean; notice?: string }) {
-  const [cfg, setCfg] = useState<ChatDefaults>(defaults);
-  const [draft, setDraft] = useState<ChatDefaults>(defaults);
   const [editing, setEditing] = useState(false);
+  const [ytDetected, setYtDetected] = useState("");
   // Plateformes affichées : on peut en choisir une ou plusieurs (Twitch et Kick dans le même fil, YouTube dans son panneau).
   const [sel, setSel] = useState<Set<P>>(new Set<P>(["youtube", "twitch", "kick"]));
   const [msgs, setMsgs] = useState<Msg[]>([]);
@@ -123,19 +113,6 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
-
-  // Réglages gardés dans ce navigateur, sinon ceux du profil. Lus après l'hydratation (localStorage n'existe pas côté serveur).
-  useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORE) ?? "null") as Partial<ChatDefaults> | null;
-      if (saved) {
-        const next = { twitch: saved.twitch ?? defaults.twitch, kick: saved.kick ?? defaults.kick, youtube: saved.youtube ?? defaults.youtube };
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setCfg(next);
-        setDraft(next);
-      }
-    } catch {}
-  }, [defaults.twitch, defaults.kick, defaults.youtube]);
 
   // Les messages arrivent par rafales : on les met en file et on les affiche à cadence régulière (plus vite si la file grossit).
   const queue = useRef<Msg[]>([]);
@@ -171,7 +148,8 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
     return () => clearInterval(t);
   }, []);
 
-  const twitch = clean(cfg.twitch);
+  // Les chaînes viennent des comptes reliés (rien à saisir) ; à défaut, de celles du profil.
+  const twitch = clean(acc?.connections.twitch ?? defaults.twitch);
   useSocket(
     /^\w{3,25}$/.test(twitch) ? "wss://irc-ws.chat.twitch.tv:443" : null,
     (ws) => {
@@ -193,7 +171,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
     setTwitchLink,
   );
 
-  const kick = clean(cfg.kick);
+  const kick = clean(acc?.connections.kick ? acc.connections.kick.replace(/_/g, "-") : defaults.kick);
   const kickOk = /^[\w-]{3,25}$/.test(kick);
   const kickRoom = room?.slug === kick ? (room.id ?? null) : null;
   useEffect(() => {
@@ -223,7 +201,33 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
   );
 
   // YouTube : pas de connexion en direct, on sonde l'API à la cadence qu'elle indique (route /api/youtube/chat).
-  const ytVideo = youtubeId(cfg.youtube);
+  const ytConnected = !!acc?.connections.youtube;
+  const ytVideo = ytConnected ? ytDetected : "";
+  // Direct YouTube en cours du compte relié : trouvé tout seul (rien à coller), recherché toutes les 45 s tant qu'il n'y en a pas.
+  useEffect(() => {
+    if (!ytConnected) return;
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const look = async () => {
+      let next = 45_000;
+      try {
+        const r = await fetch("/api/youtube/live", { cache: "no-store" });
+        if (r.ok) {
+          const j = (await r.json()) as { videoId: string | null };
+          if (!stopped) setYtDetected(j.videoId ?? "");
+        }
+      } catch {
+        next = 20_000;
+      }
+      if (!stopped) timer = setTimeout(look, next);
+    };
+    void look();
+    return () => {
+      stopped = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [ytConnected]);
+
   useEffect(() => {
     if (!ytVideo) return;
     let stopped = false;
@@ -252,18 +256,8 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
     };
   }, [ytVideo, push]);
 
-  function save() {
-    setCfg(draft);
-    setMsgs([]);
-    queue.current = [];
-    try {
-      localStorage.setItem(STORE, JSON.stringify(draft));
-    } catch {}
-    setEditing(false);
-  }
-
-  const ytId = youtubeId(cfg.youtube);
-  const channelOf: Record<P, string> = { twitch: clean(cfg.twitch), kick: clean(cfg.kick), youtube: ytId };
+  const ytId = ytVideo;
+  const channelOf: Record<P, string> = { twitch: twitch, kick: kick, youtube: ytId };
   const sendable = (Object.keys(acc?.connections ?? {}) as P[]).filter((p) => channelOf[p]);
   const connectable = (["youtube", "twitch", "kick"] as const).filter((p) => acc?.configured[p] && !acc.connections[p]);
 
@@ -316,8 +310,6 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
     youtube: !ytVideo ? "idle" : ytLink === "idle" ? "connecting" : ytLink,
     kick: !kickOk ? "idle" : room?.slug === kick && room.failed ? "error" : kickRoom && kickLink !== "idle" ? kickLink : "connecting",
   };
-  const field =
-    "h-11 w-full rounded-lg border border-line bg-background px-3 text-sm text-foreground placeholder:text-muted focus:border-line-strong focus:outline-none focus:ring-2 focus:ring-foreground/20";
 
   return (
     <section aria-label="Multichat" className={`flex flex-col overflow-hidden rounded-2xl border border-line bg-surface ${height}`}>
@@ -340,7 +332,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
                 type="button"
                 aria-pressed={on}
                 disabled={!available[p]}
-                title={available[p] ? PLATFORM[p].label : p === "youtube" ? "Ajoute l'adresse du direct YouTube dans les réglages" : `Ajoute ta chaîne ${PLATFORM[p].label} dans les réglages`}
+                title={available[p] ? PLATFORM[p].label : p === "youtube" ? (ytConnected ? "Aucun direct YouTube en cours" : "Connecte ton compte YouTube (roue)") : `Connecte ton compte ${PLATFORM[p].label} (roue)`}
                 onClick={() => toggle(p)}
                 className={`flex min-h-9 items-center gap-2 rounded-lg border px-2.5 text-sm transition-colors disabled:opacity-40 ${on ? "border-line-strong bg-foreground/10 text-foreground" : "border-line text-muted opacity-60 hover:opacity-100"}`}
               >
@@ -359,7 +351,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
           type="button"
           onClick={() => setEditing((v) => !v)}
           aria-expanded={editing}
-          aria-label="Régler les chaînes"
+          aria-label="Comptes reliés"
           className="ml-auto grid h-9 w-9 place-items-center rounded-lg text-muted hover:bg-foreground/10 hover:text-foreground"
         >
           <Gear size={18} />
@@ -367,65 +359,37 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
       </header>
 
       {editing && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            save();
-          }}
-          className="grid gap-3 border-b border-line p-3 sm:grid-cols-3"
-        >
-          {(["youtube", "twitch", "kick"] as const).map((p) => (
-            <label key={p} className="space-y-1.5 text-xs text-muted">
-              {p === "youtube" ? "YouTube : adresse du direct" : `${PLATFORM[p].label} : chaîne`}
-              <input
-                value={draft[p]}
-                onChange={(e) => setDraft({ ...draft, [p]: e.target.value })}
-                placeholder={p === "youtube" ? "https://youtube.com/live/..." : "pseudo"}
-                className={field}
-                spellCheck={false}
-                autoCapitalize="none"
-              />
-            </label>
-          ))}
-          {acc && (acc.configured.twitch || acc.configured.kick || acc.configured.youtube || Object.keys(acc.connections).length > 0) && (
-            <div className="space-y-2 sm:col-span-3">
-              <p className="text-xs text-muted">Comptes pour écrire dans le chat</p>
-              <ul className="flex flex-wrap gap-2">
-                {(["youtube", "twitch", "kick"] as const).map((p) => {
-                  const who = acc.connections[p];
-                  if (!who && !acc.configured[p]) return null;
-                  return (
-                    <li key={p} className="flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-sm">
-                      <Icon p={p} />
-                      {who ? (
-                        <>
-                          <span className="max-w-[10rem] truncate">{who}</span>
-                          <button type="button" onClick={() => disconnect(p)} className="text-xs text-muted underline-offset-4 hover:text-foreground hover:underline">
-                            Déconnecter
-                          </button>
-                        </>
-                      ) : (
-                        <a href={`/api/chat/connect/${p}`} className="text-muted underline-offset-4 hover:text-foreground hover:underline">
-                          Connecter {PLATFORM[p].label}
-                        </a>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
-          <div className="sm:col-span-3">
-            <button type="submit" className="h-11 rounded-lg bg-accent px-5 text-sm font-medium text-on-accent hover:bg-accent-hover">
-              Enregistrer
-            </button>
-          </div>
-        </form>
+        <div className="space-y-2 border-b border-line p-3">
+          <p className="text-xs text-muted">Comptes reliés : ton chat et l&apos;envoi de messages viennent de là, rien à saisir.</p>
+          <ul className="flex flex-wrap gap-2">
+            {(["youtube", "twitch", "kick"] as const).map((p) => {
+              const who = acc?.connections[p];
+              if (!who && !acc?.configured[p]) return null;
+              return (
+                <li key={p} className="flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-sm">
+                  <Icon p={p} />
+                  {who ? (
+                    <>
+                      <span className="max-w-[10rem] truncate">{who}</span>
+                      <button type="button" onClick={() => disconnect(p)} className="text-xs text-muted underline-offset-4 hover:text-foreground hover:underline">
+                        Déconnecter
+                      </button>
+                    </>
+                  ) : (
+                    <a href={`/api/chat/connect/${p}`} className="text-muted underline-offset-4 hover:text-foreground hover:underline">
+                      Connecter {PLATFORM[p].label}
+                    </a>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       )}
 
       {none ? (
         <p className="m-auto max-w-xs p-6 text-center text-sm text-muted">
-          Aucune chaîne. Ouvre les réglages (la roue) et indique ta chaîne Twitch ou Kick, ou l&apos;adresse d&apos;un direct YouTube.
+          Aucun compte relié. Ouvre la roue et connecte ton compte YouTube, Twitch ou Kick : ton chat apparaît tout seul.
         </p>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col">

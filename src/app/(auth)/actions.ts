@@ -41,6 +41,8 @@ const fail = (message: string, fields?: Record<string, string>): AuthState => ({
 
 /** Inscription : prénom, nom, email, mot de passe. Le compte n'est actif qu'après le clic dans l'email. */
 export async function signUp(_prev: AuthState, f: FormData): Promise<AuthState> {
+  // Les comptes se créent uniquement par une connexion Google, Twitch ou Discord. ALLOW_EMAIL_SIGNUP=1 rouvre l'inscription par email (tests).
+  if (process.env.ALLOW_EMAIL_SIGNUP !== "1") return fail("Crée ton compte avec Google, Twitch ou Discord.");
   const fields = { first_name: str(f, "first_name"), last_name: str(f, "last_name"), email: str(f, "email") };
   const first = nameSchema("Prénom").safeParse(fields.first_name);
   if (!first.success) return fail(first.error.issues[0].message, fields);

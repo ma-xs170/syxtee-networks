@@ -6,7 +6,7 @@ import { useActionState, useEffect, useId, useState, type ReactNode } from "reac
 import { useFormStatus } from "react-dom";
 import { motion, type Variants } from "motion/react";
 import { siDiscord, siGoogle, siTwitch } from "simple-icons";
-import { requestPasswordReset, signInWithProvider, resendVerification, resetPassword, signIn, signUp, type AuthState } from "@/app/(auth)/actions";
+import { requestPasswordReset, signInWithProvider, resetPassword, signIn, type AuthState } from "@/app/(auth)/actions";
 import { PASSWORD_MIN, passwordStrength, STRENGTH_LABEL } from "@/lib/auth/password";
 
 // Cartes d'authentification (email + mot de passe) : connexion, inscription, mot de passe oublié, nouveau mot de passe.
@@ -81,15 +81,17 @@ const PROVIDERS = [
 ] as const;
 
 /** Boutons Google / Twitch / Discord, sous le formulaire email. Formulaire distinct : l'email reste un choix à part entière. */
-function OAuthButtons({ next }: { next: string }) {
+function OAuthButtons({ next, solo = false }: { next: string; solo?: boolean }) {
   return (
-    <motion.div variants={item} className="mt-8">
-      <div className="flex items-center gap-4 text-xs text-foreground/50" role="separator">
-        <span className="h-px flex-1 bg-foreground/15" />
-        ou continue avec
-        <span className="h-px flex-1 bg-foreground/15" />
-      </div>
-      <form action={signInWithProvider} className="mt-5 grid grid-cols-3 gap-3">
+    <motion.div variants={item} className={solo ? "mt-10" : "mt-8"}>
+      {!solo && (
+        <div className="flex items-center gap-4 text-xs text-foreground/50" role="separator">
+          <span className="h-px flex-1 bg-foreground/15" />
+          ou continue avec
+          <span className="h-px flex-1 bg-foreground/15" />
+        </div>
+      )}
+      <form action={signInWithProvider} className={solo ? "space-y-3" : "mt-5 grid grid-cols-3 gap-3"}>
         <input type="hidden" name="next" value={next} />
         {PROVIDERS.map((p) => (
           <button
@@ -98,12 +100,12 @@ function OAuthButtons({ next }: { next: string }) {
             name="provider"
             value={p.id}
             aria-label={`Continuer avec ${p.label}`}
-            className="flex h-12 items-center justify-center gap-2 rounded-xl border border-foreground/20 bg-foreground/[0.08] text-sm font-medium text-foreground transition-colors hover:bg-foreground/[0.14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.99]"
+            className={`flex items-center justify-center gap-2.5 rounded-xl border border-foreground/20 bg-foreground/[0.08] font-medium text-foreground transition-colors hover:bg-foreground/[0.14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.99] ${solo ? "h-12 w-full text-sm" : "h-12 text-sm"}`}
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
               <path d={p.icon.path} />
             </svg>
-            <span className="hidden sm:inline">{p.label}</span>
+            {solo ? `Continuer avec ${p.label}` : <span className="hidden sm:inline">{p.label}</span>}
           </button>
         ))}
       </form>
@@ -311,28 +313,9 @@ export function SignInCard({ next = "", error }: { next?: string; error?: string
 
 // ─────────────────────────── Inscription ───────────────────────────
 
+/** Inscription : uniquement par une connexion Google, Twitch ou Discord (plus de mot de passe à créer). */
 export function SignUpCard({ next = "", error }: { next?: string; error?: string | null }) {
-  const [state, action] = useActionState<AuthState, FormData>(signUp, IDLE);
-  const [dismissed, setDismissed] = useState<AuthState | null>(null);
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
   const nextQ = next ? `?next=${encodeURIComponent(next)}` : "";
-  const fields = state.status === "error" ? state.fields : undefined;
-
-  if (state.status === "sent" && dismissed !== state) {
-    return (
-      <CheckMail
-        email={state.email}
-        at={state.at}
-        next={next}
-        resend={resendVerification}
-        onBack={() => setDismissed(state)}
-        lead="On t'a envoyé un lien pour activer ton compte. Il est valable 24 h."
-      />
-    );
-  }
-
-  const mismatch = confirm.length > 0 && confirm !== password;
   return (
     <Shell
       title="Crée ton compte SYXTEE"
@@ -345,42 +328,15 @@ export function SignUpCard({ next = "", error }: { next?: string; error?: string
         </>
       }
     >
-      <motion.form variants={item} action={action} className="mt-10 space-y-5">
-        <input type="hidden" name="next" value={next} />
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Field id="first_name" label="Prénom">
-            <input id="first_name" name="first_name" autoComplete="given-name" required maxLength={50} defaultValue={fields?.first_name} className={fieldCls} />
-          </Field>
-          <Field id="last_name" label="Nom">
-            <input id="last_name" name="last_name" autoComplete="family-name" required maxLength={50} defaultValue={fields?.last_name} className={fieldCls} />
-          </Field>
-        </div>
-        <Field id="email" label="Email">
-          <input id="email" name="email" type="email" inputMode="email" autoComplete="email" required defaultValue={fields?.email} placeholder="toi@exemple.com" className={fieldCls} />
-        </Field>
-        <PasswordInput id="password" name="password" label="Mot de passe" autoComplete="new-password" value={password} onChange={setPassword} gauge />
-        <div className="space-y-2">
-          <PasswordInput id="password_confirm" name="password_confirm" label="Confirmer le mot de passe" autoComplete="new-password" value={confirm} onChange={setConfirm} />
-          {mismatch && <p className="text-xs text-red-400/90">Les deux mots de passe ne correspondent pas.</p>}
-        </div>
-        <label className="flex cursor-pointer items-start gap-3 text-xs leading-relaxed text-foreground/60">
-          <input type="checkbox" name="cgu" required className="mt-0.5 h-4 w-4 shrink-0 accent-accent" />
-          <span>
-            J&apos;accepte les <Legal />.
-          </span>
-        </label>
-        <div className="pt-1">
-          <Submit idle="Créer mon compte" busy="Création…" disabled={mismatch || passwordStrength(password) === 0} />
-        </div>
-      </motion.form>
-
-      <OAuthButtons next={next} />
-
-      {(state.status === "error" || error) && (
+      <OAuthButtons next={next} solo />
+      {error && (
         <motion.div variants={item} className="mt-4">
-          <ErrorText>{state.status === "error" ? state.message : error}</ErrorText>
+          <ErrorText>{error}</ErrorText>
         </motion.div>
       )}
+      <motion.p variants={item} className="mt-8 text-center text-xs leading-relaxed text-foreground/60">
+        En continuant, tu acceptes les <Legal />.
+      </motion.p>
     </Shell>
   );
 }

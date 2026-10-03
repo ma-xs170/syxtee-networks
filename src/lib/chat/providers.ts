@@ -85,8 +85,9 @@ async function getJson<T>(url: string, token: string, headers: Record<string, st
 /** Qui est le compte qui vient de se connecter. */
 export async function identify(p: Platform, token: string): Promise<{ id: string; name: string }> {
   if (p === "twitch") {
-    const r = await getJson<{ data: { id: string; display_name: string }[] }>("https://api.twitch.tv/helix/users", token, { "Client-Id": DEFS.twitch.id });
-    return { id: r.data[0].id, name: r.data[0].display_name };
+    const r = await getJson<{ data: { id: string; login: string }[] }>("https://api.twitch.tv/helix/users", token, { "Client-Id": DEFS.twitch.id });
+    // Le pseudo de la chaîne (login) sert aussi de chaîne du chat : plus rien à saisir à la main.
+    return { id: r.data[0].id, name: r.data[0].login };
   }
   if (p === "kick") {
     const r = await getJson<{ data: { user_id: number; name: string }[] }>("https://api.kick.com/public/v1/users", token);

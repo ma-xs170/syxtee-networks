@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { fmtDateLong, fmtHour } from "@/lib/dashboard-data";
 import { coreFetch, sleep } from "./coreClient";
+import { useTimezone } from "./Timezone";
 
 // Santé du flux en direct (Server-Sent Events du Core) : débit, RTT, congestion, pertes, liens SRTLA,
 // et courbe de débit sur les 15 dernières minutes. Se reconnecte seul si le Core ou le réseau décroche.
@@ -15,7 +17,7 @@ const nf = new Intl.NumberFormat("fr-FR");
 
 function Metric({ label, value, unit }: { label: string; value: string; unit: string }) {
   return (
-    <div className="bg-background px-4 py-3">
+    <div className="rounded-xl border border-line bg-background px-4 py-3">
       <p className="text-xs text-muted">{label}</p>
       <p className="mt-1 font-mono text-lg tabular-nums text-foreground">
         {value} <span className="text-xs text-muted">{unit}</span>
@@ -25,18 +27,56 @@ function Metric({ label, value, unit }: { label: string; value: string; unit: st
 }
 
 function Curve({ samples }: { samples: Sample[] }) {
+  const tz = useTimezone();
+  const [hover, setHover] = useState<number | null>(null);
   if (samples.length < 2) return <div className="h-16" />;
   const t1 = samples[samples.length - 1].t;
   const t0 = t1 - WINDOW;
   const max = Math.max(1000, ...samples.map((s) => s.bitrate)) * 1.1;
-  const d = samples
-    .map((s, i) => `${i ? "L" : "M"}${(((s.t - t0) / WINDOW) * 100).toFixed(2)} ${(36 - (s.bitrate / max) * 32).toFixed(2)}`)
-    .join("");
+  const peak = Math.max(...samples.map((s) => s.bitrate));
+  const px = (s: Sample) => ((s.t - t0) / WINDOW) * 100;
+  const py = (s: Sample) => 36 - (s.bitrate / max) * 32;
+  const d = samples.map((s, i) => `${i ? "L" : "M"}${px(s).toFixed(2)} ${py(s).toFixed(2)}`).join("");
+  const h = hover !== null ? samples[hover] : null;
   return (
-    <svg viewBox="0 0 100 36" preserveAspectRatio="none" className="h-16 w-full text-foreground" aria-hidden="true">
-      <path d="M0 4H100M0 35H100" stroke="currentColor" strokeOpacity={0.12} strokeDasharray="1 3" vectorEffect="non-scaling-stroke" />
-      <path d={d} fill="none" stroke="currentColor" strokeWidth={1.25} vectorEffect="non-scaling-stroke" />
-    </svg>
+    <div
+      className="relative"
+      onPointerMove={(e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        const t = t0 + ((e.clientX - r.left) / r.width) * WINDOW;
+        let best = 0;
+        for (let i = 1; i < samples.length; i++) if (Math.abs(samples[i].t - t) < Math.abs(samples[best].t - t)) best = i;
+        setHover(best);
+      }}
+      onPointerLeave={() => setHover(null)}
+    >
+      <svg viewBox="0 0 100 36" preserveAspectRatio="none" className="h-16 w-full text-foreground" aria-hidden="true">
+        <path d="M0 4H100M0 35H100" stroke="currentColor" strokeOpacity={0.12} strokeDasharray="1 3" vectorEffect="non-scaling-stroke" />
+        <path d={d} fill="none" stroke="currentColor" strokeWidth={1.25} vectorEffect="non-scaling-stroke" />
+      </svg>
+      {h && (
+        <>
+          <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 w-px bg-foreground/40" style={{ left: `${px(h)}%` }} />
+          <span aria-hidden="true" className="pointer-events-none absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background bg-accent" style={{ left: `${px(h)}%`, top: `${(py(h) / 36) * 100}%` }} />
+          <div
+            role="tooltip"
+            className="pointer-events-none absolute -top-2 z-10 whitespace-nowrap rounded-lg border border-line bg-background px-3 py-2 font-mono text-[11px] leading-relaxed shadow-[0_12px_30px_-8px_rgba(0,0,0,0.9)]"
+            style={{ left: `${px(h)}%`, transform: `translate(${px(h) > 70 ? "calc(-100% - 12px)" : "12px"}, -100%)` }}
+          >
+            <p>
+              <span className="text-foreground">{fmtHour(h.t, true, tz)}</span> <span className="text-muted">{fmtDateLong(h.t, tz)}</span>
+            </p>
+            <p className="text-base tabular-nums text-foreground">
+              {nf.format(Math.round(h.bitrate))} <span className="text-xs text-muted">kbit/s</span>
+            </p>
+            <p className="text-muted">
+              RTT {nf.format(Math.round(h.rtt))} ms · {h.dropped} perdu{h.dropped > 1 ? "s" : ""}
+            </p>
+            <p className="text-muted">{h.bitrate === peak ? "Pic des 15 minutes" : `Pic ${nf.format(Math.round(peak))} kbit/s`}</p>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -103,7 +143,7 @@ export default function StreamHealth({ coreUrl, relayId, demo }: { coreUrl: stri
   const peerMax = Math.max(1, ...peers.map((p) => p.bitrate));
 
   return (
-    <section className="rounded-2xl border border-line p-5 sm:p-6" aria-labelledby="sante">
+    <section className="rounded-2xl border border-line bg-surface p-5 sm:p-6" aria-labelledby="sante">
       <div className="flex items-center justify-between gap-4">
         <h2 id="sante" className="text-sm font-semibold">
           Santé du flux
@@ -123,7 +163,7 @@ export default function StreamHealth({ coreUrl, relayId, demo }: { coreUrl: stri
         </p>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4">
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Metric label="Débit reçu" value={s ? nf.format(Math.round(s.bitrate)) : "–"} unit="kbps" />
         <Metric label="RTT" value={s ? nf.format(Math.round(s.rtt)) : "–"} unit="ms" />
         <Metric label="Congestion" value={s ? nf.format(Math.round(s.congestion * 100)) : "–"} unit="%" />

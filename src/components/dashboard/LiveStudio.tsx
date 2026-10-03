@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useLiveStatus } from "./LiveStatus";
+import MultiChat, { type ChatDefaults } from "./MultiChat";
 import StreamHealth from "./StreamHealth";
 import StreamPreview from "./StreamPreview";
 
-// Studio d'aperçu, façon régie OBS : à gauche les sources (un relais = une source, point rouge s'il est en direct),
-// au centre le flux en temps réel de la source choisie, dessous sa santé (débit, latence, pertes).
+// Studio d'aperçu, façon régie OBS : en haut le choix de la source (un relais = une source, point rouge s'il est en direct)
+// et le mode, puis le flux en temps réel à côté du chat (même hauteur), puis la santé du flux (débit, latence, pertes).
 // « Multi » affiche toutes les sources en direct côte à côte (4 max) ; un clic sur une vignette l'ouvre en grand.
 
 type Source = { id: string; name: string; live: boolean };
@@ -14,7 +15,7 @@ type Mode = "single" | "multi";
 
 const MULTI_MAX = 4;
 
-export default function LiveStudio({ sources, coreUrl, initial }: { sources: Source[]; coreUrl: string; initial: string }) {
+export default function LiveStudio({ sources, coreUrl, initial, chat }: { sources: Source[]; coreUrl: string; initial: string; chat: ChatDefaults }) {
   const [current, setCurrent] = useState(initial);
   const [mode, setMode] = useState<Mode>("single");
   const { state } = useLiveStatus();
@@ -26,13 +27,18 @@ export default function LiveStudio({ sources, coreUrl, initial }: { sources: Sou
   const multi = sources.filter((s) => isLive(s.id)).slice(0, MULTI_MAX);
 
   const tab = (m: Mode) =>
-    `flex-1 rounded-lg px-3 py-1.5 text-sm transition-colors ${mode === m ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`;
+    `min-h-9 rounded-lg px-4 text-sm transition-colors ${mode === m ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`;
+
+  const chatTile = (
+    <div className="flex min-h-[22rem] flex-col lg:min-h-0">
+      <MultiChat defaults={chat} height="min-h-0 flex-1" compact />
+    </div>
+  );
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-      <aside aria-label="Sources" className="panel self-start p-4">
-        <h2 className="text-sm font-semibold">Sources</h2>
-        <div role="group" aria-label="Mode d'affichage" className="mt-3 flex rounded-xl border border-line bg-background p-1">
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <div role="group" aria-label="Mode d'affichage" className="flex rounded-xl border border-line bg-surface p-1">
           <button type="button" className={tab("single")} aria-pressed={mode === "single"} onClick={() => setMode("single")}>
             Une vue
           </button>
@@ -40,11 +46,11 @@ export default function LiveStudio({ sources, coreUrl, initial }: { sources: Sou
             Multi
           </button>
         </div>
-        <ul className="mt-4 space-y-1">
+        <ul aria-label="Sources" className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-1">
           {sources.map((s) => {
             const active = mode === "single" && selected?.id === s.id;
             return (
-              <li key={s.id}>
+              <li key={s.id} className="shrink-0">
                 <button
                   type="button"
                   onClick={() => {
@@ -52,64 +58,62 @@ export default function LiveStudio({ sources, coreUrl, initial }: { sources: Sou
                     setMode("single");
                   }}
                   aria-pressed={active}
-                  className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
-                    active ? "border border-line-strong bg-foreground/10 text-foreground" : "border border-transparent text-muted hover:bg-foreground/[0.06] hover:text-foreground"
+                  className={`flex min-h-11 items-center gap-2.5 rounded-xl border px-4 text-sm transition-colors ${
+                    active ? "border-line-strong bg-foreground/10 text-foreground" : "border-line text-muted hover:text-foreground"
                   }`}
                 >
-                  <span className="truncate">{s.name}</span>
-                  {isLive(s.id) ? <span className="live-dot shrink-0" aria-label="En direct" /> : <span className="shrink-0 text-xs">Hors ligne</span>}
+                  {isLive(s.id) ? <span className="live-dot shrink-0" aria-label="En direct" /> : <span className="h-2 w-2 shrink-0 rounded-full border border-muted" aria-label="Hors ligne" />}
+                  <span className="max-w-[12rem] truncate">{s.name}</span>
                 </button>
               </li>
             );
           })}
         </ul>
-      </aside>
-
-      <div className="min-w-0">
-        {mode === "single" && selected ? (
-          <>
-            <div className="mb-3 flex items-baseline justify-between gap-4">
-              <h2 className="text-sm font-semibold">Aperçu du direct</h2>
-              <p className="font-mono text-xs text-muted">{selected.name}</p>
-            </div>
-            <StreamPreview key={selected.id} coreUrl={coreUrl} relayId={selected.id} />
-
-            <div className="mt-8">
-              <div className="mb-3 flex flex-wrap items-center gap-3">
-                <h2 className="text-sm font-semibold">Santé du flux</h2>
-                <span className={`rounded border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] ${isLive(selected.id) ? "border-live/40 text-foreground" : "border-line text-muted"}`}>
-                  {isLive(selected.id) ? "En ligne" : "Hors ligne"}
-                </span>
-                <span className="text-sm text-muted">{selected.name}</span>
-              </div>
-              <StreamHealth key={selected.id} coreUrl={coreUrl} relayId={selected.id} />
-            </div>
-          </>
-        ) : multi.length === 0 ? (
-          <div className="panel flex min-h-64 items-center justify-center px-6 text-center text-sm text-muted">Aucune source en direct. Lance ton live : les aperçus apparaissent ici.</div>
-        ) : (
-          <ul className={`grid gap-4 ${multi.length > 1 ? "md:grid-cols-2" : ""}`}>
-            {multi.map((s) => (
-              <li key={s.id}>
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <p className="font-mono text-xs text-muted">{s.name}</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCurrent(s.id);
-                      setMode("single");
-                    }}
-                    className="text-xs text-muted underline-offset-4 transition-colors hover:text-foreground hover:underline"
-                  >
-                    Ouvrir en grand
-                  </button>
-                </div>
-                <StreamPreview key={s.id} coreUrl={coreUrl} relayId={s.id} />
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
+
+      {mode === "single" && selected ? (
+        <>
+          <div className="grid gap-4 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <StreamPreview key={selected.id} coreUrl={coreUrl} relayId={selected.id} />
+            </div>
+            {chatTile}
+          </div>
+          <StreamHealth key={selected.id} coreUrl={coreUrl} relayId={selected.id} />
+        </>
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            {multi.length === 0 ? (
+              <div className="flex min-h-64 items-center justify-center rounded-2xl border border-line bg-surface px-6 text-center text-sm text-muted">
+                Aucune source en direct. Lance ton live : les aperçus apparaissent ici.
+              </div>
+            ) : (
+              <ul className={`grid gap-4 ${multi.length > 1 ? "md:grid-cols-2" : ""}`}>
+                {multi.map((s) => (
+                  <li key={s.id}>
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <p className="font-mono text-xs text-muted">{s.name}</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCurrent(s.id);
+                          setMode("single");
+                        }}
+                        className="text-xs text-muted underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                      >
+                        Ouvrir en grand
+                      </button>
+                    </div>
+                    <StreamPreview key={s.id} coreUrl={coreUrl} relayId={s.id} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {chatTile}
+        </div>
+      )}
     </div>
   );
 }

@@ -34,7 +34,7 @@ export default async function AccesPage() {
     <DashPage>
       <DashHeader lead="Ton" hl="accès" sub="Pas d'abonnement : l'accès est ouvert sur invitation." />
 
-      <div className="grid items-start gap-4 lg:grid-cols-[1fr_340px]">
+      <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
         <Tile aria-labelledby="actuel">
           <TileLabel id="actuel">Accès actuel</TileLabel>
           <p className="mt-4 text-3xl font-semibold tracking-tight">{plan.name}</p>

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import LiveStudio from "@/components/dashboard/LiveStudio";
-import MultiChat from "@/components/dashboard/MultiChat";
 import { DashHeader, DashPage } from "@/components/dashboard/ui";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { publicCoreUrl } from "@/lib/core";
@@ -34,12 +33,13 @@ export default async function ApercuPage({ searchParams }: PageProps<"/dashboard
           .
         </p>
       ) : (
-        <div className="space-y-6">
-          <LiveStudio sources={active.map((r) => ({ id: r.id, name: r.name, live: r.live }))} coreUrl={publicCoreUrl} initial={current.id} />
-          <div>
-            <h2 className="mb-3 text-sm font-semibold">Chat</h2>
-            <MultiChat defaults={{ twitch: profile?.twitch_login ?? "", kick: profile?.kick ?? "", youtube: "" }} />
-          </div>
+        <div>
+          <LiveStudio
+            sources={active.map((r) => ({ id: r.id, name: r.name, live: r.live }))}
+            coreUrl={publicCoreUrl}
+            initial={current.id}
+            chat={{ twitch: profile?.twitch_login ?? "", kick: profile?.kick ?? "", youtube: "" }}
+          />
         </div>
       )}
     </PlanGate>

@@ -327,13 +327,13 @@ export default function CreateRelayWizard({
             </fieldset>
           ) : (
             <div>
-              <dl className="grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-3">
+              <dl className="grid gap-3 sm:grid-cols-3">
                 {[
                   ["Protocole", protocol.toUpperCase()],
                   ["Appareil", name.trim()],
                   ["Serveur", srv ? `${flag(srv.cc)} ${srv.city} (${srv.id})` : server],
                 ].map(([k, v]) => (
-                  <div key={k} className="bg-background p-5">
+                  <div key={k} className="rounded-2xl border border-line bg-surface p-5">
                     <dt className="text-xs text-muted">{k}</dt>
                     <dd className="mt-2 break-words text-base">{v}</dd>
                   </div>

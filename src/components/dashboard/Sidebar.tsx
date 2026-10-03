@@ -8,7 +8,6 @@ import {
   CaretUpDown,
   ChartBar,
   Eye,
-  Heartbeat,
   List,
   Lifebuoy,
   Lock,
@@ -47,7 +46,6 @@ const GROUPS: Group[] = [
     items: [
       { label: "Vue d'ensemble", href: "/dashboard", icon: SquaresFour },
       { label: "Mes relais", href: "/dashboard/relais", icon: Radio, feature: "relais" },
-      { label: "Santé du flux", href: "/dashboard/sante", icon: Heartbeat, feature: "sante" },
       { label: "Aperçu", href: "/dashboard/apercu", icon: Eye, feature: "apercu" },
       { label: "Caméras externes", href: "/dashboard/dji", icon: VideoCamera, feature: "dji" },
       { label: "SYXTEE Studio", href: "/studio", icon: SlidersHorizontal, external: true },
@@ -256,7 +254,7 @@ function MobileTabs({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolea
               <Link href={t.href} aria-current={on ? "page" : undefined} className={`${cell} ${on ? "text-foreground" : "text-muted"}`}>
                 {on && <span aria-hidden="true" className="absolute inset-x-4 top-0 h-0.5 rounded-full bg-accent" />}
                 <Icon size={22} weight={on ? "fill" : "regular"} aria-hidden="true" />
-                <span className="max-w-full truncate">{t.label === "Vue d'ensemble" ? "Accueil" : t.label === "Mes relais" ? "Relais" : t.label === "Santé du flux" ? "Santé" : t.label}</span>
+                <span className="max-w-full truncate">{t.label === "Vue d'ensemble" ? "Accueil" : t.label === "Mes relais" ? "Relais" : t.label === "Caméras externes" ? "Caméras" : t.label}</span>
                 {locked && <Lock size={10} className="absolute right-3 top-1.5 text-muted" aria-label="Verrouillé dans ta formule" />}
               </Link>
             </li>

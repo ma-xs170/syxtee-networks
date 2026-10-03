@@ -57,3 +57,8 @@ export function dayPart(hour: number): DayPart {
   if (hour >= 14 && hour < 18) return { emoji: "🌤️", hello: "Bon après-midi" };
   return { emoji: "🌙", hello: "Bonne soirée" };
 }
+
+/** Fuseau du compte (pays + fuseau du profil), Europe/Paris à défaut. */
+export function accountTimezone(profile?: { country?: string | null; timezone?: string | null } | null) {
+  return validTimezone(timezoneFor(profile?.country, profile?.timezone));
+}

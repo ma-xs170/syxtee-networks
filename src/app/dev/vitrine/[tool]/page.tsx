@@ -67,6 +67,7 @@ const SESSIONS: LiveSession[] = [
 
 const kpis = (k: number) => ({ seconds: 18_400 * k, count: 7 * k, avgSeconds: 2630, avgKbps: 5720, peakKbps: 7010 });
 const OVERVIEW: OverviewData = {
+  timezone: "Europe/Paris",
   range: "7d",
   generatedAt: iso(0),
   kpis: kpis(1),

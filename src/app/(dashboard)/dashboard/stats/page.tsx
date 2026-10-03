@@ -3,7 +3,8 @@ import Link from "next/link";
 import { DailyBars } from "@/components/dashboard/charts";
 import { ArrowLink, DashHeader, DashPage, Tile, TileLabel, SectionTabs } from "@/components/dashboard/ui";
 import { statsTabs } from "@/lib/dashboard-nav";
-import { requireUser } from "@/lib/auth/dal";
+import { getProfile, requireUser } from "@/lib/auth/dal";
+import { accountTimezone } from "@/lib/regions";
 import { delta, fmtDuration, fmtInt, isRange } from "@/lib/dashboard-data";
 import { getStats } from "@/lib/dashboard-overview";
 import PlanGate from "@/components/plans/PlanGate";
@@ -22,16 +23,17 @@ function Figure({ label, value, sub }: { label: string; value: string; sub?: str
 
 export default async function StatsPage({ searchParams }: PageProps<"/dashboard/stats">) {
   await requireUser("/dashboard/stats");
+  const timezone = accountTimezone(await getProfile());
   const { range: r } = await searchParams;
   const range = isRange(r) ? r : "7d";
-  const { days, any, kpis: k, previous: p, longest, reconnects, short, daily } = await getStats(range);
+  const { days, any, kpis: k, previous: p, longest, reconnects, short, daily } = await getStats(range, timezone);
   const cmp = (a: number, b: number) => delta(a, b)?.text ?? "rien avant";
 
   return (
     <DashPage>
       <SectionTabs tabs={statsTabs} current="/dashboard/stats" label="Statistiques" />
       <PlanGate feature="stats">
-      <DashHeader lead="Tes" hl="statistiques" sub={`Tes directs sur les ${days} derniers jours, comparés aux ${days} jours d'avant.`}>
+      <DashHeader lead="Tes" hl="statistiques" sub={`Tes directs sur les ${days} derniers jours, comparés aux ${days} jours d'avant. Jours et heures en fuseau ${timezone.replace(/_/g, " ")}.`}>
         <div role="radiogroup" aria-label="Période" className="inline-flex rounded-full border border-line p-0.5">
           {(["7d", "30d"] as const).map((x) => (
             <Link

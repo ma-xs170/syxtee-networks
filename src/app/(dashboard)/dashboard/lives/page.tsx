@@ -3,7 +3,8 @@ import { SessionList } from "@/components/dashboard/sessions";
 import { ArrowLink, DashHeader, DashPage, Tile, SectionTabs } from "@/components/dashboard/ui";
 import RelayPicker from "@/components/relais/RelayPicker";
 import { statsTabs } from "@/lib/dashboard-nav";
-import { requireUser } from "@/lib/auth/dal";
+import { getProfile, requireUser } from "@/lib/auth/dal";
+import { accountTimezone } from "@/lib/regions";
 import { listSessions } from "@/lib/dashboard-overview";
 import { loadRelays } from "@/lib/relays";
 import PlanGate from "@/components/plans/PlanGate";
@@ -31,7 +32,7 @@ export default async function LivesPage({ searchParams }: PageProps<"/dashboard/
               <span>Débit</span>
               <span className="text-right">Durée</span>
             </div>
-            <SessionList sessions={sessions} spark />
+            <SessionList sessions={sessions} spark timezone={accountTimezone(await getProfile())} />
           </>
         ) : (
           <>

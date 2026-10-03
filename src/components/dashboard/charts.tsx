@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { useTimezone } from "./Timezone";
 import type { Overview } from "@/lib/dashboard-data";
 import { fmtDateLong, fmtDay, fmtDayLong, fmtDuration, fmtHour, fmtInt } from "@/lib/dashboard-data";
 
@@ -23,6 +24,7 @@ function useScrub(n: number) {
 
 /** Détail d'un relevé : heure, date, débit, et mention du pic. */
 function ScrubTip({ index, n, points, startedAt, durationS }: { index: number; n: number; points: number[]; startedAt?: string; durationS?: number }) {
+  const tz = useTimezone();
   const at = startedAt && durationS ? new Date(startedAt).getTime() + (index / (n - 1)) * durationS * 1000 : null;
   const peak = Math.max(...points);
   const x = (index / (n - 1)) * 100;
@@ -30,7 +32,7 @@ function ScrubTip({ index, n, points, startedAt, durationS }: { index: number; n
     <div role="tooltip" className={TIP} style={{ left: `${x}%`, top: 0, transform: `translate(${x > 70 ? "calc(-100% - 12px)" : "12px"}, 0)` }}>
       {at != null && (
         <p>
-          <span className="text-foreground">{fmtHour(at, true)}</span> <span className="text-muted">{fmtDateLong(at)}</span>
+          <span className="text-foreground">{fmtHour(at, true, tz)}</span> <span className="text-muted">{fmtDateLong(at, tz)}</span>
         </p>
       )}
       <p className="text-base tabular-nums">
@@ -71,6 +73,7 @@ export function Sparkline({ points, className = "h-10 w-full", label, startedAt,
 
 /** Histogramme : minutes de direct par jour, infobulle au survol et au clavier. */
 export function DailyBars({ days }: { days: Overview["daily"] }) {
+  const tz = useTimezone();
   const [hover, setHover] = useState<number | null>(null);
   const id = useId();
   const raw = Math.max(0, ...days.map((d) => d.minutes));
@@ -132,7 +135,7 @@ export function DailyBars({ days }: { days: Overview["daily"] }) {
                   </p>
                   {!!days[hover].peakKbps && (
                     <p className="text-muted">
-                      Pic {fmtInt(days[hover].peakKbps!)} kbit/s{days[hover].peakAt ? ` à ${fmtHour(days[hover].peakAt!)}` : ""}
+                      Pic {fmtInt(days[hover].peakKbps!)} kbit/s{days[hover].peakAt ? ` à ${fmtHour(days[hover].peakAt!, false, tz)}` : ""}
                     </p>
                   )}
                 </>

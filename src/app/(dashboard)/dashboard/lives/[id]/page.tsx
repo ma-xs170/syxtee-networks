@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BitrateChart } from "@/components/dashboard/charts";
 import { ArrowLink, DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
-import { requireUser } from "@/lib/auth/dal";
+import { getProfile, requireUser } from "@/lib/auth/dal";
+import { accountTimezone } from "@/lib/regions";
 import { deviceLabel, fmtDate, fmtDuration, fmtInt, fmtKbps } from "@/lib/dashboard-data";
 import { getSession } from "@/lib/dashboard-overview";
 import PlanGate from "@/components/plans/PlanGate";
@@ -13,6 +14,7 @@ export default async function LivePage({ params }: PageProps<"/dashboard/lives/[
   const { id } = await params;
   await requireUser(`/dashboard/lives/${id}`);
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
+  const timezone = accountTimezone(await getProfile());
   const s = await getSession(id);
   if (!s) notFound();
 
@@ -31,7 +33,7 @@ export default async function LivePage({ params }: PageProps<"/dashboard/lives/[
       <div className="mb-6">
         <ArrowLink href="/dashboard/lives">Historique des lives</ArrowLink>
       </div>
-      <DashHeader lead="Direct du" hl={fmtDate(s.started_at)} />
+      <DashHeader lead="Direct du" hl={fmtDate(s.started_at, timezone)} />
       <div className="grid gap-4 lg:grid-cols-3">
         <Tile className="lg:col-span-2">
           <TileLabel>Débit reçu au relais</TileLabel>

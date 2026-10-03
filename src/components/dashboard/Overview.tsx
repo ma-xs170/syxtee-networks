@@ -220,7 +220,7 @@ function DailyTile({ data, range, className = "" }: { data: OverviewData; range:
   );
 }
 
-function LastLive({ s, className = "" }: { s: NonNullable<OverviewData["last"]>; className?: string }) {
+function LastLive({ s, timezone, className = "" }: { s: NonNullable<OverviewData["last"]>; timezone: string; className?: string }) {
   const facts: [string, string][] = [
     ["Appareil", deviceLabel(s)],
     ["Durée", fmtDuration(s.duration_s)],
@@ -232,7 +232,7 @@ function LastLive({ s, className = "" }: { s: NonNullable<OverviewData["last"]>;
       <TileLabel id="dernier" right={<ArrowLink href={`/dashboard/lives/${s.id}`}>Voir le détail</ArrowLink>}>
         Dernier direct
       </TileLabel>
-      <p className="mt-1 text-sm text-muted">{fmtDate(s.started_at)}</p>
+      <p className="mt-1 text-sm text-muted">{fmtDate(s.started_at, timezone)}</p>
       <div className="mt-5 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] md:items-end">
         <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
           {facts.map(([k, v]) => (
@@ -503,7 +503,7 @@ export default function Overview({ initial, chat = { twitch: "", kick: "", youtu
         <div className="grid gap-4 lg:grid-cols-3 lg:grid-rows-[auto_auto]">
           <DailyTile data={data} range={range} className="lg:col-span-2" />
           <ChatTile chat={chat} />
-          {data.last ? <LastLive s={data.last} className="lg:col-span-2" /> : <div className="hidden lg:col-span-2 lg:block" />}
+          {data.last ? <LastLive s={data.last} timezone={data.timezone} className="lg:col-span-2" /> : <div className="hidden lg:col-span-2 lg:block" />}
           <Urls data={data} />
         </div>
       )}
@@ -519,7 +519,7 @@ export default function Overview({ initial, chat = { twitch: "", kick: "", youtu
             Derniers directs
           </TileLabel>
           <div className="mt-3">
-            <SessionList sessions={data.recent} />
+            <SessionList sessions={data.recent} timezone={data.timezone} />
           </div>
         </Tile>
       )}

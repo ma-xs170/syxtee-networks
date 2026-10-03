@@ -4,7 +4,7 @@ import { Sparkline } from "./charts";
 
 // Liste des directs (vue d'ensemble, historique) : date, appareil, durée, débit moyen / crête.
 
-export function SessionList({ sessions, spark = false }: { sessions: LiveSession[]; spark?: boolean }) {
+export function SessionList({ sessions, spark = false, timezone }: { sessions: LiveSession[]; spark?: boolean; timezone?: string }) {
   return (
     <ul className="divide-y divide-foreground/10">
       {sessions.map((s) => (
@@ -16,7 +16,7 @@ export function SessionList({ sessions, spark = false }: { sessions: LiveSession
             }`}
           >
             <span className="min-w-0">
-              <span className="block truncate text-sm text-foreground">{fmtDate(s.started_at)}</span>
+              <span className="block truncate text-sm text-foreground">{fmtDate(s.started_at, timezone)}</span>
               <span className="block truncate font-mono text-xs text-muted">
                 {deviceLabel(s)}
                 {s.reconnects > 0 && ` · ${s.reconnects} coupure${s.reconnects > 1 ? "s" : ""}`}

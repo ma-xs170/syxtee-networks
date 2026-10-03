@@ -48,6 +48,8 @@ export type Overview = {
   /** Relais actifs (sources de l'aperçu en direct). */
   sources: { id: string; name: string }[];
   coreStatus: "ok" | "down" | "off";
+  /** Fuseau du compte : les jours et les heures des graphiques en dépendent. */
+  timezone: string;
   plan: { name: string; streams: number };
 };
 
@@ -92,18 +94,27 @@ export function fmtAgo(iso: string | number, now = Date.now()) {
   return `il y a ${Math.floor(diff / (86400 * 30))} mois`;
 }
 
-const dateFmt = new Intl.DateTimeFormat("fr-FR", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" });
-/** « sam. 3 oct. » */
-export const fmtDayLong = (day: string) => dayLongFmt.format(new Date(`${day}T12:00:00Z`));
-const dayLongFmt = new Intl.DateTimeFormat("fr-FR", { weekday: "short", day: "numeric", month: "short", timeZone: "Europe/Paris" });
-/** « 17:42 » ou « 17:42:10 » (heure de Paris). */
-export const fmtHour = (t: string | number, seconds = false) => new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit", ...(seconds ? { second: "2-digit" } : {}), timeZone: "Europe/Paris" }).format(new Date(t));
-export const fmtDateLong = (t: string | number) => dayLongFmt.format(new Date(t));
-const dayFmt = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", timeZone: "Europe/Paris" });
-/** « sam. 27 sept., 21:04 ». */
-export const fmtDate = (iso: string) => dateFmt.format(new Date(iso));
+const TZ = "Europe/Paris";
+const fmtCache = new Map<string, Intl.DateTimeFormat>();
+const fmt = (key: string, opts: Intl.DateTimeFormatOptions, timeZone: string) => {
+  const k = `${key}|${timeZone}`;
+  let f = fmtCache.get(k);
+  if (!f) fmtCache.set(k, (f = new Intl.DateTimeFormat("fr-FR", { ...opts, timeZone })));
+  return f;
+};
+
+/** « sam. 27 sept., 21:04 » dans le fuseau du compte. */
+export const fmtDate = (iso: string, timezone = TZ) => fmt("date", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }, timezone).format(new Date(iso));
+/** « sam. 3 oct. » à partir d'un instant, dans le fuseau du compte. */
+export const fmtDateLong = (t: string | number, timezone = TZ) => fmt("daylong", { weekday: "short", day: "numeric", month: "short" }, timezone).format(new Date(t));
+/** « 17:42 » ou « 17:42:10 » dans le fuseau du compte. */
+export const fmtHour = (t: string | number, seconds = false, timezone = TZ) =>
+  fmt(seconds ? "hms" : "hm", { hour: "2-digit", minute: "2-digit", ...(seconds ? { second: "2-digit" } : {}) }, timezone).format(new Date(t));
+// Les jours AAAA-MM-JJ sont déjà des jours du fuseau du compte : on les affiche tels quels (UTC), sans nouveau décalage.
+/** « sam. 3 oct. » à partir d'un jour AAAA-MM-JJ. */
+export const fmtDayLong = (day: string) => fmt("daylong", { weekday: "short", day: "numeric", month: "short" }, "UTC").format(new Date(`${day}T12:00:00Z`));
 /** « 27 sept. » à partir d'un jour AAAA-MM-JJ. */
-export const fmtDay = (day: string) => dayFmt.format(new Date(`${day}T12:00:00Z`));
+export const fmtDay = (day: string) => fmt("day", { day: "numeric", month: "short" }, "UTC").format(new Date(`${day}T12:00:00Z`));
 
 /** Évolution par rapport à la période précédente : « +12 % », ou null s'il n'y avait rien avant. */
 export function delta(current: number, previous: number): { text: string; up: boolean } | null {

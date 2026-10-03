@@ -1,3 +1,4 @@
+import { accountTimezone } from "@/lib/regions";
 import "server-only";
 import type { Profile } from "@/lib/auth/dal";
 import { hasCore, listRelays, type RelayView } from "@/lib/core";
@@ -12,8 +13,8 @@ const DAY = 86_400_000;
 const TTL = 30_000;
 const memo = new Map<string, { at: number; data: Overview }>();
 
-/** Jour AAAA-MM-JJ à l'heure de Paris. */
-const parisDay = (t: number | Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" }).format(t);
+/** Jour AAAA-MM-JJ dans le fuseau du compte. */
+const localDay = (t: number | Date, timeZone: string) => new Intl.DateTimeFormat("en-CA", { timeZone }).format(t);
 
 export function computeKpis(sessions: LiveSession[]): Kpis {
   const seconds = sessions.reduce((a, s) => a + s.duration_s, 0);
@@ -27,11 +28,11 @@ export function computeKpis(sessions: LiveSession[]): Kpis {
   };
 }
 
-export function dailyMinutes(sessions: LiveSession[], now: number, days = 30) {
+export function dailyMinutes(sessions: LiveSession[], now: number, days = 30, timezone = "Europe/Paris") {
   type Day = { seconds: number; count: number; kbpsSeconds: number; peakKbps: number; peakAt: string | null };
   const byDay = new Map<string, Day>();
   for (const s of sessions) {
-    const d = parisDay(new Date(s.started_at));
+    const d = localDay(new Date(s.started_at), timezone);
     const cur = byDay.get(d) ?? { seconds: 0, count: 0, kbpsSeconds: 0, peakKbps: 0, peakAt: null };
     cur.seconds += s.duration_s;
     cur.count += 1;
@@ -47,7 +48,7 @@ export function dailyMinutes(sessions: LiveSession[], now: number, days = 30) {
     byDay.set(d, cur);
   }
   return Array.from({ length: days }, (_, i) => {
-    const day = parisDay(now - (days - 1 - i) * DAY);
+    const day = localDay(now - (days - 1 - i) * DAY, timezone);
     const v = byDay.get(day);
     return {
       day,
@@ -123,7 +124,8 @@ export async function getSession(id: string) {
 }
 
 export async function getOverview(userId: string, profile: Profile, range: Range, plan: Plan): Promise<Overview> {
-  const key = `${userId}:${range}`;
+  const timezone = accountTimezone(profile);
+  const key = `${userId}:${range}:${timezone}`;
   const hit = memo.get(key);
   if (hit && Date.now() - hit.at < TTL) return hit.data;
 
@@ -151,7 +153,7 @@ export async function getOverview(userId: string, profile: Profile, range: Range
     generatedAt: new Date(now).toISOString(),
     kpis: computeKpis(current),
     previous: computeKpis(previous),
-    daily: dailyMinutes(month, now),
+    daily: dailyMinutes(month, now, 30, timezone),
     last: done[0] ?? null,
     recent: latest,
     hasEverStreamed,
@@ -161,6 +163,7 @@ export async function getOverview(userId: string, profile: Profile, range: Range
     relays: { active: relays.filter((r) => !r.archived).length, max: relayLimit(plan) },
     sources: relays.filter((r) => !r.archived).map((r) => ({ id: r.id, name: r.name })),
     coreStatus: status,
+    timezone,
     plan: { name: plan.name, streams: Number.isFinite(plan.maxConcurrentStreams) ? plan.maxConcurrentStreams : 99 },
   };
   memo.set(key, { at: now, data });
@@ -170,12 +173,11 @@ export async function getOverview(userId: string, profile: Profile, range: Range
 
 /** Après une action (clé régénérée…) : les chiffres doivent se recalculer tout de suite. */
 export function forgetOverview(userId: string) {
-  memo.delete(`${userId}:7d`);
-  memo.delete(`${userId}:30d`);
+  for (const k of memo.keys()) if (k.startsWith(`${userId}:`)) memo.delete(k);
 }
 
 /** Page Statistiques : période choisie et période précédente, avec quelques chiffres de plus. */
-export async function getStats(range: Range) {
+export async function getStats(range: Range, timezone = "Europe/Paris") {
   const now = Date.now();
   const days = RANGE_DAYS[range];
   const all = (await listSessions({ since: now - Math.max(60, days * 2) * DAY })).filter((s) => s.ended_at);
@@ -193,6 +195,7 @@ export async function getStats(range: Range) {
     longest: cur.reduce<LiveSession | null>((m, s) => (!m || s.duration_s > m.duration_s ? s : m), null),
     reconnects: cur.reduce((a, s) => a + s.reconnects, 0),
     short: cur.filter((s) => s.duration_s < 60).length,
-    daily: dailyMinutes(cur, now, days),
+    daily: dailyMinutes(cur, now, days, timezone),
+    timezone,
   };
 }

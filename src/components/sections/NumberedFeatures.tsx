@@ -90,8 +90,8 @@ export default function NumberedFeatures() {
       <Row
         n="04"
         title="Tous tes chats, un seul fil."
-        text="Twitch et Kick se mélangent dans la même liste, YouTube a son onglet. Le chat s'affiche à côté de ton aperçu vidéo."
-        tags="Twitch · Kick · YouTube"
+        text="Un clic sur un logo affiche une plateforme ou plusieurs. Twitch et Kick se mélangent dans la même liste, YouTube a son panneau. Écris-leur depuis ton compte relié."
+        tags="YouTube · Twitch · Kick"
         flip
       >
         <figure>

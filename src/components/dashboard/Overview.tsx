@@ -404,7 +404,7 @@ function ChatTile({ chat }: { chat: ChatDefaults }) {
     return (
       <Tile aria-labelledby="chat-setup" className="flex flex-col">
         <TileLabel id="chat-setup">Multichat</TileLabel>
-        <p className="mt-3 text-sm leading-relaxed text-muted">Twitch et Kick dans un seul fil. Indique ta chaîne pour le voir ici.</p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">YouTube, Twitch et Kick au même endroit. Indique ta chaîne pour le voir ici.</p>
         <div className="mt-auto pt-4">
           <ArrowLink href="/dashboard/multichat">Configurer le chat</ArrowLink>
         </div>

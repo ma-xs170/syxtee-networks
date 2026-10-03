@@ -109,12 +109,12 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
   const [cfg, setCfg] = useState<ChatDefaults>(defaults);
   const [draft, setDraft] = useState<ChatDefaults>(defaults);
   const [editing, setEditing] = useState(false);
-  const [tab, setTab] = useState<"all" | "youtube">("all");
+  // Plateformes affichées : on peut en choisir une ou plusieurs (Twitch et Kick dans le même fil, YouTube dans son panneau).
+  const [sel, setSel] = useState<Set<P>>(new Set<P>(["youtube", "twitch", "kick"]));
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [twitchLink, setTwitchLink] = useState<Link>("idle");
   const [kickLink, setKickLink] = useState<Link>("idle");
   const [room, setRoom] = useState<{ slug: string; id?: number; failed?: boolean } | null>(null);
-  const [hidden, setHidden] = useState<Set<Platform>>(new Set());
   const [stuck, setStuck] = useState(true);
   const list = useRef<HTMLDivElement>(null);
   const [acc, setAcc] = useState<Accounts | null>(null);
@@ -234,7 +234,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
   const ytId = youtubeId(cfg.youtube);
   const channelOf: Record<P, string> = { twitch: clean(cfg.twitch), kick: clean(cfg.kick), youtube: ytId };
   const sendable = (Object.keys(acc?.connections ?? {}) as P[]).filter((p) => channelOf[p]);
-  const connectable = (["twitch", "kick", "youtube"] as const).filter((p) => acc?.configured[p] && !acc.connections[p]);
+  const connectable = (["youtube", "twitch", "kick"] as const).filter((p) => acc?.configured[p] && !acc.connections[p]);
 
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
@@ -264,8 +264,23 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
     await fetch(`/api/chat/connections?platform=${p}`, { method: "DELETE" });
     await loadAccounts();
   }
-  const shown = msgs.filter((m) => !hidden.has(m.platform));
-  const none = !twitch && !kick;
+  const available: Record<P, boolean> = { twitch: !!twitch, kick: !!kick, youtube: !!ytId };
+  const active = (["youtube", "twitch", "kick"] as const).filter((p) => sel.has(p) && available[p]);
+  const allOn = active.length > 0 && active.length === (["youtube", "twitch", "kick"] as const).filter((p) => available[p]).length;
+  const showFeed = active.includes("twitch") || active.includes("kick");
+  const showYoutube = active.includes("youtube");
+  const shown = msgs.filter((m) => active.includes(m.platform));
+  const none = !twitch && !kick && !ytId;
+  // Un clic sur un logo ajoute ou retire la plateforme ; il en reste toujours au moins une.
+  const toggle = (p: P) =>
+    setSel((cur) => {
+      const next = new Set(cur);
+      if (next.has(p)) {
+        next.delete(p);
+        if (!(["youtube", "twitch", "kick"] as const).some((x) => next.has(x) && available[x])) return cur;
+      } else next.add(p);
+      return next;
+    });
   const dot = (l: Link) => (l === "ok" ? "bg-live" : l === "error" ? "bg-red-400" : l === "connecting" ? "animate-pulse bg-muted motion-reduce:animate-none" : "border border-muted");
   const links: Record<Platform, Link> = {
     twitch: !/^\w{3,25}$/.test(twitch) ? "idle" : twitchLink === "idle" ? "connecting" : twitchLink,
@@ -277,44 +292,39 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
   return (
     <section aria-label="Multichat" className={`flex flex-col overflow-hidden rounded-2xl border border-line bg-surface ${height}`}>
       <header className={`flex items-center border-b border-line p-2.5 ${compact ? "gap-1.5" : "flex-wrap gap-2"}`}>
-        <div role="group" aria-label="Affichage" className="flex rounded-lg border border-line bg-background p-0.5">
-          {(["all", "youtube"] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              aria-pressed={tab === t}
-              onClick={() => setTab(t)}
-              className={`min-h-9 rounded-md px-3 text-sm transition-colors ${tab === t ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}
-            >
-              {t === "all" ? "Tout" : "YouTube"}
-            </button>
-          ))}
+        <button
+          type="button"
+          aria-pressed={allOn}
+          onClick={() => setSel(new Set<P>(["youtube", "twitch", "kick"]))}
+          className={`min-h-9 rounded-lg px-3 text-sm transition-colors ${allOn ? "bg-accent text-on-accent" : "border border-line text-muted hover:text-foreground"}`}
+        >
+          Tout
+        </button>
+        <div className="flex items-center gap-1" role="group" aria-label="Plateformes affichées">
+          {(["youtube", "twitch", "kick"] as const).map((p) => {
+            const on = sel.has(p) && available[p];
+            const state = p === "youtube" ? (available.youtube ? "ok" : "idle") : links[p];
+            return (
+              <button
+                key={p}
+                type="button"
+                aria-pressed={on}
+                disabled={!available[p]}
+                title={available[p] ? PLATFORM[p].label : p === "youtube" ? "Ajoute l'adresse du direct YouTube dans les réglages" : `Ajoute ta chaîne ${PLATFORM[p].label} dans les réglages`}
+                onClick={() => toggle(p)}
+                className={`flex min-h-9 items-center gap-2 rounded-lg border px-2.5 text-sm transition-colors disabled:opacity-40 ${on ? "border-line-strong bg-foreground/10 text-foreground" : "border-line text-muted opacity-60 hover:opacity-100"}`}
+              >
+                <Icon p={p} />
+                <span className={compact ? "sr-only" : "sr-only sm:not-sr-only"}>{PLATFORM[p].label}</span>
+                <span
+                  className={`h-2 w-2 rounded-full ${dot(state)}`}
+                  role="img"
+                  aria-label={state === "ok" ? "connecté" : state === "error" ? "reconnexion" : state === "connecting" ? "connexion" : "non configuré"}
+                />
+              </button>
+            );
+          })}
         </div>
-        {tab === "all" && (
-          <div className="flex items-center gap-1" role="group" aria-label="Plateformes affichées">
-            {(["twitch", "kick"] as const).map((p) => {
-              const on = !hidden.has(p);
-              return (
-                <button
-                  key={p}
-                  type="button"
-                  aria-pressed={on}
-                  disabled={!(p === "twitch" ? twitch : kick)}
-                  onClick={() => setHidden((s) => (on ? new Set([...s, p]) : new Set([...s].filter((x) => x !== p))))}
-                  className={`flex min-h-9 items-center gap-2 rounded-lg border px-2.5 text-sm transition-colors disabled:opacity-40 ${on ? "border-line-strong text-foreground" : "border-line text-muted line-through"}`}
-                >
-                  <Icon p={p} />
-                  <span className={compact ? "sr-only" : "sr-only sm:not-sr-only"}>{PLATFORM[p].label}</span>
-                  <span
-                    className={`h-2 w-2 rounded-full ${dot(links[p])}`}
-                    role="img"
-                    aria-label={links[p] === "ok" ? "connecté" : links[p] === "error" ? "reconnexion" : links[p] === "connecting" ? "connexion" : "non configuré"}
-                  />
-                </button>
-              );
-            })}
-          </div>
-        )}
         <button
           type="button"
           onClick={() => setEditing((v) => !v)}
@@ -334,7 +344,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
           }}
           className="grid gap-3 border-b border-line p-3 sm:grid-cols-3"
         >
-          {(["twitch", "kick", "youtube"] as const).map((p) => (
+          {(["youtube", "twitch", "kick"] as const).map((p) => (
             <label key={p} className="space-y-1.5 text-xs text-muted">
               {p === "youtube" ? "YouTube : adresse du direct" : `${PLATFORM[p].label} : chaîne`}
               <input
@@ -351,7 +361,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
             <div className="space-y-2 sm:col-span-3">
               <p className="text-xs text-muted">Comptes pour écrire dans le chat</p>
               <ul className="flex flex-wrap gap-2">
-                {(["twitch", "kick", "youtube"] as const).map((p) => {
+                {(["youtube", "twitch", "kick"] as const).map((p) => {
                   const who = acc.connections[p];
                   if (!who && !acc.configured[p]) return null;
                   return (
@@ -383,22 +393,21 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
         </form>
       )}
 
-      {tab === "youtube" ? (
-        ytId ? (
-          <iframe
-            title="Chat YouTube"
-            src={`https://www.youtube.com/live_chat?v=${ytId}&embed_domain=${typeof location === "undefined" ? "" : location.hostname}&dark_theme=1`}
-            className="min-h-0 w-full flex-1 border-0"
-          />
-        ) : (
-          <p className="m-auto max-w-xs p-6 text-center text-sm text-muted">Colle l&apos;adresse de ton direct YouTube dans les réglages (la roue) pour afficher son chat ici.</p>
-        )
-      ) : none ? (
+      {none ? (
         <p className="m-auto max-w-xs p-6 text-center text-sm text-muted">
-          Aucune chaîne. Ouvre les réglages (la roue) et indique ta chaîne Twitch ou Kick. Les deux se mélangent dans ce fil.
+          Aucune chaîne. Ouvre les réglages (la roue) et indique ta chaîne Twitch ou Kick, ou l&apos;adresse d&apos;un direct YouTube.
         </p>
       ) : (
-        <div className="relative min-h-0 flex-1">
+        <div className="flex min-h-0 flex-1 flex-col divide-y divide-line">
+          {showYoutube && (
+            <iframe
+              title="Chat YouTube"
+              src={`https://www.youtube.com/live_chat?v=${ytId}&embed_domain=${typeof location === "undefined" ? "" : location.hostname}&dark_theme=1`}
+              className="min-h-0 w-full flex-1 border-0"
+            />
+          )}
+          {showFeed && (
+          <div className="relative min-h-0 flex-1">
           {/* Colonne inversée : le bas du fil est l'origine du défilement, donc un nouveau message pousse les autres vers le haut tout seul. */}
           <div
             ref={list}
@@ -442,6 +451,8 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
             >
               Revenir en bas
             </button>
+          )}
+        </div>
           )}
         </div>
       )}

@@ -13,6 +13,8 @@ import { Screen, TransitionBar, type TransitionKind } from "./Stage";
 import { RelayStreamsProvider } from "./streams";
 import TopBar from "./TopBar";
 import type { MixModel } from "./model";
+import { saveAudioSettings } from "@/app/(studio)/commutateur/actions";
+import { DEFAULT_AUDIO, type AudioMode, type AudioSettings } from "@/lib/mix-audio";
 import { INITIAL_RELAYS, isOn, stepStats, type MixRelay, type Protocol } from "@/lib/mix-sim";
 
 // SYXTEE COMMUTATEUR : régie multi-relais. MAQUETTE : l'interface est complète, la liste des relais est réelle (si tu en as),
@@ -24,7 +26,7 @@ export type RealRelay = { id: string; name: string; protocol: Protocol; live: bo
 const HOST = "mix.syxtee.net";
 const newToken = () => Array.from({ length: 24 }, () => "abcdefghijkmnpqrstuvwxyz23456789"[Math.floor(Math.random() * 32)]).join("");
 
-export default function MixApp({ account, real, coreUrl }: { account: string; real: RealRelay[]; coreUrl: string }) {
+export default function MixApp({ account, real, coreUrl, initialAudio = DEFAULT_AUDIO, persist = true }: { account: string; real: RealRelay[]; coreUrl: string; initialAudio?: AudioSettings; persist?: boolean }) {
   const { state: liveState } = useLiveStatus();
   const [useReal, setUseReal] = useState(real.length > 0);
   const [demoRelays, setDemoRelays] = useState<MixRelay[]>(INITIAL_RELAYS);
@@ -52,7 +54,6 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
           volume: 0,
           mute: !live,
           solo: false,
-          afv: false,
           real: true,
         };
       }),
@@ -67,6 +68,9 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
   const [protection, setProtection] = useState(false);
   const [askUnlock, setAskUnlock] = useState(false);
   const [masterMute, setMasterMute] = useState(false);
+  const [audio, setAudioState] = useState<AudioSettings>(initialAudio);
+  const [askMode, setAskMode] = useState<AudioMode | null>(null);
+  const [listen, setListen] = useState<string | null>(null);
   const [drawer, setDrawer] = useState<"obs" | "settings" | null>(null);
   const desk = useSyncExternalStore(
     (cb) => {
@@ -122,6 +126,21 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
   }, []);
 
   const patchRelay = useCallback((id: string, patch: Partial<MixRelay>) => setDemoRelays((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch } : r))), []);
+
+  // Réglages audio : mémorisés par compte. Changer de mode pendant un direct ou un REC demande une confirmation (puis fondu court).
+  const applyAudio = useCallback(
+    (patch: Partial<AudioSettings>) => {
+      const next = { ...audio, ...patch };
+      setAudioState(next);
+      if (persist) void saveAudioSettings(next).then((r) => !r.ok && say("Réglage audio non mémorisé (migration 0031 à appliquer)."));
+    },
+    [audio, persist, say],
+  );
+  const changeAudio = (patch: Partial<AudioSettings>) => {
+    if (locked) return;
+    if (patch.mode && patch.mode !== audio.mode && (live === "live" || rec)) return setAskMode(patch.mode);
+    applyAudio(patch);
+  };
 
   // Une modification de caméra n'a lieu que si la PROTECTION est coupée.
   const doPreview = (id: string) => !locked && setPreview(id);
@@ -186,13 +205,17 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
     shot: () => say("Capture du PROGRAMME enregistrée (simulation)."),
     marker: () => say("Marqueur posé à cet instant (simulation)."),
     patch: (id, p) => (demo ? patchRelay(id, p) : mockOnly("Le mixage de tes vrais relais")),
+    audio,
+    setAudio: changeAudio,
+    listen,
+    toggleListen: (id) => setListen((cur) => (cur === id ? null : id)),
     openSettings: (id) => {
       setSelected(id);
       setDrawer("settings");
     },
   };
 
-  const topBar = <TopBar protection={protection} onProtection={() => (protection ? setAskUnlock(true) : setProtection(true))} online={online} total={relays.length} ping={ping} account={account} demo={demo} onObs={() => setDrawer("obs")} canReal={real.length > 0} onToggleReal={() => setUseReal((v) => !v)} />;
+  const topBar = <TopBar protection={protection} onProtection={() => (protection ? setAskUnlock(true) : setProtection(true))} online={online} total={relays.length} ping={ping} account={account} demo={demo} onObs={() => setDrawer("obs")} canReal={real.length > 0} onToggleReal={() => setUseReal((v) => !v)} podcast={audio.mode === "podcast"} />;
   const banner = protection && (
     <p role="status" className="shrink-0 rounded-md border border-live bg-live/15 px-3 py-0.5 text-center font-mono text-[10px] font-semibold tracking-[0.2em]">
       PROTECTION ACTIVE · changements de caméras verrouillés
@@ -234,7 +257,7 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
 
           {/* Bas (≈ 30 %) : mixeur pleine largeur, et la diffusion à sa droite. */}
           <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_14rem] gap-2">
-            <AudioMixer relays={relays} program={program} locked={locked} master={master} onMaster={setMaster} masterMute={masterMute} onMasterMute={model.toggleMasterMute} onPatch={model.patch} className="h-full" />
+            <AudioMixer relays={relays} program={program} preview={preview} slate={slate} programMs={programMs} locked={locked} master={master} onMaster={setMaster} masterMute={masterMute} onMasterMute={model.toggleMasterMute} onPatch={model.patch} settings={audio} onSettings={changeAudio} listen={listen} onListen={model.toggleListen} className="h-full" />
             <div className="rounded-xl border border-line bg-surface p-2">
               <DirectPanel locked={locked} live={live} liveSeconds={liveSeconds} onLive={toggleLive} rec={rec} recSeconds={recSeconds} onRec={toggleRec} slate={slate} onSlate={model.toggleSlate} onShot={model.shot} onMarker={model.marker} />
             </div>
@@ -284,6 +307,40 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
             </button>
             <button type="button" onClick={() => setAskUnlock(false)} className="h-10 rounded-lg border border-line px-5 text-sm hover:bg-foreground/10">
               Garder active
+            </button>
+          </div>
+        </dialog>
+      )}
+
+      {askMode && (
+        <dialog
+          ref={(d) => {
+            if (d && !d.open) d.showModal();
+          }}
+          onClose={() => setAskMode(null)}
+          aria-labelledby="mode-title"
+          className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-2xl border border-line bg-background p-6 text-foreground backdrop:bg-background/80"
+        >
+          <h2 id="mode-title" className="text-lg font-semibold">
+            Passer en {askMode === "podcast" ? "PODCAST" : "BROADCAST"} en plein direct ?
+          </h2>
+          <p className="mt-2 text-sm text-muted">
+            {askMode === "podcast" ? "Tous les micros non coupés vont s'ouvrir dans le direct, quelle que soit la caméra." : "Seul le relais au PROGRAMME restera audible. Les autres seront coupés."} Le changement se fait en un fondu de 150 ms.
+          </p>
+          <div className="mt-5 flex gap-2">
+            <button
+              type="button"
+              autoFocus
+              onClick={() => {
+                applyAudio({ mode: askMode });
+                setAskMode(null);
+              }}
+              className="h-10 rounded-lg bg-accent px-5 text-sm font-medium text-on-accent hover:bg-accent-hover"
+            >
+              Changer de mode
+            </button>
+            <button type="button" onClick={() => setAskMode(null)} className="h-10 rounded-lg border border-line px-5 text-sm hover:bg-foreground/10">
+              Annuler
             </button>
           </div>
         </dialog>

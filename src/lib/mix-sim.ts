@@ -23,22 +23,21 @@ export type MixRelay = {
   links: number;
   /** Secondes depuis la connexion. */
   uptime: number;
-  /** Audio : volume en dB (-60 à +6), muet, solo, « audio suit l'image ». */
+  /** Audio : volume en dB (-60 à +6), muet manuel (bouton M), solo. La coupure automatique du mode BROADCAST est calculée à part (mix-audio.ts). */
   volume: number;
   mute: boolean;
   solo: boolean;
-  afv: boolean;
   /** Relais réel du compte (et non simulé). */
   real?: boolean;
 };
 
 export const INITIAL_RELAYS: MixRelay[] = [
-  { id: "r1", n: 1, name: "iPhone 16", device: "Moblin", protocol: "srtla", status: "live", scene: "street", kbps: 5840, fps: 60, res: "1080p", latencyMs: 142, lossPct: 0.1, links: 4, uptime: 5412, volume: 0, mute: false, solo: false, afv: true },
-  { id: "r2", n: 2, name: "Osmo Pocket 3", device: "RTMP", protocol: "rtmp", status: "online", scene: "phone", kbps: 4120, fps: 30, res: "1080p", latencyMs: 210, lossPct: 0.4, links: 1, uptime: 3120, volume: -6, mute: false, solo: false, afv: false },
-  { id: "r3", n: 3, name: "BELABOX", device: "SRTLA", protocol: "srtla", status: "unstable", scene: "beach", kbps: 2210, fps: 28, res: "720p", latencyMs: 480, lossPct: 3.8, links: 2, uptime: 880, volume: -3, mute: false, solo: false, afv: false },
-  { id: "r4", n: 4, name: "OBS PC", device: "RIST", protocol: "rist", status: "online", scene: "desk", kbps: 7980, fps: 60, res: "1080p", latencyMs: 96, lossPct: 0, links: 1, uptime: 9640, volume: -9, mute: false, solo: false, afv: false },
-  { id: "r5", n: 5, name: "GoPro", device: "RTMP", protocol: "rtmp", status: "offline", scene: "home", kbps: 0, fps: 0, res: "–", latencyMs: 0, lossPct: 0, links: 0, uptime: 0, volume: 0, mute: true, solo: false, afv: false },
-  { id: "r6", n: 6, name: "iPad Moblin", device: "Moblin", protocol: "srtla", status: "offline", scene: "streamer", kbps: 0, fps: 0, res: "–", latencyMs: 0, lossPct: 0, links: 0, uptime: 0, volume: 0, mute: true, solo: false, afv: false },
+  { id: "r1", n: 1, name: "iPhone 16", device: "Moblin", protocol: "srtla", status: "live", scene: "street", kbps: 5840, fps: 60, res: "1080p", latencyMs: 142, lossPct: 0.1, links: 4, uptime: 5412, volume: 0, mute: false, solo: false },
+  { id: "r2", n: 2, name: "Osmo Pocket 3", device: "RTMP", protocol: "rtmp", status: "online", scene: "phone", kbps: 4120, fps: 30, res: "1080p", latencyMs: 210, lossPct: 0.4, links: 1, uptime: 3120, volume: -6, mute: false, solo: false },
+  { id: "r3", n: 3, name: "BELABOX", device: "SRTLA", protocol: "srtla", status: "unstable", scene: "beach", kbps: 2210, fps: 28, res: "720p", latencyMs: 480, lossPct: 3.8, links: 2, uptime: 880, volume: -3, mute: false, solo: false },
+  { id: "r4", n: 4, name: "OBS PC", device: "RIST", protocol: "rist", status: "online", scene: "desk", kbps: 7980, fps: 60, res: "1080p", latencyMs: 96, lossPct: 0, links: 1, uptime: 9640, volume: -9, mute: false, solo: false },
+  { id: "r5", n: 5, name: "GoPro", device: "RTMP", protocol: "rtmp", status: "offline", scene: "home", kbps: 0, fps: 0, res: "–", latencyMs: 0, lossPct: 0, links: 0, uptime: 0, volume: 0, mute: true, solo: false },
+  { id: "r6", n: 6, name: "iPad Moblin", device: "Moblin", protocol: "srtla", status: "offline", scene: "streamer", kbps: 0, fps: 0, res: "–", latencyMs: 0, lossPct: 0, links: 0, uptime: 0, volume: 0, mute: true, solo: false },
 ];
 
 /** Couleur de la caméra (liseré des strips et pastilles), une teinte par numéro. */

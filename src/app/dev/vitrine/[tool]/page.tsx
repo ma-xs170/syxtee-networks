@@ -130,7 +130,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
       {tool === "studio" && <StudioDemo />}
       {(tool === "commutateur" || tool === "commutateur-reel") && (
         <LiveStatusProvider coreUrl="">
-          <MixApp account="demo@syxtee.fr" real={tool === "commutateur-reel" ? [{ id: "a1", name: "iPhone 16", protocol: "srtla", live: true }, { id: "a2", name: "Osmo", protocol: "rtmp", live: true }, { id: "a3", name: "BELABOX", protocol: "srtla", live: true }, { id: "a4", name: "GoPro", protocol: "rtmp", live: false }] : []} coreUrl={tool === "commutateur-reel" ? "http://localhost:9" : ""} />
+          <MixApp persist={false} account="demo@syxtee.fr" real={tool === "commutateur-reel" ? [{ id: "a1", name: "iPhone 16", protocol: "srtla", live: true }, { id: "a2", name: "Osmo", protocol: "rtmp", live: true }, { id: "a3", name: "BELABOX", protocol: "srtla", live: true }, { id: "a4", name: "GoPro", protocol: "rtmp", live: false }] : []} coreUrl={tool === "commutateur-reel" ? "http://localhost:9" : ""} />
         </LiveStatusProvider>
       )}
       {tool === "admin" && (

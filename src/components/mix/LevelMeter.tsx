@@ -37,6 +37,7 @@ export default function LevelMeter({
   seed = 0,
   scale = false,
   barWidth = 5,
+  dim = false,
   source,
   className = "",
   label,
@@ -49,6 +50,8 @@ export default function LevelMeter({
   /** Affiche les graduations (strips et master). */
   scale?: boolean;
   barWidth?: number;
+  /** Relais coupé dans la sortie : la barre continue de bouger, mais en couleur atténuée. */
+  dim?: boolean;
   source?: MeterSource;
   className?: string;
   label?: string;
@@ -57,9 +60,9 @@ export default function LevelMeter({
   const peakText = useRef<HTMLSpanElement>(null);
   const [clip, setClip] = useState(false);
   const clipRef = useRef(false);
-  const live = useRef({ active, hot, seed, source });
+  const live = useRef({ active, hot, seed, source, dim });
   useEffect(() => {
-    live.current = { active, hot, seed, source };
+    live.current = { active, hot, seed, source, dim };
   });
 
   useEffect(() => {
@@ -146,6 +149,7 @@ export default function LevelMeter({
         ctx.globalAlpha = 1;
 
         const fill = toPos(s.level) * len;
+        ctx.globalAlpha = live.current.dim ? 0.38 : 1;
         const steps = [
           [-60, -18],
           [-18, -6],
@@ -160,6 +164,7 @@ export default function LevelMeter({
           if (vertical) ctx.fillRect(bx, len - to, barWidth, to - from);
           else ctx.fillRect(bx + from, by, to - from, barWidth);
         }
+        ctx.globalAlpha = 1;
         // Trait de peak hold.
         const pp = toPos(s.peak) * len;
         ctx.fillStyle = fg;

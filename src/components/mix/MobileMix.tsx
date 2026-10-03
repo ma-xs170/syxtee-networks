@@ -43,7 +43,7 @@ export default function MobileMix({ m }: { m: MixModel }) {
             ))}
           </ul>
         ) : tab === "mixeur" ? (
-          <AudioMixer relays={m.relays} program={m.program} locked={m.locked} master={m.master} onMaster={m.setMaster} masterMute={m.masterMute} onMasterMute={m.toggleMasterMute} onPatch={m.patch} big className="h-[calc(100dvh-10.5rem-env(safe-area-inset-bottom))] min-h-[22rem]" />
+          <AudioMixer relays={m.relays} program={m.program} preview={m.preview} slate={m.slate} programMs={m.programMs} locked={m.locked} master={m.master} onMaster={m.setMaster} masterMute={m.masterMute} onMasterMute={m.toggleMasterMute} onPatch={m.patch} settings={m.audio} onSettings={m.setAudio} listen={m.listen} onListen={m.toggleListen} big className="h-[calc(100dvh-10.5rem-env(safe-area-inset-bottom))] min-h-[26rem]" />
         ) : (
           <div className="mx-auto max-w-md pt-2">
             <DirectPanel locked={m.locked} live={m.live} liveSeconds={m.liveSeconds} onLive={m.toggleLive} rec={m.rec} recSeconds={m.recSeconds} onRec={m.toggleRec} slate={m.slate} onSlate={m.toggleSlate} onShot={m.shot} onMarker={m.marker} big />

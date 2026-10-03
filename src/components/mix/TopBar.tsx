@@ -29,7 +29,7 @@ function Clock() {
   );
 }
 
-export default function TopBar({ protection, onProtection, online, total, ping, account, demo, onObs, canReal, onToggleReal }: { protection: boolean; onProtection: () => void; online: number; total: number; ping: number; account: string; demo: boolean; onObs: () => void; canReal: boolean; onToggleReal: () => void }) {
+export default function TopBar({ protection, onProtection, online, total, ping, account, demo, onObs, canReal, onToggleReal, podcast }: { protection: boolean; onProtection: () => void; online: number; total: number; ping: number; account: string; demo: boolean; onObs: () => void; canReal: boolean; onToggleReal: () => void; podcast: boolean }) {
   return (
     <header className="flex h-12 shrink-0 items-center justify-between gap-x-3 rounded-lg border border-line bg-surface px-2 pt-[env(safe-area-inset-top)] sm:px-3">
       <div className="flex items-center gap-3">
@@ -46,6 +46,9 @@ export default function TopBar({ protection, onProtection, online, total, ping, 
         )}
       </div>
 
+      {podcast && (
+        <span role="status" className="hidden rounded-full border border-emerald-500 bg-emerald-600/15 px-3 py-1 font-mono text-[10px] font-semibold tracking-[0.16em] min-[520px]:inline">MODE PODCAST</span>
+      )}
       <button
         type="button"
         onClick={onProtection}

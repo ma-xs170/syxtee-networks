@@ -1,5 +1,6 @@
 import type { TransitionKind } from "./Stage";
 import type { LiveState } from "./DirectPanel";
+import type { AudioSettings } from "@/lib/mix-audio";
 import type { MixRelay } from "@/lib/mix-sim";
 
 // Tout l'état de la régie, partagé entre la vue bureau et la vue mobile (la logique reste dans MixApp).
@@ -34,6 +35,10 @@ export type MixModel = {
   toggleSlate: () => void;
   shot: () => void;
   marker: () => void;
-  patch: (id: string, p: Partial<Pick<MixRelay, "volume" | "mute" | "solo" | "afv">>) => void;
+  patch: (id: string, p: Partial<Pick<MixRelay, "volume" | "mute" | "solo">>) => void;
+  audio: AudioSettings;
+  setAudio: (p: Partial<AudioSettings>) => void;
+  listen: string | null;
+  toggleListen: (id: string) => void;
   openSettings: (id: string) => void;
 };

@@ -39,7 +39,7 @@ export function accessApproved(o: { firstName?: string | null; email: string }):
         <Title lead="Tu as été" hl="approuvé." />
         <Hi name={o.firstName} />
         <Text style={p}>
-          Bonne nouvelle : ta demande d&apos;accès est acceptée. SYXTEE NETWORKS te souhaite la bienvenue. Ton accès partenaire inclut les relais SRTLA, RTMP et RIST, SYXTEE STUDIO et toutes les fonctions.
+          Bonne nouvelle : ta demande d&apos;accès est acceptée. SYXTEE NETWORKS te souhaite la bienvenue. Ton accès partenaire inclut les relais SRTLA, RTMP et RIST, SYXTEE MIX et toutes les fonctions.
         </Text>
         <Text style={p}>Clique sur le bouton, crée ton compte avec cette adresse (celle de cet email) et ton accès s&apos;active tout seul.</Text>
         <Cta href={url}>Créer mon compte</Cta>

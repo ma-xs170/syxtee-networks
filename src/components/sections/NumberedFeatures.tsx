@@ -70,15 +70,15 @@ export default function NumberedFeatures() {
         text="Change de scène depuis ton téléphone, lance le direct et règle l'audio. Comme devant ton écran."
         tags="Scènes · Aperçu du programme · Mixeur audio"
         actions={
-          <Link href="/syxtee-studio" className="btn btn-secondary">
-            Découvrir le studio
+          <Link href="/syxtee-mix" className="btn btn-secondary">
+            Découvrir Mix
           </Link>
         }
       >
         <div className="overflow-hidden rounded-2xl border border-line bg-surface p-3 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] sm:p-4">
           <Image
             src="/images/outils/studio-v2.png"
-            alt="SYXTEE STUDIO : la régie avec la liste des scènes, le programme en direct et le bouton pour terminer le stream."
+            alt="SYXTEE MIX : la régie avec la liste des scènes, le programme en direct et le bouton pour terminer le stream."
             width={2200}
             height={1342}
             sizes="(min-width: 1024px) 560px, 100vw"

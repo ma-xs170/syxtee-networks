@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/login", destination: "/connexion", permanent: true },
       { source: "/signup", destination: "/inscription", permanent: true },
+      { source: "/studio", destination: "/mix", permanent: true },
+      { source: "/syxtee-studio", destination: "/syxtee-mix", permanent: true },
       { source: "/dashboard/urls", destination: "/dashboard/relais", permanent: true },
     ];
   },

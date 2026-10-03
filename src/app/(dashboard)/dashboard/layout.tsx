@@ -12,7 +12,7 @@ export default async function DashboardPlanLayout({ children }: LayoutProps<"/da
         <div role="region" aria-label="Formule" className="border-b border-line">
           <p className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5 text-sm text-muted sm:px-6">
             <span className="text-xs">Accès sur invitation</span>
-            <span>Les relais, l&apos;aperçu et le studio en direct s&apos;ouvrent sur invitation.</span>
+            <span>Les relais, l&apos;aperçu et Mix en direct s&apos;ouvrent sur invitation.</span>
             <a href="/acces" className="whitespace-nowrap text-foreground underline-offset-4 hover:underline">
               Demander l\'accès →
             </a>

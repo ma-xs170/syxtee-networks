@@ -12,7 +12,7 @@ const columns: { title: string; links: FooterLink[] }[] = [
     title: "Produits",
     links: [
       { label: "Relais SYXTEE", href: "/relais", wordmark: "RELAIS" },
-      { label: "SYXTEE STUDIO", href: "/syxtee-studio", badge: "Nouveau", wordmark: "STUDIO" },
+      { label: "SYXTEE MIX", href: "/syxtee-mix", badge: "Nouveau", wordmark: "MIX" },
       { label: "SYXTEE PRO", href: "/pro", badge: "À venir", wordmark: "PRO" },
       { label: "Demander l'accès", href: "/acces" },
     ],

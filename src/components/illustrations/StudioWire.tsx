@@ -1,10 +1,10 @@
-// Le multiview de SYXTEE STUDIO en filaire : aperçu et programme en grand, huit scènes dessous, horloge, tallys.
+// Le multiview de SYXTEE MIX en filaire : aperçu et programme en grand, huit scènes dessous, horloge, tallys.
 // Trait fin, aucune couleur sauf le rouge « à l'antenne » (état live) sur la case programme.
 
 export default function StudioWire({ className = "h-full w-full", animated = true }: { className?: string; animated?: boolean }) {
   const small = Array.from({ length: 8 }, (_, i) => ({ x: 20 + (i % 4) * 90, y: 164 + Math.floor(i / 4) * 46 }));
   return (
-    <svg viewBox="0 0 400 270" fill="none" className={`text-foreground ${animated ? "" : "illu-still"} ${className}`} role="img" aria-label="Multiview de SYXTEE STUDIO : aperçu, programme et huit scènes">
+    <svg viewBox="0 0 400 270" fill="none" className={`text-foreground ${animated ? "" : "illu-still"} ${className}`} role="img" aria-label="Multiview de SYXTEE MIX : aperçu, programme et huit scènes">
       <g className="svg-hairline" stroke="currentColor" strokeWidth={1.25} strokeLinecap="round" strokeLinejoin="round">
         <rect x={10} y={10} width={380} height={250} rx={10} fill="currentColor" fillOpacity={0.03} />
         {/* Horloge */}

@@ -1,6 +1,10 @@
-# SYXTEE Mix : design
+# SYXTEE MIX : design
 
 Date : 2026-10-03. Statut : spec à relire, avant plan d'implémentation.
+
+## Nom et place dans le produit
+
+Décision du 2026-10-03 : **SYXTEE STUDIO devient SYXTEE MIX** (nom plus évident). Le produit actuel (pilotage d'OBS à distance par SYXTEE Link) et le nouveau mixage forment un seul produit avec deux onglets : **Mixer** (caméras, ce spec) et **Piloter OBS** (existant). Renommage fait dans le site : textes, menu, accueil, docs, e-mails. Adresses : `/mix` (l'app) et `/syxtee-mix` (la page de présentation) ; `/studio` et `/syxtee-studio` redirigent (308). Les identifiants internes (composants, `core/src/studio.ts`, routes `/v1/me/studio/*`) gardent leur nom. Le plugin SYXTEE Link déjà installé affiche encore « SYXTEE Studio » : il sera corrigé à sa prochaine version.
 
 ## Objectif
 
@@ -105,13 +109,12 @@ Autorisation MediaMTX : le point d'entrée existant `/internal/mediamtx/auth` ro
 
 ## Intégration au site
 
-- Entrée de menu « Mix » dans le groupe Direct de la barre latérale du dashboard, avec le même contrôle d'accès que Studio.
-- Page de documentation `/docs/mix` (étapes, limites H.264, latence).
+- Entrée « SYXTEE Mix » (déjà renommée) dans la barre latérale du dashboard, avec le même contrôle d'accès. La page `/mix` aura les onglets Mixer et Piloter OBS.
+- Page de documentation `/docs/mix` (à créer avec la fonction) (étapes, limites H.264, latence).
 - Aucune annonce sur la page d'accueil tant que le test réel n'est pas fait.
 
 ## Questions ouvertes pour le plan
 
-1. Nom définitif (« Mix » par défaut).
-2. Plafond de sessions Mix simultanées par serveur (à mesurer).
-3. Durée du jeton de lecture WHEP et mode de renouvellement.
-4. Position exacte dans le menu (groupe Direct ou Outils).
+1. Plafond de sessions Mix simultanées par serveur (à mesurer).
+2. Durée du jeton de lecture WHEP et mode de renouvellement.
+3. Disposition des onglets Mixer et Piloter OBS (par défaut : Mixer d'abord).

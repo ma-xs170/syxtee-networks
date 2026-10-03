@@ -16,7 +16,7 @@ export const faq: FaqItem[] = [
   },
   {
     q: "Comment avoir accès ?",
-    a: "Il n'y a pas d'abonnement : l'accès aux relais et au studio en direct se fait sur invitation, comme le Partner Program. Demande la tienne sur le Discord.",
+    a: "Il n'y a pas d'abonnement : l'accès aux relais et à Mix en direct se fait sur invitation, comme le Partner Program. Demande la tienne sur le Discord.",
   },
   {
     q: "Comment contacter le support ?",

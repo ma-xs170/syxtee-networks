@@ -12,7 +12,7 @@ export default function LiveNow({ sources }: { sources: { id: string; name: stri
   if (live.length === 0 || !coreUrl) return null;
   return (
     <Tile aria-labelledby="live-now">
-      <TileLabel id="live-now" right={<ArrowLink href="/dashboard/apercu">Ouvrir le studio</ArrowLink>}>
+      <TileLabel id="live-now" right={<ArrowLink href="/dashboard/apercu">Ouvrir l'aperçu</ArrowLink>}>
         Aperçu en direct
       </TileLabel>
       <ul className={`mt-4 grid gap-4 ${live.length > 1 ? "md:grid-cols-2" : ""}`}>

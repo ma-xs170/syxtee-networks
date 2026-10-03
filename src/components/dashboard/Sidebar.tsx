@@ -58,7 +58,7 @@ const GROUPS: Group[] = [
   {
     title: "Outils",
     items: [
-      { label: "SYXTEE Studio", href: "/studio", icon: SlidersHorizontal, external: true, wordmark: "STUDIO" },
+      { label: "SYXTEE Mix", href: "/mix", icon: SlidersHorizontal, external: true, wordmark: "MIX" },
       { label: "Scanner", href: "/dashboard/scanner", icon: MapTrifold },
       { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },
     ],

@@ -41,6 +41,9 @@ export const INITIAL_RELAYS: MixRelay[] = [
   { id: "r6", n: 6, name: "iPad Moblin", device: "Moblin", protocol: "srtla", status: "offline", scene: "streamer", kbps: 0, fps: 0, res: "–", latencyMs: 0, lossPct: 0, links: 0, uptime: 0, volume: 0, mute: true, solo: false, afv: false },
 ];
 
+/** Couleur de la caméra (liseré des strips et pastilles), une teinte par numéro. */
+export const camColor = (n: number) => `hsl(${(n * 47 + 10) % 360} 70% 62%)`;
+
 export const isOn = (r: MixRelay) => r.status !== "offline";
 
 /** « 01:23:45 ». */

@@ -20,7 +20,7 @@ export default async function CommutateurPage() {
 
   return (
     <LiveStatusProvider coreUrl={publicCoreUrl}>
-      <div className="mx-auto w-full max-w-[1700px] px-2 pb-2 pt-2 sm:px-3">
+      <div className="mx-auto w-full max-w-[1920px]">
         <PlanGate feature="commutateur">
           <MixApp account={account} real={real} coreUrl={publicCoreUrl} />
         </PlanGate>

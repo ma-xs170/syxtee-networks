@@ -101,7 +101,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
   if (process.env.NODE_ENV === "production") notFound();
   const { tool } = await params;
   return (
-    <div id="capture" data-theme="dark" className={`mx-auto bg-background p-8 text-foreground ${tool === "accueil" ? "w-[1500px]" : tool === "commutateur" ? "w-[1440px] !p-0" : "w-[1100px]"}`}>
+    <div id="capture" data-theme="dark" className={`mx-auto bg-background p-8 text-foreground ${tool === "accueil" ? "w-[1500px]" : tool === "commutateur" ? "w-full !p-0" : "w-[1100px]"}`}>
       {tool === "relais" && <RelayList relays={RELAYS} active={6} max={10} coreUrl="" geo={null} />}
       {tool === "sante" && (
         <div className="space-y-4">
@@ -130,9 +130,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
       {tool === "studio" && <StudioDemo />}
       {tool === "commutateur" && (
         <LiveStatusProvider coreUrl="">
-          <div className="p-2">
-            <MixApp account="demo@syxtee.fr" real={[]} coreUrl="" />
-          </div>
+          <MixApp account="demo@syxtee.fr" real={[]} coreUrl="" />
         </LiveStatusProvider>
       )}
       {tool === "admin" && (

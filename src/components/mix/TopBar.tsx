@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Lock, LockOpen } from "@phosphor-icons/react";
+import { ArrowLeft, LinkSimple, Lock, LockOpen } from "@phosphor-icons/react";
 import Wordmark from "../Wordmark";
 
 // Barre du haut : nom, PROTECTION (verrou général), heure en direct, état global, ping, compte.
@@ -29,15 +29,21 @@ function Clock() {
   );
 }
 
-export default function TopBar({ protection, onProtection, online, total, ping, account, demo }: { protection: boolean; onProtection: () => void; online: number; total: number; ping: number; account: string; demo: boolean }) {
+export default function TopBar({ protection, onProtection, online, total, ping, account, demo, onObs, canReal, onToggleReal }: { protection: boolean; onProtection: () => void; online: number; total: number; ping: number; account: string; demo: boolean; onObs: () => void; canReal: boolean; onToggleReal: () => void }) {
   return (
-    <header className="flex min-h-12 flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-xl border border-line bg-surface px-3 py-1.5">
+    <header className="flex h-12 shrink-0 items-center justify-between gap-x-3 rounded-lg border border-line bg-surface px-2 pt-[env(safe-area-inset-top)] sm:px-3">
       <div className="flex items-center gap-3">
         <Link href="/dashboard" aria-label="Retour au dashboard" title="Retour au dashboard" className="grid h-8 w-8 place-items-center rounded-md border border-line text-muted transition-colors hover:bg-foreground/10 hover:text-foreground">
           <ArrowLeft size={16} aria-hidden="true" />
         </Link>
-        <Wordmark name="COMMUTATEUR" />
-        {demo && <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] tracking-[0.14em] text-muted">DÉMO</span>}
+        <span className="hidden min-[420px]:inline"><Wordmark name="COMMUTATEUR" /></span>
+        {canReal ? (
+          <button type="button" onClick={onToggleReal} title={demo ? "Passer à mes vrais relais" : "Revenir à la démonstration"} className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] tracking-[0.14em] text-muted transition-colors hover:bg-foreground/10 hover:text-foreground">
+            {demo ? "DÉMO" : "MES RELAIS"}
+          </button>
+        ) : (
+          demo && <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] tracking-[0.14em] text-muted">DÉMO</span>
+        )}
       </div>
 
       <button
@@ -49,11 +55,11 @@ export default function TopBar({ protection, onProtection, online, total, ping, 
         }`}
       >
         {protection ? <Lock size={14} weight="fill" aria-hidden="true" /> : <LockOpen size={14} aria-hidden="true" />}
-        PROTECTION {protection ? "ON" : "OFF"}
+        <span className="hidden sm:inline">PROTECTION </span>{protection ? "ON" : "OFF"}
       </button>
 
       <div className="flex items-center gap-4">
-        <dl className="hidden gap-4 font-mono text-[11px] sm:flex">
+        <dl className="hidden gap-4 whitespace-nowrap font-mono text-[11px] lg:flex">
           <div>
             <dt className="text-muted">Relais</dt>
             <dd className="tabular-nums text-foreground">
@@ -71,6 +77,10 @@ export default function TopBar({ protection, onProtection, online, total, ping, 
             </dd>
           </div>
         </dl>
+        <button type="button" onClick={onObs} className="inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-md border border-line px-2.5 text-xs font-medium transition-colors hover:bg-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/50">
+          <LinkSimple size={14} aria-hidden="true" />
+          <span className="hidden sm:inline">Lien OBS</span>
+        </button>
         <Clock />
       </div>
     </header>

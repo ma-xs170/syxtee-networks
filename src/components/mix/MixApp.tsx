@@ -1,16 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useLiveStatus } from "../dashboard/LiveStatus";
 import AudioMixer from "./AudioMixer";
-import ControlPanel, { type LiveState } from "./ControlPanel";
-import Multiview, { type TransitionKind } from "./Multiview";
-import ObsLinkCard from "./ObsLinkCard";
-import RelayRows from "./RelayRows";
+import DirectPanel, { type LiveState } from "./DirectPanel";
+import Drawer from "./Drawer";
+import MobileMix from "./MobileMix";
+import ObsLinkPanel from "./ObsLinkPanel";
+import RelaySettings from "./RelaySettings";
+import { RelayCell } from "./RelayViews";
+import { Screen, TransitionBar, type TransitionKind } from "./Stage";
 import TopBar from "./TopBar";
+import type { MixModel } from "./model";
 import { INITIAL_RELAYS, isOn, stepStats, type MixRelay, type Protocol } from "@/lib/mix-sim";
 
-// SYXTEE MIX : régie multi-relais. MAQUETTE : l'interface est complète, la liste des relais est réelle (si tu en as),
+// SYXTEE COMMUTATEUR : régie multi-relais. MAQUETTE : l'interface est complète, la liste des relais est réelle (si tu en as),
 // le reste (composition PROGRAM, mixage, enregistrement, direct, lien RTMP unique) est simulé en attendant le backend
 // (MediaMTX + FFmpeg sur le VPS, API /api/mix). Toute la logique d'état est ici ; les composants voisins ne font qu'afficher.
 
@@ -61,6 +65,17 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
   const [selected, setSelected] = useState("r1");
   const [protection, setProtection] = useState(false);
   const [askUnlock, setAskUnlock] = useState(false);
+  const [masterMute, setMasterMute] = useState(false);
+  const [drawer, setDrawer] = useState<"obs" | "settings" | null>(null);
+  const desk = useSyncExternalStore(
+    (cb) => {
+      const mq = window.matchMedia("(min-width: 1024px)");
+      mq.addEventListener("change", cb);
+      return () => mq.removeEventListener("change", cb);
+    },
+    () => window.matchMedia("(min-width: 1024px)").matches,
+    () => true,
+  );
   const [transition, setTransition] = useState<TransitionKind>("mix");
   const [duration, setDuration] = useState(500);
   const [fade, setFade] = useState<{ from: string; to: string; ms: number } | null>(null);
@@ -74,8 +89,6 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
   const [token, setToken] = useState("k7m2xq9dr4vh8tnw3bcf5pzs");
   const [ping, setPing] = useState(21);
   const [toast, setToast] = useState<string | null>(null);
-  const [fullscreen, setFullscreen] = useState(false);
-  const view = useRef<HTMLDivElement>(null);
   const locked = protection;
 
   // Sources par défaut quand on change de jeu de relais.
@@ -126,17 +139,7 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
     }, duration);
   }, [locked, preview, program, transition, duration, doCut]);
 
-  const toggleFullscreen = useCallback(() => {
-    if (document.fullscreenElement) void document.exitFullscreen();
-    else void view.current?.requestFullscreen?.();
-  }, []);
-  useEffect(() => {
-    const on = () => setFullscreen(!!document.fullscreenElement);
-    document.addEventListener("fullscreenchange", on);
-    return () => document.removeEventListener("fullscreenchange", on);
-  }, []);
-
-  // Clavier : 1 à 8 = PREVIEW, Entrée = CUT, Espace = AUTO, F = plein écran.
+  // Clavier : 1 à 8 = PREVIEW, Entrée = CUT, Espace = AUTO.
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
@@ -148,11 +151,11 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
       else if (e.key === " " && t.tagName !== "BUTTON") {
         e.preventDefault();
         doAuto();
-      } else if (e.key.toLowerCase() === "f") toggleFullscreen();
+      }
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
-  }, [relays, locked, doCut, doAuto, toggleFullscreen]);
+  }, [relays, locked, doCut, doAuto]);
 
   const toggleLive = () => {
     if (live === "live") return setLive("idle");
@@ -172,76 +175,84 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
   const online = relays.filter(isOn).length;
   const mockOnly = (what: string) => say(`${what} : disponible quand le serveur MIX sera branché (maquette).`);
 
-  return (
-    <div className="space-y-2">
-      <TopBar protection={protection} onProtection={() => (protection ? setAskUnlock(true) : setProtection(true))} online={online} total={relays.length} ping={ping} account={account} demo={demo} />
+  const byId = (id: string) => relays.find((r) => r.id === id) ?? relays[0];
+  const model: MixModel = {
+    relays, byId, program, preview, locked, slate, fade, transition, duration, clock, live, liveSeconds, rec, recSeconds,
+    master, masterMute, coreUrl: useReal ? coreUrl : "",
+    setTransition, setDuration, setMaster, toggleMasterMute: () => !locked && setMasterMute((v) => !v),
+    toPreview: doPreview,
+    toProgram: (id) => !locked && (setPreview(program), setProgram(id)),
+    cut: doCut, auto: doAuto, toggleLive, toggleRec, toggleSlate: () => setSlate((v) => !v),
+    shot: () => say("Capture du PROGRAMME enregistrée (simulation)."),
+    marker: () => say("Marqueur posé à cet instant (simulation)."),
+    patch: (id, p) => (demo ? patchRelay(id, p) : mockOnly("Le mixage de tes vrais relais")),
+    openSettings: (id) => {
+      setSelected(id);
+      setDrawer("settings");
+    },
+  };
 
-      {protection && (
-        <p role="status" className="rounded-md border border-live bg-live/15 px-3 py-1 text-center font-mono text-[11px] font-semibold tracking-[0.2em]">
-          PROTECTION ACTIVE · changements de caméras verrouillés
-        </p>
+  const topBar = <TopBar protection={protection} onProtection={() => (protection ? setAskUnlock(true) : setProtection(true))} online={online} total={relays.length} ping={ping} account={account} demo={demo} onObs={() => setDrawer("obs")} canReal={real.length > 0} onToggleReal={() => setUseReal((v) => !v)} />;
+  const banner = protection && (
+    <p role="status" className="shrink-0 rounded-md border border-live bg-live/15 px-3 py-0.5 text-center font-mono text-[10px] font-semibold tracking-[0.2em]">
+      PROTECTION ACTIVE · changements de caméras verrouillés
+    </p>
+  );
+
+  return (
+    <div className="flex h-dvh flex-col gap-2 overflow-hidden p-2">
+      {topBar}
+      {banner}
+
+      {!desk ? (
+        <MobileMix m={model} />
+      ) : (
+        <>
+          {/* Centre (≈ 60 % de la hauteur) : PROGRAMME au-dessus de APERÇU, et la grille des relais (2 colonnes, elle défile dans sa zone). */}
+          <div className="grid shrink-0 grid-cols-[auto_minmax(0,1fr)] gap-2" style={{ height: "calc((100dvh - 6rem) * 0.62)" }}>
+            <div className="flex h-full flex-col gap-2">
+              <Screen relay={byId(program)} kind="program" coreUrl={model.coreUrl} fade={fade} slate={slate} byId={byId} className="h-[calc((100%-0.5rem)/2)]" />
+              <Screen relay={byId(preview)} kind="preview" coreUrl={model.coreUrl} className="h-[calc((100%-0.5rem)/2)]" />
+            </div>
+            {relays.length === 0 ? (
+              <p className="grid place-items-center rounded-lg border border-line bg-surface text-sm text-muted">Aucun relais. Crée-en un dans Mes relais.</p>
+            ) : (
+              <ul className="grid h-full grid-cols-2 content-start gap-2 overflow-y-auto" style={{ gridAutoRows: "calc((100% - 1rem) / 3)" }}>
+                {[...relays].sort((a, b) => Number(isOn(b)) - Number(isOn(a)) || a.n - b.n).map((r) => (
+                  <RelayCell key={r.id} relay={r} program={program} preview={preview} locked={locked} onPreview={() => doPreview(r.id)} onProgram={() => model.toProgram(r.id)} onSettings={() => model.openSettings(r.id)} />
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="shrink-0">
+            <TransitionBar relays={relays} program={program} preview={preview} locked={locked} transition={transition} onTransition={setTransition} duration={duration} onDuration={setDuration} onPreview={doPreview} onCut={doCut} onAuto={doAuto} clock={clock} />
+          </div>
+
+          {/* Bas (≈ 30 %) : mixeur pleine largeur, et la diffusion à sa droite. */}
+          <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_14rem] gap-2">
+            <AudioMixer relays={relays} program={program} locked={locked} master={master} onMaster={setMaster} masterMute={masterMute} onMasterMute={model.toggleMasterMute} onPatch={model.patch} className="h-full" />
+            <div className="rounded-xl border border-line bg-surface p-2">
+              <DirectPanel locked={locked} live={live} liveSeconds={liveSeconds} onLive={toggleLive} rec={rec} recSeconds={recSeconds} onRec={toggleRec} slate={slate} onSlate={model.toggleSlate} onShot={model.shot} onMarker={model.marker} />
+            </div>
+          </div>
+        </>
       )}
 
-      {/* La largeur du multiview suit la HAUTEUR de l'écran (16:9 + le reste de la page) : tout tient sans défiler. */}
-      <div className="grid gap-2 lg:grid-cols-[minmax(0,min(calc((100dvh_-_20.5rem)*16/9),calc(100%_-_16.75rem)))_16.25rem] lg:justify-center">
-        <Multiview
-          ref={view}
-          relays={relays}
-          program={program}
-          preview={preview}
-          slate={slate}
-          fade={fade}
-          locked={locked}
-          transition={transition}
-          onTransition={setTransition}
-          duration={duration}
-          onDuration={setDuration}
-          onPreview={doPreview}
-          onProgram={(id) => !locked && (setPreview(program), setProgram(id))}
-          onCut={doCut}
-          onAuto={doAuto}
-          clock={clock}
-          fullscreen={fullscreen}
-          onFullscreen={toggleFullscreen}
-          coreUrl={useReal ? coreUrl : ""}
-        />
-        <div className="space-y-2">
-          <ControlPanel
+      <Drawer open={drawer === "obs"} title="Ton lien OBS" onClose={() => setDrawer(null)}>
+        <ObsLinkPanel token={token} host={HOST} locked={locked} onRegenerate={() => setToken(newToken())} cams={relays.map((r) => r.n).sort((a, b) => a - b)} />
+      </Drawer>
+      <Drawer open={drawer === "settings" && !!sel} title={sel ? `Réglages · CAM ${sel.n} · ${sel.name}` : "Réglages"} onClose={() => setDrawer(null)}>
+        {sel && (
+          <RelaySettings
+            relay={sel}
             locked={locked}
-            live={live}
-            liveSeconds={liveSeconds}
-            onLive={toggleLive}
-            rec={rec}
-            recSeconds={recSeconds}
-            onRec={toggleRec}
-            slate={slate}
-            onSlate={() => setSlate((v) => !v)}
-            onShot={() => say("Capture du PROGRAMME enregistrée (simulation).")}
-            onMarker={() => say("Marqueur posé à cet instant (simulation).")}
-            selected={sel}
             onRename={(name) => (demo ? patchRelay(selected, { name }) : mockOnly("Renommer un relais ici"))}
             onDisconnect={() => (demo ? patchRelay(selected, { status: "offline", kbps: 0, fps: 0, links: 0, mute: true }) : mockOnly("Déconnecter"))}
             onRegenerate={() => mockOnly("Régénérer la clé d'un relais ici")}
           />
-          <RelayRows
-            relays={relays}
-            program={program}
-            preview={preview}
-            selected={selected}
-            locked={locked}
-            onSelect={(id) => {
-              setSelected(id);
-              doPreview(id);
-            }}
-            realCount={real.length}
-            useReal={useReal}
-            onUseReal={setUseReal}
-          />
-        </div>
-      </div>
-
-      <AudioMixer relays={relays} program={program} locked={locked || !demo} master={master} onMaster={setMaster} onPatch={(id, p) => patchRelay(id, p)} />
-      <ObsLinkCard token={token} host={HOST} locked={locked} onRegenerate={() => setToken(newToken())} cams={relays.map((r) => r.n).sort((a, b) => a - b)} />
+        )}
+      </Drawer>
 
       {askUnlock && (
         <dialog

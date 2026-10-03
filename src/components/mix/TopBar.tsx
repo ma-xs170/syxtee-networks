@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Lock, LockOpen } from "@phosphor-icons/react";
+import Link from "next/link";
+import { ArrowLeft, Lock, LockOpen } from "@phosphor-icons/react";
 import Wordmark from "../Wordmark";
 
 // Barre du haut : nom, PROTECTION (verrou général), heure en direct, état global, ping, compte.
@@ -32,7 +33,10 @@ export default function TopBar({ protection, onProtection, online, total, ping, 
   return (
     <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-2xl border border-line bg-surface px-4 py-3">
       <div className="flex items-center gap-3">
-        <Wordmark name="MIX" />
+        <Link href="/dashboard" aria-label="Retour au dashboard" title="Retour au dashboard" className="grid h-9 w-9 place-items-center rounded-lg border border-line text-muted transition-colors hover:bg-foreground/10 hover:text-foreground">
+          <ArrowLeft size={18} aria-hidden="true" />
+        </Link>
+        <Wordmark name="COMMUTATEUR" />
         {demo && <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] tracking-[0.14em] text-muted">DÉMO</span>}
       </div>
 

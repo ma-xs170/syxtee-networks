@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import RelayServer from "../illustrations/RelayServer";
+import StudioWire from "../illustrations/StudioWire";
 import { CREATE_RELAY_HREF, Container } from "../ui";
 import ChatDemo from "./ChatDemo";
 import DashboardViews from "./DashboardViews";
@@ -66,24 +66,22 @@ export default function NumberedFeatures() {
 
       <Row
         n="03"
-        title="Tu pilotes OBS depuis un onglet."
-        text="Change de scène depuis ton téléphone, lance le direct et règle l'audio. Comme devant ton écran."
-        tags="Scènes · Aperçu du programme · Mixeur audio"
+        title="Toutes tes caméras, une seule régie."
+        text="Passe d'une caméra à l'autre en un clic, règle l'audio de chaque relais, et récupère le tout dans OBS avec un seul lien."
+        tags="Multiview · PROGRAM et PREVIEW · Mixeur audio · Lien OBS unique"
         actions={
-          <Link href="/syxtee-mix" className="btn btn-secondary">
-            Découvrir Mix
-          </Link>
+          <>
+            <Link href="/syxtee-mix" className="btn btn-primary">
+              Découvrir le commutateur
+            </Link>
+            <Link href="/commutateur" className="btn btn-secondary">
+              Ouvrir le commutateur
+            </Link>
+          </>
         }
       >
-        <div className="overflow-hidden rounded-2xl border border-line bg-surface p-3 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] sm:p-4">
-          <Image
-            src="/images/outils/studio-v2.png"
-            alt="SYXTEE MIX : la régie avec la liste des scènes, le programme en direct et le bouton pour terminer le stream."
-            width={2200}
-            height={1342}
-            sizes="(min-width: 1024px) 560px, 100vw"
-            className="h-auto w-full rounded-lg"
-          />
+        <div className="rounded-2xl border border-line bg-surface p-4 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] sm:p-6">
+          <StudioWire className="h-auto w-full" />
         </div>
       </Row>
 

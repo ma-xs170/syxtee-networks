@@ -5,7 +5,7 @@ import Highlight from "@/components/ui/Highlight";
 
 export const metadata: Metadata = {
   title: "Documentation",
-  description: "La documentation SYXTEE NETWORKS : démarrer en IRL, relais SRTLA, RTMP et RIST, Moblin, Starlink, eSIM Saily, SYXTEE MIX, caméras DJI, analyseur réseau et FAQ.",
+  description: "La documentation SYXTEE NETWORKS : démarrer en IRL, relais SRTLA, RTMP et RIST, Moblin, Starlink, eSIM Saily, SYXTEE COMMUTATEUR, caméras DJI, analyseur réseau et FAQ.",
   alternates: { canonical: "/docs" },
 };
 
@@ -33,7 +33,7 @@ const sections: Section[] = [
   {
     title: "Produits et matériel",
     guides: [
-      { href: "/syxtee-mix", title: "SYXTEE MIX", text: "Pilote ton OBS depuis ton navigateur ou ton téléphone.", icon: "studio", keywords: "regie obs telecommande scenes", badge: "Nouveau" },
+      { href: "/syxtee-mix", title: "SYXTEE COMMUTATEUR", text: "Toutes tes caméras sur un écran, un seul lien pour OBS.", icon: "studio", keywords: "regie obs telecommande scenes", badge: "Nouveau" },
       { href: "/docs/dji", title: "Caméras externes", text: "DJI Osmo en Bluetooth, GoPro et drones DJI en RTMP : diffuser vers ton relais.", icon: "phone", keywords: "dji osmo gopro insta360 drone mini air mavic avata camera rtmp bluetooth" },
     ],
   },

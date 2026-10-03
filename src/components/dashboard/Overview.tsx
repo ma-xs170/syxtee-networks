@@ -396,7 +396,7 @@ const shortcuts: Shortcut[] = [
   { label: "Mes relais", href: "/dashboard/relais", icon: Radio },
   { label: "Scanner", href: "/dashboard/scanner", icon: MapTrifold },
   { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },
-  { label: "SYXTEE MIX", href: "/mix", icon: SlidersHorizontal },
+  { label: "SYXTEE COMMUTATEUR", href: "/commutateur", icon: SlidersHorizontal },
 ];
 
 function ChatTile({ chat }: { chat: ChatDefaults }) {

@@ -8,7 +8,6 @@ import {
   ArrowLeft,
   CaretUpDown,
   ChatsCircle,
-  Faders,
   ChartBar,
   Eye,
   List,
@@ -53,14 +52,13 @@ const GROUPS: Group[] = [
       { label: "Mes relais", href: "/dashboard/relais", icon: Radio, feature: "relais" },
       { label: "Aperçu", href: "/dashboard/apercu", icon: Eye, feature: "apercu" },
       { label: "Multichat", href: "/dashboard/multichat", icon: ChatsCircle },
-      { label: "Commutateur", href: "/dashboard/commutateur", icon: Faders, feature: "commutateur" },
       { label: "Caméras externes", href: "/dashboard/dji", icon: VideoCamera, feature: "dji" },
     ],
   },
   {
     title: "Outils",
     items: [
-      { label: "SYXTEE Mix", href: "/mix", icon: SlidersHorizontal, external: true, wordmark: "MIX" },
+      { label: "SYXTEE Commutateur", href: "/commutateur", icon: SlidersHorizontal, external: true, wordmark: "COMMUTATEUR", feature: "commutateur" },
       { label: "Scanner", href: "/dashboard/scanner", icon: MapTrifold },
       { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },
     ],

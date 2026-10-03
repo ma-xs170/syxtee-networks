@@ -8,7 +8,7 @@ import { Container } from "@/components/ui";
 import Highlight from "@/components/ui/Highlight";
 
 export const metadata: Metadata = {
-  title: "SYXTEE MIX",
+  title: "SYXTEE COMMUTATEUR",
   description: "Une régie de diffusion dans ton navigateur : scènes, multiview, mixeur audio, secours automatique si l'image se fige et mode podcast qui suit la voix.",
   alternates: { canonical: "/syxtee-mix" },
 };
@@ -19,7 +19,7 @@ const cta =
 const features = [
   { title: "Scènes et sources", text: "Tes relais SYXTEE, une webcam, un micro, une capture d'écran, des images, du texte. Tu déplaces tout à la souris, avec aperçu et programme comme sur OBS.", wide: true },
   { title: "Mixeur audio", text: "Un curseur et un niveau en direct par source, une coupure en un clic, et l'écoute de la sortie.", wide: true },
-  { title: "Secours automatique", text: "Si l'image d'un flux se fige, Mix bascule seul sur ta scène de secours. Il revient quand l'image repart." },
+  { title: "Secours automatique", text: "Si l'image d'un flux se fige, le commutateur bascule seul sur ta scène de secours. Il revient quand l'image repart." },
   { title: "Mode podcast", text: "Plusieurs flux alignés en image et en son, même avec une latence haute. La scène suit celui qui parle." },
   { title: "Diffusion et enregistrement", text: "Ton programme part en direct vers Twitch, Kick ou YouTube, ou s'enregistre dans un fichier, sans rien installer." },
 ];
@@ -35,11 +35,11 @@ export default function StudioPage() {
               Ta régie, <Highlight>dans le navigateur.</Highlight>
             </h1>
             <p className="rise mx-auto mt-6 max-w-xl text-base leading-relaxed text-foreground/75 sm:text-lg" style={{ "--i": 1 } as React.CSSProperties}>
-              Une vraie régie de diffusion, sans OBS. Compose tes scènes et laisse Mix gérer les coupures.
+              Une vraie régie de diffusion, sans OBS. Compose tes scènes et laisse le commutateur gérer les coupures.
             </p>
             <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={{ "--i": 2 } as React.CSSProperties}>
-              <Link href="/mix" className={`${cta} bg-foreground text-background hover:bg-foreground/85`}>
-                Ouvrir Mix
+              <Link href="/commutateur" className={`${cta} bg-foreground text-background hover:bg-foreground/85`}>
+                Ouvrir le commutateur
                 <span aria-hidden="true">↗</span>
               </Link>
               <Link href="/acces" className={`${cta} border border-foreground/20 bg-background/60 text-foreground backdrop-blur-sm hover:bg-background/90`}>
@@ -93,7 +93,7 @@ export default function StudioPage() {
                 <span className="font-medium">Débit bas, image fluide.</span> <span className="text-muted">Le direct continue, rien ne change.</span>
               </li>
               <li>
-                <span className="font-medium">Image figée.</span> <span className="text-muted">Mix passe sur ta scène de secours (ou en crée une).</span>
+                <span className="font-medium">Image figée.</span> <span className="text-muted">Le commutateur passe sur ta scène de secours (ou en crée une).</span>
               </li>
               <li>
                 <span className="font-medium">L&apos;image repart.</span> <span className="text-muted">Retour automatique à la scène d&apos;origine, si tu le souhaites.</span>
@@ -111,7 +111,7 @@ export default function StudioPage() {
                 <span className="font-medium">Prise de parole.</span> <span className="text-muted">La scène de la personne qui parle passe en programme.</span>
               </li>
               <li>
-                <span className="font-medium">Plusieurs voix.</span> <span className="text-muted">Mix passe sur ton plan large.</span>
+                <span className="font-medium">Plusieurs voix.</span> <span className="text-muted">Le commutateur passe sur ton plan large.</span>
               </li>
             </ol>
           </div>

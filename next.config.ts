@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
       { source: "/studio", destination: "/mix", permanent: true },
       { source: "/syxtee-studio", destination: "/syxtee-mix", permanent: true },
       { source: "/dashboard/urls", destination: "/dashboard/relais", permanent: true },
+      { source: "/dashboard/commutateur", destination: "/commutateur", permanent: true },
     ];
   },
 };

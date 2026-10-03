@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Backups from "./Backups";
+import MultiChat, { type ChatDefaults } from "../dashboard/MultiChat";
 import Connect from "./Connect";
 import ProgramPreview, { type FrameSink } from "./ProgramPreview";
 import { useLink, type LinkEvent } from "./useLink";
@@ -25,7 +26,7 @@ const label = "font-mono text-xs uppercase tracking-[0.18em] text-muted";
 const clockOf = (tc: unknown) => String(tc ?? "00:00:00").split(".")[0];
 const dbToPct = (db: number) => Math.max(0, Math.min(100, ((db + 60) * 100) / 60));
 
-export default function Studio({ coreUrl }: { coreUrl: string }) {
+export default function Studio({ coreUrl, chat }: { coreUrl: string; chat: ChatDefaults }) {
   const [tab, setTab] = useState<Tab>("control");
   const [scenes, setScenes] = useState<string[]>([]);
   const [program, setProgram] = useState("");
@@ -399,8 +400,8 @@ export default function Studio({ coreUrl }: { coreUrl: string }) {
               </section>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-2">
-              <section aria-label="Diffusion" className={`${card} grid content-start gap-3`}>
+            <div className="grid gap-4 lg:grid-cols-12">
+              <section aria-label="Diffusion" className={`${card} grid content-start gap-3 lg:col-span-5`}>
                 <h2 className={label}>Contrôles</h2>
                 <button type="button" onClick={() => toggle("stream")} className={`${btn} ${streaming ? "bg-live text-white" : "bg-accent text-on-accent hover:bg-accent-hover"}`}>
                   {streaming ? (confirm === "stream" ? "Confirmer l'arrêt du live" : "En direct · arrêter") : "Lancer le live"}
@@ -432,7 +433,14 @@ export default function Studio({ coreUrl }: { coreUrl: string }) {
                 )}
               </section>
 
-              {backup && (
+              <div className="lg:col-span-7">
+                <h2 className={`${label} mb-3`}>Chat</h2>
+                <MultiChat defaults={chat} height="h-[30rem]" compact />
+              </div>
+            </div>
+
+            {backup && (
+              <div>
                 <section aria-label="Secours automatique" className={card}>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -458,8 +466,8 @@ export default function Studio({ coreUrl }: { coreUrl: string }) {
                     </label>
                   </div>
                 </section>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
 

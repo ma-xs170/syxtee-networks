@@ -24,7 +24,7 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
     { href: "/compte/reseaux", Icon: ShareNetwork, title: "Réseaux et visibilité", text: "Région, bio, Twitch, Kick, YouTube et ce que tu montres sur l'accueil.", state: `${region ?? "Région à choisir"} · ${profile.show_on_site ? "Visible sur l'accueil" : "Masqué sur l'accueil"}` },
     { href: "/compte/comptes-relies", Icon: PlugsConnected, title: "Comptes reliés", text: "YouTube, Twitch et Kick pour le Multichat.", state: linked ? `${linked} compte${linked > 1 ? "s" : ""} relié${linked > 1 ? "s" : ""}` : "Aucun compte relié" },
     { href: "/compte/securite", Icon: LockKey, title: "Sécurité", text: "Adresse email et mot de passe.", state: user.email ?? "" },
-    { href: "/dashboard/abonnement", Icon: Key, title: "Mon accès", text: "Ta formule et ce qu'elle débloque.", state: plan.name },
+    { href: "/dashboard/abonnement", Icon: Key, title: "Abonnement", text: "Ta formule et ce qu'elle débloque.", state: plan.name },
     { href: "/compte/supprimer", Icon: Trash, title: "Supprimer mon compte", text: "Suppression définitive du compte et des données.", state: "Action irréversible", danger: true },
   ];
 

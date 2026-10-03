@@ -25,7 +25,7 @@ function dashboardGroups(admin: boolean): MenuGroup[] {
       label: "Compte",
       links: [
         { label: "Profil & réseaux", href: "/dashboard/profil" },
-        { label: "Mon accès", href: "/dashboard/abonnement" },
+        { label: "Abonnement", href: "/dashboard/abonnement" },
         { label: "Paramètres", href: "/dashboard/parametres" },
       ],
     },

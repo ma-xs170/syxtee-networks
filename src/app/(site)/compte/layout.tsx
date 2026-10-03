@@ -35,7 +35,7 @@ export default async function CompteLayout({ children }: LayoutProps<"/compte">)
         </div>
         <div className="flex items-center gap-3">
           <Link href="/dashboard/abonnement" className="rounded-full border border-line px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-muted transition-colors hover:text-foreground">
-            Accès : {plan.name}
+            Abonnement : {plan.name}
           </Link>
           <Link href="/dashboard" className="inline-flex h-10 items-center rounded-full border border-line-strong px-5 text-sm font-medium transition-colors hover:bg-foreground/10">
             Dashboard

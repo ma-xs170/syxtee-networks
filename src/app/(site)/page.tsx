@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
 import StreamerWall from "@/components/home/StreamerWall";
-import DashboardShowcase from "@/components/sections/DashboardShowcase";
-import RistPromo from "@/components/sections/RistPromo";
-import StudioPromo from "@/components/sections/StudioPromo";
-import MultichatPromo from "@/components/sections/MultichatPromo";
+import NumberedFeatures from "@/components/sections/NumberedFeatures";
+import Faq from "@/components/sections/Faq";
 import FinalCta from "@/components/sections/FinalCta";
 import { getHomeStreamers } from "@/lib/streamers";
 
@@ -22,11 +20,9 @@ export default async function Home() {
   return (
     <>
       <Hero streamers={streamers} />
-      <DashboardShowcase />
-      <RistPromo />
-      <StudioPromo />
-      <MultichatPromo />
+      <NumberedFeatures />
       <StreamerWall streamers={streamers} />
+      <Faq />
       <FinalCta />
     </>
   );

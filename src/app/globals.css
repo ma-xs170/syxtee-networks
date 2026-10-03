@@ -171,6 +171,17 @@ body {
 }
 @keyframes chat-in { from { grid-template-rows: 0fr; opacity: 0; } to { grid-template-rows: 1fr; opacity: 1; } }
 
+/* Rangées de cartes de l'accueil (StreamerWall) : défilement lent en boucle, pause au survol, arrêt en mouvement réduit. */
+.marquee { display: flex; width: max-content; }
+@media (prefers-reduced-motion: no-preference) {
+  .marquee-wrap { overflow: hidden; }
+  .marquee-l { animation: marquee-l 70s linear infinite; }
+  .marquee-r { animation: marquee-r 80s linear infinite; }
+  .marquee-wrap:hover .marquee, .marquee-wrap:focus-within .marquee { animation-play-state: paused; }
+}
+@keyframes marquee-l { to { transform: translateX(-50%); } }
+@keyframes marquee-r { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+
 /* Nuages du hero (CloudBackdrop) : dérive très lente, transform seulement. */
 @media (prefers-reduced-motion: no-preference) {
   .cloud-a { animation: cloud-a 18s ease-in-out infinite alternate; }

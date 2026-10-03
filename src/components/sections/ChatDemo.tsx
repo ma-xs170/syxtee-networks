@@ -30,7 +30,7 @@ const VISIBLE = 9;
 
 function PlatformIcon({ p, size = 14 }: { p: keyof typeof icons; size?: number }) {
   return (
-    <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" aria-hidden="true" className="shrink-0">
+    <svg viewBox="0 0 24 24" width={size} height={size} fill={`#${icons[p].hex}`} aria-hidden="true" className="shrink-0">
       <path d={icons[p].path} />
     </svg>
   );
@@ -70,10 +70,8 @@ export default function ChatDemo() {
         {rows.map((m) => (
           <div key={m.k} className="chat-row">
             <div>
-              <p className="flex items-baseline gap-2 py-1.5">
-                <span className="text-muted">
-                  <PlatformIcon p={m.p} size={13} />
-                </span>
+              <p className="flex items-center gap-2 py-1.5">
+                <PlatformIcon p={m.p} size={14} />
                 <span>
                   <span className="font-semibold">{m.user}</span>
                   <span className="text-muted">: {m.text}</span>

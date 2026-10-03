@@ -32,7 +32,7 @@ function youtubeId(v: string) {
 
 function Icon({ p, size = 14 }: { p: keyof typeof PLATFORM; size?: number }) {
   return (
-    <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" aria-label={PLATFORM[p].label} role="img" className="shrink-0">
+    <svg viewBox="0 0 24 24" width={size} height={size} fill={`#${PLATFORM[p].icon.hex}`} aria-label={PLATFORM[p].label} role="img" className="shrink-0">
       <path d={PLATFORM[p].icon.path} />
     </svg>
   );
@@ -314,12 +314,20 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
             onScroll={(e) => setStuck(Math.abs(e.currentTarget.scrollTop) < 40)}
             className="flex h-full flex-col-reverse overflow-y-auto overscroll-contain px-3 py-2 text-sm"
           >
-            {shown.length === 0 && <p className="pb-6 text-center text-muted">En attente de messages…</p>}
+            {shown.length === 0 && (
+              <div className="m-auto flex flex-col items-center gap-3 px-6 text-center text-muted">
+                <span className="flex items-center gap-3">
+                  {twitch && <Icon p="twitch" size={20} />}
+                  {kick && <Icon p="kick" size={20} />}
+                </span>
+                <p>En attente des premiers messages…</p>
+              </div>
+            )}
             {[...shown].reverse().map((m) => (
               <div key={m.id} className="chat-row">
                 <div>
                   <p className="break-words py-0.5 leading-snug [overflow-wrap:anywhere]">
-                    <span className="mr-1.5 inline-block align-[-2px] text-muted">
+                    <span className="mr-1.5 inline-block align-[-2px]">
                       <Icon p={m.platform} size={compact ? 12 : 14} />
                     </span>
                     <span className="font-semibold" style={m.color ? { color: m.color } : undefined}>

@@ -47,7 +47,13 @@ export async function saveProfile(mode: "bienvenue" | "compte", _prev: FormState
   }
   if (error) {
     console.error("saveProfile", error.code, error.message);
-    return { error: "Enregistrement impossible. Réessaie.", fields: raw };
+    const why =
+      error.code === "42501" ? "droits manquants sur la base : applique la migration 0033 en entier (ligne « grant update »)"
+      : error.code === "23514" ? "une valeur est refusée par la base (pseudo : 3 à 25 lettres, chiffres ou _)"
+      : error.code === "42703" || error.code === "PGRST204" ? "colonne absente de la base : applique les migrations 0028 et 0033"
+      : error.code === "PGRST301" || /jwt/i.test(error.message) ? "session expirée : reconnecte-toi"
+      : `code ${error.code ?? "inconnu"}`;
+    return { error: `Enregistrement impossible (${why}).`, fields: raw };
   }
   revalidatePath("/", "layout");
   if (mode === "bienvenue") redirect(safeNext(String(formData.get("next") ?? "")));

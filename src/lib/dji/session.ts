@@ -189,6 +189,15 @@ export class DjiSession {
     }
   }
 
+  /** Relance le live avec d'autres réglages (qualité adaptée) : arrêt, attente du retour à « Prête », puis démarrage. */
+  async restart(patch: Partial<StartOptions>) {
+    if (!this.settings) return;
+    const next = { ...this.settings, ...patch };
+    await this.stop();
+    for (let i = 0; i < 100 && this.state !== "idle" && this.state !== "error"; i++) await new Promise((r) => setTimeout(r, 200));
+    await this.start(next);
+  }
+
   /** Lâche le Bluetooth sans arrêter le live (fermeture de la page) : la caméra continue de diffuser. */
   release() {
     if (this.state !== "streaming") return;

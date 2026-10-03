@@ -28,6 +28,7 @@ const STEPS_GOPRO: { id: StepId; label: string }[] = [
 const GOPRO_MODELS = ["HERO13 Black", "HERO12 Black", "HERO11 Black", "HERO11 Black Mini", "HERO10 Black", "HERO9 Black"];
 const PRESETS: { id: string; title: string; text: string; resolution: Resolution; bitrateKbps: number }[] = [
   { id: "eco", title: "Économe", text: "720p · 2 Mb/s. Tient sur une 4G moyenne, conseillé en IRL.", resolution: "720p", bitrateKbps: 2000 },
+  { id: "low", title: "Bas débit", text: "480p · 0,8 Mb/s. Passe sur une 3G ou une 4G faible.", resolution: "480p", bitrateKbps: 800 },
   { id: "hd", title: "Full HD", text: "1080p · 4 Mb/s. Bonne 4G ou 5G.", resolution: "1080p", bitrateKbps: 4000 },
   { id: "max", title: "Maximum", text: "1080p · 6 Mb/s. 5G solide ou Wi-Fi.", resolution: "1080p", bitrateKbps: 6000 },
 ];
@@ -295,7 +296,7 @@ export default function CameraWizard({
             <div className="grid gap-6">
               <fieldset>
                 <legend className="text-base text-muted">Qualité du direct</legend>
-                <div className="mt-4 grid gap-3 md:grid-cols-3">
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {PRESETS.map((p) => (
                     <label key={p.id} className={card(preset === p.id)}>
                       <input
@@ -314,6 +315,17 @@ export default function CameraWizard({
                   ))}
                 </div>
               </fieldset>
+              {!gopro && (
+                <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-line p-4">
+                  <input type="checkbox" checked={c.auto !== false} onChange={(e) => set("auto", e.target.checked)} className="mt-1 size-4 accent-[var(--accent)]" />
+                  <span className="text-sm">
+                    <span className="font-medium">Adapter la qualité automatiquement</span>
+                    <span className="mt-1 block text-xs leading-relaxed text-muted">
+                      Si le réseau ne suit plus, la caméra repart un cran plus léger (jusqu&apos;à 480p · 0,5 Mb/s) puis remonte quand c&apos;est stable. Coupure d&apos;environ 20 s à chaque changement. Page ouverte et Bluetooth requis.
+                    </span>
+                  </span>
+                </label>
+              )}
               <button type="button" aria-expanded={advanced} onClick={() => setAdvanced((v) => !v)} className="w-fit text-sm text-muted underline-offset-4 hover:text-foreground hover:underline">
                 {advanced ? "Masquer les réglages avancés" : "Réglages avancés"}
               </button>
@@ -325,7 +337,7 @@ export default function CameraWizard({
                   </div>
                   <div className="grid gap-2">
                     <span className="text-sm text-muted">Débit</span>
-                    <Pills label="Débit" value={c.bitrateKbps} onChange={(v) => set("bitrateKbps", v)} options={[1000, 2000, 3000, 4000, 6000, 8000].map((b) => ({ v: b, l: `${b / 1000} Mb/s` }))} />
+                    <Pills label="Débit" value={c.bitrateKbps} onChange={(v) => set("bitrateKbps", v)} options={[500, 800, 1000, 2000, 3000, 4000, 6000, 8000].map((b) => ({ v: b, l: `${b / 1000} Mb/s` }))} />
                   </div>
                   <div className="grid gap-2">
                     <span className="text-sm text-muted">Images par seconde</span>

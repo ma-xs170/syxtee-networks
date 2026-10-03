@@ -22,6 +22,8 @@ export type Camera = {
   bitrateKbps: number;
   codec: Codec;
   stabilization: Stabilization;
+  /** Qualité adaptative : baisse seule le débit si le réseau ne suit pas (absent = activée). */
+  auto?: boolean;
 };
 
 export type DjiStore = { cameras: Camera[]; networks: Network[] };
@@ -43,6 +45,7 @@ export const defaultCamera = (relayId: string, networkId = ""): Camera => ({
   bitrateKbps: 2000,
   codec: "h264",
   stabilization: "rockSteady",
+  auto: true,
 });
 
 /** Lecture (et reprise de l'ancien format à une caméra). Ne lève jamais. */

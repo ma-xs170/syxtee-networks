@@ -6,6 +6,7 @@ import CopyCode from "@/components/CopyCode";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useLiveStatus, useNow, type RelayLive } from "@/components/dashboard/LiveStatus";
 import { DJI_MODELS, type DjiModel } from "@/lib/dji/protocol";
+import { abrInit, abrStep, LADDER, rungIndex, type AbrState, type Rung } from "@/lib/dji/ladder";
 import { bluetoothSupported, DjiSession, knownCamera, pickCamera, type DjiError, type DjiState } from "@/lib/dji/session";
 import CameraWizard from "./CameraWizard";
 import NetworkDialog from "./NetworkDialog";
@@ -57,7 +58,7 @@ function fmtDuration(ms: number) {
 
 // ───────────── Stats en direct (haut de page) ─────────────
 
-function LiveStats({ cameras, relays, runs, live }: { cameras: Camera[]; relays: RtmpRelay[]; runs: Record<string, CamRun>; live: RelayLive[] }) {
+function LiveStats({ cameras, relays, runs, live, adapted }: { cameras: Camera[]; relays: RtmpRelay[]; runs: Record<string, CamRun>; live: RelayLive[]; adapted: Record<string, Rung> }) {
   const anyLive = cameras.some((c) => live.find((r) => r.id === c.relayId)?.live);
   const now = useNow(anyLive);
   if (!cameras.length) return null;
@@ -96,6 +97,11 @@ function LiveStats({ cameras, relays, runs, live }: { cameras: Camera[]; relays:
             ) : (
               <p className="mt-4 text-xs text-muted">Débit, durée et batterie s&apos;affichent pendant le direct.</p>
             )}
+            {on && adapted[c.id] && (
+              <p className="mt-3 text-xs text-muted">
+                Qualité adaptée au réseau : {adapted[c.id].resolution} · {adapted[c.id].bitrateKbps / 1000} Mb/s
+              </p>
+            )}
             {on && r && r.reconnects > 0 && <p className="mt-3 text-xs text-muted">{r.reconnects} reconnexion{r.reconnects > 1 ? "s" : ""} pendant ce live</p>}
           </div>
         );
@@ -127,6 +133,31 @@ export default function DjiHub({ relays, focusRelay }: { relays: RtmpRelay[]; fo
   const sessions = useRef(new Map<string, DjiSession>());
   const { state: live } = useLiveStatus();
   const liveRelays = live?.relays ?? [];
+  // Qualité adaptative : un contrôleur par caméra lancée depuis cette page (voir lib/dji/ladder.ts).
+  const abr = useRef(new Map<string, AbrState>());
+  const [adapted, setAdapted] = useState<Record<string, Rung>>({});
+
+  useEffect(() => {
+    const t = Date.now();
+    for (const cam of store.cameras) {
+      const run = runs[cam.id]?.state;
+      const session = sessions.current.get(cam.id);
+      if (cam.brand === "gopro" || cam.auto === false || !session || (run !== "streaming" && run !== "detached")) {
+        if (run !== "starting" && run !== "stopping" && run !== "connecting" && run !== "pairing" && run !== "preparing" && run !== "wifi" && run !== "configuring" && run !== "approve") abr.current.delete(cam.id);
+        continue;
+      }
+      const r = live?.relays?.find((x) => x.id === cam.relayId);
+      const prev = abr.current.get(cam.id) ?? abrInit(rungIndex(cam), t);
+      const { state, action } = abrStep(prev, { now: t, live: !!r?.live, kbps: r?.kbps ?? null });
+      abr.current.set(cam.id, state);
+      if (!action) continue;
+      const rung = LADDER[state.index];
+      void (async () => {
+        setAdapted((a) => (state.index === state.ceiling ? Object.fromEntries(Object.entries(a).filter(([k]) => k !== cam.id)) : { ...a, [cam.id]: rung }));
+        await session.restart({ resolution: rung.resolution, fps: rung.fps, bitrateKbps: rung.bitrateKbps });
+      })();
+    }
+  }, [live, store.cameras, runs]);
 
   useEffect(() => {
     const s = loadStore();
@@ -203,7 +234,7 @@ export default function DjiHub({ relays, focusRelay }: { relays: RtmpRelay[]; fo
 
   return (
     <div>
-      <LiveStats cameras={store.cameras} relays={relays} runs={runs} live={liveRelays} />
+      <LiveStats cameras={store.cameras} relays={relays} runs={runs} live={liveRelays} adapted={adapted} />
 
       {noBt && (
         <p className="mb-6 rounded-2xl border border-line p-5 text-sm leading-relaxed">

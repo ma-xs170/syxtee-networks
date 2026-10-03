@@ -25,6 +25,7 @@ const STEPS_GOPRO: { id: StepId; label: string }[] = [
   { id: "relay", label: "Relais" },
   { id: "gopro", label: "Réglages" },
 ];
+const DRONE_MODELS = ["Mini 4 Pro", "Mini 3 Pro", "Mini 3", "Air 3S", "Air 3", "Mavic 3 Pro", "Mavic 3 Classic", "Avata 2", "Autre drone DJI"];
 const GOPRO_MODELS = ["HERO13 Black", "HERO12 Black", "HERO11 Black", "HERO11 Black Mini", "HERO10 Black", "HERO9 Black"];
 const PRESETS: { id: string; title: string; text: string; resolution: Resolution; bitrateKbps: number }[] = [
   { id: "eco", title: "Économe", text: "720p · 2 Mb/s. Tient sur une 4G moyenne, conseillé en IRL.", resolution: "720p", bitrateKbps: 2000 },
@@ -113,13 +114,14 @@ export default function CameraWizard({
     }
   }
 
-  const gopro = c.brand === "gopro";
+  const drone = c.brand === "drone";
+  const gopro = c.brand === "gopro" || drone; // RTMP lancé depuis l'app de l'appareil (GoPro ou drone), sans Bluetooth
   const steps = gopro ? STEPS_GOPRO : STEPS_DJI;
   const id = steps[step].id;
   const last = step === steps.length - 1;
   const canNext = { cam: gopro || !!c.deviceId, net: networks.some((n) => n.id === c.networkId), relay: relays.some((r) => r.id === c.relayId), quality: true, gopro: true }[id];
   const preset = PRESETS.find((p) => p.resolution === c.resolution && p.bitrateKbps === c.bitrateKbps)?.id ?? null;
-  const finish = (launch: boolean) => onSave({ ...c, name: c.name.trim() || (gopro ? c.gopro || "GoPro" : c.deviceName || DJI_MODELS.find((m) => m.id === c.model)?.name || "Caméra DJI") }, launch && !gopro);
+  const finish = (launch: boolean) => onSave({ ...c, name: c.name.trim() || (drone ? c.drone || "Drone DJI" : gopro ? c.gopro || "GoPro" : c.deviceName || DJI_MODELS.find((m) => m.id === c.model)?.name || "Caméra DJI") }, launch && !gopro);
   const goproRelay = relays.find((r) => r.id === c.relayId);
 
   return (
@@ -150,16 +152,17 @@ export default function CameraWizard({
             <div className="grid gap-6">
               <fieldset>
                 <legend className="text-base text-muted">Quelle marque ?</legend>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
                   {(
                     [
                       { v: "dji", t: "DJI", d: "Osmo Pocket, Action, 360. Lancée en Bluetooth depuis cette page." },
                       { v: "gopro", t: "GoPro", d: "HERO9 et plus récentes. Tu colles l'URL RTMP dans l'app GoPro." },
+                      { v: "drone", t: "Drone DJI", d: "Mini, Air, Mavic, Avata. Tu colles l'URL RTMP dans DJI Fly." },
                     ] as const
                   ).map((b) => (
                     <label key={b.v} className={card((c.brand ?? "dji") === b.v)}>
                       <input type="radio" name="wiz-brand" checked={(c.brand ?? "dji") === b.v} onChange={() => set("brand", b.v)} className="sr-only" />
-                      <BrandLogo brand={b.v} className={b.v === "gopro" ? "mb-3 h-6 w-auto" : "mb-3 h-6 w-auto"} />
+                      <BrandLogo brand={b.v === "drone" ? "dji" : b.v} className="mb-3 h-6 w-auto" />
                       <span className="text-base font-medium">{b.t}</span>
                       <span className="mt-1 text-xs leading-relaxed text-muted">{b.d}</span>
                     </label>
@@ -199,7 +202,7 @@ export default function CameraWizard({
                     value={c.name}
                     onChange={(e) => set("name", e.target.value)}
                     maxLength={40}
-                    placeholder={gopro ? "Ex. GoPro principale" : "Ex. Osmo principale"}
+                    placeholder={drone ? "Ex. Drone de plage" : gopro ? "Ex. GoPro principale" : "Ex. Osmo principale"}
                     className="h-12 w-full rounded-xl border border-line bg-background px-4 text-base placeholder:text-muted focus:border-foreground/70 focus:outline-none"
                   />
                 </div>
@@ -210,11 +213,11 @@ export default function CameraWizard({
                   {gopro ? (
                     <select
                       id="wiz-model"
-                      value={c.gopro ?? GOPRO_MODELS[0]}
-                      onChange={(e) => set("gopro", e.target.value)}
+                      value={drone ? (c.drone ?? DRONE_MODELS[0]) : (c.gopro ?? GOPRO_MODELS[0])}
+                      onChange={(e) => set(drone ? "drone" : "gopro", e.target.value)}
                       className="h-12 w-full rounded-xl border border-line bg-background px-4 text-base focus:border-foreground/70 focus:outline-none"
                     >
-                      {GOPRO_MODELS.map((m) => (
+                      {(drone ? DRONE_MODELS : GOPRO_MODELS).map((m) => (
                         <option key={m} value={m}>
                           {m}
                         </option>
@@ -281,14 +284,27 @@ export default function CameraWizard({
 
           {id === "gopro" && (
             <div className="grid gap-5">
-              <p className="text-base text-muted">Dans l&apos;app GoPro, ouvre ta caméra, choisis la diffusion en direct, puis une URL RTMP personnalisée et colle l&apos;adresse ci-dessous.</p>
+              <p className="text-base text-muted">
+                {drone
+                  ? "Dans DJI Fly, ouvre la transmission en direct, choisis la plateforme RTMP personnalisée et colle l'adresse ci-dessous."
+                  : "Dans l'app GoPro, ouvre ta caméra, choisis la diffusion en direct, puis une URL RTMP personnalisée et colle l'adresse ci-dessous."}
+              </p>
               {goproRelay?.rtmpUrl ? <CopyCode code={goproRelay.rtmpUrl} /> : <p className="text-sm text-muted">Choisis un relais RTMP à l&apos;étape précédente pour voir son adresse.</p>}
-              <ol className="list-decimal space-y-2 pl-5 text-sm leading-relaxed text-muted">
-                <li>Allume la caméra et connecte-la à ton téléphone dans l&apos;app GoPro.</li>
-                <li>Réseau : active le partage de connexion de ton téléphone (ou un Wi-Fi), la GoPro s&apos;y connecte.</li>
-                <li>Résolution conseillée : 720p ou 1080p, 30 images par seconde.</li>
-                <li>Lance la diffusion dans l&apos;app : le relais passe « En direct » ici.</li>
-              </ol>
+              {drone ? (
+                <ol className="list-decimal space-y-2 pl-5 text-sm leading-relaxed text-muted">
+                  <li>Allume le drone et la radiocommande, connecte la radiocommande à Internet (partage de connexion de ton téléphone ou Wi-Fi).</li>
+                  <li>Dans DJI Fly : Transmission en direct, puis RTMP personnalisé. Colle l&apos;adresse copiée.</li>
+                  <li>Résolution conseillée : 720p ou 1080p. Vérifie que ton modèle propose le RTMP dans DJI Fly.</li>
+                  <li>Lance la transmission : le relais passe « En direct » ici.</li>
+                </ol>
+              ) : (
+                <ol className="list-decimal space-y-2 pl-5 text-sm leading-relaxed text-muted">
+                  <li>Allume la caméra et connecte-la à ton téléphone dans l&apos;app GoPro.</li>
+                  <li>Réseau : active le partage de connexion de ton téléphone (ou un Wi-Fi), la GoPro s&apos;y connecte.</li>
+                  <li>Résolution conseillée : 720p ou 1080p, 30 images par seconde.</li>
+                  <li>Lance la diffusion dans l&apos;app : le relais passe « En direct » ici.</li>
+                </ol>
+              )}
             </div>
           )}
 

@@ -19,7 +19,7 @@ export const dashboardNav: DashItem[] = [
     children: [
       { label: "Mes relais", href: "/dashboard/relais", desc: "SRTLA, RTMP, RIST, tes URLs et clés", icon: "relays", feature: "relais" },
       { label: "Aperçu", href: "/dashboard/apercu", desc: "Ton flux en direct", icon: "preview", feature: "apercu" },
-      { label: "Caméras externes", href: "/dashboard/dji", desc: "DJI en Bluetooth, GoPro en RTMP", icon: "cam", feature: "dji" },
+      { label: "Caméras externes", href: "/dashboard/dji", desc: "DJI en Bluetooth, GoPro et drones en RTMP", icon: "cam", feature: "dji" },
     ],
   },
   { label: "Statistiques", href: "/dashboard/stats" },

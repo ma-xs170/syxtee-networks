@@ -10,9 +10,9 @@ import { abrInit, abrStep, LADDER, rungIndex, type AbrState, type Rung } from "@
 import { bluetoothSupported, DjiSession, knownCamera, pickCamera, type DjiError, type DjiState } from "@/lib/dji/session";
 import CameraWizard from "./CameraWizard";
 import NetworkDialog from "./NetworkDialog";
-import { loadStore, saveStore, type Camera, type DjiStore, type Network } from "./store";
+import { isRtmpCam, loadStore, saveStore, type Camera, type DjiStore, type Network } from "./store";
 
-// Caméras externes (DJI, GoPro) : autant de caméras que tu veux, chacune liée à un relais RTMP. Stats en direct en haut, puis onglets.
+// Caméras externes (DJI, GoPro, drones DJI) : autant de caméras que tu veux, chacune liée à un relais RTMP. Stats en direct en haut, puis onglets.
 // Une fois le live lancé, la caméra garde l'URL RTMP et continue de diffuser même page fermée (le Bluetooth ne sert
 // qu'à lancer, suivre la batterie et arrêter). Tout reste sur ce téléphone : rien du Wi-Fi n'est envoyé au serveur.
 
@@ -45,7 +45,7 @@ const ERROR_LABEL: Record<DjiError, string> = {
   network: "Le réseau Wi-Fi de cette caméra n'existe plus. Clique sur « Modifier » et choisis un réseau.",
 };
 const modelName = (m: DjiModel) => DJI_MODELS.find((x) => x.id === m)?.name ?? "Caméra DJI";
-const camLabel = (c: Camera) => (c.brand === "gopro" ? c.gopro || "GoPro" : modelName(c.model));
+const camLabel = (c: Camera) => (c.brand === "gopro" ? c.gopro || "GoPro" : c.brand === "drone" ? c.drone || "Drone DJI" : modelName(c.model));
 
 const btnPrimary = "h-11 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40";
 const btnGhost = "h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-foreground/10 disabled:opacity-40";
@@ -142,7 +142,7 @@ export default function DjiHub({ relays, focusRelay }: { relays: RtmpRelay[]; fo
     for (const cam of store.cameras) {
       const run = runs[cam.id]?.state;
       const session = sessions.current.get(cam.id);
-      if (cam.brand === "gopro" || cam.auto === false || !session || (run !== "streaming" && run !== "detached")) {
+      if (isRtmpCam(cam) || cam.auto === false || !session || (run !== "streaming" && run !== "detached")) {
         if (run !== "starting" && run !== "stopping" && run !== "connecting" && run !== "pairing" && run !== "preparing" && run !== "wifi" && run !== "configuring" && run !== "approve") abr.current.delete(cam.id);
         continue;
       }
@@ -379,7 +379,7 @@ function CameraCard({
             <BrandLogo brand={cam.brand === "gopro" ? "gopro" : "dji"} className="h-5 w-auto shrink-0 text-muted" />
             <span className="truncate">{cam.name}</span>
           </h3>
-          {cam.brand === "gopro" ? (
+          {isRtmpCam(cam) ? (
             <>
               <p className="mt-1 text-xs text-muted">{camLabel(cam)} · RTMP</p>
               <p className="mt-2 text-sm text-muted">{relay ? `Relais ${relay.name}` : "Relais supprimé : modifie la caméra"}</p>
@@ -396,7 +396,7 @@ function CameraCard({
           )}
         </div>
         <div className="flex flex-wrap gap-2">
-          {cam.brand === "gopro" ? null : onAir ? (
+          {isRtmpCam(cam) ? null : onAir ? (
             <button type="button" onClick={onStop} disabled={noBt} className={btnDanger}>
               Arrêter le live
             </button>
@@ -415,15 +415,17 @@ function CameraCard({
       </div>
       <p role="status" aria-live="polite" className="mt-4 flex items-center gap-2 text-sm">
         {onAir && <span className="h-2 w-2 rounded-full bg-live" aria-hidden="true" />}
-        {cam.brand === "gopro"
+        {isRtmpCam(cam)
           ? relayLive
             ? "En direct"
-            : "En attente du flux : lance la diffusion dans l'app GoPro."
+            : cam.brand === "drone"
+              ? "En attente du flux : lance la transmission en direct dans DJI Fly."
+              : "En attente du flux : lance la diffusion dans l'app GoPro."
           : relayLive && state === "idle"
             ? "En direct (lancé depuis un autre appareil ou avant l'ouverture de la page)"
             : STATE_LABEL[state]}
       </p>
-      {cam.brand === "gopro" && relay && (
+      {isRtmpCam(cam) && relay && (
         <div className="mt-3">
           <CopyCode code={relay.rtmpUrl} />
         </div>

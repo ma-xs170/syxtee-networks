@@ -6,7 +6,7 @@ import { DJI_MODELS } from "@/lib/dji/protocol";
 
 export const metadata: Metadata = {
   title: "Caméras externes",
-  description: "Connecter une caméra DJI (Bluetooth) ou GoPro (RTMP) et la faire diffuser vers ton relais RTMP SYXTEE.",
+  description: "Connecter une caméra DJI (Bluetooth), une GoPro ou un drone DJI (RTMP) et les faire diffuser vers ton relais RTMP SYXTEE.",
   alternates: { canonical: "/docs/dji" },
 };
 
@@ -21,6 +21,14 @@ const steps = [
   "« Enregistrer et lancer le direct » : la caméra rejoint le réseau et diffuse. Tu peux fermer la page, elle continue. Les stats en direct s'affichent en haut de Caméras externes.",
 ];
 
+const droneSteps = [
+  "Crée un relais RTMP par drone dans Mes relais (un relais = un flux).",
+  "Dashboard, Direct, Caméras externes, onglet Ajouter, marque Drone DJI. Choisis le modèle et le relais : l'adresse RTMP s'affiche, avec un bouton Copier.",
+  "Dans DJI Fly, ouvre la transmission en direct et choisis le RTMP personnalisé. Colle l'adresse copiée.",
+  "Donne Internet à la radiocommande : le partage de connexion de ton téléphone ou un Wi-Fi.",
+  "Lance la transmission : le relais passe « En direct » dans la page Caméras externes. Vérifie que ton modèle propose le RTMP dans DJI Fly.",
+];
+
 const goproSteps = [
   "Crée un relais RTMP par caméra dans Mes relais (un relais = un flux).",
   "Dashboard, Direct, Caméras externes, onglet Ajouter, marque GoPro. Choisis le modèle et le relais : l'adresse RTMP s'affiche, avec un bouton Copier.",
@@ -33,7 +41,7 @@ export default function DjiDocPage() {
   return (
     <>
       <PageHero kicker="Documentation" title="Caméras externes." crumb="Caméras externes">
-        DJI en Bluetooth, GoPro en RTMP : ta caméra diffuse directement vers ton relais SYXTEE.
+        DJI en Bluetooth, GoPro et drones DJI en RTMP : ta caméra diffuse directement vers ton relais SYXTEE.
       </PageHero>
       <section className="border-b border-line py-16 sm:py-20">
         <Container className="grid gap-12 lg:grid-cols-2">
@@ -69,6 +77,15 @@ export default function DjiDocPage() {
             <h2 className="text-2xl font-semibold tracking-tight">GoPro : étapes</h2>
             <ol className="mb-12 mt-6 space-y-4">
               {goproSteps.map((s, i) => (
+                <li key={s} className="flex gap-4 text-sm leading-relaxed">
+                  <span className="font-mono text-xs text-muted">{i + 1}.</span>
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ol>
+            <h2 className="text-2xl font-semibold tracking-tight">Drone DJI : étapes</h2>
+            <ol className="mb-12 mt-6 space-y-4">
+              {droneSteps.map((s, i) => (
                 <li key={s} className="flex gap-4 text-sm leading-relaxed">
                   <span className="font-mono text-xs text-muted">{i + 1}.</span>
                   <span>{s}</span>

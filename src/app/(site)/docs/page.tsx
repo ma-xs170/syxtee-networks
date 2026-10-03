@@ -34,7 +34,7 @@ const sections: Section[] = [
     title: "Produits et matériel",
     guides: [
       { href: "/syxtee-studio", title: "SYXTEE STUDIO", text: "Pilote ton OBS depuis ton navigateur ou ton téléphone.", icon: "studio", keywords: "regie obs telecommande scenes", badge: "Nouveau" },
-      { href: "/docs/dji", title: "Caméras externes", text: "DJI Osmo en Bluetooth, GoPro en RTMP : diffuser vers ton relais.", icon: "phone", keywords: "dji osmo gopro insta360 camera rtmp bluetooth" },
+      { href: "/docs/dji", title: "Caméras externes", text: "DJI Osmo en Bluetooth, GoPro et drones DJI en RTMP : diffuser vers ton relais.", icon: "phone", keywords: "dji osmo gopro insta360 drone mini air mavic avata camera rtmp bluetooth" },
     ],
   },
   {

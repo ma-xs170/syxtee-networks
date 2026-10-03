@@ -10,10 +10,12 @@ export type Camera = {
   name: string;
   deviceId?: string;
   deviceName?: string;
-  /** Marque : DJI (lancée en Bluetooth) ou GoPro (RTMP, lancée depuis l'app GoPro). Absent = DJI. */
-  brand?: "dji" | "gopro";
+  /** Marque : DJI (lancée en Bluetooth), GoPro (RTMP, lancée depuis l'app GoPro) ou drone DJI (RTMP, lancé depuis DJI Fly). Absent = DJI. */
+  brand?: "dji" | "gopro" | "drone";
   /** GoPro : modèle (texte libre parmi la liste). */
   gopro?: string;
+  /** Drone DJI : modèle (texte libre parmi la liste). */
+  drone?: string;
   model: DjiModel;
   relayId: string;
   networkId: string;
@@ -25,6 +27,9 @@ export type Camera = {
   /** Qualité adaptative : baisse seule le débit si le réseau ne suit pas (absent = activée). */
   auto?: boolean;
 };
+
+/** Caméra qui diffuse en RTMP depuis sa propre app (GoPro, drone DJI) : pas de Bluetooth ni de réglages envoyés d'ici. */
+export const isRtmpCam = (c: Pick<Camera, "brand">) => c.brand === "gopro" || c.brand === "drone";
 
 export type DjiStore = { cameras: Camera[]; networks: Network[] };
 

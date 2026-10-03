@@ -7,7 +7,7 @@ import { hasCore, listRelays } from "@/lib/core";
 
 export const metadata: Metadata = { title: "Caméras externes", robots: { index: false } };
 
-// Caméras externes (menu Direct) : DJI lancées en Bluetooth, GoPro en RTMP. Chacune liée à un relais RTMP
+// Caméras externes (menu Direct) : DJI lancées en Bluetooth, GoPro et drones DJI en RTMP. Chacune liée à un relais RTMP
 // (protocole de Moblin, licence MIT). ?relais=<id> : relais présélectionné pour l'ajout (lien depuis la fiche relais).
 export default async function DjiPage({ searchParams }: { searchParams: Promise<{ relais?: string }> }) {
   const user = await requireUser("/dashboard/dji");
@@ -27,7 +27,7 @@ export default async function DjiPage({ searchParams }: { searchParams: Promise<
 
   return (
     <DashPage>
-      <DashHeader lead="Caméras" hl="externes" sub="DJI Osmo en Bluetooth, GoPro en RTMP : chaque caméra diffuse directement vers son relais." />
+      <DashHeader lead="Caméras" hl="externes" sub="DJI Osmo en Bluetooth, GoPro et drones DJI en RTMP : chaque caméra diffuse directement vers son relais." />
       <PlanGate feature="dji">
         {down ? <p className="text-sm text-muted">Le relais ne répond pas pour le moment. Réessaie dans quelques minutes.</p> : <DjiHub relays={relays} focusRelay={relais} />}
       </PlanGate>

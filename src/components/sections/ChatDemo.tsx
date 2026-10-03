@@ -13,24 +13,23 @@ const icons = { twitch: siTwitch, kick: siKick, youtube: siYoutube };
 const LABEL: Record<P, string> = { twitch: "Twitch", kick: "Kick", youtube: "YouTube" };
 const ALL: P[] = ["youtube", "twitch", "kick"];
 
-const POOL: { p: "twitch" | "kick"; user: string; text: string }[] = [
+const POOL: { p: P; user: string; text: string }[] = [
   { p: "twitch", user: "Maëlys", text: "le signal tient bien dans le tunnel" },
+  { p: "youtube", user: "Camille", text: "belle qualité d'image" },
   { p: "kick", user: "tonton_fibre", text: "quelle ville ce soir ?" },
   { p: "twitch", user: "Rayan_IRL", text: "salut tout le monde" },
+  { p: "youtube", user: "Hugo_974", text: "ça passe bien sur mon téléphone" },
   { p: "kick", user: "Noé", text: "la 5G passe nickel ici" },
   { p: "twitch", user: "Capucine", text: "on peut avoir le débit à l'écran ?" },
   { p: "kick", user: "Ilyes_974", text: "belle vue, tu es où exactement ?" },
+  { p: "youtube", user: "Inès", text: "merci pour le live" },
   { p: "twitch", user: "Garance", text: "l'image est super fluide" },
   { p: "twitch", user: "Théo_Live", text: "tu passes sur Starlink après ?" },
+  { p: "youtube", user: "Léo", text: "on te voit très bien d'ici" },
   { p: "kick", user: "Lou", text: "le son est parfait" },
   { p: "twitch", user: "Mathéo", text: "premier live que je regarde en entier" },
   { p: "kick", user: "Sasha_fr", text: "bravo pour le direct" },
   { p: "twitch", user: "Anaïs", text: "on te voit très bien" },
-];
-const YOUTUBE = [
-  { user: "Camille", text: "belle qualité d'image" },
-  { user: "Hugo_974", text: "ça passe bien sur mon téléphone" },
-  { user: "Inès", text: "merci pour le live" },
 ];
 // Plus de lignes que la hauteur du cadre : le haut est toujours rempli (les plus anciennes sortent par le haut, sous le dégradé).
 const VISIBLE = 9;
@@ -55,8 +54,6 @@ export default function ChatDemo({ heightClass = "h-[19rem]" }: { heightClass?: 
   }, [reduce]);
 
   const allOn = sel.size === ALL.length;
-  const showFeed = sel.has("twitch") || sel.has("kick");
-  const showYoutube = sel.has("youtube");
   const toggle = (p: P) =>
     setSel((cur) => {
       const next = new Set(cur);
@@ -104,42 +101,25 @@ export default function ChatDemo({ heightClass = "h-[19rem]" }: { heightClass?: 
         </div>
       </div>
 
-      <div className={`flex flex-col divide-y divide-line ${heightClass}`}>
-        {showYoutube && (
-          <div className={`flex flex-col justify-end overflow-hidden px-4 py-3 text-sm ${showFeed ? "h-28 shrink-0" : "min-h-0 flex-1"}`} role="img" aria-label="Exemple de messages YouTube">
-            {YOUTUBE.map((m) => (
-              <p key={m.user} className="flex items-center gap-2 py-1.5">
-                <PlatformIcon p="youtube" />
+      {/* Un seul fil pour toutes les plateformes. Colonne inversée : les nouveaux messages arrivent en bas et poussent les autres vers le haut. */}
+      <div
+        className={`flex ${heightClass} flex-col-reverse overflow-hidden px-4 py-3 text-sm [mask-image:linear-gradient(to_bottom,transparent,#000_28%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,#000_28%)]`}
+        role="img"
+        aria-label="Exemple de messages YouTube, Twitch et Kick dans un seul fil"
+      >
+        {rows.map((m) => (
+          <div key={m.k} className="chat-row">
+            <div>
+              <p className="flex items-center gap-2 py-1.5">
+                <PlatformIcon p={m.p} />
                 <span>
                   <span className="font-semibold">{m.user}</span>
                   <span className="text-muted">: {m.text}</span>
                 </span>
               </p>
-            ))}
+            </div>
           </div>
-        )}
-        {showFeed && (
-          /* Colonne inversée : les nouveaux messages arrivent en bas et poussent les autres vers le haut. */
-          <div
-            className="flex min-h-0 flex-1 flex-col-reverse overflow-hidden px-4 py-3 text-sm [mask-image:linear-gradient(to_bottom,transparent,#000_28%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,#000_28%)]"
-            role="img"
-            aria-label="Exemple de messages Twitch et Kick dans un seul fil"
-          >
-            {rows.map((m) => (
-              <div key={m.k} className="chat-row">
-                <div>
-                  <p className="flex items-center gap-2 py-1.5">
-                    <PlatformIcon p={m.p} />
-                    <span>
-                      <span className="font-semibold">{m.user}</span>
-                      <span className="text-muted">: {m.text}</span>
-                    </span>
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        ))}
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ import { Gear } from "@phosphor-icons/react";
 // YouTube dans un onglet à part (son chat n'est lisible que dans son propre lecteur).
 // Les chaînes viennent du profil ; on peut les changer ici (gardé dans ce navigateur).
 
-type Platform = "twitch" | "kick";
+type Platform = "twitch" | "kick" | "youtube";
 type Msg = { id: string; platform: Platform; user: string; color: string | null; text: string };
 type Link = "idle" | "connecting" | "ok" | "error";
 export type ChatDefaults = { twitch: string; kick: string; youtube: string };
@@ -114,6 +114,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [twitchLink, setTwitchLink] = useState<Link>("idle");
   const [kickLink, setKickLink] = useState<Link>("idle");
+  const [ytLink, setYtLink] = useState<Link>("idle");
   const [room, setRoom] = useState<{ slug: string; id?: number; failed?: boolean } | null>(null);
   const [stuck, setStuck] = useState(true);
   const list = useRef<HTMLDivElement>(null);
@@ -221,6 +222,36 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
     setKickLink,
   );
 
+  // YouTube : pas de connexion en direct, on sonde l'API à la cadence qu'elle indique (route /api/youtube/chat).
+  const ytVideo = youtubeId(cfg.youtube);
+  useEffect(() => {
+    if (!ytVideo) return;
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let after = "";
+    const tick = async () => {
+      let wait = 12_000;
+      try {
+        const r = await fetch(`/api/youtube/chat?v=${ytVideo}${after ? `&after=${encodeURIComponent(after)}` : ""}`, { cache: "no-store" });
+        if (!r.ok) throw new Error(String(r.status));
+        const j = (await r.json()) as { messages: { id: string; user: string; text: string }[]; next: string; interval: number };
+        if (stopped) return;
+        after = j.next || after;
+        setYtLink("ok");
+        for (const m of j.messages) push({ id: `y-${m.id}`, platform: "youtube", user: m.user, color: null, text: m.text });
+        wait = Math.min(15_000, Math.max(3_000, j.interval));
+      } catch {
+        if (!stopped) setYtLink("error");
+      }
+      if (!stopped) timer = setTimeout(tick, wait);
+    };
+    void tick();
+    return () => {
+      stopped = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [ytVideo, push]);
+
   function save() {
     setCfg(draft);
     setMsgs([]);
@@ -267,8 +298,6 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
   const available: Record<P, boolean> = { twitch: !!twitch, kick: !!kick, youtube: !!ytId };
   const active = (["youtube", "twitch", "kick"] as const).filter((p) => sel.has(p) && available[p]);
   const allOn = active.length > 0 && active.length === (["youtube", "twitch", "kick"] as const).filter((p) => available[p]).length;
-  const showFeed = active.includes("twitch") || active.includes("kick");
-  const showYoutube = active.includes("youtube");
   const shown = msgs.filter((m) => active.includes(m.platform));
   const none = !twitch && !kick && !ytId;
   // Un clic sur un logo ajoute ou retire la plateforme ; il en reste toujours au moins une.
@@ -284,6 +313,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
   const dot = (l: Link) => (l === "ok" ? "bg-live" : l === "error" ? "bg-red-400" : l === "connecting" ? "animate-pulse bg-muted motion-reduce:animate-none" : "border border-muted");
   const links: Record<Platform, Link> = {
     twitch: !/^\w{3,25}$/.test(twitch) ? "idle" : twitchLink === "idle" ? "connecting" : twitchLink,
+    youtube: !ytVideo ? "idle" : ytLink === "idle" ? "connecting" : ytLink,
     kick: !kickOk ? "idle" : room?.slug === kick && room.failed ? "error" : kickRoom && kickLink !== "idle" ? kickLink : "connecting",
   };
   const field =
@@ -303,7 +333,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
         <div className="flex items-center gap-1" role="group" aria-label="Plateformes affichées">
           {(["youtube", "twitch", "kick"] as const).map((p) => {
             const on = sel.has(p) && available[p];
-            const state = p === "youtube" ? (available.youtube ? "ok" : "idle") : links[p];
+            const state = links[p];
             return (
               <button
                 key={p}
@@ -398,15 +428,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
           Aucune chaîne. Ouvre les réglages (la roue) et indique ta chaîne Twitch ou Kick, ou l&apos;adresse d&apos;un direct YouTube.
         </p>
       ) : (
-        <div className="flex min-h-0 flex-1 flex-col divide-y divide-line">
-          {showYoutube && (
-            <iframe
-              title="Chat YouTube"
-              src={`https://www.youtube.com/live_chat?v=${ytId}&embed_domain=${typeof location === "undefined" ? "" : location.hostname}&dark_theme=1`}
-              className="min-h-0 w-full flex-1 border-0"
-            />
-          )}
-          {showFeed && (
+        <div className="flex min-h-0 flex-1 flex-col">
           <div className="relative min-h-0 flex-1">
           {/* Colonne inversée : le bas du fil est l'origine du défilement, donc un nouveau message pousse les autres vers le haut tout seul. */}
           <div
@@ -421,6 +443,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
             {shown.length === 0 && (
               <div className="m-auto flex flex-col items-center gap-3 px-6 text-center text-muted">
                 <span className="flex items-center gap-3">
+                  {ytVideo && <Icon p="youtube" size={20} />}
                   {twitch && <Icon p="twitch" size={20} />}
                   {kick && <Icon p="kick" size={20} />}
                 </span>
@@ -453,7 +476,6 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
             </button>
           )}
         </div>
-          )}
         </div>
       )}
       {(sendable.length > 0 || connectable.length > 0 || notice || sendError) && (

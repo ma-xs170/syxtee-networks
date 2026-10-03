@@ -199,3 +199,12 @@ export async function sendMessage(userId: string, p: Platform, channel: string, 
   if (!liveChatId) throw new ChatError("no_live_chat", 404);
   await post("https://www.googleapis.com/youtube/v3/liveChat/messages?part=snippet", token, { snippet: { liveChatId, type: "textMessageEvent", textMessageDetails: { messageText: msg } } });
 }
+
+/** Jeton YouTube du compte relié, ou null (lecture du chat quand aucune clé d'API n'est configurée). */
+export async function youtubeToken(userId: string): Promise<string | null> {
+  try {
+    return (await accessToken(userId, "youtube")).token;
+  } catch {
+    return null;
+  }
+}

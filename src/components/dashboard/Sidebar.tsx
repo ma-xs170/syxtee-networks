@@ -64,7 +64,7 @@ const HELP: Item[] = [
 
 function NavLink({ item, active, locked, onNavigate, hovered, onHover }: { item: Item; active: boolean; locked?: boolean; onNavigate: () => void; hovered?: boolean; onHover?: () => void }) {
   const Icon = item.icon;
-  const cls = `group relative flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm transition-colors ${
+  const cls = `group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors lg:py-1.5 ${
     active ? "border border-line-strong bg-foreground/10 text-foreground" : "border border-transparent text-muted hover:bg-foreground/[0.06] hover:text-foreground"
   }`;
   const inner = (
@@ -237,6 +237,42 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
   );
 }
 
+// Barre d'onglets du bas (mobile) : les 4 pages du quotidien à portée de pouce, le reste dans le tiroir.
+const TABS: Item[] = [GROUPS[0].items[0], GROUPS[0].items[1], GROUPS[0].items[2], GROUPS[0].items[3]];
+
+function MobileTabs({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolean }) {
+  const pathname = usePathname();
+  const account = useAccount();
+  const cell = "relative flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-[11px] transition-colors active:scale-[0.97]";
+  return (
+    <nav aria-label="Navigation rapide" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
+      <ul className="mx-auto grid max-w-lg grid-cols-5 gap-1 px-2 pt-1.5">
+        {TABS.map((t) => {
+          const Icon = t.icon;
+          const on = t.href === "/dashboard" ? pathname === t.href : pathname === t.href || pathname.startsWith(`${t.href}/`);
+          const locked = !!t.feature && !!account && !account.features.includes(t.feature);
+          return (
+            <li key={t.href}>
+              <Link href={t.href} aria-current={on ? "page" : undefined} className={`${cell} ${on ? "text-foreground" : "text-muted"}`}>
+                {on && <span aria-hidden="true" className="absolute inset-x-4 top-0 h-0.5 rounded-full bg-accent" />}
+                <Icon size={22} weight={on ? "fill" : "regular"} aria-hidden="true" />
+                <span className="max-w-full truncate">{t.label === "Vue d'ensemble" ? "Accueil" : t.label === "Mes relais" ? "Relais" : t.label === "Santé du flux" ? "Santé" : t.label}</span>
+                {locked && <Lock size={10} className="absolute right-3 top-1.5 text-muted" aria-label="Verrouillé dans ta formule" />}
+              </Link>
+            </li>
+          );
+        })}
+        <li>
+          <button type="button" onClick={onMenu} aria-expanded={menuOpen} aria-label="Ouvrir le menu" className={`${cell} w-full text-muted`}>
+            <List size={22} aria-hidden="true" />
+            <span>Menu</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  );
+}
+
 /** Mise en page : barre latérale fixe en desktop, barre du haut et tiroir en mobile. */
 export default function DashboardShell({ admin, children }: { admin: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -246,6 +282,15 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
     restoreStreamMode();
   }, []);
   useEffect(() => setOpen(false), [pathname]);
+  // Tiroir ouvert : la page derrière ne défile plus.
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
 
   return (
     <div className="dash-surface min-h-dvh lg:grid lg:grid-cols-[264px_1fr]">
@@ -253,14 +298,14 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
         <Content admin={admin} onNavigate={() => {}} />
       </aside>
 
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-line bg-background/90 px-4 backdrop-blur-md lg:hidden">
+      <header className="sticky top-0 z-40 flex h-[calc(3.5rem+env(safe-area-inset-top))] items-center justify-between border-b border-line bg-background/90 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-md lg:hidden">
         <Link href="/dashboard" className="flex items-center gap-3" aria-label="Dashboard SYXTEE">
           <Image src="/logo-400.png" alt="" width={20} height={28} style={{ width: 20, height: "auto" }} className="ink-img" priority />
           <span className="text-sm font-semibold tracking-[0.18em]">SYXTEE</span>
         </Link>
         <div className="flex items-center gap-2">
           <LivePill compact />
-          <button type="button" onClick={() => setOpen(true)} aria-label="Ouvrir le menu" aria-expanded={open} className="rounded-lg p-2 hover:bg-foreground/10">
+          <button type="button" onClick={() => setOpen(true)} aria-label="Ouvrir le menu" aria-expanded={open} className="grid h-11 w-11 place-items-center rounded-lg hover:bg-foreground/10">
             <List size={22} />
           </button>
         </div>
@@ -269,8 +314,8 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu du dashboard">
           <button type="button" aria-label="Fermer le menu" className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
-          <div className="relative h-full w-[280px] max-w-[85vw] border-r border-line bg-surface">
-            <button type="button" onClick={() => setOpen(false)} aria-label="Fermer le menu" className="absolute right-3 top-4 rounded-lg p-2 hover:bg-foreground/10">
+          <div className="relative h-dvh w-[300px] max-w-[88vw] border-r border-line bg-surface pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
+            <button type="button" onClick={() => setOpen(false)} aria-label="Fermer le menu" className="absolute right-3 top-[calc(0.5rem+env(safe-area-inset-top))] grid h-11 w-11 place-items-center rounded-lg hover:bg-foreground/10">
               <X size={18} />
             </button>
             <Content admin={admin} onNavigate={() => setOpen(false)} />
@@ -278,7 +323,9 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
         </div>
       )}
 
-      <div className="relative min-w-0">
+      <MobileTabs onMenu={() => setOpen(true)} menuOpen={open} />
+
+      <div className="relative min-w-0 pb-[calc(4.25rem+env(safe-area-inset-bottom))] lg:pb-0">
         {/* Fond de la page : même principe que l'accueil (dégradé rouge et nuages animés), qui se fond dans le thème vers le bas. */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[40rem] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_35%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_35%,transparent_100%)]">
           <CloudBackdrop tone="theme" />

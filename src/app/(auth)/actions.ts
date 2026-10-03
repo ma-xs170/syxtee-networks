@@ -153,6 +153,23 @@ export async function linkTwitch(formData: FormData) {
   redirect(data.url);
 }
 
+const OAUTH_PROVIDERS = ["google", "twitch", "discord"] as const;
+
+/** Connexion ou inscription avec Google, Twitch ou Discord. Le retour passe par /auth/callback (afterLogin, puis /bienvenue si profil incomplet). */
+export async function signInWithProvider(formData: FormData) {
+  const provider = OAUTH_PROVIDERS.find((p) => p === formData.get("provider"));
+  const next = safeNext(String(formData.get("next") ?? ""), "");
+  if (!provider || !hasSupabase) redirect(`/connexion?erreur=${provider ? "indisponible" : "oauth"}`);
+  if (!(await allow(`oauth:ip:${await clientIp()}`, 30, 3600))) redirect("/connexion?erreur=limite");
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo: `${await origin()}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}` },
+  });
+  if (error || !data.url) redirect(`/connexion?erreur=${mapSupabaseError(error?.code)}`);
+  redirect(data.url);
+}
+
 export async function signOut() {
   if (hasSupabase) {
     const supabase = await createClient();

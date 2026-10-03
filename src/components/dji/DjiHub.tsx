@@ -239,7 +239,7 @@ export default function DjiHub({ relays, focusRelay }: { relays: RtmpRelay[]; fo
       {noBt && (
         <p className="mb-6 rounded-2xl border border-line p-5 text-sm leading-relaxed">
           {env === "ios"
-            ? "Sur iPhone, Safari n'a pas accès au Bluetooth : utilise Moblin pour lancer ta DJI, ou l'app SYXTEE (bientôt). Les stats ci-dessus restent à jour."
+            ? "Safari n'a pas accès au Bluetooth sur iPhone, Apple ne l'autorise pas. Ouvre cette page dans Bluefy (navigateur gratuit de l'App Store, avec Bluetooth) pour lancer ta DJI, ou utilise Moblin. Les stats ci-dessus restent à jour."
             : "Ce navigateur n'a pas accès au Bluetooth : ouvre cette page dans Chrome (Android ou ordinateur) ou Edge."}
         </p>
       )}

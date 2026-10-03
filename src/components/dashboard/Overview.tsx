@@ -17,6 +17,7 @@ import PhoneMoblin from "../illustrations/PhoneMoblin";
 import { DailyBars, Sparkline } from "./charts";
 import { useLiveClock, useLiveStatus } from "./LiveStatus";
 import MaskedUrl from "./MaskedUrl";
+import MultiChat, { type ChatDefaults } from "./MultiChat";
 import LiveNow from "./LiveNow";
 import { SessionList } from "./sessions";
 import { ArrowLink, Tile, TileLabel } from "./ui";
@@ -366,7 +367,7 @@ function GoTo() {
 
 // ─────────────── Page ───────────────
 
-export default function Overview({ initial }: { initial: OverviewData }) {
+export default function Overview({ initial, chat = { twitch: "", kick: "", youtube: "" } }: { initial: OverviewData; chat?: ChatDefaults }) {
   const [range, setRange] = useState<Range>(initial.range);
   const [data, setData] = useState(initial);
   const [pending, setPending] = useState(false);
@@ -450,6 +451,12 @@ export default function Overview({ initial }: { initial: OverviewData }) {
         </div>
 
         <div className="space-y-4">
+          <div>
+            <TileLabel right={<ArrowLink href="/dashboard/apercu">Aperçu</ArrowLink>}>Chat</TileLabel>
+            <div className="mt-3">
+              <MultiChat defaults={chat} height="h-[28rem]" compact />
+            </div>
+          </div>
           <Subscription data={data} />
           <Urls data={data} />
           <GoTo />

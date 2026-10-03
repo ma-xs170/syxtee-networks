@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import LiveStudio from "@/components/dashboard/LiveStudio";
+import MultiChat from "@/components/dashboard/MultiChat";
 import { DashHeader, DashPage } from "@/components/dashboard/ui";
-import { requireUser } from "@/lib/auth/dal";
+import { getProfile, requireUser } from "@/lib/auth/dal";
 import { publicCoreUrl } from "@/lib/core";
 import { defaultRelay } from "@/lib/relay-groups";
 import { coreStatusText, loadRelays } from "@/lib/relays";
@@ -13,6 +14,7 @@ export const metadata: Metadata = { title: "Aperçu", robots: { index: false } }
 export default async function ApercuPage({ searchParams }: PageProps<"/dashboard/apercu">) {
   const user = await requireUser("/dashboard/apercu");
   const { relay: wanted } = await searchParams;
+  const profile = await getProfile();
   const { relays, status } = await loadRelays(user.id);
   const active = relays.filter((r) => !r.archived);
   const current = active.find((r) => r.id === wanted) ?? defaultRelay(active);
@@ -32,9 +34,13 @@ export default async function ApercuPage({ searchParams }: PageProps<"/dashboard
           .
         </p>
       ) : (
-        <>
+        <div className="space-y-6">
           <LiveStudio sources={active.map((r) => ({ id: r.id, name: r.name, live: r.live }))} coreUrl={publicCoreUrl} initial={current.id} />
-        </>
+          <div>
+            <h2 className="mb-3 text-sm font-semibold">Chat</h2>
+            <MultiChat defaults={{ twitch: profile?.twitch_login ?? "", kick: profile?.kick ?? "", youtube: "" }} />
+          </div>
+        </div>
       )}
     </PlanGate>
     </DashPage>

@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useActionState, useEffect, useId, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { motion, type Variants } from "motion/react";
-import { requestPasswordReset, resendVerification, resetPassword, signIn, signUp, type AuthState } from "@/app/(auth)/actions";
+import { siDiscord, siGoogle, siTwitch } from "simple-icons";
+import { requestPasswordReset, signInWithProvider, resendVerification, resetPassword, signIn, signUp, type AuthState } from "@/app/(auth)/actions";
 import { PASSWORD_MIN, passwordStrength, STRENGTH_LABEL } from "@/lib/auth/password";
 
 // Cartes d'authentification (email + mot de passe) : connexion, inscription, mot de passe oublié, nouveau mot de passe.
@@ -70,6 +71,43 @@ function Submit({ idle, busy, disabled = false }: { idle: string; busy: string; 
     >
       {pending ? busy : idle}
     </button>
+  );
+}
+
+const PROVIDERS = [
+  { id: "google", label: "Google", icon: siGoogle },
+  { id: "twitch", label: "Twitch", icon: siTwitch },
+  { id: "discord", label: "Discord", icon: siDiscord },
+] as const;
+
+/** Boutons Google / Twitch / Discord, sous le formulaire email. Formulaire distinct : l'email reste un choix à part entière. */
+function OAuthButtons({ next }: { next: string }) {
+  return (
+    <motion.div variants={item} className="mt-8">
+      <div className="flex items-center gap-4 text-xs text-foreground/50" role="separator">
+        <span className="h-px flex-1 bg-foreground/15" />
+        ou continue avec
+        <span className="h-px flex-1 bg-foreground/15" />
+      </div>
+      <form action={signInWithProvider} className="mt-5 grid grid-cols-3 gap-3">
+        <input type="hidden" name="next" value={next} />
+        {PROVIDERS.map((p) => (
+          <button
+            key={p.id}
+            type="submit"
+            name="provider"
+            value={p.id}
+            aria-label={`Continuer avec ${p.label}`}
+            className="flex h-12 items-center justify-center gap-2 rounded-xl border border-foreground/20 bg-foreground/[0.08] text-sm font-medium text-foreground transition-colors hover:bg-foreground/[0.14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.99]"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+              <path d={p.icon.path} />
+            </svg>
+            <span className="hidden sm:inline">{p.label}</span>
+          </button>
+        ))}
+      </form>
+    </motion.div>
   );
 }
 
@@ -252,6 +290,8 @@ export function SignInCard({ next = "", error }: { next?: string; error?: string
         </div>
       </motion.form>
 
+      <OAuthButtons next={next} />
+
       {message && (
         <motion.div variants={item} className="mt-4">
           <ErrorText>{message}</ErrorText>
@@ -259,7 +299,7 @@ export function SignInCard({ next = "", error }: { next?: string; error?: string
       )}
 
       <motion.p variants={item} className="mt-10 rounded-xl border border-foreground/20 bg-foreground/[0.08] p-4 text-center text-xs leading-relaxed text-foreground/55">
-        Compte créé avec Twitch, Discord, Google ou un lien par email ?{" "}
+        Compte créé avec un lien par email ?{" "}
         <Link href={`/mot-de-passe-oublie${email ? `?email=${encodeURIComponent(email)}` : ""}`} className="font-medium text-foreground hover:underline">
           Définis ton mot de passe
         </Link>{" "}
@@ -333,6 +373,8 @@ export function SignUpCard({ next = "", error }: { next?: string; error?: string
           <Submit idle="Créer mon compte" busy="Création…" disabled={mismatch || passwordStrength(password) === 0} />
         </div>
       </motion.form>
+
+      <OAuthButtons next={next} />
 
       {(state.status === "error" || error) && (
         <motion.div variants={item} className="mt-4">

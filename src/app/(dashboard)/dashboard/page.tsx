@@ -17,7 +17,7 @@ export default async function DashboardPage() {
     <DashPage>
       {/* Prénom pas encore renseigné : « Salut. » tout court. */}
       {first ? <DashHeader lead="Salut" hl={`${first}.`} highlight /> : <DashHeader lead="Salut." hl="" />}
-      <Overview initial={initial} />
+      <Overview initial={initial} chat={{ twitch: profile.twitch_login ?? "", kick: profile.kick ?? "", youtube: "" }} />
     </DashPage>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { signOut } from "@/app/(auth)/actions";
 import { redirect } from "next/navigation";
 import CompteNav from "@/components/compte/CompteNav";
 import { Container } from "@/components/ui";
@@ -39,6 +40,11 @@ export default async function CompteLayout({ children }: LayoutProps<"/compte">)
           <Link href="/dashboard" className="inline-flex h-10 items-center rounded-full border border-line-strong px-5 text-sm font-medium transition-colors hover:bg-foreground/10">
             Dashboard
           </Link>
+          <form action={signOut}>
+            <button type="submit" className="inline-flex h-10 items-center rounded-full border border-line px-5 text-sm text-muted transition-colors hover:bg-foreground/10 hover:text-foreground">
+              Déconnexion
+            </button>
+          </form>
         </div>
       </header>
 

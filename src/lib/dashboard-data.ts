@@ -125,8 +125,10 @@ export function delta(current: number, previous: number): { text: string; up: bo
 
 /** Masque la clé d'une URL de stream : srtla://hôte:5000?streamid=live_•••••••• */
 export function maskUrl(url: string) {
-  // Clé seule (champ « Clé » RTMP) ou clé en fin de chemin RTMP (…/live/live_xxx).
+  // Secret seul (champ RIST), clé seule (champ « Clé » RTMP) ou clé en fin de chemin RTMP (…/live/live_xxx).
   if (/^live_[0-9a-f]+$/i.test(url)) return "live_••••••••";
+  if (/^[0-9a-f]{48}$/i.test(url)) return "••••••••••••••••";
+  if (url.startsWith("rist")) return url.replace(/(secret=)[^&]*/i, "$1••••••••");
   if (url.startsWith("rtmp")) return url.replace(/\/(live_)[0-9a-f]+$/i, "/$1••••••••");
   return url.replace(/(streamid=)([a-z]+_)?[^&]*/i, (_m, p: string, prefix = "") => `${p}${prefix}••••••••`);
 }

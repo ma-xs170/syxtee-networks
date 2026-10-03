@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashPage } from "@/components/dashboard/ui";
-import { requireUser } from "@/lib/auth/dal";
+import { DiscordTicketButton, SupportId } from "@/components/SupportId";
+import { getProfile, requireUser } from "@/lib/auth/dal";
 import { fmtAgo } from "@/lib/dashboard-data";
 import { listTickets, ticketCounts } from "@/lib/support";
 
@@ -17,16 +18,45 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
   const user = await requireUser("/dashboard/support");
   const { etat } = await searchParams;
   const tab = TABS.find((t) => t.id === etat) ?? TABS[0];
+  const profile = await getProfile();
   const [tickets, counts] = await Promise.all([listTickets({ userId: user.id, state: tab.state }), ticketCounts(user.id)]);
 
   return (
     <DashPage>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Support</h1>
-        <Link href="/dashboard/support/nouveau" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-lg bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
-          <span aria-hidden="true">+</span> Nouvelle demande
-        </Link>
+      <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Support</h1>
+      <p className="mt-2 max-w-[65ch] text-sm text-muted">Choisis comment nous écrire. Pour une question de la documentation, lis d&apos;abord la <Link href="/docs" className="text-foreground underline underline-offset-4">documentation</Link>.</p>
+
+      <div className="mt-8 grid gap-4 md:grid-cols-2">
+        <section aria-labelledby="canal-discord" className="flex flex-col rounded-2xl border border-line-strong bg-surface p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-3">
+            <h2 id="canal-discord" className="text-lg font-semibold tracking-tight">
+              Discord
+            </h2>
+            <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-on-accent">Recommandé</span>
+          </div>
+          <p className="mt-3 text-sm leading-relaxed text-muted">Le plus rapide : l&apos;équipe et la communauté répondent sur le serveur. Donne ton ID support dans le ticket pour qu&apos;on retrouve ton compte.</p>
+          {profile?.support_id && (
+            <div className="mt-5">
+              <SupportId id={profile.support_id} />
+            </div>
+          )}
+          <div className="mt-auto pt-5">{profile?.support_id ? <DiscordTicketButton id={profile.support_id} /> : null}</div>
+        </section>
+
+        <section aria-labelledby="canal-chat" className="flex flex-col rounded-2xl border border-line bg-surface p-5 sm:p-6">
+          <h2 id="canal-chat" className="text-lg font-semibold tracking-tight">
+            Support (chat)
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted">Une demande écrite, suivie ici même : tu retrouves la réponse de l&apos;équipe dans la liste ci-dessous, sans passer par Discord.</p>
+          <div className="mt-auto pt-5">
+            <Link href="/dashboard/support/nouveau" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full border border-line-strong px-5 text-sm font-medium transition-colors hover:bg-foreground/10">
+              <span aria-hidden="true">+</span> Nouvelle demande
+            </Link>
+          </div>
+        </section>
       </div>
+
+      <h2 className="mb-4 mt-12 text-sm font-semibold">Mes demandes</h2>
 
       <nav aria-label="Filtrer les demandes" className="mb-6 flex gap-6 border-b border-line">
         {TABS.map((t) => (

@@ -9,7 +9,7 @@ export const hasCore = coreUrl !== "" && token !== "";
 /** URL publique du Core, transmise aux composants client du dashboard. */
 export const publicCoreUrl = coreUrl;
 
-export type RelayProtocol = "srtla" | "rtmp";
+export type RelayProtocol = "srtla" | "rtmp" | "rist";
 
 /** Un relais, tel que le Core le montre au dashboard. */
 export type RelayView = {
@@ -22,7 +22,18 @@ export type RelayView = {
   live: boolean;
   mode: "direct" | "regie";
   regie_available: boolean;
-  urls: { srtla_url?: string; srt_url?: string; rtmp_server?: string; rtmp_key?: string; rtmp_url?: string };
+  urls: {
+    srtla_url?: string;
+    srt_url?: string;
+    rtmp_server?: string;
+    rtmp_key?: string;
+    rtmp_url?: string;
+    rist_url?: string;
+    rist_server?: string;
+    rist_host?: string;
+    rist_port?: number;
+    rist_secret?: string;
+  };
   obs_srt_url: string;
   created_at: string;
   rotated_at: string | null;

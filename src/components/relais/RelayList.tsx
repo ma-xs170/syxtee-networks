@@ -158,7 +158,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
         <>
           <div className="mb-6 flex flex-wrap items-center gap-3">
             <div role="radiogroup" aria-label="Protocole" className="flex rounded-full border border-line p-1">
-              {(["all", "srtla", "rtmp"] as const).map((p) => (
+              {(["all", "srtla", "rtmp", "rist"] as const).map((p) => (
                 <button
                   key={p}
                   type="button"

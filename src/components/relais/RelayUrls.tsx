@@ -19,7 +19,13 @@ export default function RelayUrls({ relay }: { relay: Pick<RelayView, "protocol"
   const u = relay.urls;
   return (
     <div className="space-y-6">
-      {relay.protocol === "rtmp" ? (
+      {relay.protocol === "rist" ? (
+        <>
+          {u.rist_url && <Url label="URL RIST complète" hint="Moblin, encodeur RIST, FFmpeg : serveur, port, secret et chiffrement AES-256 inclus." url={u.rist_url} />}
+          {u.rist_server && <Url label="Serveur RIST" hint="Si ton appareil a des champs séparés : adresse et port." url={u.rist_server} />}
+          {u.rist_secret && <Url label="Secret (AES-256)" hint="Mot de passe de chiffrement (profil Main, AES 256 bits). Sans lui, le relais refuse le flux." url={u.rist_secret} />}
+        </>
+      ) : relay.protocol === "rtmp" ? (
         <>
           {u.rtmp_server && <Url label="Serveur RTMP" hint="DJI Mimo, GoPro Quik, OBS → Serveur (ou URL RTMP)." url={u.rtmp_server} />}
           {u.rtmp_key && <Url label="Clé de stream" hint="À coller dans le champ « Clé » de la caméra ou du logiciel." url={u.rtmp_key} />}

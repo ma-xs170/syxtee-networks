@@ -25,7 +25,8 @@ const POOL: { p: P; user: string; text: string }[] = [
   { p: "kick", user: "Sasha_fr", text: "bravo pour le direct" },
   { p: "twitch", user: "Anaïs", text: "on te voit très bien" },
 ];
-const VISIBLE = 5;
+// Plus de lignes que la hauteur du cadre : le haut est toujours rempli (les plus anciennes sortent par le haut, sous le dégradé).
+const VISIBLE = 9;
 
 function PlatformIcon({ p, size = 14 }: { p: keyof typeof icons; size?: number }) {
   return (
@@ -37,7 +38,7 @@ function PlatformIcon({ p, size = 14 }: { p: keyof typeof icons; size?: number }
 
 export default function ChatDemo() {
   const reduce = useReducedMotion();
-  // Les cinq premiers messages sont déjà là ; la suite arrive toutes les 1,8 s, en boucle.
+  // Les premiers messages sont déjà là ; la suite arrive toutes les 1,8 s, en boucle.
   const [n, setN] = useState(VISIBLE);
   useEffect(() => {
     if (reduce) return;

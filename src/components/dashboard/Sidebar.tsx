@@ -26,7 +26,6 @@ import {
 import { signOut } from "@/app/(auth)/actions";
 import type { Feature } from "@/lib/plans";
 import { activeAlso } from "@/lib/dashboard-nav";
-import { site } from "@/lib/site";
 import { Avatar, useAccount } from "../AccountMenu";
 import CloudBackdrop from "../home/CloudBackdrop";
 import ThemeToggle from "../ThemeToggle";
@@ -137,14 +136,10 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
   }, [open]);
 
   const links: { label: string; href: string }[] = [
-    { label: "Profil & réseaux", href: "/dashboard/profil" },
+    { label: "Mon compte", href: "/compte" },
     { label: "Abonnement", href: "/dashboard/abonnement" },
     { label: "Paramètres", href: "/dashboard/parametres" },
     ...(admin ? [{ label: "Administration", href: "/admin" }] : []),
-  ];
-  const more: { label: string; href: string; external?: boolean }[] = [
-    { label: "Discord", href: site.discord, external: true },
-    { label: "Retour au site", href: "/" },
   ];
   const item = "block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-foreground/10";
 
@@ -167,8 +162,7 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
         </button>
         {open && (
           <div role="menu" className="absolute bottom-full left-0 z-50 mb-2 w-[calc(100%+3rem)] overflow-hidden rounded-xl border border-line bg-background py-1 shadow-[0_18px_40px_rgba(0,0,0,0.6)]">
-            <p className="px-4 pb-1 pt-2 text-xs font-medium text-muted">Mon compte</p>
-            {links.map((l) => (
+                        {links.map((l) => (
               <Link
                 key={l.href}
                 role="menuitem"
@@ -182,19 +176,6 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
                 {l.label}
               </Link>
             ))}
-            <div className="border-t border-line">
-              {more.map((l) =>
-                l.external ? (
-                  <a key={l.href} role="menuitem" href={l.href} target="_blank" rel="noopener noreferrer" className={item}>
-                    {l.label} <span aria-hidden="true" className="text-muted">↗</span>
-                  </a>
-                ) : (
-                  <Link key={l.href} role="menuitem" href={l.href} onClick={() => setOpen(false)} className={item}>
-                    {l.label}
-                  </Link>
-                ),
-              )}
-            </div>
             <form action={signOut} className="border-t border-line">
               <button type="submit" role="menuitem" className={`${item} flex items-center gap-2 text-red-400`}>
                 <SignOut size={16} aria-hidden="true" />

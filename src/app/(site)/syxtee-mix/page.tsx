@@ -38,10 +38,7 @@ export default function StudioPage() {
               Une vraie régie de diffusion, sans OBS. Compose tes scènes et laisse le commutateur gérer les coupures.
             </p>
             <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={{ "--i": 2 } as React.CSSProperties}>
-              <Link href="/commutateur" className={`${cta} bg-foreground text-background hover:bg-foreground/85`}>
-                Ouvrir le commutateur
-                <span aria-hidden="true">↗</span>
-              </Link>
+              <span className={`${cta} border border-foreground/20 bg-background/60 font-mono text-sm uppercase tracking-[0.14em] text-foreground/70`}>À venir</span>
               <Link href="/acces" className={`${cta} border border-foreground/20 bg-background/60 text-foreground backdrop-blur-sm hover:bg-background/90`}>
                 Demander l'accès
               </Link>

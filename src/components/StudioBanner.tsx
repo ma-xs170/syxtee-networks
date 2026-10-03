@@ -18,11 +18,9 @@ export default function StudioBanner() {
               Multiview, PROGRAM et PREVIEW, transitions, mixeur audio, protection et un seul lien pour OBS.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Link href="/syxtee-mix" className="btn btn-primary">
+              <span className="inline-flex h-12 items-center rounded-xl border border-line px-5 font-mono text-xs uppercase tracking-[0.14em] text-muted">À venir</span>
+              <Link href="/syxtee-mix" className="btn btn-secondary">
                 Découvrir le commutateur
-              </Link>
-              <Link href="/commutateur" className="btn btn-secondary">
-                Ouvrir le commutateur
               </Link>
             </div>
           </div>

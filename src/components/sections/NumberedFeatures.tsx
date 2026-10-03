@@ -71,11 +71,9 @@ export default function NumberedFeatures() {
         tags="Multiview · PROGRAM et PREVIEW · Mixeur audio · Lien OBS unique"
         actions={
           <>
-            <Link href="/syxtee-mix" className="btn btn-primary">
+            <span className="inline-flex h-12 items-center rounded-xl border border-line px-5 font-mono text-xs uppercase tracking-[0.14em] text-muted">À venir</span>
+            <Link href="/syxtee-mix" className="btn btn-secondary">
               Découvrir le commutateur
-            </Link>
-            <Link href="/commutateur" className="btn btn-secondary">
-              Ouvrir le commutateur
             </Link>
           </>
         }

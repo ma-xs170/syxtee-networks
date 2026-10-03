@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { isAdminEmail } from "@/lib/admin";
 import { LiveStatusProvider } from "@/components/dashboard/LiveStatus";
 import MixApp, { type RealRelay } from "@/components/mix/MixApp";
 import PlanGate from "@/components/plans/PlanGate";
@@ -14,6 +16,8 @@ export const metadata: Metadata = { title: "SYXTEE COMMUTATEUR", robots: { index
 // Maquette : la liste des relais est réelle, la composition est simulée.
 export default async function CommutateurPage() {
   const user = await requireUser("/commutateur");
+  // « À venir » : fermé au public, seul l'admin voit la maquette.
+  if (!isAdminEmail(user.email)) redirect("/syxtee-mix");
   const profile = await getProfile();
   const [{ relays }, audio] = await Promise.all([loadRelays(user.id), getMixSettings(user.id)]);
   const real: RealRelay[] = relays.filter((r) => !r.archived).map((r) => ({ id: r.id, name: r.name, protocol: r.protocol, live: r.live }));

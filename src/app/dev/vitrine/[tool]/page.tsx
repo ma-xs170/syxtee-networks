@@ -174,6 +174,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
             handle: ["lunaplay", "nokta_tv", "kairo", "mellow", "zeph", "orbitfr", "tiki", "vexa", "dolmen", "sorbet"][i % 10] + (i >= 10 ? i : ""),
             firstName: i === 1 ? "Inès" : null,
             partner: i === 2,
+            channels: [{ platform: (["twitch", "kick", "youtube"] as const)[i % 3], handle: ["lunaplay", "nokta_tv", "kairo", "mellow", "zeph", "orbitfr", "tiki", "vexa", "dolmen", "sorbet"][i % 10] + (i >= 10 ? i : ""), url: "#" }],
             url: "https://twitch.tv",
             avatar: null,
             live: i === 0 ? { viewers: 1284 } : null,

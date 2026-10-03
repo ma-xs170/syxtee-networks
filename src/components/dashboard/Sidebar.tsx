@@ -40,7 +40,7 @@ import { restoreStreamMode } from "./streamMode";
 // Barre latérale du dashboard : groupes titrés, icônes, formule et compte en bas. Sur mobile, une barre en haut
 // ouvre la même navigation en tiroir. Les entrées liées à une fonction de la formule affichent un cadenas en Gratuit.
 
-type Item = { label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean; wordmark?: string };
+type Item = { label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean; wordmark?: string; /** « À venir » : pas encore ouvert (l'admin y accède quand même). */ soon?: boolean };
 type Group = { title?: string; items: Item[] };
 
 // Barre épurée : une seule liste. Statistiques et Scanner regroupent leurs pages en onglets ; Discord et le retour au site sont dans le menu du compte.
@@ -58,7 +58,7 @@ const GROUPS: Group[] = [
   {
     title: "Outils",
     items: [
-      { label: "SYXTEE Commutateur", href: "/commutateur", icon: SlidersHorizontal, external: true, wordmark: "COMMUTATEUR", feature: "commutateur" },
+      { label: "SYXTEE Commutateur", href: "/commutateur", icon: SlidersHorizontal, external: true, wordmark: "COMMUTATEUR", feature: "commutateur", soon: true },
       { label: "Scanner", href: "/dashboard/scanner", icon: MapTrifold },
       { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },
     ],
@@ -70,8 +70,24 @@ const HELP: Item[] = [
   { label: "Documentation", href: "/docs", icon: Question },
 ];
 
-function NavLink({ item, active, locked, onNavigate, hovered, onHover }: { item: Item; active: boolean; locked?: boolean; onNavigate: () => void; hovered?: boolean; onHover?: () => void }) {
+function NavLink({ item, active, locked, soon, onNavigate, hovered, onHover }: { item: Item; active: boolean; locked?: boolean; soon?: boolean; onNavigate: () => void; hovered?: boolean; onHover?: () => void }) {
   const Icon = item.icon;
+  if (soon)
+    return (
+      <div aria-disabled="true" className="flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-sm font-medium text-muted lg:py-1.5">
+        {item.wordmark ? (
+          <span className="min-w-0 opacity-70" aria-label={item.label}>
+            <Wordmark name={item.wordmark} size="sm" className="gap-2" />
+          </span>
+        ) : (
+          <>
+            <Icon size={20} className="shrink-0" aria-hidden="true" />
+            <span className="truncate">{item.label}</span>
+          </>
+        )}
+        <span className="ml-auto shrink-0 rounded border border-line px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em]">À venir</span>
+      </div>
+    );
   const cls = `group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium tracking-[0.01em] transition-colors lg:py-1.5 ${
     active ? "bg-foreground/10 text-foreground" : "text-muted hover:text-foreground"
   }`;
@@ -233,7 +249,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
             <ul className="space-y-0.5">
               {g.items.map((it) => (
                 <li key={it.href}>
-                  <NavLink item={it} active={isActive(it.href)} locked={locked(it)} onNavigate={onNavigate} hovered={hover === it.href} onHover={() => setHover(it.href)} />
+                  <NavLink item={it} active={isActive(it.href)} locked={locked(it)} soon={it.soon && !admin} onNavigate={onNavigate} hovered={hover === it.href} onHover={() => setHover(it.href)} />
                 </li>
               ))}
             </ul>

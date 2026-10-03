@@ -389,14 +389,14 @@ function Urls({ data }: { data: OverviewData }) {
 }
 
 
-type Shortcut = { label: string; href: string; icon: ComponentType<IconProps> };
+type Shortcut = { label: string; href: string; icon: ComponentType<IconProps>; soon?: boolean };
 const shortcuts: Shortcut[] = [
   { label: "Aperçu", href: "/dashboard/apercu", icon: Eye },
   { label: "Multichat", href: "/dashboard/multichat", icon: ChatsCircle },
   { label: "Mes relais", href: "/dashboard/relais", icon: Radio },
   { label: "Scanner", href: "/dashboard/scanner", icon: MapTrifold },
   { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },
-  { label: "SYXTEE COMMUTATEUR", href: "/commutateur", icon: SlidersHorizontal },
+  { label: "SYXTEE COMMUTATEUR", href: "/commutateur", icon: SlidersHorizontal, soon: true },
 ];
 
 function ChatTile({ chat }: { chat: ChatDefaults }) {
@@ -404,7 +404,7 @@ function ChatTile({ chat }: { chat: ChatDefaults }) {
     return (
       <Tile aria-labelledby="chat-setup" className="flex flex-col">
         <TileLabel id="chat-setup">Multichat</TileLabel>
-        <p className="mt-3 text-sm leading-relaxed text-muted">YouTube, Twitch et Kick au même endroit. Indique ta chaîne pour le voir ici.</p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">YouTube, Twitch et Kick au même endroit. Connecte ton compte pour le voir ici.</p>
         <div className="mt-auto pt-4">
           <ArrowLink href="/dashboard/multichat">Configurer le chat</ArrowLink>
         </div>
@@ -427,17 +427,27 @@ function GoTo() {
         Accès rapides
       </h2>
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {shortcuts.map((s) => (
-          <li key={s.href}>
-            <Link
-              href={s.href}
-              className="flex h-full flex-col gap-4 rounded-xl border border-line bg-surface p-4 text-muted transition-colors hover:border-line-strong hover:bg-foreground/[0.06] hover:text-foreground"
-            >
-              <s.icon size={22} aria-hidden="true" />
-              <span className="text-sm font-medium text-foreground">{s.label}</span>
-            </Link>
-          </li>
-        ))}
+        {shortcuts.map((s) =>
+          s.soon ? (
+            <li key={s.href}>
+              <div aria-disabled="true" className="flex h-full flex-col gap-4 rounded-xl border border-line bg-surface p-4 text-muted">
+                <s.icon size={22} aria-hidden="true" />
+                <span className="text-sm font-medium">{s.label}</span>
+                <span className="w-fit rounded border border-line px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em]">À venir</span>
+              </div>
+            </li>
+          ) : (
+            <li key={s.href}>
+              <Link
+                href={s.href}
+                className="flex h-full flex-col gap-4 rounded-xl border border-line bg-surface p-4 text-muted transition-colors hover:border-line-strong hover:bg-foreground/[0.06] hover:text-foreground"
+              >
+                <s.icon size={22} aria-hidden="true" />
+                <span className="text-sm font-medium text-foreground">{s.label}</span>
+              </Link>
+            </li>
+          ),
+        )}
       </ul>
     </section>
   );

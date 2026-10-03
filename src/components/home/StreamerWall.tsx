@@ -1,7 +1,8 @@
 import Image from "next/image";
+import { siKick, siTwitch, siYoutube } from "simple-icons";
 import type { HomeStreamer } from "@/lib/streamers";
 
-// Accueil : « Ils streament avec SYXTEE. » Deux rangées de cartes (avatar, @pseudo, lien vers la chaîne) qui défilent
+// Accueil : « Ils streament avec SYXTEE. » Deux rangées de cartes, une par chaîne (Twitch, Kick, YouTube : logo, avatar, @pseudo, lien) qui défilent
 // lentement en sens inverse, et s'arrêtent au survol. Données : comptes qui ont coché « Afficher ma chaîne » avec un
 // Twitch vérifié (public_streamers). Rien ne s'affiche tant qu'il n'y a aucun streamer. Immobile sous prefers-reduced-motion.
 
@@ -13,10 +14,14 @@ function Avatar({ s }: { s: HomeStreamer }) {
   );
 }
 
-function Card({ s }: { s: HomeStreamer }) {
+type Card = { key: string; s: HomeStreamer; platform: "twitch" | "kick" | "youtube"; handle: string; url: string };
+const ICON = { twitch: siTwitch, kick: siKick, youtube: siYoutube };
+
+function Card({ c }: { c: Card }) {
+  const { s } = c;
   return (
     <a
-      href={s.url}
+      href={c.url}
       target="_blank"
       rel="noopener noreferrer"
       className="mr-3 flex w-64 shrink-0 items-center gap-4 rounded-xl border border-line bg-surface px-5 py-4 transition-colors hover:border-line-strong hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground sm:w-72"
@@ -24,8 +29,11 @@ function Card({ s }: { s: HomeStreamer }) {
       <Avatar s={s} />
       <span className="min-w-0">
         <span className="flex items-center gap-2 font-mono text-base">
-          <span className="truncate">@{s.handle}</span>
-          {s.live && <span className="live-dot shrink-0" role="img" aria-label="En direct" />}
+          <svg viewBox="0 0 24 24" width="14" height="14" fill={`#${ICON[c.platform].hex}`} aria-label={c.platform} role="img" className="shrink-0">
+            <path d={ICON[c.platform].path} />
+          </svg>
+          <span className="truncate">@{c.handle}</span>
+          {c.platform === "twitch" && s.live && <span className="live-dot shrink-0" role="img" aria-label="En direct" />}
         </span>
         <span className="mt-0.5 block text-sm text-muted">
           Voir la chaîne <span aria-hidden="true">→</span>
@@ -36,15 +44,15 @@ function Card({ s }: { s: HomeStreamer }) {
 }
 
 /** Rangée en boucle : la liste est répétée jusqu'à remplir l'écran, puis doublée (la moitié sort pendant que l'autre entre). */
-function Row({ items, reverse }: { items: HomeStreamer[]; reverse?: boolean }) {
+function Row({ items, reverse }: { items: Card[]; reverse?: boolean }) {
   const base = Array.from({ length: Math.max(1, Math.ceil(8 / items.length)) }, () => items).flat();
   return (
     <div className="marquee-wrap overflow-x-auto motion-reduce:overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <div className={`marquee ${reverse ? "marquee-r" : "marquee-l"}`}>
         {[0, 1].map((copy) => (
           <div key={copy} className="flex shrink-0" aria-hidden={copy === 1 ? true : undefined}>
-            {base.map((s, i) => (
-              <Card key={`${s.handle}-${i}`} s={s} />
+            {base.map((c, i) => (
+              <Card key={`${c.key}-${i}`} c={c} />
             ))}
           </div>
         ))}
@@ -56,8 +64,10 @@ function Row({ items, reverse }: { items: HomeStreamer[]; reverse?: boolean }) {
 export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] }) {
   if (streamers.length === 0) return null;
   const ranked = [...streamers].sort((a, b) => Number(!!b.live) - Number(!!a.live) || Number(b.partner) - Number(a.partner));
-  const top = ranked.filter((_, i) => i % 2 === 0);
-  const bottom = ranked.filter((_, i) => i % 2 === 1);
+  // Une carte par chaîne vérifiée de chaque streamer.
+  const cards: Card[] = ranked.flatMap((s) => s.channels.map((ch) => ({ key: `${s.handle}-${ch.platform}`, s, platform: ch.platform, handle: ch.handle, url: ch.url })));
+  const top = cards.filter((_, i) => i % 2 === 0);
+  const bottom = cards.filter((_, i) => i % 2 === 1);
 
   return (
     <section aria-labelledby="mur-titre" className="border-b border-line py-24 sm:py-32">

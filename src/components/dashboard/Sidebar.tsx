@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import {
+  ArrowLeft,
   CaretUpDown,
   ChatsCircle,
   ChartBar,
@@ -213,8 +214,16 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
         </Link>
       </div>
 
-      <div className="px-4 pb-3">
+      <div className="flex items-center gap-2 px-4 pb-3">
         <LivePill />
+        <Link
+          href="/"
+          onClick={onNavigate}
+          className="inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-full border border-line px-3 text-sm text-muted transition-colors hover:bg-foreground/10 hover:text-foreground"
+        >
+          <ArrowLeft size={14} aria-hidden="true" />
+          Retour au site
+        </Link>
       </div>
 
       <nav aria-label="Navigation du dashboard" className="flex-1 space-y-6 overflow-y-auto px-3 pb-3" onMouseLeave={() => setHover(null)}>
@@ -322,6 +331,9 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
           <span className="text-sm font-semibold tracking-[0.18em]">SYXTEE</span>
         </Link>
         <div className="flex items-center gap-2">
+          <Link href="/" aria-label="Retour au site" className="grid h-11 w-11 place-items-center rounded-lg text-muted hover:bg-foreground/10 hover:text-foreground">
+            <ArrowLeft size={20} />
+          </Link>
           <LivePill compact />
           <button type="button" onClick={() => setOpen(true)} aria-label="Ouvrir le menu" aria-expanded={open} className="grid h-11 w-11 place-items-center rounded-lg hover:bg-foreground/10">
             <List size={22} />

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useEffect, useState, type ComponentType } from "react";
 import { DesktopTower, DeviceMobile } from "@phosphor-icons/react";
 import HeroStreet from "./HeroStreet";
-import { useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import DataCenter from "../illustrations/DataCenter";
 import StreamerDesk from "../illustrations/StreamerDesk";
 import PhoneMoblin from "../illustrations/PhoneMoblin";
@@ -125,6 +125,7 @@ function SetupSwitch({ animated }: { animated: boolean }) {
 }
 
 const DELAY = 7000;
+const EASE = [0.16, 1, 0.3, 1] as const;
 /** Rapport largeur/hauteur du cadre des démos. */
 const FRAME = 16 / 10;
 
@@ -173,8 +174,16 @@ export default function FeatureExplorer() {
                   onClick={() => setActive(i)}
                   className={`relative flex w-full items-center gap-4 border-b border-line py-5 text-left text-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 ${on ? "text-foreground" : "text-muted hover:text-foreground"}`}
                 >
-                  <span className="font-mono text-base tabular-nums text-accent">{String(i + 1).padStart(2, "0")}</span>
-                  <span className="font-medium">{it.name}</span>
+                  {on && (
+                    <motion.span
+                      layoutId="fe-active"
+                      aria-hidden="true"
+                      className="absolute -inset-x-3 inset-y-0 rounded-xl bg-foreground/[0.05]"
+                      transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 36 }}
+                    />
+                  )}
+                  <span className="relative font-mono text-base tabular-nums text-accent">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="relative font-medium">{it.name}</span>
                   {on && (
                     <span aria-hidden="true" className="absolute inset-x-0 bottom-[-1px] h-[2px] overflow-hidden bg-transparent">
                       <span
@@ -190,22 +199,33 @@ export default function FeatureExplorer() {
           </div>
 
           <div id="f-panel" role="tabpanel" aria-labelledby={`f-tab-${active}`} className="min-w-0">
-            {/* Bloc de texte à hauteur réservée : le cadre de démo reste à la même place quelle que soit la fonctionnalité. */}
+            {/* Bloc de texte à hauteur réservée : le cadre de démo reste à la même place quelle que soit la fonctionnalité.
+                Le texte sort en fondu puis le suivant monte doucement (transform et opacité seulement). */}
             <div className="lg:h-[17.5rem]">
-            <h3 className="text-3xl font-semibold leading-[1.1] tracking-tight sm:text-4xl">
-              {f.lead}
-              <br />
-              <span className="text-accent">{f.hl}</span>
-            </h3>
-            <p className="mt-5 max-w-[60ch] text-base leading-relaxed text-muted sm:text-lg">{f.text}</p>
-            {f.href && (
-              <Link href={f.href} className="group mt-5 inline-flex items-center gap-2 text-sm text-foreground underline-offset-4 hover:underline">
-                En savoir plus
-                <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none">
-                  →
-                </span>
-              </Link>
-            )}
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={active}
+                  initial={reduce ? false : { opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduce ? undefined : { opacity: 0, y: -8, transition: { duration: 0.16 } }}
+                  transition={{ duration: 0.5, ease: EASE }}
+                >
+                  <h3 className="text-3xl font-semibold leading-[1.1] tracking-tight sm:text-4xl">
+                    {f.lead}
+                    <br />
+                    <span className="text-accent">{f.hl}</span>
+                  </h3>
+                  <p className="mt-5 max-w-[60ch] text-base leading-relaxed text-muted sm:text-lg">{f.text}</p>
+                  {f.href && (
+                    <Link href={f.href} className="group mt-5 inline-flex items-center gap-2 text-sm text-foreground underline-offset-4 hover:underline">
+                      En savoir plus
+                      <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none">
+                        →
+                      </span>
+                    </Link>
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
             {/* Cadre à format fixe (16/10) : la page ne bouge plus d'une fonctionnalité à l'autre. Une capture trop haute
                 coulisse lentement de haut en bas (transform seulement), arrêtée en mouvement réduit. */}
@@ -214,6 +234,15 @@ export default function FeatureExplorer() {
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_70%_at_50%_100%,color-mix(in_srgb,var(--accent)_16%,transparent),transparent_70%)]"
               />
+              <AnimatePresence initial={false}>
+                <motion.div
+                  key={active}
+                  className="absolute inset-0"
+                  initial={reduce ? false : { opacity: 0, scale: 0.985 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={reduce ? undefined : { opacity: 0, transition: { duration: 0.3 } }}
+                  transition={{ duration: 0.55, ease: EASE }}
+                >
               {f.custom === "setup" ? (
                 <SetupSwitch animated={!reduce} />
               ) : f.img ? (
@@ -236,6 +265,8 @@ export default function FeatureExplorer() {
                   <Art key={active} animated={!reduce} className="h-full w-full" />
                 </div>
               )}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </div>

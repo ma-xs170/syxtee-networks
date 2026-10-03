@@ -12,7 +12,7 @@ Décisions du 2026-10-03 : **SYXTEE STUDIO devient SYXTEE MIX** (nom plus évide
 3. changer de scène **seulement si le flux est figé** (le secours automatique qui existe déjà : `Backups`, `backup` côté Core).
 Tout le reste du pilotage d'OBS (liste de scènes, sources, mixeur audio d'OBS, aperçu d'OBS, sauvegardes de scènes, réglages) est retiré de l'interface. La page Mix affiche une barre « OBS » (Stream, Rec, état) seulement quand le plugin est connecté. Le code retiré de l'interface (`Studio.tsx` et ses panneaux) n'est supprimé que dans un lot de nettoyage séparé.
 
-**Mode podcast** : décision attendue de l'utilisateur (voir « Questions ouvertes »). Le rec à distance en est le prérequis.
+**Mode podcast** : synchronisation automatique des sources, image et son, même quand leurs latences diffèrent (voir « Mode podcast : synchronisation »). Le rec à distance du plugin sert à enregistrer le résultat.
 
 Adresses : `/mix` (l'app) et `/syxtee-mix` (la présentation) ; `/studio` et `/syxtee-studio` redirigent (308). Les identifiants internes (composants, `core/src/studio.ts`, routes `/v1/me/studio/*`) gardent leur nom.
 
@@ -34,6 +34,29 @@ Ce que l'utilisateur a validé :
 - Sortie SRT pour OBS en plus du RTMP.
 - Prévisualisation avant passage à l'antenne (preview / programme).
 - Sauvegarde des scènes dans le compte (la V1 les garde dans le navigateur, comme les caméras DJI).
+
+## Mode podcast : synchronisation
+
+But : des caméras qui arrivent avec des latences différentes (SRTLA, RTMP, RIST n'ont pas le même retard) doivent être **alignées**, image et son, dans le programme. C'est le mode podcast voulu : on parle dans la même pièce, les flux doivent coller.
+
+**Principe**
+- Chaque source a un retard de lecture réglable dans le navigateur : `RTCRtpReceiver.jitterBufferTarget` (Chromium). Il retarde **ensemble** l'image et le son d'une source, sans mémoire d'images à gérer. Plage utile : 0 à environ 4 s.
+- Le mode calcule le retard de chaque source par rapport à la plus lente, puis retarde les plus rapides pour qu'elles tombent au même moment. Le programme prend donc le retard de la source la plus lente (le mode est fait pour enregistrer, pas pour l'échange en direct).
+- **Mesure automatique** : le navigateur compare le son des sources deux à deux par corrélation croisée (GCC-PHAT, dans un Web Worker) sur des fenêtres de 8 à 10 secondes à 16 kHz mono. Cela marche quand les sources **entendent un son en commun** (même pièce, mêmes voix). Précision visée : de l'ordre de 20 ms. La mesure est relancée toutes les 30 secondes et lissée pour suivre une dérive.
+- **Test du clap** : un bouton « Synchroniser » invite à taper dans les mains ; le pic de chaque source donne un décalage fiable, même dans le bruit.
+- **Réglage manuel** : un curseur de retard par source (en ms) reste toujours disponible et prioritaire.
+- **Honnêteté sur « l'IA »** : c'est du traitement du signal classique, pas un modèle d'IA. Le texte commercial dira « synchronisation automatique ».
+
+**Limites annoncées dans l'interface**
+- Sources dans des lieux différents sans son en commun (invités à distance) : pas de mesure automatique possible, réglage manuel.
+- Écart au-delà de la plage du navigateur (environ 4 s) : l'interface le signale et propose de baisser la latence de la source la plus lente.
+- Navigateur : Chromium sur PC (Chrome, Edge). Les autres navigateurs affichent « synchronisation indisponible ».
+
+**Composants**
+- `sync/gcc-phat.ts` : fonction pure (deux signaux, retourne le décalage en ms et un indice de confiance). Testée avec des signaux synthétiques à décalages connus, du bruit, et un cas sans corrélation.
+- `sync/sync-worker.ts` : exécute le calcul hors du fil principal.
+- `sync/apply-delay.ts` : transforme les décalages en `jitterBufferTarget` par source, plafonné.
+- Interface : un interrupteur « Mode podcast » dans l'en-tête, l'état de chaque source (retard appliqué, confiance de la mesure, curseur manuel) dans la colonne Sources.
 
 ## Architecture
 
@@ -129,4 +152,4 @@ Autorisation MediaMTX : le point d'entrée existant `/internal/mediamtx/auth` ro
 1. Plafond de sessions Mix simultanées par serveur (à mesurer).
 2. Durée du jeton de lecture WHEP et mode de renouvellement.
 3. Nettoyage de l'ancien pilotage d'OBS : quand supprimer le code retiré de l'interface.
-4. **Mode podcast** : ce que l'utilisateur attend exactement (rec seul sans stream, pistes audio séparées par relais, ou autre).
+4. Précision réellement atteignable de la synchronisation avec WebRTC (à mesurer en test réel, avec une caméra SRTLA et une RTMP dans la même pièce).

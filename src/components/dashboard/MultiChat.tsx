@@ -116,7 +116,24 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
     } catch {}
   }, [defaults.twitch, defaults.kick, defaults.youtube]);
 
-  const push = useCallback((m: Msg) => setMsgs((cur) => (cur.some((x) => x.id === m.id) ? cur : [...cur.slice(-(KEEP - 1)), m])), []);
+  // Les messages arrivent par rafales : on les met en file et on les affiche à cadence régulière (plus vite si la file grossit).
+  const queue = useRef<Msg[]>([]);
+  const push = useCallback((m: Msg) => {
+    if (queue.current.length < 400) queue.current.push(m);
+  }, []);
+  useEffect(() => {
+    const t = setInterval(() => {
+      const q = queue.current;
+      if (!q.length) return;
+      const batch = q.splice(0, Math.max(1, Math.ceil(q.length / 8)));
+      setMsgs((cur) => {
+        const seen = new Set(cur.map((x) => x.id));
+        const add = batch.filter((m) => !seen.has(m.id));
+        return add.length ? [...cur, ...add].slice(-KEEP) : cur;
+      });
+    }, 120);
+    return () => clearInterval(t);
+  }, []);
 
   const twitch = clean(cfg.twitch);
   useSocket(
@@ -169,14 +186,10 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
     setKickLink,
   );
 
-  // Suit le bas du fil, sauf si on remonte lire plus haut.
-  useEffect(() => {
-    if (stuck && list.current) list.current.scrollTop = list.current.scrollHeight;
-  }, [msgs, hidden, stuck, tab]);
-
   function save() {
     setCfg(draft);
     setMsgs([]);
+    queue.current = [];
     try {
       localStorage.setItem(STORE, JSON.stringify(draft));
     } catch {}
@@ -291,35 +304,37 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
         </p>
       ) : (
         <div className="relative min-h-0 flex-1">
+          {/* Colonne inversée : le bas du fil est l'origine du défilement, donc un nouveau message pousse les autres vers le haut tout seul. */}
           <div
             ref={list}
             role="log"
             aria-live="off"
             aria-label="Messages du chat"
             tabIndex={0}
-            onScroll={(e) => {
-              const el = e.currentTarget;
-              setStuck(el.scrollHeight - el.scrollTop - el.clientHeight < 40);
-            }}
-            className="h-full space-y-1 overflow-y-auto overscroll-contain px-3 py-2 text-sm"
+            onScroll={(e) => setStuck(Math.abs(e.currentTarget.scrollTop) < 40)}
+            className="flex h-full flex-col-reverse overflow-y-auto overscroll-contain px-3 py-2 text-sm"
           >
-            {shown.length === 0 && <p className="pt-6 text-center text-muted">En attente de messages…</p>}
-            {shown.map((m) => (
-              <p key={m.id} className="break-words leading-snug [overflow-wrap:anywhere]">
-                <span className="mr-1.5 inline-block align-[-2px] text-muted">
-                  <Icon p={m.platform} size={compact ? 12 : 14} />
-                </span>
-                <span className="font-semibold" style={m.color ? { color: m.color } : undefined}>
-                  {m.user}
-                </span>
-                <span className="text-foreground">: {m.text}</span>
-              </p>
+            {shown.length === 0 && <p className="pb-6 text-center text-muted">En attente de messages…</p>}
+            {[...shown].reverse().map((m) => (
+              <div key={m.id} className="chat-row">
+                <div>
+                  <p className="break-words py-0.5 leading-snug [overflow-wrap:anywhere]">
+                    <span className="mr-1.5 inline-block align-[-2px] text-muted">
+                      <Icon p={m.platform} size={compact ? 12 : 14} />
+                    </span>
+                    <span className="font-semibold" style={m.color ? { color: m.color } : undefined}>
+                      {m.user}
+                    </span>
+                    <span className="text-foreground">: {m.text}</span>
+                  </p>
+                </div>
+              </div>
             ))}
           </div>
           {!stuck && (
             <button
               type="button"
-              onClick={() => setStuck(true)}
+              onClick={() => list.current?.scrollTo({ top: 0, behavior: "smooth" })}
               className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full border border-line-strong bg-background px-4 py-2 text-xs text-foreground shadow-lg"
             >
               Revenir en bas

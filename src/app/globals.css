@@ -163,6 +163,14 @@ body {
   100% { transform: translateY(0); }
 }
 
+/* Chat (Multichat, démo de l'accueil) : un nouveau message déplie sa ligne, les anciens glissent vers le haut sans saut. */
+.chat-row { display: grid; grid-template-rows: 1fr; }
+.chat-row > div { min-height: 0; overflow: hidden; }
+@media (prefers-reduced-motion: no-preference) {
+  .chat-row { animation: chat-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+}
+@keyframes chat-in { from { grid-template-rows: 0fr; opacity: 0; } to { grid-template-rows: 1fr; opacity: 1; } }
+
 /* Nuages du hero (CloudBackdrop) : dérive très lente, transform seulement. */
 @media (prefers-reduced-motion: no-preference) {
   .cloud-a { animation: cloud-a 18s ease-in-out infinite alternate; }

@@ -1,24 +1,22 @@
+import Image from "next/image";
 import { DiscordLogo } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { rich } from "@/lib/rich";
 import { site } from "@/lib/site";
 import type { HomeStreamer } from "@/lib/streamers";
-import HeroCrowd, { hasCrowd } from "../home/HeroCrowd";
 import CloudBackdrop from "../home/CloudBackdrop";
-import StudioDemo from "../studio/StudioDemo";
 import { CREATE_RELAY_HREF, Container } from "../ui";
 import RotatingHighlight from "../home/RotatingHighlight";
 
 // Accueil : hero clair (rouge, blanc, noir) quel que soit le thème du site, comme les sites de streaming : fond rouge
-// qui s'éclaircit vers le bas, portraits de streamers en trame de points, boutons noirs, et un panneau sombre
-// (la démo de SYXTEE STUDIO) à la place de la capture d'écran. Le reste de la page suit le thème choisi.
+// qui s'éclaircit vers le bas, boutons noirs, puis une rangée d'avatars de streamers. Le reste de la page suit le thème choisi.
 
 const corner = "pointer-events-none absolute h-9 w-9 border-accent sm:h-12 sm:w-12";
 const btn =
   "inline-flex h-12 items-center justify-center gap-3 whitespace-nowrap rounded-xl px-7 text-base font-medium transition-[background-color,transform] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 
 export default function Hero({ streamers = [] }: { streamers?: HomeStreamer[] }) {
-  const crowd = hasCrowd(streamers);
+  const faces = streamers.filter((s) => s.avatar).slice(0, 4);
   return (
     <section data-theme="light" className="relative -mt-[4.75rem] overflow-hidden border-b border-line bg-background text-foreground">
       {/* Nuages et grain, sous la barre de menu (la section remonte derrière elle). */}
@@ -70,13 +68,19 @@ export default function Hero({ streamers = [] }: { streamers?: HomeStreamer[] })
           </div>
         </div>
 
-        {/* Les portraits montent derrière la fenêtre, qui les recouvre par le bas. La fenêtre est entière, sans fondu. */}
-        <div className={crowd ? "mt-6" : "mt-10"}>
-          <HeroCrowd streamers={streamers} />
-          <div className="relative z-10 mx-auto max-w-5xl">
-            <StudioDemo />
+        {/* Quelques avatars de streamers inscrits (consentement + Twitch vérifié), rien sans au moins un. */}
+        {faces.length > 0 && (
+          <div className="rise mt-10 flex items-center justify-center gap-4" style={{ "--i": 4 } as React.CSSProperties}>
+            <ul className="flex -space-x-3" aria-hidden="true">
+              {faces.map((s) => (
+                <li key={s.handle}>
+                  <Image src={s.avatar!} alt="" width={56} height={56} className="h-12 w-12 rounded-full border-2 border-background object-cover sm:h-14 sm:w-14" />
+                </li>
+              ))}
+            </ul>
+            <p className="text-base text-foreground/75 sm:text-lg">Ils diffusent déjà avec nous</p>
           </div>
-        </div>
+        )}
       </Container>
     </section>
   );

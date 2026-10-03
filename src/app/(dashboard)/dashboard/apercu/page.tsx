@@ -35,7 +35,7 @@ export default async function ApercuPage({ searchParams }: PageProps<"/dashboard
       ) : (
         <div>
           <LiveStudio
-            sources={active.map((r) => ({ id: r.id, name: r.name, live: r.live }))}
+            sources={active.map((r) => ({ id: r.id, name: r.name, live: r.live, protocol: r.protocol }))}
             coreUrl={publicCoreUrl}
             initial={current.id}
             chat={{ twitch: profile?.twitch_login ?? "", kick: profile?.kick ?? "", youtube: "" }}

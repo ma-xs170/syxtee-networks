@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { RelayView } from "@/lib/core";
+import ProtocolBadge from "./ProtocolBadge";
 
 // Choix du relais sur les pages Santé, Aperçu et Historique (?relay=<id>). Masqué s'il n'y a qu'un relais.
 
-export default function RelayPicker({ relays, current, base, all }: { relays: Pick<RelayView, "id" | "name" | "live">[]; current: string | null; base: string; all?: boolean }) {
+export default function RelayPicker({ relays, current, base, all }: { relays: Pick<RelayView, "id" | "name" | "live" | "protocol">[]; current: string | null; base: string; all?: boolean }) {
   if (relays.length < 2 && !all) return null;
   const pill = (active: boolean) =>
     `inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-full border px-3.5 text-sm transition-colors ${
@@ -20,6 +21,7 @@ export default function RelayPicker({ relays, current, base, all }: { relays: Pi
         <Link key={r.id} href={`${base}?relay=${r.id}`} className={pill(current === r.id)} aria-current={current === r.id ? "page" : undefined}>
           {r.live && <span className="live-dot" aria-label="En live" />}
           {r.name}
+          <ProtocolBadge protocol={r.protocol} className={current === r.id ? "border-current/40 text-current" : "border-line text-muted"} />
         </Link>
       ))}
     </nav>

@@ -6,6 +6,7 @@ import { fmtAgo, fmtInt } from "@/lib/dashboard-data";
 import { relayGroup, type RelayGroup, type RelayRow } from "@/lib/relay-groups";
 import { flag, serverById } from "@/lib/relay-servers";
 import RelayServer from "../illustrations/RelayServer";
+import ProtocolBadge from "./ProtocolBadge";
 import CreateRelayWizard from "./CreateRelayWizard";
 import RelayActions from "./RelayActions";
 import RelayDetailModal from "./RelayDetailModal";
@@ -28,9 +29,7 @@ type Props = {
   autoOpen?: boolean;
 };
 
-export function ProtocolBadge({ protocol }: { protocol: RelayRow["protocol"] }) {
-  return <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{protocol}</span>;
-}
+export { ProtocolBadge };
 
 export function ServerLabel({ id }: { id: string }) {
   const s = serverById(id);

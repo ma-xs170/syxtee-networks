@@ -90,7 +90,22 @@ function parseTwitch(line: string): Msg | null {
   };
 }
 
-export default function MultiChat({ defaults, height = "h-[34rem]", compact = false }: { defaults: ChatDefaults; height?: string; compact?: boolean }) {
+type Accounts = { connections: Partial<Record<keyof typeof PLATFORM, string>>; configured: Record<string, boolean> };
+type P = keyof typeof PLATFORM;
+
+const SEND_ERRORS: Record<string, string> = {
+  not_connected: "Reconnecte ton compte pour écrire.",
+  expired: "Ta connexion a expiré. Reconnecte ton compte.",
+  forbidden: "La plateforme refuse l'envoi (chat réservé aux abonnés, ou compte limité).",
+  rate_limited: "Doucement : trop de messages d'affilée.",
+  no_live_chat: "Aucun direct YouTube actif pour cette adresse.",
+  channel_not_found: "Chaîne introuvable.",
+  too_long: "Message trop long pour cette plateforme.",
+  rejected: "Le message a été refusé par la plateforme.",
+  bad_channel: "Chaîne invalide : vérifie les réglages.",
+};
+
+export default function MultiChat({ defaults, height = "h-[34rem]", compact = false, notice }: { defaults: ChatDefaults; height?: string; compact?: boolean; notice?: string }) {
   const [cfg, setCfg] = useState<ChatDefaults>(defaults);
   const [draft, setDraft] = useState<ChatDefaults>(defaults);
   const [editing, setEditing] = useState(false);
@@ -102,6 +117,11 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
   const [hidden, setHidden] = useState<Set<Platform>>(new Set());
   const [stuck, setStuck] = useState(true);
   const list = useRef<HTMLDivElement>(null);
+  const [acc, setAcc] = useState<Accounts | null>(null);
+  const [targets, setTargets] = useState<Set<P>>(new Set());
+  const [text, setText] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   // Réglages gardés dans ce navigateur, sinon ceux du profil. Lus après l'hydratation (localStorage n'existe pas côté serveur).
   useEffect(() => {
@@ -118,6 +138,21 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
 
   // Les messages arrivent par rafales : on les met en file et on les affiche à cadence régulière (plus vite si la file grossit).
   const queue = useRef<Msg[]>([]);
+  // Comptes reliés pour écrire (jetons côté serveur : on ne reçoit que les noms).
+  const loadAccounts = useCallback(async () => {
+    try {
+      const r = await fetch("/api/chat/connections", { cache: "no-store" });
+      if (!r.ok) return;
+      const a = (await r.json()) as Accounts;
+      setAcc(a);
+      setTargets((cur) => (cur.size ? new Set([...cur].filter((p) => a.connections[p])) : new Set(Object.keys(a.connections) as P[])));
+    } catch {}
+  }, []);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadAccounts();
+  }, [loadAccounts]);
+
   const push = useCallback((m: Msg) => {
     if (queue.current.length < 400) queue.current.push(m);
   }, []);
@@ -197,6 +232,38 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
   }
 
   const ytId = youtubeId(cfg.youtube);
+  const channelOf: Record<P, string> = { twitch: clean(cfg.twitch), kick: clean(cfg.kick), youtube: ytId };
+  const sendable = (Object.keys(acc?.connections ?? {}) as P[]).filter((p) => channelOf[p]);
+  const connectable = (["twitch", "kick", "youtube"] as const).filter((p) => acc?.configured[p] && !acc.connections[p]);
+
+  async function sendMessage(e: React.FormEvent) {
+    e.preventDefault();
+    const to = sendable.filter((p) => targets.has(p));
+    if (!text.trim() || !to.length || sending) return;
+    setSending(true);
+    setSendError(null);
+    const results = await Promise.all(
+      to.map(async (p) => {
+        try {
+          const r = await fetch("/api/chat/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ platform: p, channel: channelOf[p], text }) });
+          if (r.ok) return null;
+          const j = (await r.json().catch(() => ({}))) as { error?: string };
+          return `${PLATFORM[p].label} : ${SEND_ERRORS[j.error ?? ""] ?? "envoi impossible."}`;
+        } catch {
+          return `${PLATFORM[p].label} : réseau indisponible.`;
+        }
+      }),
+    );
+    const errors = results.filter(Boolean) as string[];
+    if (errors.length) setSendError(errors.join(" "));
+    if (errors.length < to.length) setText("");
+    setSending(false);
+  }
+
+  async function disconnect(p: P) {
+    await fetch(`/api/chat/connections?platform=${p}`, { method: "DELETE" });
+    await loadAccounts();
+  }
   const shown = msgs.filter((m) => !hidden.has(m.platform));
   const none = !twitch && !kick;
   const dot = (l: Link) => (l === "ok" ? "bg-live" : l === "error" ? "bg-red-400" : l === "connecting" ? "animate-pulse bg-muted motion-reduce:animate-none" : "border border-muted");
@@ -280,6 +347,34 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
               />
             </label>
           ))}
+          {acc && (acc.configured.twitch || acc.configured.kick || acc.configured.youtube || Object.keys(acc.connections).length > 0) && (
+            <div className="space-y-2 sm:col-span-3">
+              <p className="text-xs text-muted">Comptes pour écrire dans le chat</p>
+              <ul className="flex flex-wrap gap-2">
+                {(["twitch", "kick", "youtube"] as const).map((p) => {
+                  const who = acc.connections[p];
+                  if (!who && !acc.configured[p]) return null;
+                  return (
+                    <li key={p} className="flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-sm">
+                      <Icon p={p} />
+                      {who ? (
+                        <>
+                          <span className="max-w-[10rem] truncate">{who}</span>
+                          <button type="button" onClick={() => disconnect(p)} className="text-xs text-muted underline-offset-4 hover:text-foreground hover:underline">
+                            Déconnecter
+                          </button>
+                        </>
+                      ) : (
+                        <a href={`/api/chat/connect/${p}`} className="text-muted underline-offset-4 hover:text-foreground hover:underline">
+                          Connecter {PLATFORM[p].label}
+                        </a>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
           <div className="sm:col-span-3">
             <button type="submit" className="h-11 rounded-lg bg-accent px-5 text-sm font-medium text-on-accent hover:bg-accent-hover">
               Enregistrer
@@ -347,6 +442,65 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
             >
               Revenir en bas
             </button>
+          )}
+        </div>
+      )}
+      {(sendable.length > 0 || connectable.length > 0 || notice || sendError) && (
+        <div className="border-t border-line p-2.5">
+          {notice && <p role="status" className="mb-2 text-xs text-muted">{notice}</p>}
+          {sendable.length > 0 ? (
+            <form onSubmit={sendMessage} className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-1" role="group" aria-label="Envoyer vers">
+                {sendable.map((p) => {
+                  const on = targets.has(p);
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      aria-pressed={on}
+                      title={`Écrire sur ${PLATFORM[p].label} (${acc?.connections[p]})`}
+                      onClick={() => setTargets((s) => new Set(on ? [...s].filter((x) => x !== p) : [...s, p]))}
+                      className={`grid h-10 w-10 place-items-center rounded-lg border transition-colors ${on ? "border-line-strong bg-foreground/10" : "border-line opacity-50 hover:opacity-100"}`}
+                    >
+                      <Icon p={p} size={16} />
+                    </button>
+                  );
+                })}
+              </div>
+              <input
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                maxLength={500}
+                placeholder="Écrire un message"
+                aria-label="Message du chat"
+                autoComplete="off"
+                className="h-10 min-w-0 flex-1 rounded-lg border border-line bg-background px-3 text-sm text-foreground placeholder:text-muted focus:border-line-strong focus:outline-none focus:ring-2 focus:ring-foreground/20"
+              />
+              <button
+                type="submit"
+                disabled={sending || !text.trim() || ![...targets].some((p) => sendable.includes(p))}
+                className="h-10 shrink-0 rounded-lg bg-accent px-4 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {sending ? "Envoi…" : "Envoyer"}
+              </button>
+            </form>
+          ) : (
+            connectable.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+                <span>Connecte un compte pour écrire :</span>
+                {connectable.map((p) => (
+                  <a key={p} href={`/api/chat/connect/${p}`} className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-line px-3 text-foreground transition-colors hover:bg-foreground/10">
+                    <Icon p={p} size={14} />
+                    {PLATFORM[p].label}
+                  </a>
+                ))}
+              </div>
+            )
+          )}
+          {sendError && (
+            <p role="alert" className="mt-2 text-xs text-red-400/90">
+              {sendError}
+            </p>
           )}
         </div>
       )}

@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import type { RelayProtocol } from "@/lib/core";
 import { useLiveStatus } from "./LiveStatus";
 import MultiChat, { type ChatDefaults } from "./MultiChat";
 import StreamHealth from "./StreamHealth";
+import ProtocolBadge from "../relais/ProtocolBadge";
 import StreamPreview from "./StreamPreview";
 
 // Studio d'aperçu, façon régie OBS : en haut le choix de la source (un relais = une source, point rouge s'il est en direct)
 // et le mode, puis le flux en temps réel à côté du chat (même hauteur), puis la santé du flux (débit, latence, pertes).
 // « Multi » affiche toutes les sources en direct côte à côte (4 max) ; un clic sur une vignette l'ouvre en grand.
 
-type Source = { id: string; name: string; live: boolean };
+type Source = { id: string; name: string; live: boolean; protocol: RelayProtocol };
 type Mode = "single" | "multi";
 
 const MULTI_MAX = 4;
@@ -64,6 +66,7 @@ export default function LiveStudio({ sources, coreUrl, initial, chat }: { source
                 >
                   {isLive(s.id) ? <span className="live-dot shrink-0" aria-label="En direct" /> : <span className="h-2 w-2 shrink-0 rounded-full border border-muted" aria-label="Hors ligne" />}
                   <span className="max-w-[12rem] truncate">{s.name}</span>
+                  <ProtocolBadge protocol={s.protocol} />
                 </button>
               </li>
             );
@@ -93,7 +96,10 @@ export default function LiveStudio({ sources, coreUrl, initial, chat }: { source
                 {multi.map((s) => (
                   <li key={s.id}>
                     <div className="mb-2 flex items-center justify-between gap-3">
-                      <p className="font-mono text-xs text-muted">{s.name}</p>
+                      <p className="flex items-center gap-2 font-mono text-xs text-muted">
+                        {s.name}
+                        <ProtocolBadge protocol={s.protocol} />
+                      </p>
                       <button
                         type="button"
                         onClick={() => {

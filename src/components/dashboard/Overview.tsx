@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
+import { ChartBar, ChatsCircle, Eye, MapTrifold, Radio, SlidersHorizontal, type IconProps } from "@phosphor-icons/react";
 import {
   delta,
   deviceLabel,
@@ -22,55 +23,228 @@ import LiveNow from "./LiveNow";
 import { SessionList } from "./sessions";
 import { ArrowLink, Tile, TileLabel } from "./ui";
 
-// Vue d'ensemble du dashboard (grille bento) : statut, alertes, activité, dernier direct, histogramme,
-// derniers directs, abonnement, URLs, santé, raccourcis. Données : /api/dashboard/overview (une requête).
+// Vue d'ensemble du dashboard, en quatre niveaux : 1. l'état du direct et les actions, 2. ce qui demande une action,
+// 3. les chiffres de la période, 4. le détail (activité, derniers directs) avec le chat, les URLs et les accès rapides.
+// Données : /api/dashboard/overview (une requête).
 
-// ─────────────── Bandeau de statut ───────────────
+// ─────────────── 1. Centre de contrôle ───────────────
 
-function StatusBanner({ data, onLaunch }: { data: OverviewData; onLaunch: () => void }) {
+function Stat({ label, value, href }: { label: string; value: string; href?: string }) {
+  const body = (
+    <>
+      <p className="text-xs text-muted">{label}</p>
+      <p className="mt-1 font-mono text-sm tabular-nums text-foreground">{value}</p>
+    </>
+  );
+  return href ? (
+    <Link href={href} className="block rounded-lg transition-opacity hover:opacity-70">
+      {body}
+    </Link>
+  ) : (
+    <div>{body}</div>
+  );
+}
+
+const btnPrimary =
+  "inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-accent px-6 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98]";
+const btnGhost = "inline-flex h-11 items-center whitespace-nowrap rounded-full border border-line-strong px-5 text-sm transition-colors hover:bg-foreground/10";
+
+function ControlCenter({ data, onLaunch }: { data: OverviewData; onLaunch: () => void }) {
   const { state, link } = useLiveStatus();
   const clock = useLiveClock();
   const live = !!state?.live;
   const reconnecting = !!state?.reconnecting;
+  const on = live || reconnecting;
+  const used = state?.relays ? state.relays.filter((r) => r.live || r.reconnecting).length : on ? 1 : 0;
+  const liveName = state?.relays?.find((r) => r.id === state.relay_id)?.name;
+  const unlimited = data.relays.max >= 1_000_000;
 
   return (
-    <section
-      aria-label="Statut du direct"
-      className={`flex flex-col gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 ${live || reconnecting ? "border-live/40" : "border-line"}`}
-    >
-      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium" aria-live="polite">
-        {live || reconnecting ? (
-          <>
-            <span className="live-dot" aria-hidden="true" />
-            <span className="text-foreground">{reconnecting ? "Reconnexion" : "En live"}</span>
-            {clock && <span className="tabular-nums text-foreground">{clock}</span>}
-            {state?.kbps != null && <span className="tabular-nums text-muted">{fmtInt(state.kbps)} kbps</span>}
-            {state?.relays && state.relays.filter((r) => r.live).length > 1 ? (
-              <span className="text-muted">{state.relays.filter((r) => r.live).length} relais</span>
-            ) : (
-              state?.relays?.find((r) => r.id === state.relay_id) && <span className="normal-case tracking-normal text-muted">{state.relays.find((r) => r.id === state.relay_id)!.name}</span>
-            )}
-          </>
-        ) : (
-          <>
-            <span className="h-2 w-2 rounded-full border border-muted" aria-hidden="true" />
-            <span className="text-foreground">{link === "error" ? "Relais injoignable" : "Hors ligne"}</span>
-            {data.lastEndedAt && <span className="normal-case tracking-normal text-muted">dernier direct {fmtAgo(data.lastEndedAt)}</span>}
-          </>
-        )}
-      </p>
-      {live || reconnecting ? (
-        <ArrowLink href="/dashboard/sante">Voir la santé</ArrowLink>
-      ) : (
-        <button
-          type="button"
-          onClick={onLaunch}
-          className="inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98]"
-        >
-          Lancer un direct <span aria-hidden="true">→</span>
-        </button>
-      )}
+    <section aria-label="Statut du direct" className={`rounded-2xl border bg-surface p-5 sm:p-7 ${on ? "border-live/40" : "border-line"}`}>
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div aria-live="polite">
+          <p className="flex items-center gap-2.5 font-mono text-xs uppercase tracking-[0.16em] text-muted">
+            {on ? <span className="live-dot" aria-hidden="true" /> : <span className="h-2 w-2 rounded-full border border-muted" aria-hidden="true" />}
+            {on ? (reconnecting ? "Reconnexion" : "En live") : link === "error" ? "Relais injoignable" : "Hors ligne"}
+          </p>
+          {on ? (
+            <>
+              <p className="mt-3 font-mono text-4xl tabular-nums tracking-tight text-foreground sm:text-5xl">{clock ?? "00:00:00"}</p>
+              <p className="mt-2 text-sm text-muted">
+                {state?.kbps != null && <span className="font-mono tabular-nums text-foreground">{fmtInt(state.kbps)} kbit/s</span>}
+                {(used > 1 || liveName) && (
+                  <span>
+                    {state?.kbps != null ? " sur " : "Sur "}
+                    {used > 1 ? `${used} relais` : liveName}
+                  </span>
+                )}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Aucun direct en cours</p>
+              <p className="mt-2 text-sm text-muted">{data.lastEndedAt ? `Dernier direct ${fmtAgo(data.lastEndedAt)}.` : "Ton premier direct apparaîtra ici."}</p>
+            </>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          {on ? (
+            <>
+              <Link href="/dashboard/apercu" className={btnPrimary}>
+                Ouvrir l&apos;aperçu <span aria-hidden="true">→</span>
+              </Link>
+              <Link href="/dashboard/relais" className={btnGhost}>
+                Mes relais
+              </Link>
+            </>
+          ) : (
+            <>
+              <button type="button" onClick={onLaunch} className={btnPrimary}>
+                Lancer un direct <span aria-hidden="true">→</span>
+              </button>
+              <Link href="/dashboard/relais" className={btnGhost}>
+                Mes relais
+              </Link>
+            </>
+          )}
+        </div>
+      </div>
+      <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-line pt-5 sm:grid-cols-4">
+        <Stat label="Formule" value={data.plan.name} href="/dashboard/abonnement" />
+        <Stat label="Relais actifs" value={`${data.relays.active} / ${unlimited ? "∞" : data.relays.max}`} href="/dashboard/relais" />
+        <Stat label="Flux simultanés" value={`${used} / ${data.plan.streams}`} />
+        <Stat label="Dernier direct" value={data.last ? fmtDuration(data.last.duration_s) : "–"} href={data.last ? `/dashboard/lives/${data.last.id}` : undefined} />
+      </dl>
     </section>
+  );
+}
+
+// ─────────────── 2. À vérifier ───────────────
+
+function Alerts({ alerts }: { alerts: OverviewData["alerts"] }) {
+  if (!alerts.length) return null;
+  return (
+    <section aria-labelledby="attention">
+      <h2 id="attention" className="mb-3 flex items-center gap-2 text-sm font-semibold">
+        À vérifier
+        <span className="rounded-full border border-line px-2 py-0.5 font-mono text-xs font-normal tabular-nums text-muted">{alerts.length}</span>
+      </h2>
+      <ul className={`grid gap-3 ${alerts.length === 1 ? "" : alerts.length === 2 ? "md:grid-cols-2" : "md:grid-cols-2 xl:grid-cols-3"}`}>
+        {alerts.map((a) => (
+          <li key={a.id} className="flex flex-col justify-between gap-4 rounded-xl border border-line border-l-2 border-l-accent bg-surface p-4">
+            <p className="text-sm leading-relaxed text-foreground">{a.text}</p>
+            <ArrowLink href={a.href}>{a.cta}</ArrowLink>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+// ─────────────── 3. Chiffres de la période ───────────────
+
+function Delta({ current, previous }: { current: number; previous: number }) {
+  const d = delta(current, previous);
+  if (!d) return <p className="mt-1 text-xs text-muted">Pas de période précédente</p>;
+  return (
+    <p className={`mt-1 font-mono text-xs tabular-nums ${d.up ? "text-foreground" : "text-muted"}`}>
+      <span aria-hidden="true">{d.up ? "▲" : "▼"}</span> {d.text}
+      <span className="sr-only"> par rapport à la période précédente</span>
+    </p>
+  );
+}
+
+function Kpi({ label, value, unit, children }: { label: string; value: string; unit?: string; children: ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
+      <p className="text-xs text-muted">{label}</p>
+      <p className="mt-2 font-mono text-3xl tabular-nums tracking-tight text-foreground">
+        {value}
+        {unit && <span className="ml-1.5 text-sm text-muted">{unit}</span>}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+function RangeToggle({ range, onChange, pending }: { range: Range; onChange: (r: Range) => void; pending: boolean }) {
+  return (
+    <div role="radiogroup" aria-label="Période" className="inline-flex shrink-0 rounded-full border border-line p-0.5" aria-busy={pending}>
+      {(["7d", "30d"] as const).map((r) => (
+        <button
+          key={r}
+          type="button"
+          role="radio"
+          aria-checked={range === r}
+          onClick={() => onChange(r)}
+          className={`h-8 whitespace-nowrap rounded-full px-3.5 font-mono text-xs transition-colors ${range === r ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}
+        >
+          {r === "7d" ? "7 jours" : "30 jours"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Kpis({ data, pending }: { data: OverviewData; pending: boolean }) {
+  const { kpis, previous } = data;
+  return (
+    <div className={`grid grid-cols-2 gap-3 transition-opacity lg:grid-cols-4 ${pending ? "opacity-50" : ""}`}>
+      <Kpi label="Temps de direct" value={fmtDuration(kpis.seconds)}>
+        <Delta current={kpis.seconds} previous={previous.seconds} />
+      </Kpi>
+      <Kpi label="Nombre de directs" value={fmtInt(kpis.count)}>
+        <Delta current={kpis.count} previous={previous.count} />
+      </Kpi>
+      <Kpi label="Durée moyenne" value={kpis.count ? fmtDuration(kpis.avgSeconds) : "–"}>
+        <Delta current={kpis.avgSeconds} previous={previous.avgSeconds} />
+      </Kpi>
+      <Kpi label="Débit moyen" value={kpis.avgKbps ? fmtInt(kpis.avgKbps) : "–"} unit={kpis.avgKbps ? "kbit/s" : undefined}>
+        <p className="mt-1 font-mono text-xs text-muted">{kpis.peakKbps ? `Crête ${fmtInt(kpis.peakKbps)} kbit/s` : "Pas de mesure"}</p>
+      </Kpi>
+    </div>
+  );
+}
+
+// ─────────────── 4. Détail ───────────────
+
+function DailyTile({ data, range }: { data: OverviewData; range: Range }) {
+  const days = range === "7d" ? data.daily.slice(-7) : data.daily;
+  return (
+    <Tile aria-labelledby="par-jour">
+      <TileLabel id="par-jour">Temps de direct par jour</TileLabel>
+      <div className="mt-6">
+        <DailyBars days={days} />
+      </div>
+    </Tile>
+  );
+}
+
+function LastLive({ s }: { s: NonNullable<OverviewData["last"]> }) {
+  const facts: [string, string][] = [
+    ["Appareil", deviceLabel(s)],
+    ["Durée", fmtDuration(s.duration_s)],
+    ["Coupures", fmtInt(s.reconnects)],
+    ["Débit moyen", fmtKbps(s.avg_kbps)],
+  ];
+  return (
+    <Tile aria-labelledby="dernier">
+      <TileLabel id="dernier" right={<ArrowLink href={`/dashboard/lives/${s.id}`}>Voir le détail</ArrowLink>}>
+        Dernier direct
+      </TileLabel>
+      <p className="mt-1 text-sm text-muted">{fmtDate(s.started_at)}</p>
+      <div className="mt-5 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] md:items-end">
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
+          {facts.map(([k, v]) => (
+            <div key={k}>
+              <dt className="text-xs text-muted">{k}</dt>
+              <dd className="mt-0.5 truncate font-mono text-sm tabular-nums text-foreground">{v}</dd>
+            </div>
+          ))}
+        </dl>
+        <Sparkline points={s.bitrate_series} className="h-20 w-full" label={`Débit du direct, crête à ${fmtInt(s.peak_kbps)} kbit/s`} />
+      </div>
+    </Tile>
   );
 }
 
@@ -139,107 +313,6 @@ function LaunchGuide({ open, onClose, keys }: { open: boolean; onClose: () => vo
   );
 }
 
-// ─────────────── Activité ───────────────
-
-function Delta({ current, previous }: { current: number; previous: number }) {
-  const d = delta(current, previous);
-  if (!d) return <p className="mt-1 text-xs text-muted">Pas de période précédente</p>;
-  return (
-    <p className={`mt-1 font-mono text-xs tabular-nums ${d.up ? "text-foreground" : "text-muted"}`}>
-      <span aria-hidden="true">{d.up ? "▲" : "▼"}</span> {d.text}
-      <span className="sr-only"> par rapport à la période précédente</span>
-    </p>
-  );
-}
-
-function Kpi({ label, value, children }: { label: string; value: string; children: ReactNode }) {
-  return (
-    <div className="bg-surface p-4">
-      <p className="text-xs text-muted">{label}</p>
-      <p className="mt-1.5 font-mono text-2xl tabular-nums tracking-tight text-foreground">{value}</p>
-      {children}
-    </div>
-  );
-}
-
-function RangeToggle({ range, onChange, pending }: { range: Range; onChange: (r: Range) => void; pending: boolean }) {
-  return (
-    <div role="radiogroup" aria-label="Période" className="inline-flex shrink-0 rounded-full border border-line p-0.5" aria-busy={pending}>
-      {(["7d", "30d"] as const).map((r) => (
-        <button
-          key={r}
-          type="button"
-          role="radio"
-          aria-checked={range === r}
-          onClick={() => onChange(r)}
-          className={`h-7 whitespace-nowrap rounded-full px-3 font-mono text-xs transition-colors ${range === r ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}
-        >
-          {r === "7d" ? "7 j" : "30 j"}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function Activity({ data, range, onRange, pending }: { data: OverviewData; range: Range; onRange: (r: Range) => void; pending: boolean }) {
-  const { kpis, previous } = data;
-  return (
-    <Tile aria-labelledby="activite">
-      <TileLabel id="activite" right={<RangeToggle range={range} onChange={onRange} pending={pending} />}>
-        Ton activité en direct
-      </TileLabel>
-      <div className={`mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line transition-opacity md:grid-cols-4 ${pending ? "opacity-50" : ""}`}>
-        <Kpi label="Temps de direct" value={fmtDuration(kpis.seconds)}>
-          <Delta current={kpis.seconds} previous={previous.seconds} />
-        </Kpi>
-        <Kpi label="Nombre de directs" value={fmtInt(kpis.count)}>
-          <Delta current={kpis.count} previous={previous.count} />
-        </Kpi>
-        <Kpi label="Durée moyenne" value={kpis.count ? fmtDuration(kpis.avgSeconds) : "–"}>
-          <Delta current={kpis.avgSeconds} previous={previous.avgSeconds} />
-        </Kpi>
-        <Kpi label="Débit moyen" value={kpis.avgKbps ? `${fmtInt(kpis.avgKbps)}` : "–"}>
-          <p className="mt-1 font-mono text-xs text-muted">{kpis.peakKbps ? `kbit/s, crête à ${fmtInt(kpis.peakKbps)}` : "kbit/s"}</p>
-        </Kpi>
-      </div>
-      <div className="mt-6 border-t border-line pt-5">
-        <h3 className="text-xs font-medium text-muted">Temps de direct par jour</h3>
-        <div className="mt-4">
-          <DailyBars days={data.daily} />
-        </div>
-      </div>
-    </Tile>
-  );
-}
-
-function LastLive({ s }: { s: NonNullable<OverviewData["last"]> }) {
-  const facts: [string, string][] = [
-    ["Appareil", deviceLabel(s)],
-    ["Durée", fmtDuration(s.duration_s)],
-    ["Coupures", fmtInt(s.reconnects)],
-    ["Débit moyen", fmtKbps(s.avg_kbps)],
-  ];
-  return (
-    <Tile aria-labelledby="dernier">
-      <TileLabel id="dernier" right={<ArrowLink href={`/dashboard/lives/${s.id}`}>Voir le détail</ArrowLink>}>
-        Dernier direct
-      </TileLabel>
-      <p className="mt-3 text-sm text-muted">{fmtDate(s.started_at)}</p>
-      <div className="mt-4 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] md:items-end">
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-3">
-          {facts.map(([k, v]) => (
-            <div key={k}>
-              <dt className="text-xs text-muted">{k}</dt>
-              <dd className="mt-0.5 truncate font-mono text-sm tabular-nums text-foreground">{v}</dd>
-            </div>
-          ))}
-        </dl>
-        <Sparkline points={s.bitrate_series} className="h-20 w-full" label={`Débit du direct, crête à ${fmtInt(s.peak_kbps)} kbit/s`} />
-      </div>
-    </Tile>
-  );
-}
-
 function Onboarding({ keys }: { keys: OverviewData["keys"] }) {
   const steps = [
     { t: "Copier l'URL dans Moblin", d: "Réglages → Streams → URL." },
@@ -280,34 +353,6 @@ function Onboarding({ keys }: { keys: OverviewData["keys"] }) {
   );
 }
 
-// ─────────────── Colonne droite ───────────────
-
-function Subscription({ data }: { data: OverviewData }) {
-  const { state } = useLiveStatus();
-  const used = state?.relays ? state.relays.filter((r) => r.live || r.reconnecting).length : state?.live || state?.reconnecting ? 1 : 0;
-  return (
-    <Tile aria-labelledby="abonnement">
-      <TileLabel id="abonnement">Ton accès</TileLabel>
-      <p className="mt-4 text-xl font-semibold tracking-tight">{data.plan.name}</p>
-      <div className="mt-4 flex items-center justify-between text-sm">
-        <span className="text-muted">Relais</span>
-        <span className="font-mono tabular-nums">
-          {data.relays.active} / {data.relays.max >= 1_000_000 ? "∞" : data.relays.max}
-        </span>
-      </div>
-      <div className="mt-2 flex items-center justify-between text-sm">
-        <span className="text-muted">Flux simultanés</span>
-        <span className="font-mono tabular-nums">
-          {used} / {data.plan.streams}
-        </span>
-      </div>
-      <div className="mt-5">
-        <ArrowLink href="/dashboard/abonnement">Mon accès</ArrowLink>
-      </div>
-    </Tile>
-  );
-}
-
 function Urls({ data }: { data: OverviewData }) {
   return (
     <Tile aria-labelledby="urls-courtes">
@@ -343,33 +388,37 @@ function Urls({ data }: { data: OverviewData }) {
   );
 }
 
-const shortcuts = [
-  { label: "Aperçu", href: "/dashboard/apercu" },
-  { label: "Multichat", href: "/dashboard/multichat" },
-  { label: "Mes relais", href: "/dashboard/relais" },
-  { label: "Scanner réseau", href: "/dashboard/scanner" },
-  { label: "Statistiques", href: "/dashboard/stats" },
-  { label: "SYXTEE STUDIO", href: "/studio" },
+
+type Shortcut = { label: string; href: string; icon: ComponentType<IconProps> };
+const shortcuts: Shortcut[] = [
+  { label: "Aperçu", href: "/dashboard/apercu", icon: Eye },
+  { label: "Multichat", href: "/dashboard/multichat", icon: ChatsCircle },
+  { label: "Mes relais", href: "/dashboard/relais", icon: Radio },
+  { label: "Scanner", href: "/dashboard/scanner", icon: MapTrifold },
+  { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },
+  { label: "SYXTEE STUDIO", href: "/studio", icon: SlidersHorizontal },
 ];
 
 function GoTo() {
   return (
-    <Tile aria-labelledby="aller">
-      <TileLabel id="aller">Accès rapides</TileLabel>
-      <ul className="mt-4 grid grid-cols-2 gap-2">
+    <section aria-labelledby="aller">
+      <h2 id="aller" className="mb-3 text-sm font-semibold">
+        Accès rapides
+      </h2>
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {shortcuts.map((s) => (
           <li key={s.href}>
             <Link
               href={s.href}
-              className="flex h-full items-center justify-between gap-2 rounded-xl border border-line px-3 py-3 text-sm text-muted transition-colors hover:bg-foreground/10 hover:text-foreground"
+              className="flex h-full flex-col gap-4 rounded-xl border border-line bg-surface p-4 text-muted transition-colors hover:border-line-strong hover:bg-foreground/[0.06] hover:text-foreground"
             >
-              {s.label}
-              <span aria-hidden="true">→</span>
+              <s.icon size={22} aria-hidden="true" />
+              <span className="text-sm font-medium text-foreground">{s.label}</span>
             </Link>
           </li>
         ))}
       </ul>
-    </Tile>
+    </section>
   );
 }
 
@@ -402,56 +451,54 @@ export default function Overview({ initial, chat = { twitch: "", kick: "", youtu
     }
   }
 
+  const hasChat = !!(chat.twitch || chat.kick);
+
   return (
-    <div className="space-y-4">
-      <StatusBanner data={data} onLaunch={() => setGuide(true)} />
+    <div className="space-y-8">
+      <ControlCenter data={data} onLaunch={() => setGuide(true)} />
       <LaunchGuide open={guide} onClose={() => setGuide(false)} keys={data.keys} />
       <LiveNow sources={data.sources} />
+      <Alerts alerts={data.alerts} />
 
-      {data.alerts.length > 0 && (
-        <Tile aria-labelledby="attention" className="py-4 sm:py-5">
-          <TileLabel id="attention" right={<span className="rounded-full border border-line px-2 py-0.5 font-mono text-xs tabular-nums text-muted">{data.alerts.length}</span>}>
-            À vérifier
-          </TileLabel>
-          <ul className="mt-2 divide-y divide-line">
-            {data.alerts.map((a) => (
-              <li key={a.id} className="flex flex-col gap-1.5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-                <p className="text-sm text-foreground">{a.text}</p>
-                <ArrowLink href={a.href}>{a.cta}</ArrowLink>
-              </li>
-            ))}
-          </ul>
-        </Tile>
-      )}
-
-      {error && (
-        <p role="alert" className="text-sm text-red-400/90">
-          Impossible de charger cette période. Réessaie dans un instant.
-        </p>
+      {data.hasEverStreamed ? (
+        <section aria-labelledby="periode" className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 id="periode" className="text-sm font-semibold">
+              Ton activité
+            </h2>
+            <RangeToggle range={range} onChange={changeRange} pending={pending} />
+          </div>
+          {error && (
+            <p role="alert" className="text-sm text-red-400/90">
+              Impossible de charger cette période. Réessaie dans un instant.
+            </p>
+          )}
+          <Kpis data={data} pending={pending} />
+        </section>
+      ) : (
+        <Onboarding keys={data.keys} />
       )}
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
-          {data.hasEverStreamed ? (
+          {data.hasEverStreamed && (
             <>
-              <Activity data={data} range={range} onRange={changeRange} pending={pending} />
+              <DailyTile data={data} range={range} />
               {data.last && <LastLive s={data.last} />}
               <Tile aria-labelledby="derniers">
                 <TileLabel id="derniers" right={<ArrowLink href="/dashboard/lives">Tout l&apos;historique</ArrowLink>}>
-                  3 derniers directs
+                  Derniers directs
                 </TileLabel>
                 <div className="mt-3">
                   <SessionList sessions={data.recent} />
                 </div>
               </Tile>
             </>
-          ) : (
-            <Onboarding keys={data.keys} />
           )}
         </div>
 
         <div className="space-y-4">
-          {chat.twitch || chat.kick ? (
+          {hasChat ? (
             <div>
               <div className="mb-3">
                 <TileLabel right={<ArrowLink href="/dashboard/multichat">Multichat</ArrowLink>}>Chat</TileLabel>
@@ -468,10 +515,10 @@ export default function Overview({ initial, chat = { twitch: "", kick: "", youtu
             </Tile>
           )}
           <Urls data={data} />
-          <Subscription data={data} />
-          <GoTo />
         </div>
       </div>
+
+      <GoTo />
     </div>
   );
 }

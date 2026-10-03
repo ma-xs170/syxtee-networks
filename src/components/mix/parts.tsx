@@ -8,7 +8,7 @@ import Streamer from "../illustrations/Streamer";
 import StreamerDesk from "../illustrations/StreamerDesk";
 import HeroStreet from "../home/HeroStreet";
 import RelayServer from "../illustrations/RelayServer";
-import StreamPreview from "../dashboard/StreamPreview";
+import { StreamCanvas } from "./streams";
 import TestPattern from "./TestPattern";
 import { isOn, type MixRelay, type RelayStatus } from "@/lib/mix-sim";
 
@@ -24,21 +24,26 @@ const SCENES: Record<MixRelay["scene"], Art> = {
   home: RelayServer,
 };
 
-/** Image d'une caméra (simulée). Hors ligne : écran « SIGNAL PERDU ». */
-export function Feed({ relay, className = "", coreUrl, compact = false }: { relay: MixRelay; className?: string; coreUrl?: string; compact?: boolean }) {
+/**
+ * Image d'une caméra. Hors ligne : mire fictive locale. Relais réel en ligne : sa vidéo partagée du registre (StreamCanvas), avec la
+ * mire dessous tant qu'aucune image n'est arrivée (jamais d'écran noir ni de texte de chargement). Démonstration : l'illustration.
+ */
+export function Feed({ relay, className = "", compact = false }: { relay: MixRelay; className?: string; compact?: boolean }) {
   const Scene = SCENES[relay.scene];
+  const label = `CAM ${relay.n} - ${relay.name.toUpperCase()}`;
   return (
     <div className={`overflow-hidden bg-background ${className || "relative"}`}>
-      {isOn(relay) && relay.real && coreUrl ? (
-        <div className="absolute inset-0 bg-background [&_section]:h-full [&_section]:rounded-none [&_section]:border-0 [&>section>div]:h-full">
-          <StreamPreview coreUrl={coreUrl} relayId={relay.id} />
-        </div>
-      ) : isOn(relay) ? (
+      {!isOn(relay) ? (
+        <TestPattern label={label} compact={compact} />
+      ) : relay.real ? (
+        <>
+          <TestPattern label={label} compact={compact} />
+          <StreamCanvas relayId={relay.id} thumb={compact} />
+        </>
+      ) : (
         <div className="absolute inset-0 flex items-center justify-center p-2">
           <Scene animated={false} className="h-full w-full" />
         </div>
-      ) : (
-        <TestPattern label={`CAM ${relay.n} - ${relay.name.toUpperCase()}`} compact={compact} />
       )}
     </div>
   );

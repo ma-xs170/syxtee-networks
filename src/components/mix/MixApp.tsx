@@ -10,6 +10,7 @@ import ObsLinkPanel from "./ObsLinkPanel";
 import RelaySettings from "./RelaySettings";
 import { RelayCell } from "./RelayViews";
 import { Screen, TransitionBar, type TransitionKind } from "./Stage";
+import { RelayStreamsProvider } from "./streams";
 import TopBar from "./TopBar";
 import type { MixModel } from "./model";
 import { INITIAL_RELAYS, isOn, stepStats, type MixRelay, type Protocol } from "@/lib/mix-sim";
@@ -78,7 +79,8 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
   );
   const [transition, setTransition] = useState<TransitionKind>("mix");
   const [duration, setDuration] = useState(500);
-  const [fade, setFade] = useState<{ from: string; to: string; ms: number } | null>(null);
+  // Durée du fondu du PROGRAMME : 0 pour un CUT, la durée réglée pour AUTO (le Screen fait le fondu entre ses deux couches).
+  const [programMs, setProgramMs] = useState(0);
   const [slate, setSlate] = useState(false);
   const [live, setLive] = useState<LiveState>("idle");
   const [liveSeconds, setLiveSeconds] = useState(0);
@@ -125,18 +127,16 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
   const doPreview = (id: string) => !locked && setPreview(id);
   const doCut = useCallback(() => {
     if (locked || preview === program) return;
+    setProgramMs(0);
     setProgram(preview);
     setPreview(program);
   }, [locked, preview, program]);
   const doAuto = useCallback(() => {
     if (locked || preview === program) return;
     if (transition === "cut") return doCut();
-    setFade({ from: program, to: preview, ms: duration });
-    setTimeout(() => {
-      setProgram(preview);
-      setPreview(program);
-      setFade(null);
-    }, duration);
+    setProgramMs(duration);
+    setProgram(preview);
+    setPreview(program);
   }, [locked, preview, program, transition, duration, doCut]);
 
   // Clavier : 1 à 8 = PREVIEW, Entrée = CUT, Espace = AUTO.
@@ -177,11 +177,11 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
 
   const byId = (id: string) => relays.find((r) => r.id === id) ?? relays[0];
   const model: MixModel = {
-    relays, byId, program, preview, locked, slate, fade, transition, duration, clock, live, liveSeconds, rec, recSeconds,
-    master, masterMute, coreUrl: useReal ? coreUrl : "",
+    relays, byId, program, preview, locked, slate, programMs, transition, duration, clock, live, liveSeconds, rec, recSeconds,
+    master, masterMute,
     setTransition, setDuration, setMaster, toggleMasterMute: () => !locked && setMasterMute((v) => !v),
     toPreview: doPreview,
-    toProgram: (id) => !locked && (setPreview(program), setProgram(id)),
+    toProgram: (id) => !locked && (setProgramMs(0), setPreview(program), setProgram(id)),
     cut: doCut, auto: doAuto, toggleLive, toggleRec, toggleSlate: () => setSlate((v) => !v),
     shot: () => say("Capture du PROGRAMME enregistrée (simulation)."),
     marker: () => say("Marqueur posé à cet instant (simulation)."),
@@ -199,7 +199,10 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
     </p>
   );
 
+  const liveIds = useReal ? relays.filter(isOn).map((r) => r.id) : [];
+
   return (
+    <RelayStreamsProvider coreUrl={useReal ? coreUrl : ""} liveIds={liveIds}>
     <div className="flex h-dvh flex-col gap-2 overflow-hidden p-2">
       {topBar}
       {banner}
@@ -211,8 +214,8 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
           {/* Centre (≈ 60 % de la hauteur) : PROGRAMME au-dessus de APERÇU, et la grille des relais (2 colonnes, elle défile dans sa zone). */}
           <div className="grid shrink-0 grid-cols-[auto_minmax(0,1fr)] gap-2" style={{ height: "calc((100dvh - 6rem) * 0.62)" }}>
             <div className="flex h-full flex-col gap-2">
-              <Screen relay={byId(program)} kind="program" coreUrl={model.coreUrl} fade={fade} slate={slate} byId={byId} className="h-[calc((100%-0.5rem)/2)]" />
-              <Screen relay={byId(preview)} kind="preview" coreUrl={model.coreUrl} className="h-[calc((100%-0.5rem)/2)]" />
+              <Screen relayId={program} kind="program" ms={programMs} slate={slate} byId={byId} className="h-[calc((100%-0.5rem)/2)]" />
+              <Screen relayId={preview} kind="preview" ms={0} byId={byId} className="h-[calc((100%-0.5rem)/2)]" />
             </div>
             {relays.length === 0 ? (
               <p className="grid place-items-center rounded-lg border border-line bg-surface text-sm text-muted">Aucun relais. Crée-en un dans Mes relais.</p>
@@ -292,5 +295,6 @@ export default function MixApp({ account, real, coreUrl }: { account: string; re
         </p>
       )}
     </div>
+    </RelayStreamsProvider>
   );
 }

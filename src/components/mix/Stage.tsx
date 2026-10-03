@@ -1,29 +1,66 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { Feed, Slate } from "./parts";
+import { useStreamHub } from "./streams";
 import { tc, type MixRelay } from "@/lib/mix-sim";
 
 // PROGRAMME (bordure rouge) et APERÇU (bordure verte) en 16:9, et la barre CUT / AUTO sur une ligne fine.
-// Libellés centrés en bas, blanc gras, comme le projecteur « Vue multiple » d'OBS. Une relais sans signal montre la mire (TestPattern).
+// Libellés centrés en bas, blanc gras, comme le projecteur « Vue multiple » d'OBS. Un relais sans signal montre la mire (TestPattern).
 
 export type TransitionKind = "cut" | "mix";
-export type Fade = { from: string; to: string; ms: number } | null;
-
 const label = "pointer-events-none absolute inset-x-0 bottom-0 truncate px-1 pb-1.5 text-center text-sm font-bold uppercase text-white [text-shadow:0_1px_2px_rgb(0_0_0/0.9)]";
 
-export function Screen({ relay, kind, coreUrl, fade, slate, byId, className = "" }: { relay: MixRelay; kind: "program" | "preview"; coreUrl?: string; fade?: Fade; slate?: boolean; byId?: (id: string) => MixRelay; className?: string }) {
+/**
+ * Écran PROGRAMME ou APERÇU : deux couches A et B toujours montées. Quand la caméra change, la nouvelle source est mise sur la couche
+ * cachée ; dès qu'elle a une image (déjà le cas pour un flux pré-chauffé), on bascule par l'opacité : `ms` = 0 pour un CUT, la durée
+ * réglée pour un fondu. La couche précédente reste visible jusqu'à ce moment : jamais de chargement ni d'écran noir. Rien n'est
+ * démonté ni reconnecté (pas de key sur la source).
+ */
+export function Screen({ relayId, kind, ms, slate, byId, className = "" }: { relayId: string; kind: "program" | "preview"; ms: number; slate?: boolean; byId: (id: string) => MixRelay; className?: string }) {
+  const hub = useStreamHub();
+  const [layers, setLayers] = useState<[string, string]>([relayId, relayId]);
+  const [front, setFront] = useState<0 | 1>(0);
+  const frontRef = useRef(0);
+  const layersRef = useRef<[string, string]>([relayId, relayId]);
+
+  useEffect(() => {
+    if (layersRef.current[frontRef.current] === relayId) return;
+    const back = (1 - frontRef.current) as 0 | 1;
+    const next: [string, string] = [...layersRef.current] as [string, string];
+    next[back] = relayId;
+    layersRef.current = next;
+    setLayers(next);
+    // Bascule dès que la source cachée a une image (au plus 600 ms d'attente, jamais de blocage).
+    const t0 = performance.now();
+    let raf = 0;
+    const tick = () => {
+      const r = byId(relayId);
+      const warm = !r.real || !hub || hub.ready(relayId);
+      if (warm || performance.now() - t0 > 600) {
+        frontRef.current = back;
+        setFront(back);
+      } else raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [relayId, hub, byId]);
+
   return (
     // bg-black : surface vidéo, comme le projecteur d'OBS.
     <div className={`relative aspect-video overflow-hidden bg-black ${className}`}>
-      <Feed relay={relay} coreUrl={coreUrl} className="absolute inset-0" />
-      {kind === "program" && fade && byId && (
-        <div className="absolute inset-0" style={{ animation: `mix-fade ${fade.ms}ms linear forwards` }} aria-hidden="true">
-          <Feed relay={byId(fade.to)} className="absolute inset-0" />
+      {[0, 1].map((i) => (
+        <div key={i} className="absolute inset-0" style={{ opacity: front === i ? 1 : 0, transition: `opacity ${ms}ms linear`, zIndex: front === i ? 1 : 0 }}>
+          <Feed relay={byId(layers[i])} className="absolute inset-0" />
+        </div>
+      ))}
+      {kind === "program" && slate && (
+        <div className="absolute inset-0 z-[2]">
+          <Slate label="BRB" sub="On revient dans un instant" />
         </div>
       )}
-      {kind === "program" && slate && <Slate label="BRB" sub="On revient dans un instant" />}
-      <span aria-hidden="true" className={`pointer-events-none absolute inset-0 border-[3px] ${kind === "program" ? "border-live" : "border-emerald-500"}`} />
-      <p className={label}>{kind === "program" ? "Programme" : "Aperçu"}</p>
+      <span aria-hidden="true" className={`pointer-events-none absolute inset-0 z-[3] border-[3px] ${kind === "program" ? "border-live" : "border-emerald-500"}`} />
+      <p className={`${label} z-[3]`}>{kind === "program" ? "Programme" : "Aperçu"}</p>
     </div>
   );
 }

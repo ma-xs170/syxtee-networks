@@ -21,8 +21,6 @@ type Tab = (typeof TABS)[number]["id"];
 
 export default function MobileMix({ m }: { m: MixModel }) {
   const [tab, setTab] = useState<Tab>("regie");
-  const pgm = m.byId(m.program);
-  const pvw = m.byId(m.preview);
   const empty = m.relays.length === 0;
 
   return (
@@ -33,8 +31,8 @@ export default function MobileMix({ m }: { m: MixModel }) {
         ) : tab === "regie" ? (
           <div className="space-y-2">
             <div className="grid gap-2 landscape:grid-cols-2">
-              <Screen relay={pgm} kind="program" coreUrl={m.coreUrl} fade={m.fade} slate={m.slate} byId={m.byId} />
-              <Screen relay={pvw} kind="preview" coreUrl={m.coreUrl} className="w-3/5 landscape:w-full" />
+              <Screen relayId={m.program} kind="program" ms={m.programMs} slate={m.slate} byId={m.byId} />
+              <Screen relayId={m.preview} kind="preview" ms={0} byId={m.byId} className="w-3/5 landscape:w-full" />
             </div>
             <TransitionBar relays={m.relays} program={m.program} preview={m.preview} locked={m.locked} transition={m.transition} onTransition={m.setTransition} duration={m.duration} onDuration={m.setDuration} onPreview={m.toPreview} onCut={m.cut} onAuto={m.auto} clock={m.clock} big />
           </div>

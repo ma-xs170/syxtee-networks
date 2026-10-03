@@ -1,4 +1,4 @@
-import type { Fade, TransitionKind } from "./Stage";
+import type { TransitionKind } from "./Stage";
 import type { LiveState } from "./DirectPanel";
 import type { MixRelay } from "@/lib/mix-sim";
 
@@ -10,7 +10,8 @@ export type MixModel = {
   preview: string;
   locked: boolean;
   slate: boolean;
-  fade: Fade;
+  /** Durée du fondu du PROGRAMME (0 = CUT). */
+  programMs: number;
   transition: TransitionKind;
   duration: number;
   clock: number;
@@ -20,7 +21,6 @@ export type MixModel = {
   recSeconds: number;
   master: number;
   masterMute: boolean;
-  coreUrl: string;
   setTransition: (t: TransitionKind) => void;
   setDuration: (ms: number) => void;
   setMaster: (db: number) => void;

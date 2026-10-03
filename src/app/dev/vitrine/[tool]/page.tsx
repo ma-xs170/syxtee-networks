@@ -101,7 +101,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
   if (process.env.NODE_ENV === "production") notFound();
   const { tool } = await params;
   return (
-    <div id="capture" data-theme="dark" className={`mx-auto bg-background p-8 text-foreground ${tool === "accueil" ? "w-[1500px]" : tool === "commutateur" ? "w-full !p-0" : "w-[1100px]"}`}>
+    <div id="capture" data-theme="dark" className={`mx-auto bg-background p-8 text-foreground ${tool === "accueil" ? "w-[1500px]" : tool.startsWith("commutateur") ? "w-full !p-0" : "w-[1100px]"}`}>
       {tool === "relais" && <RelayList relays={RELAYS} active={6} max={10} coreUrl="" geo={null} />}
       {tool === "sante" && (
         <div className="space-y-4">
@@ -128,9 +128,9 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
         </div>
       )}
       {tool === "studio" && <StudioDemo />}
-      {tool === "commutateur" && (
+      {(tool === "commutateur" || tool === "commutateur-reel") && (
         <LiveStatusProvider coreUrl="">
-          <MixApp account="demo@syxtee.fr" real={[]} coreUrl="" />
+          <MixApp account="demo@syxtee.fr" real={tool === "commutateur-reel" ? [{ id: "a1", name: "iPhone 16", protocol: "srtla", live: true }, { id: "a2", name: "Osmo", protocol: "rtmp", live: true }, { id: "a3", name: "BELABOX", protocol: "srtla", live: true }, { id: "a4", name: "GoPro", protocol: "rtmp", live: false }] : []} coreUrl={tool === "commutateur-reel" ? "http://localhost:9" : ""} />
         </LiveStatusProvider>
       )}
       {tool === "admin" && (
@@ -180,7 +180,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           }))}
         />
       )}
-      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "commutateur"].includes(tool) && notFound()}
+      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "commutateur", "commutateur-reel"].includes(tool) && notFound()}
     </div>
   );
 }

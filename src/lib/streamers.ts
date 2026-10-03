@@ -18,7 +18,7 @@ export type HomeStreamer = {
   channels: Channel[];
 };
 
-type Row = { username: string; first_name?: string | null; partner?: boolean | null; avatar_url: string | null; twitch_id: string | null; twitch_login: string; twitch_display_name: string | null; kick_name?: string | null; youtube_name?: string | null; youtube_id?: string | null };
+type Row = { username: string; first_name?: string | null; partner?: boolean | null; avatar_url: string | null; twitch_id: string | null; twitch_login: string; twitch_display_name: string | null; kick_name?: string | null; youtube_name?: string | null; youtube_id?: string | null; youtube_handle?: string | null };
 
 /** Streamers de l'accueil (consentement + Twitch vérifié), chaînes en live d'abord. Ne lève jamais. */
 export async function getHomeStreamers(): Promise<HomeStreamer[]> {
@@ -47,7 +47,12 @@ export async function getHomeStreamers(): Promise<HomeStreamer[]> {
       channels: [
         { platform: "twitch" as const, handle: r.twitch_display_name || r.twitch_login, url: `https://twitch.tv/${r.twitch_login}` },
         ...(r.kick_name ? [{ platform: "kick" as const, handle: r.kick_name, url: `https://kick.com/${r.kick_name.replace(/_/g, "-").toLowerCase()}` }] : []),
-        ...(r.youtube_name && r.youtube_id ? [{ platform: "youtube" as const, handle: r.youtube_name, url: `https://www.youtube.com/channel/${r.youtube_id}` }] : []),
+        // YouTube : chaîne vérifiée (compte relié) si elle existe, sinon le pseudo saisi à l'inscription.
+        ...(r.youtube_name && r.youtube_id
+          ? [{ platform: "youtube" as const, handle: r.youtube_name, url: `https://www.youtube.com/channel/${r.youtube_id}` }]
+          : r.youtube_handle
+            ? [{ platform: "youtube" as const, handle: r.youtube_handle, url: `https://www.youtube.com/@${r.youtube_handle}` }]
+            : []),
       ],
     }))
     .sort((a, b) => (b.live?.viewers ?? -1) - (a.live?.viewers ?? -1) || a.handle.localeCompare(b.handle));

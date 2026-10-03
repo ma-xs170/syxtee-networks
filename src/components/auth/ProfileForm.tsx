@@ -32,7 +32,7 @@ function Field({ id, label, hint, children }: { id: string; label: string; hint?
   );
 }
 
-function Social({ name, label, icon, value }: { name: string; label: string; icon: SimpleIcon; value: string }) {
+function Social({ name, label, icon, value, required = false }: { name: string; label: string; icon: SimpleIcon; value: string; required?: boolean }) {
   return (
     <div className="flex items-center gap-3">
       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-foreground/20 text-foreground/70" title={label}>
@@ -43,7 +43,7 @@ function Social({ name, label, icon, value }: { name: string; label: string; ico
       </label>
       <div className="relative flex-1">
         <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-foreground/35">@</span>
-        <input id={`social-${name}`} name={name} defaultValue={value} placeholder={`Pseudo ${label}`} autoComplete="off" className={`${inputCls} pl-8`} />
+        <input id={`social-${name}`} name={name} defaultValue={value} placeholder={required ? `Pseudo ${label} (obligatoire)` : `Pseudo ${label}`} required={required} autoComplete="off" className={`${inputCls} pl-8`} />
       </div>
     </div>
   );
@@ -97,7 +97,7 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
       )}
 
       <fieldset className="space-y-3">
-        <legend className="mb-3 text-sm font-medium text-foreground/80">Réseaux sociaux</legend>
+        <legend className="mb-3 text-sm font-medium text-foreground/80">{mode === "bienvenue" ? "Tes chaînes (obligatoire)" : "Réseaux sociaux"}</legend>
         {verified ? (
           <div className="flex items-center gap-3">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-foreground/20 text-foreground/70" title="Twitch">
@@ -109,20 +109,24 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
             </p>
           </div>
         ) : (
-          <Social name="twitch" label="Twitch" icon={siTwitch} value={v("twitch")} />
+          <Social name="twitch" label="Twitch" icon={siTwitch} value={v("twitch")} required={mode === "bienvenue"} />
         )}
-        <Social name="kick" label="Kick" icon={siKick} value={v("kick")} />
-        <Social name="youtube" label="YouTube" icon={siYoutube} value={v("youtube")} />
-        <Social name="tiktok" label="TikTok" icon={siTiktok} value={v("tiktok")} />
-        <Social name="instagram" label="Instagram" icon={siInstagram} value={v("instagram")} />
-        <Social name="x" label="X" icon={siX} value={v("x")} />
+        {mode === "compte" && <Social name="kick" label="Kick" icon={siKick} value={v("kick")} />}
+        <Social name="youtube" label="YouTube" icon={siYoutube} value={v("youtube")} required={mode === "bienvenue"} />
+        {mode === "compte" && (
+          <>
+            <Social name="tiktok" label="TikTok" icon={siTiktok} value={v("tiktok")} />
+            <Social name="instagram" label="Instagram" icon={siInstagram} value={v("instagram")} />
+            <Social name="x" label="X" icon={siX} value={v("x")} />
+          </>
+        )}
       </fieldset>
 
       <label className={`flex items-start gap-3 rounded-xl border border-foreground/20 p-4 cursor-pointer`}>
         <input
           type="checkbox"
           name="show_on_site"
-          defaultChecked={profile.show_on_site}
+          defaultChecked={mode === "bienvenue" ? true : profile.show_on_site}
           className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
         />
         <span>
@@ -133,6 +137,7 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
         </span>
       </label>
 
+      {mode === "compte" && (
       <label className={`flex items-start gap-3 rounded-xl border border-foreground/20 p-4 cursor-pointer`}>
         <input
           type="checkbox"
@@ -147,6 +152,7 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
           </span>
         </span>
       </label>
+      )}
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <Submit>{mode === "bienvenue" ? "Continuer" : "Enregistrer"}</Submit>

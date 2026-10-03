@@ -32,6 +32,9 @@ export async function saveProfile(mode: "bienvenue" | "compte", _prev: FormState
   if (values.show_on_site && !(values.twitch || profile?.twitch_login || profile?.twitch_id)) return { error: "Indique ton pseudo Twitch pour afficher ta chaîne sur le site.", fields: raw };
   // Région obligatoire à l'inscription ; le fuseau doit appartenir au pays choisi.
   if (mode === "bienvenue" && !values.country) return { error: "Choisis ta région.", fields: raw };
+  // À l'inscription : pseudo Twitch et pseudo YouTube obligatoires (le Twitch lié par connexion compte).
+  if (mode === "bienvenue" && !(values.twitch || profile?.twitch_login)) return { error: "Indique ton pseudo Twitch.", fields: raw };
+  if (mode === "bienvenue" && !values.youtube) return { error: "Indique ton pseudo YouTube.", fields: raw };
   const timezone = timezoneFor(values.country, String(formData.get("timezone") ?? ""));
 
   const supabase = await createClient();

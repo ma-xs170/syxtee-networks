@@ -28,6 +28,7 @@ import { site } from "@/lib/site";
 import { Avatar, useAccount } from "../AccountMenu";
 import CloudBackdrop from "../home/CloudBackdrop";
 import ThemeToggle from "../ThemeToggle";
+import Wordmark from "../Wordmark";
 import GlidePill from "../ui/GlidePill";
 import { LivePill } from "./LiveStatus";
 import NotificationsBell from "./NotificationsBell";
@@ -37,7 +38,7 @@ import { restoreStreamMode } from "./streamMode";
 // Barre latérale du dashboard : groupes titrés, icônes, formule et compte en bas. Sur mobile, une barre en haut
 // ouvre la même navigation en tiroir. Les entrées liées à une fonction de la formule affichent un cadenas en Gratuit.
 
-type Item = { label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean };
+type Item = { label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean; wordmark?: string };
 type Group = { title?: string; items: Item[] };
 
 // Barre épurée : une seule liste. Statistiques et Scanner regroupent leurs pages en onglets ; Discord et le retour au site sont dans le menu du compte.
@@ -48,7 +49,7 @@ const GROUPS: Group[] = [
       { label: "Mes relais", href: "/dashboard/relais", icon: Radio, feature: "relais" },
       { label: "Aperçu", href: "/dashboard/apercu", icon: Eye, feature: "apercu" },
       { label: "Caméras externes", href: "/dashboard/dji", icon: VideoCamera, feature: "dji" },
-      { label: "SYXTEE Studio", href: "/studio", icon: SlidersHorizontal, external: true },
+      { label: "SYXTEE Studio", href: "/studio", icon: SlidersHorizontal, external: true, wordmark: "STUDIO" },
       { label: "Scanner", href: "/dashboard/scanner", icon: MapTrifold },
       { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },
     ],
@@ -68,8 +69,16 @@ function NavLink({ item, active, locked, onNavigate, hovered, onHover }: { item:
   const inner = (
     <>
       <GlidePill show={!!hovered && !active} id="dash-nav-pill" />
-      <Icon size={20} weight={active ? "fill" : "regular"} className="relative z-10 shrink-0" aria-hidden="true" />
-      <span className="relative z-10 truncate">{item.label}</span>
+      {item.wordmark ? (
+        <span className="relative z-10 min-w-0" aria-label={item.label}>
+          <Wordmark name={item.wordmark} className="gap-3" />
+        </span>
+      ) : (
+        <>
+          <Icon size={20} weight={active ? "fill" : "regular"} className="relative z-10 shrink-0" aria-hidden="true" />
+          <span className="relative z-10 truncate">{item.label}</span>
+        </>
+      )}
       {locked && <Lock size={14} className="relative z-10 ml-auto shrink-0 text-muted" aria-label="Verrouillé dans ta formule" />}
     </>
   );

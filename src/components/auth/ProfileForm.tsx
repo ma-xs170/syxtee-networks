@@ -1,12 +1,12 @@
 "use client";
 
-import { useActionState, useMemo, type ReactNode } from "react";
+import { useActionState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { siInstagram, siKick, siTiktok, siTwitch, siX, siYoutube, type SimpleIcon } from "simple-icons";
 import { linkTwitch } from "@/app/(auth)/actions";
 import type { Profile } from "@/lib/auth/dal";
 import { saveProfile, type FormState } from "@/lib/auth/profileActions";
-import { COUNTRIES } from "@/lib/auth/profileSchema";
+import RegionPicker from "@/components/auth/RegionPicker";
 
 // Formulaire de profil : /bienvenue (première connexion, version courte) et /compte (complet).
 
@@ -82,32 +82,18 @@ export function Notice({ state }: { state: FormState }) {
 export default function ProfileForm({ profile, mode, next = "" }: { profile: Profile; mode: "bienvenue" | "compte"; next?: string }) {
   const [state, action] = useActionState<FormState, FormData>(saveProfile.bind(null, mode), {});
   const v = (k: keyof Profile) => state.fields?.[k] ?? (profile[k] as string | null) ?? "";
-  const countries = useMemo(() => {
-    const names = new Intl.DisplayNames(["fr"], { type: "region" });
-    return COUNTRIES.map((c) => ({ c, n: names.of(c) ?? c })).sort((a, b) => a.n.localeCompare(b.n, "fr"));
-  }, []);
   const twitch = profile.twitch_login;
 
   return (
     <form action={action} className="space-y-8">
       <input type="hidden" name="next" value={next || (mode === "bienvenue" ? "/dashboard" : "/compte")} />
 
+      <RegionPicker country={v("country")} timezone={v("timezone")} required={mode === "bienvenue"} />
+
       {mode === "compte" && (
-        <>
-          <Field id="bio" label="Bio" hint="160 caractères maximum.">
-            <textarea id="bio" name="bio" maxLength={160} rows={3} defaultValue={v("bio")} className={`${inputCls} h-auto resize-none py-3`} />
-          </Field>
-          <Field id="country" label="Pays">
-            <select id="country" name="country" defaultValue={v("country")} className={`${inputCls} appearance-none`}>
-              <option value="">Non précisé</option>
-              {countries.map(({ c, n }) => (
-                <option key={c} value={c}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </>
+        <Field id="bio" label="Bio" hint="160 caractères maximum.">
+          <textarea id="bio" name="bio" maxLength={160} rows={3} defaultValue={v("bio")} className={`${inputCls} h-auto resize-none py-3`} />
+        </Field>
       )}
 
       <fieldset className="space-y-3">

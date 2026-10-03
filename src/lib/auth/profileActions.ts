@@ -13,6 +13,7 @@ import { getProfile, getUser, requireUser, safeNext } from "./dal";
 import { AUTH_ERRORS } from "./errors";
 import { passwordProblem } from "./password";
 import { namesSchema, profileSchema } from "./profileSchema";
+import { timezoneFor } from "@/lib/regions";
 import { isPwned } from "./pwned";
 import { allow } from "./rateLimit";
 
@@ -21,7 +22,7 @@ export type FormState = { ok?: string; error?: string; fields?: Record<string, s
 /** Enregistre le profil. `bienvenue` : première fois, marque le profil complété puis part vers le dashboard. */
 export async function saveProfile(mode: "bienvenue" | "compte", _prev: FormState, formData: FormData): Promise<FormState> {
   const user = await requireUser(mode === "bienvenue" ? "/bienvenue" : "/compte");
-  const raw = Object.fromEntries(["bio", "country", "kick", "youtube", "tiktok", "instagram", "x"].map((k) => [k, String(formData.get(k) ?? "")]));
+  const raw = Object.fromEntries(["bio", "country", "timezone", "kick", "youtube", "tiktok", "instagram", "x"].map((k) => [k, String(formData.get(k) ?? "")]));
   const parsed = profileSchema.safeParse({ ...raw, show_on_site: formData.get("show_on_site") ?? "", show_first_name: formData.get("show_first_name") ?? "" });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide.", fields: raw };
 
@@ -29,11 +30,14 @@ export async function saveProfile(mode: "bienvenue" | "compte", _prev: FormState
   const values = parsed.data;
   // La case n'a d'effet qu'avec un Twitch vérifié (sinon la chaîne n'apparaîtrait pas).
   if (values.show_on_site && !profile?.twitch_id) return { error: "Lie d'abord ton Twitch pour afficher ta chaîne sur le site.", fields: raw };
+  // Région obligatoire à l'inscription ; le fuseau doit appartenir au pays choisi.
+  if (mode === "bienvenue" && !values.country) return { error: "Choisis ta région.", fields: raw };
+  const timezone = timezoneFor(values.country, String(formData.get("timezone") ?? ""));
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("profiles")
-    .update({ ...values, ...(mode === "bienvenue" ? { onboarded_at: new Date().toISOString() } : {}) })
+    .update({ ...values, timezone, ...(mode === "bienvenue" ? { onboarded_at: new Date().toISOString() } : {}) })
     .eq("id", user.id);
   if (error) {
     console.error("saveProfile", error.message);

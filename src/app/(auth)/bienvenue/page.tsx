@@ -22,7 +22,7 @@ export default async function BienvenuePage({ searchParams }: PageProps<"/bienve
         <Image src="/logo-400.png" alt="SYXTEE" width={18} height={25} priority />
       </div>
       <h1 className="mt-8 text-center text-3xl font-semibold tracking-tight">Bienvenue sur SYXTEE</h1>
-      <p className="mt-3 text-center text-sm text-foreground/60">Ajoute tes réseaux. Tu pourras tout modifier plus tard.</p>
+      <p className="mt-3 text-center text-sm text-foreground/60">Choisis ta région et ajoute tes réseaux. Tu pourras tout modifier plus tard.</p>
       {error && (
         <p role="alert" className="mt-4 text-center text-sm text-red-400/90">
           {error}

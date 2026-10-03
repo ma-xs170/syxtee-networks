@@ -14,6 +14,8 @@ export type Profile = {
   avatar_url: string | null;
   bio: string | null;
   country: string | null;
+  /** Fuseau IANA (0028_timezone.sql) ; vide = Europe/Paris. */
+  timezone?: string | null;
   twitch_id: string | null;
   twitch_login: string | null;
   twitch_display_name: string | null;

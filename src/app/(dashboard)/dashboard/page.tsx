@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Overview from "@/components/dashboard/Overview";
-import { DashHeader, DashPage } from "@/components/dashboard/ui";
+import Greeting from "@/components/dashboard/Greeting";
+import { DashPage } from "@/components/dashboard/ui";
+import { regionList, serverNow, validTimezone } from "@/lib/regions";
 import { getPlan } from "@/lib/auth/plan";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { getOverview } from "@/lib/dashboard-overview";
@@ -13,12 +15,11 @@ export default async function DashboardPage() {
   const profile = (await getProfile())!;
   const initial = await getOverview(user.id, profile, "7d", await getPlan());
   const first = profile.first_name?.trim();
-  const day = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Paris" });
-  const today = day.charAt(0).toUpperCase() + day.slice(1);
+  const region = profile.country ? regionList().find((r) => r.code === profile.country) : undefined;
   return (
     <DashPage>
-      {/* Prénom pas encore renseigné : « Salut. » tout court. */}
-      {first ? <DashHeader lead="Salut" hl={`${first}.`} highlight sub={today} /> : <DashHeader lead="Salut." hl="" sub={today} />}
+      {/* Prénom pas encore renseigné : « Bonjour. » tout court. Fuseau absent (ancien compte) : Europe/Paris. */}
+      <Greeting now={serverNow()} timezone={validTimezone(profile.timezone)} name={first || undefined} flag={region?.flag} region={region?.name} />
       <Overview initial={initial} chat={{ twitch: profile.twitch_login ?? "", kick: profile.kick ?? "", youtube: "" }} />
     </DashPage>
   );

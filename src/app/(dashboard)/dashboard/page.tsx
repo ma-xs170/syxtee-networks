@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Overview from "@/components/dashboard/Overview";
 import Greeting from "@/components/dashboard/Greeting";
 import { DashPage } from "@/components/dashboard/ui";
-import { regionList, serverNow, validTimezone } from "@/lib/regions";
+import { regionList, serverNow, timezoneFor, validTimezone } from "@/lib/regions";
 import { getPlan } from "@/lib/auth/plan";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { getOverview } from "@/lib/dashboard-overview";
@@ -19,7 +19,7 @@ export default async function DashboardPage() {
   return (
     <DashPage>
       {/* Prénom pas encore renseigné : « Bonjour. » tout court. Fuseau absent (ancien compte) : Europe/Paris. */}
-      <Greeting now={serverNow()} timezone={validTimezone(profile.timezone)} name={first || undefined} flag={region?.flag} region={region?.name} />
+      <Greeting now={serverNow()} timezone={validTimezone(timezoneFor(profile.country, profile.timezone))} name={first || undefined} flag={region?.flag} region={region?.name} />
       <Overview initial={initial} chat={{ twitch: profile.twitch_login ?? "", kick: profile.kick ?? "", youtube: "" }} />
     </DashPage>
   );

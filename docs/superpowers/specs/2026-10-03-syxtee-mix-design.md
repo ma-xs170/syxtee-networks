@@ -4,19 +4,20 @@ Date : 2026-10-03. Statut : spec à relire, avant plan d'implémentation.
 
 ## Nom et place dans le produit
 
-Décision du 2026-10-03 : **SYXTEE STUDIO devient SYXTEE MIX** (nom plus évident). Le produit actuel (pilotage d'OBS à distance par SYXTEE Link) et le nouveau mixage forment un seul produit avec deux onglets : **Mixer** (caméras, ce spec) et **Piloter OBS** (existant). Renommage fait dans le site : textes, menu, accueil, docs, e-mails. Adresses : `/mix` (l'app) et `/syxtee-mix` (la page de présentation) ; `/studio` et `/syxtee-studio` redirigent (308). Les identifiants internes (composants, `core/src/studio.ts`, routes `/v1/me/studio/*`) gardent leur nom. Le plugin SYXTEE Link déjà installé affiche encore « SYXTEE Studio » : il sera corrigé à sa prochaine version.
+Décisions du 2026-10-03 : **SYXTEE STUDIO devient SYXTEE MIX** (nom plus évident), et **le plugin SYXTEE Link est abandonné**. SYXTEE Mix n'est plus une télécommande d'OBS : c'est un mixeur multi-caméras natif sur le site, qui sort un seul flux RTMP pour OBS. La page `/mix` affiche donc **uniquement le mixeur** (plus d'onglet « Piloter OBS »). Le code de l'ancien pilotage d'OBS (`src/components/studio/Studio.tsx`, `Connect`, `LinkApprove`, `useLink`, page `/link`, dossier `link/`, côté Core `remote`, `backups`) n'est plus branché à `/mix` ; sa suppression se fait dans un lot de nettoyage séparé, pas dans ce chantier. Adresses : `/mix` (l'app) et `/syxtee-mix` (la présentation) ; `/studio` et `/syxtee-studio` redirigent (308). Les identifiants internes (composants, `core/src/studio.ts`, routes `/v1/me/studio/*`) gardent leur nom.
 
 ## Objectif
 
-Un compte peut mixer plusieurs de ses caméras (téléphone, DJI, drone, GoPro, SYXTEE Cam) depuis une page du dashboard. Il choisit les scènes et règle l'audio, puis colle **une seule adresse RTMP** dans OBS Studio. OBS reçoit déjà le mélange : il n'a plus à gérer chaque caméra.
+Un compte voit **toutes ses caméras (relais) en même temps**, comme un multiview natif, et les mixe depuis une page du dashboard : il choisit les scènes et règle l'audio de **chaque source**. Il colle ensuite **une seule adresse RTMP** dans OBS Studio : OBS reçoit déjà le mélange, il n'a plus à gérer chaque caméra.
 
 Ce que l'utilisateur a validé :
-- Le mixage se fait **dans le navigateur** (pas de CPU serveur significatif). Il faut garder l'onglet Mix ouvert.
+- Le mixage se fait **dans le navigateur** (pas de CPU serveur significatif). Il faut garder la page Mix ouverte.
 - Le pilote est un **PC avec une bonne connexion** (pas un téléphone en 4G).
 - Interface : maquette validée (3 colonnes Sources, Programme, Audio, plus un bandeau « Pour OBS »). Elle sera améliorée ensuite (voir « Hors première version »).
 
 ## Hors première version (à améliorer ensuite)
 
+- Sources audio hors caméras (micro, musique, média) : exclu, l'audio vient seulement des relais.
 - Éditeur de scènes (choisir quelle caméra va dans quelle case, créer ses propres scènes). La V1 propose 4 scènes fixes.
 - Sortie 1080p (la V1 est en 720p, 30 images par seconde).
 - Version téléphone du pilotage.
@@ -48,7 +49,7 @@ Trois blocs, chacun avec une seule responsabilité.
   - `SourcesPanel` : liste des relais du compte, état, protocole, débit, case à cocher (max 4).
   - `ProgramCanvas` : canvas 1280x720 à 30 images par seconde, alimenté par un `<video>` caché par source (WHEP). Sortie via `canvas.captureStream(30)`.
   - `SceneBar` : 4 scènes fixes en V1 (plein écran, incrustation, côte à côte, grille de 4) et le choix Coupure ou Fondu.
-  - `AudioMixer` : par source un volume, muet, solo et un vumètre ; un volume général.
+  - `AudioMixer` : l'audio est celui **des sources seulement** (le son de chaque caméra), pas de micro ni de média extérieur. Par source : volume, muet, solo, vumètre ; plus un volume général.
   - `ObsOutput` : URL RTMP du programme avec Copier et Régénérer.
 - Logique pure et testable, séparée de l'interface :
   - `layouts.ts` : pour une scène et une liste de sources, calcule les rectangles (position, taille, ordre).
@@ -109,7 +110,7 @@ Autorisation MediaMTX : le point d'entrée existant `/internal/mediamtx/auth` ro
 
 ## Intégration au site
 
-- Entrée « SYXTEE Mix » (déjà renommée) dans la barre latérale du dashboard, avec le même contrôle d'accès. La page `/mix` aura les onglets Mixer et Piloter OBS.
+- Entrée « SYXTEE Mix » (déjà renommée) dans la barre latérale du dashboard, avec le même contrôle d'accès. La page `/mix` est le mixeur (plein écran, sans nav du site, comme l'actuel `(studio)/layout.tsx`).
 - Page de documentation `/docs/mix` (à créer avec la fonction) (étapes, limites H.264, latence).
 - Aucune annonce sur la page d'accueil tant que le test réel n'est pas fait.
 
@@ -117,4 +118,4 @@ Autorisation MediaMTX : le point d'entrée existant `/internal/mediamtx/auth` ro
 
 1. Plafond de sessions Mix simultanées par serveur (à mesurer).
 2. Durée du jeton de lecture WHEP et mode de renouvellement.
-3. Disposition des onglets Mixer et Piloter OBS (par défaut : Mixer d'abord).
+3. Nettoyage de l'ancien pilotage d'OBS (Link) : quand le supprimer, et que faire des comptes déjà appairés.

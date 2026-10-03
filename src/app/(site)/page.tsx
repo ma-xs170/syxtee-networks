@@ -3,6 +3,9 @@ import Hero from "@/components/sections/Hero";
 import FeatureExplorer from "@/components/home/FeatureExplorer";
 import StreamerWall from "@/components/home/StreamerWall";
 import RelayBento from "@/components/home/RelayBento";
+import RistPromo from "@/components/sections/RistPromo";
+import StudioPromo from "@/components/sections/StudioPromo";
+import MultichatPromo from "@/components/sections/MultichatPromo";
 import FinalCta from "@/components/sections/FinalCta";
 import { getHomeStreamers } from "@/lib/streamers";
 
@@ -21,6 +24,9 @@ export default async function Home() {
     <>
       <Hero streamers={streamers} />
       <FeatureExplorer />
+      <RistPromo />
+      <StudioPromo />
+      <MultichatPromo />
       <StreamerWall streamers={streamers} />
       <RelayBento />
       <FinalCta />

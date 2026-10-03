@@ -35,17 +35,23 @@ export async function saveProfile(mode: "bienvenue" | "compte", _prev: FormState
   const timezone = timezoneFor(values.country, String(formData.get("timezone") ?? ""));
 
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("profiles")
-    .update({ ...values, timezone, ...(mode === "bienvenue" ? { onboarded_at: new Date().toISOString() } : {}) })
-    .eq("id", user.id);
+  const extra = mode === "bienvenue" ? { onboarded_at: new Date().toISOString() } : {};
+  let { error } = await supabase.from("profiles").update({ ...values, timezone, ...extra }).eq("id", user.id);
+  // Colonne « twitch » absente (migration 0033 pas encore appliquée) : on enregistre le reste et on le dit.
+  let twitchSkipped = false;
+  if (error && (error.code === "42703" || error.code === "PGRST204") && /twitch/i.test(error.message)) {
+    const { twitch: _skip, ...rest } = values;
+    void _skip;
+    twitchSkipped = true;
+    ({ error } = await supabase.from("profiles").update({ ...rest, timezone, ...extra }).eq("id", user.id));
+  }
   if (error) {
-    console.error("saveProfile", error.message);
+    console.error("saveProfile", error.code, error.message);
     return { error: "Enregistrement impossible. Réessaie.", fields: raw };
   }
   revalidatePath("/", "layout");
   if (mode === "bienvenue") redirect(safeNext(String(formData.get("next") ?? "")));
-  return { ok: "Profil enregistré." };
+  return twitchSkipped ? { ok: "Profil enregistré, sauf le pseudo Twitch : la base de données doit être mise à jour d'abord." } : { ok: "Profil enregistré." };
 }
 
 /** Message affiché pour une erreur Supabase sur profiles : la vraie raison, jamais un message générique. */

@@ -45,6 +45,11 @@ export async function saveProfile(mode: "bienvenue" | "compte", _prev: FormState
     twitchSkipped = true;
     ({ error } = await supabase.from("profiles").update({ ...rest, timezone, ...extra }).eq("id", user.id));
   }
+  // Colonne « timezone » absente (migration 0028 pas encore appliquée) : on enregistre le reste sans le fuseau.
+  if (error && (error.code === "42703" || error.code === "PGRST204") && /timezone/i.test(error.message)) {
+    const { twitch: tw, ...noTwitch } = values;
+    ({ error } = await supabase.from("profiles").update({ ...(twitchSkipped ? noTwitch : { ...noTwitch, twitch: tw }), ...extra }).eq("id", user.id));
+  }
   if (error) {
     console.error("saveProfile", error.code, error.message);
     const why =

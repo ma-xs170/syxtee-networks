@@ -81,7 +81,7 @@ function NavLink({ item, active, locked, onNavigate, hovered, onHover }: { item:
       {active && <span aria-hidden="true" className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-accent" />}
       {item.wordmark ? (
         <span className="relative z-10 min-w-0" aria-label={item.label}>
-          <Wordmark name={item.wordmark} className="gap-3" />
+          <Wordmark name={item.wordmark} size="sm" className="gap-2" />
         </span>
       ) : (
         <>

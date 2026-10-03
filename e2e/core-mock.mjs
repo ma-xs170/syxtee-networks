@@ -18,7 +18,9 @@ const view = (r) => ({
   mode: r.mode,
   regie_available: false,
   urls:
-    r.protocol === "rtmp"
+    r.protocol === "rist"
+      ? { rist_url: `rist://${HOST}:6001?secret=${"a".repeat(48)}&aes-type=256&profile=1`, rist_server: `rist://${HOST}:6001`, rist_host: HOST, rist_port: 6001, rist_secret: "a".repeat(48) }
+      : r.protocol === "rtmp"
       ? { rtmp_server: `rtmp://${HOST}:1935/live`, rtmp_key: r.publish_id, rtmp_url: `rtmp://${HOST}:1935/live/${r.publish_id}` }
       : { srtla_url: `srtla://${HOST}:5000?streamid=${r.publish_id}`, srt_url: `srt://${HOST}:4001?streamid=${r.publish_id}` },
   obs_srt_url: `srt://${HOST}:4000?streamid=${r.play_id}`,

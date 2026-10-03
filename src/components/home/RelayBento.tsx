@@ -12,7 +12,7 @@ import { HealthArt, KeyArt, PreviewArt } from "./BentoArt";
 type Cell = { title: string; text: string; art: ReactNode; wide?: boolean; tone: "plain" | "grid" | "glow" };
 
 const cells: Cell[] = [
-  { title: "SRTLA ou RTMP, au choix", text: "SRTLA pour le bonding en mouvement. RTMP pour une caméra DJI, GoPro ou OBS.", art: <RelayServer />, wide: true, tone: "grid" },
+  { title: "SRTLA, RTMP ou RIST", text: "SRTLA pour le bonding en mouvement. RIST (nouveau) pour un encodeur pro. RTMP pour une caméra DJI, GoPro ou OBS.", art: <RelayServer />, wide: true, tone: "grid" },
   { title: "Bonding multi-réseaux", text: "4G, 5G, Wi-Fi et Starlink combinés. Si un réseau lâche, les autres continuent.", art: <PhoneMoblin />, tone: "plain" },
   { title: "Studio dans le navigateur", text: "Compose tes scènes, enregistre et diffuse vers Twitch, Kick ou YouTube, sans OBS.", art: <ObsScreen />, tone: "glow" },
   { title: "Santé du flux", text: "Débit, pertes et latence en direct, dans ton dashboard.", art: <HealthArt />, tone: "plain" },

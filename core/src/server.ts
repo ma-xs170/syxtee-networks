@@ -9,9 +9,10 @@ import { isServiceToken } from "./auth.ts";
 import type { Config } from "./config.ts";
 import type { HealthMonitor, Live } from "./health.ts";
 import { createSysStats } from "./sysstats.ts";
-import { ForbiddenError, QuotaError, type Relay, type RelayStore } from "./relays.ts";
+import { ForbiddenError, PortsError, QuotaError, type Relay, type RelayStore } from "./relays.ts";
 import type { Security } from "./security.ts";
 import type { SlsEvent } from "./sls-log.ts";
+import type { Rist } from "./rist.ts";
 import type { Rtmp } from "./rtmp.ts";
 import { RTMP_APP } from "./rtmp.ts";
 import type { SampleStore } from "./samples.ts";
@@ -46,6 +47,8 @@ export type Deps = {
   profile?: (userId: string) => Promise<{ username: string | null; twitch_login: string | null }>;
   /** Entrée RTMP (null si désactivée). */
   rtmp?: Rtmp | null;
+  /** Entrée RIST (null si désactivée ou ffmpeg sans librist). */
+  rist?: Rist | null;
   /** Sécurité du relais (journal des refus, bannissements, alertes). */
   security?: Security | null;
   config: Config;
@@ -85,7 +88,15 @@ export function relayView(r: Relay, c: Config, live = false) {
     mode: regie ? ("regie" as const) : r.mode,
     regie_available: c.REGIE_ENABLED,
     urls:
-      r.protocol === "rtmp"
+      r.protocol === "rist"
+        ? {
+            rist_url: `rist://${host}:${r.rist_port}?secret=${r.rist_secret}&aes-type=256&profile=1`,
+            rist_server: `rist://${host}:${r.rist_port}`,
+            rist_host: host,
+            rist_port: r.rist_port ?? 0,
+            rist_secret: r.rist_secret ?? "",
+          }
+        : r.protocol === "rtmp"
         ? { rtmp_server: `rtmp://${host}:${c.RTMP_PORT}/${RTMP_APP}`, rtmp_key: r.publish_id, rtmp_url: `rtmp://${host}:${c.RTMP_PORT}/${RTMP_APP}/${r.publish_id}` }
         : { srtla_url: `srtla://${host}:${c.SRTLA_PORT}?streamid=${r.publish_id}`, srt_url: `srt://${host}:${c.SRT_PUBLISH_PORT}?streamid=${r.publish_id}` },
     obs_srt_url: `srt://${host}:${c.SRT_PLAY_PORT}?streamid=${regie ? r.out_play_id : r.play_id}`,
@@ -153,15 +164,17 @@ export function buildServer(d: Deps) {
   app.post("/v1/users/:id/relays", { preHandler: service }, async (req, reply) => {
     const { id } = uuid.parse(req.params);
     const body = z
-      .object({ name: z.string().trim().min(1).max(40), protocol: z.enum(["srtla", "rtmp"]), server: z.string(), limit: z.number().int().min(0) })
+      .object({ name: z.string().trim().min(1).max(40), protocol: z.enum(["srtla", "rtmp", "rist"]), server: z.string(), limit: z.number().int().min(0) })
       .parse(req.body);
     if (body.server !== d.config.RELAY_NAME) return reply.code(409).send({ error: "server_unavailable" });
     if (body.protocol === "rtmp" && !d.rtmp) return reply.code(409).send({ error: "rtmp_disabled" });
+    if (body.protocol === "rist" && !d.rist) return reply.code(409).send({ error: "rist_disabled" });
     try {
       return changed(view(await d.relays.create(id, body)));
     } catch (e) {
       if (e instanceof QuotaError) return reply.code(403).send({ error: "quota" });
       if (e instanceof ForbiddenError) return reply.code(403).send({ error: "forbidden" });
+      if (e instanceof PortsError) return reply.code(409).send({ error: "rist_ports_full" });
       throw e;
     }
   });

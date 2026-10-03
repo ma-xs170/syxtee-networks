@@ -5,6 +5,7 @@ import { loadConfig } from "./config.ts";
 import { createHealthMonitor, type Live } from "./health.ts";
 import type { Relay } from "./relays.ts";
 import { createRelayStore, publicName } from "./relays.ts";
+import { createRist, ristSupported } from "./rist.ts";
 import { createRtmp } from "./rtmp.ts";
 import { loadLogo } from "./mire.ts";
 import { createPreviews, openLive } from "./preview.ts";
@@ -46,6 +47,7 @@ let reconcileSoon: () => void = () => {};
 const relays = createRelayStore(supabase, sls, config.RELAY_NAME, {
   sealer: createSealer(parseSecret(config.RELAY_KEYS_SECRET)),
   log,
+  ristPorts: { min: config.RIST_PORT_MIN, max: config.RIST_PORT_MAX },
   // Clé retirée du SLS : sessions SRT/SRTLA coupées par le Guard ; RTMP et Cam coupés par leur boucle de synchro.
   onRevoked: (keys) => void security.kickKeys(keys).then((n) => n && log(`${n} session(s) coupée(s) (clé retirée)`)),
 });
@@ -146,6 +148,11 @@ rtmp = config.RTMP_ENABLED
   ? createRtmp({ apiUrl: config.MEDIAMTX_API_URL, rtspUrl: config.MEDIAMTX_RTSP_URL, output: srtOut, log, security })
   : null;
 
+// Entrée RIST : un ffmpeg (librist) par relais. Désactivée, avec un avertissement, si ce ffmpeg ne sait pas faire du RIST.
+const ristOk = config.RIST_ENABLED ? await ristSupported() : false;
+if (config.RIST_ENABLED && !ristOk) log("rist : ce ffmpeg n'a pas librist, entrée RIST désactivée (voir core/Dockerfile)");
+const rist = ristOk ? createRist({ output: srtOut, log }) : null;
+
 /** Aligne le SLS sur la base (relais autorisés seulement) et distribue les clés aux modules. */
 let refreshing: Promise<void> | null = null;
 async function refreshKeys() {
@@ -161,6 +168,7 @@ async function refreshKeys() {
       linkUsers.clear();
       for (const r of ok) linkUsers.add(r.user_id);
       rtmp?.setKeys(ok);
+      rist?.setKeys(ok);
       await regie?.sync(ok);
     } catch (e) {
       log(`lecture des clés impossible : ${(e as Error).message}`);
@@ -192,6 +200,7 @@ const app = buildServer({
   config,
   relays,
   rtmp,
+  rist,
   health,
   samples,
   sessions,
@@ -290,7 +299,7 @@ await app.listen({ port: config.PORT, host: config.HOST });
 app.server.on("upgrade", (req, socket, head) => {
   if (!remote?.upgrade(req, socket, head)) socket.destroy();
 });
-log(`prêt sur :${config.PORT} · relais ${config.RELAY_NAME} (${config.RELAY_PUBLIC_HOST}) · aperçus ${previews ? "oui" : "non"} · régie ${regie ? "oui" : "non"} · cam ${cam ? camWhipBase : "non"} · studio ${studio ? "oui" : "non"} · link ${remote ? "oui" : "non"} · rtmp ${rtmp ? `:${config.RTMP_PORT}` : "non"}`);
+log(`prêt sur :${config.PORT} · relais ${config.RELAY_NAME} (${config.RELAY_PUBLIC_HOST}) · aperçus ${previews ? "oui" : "non"} · régie ${regie ? "oui" : "non"} · cam ${cam ? camWhipBase : "non"} · studio ${studio ? "oui" : "non"} · link ${remote ? "oui" : "non"} · rtmp ${rtmp ? `:${config.RTMP_PORT}` : "non"} · rist ${rist ? `:${config.RIST_PORT_MIN}-${config.RIST_PORT_MAX}` : "non"}`);
 
 const shutdown = async () => {
   timers.forEach(clearInterval);
@@ -300,6 +309,7 @@ const shutdown = async () => {
   studio?.stopAll();
   remote?.close();
   rtmp?.stopAll();
+  rist?.stopAll();
   await sessions.closeAll();
   await coverage.flush();
   await prefixes.flush();

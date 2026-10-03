@@ -11,7 +11,10 @@ RUN npm run build && npm prune --omit=dev
 FROM node:24-trixie-slim
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ffmpeg ca-certificates tini fonts-dejavu-core iptables util-linux \
- && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/* \
+ && ffmpeg -hide_banner -protocols 2>/dev/null | grep -qE "^\s*rist\s*$" \
+ && echo "ffmpeg : librist présent (entrée RIST)" \
+ || echo "ATTENTION : ffmpeg sans librist, l'entrée RIST sera désactivée"
 WORKDIR /app
 ENV NODE_ENV=production DATA_DIR=/app/data
 COPY --from=build /app/node_modules ./node_modules

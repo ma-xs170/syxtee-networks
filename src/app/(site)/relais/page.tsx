@@ -32,7 +32,7 @@ export default function RelaisPage() {
           <h1 className="h-hero mx-auto max-w-3xl">
             Nos <Highlight>relais.</Highlight>
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-foreground/75 sm:text-lg">Des serveurs SRTLA et RTMP dans le monde entier. Choisis le plus proche de toi.</p>
+          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-foreground/75 sm:text-lg">Des serveurs SRTLA, RTMP et RIST dans le monde entier. Choisis le plus proche de toi.</p>
         </Container>
       </section>
 

@@ -7,12 +7,12 @@ import Highlight from "@/components/ui/Highlight";
 
 export const metadata: Metadata = {
   title: "Demander l'accès",
-  description: "SYXTEE NETWORKS est fermé au public pour le moment et ouvert aux partenaires. Remplis la demande : 5 relais SRTLA, 5 relais RTMP et toutes les fonctions.",
+  description: "SYXTEE NETWORKS est fermé au public pour le moment et ouvert aux partenaires. Remplis la demande : 5 relais par protocole (SRTLA, RTMP, RIST) et toutes les fonctions.",
   alternates: { canonical: "/acces" },
 };
 
 const premium = [
-  "5 relais SRTLA et 5 relais RTMP",
+  "5 relais par protocole : SRTLA, RTMP, RIST",
   "Bonding 4G, 5G, Wi-Fi et Starlink",
   "SYXTEE STUDIO, la régie dans le navigateur",
   "Santé du flux, aperçu et historique des lives",

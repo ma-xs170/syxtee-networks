@@ -47,6 +47,10 @@ const schema = z.object({
   // Entrée RTMP (DJI, GoPro, OBS…) via MediaMTX, relayée en SRT vers le SLS (voir rtmp.ts).
   RTMP_ENABLED: bool.default(true),
   RTMP_PORT: z.coerce.number().default(1935),
+  // Entrée RIST (profil Main, AES-256) : un port UDP par relais dans cette plage, écouteur ffmpeg/librist (voir rist.ts).
+  RIST_ENABLED: bool.default(true),
+  RIST_PORT_MIN: z.coerce.number().default(6000),
+  RIST_PORT_MAX: z.coerce.number().default(6199),
 
   DATA_DIR: z.string().default("./data"),
   // Carte de couverture : jeton IPinfo Lite (opérateur d'une IP, base téléchargée chaque semaine) et sel des

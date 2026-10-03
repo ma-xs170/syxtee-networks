@@ -27,10 +27,10 @@ const FEATURES: Feature[] = [
     art: PhoneMoblin,
   },
   {
-    name: "Relais SRTLA et RTMP",
+    name: "Relais SRTLA, RTMP et RIST",
     lead: "Un relais",
     hl: "pour chaque appareil.",
-    text: "Moblin, IRL Pro et BELABOX se connectent en SRTLA ; les caméras DJI Osmo, GoPro et OBS en RTMP. Chaque appareil dispose de son propre relais, de son adresse et de sa clé.",
+    text: "Moblin, IRL Pro et BELABOX se connectent en SRTLA ; les caméras DJI Osmo, GoPro et OBS en RTMP ; les encodeurs pros en RIST, chiffré en AES-256. Chaque appareil dispose de son propre relais, de son adresse et de sa clé.",
     art: RelayServer,
     img: "/images/outils/relais-v2.png",
     w: 2200,

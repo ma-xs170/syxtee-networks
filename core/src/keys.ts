@@ -13,6 +13,8 @@ export type SecretKeys = {
   out_publish_id: string;
   out_play_id: string;
   cam_key: string | null;
+  /** Secret AES du relais RIST (profil Main), absent sur les autres protocoles. */
+  rist_secret?: string | null;
 };
 
 export const hashKey = (key: string) => createHash("sha256").update(key).digest("hex");

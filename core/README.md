@@ -13,10 +13,23 @@ Service du VPS, à côté du `srtla-receiver` (OpenIRL). Il gère :
 
 ```
 Moblin ──SRTLA :5000──► srtla-receiver (SLS) ──SRT :4000──► OBS
+Moblin / encodeur ──RIST :6000-6199/udp (AES-256)──► Core (ffmpeg + librist, copie) ──SRT :4001──┘
 DJI ──RTMP :1935──► MediaMTX ──► Core (ffmpeg, copie) ──SRT :4001──┘
                            ▲ API + stats :8080 (localhost)
                      SYXTEE Core 127.0.0.1:8787 ◄── Caddy HTTPS (core.<domaine>) ◄── dashboard Vercel
 ```
+
+## Entrée RIST (profil Main, AES-256)
+
+Un relais RIST (migration `0029_rist.sql`, à appliquer avant le Core) reçoit un port UDP libre de la plage `RIST_PORT_MIN`–`RIST_PORT_MAX`
+(défaut 6000-6199, `ufw allow 6000:6199/udp`) et un secret de 192 bits chiffré avec les clés (`keys_enc`). Le Core lance un `ffmpeg`
+par relais (`src/rist.ts`) qui écoute `rist://@:<port>` avec ce secret et republie le flux en SRT dans le SLS, comme le RTMP.
+Archiver, supprimer ou régénérer le relais arrête ou relance l'écouteur au prochain réalignement (≤ 30 s, immédiat après l'action).
+**Prérequis : un ffmpeg compilé avec librist** (`ffmpeg -protocols | grep rist`). Le build du Dockerfile l'indique ; au démarrage le Core
+désactive l'entrée RIST avec un avertissement dans le journal s'il n'y est pas (`rist non`). `RIST_ENABLED=false` la coupe aussi.
+Test réel après déploiement : créer un relais RIST, envoyer avec Moblin ou
+`ffmpeg -re -f lavfi -i testsrc2 -f lavfi -i sine -c:v libx264 -c:a aac -f mpegts "rist://<hôte>:<port>?secret=<secret>&aes-type=256&profile=1"`,
+puis vérifier « En direct » dans le dashboard.
 
 ## Sécurité des clés (relais SRTLA, SRT, RTMP, Cam)
 
@@ -126,6 +139,7 @@ sudo ufw allow 5000/udp        # SRTLA (Moblin)
 sudo ufw allow 4000/udp        # SRT lecture (OBS)
 sudo ufw allow 4001/udp        # SRT publication (IRL Pro, encodeurs)
 sudo ufw allow 1935/tcp        # RTMP (caméras DJI, GoPro, OBS)
+sudo ufw allow 6000:6199/udp   # RIST (un port par relais RIST, plage RIST_PORT_MIN..MAX)
 sudo ufw enable
 sudo apt-get install -y fail2ban && sudo systemctl enable --now fail2ban
 ```

@@ -4,7 +4,7 @@
 // Formules vendues (Stripe) : basic (Basique), paid (Premium), extra (Extra).
 export type PlanId = "free" | "basic" | "beta" | "paid" | "extra" | "partner" | "admin";
 
-/** `maxPerProtocol` : relais actifs au plus par protocole (SRTLA, RTMP), en plus du total. Absent = pas de limite. */
+/** `maxPerProtocol` : relais actifs au plus par protocole (SRTLA, RTMP, RIST), en plus du total. Absent = pas de limite. */
 export type Limits = { maxRelays: number; maxConcurrentStreams: number; maxPerProtocol?: number };
 
 export const PLAN_LIMITS: Record<PlanId, Limits> = {

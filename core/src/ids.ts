@@ -25,3 +25,6 @@ export function sessionCode() {
   const h = randomBytes(4).toString("hex").toUpperCase();
   return `${h.slice(0, 4)}-${h.slice(4)}`;
 }
+
+/** Secret AES d'un relais RIST (192 bits, hex : sans caractère à échapper dans une URL). */
+export const newRistSecret = () => randomBytes(24).toString("hex");

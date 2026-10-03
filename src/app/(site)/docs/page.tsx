@@ -5,7 +5,7 @@ import Highlight from "@/components/ui/Highlight";
 
 export const metadata: Metadata = {
   title: "Documentation",
-  description: "La documentation SYXTEE NETWORKS : démarrer en IRL, relais SRTLA et RTMP, Moblin, Starlink, eSIM Saily, SYXTEE STUDIO, caméras DJI, analyseur réseau et FAQ.",
+  description: "La documentation SYXTEE NETWORKS : démarrer en IRL, relais SRTLA, RTMP et RIST, Moblin, Starlink, eSIM Saily, SYXTEE STUDIO, caméras DJI, analyseur réseau et FAQ.",
   alternates: { canonical: "/docs" },
 };
 
@@ -15,7 +15,8 @@ const sections: Section[] = [
     title: "Démarrer",
     guides: [
       { href: "/fonctionnement", title: "Fonctionnement", text: "Le trajet d'un live de A à Z, du téléphone à ton OBS.", icon: "route", keywords: "trajet live bonding srt obs" },
-      { href: "/relais", title: "Relais SYXTEE", text: "Choisir ton serveur SRTLA ou RTMP et savoir à quelle latence t'attendre.", icon: "rack", keywords: "serveur srtla rtmp latence url" },
+      { href: "/relais", title: "Relais SYXTEE", text: "Choisir ton serveur (SRTLA, RTMP, RIST) et savoir à quelle latence t'attendre.", icon: "rack", keywords: "serveur srtla rtmp rist latence url" },
+      { href: "/docs/rist", title: "RIST", text: "Le protocole des régies broadcast : chiffré, avec récupération des paquets perdus.", icon: "route", keywords: "rist protocole aes encodeur broadcast", badge: "Nouveau" },
       { href: "/services", title: "Services", text: "Tout ce que fait le relais pour ton direct.", icon: "services", keywords: "fonctions relais" },
       { href: "/moblin", title: "Moblin", text: "Installer l'app IRL et la brancher sur le relais SYXTEE.", icon: "phone", keywords: "iphone app irl srtla" },
     ],

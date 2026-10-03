@@ -214,7 +214,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
         </Link>
       </div>
 
-      <div className="flex items-center gap-2 px-4 pb-3">
+      <div className="flex flex-wrap items-center gap-2 px-4 pb-3">
         <LivePill />
         <Link
           href="/"

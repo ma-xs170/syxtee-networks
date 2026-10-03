@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LockKey, PlugsConnected, ShareNetwork, SquaresFour, Trash, UserCircle } from "@phosphor-icons/react";
 
 // Menu de Mon compte : une page par section. Pastilles défilantes sur mobile, colonne collée à gauche sur ordinateur.
 export const COMPTE_SECTIONS = [
-  { href: "/compte", label: "Vue d'ensemble" },
-  { href: "/compte/profil", label: "Profil" },
-  { href: "/compte/reseaux", label: "Réseaux et visibilité" },
-  { href: "/compte/comptes-relies", label: "Comptes reliés" },
-  { href: "/compte/securite", label: "Sécurité" },
-  { href: "/compte/supprimer", label: "Supprimer mon compte" },
+  { href: "/compte", label: "Vue d'ensemble", Icon: SquaresFour },
+  { href: "/compte/profil", label: "Profil", Icon: UserCircle },
+  { href: "/compte/reseaux", label: "Réseaux et visibilité", Icon: ShareNetwork },
+  { href: "/compte/comptes-relies", label: "Comptes reliés", Icon: PlugsConnected },
+  { href: "/compte/securite", label: "Sécurité", Icon: LockKey },
+  { href: "/compte/supprimer", label: "Supprimer mon compte", Icon: Trash },
 ] as const;
 
 export default function CompteNav() {
@@ -25,11 +26,12 @@ export default function CompteNav() {
               <Link
                 href={s.href}
                 aria-current={on ? "page" : undefined}
-                className={`relative block whitespace-nowrap rounded-full border px-4 py-2 text-sm transition-colors lg:rounded-lg lg:border-transparent lg:px-3 ${
+                className={`relative flex items-center gap-2.5 whitespace-nowrap rounded-full border px-4 py-2 text-sm transition-colors lg:rounded-lg lg:border-transparent lg:px-3 ${
                   on ? "border-line-strong bg-foreground/10 text-foreground" : "border-line text-muted hover:text-foreground lg:hover:bg-foreground/[0.06]"
                 } ${s.href === "/compte/supprimer" && !on ? "hover:text-red-300" : ""}`}
               >
                 {on && <span aria-hidden="true" className="absolute inset-y-1.5 left-0 hidden w-0.5 rounded-full bg-accent lg:block" />}
+                <s.Icon size={18} weight={on ? "fill" : "regular"} aria-hidden="true" className="shrink-0" />
                 {s.label}
               </Link>
             </li>

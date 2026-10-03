@@ -13,10 +13,12 @@ export default async function DashboardPage() {
   const profile = (await getProfile())!;
   const initial = await getOverview(user.id, profile, "7d", await getPlan());
   const first = profile.first_name?.trim();
+  const day = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Paris" });
+  const today = day.charAt(0).toUpperCase() + day.slice(1);
   return (
     <DashPage>
       {/* Prénom pas encore renseigné : « Salut. » tout court. */}
-      {first ? <DashHeader lead="Salut" hl={`${first}.`} highlight /> : <DashHeader lead="Salut." hl="" />}
+      {first ? <DashHeader lead="Salut" hl={`${first}.`} highlight sub={today} /> : <DashHeader lead="Salut." hl="" sub={today} />}
       <Overview initial={initial} chat={{ twitch: profile.twitch_login ?? "", kick: profile.kick ?? "", youtube: "" }} />
     </DashPage>
   );

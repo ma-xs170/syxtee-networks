@@ -143,7 +143,7 @@ function LaunchGuide({ open, onClose, keys }: { open: boolean; onClose: () => vo
 
 function Delta({ current, previous }: { current: number; previous: number }) {
   const d = delta(current, previous);
-  if (!d) return <p className="mt-1 text-xs text-muted">rien sur la période précédente</p>;
+  if (!d) return <p className="mt-1 text-xs text-muted">Pas de période précédente</p>;
   return (
     <p className={`mt-1 font-mono text-xs tabular-nums ${d.up ? "text-foreground" : "text-muted"}`}>
       <span aria-hidden="true">{d.up ? "▲" : "▼"}</span> {d.text}
@@ -201,6 +201,12 @@ function Activity({ data, range, onRange, pending }: { data: OverviewData; range
         <Kpi label="Débit moyen" value={kpis.avgKbps ? `${fmtInt(kpis.avgKbps)}` : "–"}>
           <p className="mt-1 font-mono text-xs text-muted">{kpis.peakKbps ? `kbit/s, crête à ${fmtInt(kpis.peakKbps)}` : "kbit/s"}</p>
         </Kpi>
+      </div>
+      <div className="mt-6 border-t border-line pt-5">
+        <h3 className="text-xs font-medium text-muted">Temps de direct par jour</h3>
+        <div className="mt-4">
+          <DailyBars days={data.daily} />
+        </div>
       </div>
     </Tile>
   );
@@ -338,16 +344,18 @@ function Urls({ data }: { data: OverviewData }) {
 }
 
 const shortcuts = [
-  { label: "SYXTEE Studio", href: "/studio" },
+  { label: "Aperçu", href: "/dashboard/apercu" },
+  { label: "Multichat", href: "/dashboard/multichat" },
   { label: "Mes relais", href: "/dashboard/relais" },
   { label: "Scanner réseau", href: "/dashboard/scanner" },
   { label: "Statistiques", href: "/dashboard/stats" },
+  { label: "SYXTEE STUDIO", href: "/studio" },
 ];
 
 function GoTo() {
   return (
     <Tile aria-labelledby="aller">
-      <TileLabel id="aller">Aller à</TileLabel>
+      <TileLabel id="aller">Accès rapides</TileLabel>
       <ul className="mt-4 grid grid-cols-2 gap-2">
         {shortcuts.map((s) => (
           <li key={s.href}>
@@ -400,23 +408,21 @@ export default function Overview({ initial, chat = { twitch: "", kick: "", youtu
       <LaunchGuide open={guide} onClose={() => setGuide(false)} keys={data.keys} />
       <LiveNow sources={data.sources} />
 
-      <Tile aria-labelledby="attention" className="py-4 sm:py-5">
-        <TileLabel id="attention">Ce qui demande ton attention</TileLabel>
-        {data.alerts.length ? (
-          <ul className="mt-3 divide-y divide-foreground/10">
+      {data.alerts.length > 0 && (
+        <Tile aria-labelledby="attention" className="py-4 sm:py-5">
+          <TileLabel id="attention" right={<span className="rounded-full border border-line px-2 py-0.5 font-mono text-xs tabular-nums text-muted">{data.alerts.length}</span>}>
+            À vérifier
+          </TileLabel>
+          <ul className="mt-2 divide-y divide-line">
             {data.alerts.map((a) => (
-              <li key={a.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+              <li key={a.id} className="flex flex-col gap-1.5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
                 <p className="text-sm text-foreground">{a.text}</p>
                 <ArrowLink href={a.href}>{a.cta}</ArrowLink>
               </li>
             ))}
           </ul>
-        ) : (
-          <p className="mt-3 text-sm text-muted">
-            Rien à traiter <span aria-hidden="true">✓</span>
-          </p>
-        )}
-      </Tile>
+        </Tile>
+      )}
 
       {error && (
         <p role="alert" className="text-sm text-red-400/90">
@@ -430,12 +436,6 @@ export default function Overview({ initial, chat = { twitch: "", kick: "", youtu
             <>
               <Activity data={data} range={range} onRange={changeRange} pending={pending} />
               {data.last && <LastLive s={data.last} />}
-              <Tile aria-labelledby="par-jour">
-                <TileLabel id="par-jour">Temps de direct par jour</TileLabel>
-                <div className="mt-6">
-                  <DailyBars days={data.daily} />
-                </div>
-              </Tile>
               <Tile aria-labelledby="derniers">
                 <TileLabel id="derniers" right={<ArrowLink href="/dashboard/lives">Tout l&apos;historique</ArrowLink>}>
                   3 derniers directs
@@ -451,14 +451,24 @@ export default function Overview({ initial, chat = { twitch: "", kick: "", youtu
         </div>
 
         <div className="space-y-4">
-          <div>
-            <TileLabel right={<ArrowLink href="/dashboard/apercu">Aperçu</ArrowLink>}>Chat</TileLabel>
-            <div className="mt-3">
-              <MultiChat defaults={chat} height="h-[28rem]" compact />
+          {chat.twitch || chat.kick ? (
+            <div>
+              <div className="mb-3">
+                <TileLabel right={<ArrowLink href="/dashboard/multichat">Multichat</ArrowLink>}>Chat</TileLabel>
+              </div>
+              <MultiChat defaults={chat} height="h-80" compact />
             </div>
-          </div>
-          <Subscription data={data} />
+          ) : (
+            <Tile aria-labelledby="chat-setup">
+              <TileLabel id="chat-setup">Multichat</TileLabel>
+              <p className="mt-3 text-sm leading-relaxed text-muted">Twitch et Kick dans un seul fil. Indique ta chaîne pour le voir ici.</p>
+              <div className="mt-4">
+                <ArrowLink href="/dashboard/multichat">Configurer le chat</ArrowLink>
+              </div>
+            </Tile>
+          )}
           <Urls data={data} />
+          <Subscription data={data} />
           <GoTo />
         </div>
       </div>

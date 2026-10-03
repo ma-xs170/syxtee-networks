@@ -196,7 +196,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
 
   return (
     <section aria-label="Multichat" className={`flex flex-col overflow-hidden rounded-2xl border border-line bg-surface ${height}`}>
-      <header className="flex flex-wrap items-center gap-2 border-b border-line p-2.5">
+      <header className={`flex items-center border-b border-line p-2.5 ${compact ? "gap-1.5" : "flex-wrap gap-2"}`}>
         <div role="group" aria-label="Affichage" className="flex rounded-lg border border-line bg-background p-0.5">
           {(["all", "youtube"] as const).map((t) => (
             <button
@@ -224,7 +224,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
                   className={`flex min-h-9 items-center gap-2 rounded-lg border px-2.5 text-sm transition-colors disabled:opacity-40 ${on ? "border-line-strong text-foreground" : "border-line text-muted line-through"}`}
                 >
                   <Icon p={p} />
-                  <span className="sr-only sm:not-sr-only">{PLATFORM[p].label}</span>
+                  <span className={compact ? "sr-only" : "sr-only sm:not-sr-only"}>{PLATFORM[p].label}</span>
                   <span
                     className={`h-2 w-2 rounded-full ${dot(links[p])}`}
                     role="img"

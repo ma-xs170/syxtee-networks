@@ -18,6 +18,8 @@ export type Profile = {
   timezone?: string | null;
   twitch_id: string | null;
   twitch_login: string | null;
+  /** Pseudo Twitch saisi à la main (0033_twitch_handle.sql), sans vérification. */
+  twitch?: string | null;
   twitch_display_name: string | null;
   kick: string | null;
   youtube: string | null;

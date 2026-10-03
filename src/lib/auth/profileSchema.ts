@@ -36,6 +36,7 @@ export const profileSchema = z.object({
     .trim()
     .refine((v) => v === "" || /^[A-Z]{2}$/.test(v), "Pays invalide.")
     .transform((v) => (v === "" ? null : v)),
+  twitch: handle(/^[A-Za-z0-9_]{3,25}$/, "Twitch"),
   kick: handle(/^[A-Za-z0-9_]{3,25}$/, "Kick"),
   youtube: handle(/^[A-Za-z0-9._-]{3,30}$/, "YouTube"),
   tiktok: handle(/^[A-Za-z0-9._]{2,24}$/, "TikTok"),

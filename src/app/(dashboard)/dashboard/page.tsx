@@ -20,7 +20,7 @@ export default async function DashboardPage() {
     <DashPage>
       {/* Prénom pas encore renseigné : « Bonjour. » tout court. Fuseau absent (ancien compte) : Europe/Paris. */}
       <Greeting now={serverNow()} timezone={validTimezone(timezoneFor(profile.country, profile.timezone))} name={first || undefined} flag={region?.flag} region={region?.name} />
-      <Overview initial={initial} chat={{ twitch: profile.twitch_login ?? "", kick: profile.kick ?? "", youtube: "" }} />
+      <Overview initial={initial} chat={{ twitch: profile.twitch_login || profile.twitch || "", kick: profile.kick ?? "", youtube: "" }} />
     </DashPage>
   );
 }

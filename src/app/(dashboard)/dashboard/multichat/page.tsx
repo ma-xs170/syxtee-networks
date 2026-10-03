@@ -30,7 +30,7 @@ export default async function MultichatPage({ searchParams }: PageProps<"/dashbo
   return (
     <DashPage>
       <DashHeader lead="Tous tes chats," hl="un seul fil" sub="Un clic sur un logo affiche une plateforme ou plusieurs : YouTube, Twitch et Kick. Relie ton compte (roue) pour écrire dans le chat." />
-      <MultiChat defaults={{ twitch: profile?.twitch_login ?? "", kick: profile?.kick ?? "", youtube: "" }} height="h-[max(28rem,calc(100dvh-16rem))]" notice={notice} />
+      <MultiChat defaults={{ twitch: profile?.twitch_login || profile?.twitch || "", kick: profile?.kick ?? "", youtube: "" }} height="h-[max(28rem,calc(100dvh-16rem))]" notice={notice} />
     </DashPage>
   );
 }

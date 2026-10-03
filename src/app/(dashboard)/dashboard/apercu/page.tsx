@@ -38,7 +38,7 @@ export default async function ApercuPage({ searchParams }: PageProps<"/dashboard
             sources={active.map((r) => ({ id: r.id, name: r.name, live: r.live, protocol: r.protocol }))}
             coreUrl={publicCoreUrl}
             initial={current.id}
-            chat={{ twitch: profile?.twitch_login ?? "", kick: profile?.kick ?? "", youtube: "" }}
+            chat={{ twitch: profile?.twitch_login || profile?.twitch || "", kick: profile?.kick ?? "", youtube: "" }}
           />
         </div>
       )}

@@ -3,7 +3,6 @@
 import { useActionState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { siInstagram, siKick, siTiktok, siTwitch, siX, siYoutube, type SimpleIcon } from "simple-icons";
-import { linkTwitch } from "@/app/(auth)/actions";
 import type { Profile } from "@/lib/auth/dal";
 import { saveProfile, type FormState } from "@/lib/auth/profileActions";
 import RegionPicker from "@/components/auth/RegionPicker";
@@ -82,7 +81,8 @@ export function Notice({ state }: { state: FormState }) {
 export default function ProfileForm({ profile, mode, next = "" }: { profile: Profile; mode: "bienvenue" | "compte"; next?: string }) {
   const [state, action] = useActionState<FormState, FormData>(saveProfile.bind(null, mode), {});
   const v = (k: keyof Profile) => state.fields?.[k] ?? (profile[k] as string | null) ?? "";
-  const twitch = profile.twitch_login;
+  // Twitch vérifié (connexion) : affiché tel quel. Sinon : un simple pseudo, comme Kick et YouTube (lien twitch.tv/<pseudo>).
+  const verified = profile.twitch_login;
 
   return (
     <form action={action} className="space-y-8">
@@ -98,27 +98,19 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
 
       <fieldset className="space-y-3">
         <legend className="mb-3 text-sm font-medium text-foreground/80">Réseaux sociaux</legend>
-        {/* Twitch : uniquement via une connexion Twitch vérifiée */}
-        <div className="flex items-center gap-3">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-foreground/20 text-foreground/70" title="Twitch">
-            <Icon icon={siTwitch} />
-          </span>
-          {twitch ? (
+        {verified ? (
+          <div className="flex items-center gap-3">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-foreground/20 text-foreground/70" title="Twitch">
+              <Icon icon={siTwitch} />
+            </span>
             <p className="flex h-12 flex-1 items-center rounded-xl border border-foreground/20 bg-foreground/[0.08] px-4 text-[15px] text-foreground">
-              @{twitch}
+              @{verified}
               <span className="ml-auto text-xs text-foreground/50">Vérifié</span>
             </p>
-          ) : (
-            <button
-              type="submit"
-              formAction={linkTwitch}
-              formNoValidate
-              className="h-12 flex-1 rounded-xl border border-foreground/20 bg-foreground/[0.08] px-4 text-left text-sm font-medium text-foreground transition-colors hover:bg-foreground/[0.12]"
-            >
-              Lier mon Twitch
-            </button>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Social name="twitch" label="Twitch" icon={siTwitch} value={v("twitch")} />
+        )}
         <Social name="kick" label="Kick" icon={siKick} value={v("kick")} />
         <Social name="youtube" label="YouTube" icon={siYoutube} value={v("youtube")} />
         <Social name="tiktok" label="TikTok" icon={siTiktok} value={v("tiktok")} />
@@ -126,30 +118,26 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
         <Social name="x" label="X" icon={siX} value={v("x")} />
       </fieldset>
 
-      <label className={`flex items-start gap-3 rounded-xl border border-foreground/20 p-4 ${twitch ? "cursor-pointer" : "opacity-60"}`}>
+      <label className={`flex items-start gap-3 rounded-xl border border-foreground/20 p-4 cursor-pointer`}>
         <input
           type="checkbox"
           name="show_on_site"
           defaultChecked={profile.show_on_site}
-          disabled={!twitch}
           className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
         />
         <span>
           <span className="block text-sm font-medium text-foreground">Afficher ma chaîne sur le site SYXTEE</span>
           <span className="mt-1 block text-xs leading-relaxed text-foreground/50">
-            {twitch
-              ? "Ta chaîne Twitch apparaît dans « Ils nous font confiance » sur l'accueil, avec un badge quand tu es en live. Tu peux décocher à tout moment."
-              : "Disponible une fois ton Twitch lié."}
+            Ta chaîne apparaît dans « Ils streament avec SYXTEE » sur l&apos;accueil, avec un lien vers twitch.tv/ton-pseudo. Tu peux décocher à tout moment.
           </span>
         </span>
       </label>
 
-      <label className={`flex items-start gap-3 rounded-xl border border-foreground/20 p-4 ${twitch ? "cursor-pointer" : "opacity-60"}`}>
+      <label className={`flex items-start gap-3 rounded-xl border border-foreground/20 p-4 cursor-pointer`}>
         <input
           type="checkbox"
           name="show_first_name"
           defaultChecked={profile.show_first_name === true}
-          disabled={!twitch}
           className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
         />
         <span>

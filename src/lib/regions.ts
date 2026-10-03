@@ -41,11 +41,19 @@ export function serverNow() {
   return Date.now();
 }
 
+/** Heure locale (0–23) d'un instant dans un fuseau. Passe par formatToParts : le texte localisé (« 12 h ») n'est pas fiable. */
+export function localHour(ms: number, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", hourCycle: "h23", timeZone }).formatToParts(new Date(ms));
+  const h = Number(parts.find((p) => p.type === "hour")?.value);
+  return Number.isFinite(h) ? h % 24 : 0;
+}
+
 export type DayPart = { emoji: string; hello: string };
 
 /** Moment de la journée d'après l'heure locale (0–23). */
 export function dayPart(hour: number): DayPart {
   if (hour >= 5 && hour < 12) return { emoji: "☀️", hello: "Bonjour" };
-  if (hour >= 12 && hour < 18) return { emoji: "🌤️", hello: "Bon après-midi" };
+  if (hour >= 12 && hour < 14) return { emoji: "🍽️", hello: "Bon midi" };
+  if (hour >= 14 && hour < 18) return { emoji: "🌤️", hello: "Bon après-midi" };
   return { emoji: "🌙", hello: "Bonne soirée" };
 }

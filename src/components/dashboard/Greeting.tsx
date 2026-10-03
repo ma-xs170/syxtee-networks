@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Highlight from "@/components/ui/Highlight";
-import { dayPart } from "@/lib/regions";
+import { dayPart, localHour } from "@/lib/regions";
 
 // Bonjour / Bon après-midi / Bonne soirée selon l'heure du fuseau du compte, avec la date et l'heure locales.
 // `now` vient du serveur : le premier rendu est identique des deux côtés, puis l'horloge avance chaque minute.
@@ -15,8 +15,7 @@ export default function Greeting({ now, timezone, name, flag, region }: { now: n
   }, []);
 
   const date = new Date(ms);
-  const hour = Number(new Intl.DateTimeFormat("fr-FR", { hour: "numeric", hourCycle: "h23", timeZone: timezone }).format(date));
-  const part = dayPart(hour);
+  const part = dayPart(localHour(ms, timezone));
   const day = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: timezone }).format(date);
   const time = new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: timezone }).format(date);
 

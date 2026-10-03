@@ -28,19 +28,52 @@ export function computeKpis(sessions: LiveSession[]): Kpis {
 }
 
 export function dailyMinutes(sessions: LiveSession[], now: number, days = 30) {
-  const byDay = new Map<string, number>();
+  type Day = { seconds: number; count: number; kbpsSeconds: number; peakKbps: number; peakAt: string | null };
+  const byDay = new Map<string, Day>();
   for (const s of sessions) {
     const d = parisDay(new Date(s.started_at));
-    byDay.set(d, (byDay.get(d) ?? 0) + s.duration_s / 60);
+    const cur = byDay.get(d) ?? { seconds: 0, count: 0, kbpsSeconds: 0, peakKbps: 0, peakAt: null };
+    cur.seconds += s.duration_s;
+    cur.count += 1;
+    cur.kbpsSeconds += s.avg_kbps * s.duration_s;
+    if (s.peak_kbps > cur.peakKbps) {
+      cur.peakKbps = s.peak_kbps;
+      // Heure du pic : les relevés sont répartis régulièrement sur la durée du direct.
+      const series = s.bitrate_series ?? [];
+      const top = series.length > 1 ? series.indexOf(Math.max(...series)) : 0;
+      const offset = series.length > 1 ? (top / (series.length - 1)) * s.duration_s * 1000 : 0;
+      cur.peakAt = new Date(new Date(s.started_at).getTime() + offset).toISOString();
+    }
+    byDay.set(d, cur);
   }
   return Array.from({ length: days }, (_, i) => {
     const day = parisDay(now - (days - 1 - i) * DAY);
-    return { day, minutes: Math.round(byDay.get(day) ?? 0) };
+    const v = byDay.get(day);
+    return {
+      day,
+      minutes: Math.round((v?.seconds ?? 0) / 60),
+      count: v?.count ?? 0,
+      avgKbps: v && v.seconds ? Math.round(v.kbpsSeconds / v.seconds) : 0,
+      peakKbps: v?.peakKbps ?? 0,
+      peakAt: v?.peakAt ?? null,
+    };
   });
 }
 
+/** Seulement ce qui compromet un direct : relais injoignable, pas de relais, coupures répétées, directs qui avortent. */
 export function buildAlerts(o: { month: LiveSession[]; profile: Profile; relays: RelayView[]; coreOk: boolean; hasEverStreamed: boolean }): Alert[] {
   const alerts: Alert[] = [];
+  const active = o.relays.filter((r) => !r.archived);
+  if (!o.coreOk) alerts.push({ id: "core", text: "Le relais ne répond pas pour le moment. Tes directs peuvent être impossibles.", href: "/dashboard/relais", cta: "Mes relais" });
+  else if (!active.length) alerts.push({ id: "norelay", text: "Tu n'as pas encore de relais : sans lui, impossible de lancer un direct.", href: "/dashboard/relais", cta: "Créer un relais" });
+  const reconnects = o.month.reduce((a, s) => a + s.reconnects, 0);
+  if (reconnects >= 10)
+    alerts.push({
+      id: "reconnects",
+      text: `${reconnects} coupures sur 30 jours. Vérifie tes connexions dans Moblin.`,
+      href: "/dashboard/apercu",
+      cta: "Ouvrir l'aperçu",
+    });
   const short = o.month.filter((s) => s.ended_at && s.duration_s < 60).length;
   if (short >= 3)
     alerts.push({
@@ -49,19 +82,6 @@ export function buildAlerts(o: { month: LiveSession[]; profile: Profile; relays:
       href: "/dashboard/lives",
       cta: "Voir mes lives",
     });
-  const reconnects = o.month.reduce((a, s) => a + s.reconnects, 0);
-  if (reconnects >= 10)
-    alerts.push({
-      id: "reconnects",
-      text: `${reconnects} coupures sur 30 jours. Vérifie tes connexions dans Moblin.`,
-      href: "/dashboard/sante",
-      cta: "Santé du flux",
-    });
-  if (!o.profile.twitch_login)
-    alerts.push({ id: "twitch", text: "Ton Twitch n'est pas renseigné : tu n'apparais pas sur le site.", href: "/dashboard/profil", cta: "Profil" });
-  const active = o.relays.filter((r) => !r.archived);
-  if (o.coreOk && !active.length) alerts.push({ id: "norelay", text: "Tu n'as pas encore de relais.", href: "/dashboard/relais", cta: "Créer un relais" });
-  else if (active.length && !o.hasEverStreamed) alerts.push({ id: "unused", text: "Ton relais n'a jamais été utilisé.", href: "/dashboard/relais", cta: "Mes relais" });
   return alerts.slice(0, 3);
 }
 

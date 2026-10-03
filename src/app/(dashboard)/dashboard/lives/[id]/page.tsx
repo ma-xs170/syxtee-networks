@@ -36,7 +36,7 @@ export default async function LivePage({ params }: PageProps<"/dashboard/lives/[
         <Tile className="lg:col-span-2">
           <TileLabel>Débit reçu au relais</TileLabel>
           <div className="mt-6">
-            <BitrateChart points={s.bitrate_series} durationS={s.duration_s} />
+            <BitrateChart points={s.bitrate_series} durationS={s.duration_s} startedAt={s.started_at} />
           </div>
         </Tile>
         <Tile>

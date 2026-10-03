@@ -208,10 +208,10 @@ function Kpis({ data, pending }: { data: OverviewData; pending: boolean }) {
 
 // ─────────────── 4. Détail ───────────────
 
-function DailyTile({ data, range }: { data: OverviewData; range: Range }) {
+function DailyTile({ data, range, className = "" }: { data: OverviewData; range: Range; className?: string }) {
   const days = range === "7d" ? data.daily.slice(-7) : data.daily;
   return (
-    <Tile aria-labelledby="par-jour">
+    <Tile aria-labelledby="par-jour" className={className}>
       <TileLabel id="par-jour">Temps de direct par jour</TileLabel>
       <div className="mt-6">
         <DailyBars days={days} />
@@ -220,7 +220,7 @@ function DailyTile({ data, range }: { data: OverviewData; range: Range }) {
   );
 }
 
-function LastLive({ s }: { s: NonNullable<OverviewData["last"]> }) {
+function LastLive({ s, className = "" }: { s: NonNullable<OverviewData["last"]>; className?: string }) {
   const facts: [string, string][] = [
     ["Appareil", deviceLabel(s)],
     ["Durée", fmtDuration(s.duration_s)],
@@ -228,7 +228,7 @@ function LastLive({ s }: { s: NonNullable<OverviewData["last"]> }) {
     ["Débit moyen", fmtKbps(s.avg_kbps)],
   ];
   return (
-    <Tile aria-labelledby="dernier">
+    <Tile aria-labelledby="dernier" className={className}>
       <TileLabel id="dernier" right={<ArrowLink href={`/dashboard/lives/${s.id}`}>Voir le détail</ArrowLink>}>
         Dernier direct
       </TileLabel>
@@ -242,7 +242,7 @@ function LastLive({ s }: { s: NonNullable<OverviewData["last"]> }) {
             </div>
           ))}
         </dl>
-        <Sparkline points={s.bitrate_series} className="h-20 w-full" label={`Débit du direct, crête à ${fmtInt(s.peak_kbps)} kbit/s`} />
+        <Sparkline points={s.bitrate_series} startedAt={s.started_at} durationS={s.duration_s} className="h-20 w-full" label={`Débit du direct, crête à ${fmtInt(s.peak_kbps)} kbit/s`} />
       </div>
     </Tile>
   );
@@ -355,7 +355,7 @@ function Onboarding({ keys }: { keys: OverviewData["keys"] }) {
 
 function Urls({ data }: { data: OverviewData }) {
   return (
-    <Tile aria-labelledby="urls-courtes">
+    <Tile aria-labelledby="urls-courtes" className="flex flex-col">
       <TileLabel id="urls-courtes">{data.keys ? data.keys.relay : "Tes URLs"}</TileLabel>
       {data.keys ? (
         <div className="mt-4 space-y-3">
@@ -381,7 +381,7 @@ function Urls({ data }: { data: OverviewData }) {
               : "Pas encore de relais."}
         </p>
       )}
-      <div className="mt-5">
+      <div className="mt-auto pt-5">
         <ArrowLink href="/dashboard/relais">Mes relais</ArrowLink>
       </div>
     </Tile>
@@ -398,6 +398,27 @@ const shortcuts: Shortcut[] = [
   { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },
   { label: "SYXTEE STUDIO", href: "/studio", icon: SlidersHorizontal },
 ];
+
+function ChatTile({ chat }: { chat: ChatDefaults }) {
+  if (!(chat.twitch || chat.kick))
+    return (
+      <Tile aria-labelledby="chat-setup" className="flex flex-col">
+        <TileLabel id="chat-setup">Multichat</TileLabel>
+        <p className="mt-3 text-sm leading-relaxed text-muted">Twitch et Kick dans un seul fil. Indique ta chaîne pour le voir ici.</p>
+        <div className="mt-auto pt-4">
+          <ArrowLink href="/dashboard/multichat">Configurer le chat</ArrowLink>
+        </div>
+      </Tile>
+    );
+  return (
+    <div className="flex min-h-[22rem] flex-col">
+      <div className="mb-3">
+        <TileLabel right={<ArrowLink href="/dashboard/multichat">Multichat</ArrowLink>}>Chat</TileLabel>
+      </div>
+      <MultiChat defaults={chat} height="min-h-0 flex-1" compact />
+    </div>
+  );
+}
 
 function GoTo() {
   return (
@@ -451,8 +472,6 @@ export default function Overview({ initial, chat = { twitch: "", kick: "", youtu
     }
   }
 
-  const hasChat = !!(chat.twitch || chat.kick);
-
   return (
     <div className="space-y-8">
       <ControlCenter data={data} onLaunch={() => setGuide(true)} />
@@ -479,44 +498,31 @@ export default function Overview({ initial, chat = { twitch: "", kick: "", youtu
         <Onboarding keys={data.keys} />
       )}
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
-          {data.hasEverStreamed && (
-            <>
-              <DailyTile data={data} range={range} />
-              {data.last && <LastLive s={data.last} />}
-              <Tile aria-labelledby="derniers">
-                <TileLabel id="derniers" right={<ArrowLink href="/dashboard/lives">Tout l&apos;historique</ArrowLink>}>
-                  Derniers directs
-                </TileLabel>
-                <div className="mt-3">
-                  <SessionList sessions={data.recent} />
-                </div>
-              </Tile>
-            </>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          {hasChat ? (
-            <div>
-              <div className="mb-3">
-                <TileLabel right={<ArrowLink href="/dashboard/multichat">Multichat</ArrowLink>}>Chat</TileLabel>
-              </div>
-              <MultiChat defaults={chat} height="h-80" compact />
-            </div>
-          ) : (
-            <Tile aria-labelledby="chat-setup">
-              <TileLabel id="chat-setup">Multichat</TileLabel>
-              <p className="mt-3 text-sm leading-relaxed text-muted">Twitch et Kick dans un seul fil. Indique ta chaîne pour le voir ici.</p>
-              <div className="mt-4">
-                <ArrowLink href="/dashboard/multichat">Configurer le chat</ArrowLink>
-              </div>
-            </Tile>
-          )}
+      {/* Trois rangées de même structure (2/3 + 1/3) : chaque tuile remplit sa cellule, les bords haut et bas sont alignés. */}
+      {data.hasEverStreamed && (
+        <div className="grid gap-4 lg:grid-cols-3 lg:grid-rows-[auto_auto]">
+          <DailyTile data={data} range={range} className="lg:col-span-2" />
+          <ChatTile chat={chat} />
+          {data.last ? <LastLive s={data.last} className="lg:col-span-2" /> : <div className="hidden lg:col-span-2 lg:block" />}
           <Urls data={data} />
         </div>
-      </div>
+      )}
+      {!data.hasEverStreamed && (
+        <div className="grid gap-4 lg:grid-cols-3">
+          <ChatTile chat={chat} />
+          <Urls data={data} />
+        </div>
+      )}
+      {data.hasEverStreamed && (
+        <Tile aria-labelledby="derniers">
+          <TileLabel id="derniers" right={<ArrowLink href="/dashboard/lives">Tout l&apos;historique</ArrowLink>}>
+            Derniers directs
+          </TileLabel>
+          <div className="mt-3">
+            <SessionList sessions={data.recent} />
+          </div>
+        </Tile>
+      )}
 
       <GoTo />
     </div>

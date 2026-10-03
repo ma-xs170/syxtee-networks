@@ -36,7 +36,7 @@ export type Overview = {
   kpis: Kpis;
   previous: Kpis;
   /** Minutes de direct par jour (heure de Paris), 30 derniers jours, du plus ancien à aujourd'hui. */
-  daily: { day: string; minutes: number }[];
+  daily: { day: string; minutes: number; count?: number; avgKbps?: number; peakKbps?: number; peakAt?: string | null }[];
   last: LiveSession | null;
   recent: LiveSession[];
   hasEverStreamed: boolean;
@@ -93,6 +93,12 @@ export function fmtAgo(iso: string | number, now = Date.now()) {
 }
 
 const dateFmt = new Intl.DateTimeFormat("fr-FR", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" });
+/** « sam. 3 oct. » */
+export const fmtDayLong = (day: string) => dayLongFmt.format(new Date(`${day}T12:00:00Z`));
+const dayLongFmt = new Intl.DateTimeFormat("fr-FR", { weekday: "short", day: "numeric", month: "short", timeZone: "Europe/Paris" });
+/** « 17:42 » ou « 17:42:10 » (heure de Paris). */
+export const fmtHour = (t: string | number, seconds = false) => new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit", ...(seconds ? { second: "2-digit" } : {}), timeZone: "Europe/Paris" }).format(new Date(t));
+export const fmtDateLong = (t: string | number) => dayLongFmt.format(new Date(t));
 const dayFmt = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", timeZone: "Europe/Paris" });
 /** « sam. 27 sept., 21:04 ». */
 export const fmtDate = (iso: string) => dateFmt.format(new Date(iso));

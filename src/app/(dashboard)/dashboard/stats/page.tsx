@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Statistiques", robots: { index: fals
 
 function Figure({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-background p-4 sm:p-5">
+    <div className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
       <p className="text-xs text-muted">{label}</p>
       <p className="mt-1.5 font-mono text-2xl tabular-nums tracking-tight">{value}</p>
       {sub && <p className="mt-1 font-mono text-xs text-muted">{sub}</p>}
@@ -56,7 +56,7 @@ export default async function StatsPage({ searchParams }: PageProps<"/dashboard/
         </Tile>
       ) : (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <Figure label="Temps de direct" value={fmtDuration(k.seconds)} sub={cmp(k.seconds, p.seconds)} />
             <Figure label="Nombre de directs" value={fmtInt(k.count)} sub={cmp(k.count, p.count)} />
             <Figure label="Durée moyenne" value={k.count ? fmtDuration(k.avgSeconds) : "–"} sub={cmp(k.avgSeconds, p.avgSeconds)} />

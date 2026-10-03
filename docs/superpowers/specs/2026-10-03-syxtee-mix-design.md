@@ -4,7 +4,17 @@ Date : 2026-10-03. Statut : spec à relire, avant plan d'implémentation.
 
 ## Nom et place dans le produit
 
-Décisions du 2026-10-03 : **SYXTEE STUDIO devient SYXTEE MIX** (nom plus évident), et **le plugin SYXTEE Link est abandonné**. SYXTEE Mix n'est plus une télécommande d'OBS : c'est un mixeur multi-caméras natif sur le site, qui sort un seul flux RTMP pour OBS. La page `/mix` affiche donc **uniquement le mixeur** (plus d'onglet « Piloter OBS »). Le code de l'ancien pilotage d'OBS (`src/components/studio/Studio.tsx`, `Connect`, `LinkApprove`, `useLink`, page `/link`, dossier `link/`, côté Core `remote`, `backups`) n'est plus branché à `/mix` ; sa suppression se fait dans un lot de nettoyage séparé, pas dans ce chantier. Adresses : `/mix` (l'app) et `/syxtee-mix` (la présentation) ; `/studio` et `/syxtee-studio` redirigent (308). Les identifiants internes (composants, `core/src/studio.ts`, routes `/v1/me/studio/*`) gardent leur nom.
+Décisions du 2026-10-03 : **SYXTEE STUDIO devient SYXTEE MIX** (nom plus évident). SYXTEE Mix est un mixeur multi-caméras natif sur le site. **Tout se contrôle sur le web, à partir des relais et des caméras externes** : les scènes et les sources audio viennent des relais (pas d'OBS). À la fin, l'utilisateur colle **un seul lien de sortie (RTMP, présenté comme un lien de relais)** dans OBS. La page `/mix` est le mixeur ; il n'y a plus de pilotage d'OBS scène par scène.
+
+**Rôle réduit du plugin SYXTEE Link** (il reste installé, il ne fait que ça) :
+1. lancer et couper le stream d'OBS, à distance ;
+2. lancer et couper l'enregistrement d'OBS, à distance (c'est ce qui permettra le mode podcast, voir plus bas) ;
+3. changer de scène **seulement si le flux est figé** (le secours automatique qui existe déjà : `Backups`, `backup` côté Core).
+Tout le reste du pilotage d'OBS (liste de scènes, sources, mixeur audio d'OBS, aperçu d'OBS, sauvegardes de scènes, réglages) est retiré de l'interface. La page Mix affiche une barre « OBS » (Stream, Rec, état) seulement quand le plugin est connecté. Le code retiré de l'interface (`Studio.tsx` et ses panneaux) n'est supprimé que dans un lot de nettoyage séparé.
+
+**Mode podcast** : décision attendue de l'utilisateur (voir « Questions ouvertes »). Le rec à distance en est le prérequis.
+
+Adresses : `/mix` (l'app) et `/syxtee-mix` (la présentation) ; `/studio` et `/syxtee-studio` redirigent (308). Les identifiants internes (composants, `core/src/studio.ts`, routes `/v1/me/studio/*`) gardent leur nom.
 
 ## Objectif
 
@@ -118,4 +128,5 @@ Autorisation MediaMTX : le point d'entrée existant `/internal/mediamtx/auth` ro
 
 1. Plafond de sessions Mix simultanées par serveur (à mesurer).
 2. Durée du jeton de lecture WHEP et mode de renouvellement.
-3. Nettoyage de l'ancien pilotage d'OBS (Link) : quand le supprimer, et que faire des comptes déjà appairés.
+3. Nettoyage de l'ancien pilotage d'OBS : quand supprimer le code retiré de l'interface.
+4. **Mode podcast** : ce que l'utilisateur attend exactement (rec seul sans stream, pistes audio séparées par relais, ou autre).

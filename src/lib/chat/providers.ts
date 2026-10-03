@@ -44,6 +44,11 @@ const DEFS: Record<Platform, Def> = {
 
 export const configured = (p: Platform) => hasChatKey && DEFS[p].id !== "" && DEFS[p].secret !== "";
 
+const VAR_NAMES: Record<Platform, [string, string]> = { twitch: ["TWITCH_CLIENT_ID", "TWITCH_CLIENT_SECRET"], kick: ["KICK_CLIENT_ID", "KICK_CLIENT_SECRET"], youtube: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"] };
+
+/** Noms (jamais les valeurs) des variables d'environnement vides ou absentes pour une plateforme : aide au diagnostic. */
+export const missingVars = (p: Platform) => [...(hasChatKey ? [] : ["CHAT_TOKEN_KEY"]), ...VAR_NAMES[p].filter((k) => env(k) === "")];
+
 export function authorizeUrl(p: Platform, redirectUri: string, state: string, challenge?: string) {
   const d = DEFS[p];
   const q = new URLSearchParams({ client_id: d.id, redirect_uri: redirectUri, response_type: "code", scope: d.scope, state, ...d.extra });

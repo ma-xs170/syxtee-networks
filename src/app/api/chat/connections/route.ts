@@ -1,13 +1,13 @@
 import type { NextRequest } from "next/server";
 import { getUser } from "@/lib/auth/dal";
-import { PLATFORMS, configured, isPlatform, listConnections, removeConnection } from "@/lib/chat/providers";
+import { PLATFORMS, configured, isPlatform, listConnections, missingVars, removeConnection } from "@/lib/chat/providers";
 
 // GET : comptes reliés (nom affiché) et plateformes disponibles côté serveur. DELETE ?platform=… : délie un compte.
 export async function GET() {
   const user = await getUser();
   if (!user) return Response.json({ error: "unauthorized" }, { status: 401 });
   const connections = await listConnections(user.id).catch(() => ({}));
-  return Response.json({ connections, configured: Object.fromEntries(PLATFORMS.map((p) => [p, configured(p)])) }, { headers: { "Cache-Control": "private, no-store" } });
+  return Response.json({ connections, configured: Object.fromEntries(PLATFORMS.map((p) => [p, configured(p)])), missing: Object.fromEntries(PLATFORMS.map((p) => [p, missingVars(p)])) }, { headers: { "Cache-Control": "private, no-store" } });
 }
 
 export async function DELETE(request: NextRequest) {

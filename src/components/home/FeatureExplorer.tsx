@@ -11,12 +11,13 @@ import StreamerDesk from "../illustrations/StreamerDesk";
 import PhoneMoblin from "../illustrations/PhoneMoblin";
 import RelayServer from "../illustrations/RelayServer";
 import StudioWire from "../illustrations/StudioWire";
+import ChatDemo from "../sections/ChatDemo";
 
 // Accueil : liste numérotée à gauche, démo à droite. Le panneau actif change tout seul toutes les 7 s pour montrer
 // l'ensemble, s'arrête au survol ou au focus, et reste fixe en prefers-reduced-motion.
 
 type Art = ComponentType<{ className?: string; animated?: boolean }>;
-type Feature = { name: string; lead: string; hl: string; text: string; art: Art; custom?: "setup"; img?: string; w?: number; h?: number; alt?: string; href?: string };
+type Feature = { name: string; lead: string; hl: string; text: string; art: Art; custom?: "setup" | "chat"; img?: string; w?: number; h?: number; alt?: string; href?: string };
 
 const FEATURES: Feature[] = [
   {
@@ -39,10 +40,10 @@ const FEATURES: Feature[] = [
     href: "/relais",
   },
   {
-    name: "Santé du flux",
+    name: "Santé et tableau de bord",
     lead: "Supervise ton flux",
     hl: "en temps réel.",
-    text: "Débit, latence, congestion, pertes et liens actifs sont mesurés en continu, avec l'historique des 15 dernières minutes pour repérer la cause d'une dégradation.",
+    text: "Débit, latence, congestion et pertes sont mesurés en continu, avec l'historique des 15 dernières minutes. Ton activité et tes derniers directs sont réunis sur un seul écran.",
     art: DataCenter,
     img: "/images/outils/sante-v2.png",
     w: 2200,
@@ -50,15 +51,12 @@ const FEATURES: Feature[] = [
     alt: "Santé du flux : débit, latence, congestion, pertes, courbe et liens SRTLA.",
   },
   {
-    name: "Tableau de bord",
-    lead: "Ton activité,",
-    hl: "en un seul écran.",
-    text: "Statut du direct en cours, temps de diffusion sur 7 et 30 jours, derniers directs et accès rapides à chaque outil.",
+    name: "Multichat",
+    lead: "Tous tes chats,",
+    hl: "un seul fil.",
+    text: "Twitch et Kick se mélangent dans la même liste, YouTube a son onglet. Le chat s'affiche à côté de ton aperçu vidéo, dans ton dashboard.",
     art: DataCenter,
-    img: "/images/outils/accueil-v2.png",
-    w: 3000,
-    h: 2566,
-    alt: "L'accueil du dashboard : activité en direct, dernier direct et temps de direct par jour.",
+    custom: "chat",
   },
   {
     name: "SYXTEE STUDIO",
@@ -245,6 +243,12 @@ export default function FeatureExplorer() {
                 >
               {f.custom === "setup" ? (
                 <SetupSwitch animated={!reduce} />
+              ) : f.custom === "chat" ? (
+                <div className="absolute inset-0 grid place-items-center p-4 sm:p-6">
+                  <div className="w-full">
+                    <ChatDemo heightClass="h-32 sm:h-[15rem]" />
+                  </div>
+                </div>
               ) : f.img ? (
                 tall ? (
                   <Image

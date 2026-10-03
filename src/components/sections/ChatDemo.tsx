@@ -35,7 +35,7 @@ function PlatformIcon({ p, size = 14 }: { p: keyof typeof icons; size?: number }
   );
 }
 
-export default function ChatDemo() {
+export default function ChatDemo({ heightClass = "h-[17rem]" }: { heightClass?: string }) {
   const reduce = useReducedMotion();
   // Les cinq premiers messages sont déjà là ; la suite arrive toutes les 1,8 s, en boucle.
   const [n, setN] = useState(VISIBLE);
@@ -62,7 +62,7 @@ export default function ChatDemo() {
       </div>
       {/* Colonne inversée : les nouveaux messages arrivent en bas et poussent les autres vers le haut. */}
       <div
-        className="flex h-[17rem] flex-col-reverse overflow-hidden px-4 py-3 text-sm [mask-image:linear-gradient(to_bottom,transparent,#000_28%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,#000_28%)]"
+        className={`flex ${heightClass} flex-col-reverse overflow-hidden px-4 py-3 text-sm [mask-image:linear-gradient(to_bottom,transparent,#000_28%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,#000_28%)]`}
         role="img"
         aria-label="Exemple de messages Twitch et Kick dans un seul fil"
       >

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import AnimatedEmoji from "@/components/ui/AnimatedEmoji";
 import Highlight from "@/components/ui/Highlight";
 import { dayPart, localHour } from "@/lib/regions";
 
@@ -22,7 +23,7 @@ export default function Greeting({ now, timezone, name, flag, region }: { now: n
   return (
     <div className="mb-8">
       <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-        <span aria-hidden="true">{part.emoji}</span> {part.hello}
+        <AnimatedEmoji key={part.emoji}>{part.emoji}</AnimatedEmoji> {part.hello}
         {name ? (
           <>
             {" "}
@@ -42,7 +43,7 @@ export default function Greeting({ now, timezone, name, flag, region }: { now: n
           <>
             <span aria-hidden="true">·</span>
             <span>
-              <span aria-hidden="true">{flag} </span>
+              <AnimatedEmoji>{flag ?? ""}</AnimatedEmoji>{" "}
               {region}
             </span>
           </>

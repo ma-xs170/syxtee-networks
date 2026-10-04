@@ -1,5 +1,6 @@
 "use client";
 
+import AnimatedEmoji from "@/components/ui/AnimatedEmoji";
 import { useId, useMemo, useState } from "react";
 import { inputCls } from "@/components/auth/ProfileForm";
 import { regionList, timezoneFor } from "@/lib/regions";
@@ -57,7 +58,7 @@ export default function RegionPicker({ country, timezone, required }: { country:
         </label>
         <div className="relative">
           <span aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xl leading-none">
-            {current ? current.flag : "🌍"}
+            <AnimatedEmoji key={current?.flag ?? "world"}>{current ? current.flag : "🌍"}</AnimatedEmoji>
           </span>
           <input
             id={`${id}-q`}

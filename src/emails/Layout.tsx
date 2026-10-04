@@ -92,16 +92,14 @@ export default function Layout({ preview, reason, children }: { preview: string;
             {children}
           </Section>
           <Section style={{ padding: "24px 4px 0", textAlign: "center" }}>
-            <Text style={{ ...muted, fontStyle: "italic", fontSize: "13px", margin: "0 0 14px" }}>Ceci est un email automatique, merci de ne pas y répondre.</Text>
-            <Text style={{ ...muted, fontSize: "12px", lineHeight: "18px", margin: "0 0 14px" }}>{reason}</Text>
-            <Text style={{ ...muted, color: C.fg, margin: "0 0 4px" }}>Cet email a été envoyé par SYXTEE NETWORKS</Text>
-            <Text style={{ ...muted, fontSize: "12px", margin: "0 0 18px" }}>© {new Date().getFullYear()} SYXTEE NETWORKS. Tous droits réservés.</Text>
-            <Text style={{ ...muted, fontSize: "13px", margin: 0 }}>
-              <Link href={site.discord} style={{ color: C.fg, textDecoration: "none" }}>
+            <Text style={{ ...muted, fontSize: "12px", margin: "0 0 14px" }}>{reason}</Text>
+            <Text style={{ ...muted, fontSize: "12px", margin: "0 0 4px" }}>© {new Date().getFullYear()} SYXTEE NETWORKS</Text>
+            <Text style={{ ...muted, fontSize: "12px", margin: 0 }}>
+              <Link href={site.discord} style={{ color: C.muted, textDecoration: "none" }}>
                 Contact
               </Link>
               <span style={{ color: C.line }}> &nbsp;|&nbsp; </span>
-              <Link href={`${site.url}/confidentialite`} style={{ color: C.fg, textDecoration: "none" }}>
+              <Link href={`${site.url}/confidentialite`} style={{ color: C.muted, textDecoration: "none" }}>
                 Confidentialité
               </Link>
             </Text>

@@ -1,7 +1,7 @@
-import { Link, Text } from "@react-email/components";
+import { Text } from "@react-email/components";
 import type { ReactElement } from "react";
 import { site } from "@/lib/site";
-import Layout, { C, Callout, Cta, InfoPanel, mono, muted, p, RawLink, Title } from "./Layout";
+import Layout, { Callout, Cta, InfoPanel, mono, p, Title } from "./Layout";
 
 // Tous les emails SYXTEE. Chaque modèle renvoie le sujet et le composant ; send.ts produit le HTML et le texte brut.
 
@@ -18,12 +18,10 @@ export function verifyEmail(o: { url: string; firstName?: string | null }): Emai
   return {
     subject: "Confirme ton email SYXTEE",
     element: (
-      <Layout preview="Un clic pour activer ton compte SYXTEE." kicker="Vérification" reason="Tu reçois cet email car un compte SYXTEE vient d'être créé avec cette adresse. Pas toi ? Ignore-le : sans clic, aucun compte n'est activé.">
-        <Title lead="Confirme ton email," hl="et c'est parti." />
+      <Layout preview="Un clic pour activer ton compte." reason="Pas toi ? Ignore cet email.">
+        <Title lead="Confirme ton" hl="email." />
         <Hi name={o.firstName} />
-        <Text style={p}>Clique sur le bouton pour activer ton compte. Le lien est valable 24 h.</Text>
         <Cta href={o.url}>Vérifier mon compte</Cta>
-        <RawLink href={o.url} />
       </Layout>
     ),
   };
@@ -35,15 +33,11 @@ export function accessApproved(o: { firstName?: string | null; email: string }):
   return {
     subject: "Ta demande est approuvée : bienvenue chez SYXTEE NETWORKS",
     element: (
-      <Layout preview="Ta demande d'accès est approuvée. Crée ton compte." kicker="Accès approuvé" reason="Tu reçois cet email car tu as demandé l'accès à SYXTEE NETWORKS avec cette adresse.">
+      <Layout preview="Ta demande d'accès est approuvée." reason="Tu as demandé l'accès avec cette adresse.">
         <Title lead="Tu as été" hl="approuvé." />
         <Hi name={o.firstName} />
-        <Text style={p}>
-          Bonne nouvelle : ta demande d&apos;accès est acceptée. SYXTEE NETWORKS te souhaite la bienvenue. Ton accès partenaire inclut les relais SRTLA, RTMP et RIST, SYXTEE COMMUTATEUR et toutes les fonctions.
-        </Text>
-        <Text style={p}>Clique sur le bouton, crée ton compte avec cette adresse (celle de cet email) et ton accès s&apos;active tout seul.</Text>
+        <Text style={p}>Crée ton compte avec cette adresse pour activer ton accès.</Text>
         <Cta href={url}>Créer mon compte</Cta>
-        <RawLink href={url} />
       </Layout>
     ),
   };
@@ -55,16 +49,13 @@ export function accessRequested(o: { name: string; email: string; channel: strin
     ["Nom", o.name],
     ["Email", o.email],
     ["Chaîne", `${o.channel} (${o.platform})`],
-    ["Audience", o.audience || "non précisée"],
-    ["Matériel", o.devices || "non précisé"],
   ];
   return {
     subject: `Demande d'accès : ${o.name}`,
     element: (
-      <Layout preview={`${o.name} demande l'accès.`} kicker="Admin" reason="Tu reçois cet email car tu es administrateur SYXTEE NETWORKS.">
-        <Title lead="Nouvelle demande" hl="d'accès." />
+      <Layout preview={`${o.name} demande l'accès.`} reason="Email réservé aux administrateurs.">
+        <Title lead="Nouvelle" hl="demande." />
         <InfoPanel rows={rows} />
-        {o.message && <Text style={{ ...p, whiteSpace: "pre-wrap", textAlign: "left", borderLeft: `2px solid ${C.line}`, paddingLeft: "12px" }}>{o.message}</Text>}
         <Cta href={o.adminUrl}>Traiter la demande</Cta>
       </Layout>
     ),
@@ -74,41 +65,13 @@ export function accessRequested(o: { name: string; email: string; channel: strin
 /** b) Bienvenue, après la vérification. */
 export function welcome(o: { firstName?: string | null; lastName?: string | null }): Email {
   const full = [o.firstName, o.lastName].filter(Boolean).join(" ");
-  const steps: [string, string, string][] = [
-    ["Demande ton accès", "Relais SRTLA, URLs Moblin et OBS, santé du flux : ouvert aux partenaires.", `${site.url}/offres`],
-    ["Scanne ton réseau", "L'analyseur mesure ta 4G/5G et alimente la carte de couverture.", `${site.url}/dashboard/analyseur`],
-    ["Rejoins le Discord", "Réglages, entraide et support.", site.discord],
-  ];
   return {
     subject: full ? `Bienvenue ${full} sur SYXTEE NETWORKS` : "Bienvenue sur SYXTEE NETWORKS",
     element: (
-      <Layout preview="Ton compte est actif : les 3 prochaines étapes." kicker="Bienvenue" reason="Tu reçois cet email car tu viens d'activer ton compte SYXTEE.">
+      <Layout preview="Ton compte est actif." reason="Tu viens d'activer ton compte.">
         <Title lead="Bienvenue" hl={full ? `${full}.` : "sur SYXTEE."} />
-        <Hi name={o.firstName} />
-        <Text style={p}>Ton compte SYXTEE NETWORKS est actif. Trois étapes pour ton premier live :</Text>
-        {steps.map(([t, d, href], i) => (
-          <Text key={t} style={{ ...p, textAlign: "left", margin: "0 0 14px" }}>
-            <span style={{ ...mono, color: C.muted, fontSize: "12px" }}>{i + 1}.</span>{" "}
-            <Link href={href} style={{ color: C.fg, fontWeight: 600, textDecoration: "underline" }}>
-              {t}
-            </Link>
-            <br />
-            <span style={{ color: C.muted, fontSize: "14px" }}>{d}</span>
-          </Text>
-        ))}
+        <Text style={p}>Ton compte est actif.</Text>
         <Cta href={`${site.url}/dashboard`}>Ouvrir mon dashboard</Cta>
-        <Text style={{ ...p, borderTop: `1px solid ${C.line}`, paddingTop: "18px", margin: "0 0 6px", fontWeight: 600 }}>Besoin d&apos;aide ?</Text>
-        <Text style={{ ...muted, margin: "0 0 18px" }}>
-          Lis la{" "}
-          <Link href={`${site.url}/docs`} style={{ color: C.fg, textDecoration: "underline" }}>
-            documentation
-          </Link>
-          , ou ouvre une demande depuis ton{" "}
-          <Link href={`${site.url}/dashboard/support`} style={{ color: C.fg, textDecoration: "underline" }}>
-            espace support
-          </Link>
-          . On te répond là-bas.
-        </Text>
       </Layout>
     ),
   };
@@ -119,12 +82,10 @@ export function resetPassword(o: { url: string }): Email {
   return {
     subject: "Choisis un nouveau mot de passe SYXTEE",
     element: (
-      <Layout preview="Lien valable 1 h pour choisir un nouveau mot de passe." kicker="Mot de passe" reason="Tu reçois cet email car une réinitialisation du mot de passe a été demandée pour ce compte.">
+      <Layout preview="Lien valable 1 h." reason="Pas toi ? Ignore cet email, ton mot de passe reste valable.">
         <Title lead="Nouveau" hl="mot de passe." />
-        <Text style={p}>Quelqu&apos;un (toi, normalement) a demandé à changer le mot de passe de ce compte. Le lien est valable 1 h.</Text>
-        <Cta href={o.url}>Choisir un nouveau mot de passe</Cta>
-        <Text style={p}>Si ce n&apos;est pas toi, ignore cet email : ton mot de passe actuel reste valable.</Text>
-        <RawLink href={o.url} />
+        <Text style={p}>Ce lien est valable 1 h.</Text>
+        <Cta href={o.url}>Choisir un mot de passe</Cta>
       </Layout>
     ),
   };
@@ -135,11 +96,10 @@ export function passwordChanged(o: { at: Date }): Email {
   return {
     subject: "Ton mot de passe SYXTEE a été modifié",
     element: (
-      <Layout preview={`Mot de passe modifié le ${when(o.at)}.`} kicker="Alerte de sécurité" reason="Tu reçois cet email car le mot de passe de ton compte SYXTEE vient de changer. C'est une alerte de sécurité : on l'envoie toujours.">
+      <Layout preview={`Mot de passe modifié le ${when(o.at)}.`} reason="Alerte de sécurité.">
         <Title lead="Mot de passe" hl="modifié." />
-        <Text style={p}>Le mot de passe de ton compte vient d&apos;être changé.</Text>
         <InfoPanel rows={[["Date et heure", when(o.at)]]} />
-        <Callout title="Ce n'était pas toi ?">Reprends la main tout de suite en choisissant un nouveau mot de passe, puis ouvre un ticket sur Discord. Si c&apos;était toi, rien à faire.</Callout>
+        <Callout title="Ce n'était pas toi ?">Choisis un nouveau mot de passe tout de suite.</Callout>
         <Cta href={`${site.url}/mot-de-passe-oublie`}>Sécuriser mon compte</Cta>
       </Layout>
     ),
@@ -151,11 +111,10 @@ export function newDevice(o: { device: string; place: string | null; at: Date })
   return {
     subject: "Nouvelle connexion à ton compte SYXTEE",
     element: (
-      <Layout preview={`Connexion depuis ${o.device}${o.place ? `, ${o.place}` : ""}.`} kicker="Alerte de sécurité" reason="Tu reçois cet email car ton compte SYXTEE vient d'être ouvert depuis un appareil qu'on ne connaissait pas.">
+      <Layout preview={`Connexion depuis ${o.device}.`} reason="Alerte de sécurité.">
         <Title lead="Nouvelle" hl="connexion." />
-        <Text style={p}>Une nouvelle connexion à ton compte SYXTEE vient d&apos;être effectuée.</Text>
-        <InfoPanel rows={[["Date et heure", when(o.at)], ["Appareil", o.device], ["Lieu (approximatif)", o.place ?? "inconnu"]]} />
-        <Callout title="Ce n'était pas toi ?">Sécurise immédiatement ton compte en changeant ton mot de passe. Si c&apos;était toi, rien à faire.</Callout>
+        <InfoPanel rows={[["Date et heure", when(o.at)], ["Appareil", o.device], ["Lieu", o.place ?? "inconnu"]]} />
+        <Callout title="Ce n'était pas toi ?">Change ton mot de passe tout de suite.</Callout>
         <Cta href={`${site.url}/mot-de-passe-oublie`}>Sécuriser mon compte</Cta>
       </Layout>
     ),
@@ -168,17 +127,10 @@ export function emailChange(o: { to: "old" | "new"; oldEmail: string; newEmail: 
   return {
     subject: old ? "Changement d'email de ton compte SYXTEE" : "Confirme ta nouvelle adresse SYXTEE",
     element: (
-      <Layout
-        preview={old ? `Ton email va passer à ${o.newEmail}.` : "Confirme ta nouvelle adresse."}
-        kicker="Changement d'email"
-        reason={old ? "Tu reçois cet email car un changement d'adresse a été demandé pour ton compte SYXTEE." : "Tu reçois cet email car cette adresse a été indiquée comme nouvelle adresse d'un compte SYXTEE."}
-      >
+      <Layout preview="Confirme le changement d'adresse." reason={old ? "Pas toi ? Ne clique pas et change ton mot de passe." : "Lien valable 24 h."}>
         <Title lead={old ? "Changement" : "Nouvelle"} hl={old ? "d'email." : "adresse."} />
         <InfoPanel rows={[["Ancienne adresse", o.oldEmail], ["Nouvelle adresse", o.newEmail]]} />
-        <Text style={p}>Le changement se fait quand les deux adresses ont confirmé. Lien valable 24 h.</Text>
-        <Cta href={o.url}>Confirmer le changement</Cta>
-        {old && <Text style={p}>Ce n&apos;est pas toi ? Ne clique pas, et change ton mot de passe.</Text>}
-        <RawLink href={o.url} />
+        <Cta href={o.url}>Confirmer</Cta>
       </Layout>
     ),
   };
@@ -192,22 +144,9 @@ export function planChanged(o: { plan: string; until?: Date | null; expiring?: b
   return {
     subject: o.expiring ? `Ta formule ${name} se termine dans 7 jours` : `Ton compte passe en formule ${name}`,
     element: (
-      <Layout
-        preview={o.expiring ? `Fin de la formule ${name} le ${o.until ? day(o.until) : "bientôt"}.` : `Formule ${name} active${o.until ? ` jusqu'au ${day(o.until)}` : ""}.`}
-        kicker="Formule"
-        reason="Tu reçois cet email car la formule de ton compte SYXTEE a changé ou arrive à échéance."
-      >
+      <Layout preview={o.expiring ? `Fin de la formule ${name}.` : `Formule ${name} active.`} reason="Changement de formule.">
         <Title lead={o.expiring ? "Fin de formule" : "Formule"} hl={o.expiring ? "dans 7 jours." : `${name}.`} />
-        {o.expiring ? (
-          <Text style={p}>
-            Ta formule {name} se termine le {o.until ? day(o.until) : "bientôt"}. Ensuite, ton compte repasse en formule Gratuit : tes relais sont conservés mais mis en pause.
-          </Text>
-        ) : (
-          <Text style={p}>
-            Ton compte est maintenant en formule {name}
-            {o.until ? `, jusqu'au ${day(o.until)}` : ""}. Tout est déjà débloqué dans ton dashboard.
-          </Text>
-        )}
+        {o.until && <Text style={p}>{o.expiring ? "Fin le" : "Jusqu'au"} {day(o.until)}.</Text>}
         <Cta href={`${site.url}/dashboard/abonnement`}>Voir ma formule</Cta>
       </Layout>
     ),
@@ -219,10 +158,9 @@ export function freeMonth(o: { until: Date }): Email {
   return {
     subject: "Tu as gagné 1 mois de SYXTEE RELAIS",
     element: (
-      <Layout preview={`Relais offert jusqu'au ${day(o.until)}.`} kicker="Programme Scan" reason="Tu reçois cet email car tes mesures avec l'analyseur réseau t'ont fait gagner un mois de relais.">
+      <Layout preview={`Relais offert jusqu'au ${day(o.until)}.`} reason="Merci pour tes mesures.">
         <Title lead="1 mois de relais" hl="offert." />
-        <Text style={p}>Merci pour tes mesures : elles rendent la carte de couverture plus précise pour tout le monde.</Text>
-        <Text style={p}>Ton relais SYXTEE est offert jusqu&apos;au {day(o.until)}.</Text>
+        <Text style={p}>Jusqu&apos;au {day(o.until)}.</Text>
         <Cta href={`${site.url}/dashboard/relais`}>Ouvrir mes relais</Cta>
       </Layout>
     ),
@@ -235,10 +173,9 @@ export function paymentFailed(o: { amount: number; currency: string }): Email {
   return {
     subject: "Ton paiement SYXTEE n'est pas passé",
     element: (
-      <Layout preview={`Le prélèvement de ${amount} a été refusé.`} kicker="Abonnement" reason="Tu reçois cet email car le paiement de ton abonnement SYXTEE a échoué.">
+      <Layout preview={`Le prélèvement de ${amount} a été refusé.`} reason="On réessaie automatiquement.">
         <Title lead="Paiement" hl="refusé." />
-        <Text style={p}>Le prélèvement de {amount} pour ton abonnement SYXTEE n&apos;est pas passé. Ta carte a peut-être expiré ou manque de provision.</Text>
-        <Text style={p}>On réessaie automatiquement dans les prochains jours. Ton accès continue d&apos;ici là. Mets ta carte à jour pour éviter la coupure.</Text>
+        <InfoPanel rows={[["Montant", amount]]} />
         <Cta href={`${site.url}/dashboard/abonnement`}>Mettre à jour ma carte</Cta>
       </Layout>
     ),
@@ -250,10 +187,9 @@ export function loginLink(o: { url: string }): Email {
   return {
     subject: "Ton lien de connexion SYXTEE",
     element: (
-      <Layout preview="Lien de connexion valable peu de temps." kicker="Connexion" reason="Tu reçois cet email car une connexion à SYXTEE a été demandée avec cette adresse. Pas toi ? Ignore-le.">
+      <Layout preview="Lien de connexion." reason="Pas toi ? Ignore cet email.">
         <Title lead="Connexion à" hl="SYXTEE." />
         <Cta href={o.url}>Me connecter</Cta>
-        <RawLink href={o.url} />
       </Layout>
     ),
   };
@@ -264,10 +200,9 @@ export function code(o: { token: string }): Email {
   return {
     subject: `Ton code SYXTEE : ${o.token}`,
     element: (
-      <Layout preview={`Code : ${o.token}`} kicker="Code de vérification" reason="Tu reçois cet email car une action sensible a été demandée sur ton compte SYXTEE.">
+      <Layout preview={`Code : ${o.token}`} reason="Ne le donne à personne.">
         <Title lead="Ton" hl="code." />
         <Text style={{ ...p, ...mono, fontSize: "28px", letterSpacing: "6px", lineHeight: "36px" }}>{o.token}</Text>
-        <Text style={muted}>Ne le donne à personne, même au support.</Text>
       </Layout>
     ),
   };

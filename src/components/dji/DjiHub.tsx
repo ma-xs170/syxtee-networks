@@ -39,7 +39,7 @@ const ERROR_LABEL: Record<DjiError, string> = {
   timeout: "La caméra ne répond plus. Rallume-la, rapproche le téléphone, puis relance.",
   disconnected: "Connexion Bluetooth perdue. Rapproche le téléphone et relance.",
   service: "Cette caméra ne répond pas comme une DJI compatible. Vérifie le modèle.",
-  cancelled: "Recherche annulée.",
+  cancelled: "Caméra non trouvée ou recherche annulée. Allume son Bluetooth, puis clique sur « Modifier » > « Rechercher ma caméra » et, au besoin, « afficher tous les appareils ».",
   unsupported: "Bluetooth indisponible dans ce navigateur.",
   relay: "Le relais lié à cette caméra n'existe plus. Clique sur « Modifier » et choisis un relais.",
   network: "Le réseau Wi-Fi de cette caméra n'existe plus. Clique sur « Modifier » et choisis un réseau.",

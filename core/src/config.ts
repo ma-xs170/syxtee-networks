@@ -57,6 +57,10 @@ const schema = z.object({
   // identifiants anonymes d'appareil (par défaut dérivé de CORE_API_TOKEN).
   IPINFO_TOKEN: z.string().default(""),
   COVERAGE_SALT: z.string().optional(),
+  // Enregistrement des flux sur le serveur : quota par compte et place libre minimale du disque (en dessous, plus d'enregistrement).
+  RECORD_ENABLED: bool.default(true),
+  RECORD_QUOTA_GB: z.coerce.number().positive().default(10),
+  RECORD_MIN_FREE_GB: z.coerce.number().min(0).default(20),
   PREVIEW_ENABLED: bool.default(true),
   PREVIEW_INTERVAL_S: z.coerce.number().default(3),
   // Régie (mire automatique) : réencodage, ~1,5–2 vCPU par flux 1080p. Désactivée par défaut.

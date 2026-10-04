@@ -37,8 +37,7 @@ export default function CgvPage() {
       <LegalBlock title="3. Prix">
         <p>
           {TIERS.map((t) => `${CATALOG[t].name} : ${CATALOG[t].prices.month.amount} par mois ou ${CATALOG[t].prices.year.amount} par an`).join(" ; ")}. Prix nets, TVA non
-          applicable [À COMPLÉTER : article du CGI
-          applicable à l&apos;association]. Toute évolution de prix est annoncée au moins 30 jours avant le renouvellement concerné ; tu peux résilier avant
+          applicable, article 293 B du CGI. Toute évolution de prix est annoncée au moins 30 jours avant le renouvellement concerné ; tu peux résilier avant
           qu&apos;elle ne s&apos;applique.
         </p>
       </LegalBlock>

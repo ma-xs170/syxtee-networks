@@ -23,7 +23,9 @@ const refusal = (e: unknown) =>
     : e instanceof CoreRefusal
     ? e.code === "quota"
       ? "Limite de relais atteinte pour ta formule."
-      : e.code === "regie_disabled"
+      : e.code === "record_disabled"
+        ? "L'enregistrement n'est pas encore ouvert sur ce serveur."
+        : e.code === "regie_disabled"
         ? "La régie n'est pas encore disponible."
         : e.code === "rtmp_disabled"
           ? "L'entrée RTMP n'est pas encore ouverte sur ce serveur."
@@ -108,5 +110,12 @@ export async function deleteRelayAction(relayId: string) {
 export async function changeModeAction(relayId: string, mode: "direct" | "regie") {
   const r = await run(relayId, "mode", 20, (u) => updateRelay(u, relayId, { mode }), "mire");
   revalidatePath("/dashboard/mire");
+  return r;
+}
+
+/** Enregistrer le flux du relais sur le serveur (10 Go par compte, voir /dashboard/enregistrements). */
+export async function setRecordAction(relayId: string, record: boolean) {
+  const r = await run(relayId, "record", 60, (u) => updateRelay(u, relayId, { record }));
+  revalidatePath("/dashboard/enregistrements");
   return r;
 }

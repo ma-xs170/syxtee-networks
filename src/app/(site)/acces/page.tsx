@@ -7,7 +7,7 @@ import Highlight from "@/components/ui/Highlight";
 
 export const metadata: Metadata = {
   title: "Demander l'accès",
-  description: "SYXTEE NETWORKS est fermé au public pour le moment et ouvert aux partenaires. Remplis la demande : 5 relais par protocole (SRTLA, RTMP, RIST) et toutes les fonctions.",
+  description: "L'ouverture au public arrive bientôt. En attendant, SYXTEE NETWORKS est ouvert aux partenaires : 5 relais par protocole (SRTLA, RTMP, RIST), enregistrement des directs jusqu'à 10 Go et toutes les fonctions.",
   alternates: { canonical: "/acces" },
 };
 
@@ -16,6 +16,7 @@ const premium = [
   "Bonding 4G, 5G, Wi-Fi et Starlink",
   "SYXTEE COMMUTATEUR, toutes tes caméras sur un écran",
   "Santé du flux, aperçu et historique des lives",
+  "Enregistrement de tes directs sur le serveur, jusqu'à 10 Go",
   "Caméras externes (DJI, GoPro) et sortie SRT pour OBS",
   "Secours automatique et support dédié",
 ];
@@ -26,12 +27,14 @@ export default function AccessPage() {
       <section data-theme="light" className="relative -mt-[4.75rem] overflow-hidden border-b border-line bg-background pb-16 pt-[9rem] text-foreground sm:pb-20 sm:pt-[10.5rem]">
         <CloudBackdrop />
         <Container className="relative text-center">
+          <p className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-foreground/25 px-4 py-1.5 font-mono text-xs uppercase tracking-[0.16em]">Ouverture au public : bientôt</p>
           <h1 className="h-hero mx-auto max-w-3xl">
             Demande ton <Highlight>accès.</Highlight>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-foreground/75 sm:text-lg">
-            SYXTEE NETWORKS est fermé au public pour le moment. L&apos;accès est ouvert aux partenaires : on étudie chaque demande et on te répond par email.
+            <strong>On arrive bientôt.</strong> Les premières formules ouvrent très prochainement ; en attendant, l&apos;accès est réservé aux partenaires. On étudie chaque demande et on te répond par email.
           </p>
+          <p className="mx-auto mt-3 max-w-2xl text-sm text-foreground/70">Premières formules à TVA non applicable, article 293 B du CGI.</p>
         </Container>
       </section>
 

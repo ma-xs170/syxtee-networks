@@ -22,6 +22,7 @@ import { createCam } from "./cam.ts";
 import { createStudio } from "./studio.ts";
 import { createRemote } from "./remote.ts";
 import { createBackups } from "./backups.ts";
+import { createRecordings } from "./recordings.ts";
 import { createSessionTracker, supabaseSessionDb } from "./sessions.ts";
 import { createSls } from "./sls.ts";
 import { createSealer, parseSecret } from "./keys.ts";
@@ -91,6 +92,17 @@ const sessions = createSessionTracker({ db: sessionDb, relay: config.RELAY_NAME,
 
 const previews = config.PREVIEW_ENABLED
   ? createPreviews({ dir: join(config.DATA_DIR, "previews"), host: config.SLS_SRT_HOST, port: config.SRT_PLAY_PORT, intervalS: config.PREVIEW_INTERVAL_S, log })
+  : null;
+const recordings = config.RECORD_ENABLED
+  ? createRecordings({
+      dir: join(config.DATA_DIR, "recordings"),
+      host: config.SLS_SRT_HOST,
+      port: config.SRT_PLAY_PORT,
+      secret: config.CORE_API_TOKEN,
+      quota: config.RECORD_QUOTA_GB * 1024 ** 3,
+      minFreeBytes: config.RECORD_MIN_FREE_GB * 1024 ** 3,
+      log,
+    })
   : null;
 const regie = config.REGIE_ENABLED
   ? createRegie({
@@ -186,6 +198,7 @@ health.events.on("status", (relayId: string, s: { live: boolean }, relay: Relay)
   relays.setStatus(relayId, s.live).catch((e) => log((e as Error).message));
   if (!s.live) coverage.end(relay.user_id, "live");
   previews?.sync(health.liveRelays());
+  void recordings?.sync(health.liveRelays()).catch((e) => log(`enregistrements : ${(e as Error).message}`));
 });
 
 health.events.on("sample", (relayId: string, s: Live, relay: Relay) => {
@@ -220,6 +233,7 @@ const app = buildServer({
   verifyUser,
   remote,
   backups,
+  recordings,
   previewPath: (id) => previews?.path(id) ?? "",
   liveFeed: previews ? (r) => openLive({ host: config.SLS_SRT_HOST, port: config.SRT_PLAY_PORT, playId: r.play_id }) : undefined,
   onKeysChanged: () => void refreshKeys(),
@@ -287,6 +301,7 @@ const timers = [
   setInterval(() => void supabase.rpc("security_purge").then(({ error }) => error && log(`security_purge : ${error.message}`)), 24 * 3_600_000),
   setInterval(() => void sessions.tick(), 5_000),
   setInterval(() => void health.tick(), 200),
+  ...(recordings ? [setInterval(() => void recordings.sync(health.liveRelays()).catch((e) => log(`enregistrements : ${(e as Error).message}`)), 10_000)] : []),
   setInterval(() => void refreshKeys(), 30_000),
   ...(cam ? [setInterval(() => void cam.syncRelays(), 1_000)] : []),
   ...(studio ? [setInterval(() => void studio.sync(), 1_000)] : []),
@@ -304,6 +319,7 @@ log(`prêt sur :${config.PORT} · relais ${config.RELAY_NAME} (${config.RELAY_PU
 const shutdown = async () => {
   timers.forEach(clearInterval);
   previews?.stopAll();
+  recordings?.stopAll();
   regie?.stopAll();
   cam?.stopAll();
   studio?.stopAll();

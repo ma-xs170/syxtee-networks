@@ -66,12 +66,20 @@ export type DjiError = "wifi" | "timeout" | "disconnected" | "service" | "cancel
 
 export type LiveSettings = StartOptions & { ssid: string; password: string; model: DjiModel; stabilization: Stabilization };
 
-/** Choix de la caméra (sélecteur du navigateur, geste de l'utilisateur obligatoire). */
-export async function pickCamera(): Promise<BtDevice> {
+/**
+ * Choix de la caméra (sélecteur du navigateur, geste de l'utilisateur obligatoire).
+ * Par défaut : filtre sur l'identifiant DJI ou le nom Bluetooth. `showAll` liste tous les appareils proches
+ * (utile si l'Osmo n'annonce pas son identifiant, ce qui dépend du modèle et du navigateur).
+ */
+export async function pickCamera(showAll = false): Promise<BtDevice> {
   const b = bt();
   if (!b) throw new Error("unsupported");
+  if (showAll) return b.requestDevice({ acceptAllDevices: true, optionalServices: [SERVICE] });
   return b.requestDevice({
-    filters: DJI_COMPANY_IDS.map((companyIdentifier) => ({ manufacturerData: [{ companyIdentifier }] })),
+    filters: [
+      ...DJI_COMPANY_IDS.map((companyIdentifier) => ({ manufacturerData: [{ companyIdentifier }] })),
+      ...["Osmo", "DJI"].map((namePrefix) => ({ namePrefix })),
+    ],
     optionalServices: [SERVICE],
   });
 }

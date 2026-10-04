@@ -27,6 +27,7 @@ import type { Coverage } from "./coverage.ts";
 import { classify, countsOnMap, DECLARED, declaredName, ipPrefix, isCaribbean, netToken, type Declared, type Prefixes } from "./link.ts";
 import type { PrivateRelay } from "./privaterelay.ts";
 import type { LiveFeed } from "./preview.ts";
+import type { Recordings } from "./recordings.ts";
 
 // API HTTP du Core (derrière Caddy en HTTPS).
 // /v1/users/:id/*  → serveur Vercel, jeton de service.
@@ -40,6 +41,8 @@ export type Deps = {
   studio?: Studio | null;
   /** SYXTEE Link : télécommande d'OBS (null si désactivée). */
   remote?: Remote | null;
+  /** Enregistrement des flux (10 Go par compte ; null si désactivé). */
+  recordings?: Recordings | null;
   /** Sauvegardes de scènes (5 Go par compte). */
   backups?: Backups | null;
   /** Pseudo et Twitch vérifié, pour l'app /cam (chat en superposition). */
@@ -85,6 +88,8 @@ export function relayView(r: Relay, c: Config, live = false) {
     host,
     archived: r.archived,
     live: !r.archived && live,
+    record: r.record === true,
+    record_available: c.RECORD_ENABLED,
     mode: regie ? ("regie" as const) : r.mode,
     regie_available: c.REGIE_ENABLED,
     urls:
@@ -190,6 +195,7 @@ export function buildServer(d: Deps) {
         name: z.string().trim().min(1).max(40).optional(),
         archived: z.boolean().optional(),
         mode: z.enum(["direct", "regie"]).optional(),
+        record: z.boolean().optional(),
         limit: z.number().int().min(0).default(0),
       })
       .parse(req.body);
@@ -198,6 +204,10 @@ export function buildServer(d: Deps) {
     try {
       if (body.name !== undefined) r = await d.relays.rename(r, body.name);
       if (body.mode !== undefined) r = await d.relays.setMode(r, body.mode);
+      if (body.record !== undefined) {
+        if (body.record && !d.recordings) return reply.code(409).send({ error: "record_disabled" });
+        r = await d.relays.setRecord(r, body.record);
+      }
       if (body.archived !== undefined) r = await d.relays.setArchived(r, body.archived, body.limit);
     } catch (e) {
       if (e instanceof QuotaError) return reply.code(403).send({ error: "quota" });
@@ -221,6 +231,7 @@ export function buildServer(d: Deps) {
   app.delete("/v1/users/:id/relays", { preHandler: service }, async (req, reply) => {
     const { id } = uuid.parse(req.params);
     await d.relays.removeAll(id);
+    await d.recordings?.removeUser(id).catch(() => {});
     await d.security?.forget(id).catch(() => {});
     d.onKeysChanged();
     return reply.code(204).send();
@@ -424,6 +435,61 @@ export function buildServer(d: Deps) {
     feed.stream.on("error", close).on("end", close).pipe(reply.raw);
     req.raw.on("close", close);
   });
+
+  // ───── Enregistrements des flux (fichiers MP4 sur le serveur, quota par compte) ─────
+  const rec = d.recordings;
+  if (rec) {
+    app.get("/v1/me/recordings", async (req, reply) => {
+      const id = await userId(req, reply);
+      if (!id) return;
+      return { ...(await rec.usage(id)), files: await rec.files(id) };
+    });
+    app.post("/v1/me/recordings/link", async (req, reply) => {
+      const id = await userId(req, reply);
+      if (!id) return;
+      const b = z.object({ relay: z.uuid(), file: z.string().max(40) }).safeParse(req.body);
+      if (!b.success || !(await rec.open(id, b.data.relay, b.data.file))) return reply.code(404).send({ error: "not_found" });
+      return { path: `/v1/rec/${rec.sign(id, b.data.relay, b.data.file)}` };
+    });
+    app.delete("/v1/me/recordings/:rid/:file", async (req, reply) => {
+      const id = await userId(req, reply);
+      if (!id) return;
+      const p = z.object({ rid: z.uuid(), file: z.string().max(40) }).safeParse(req.params);
+      if (!p.success || !(await rec.remove(id, p.data.rid, p.data.file))) return reply.code(404).send({ error: "not_found" });
+      return reply.code(204).send();
+    });
+    // Téléchargement par lien signé (5 min), avec reprise (Range) : un direct de plusieurs Go.
+    app.get("/v1/rec/:token", async (req, reply) => {
+      const t = rec.verify(z.object({ token: z.string().max(600) }).parse(req.params).token);
+      if (!t) return reply.code(404).send({ error: "not_found" });
+      const head = await rec.open(t.user, t.relay, t.file);
+      if (!head) return reply.code(404).send({ error: "not_found" });
+      head.stream.destroy();
+      const m = /^bytes=(\d*)-(\d*)$/.exec(String(req.headers.range ?? ""));
+      let start = 0;
+      let end = head.size - 1;
+      if (m && (m[1] || m[2])) {
+        if (m[1]) {
+          start = Number(m[1]);
+          if (m[2]) end = Math.min(end, Number(m[2]));
+        } else {
+          start = Math.max(0, head.size - Number(m[2]));
+        }
+        if (start > end) return reply.code(416).header("Content-Range", `bytes */${head.size}`).send();
+      }
+      const body = await rec.open(t.user, t.relay, t.file, { start, end });
+      if (!body) return reply.code(404).send({ error: "not_found" });
+      return reply
+        .code(m ? 206 : 200)
+        .header("Content-Type", "video/mp4")
+        .header("Content-Disposition", `attachment; filename="syxtee-${t.file}"`)
+        .header("Accept-Ranges", "bytes")
+        .header("Content-Length", String(end - start + 1))
+        .header("Cache-Control", "no-store")
+        .headers(m ? { "Content-Range": `bytes ${start}-${end}/${head.size}` } : {})
+        .send(body.stream);
+    });
+  }
 
   // ───── SYXTEE Cam ─────
   const cam = d.cam;

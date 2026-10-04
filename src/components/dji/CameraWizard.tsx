@@ -101,10 +101,10 @@ export default function CameraWizard({
 
   const set = <K extends keyof Camera>(k: K, v: Camera[K]) => setC((cur) => ({ ...cur, [k]: v }));
 
-  async function search() {
+  async function search(showAll = false) {
     setScan("busy");
     try {
-      const d = await pickCamera();
+      const d = await pickCamera(showAll);
       const m = await detectModel(d);
       setC((cur) => ({ ...cur, deviceId: d.id, deviceName: d.name ?? "Caméra DJI", model: m !== "unknown" ? m : cur.model, name: cur.name || d.name || "" }));
       setScan("idle");
@@ -177,17 +177,24 @@ export default function CameraWizard({
                       <span className="block text-lg font-medium">{c.deviceName}</span>
                       <span className="text-sm text-muted">Caméra trouvée. Modèle détecté ou à choisir ci-dessous.</span>
                     </span>
-                    <button type="button" onClick={search} className={ghost}>
+                    <button type="button" onClick={() => search()} className={ghost}>
                       Changer
                     </button>
                   </p>
                 ) : (
                   <div>
                     <p className="text-base text-muted">Allume la caméra et son Bluetooth, puis lance la recherche. À la première connexion, valide la demande sur l&apos;écran de la caméra.</p>
-                    <button type="button" onClick={search} disabled={scan === "busy"} className={`${primary} mt-5`}>
+                    <button type="button" onClick={() => search()} disabled={scan === "busy"} className={`${primary} mt-5`}>
                       {scan === "busy" ? "Recherche…" : "Rechercher ma caméra"}
                     </button>
-                    {scan === "cancelled" && <p className="mt-3 text-sm text-muted">Aucune caméra choisie. Vérifie qu&apos;elle est allumée, puis réessaie.</p>}
+                    {scan === "cancelled" && (
+                      <div className="mt-3 text-sm text-muted">
+                        <p>Aucune caméra choisie. Allume la caméra, active son Bluetooth (menu Wi-Fi / Bluetooth), rapproche le téléphone, puis réessaie.</p>
+                        <button type="button" onClick={() => search(true)} className="mt-2 underline underline-offset-4 hover:text-foreground">
+                          Ma caméra n&apos;apparaît pas : afficher tous les appareils
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

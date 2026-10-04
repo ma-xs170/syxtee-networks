@@ -6,6 +6,10 @@
 	# Routes internes (MediaMTX → Core) : jamais depuis internet.
 	@internal path /internal/*
 	respond @internal 404
+	# Bot Discord : webhook GitHub et /announce (signature / jeton vérifiés par le bot).
+	handle /discord/* {
+		reverse_proxy 127.0.0.1:8790
+	}
 	reverse_proxy 127.0.0.1:8787 {
 		# Server-Sent Events (santé du flux en direct) : pas de mise en tampon.
 		flush_interval -1

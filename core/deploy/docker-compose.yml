@@ -51,6 +51,20 @@ services:
     restart: unless-stopped
     logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
 
+  # SYXTEE Bot : bot Discord (nouveautés, /services, alertes). HTTP sur 127.0.0.1:8790 (webhook GitHub, /announce).
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    network_mode: host
+    env_file: .env
+    environment:
+      CORE_URL: http://127.0.0.1:8787
+      BOT_HOST: 127.0.0.1
+      BOT_PORT: "8790"
+    restart: unless-stopped
+    logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
+
   caddy:
     image: caddy:2
     network_mode: host

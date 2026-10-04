@@ -59,11 +59,12 @@ async function newsChannel(): Promise<TextBasedChannel | null> {
   return ch && ch.isTextBased() ? ch : null;
 }
 
-async function publish(embed: EmbedBuilder, entry: Omit<LogEntry, "at">) {
+async function publish(embed: EmbedBuilder, entry: Omit<LogEntry, "at">): Promise<string> {
   const ch = await newsChannel();
   if (!ch || !("send" in ch)) throw new Error("salon introuvable ou sans droit d'écriture");
-  await ch.send({ embeds: [embed], files: files(true) });
+  const msg = await ch.send({ embeds: [embed], files: files(true) });
   store.record(entry);
+  return msg.id;
 }
 
 // ───── /services : message qui se réactualise (édition toutes les 20 s, ~14 min : limite du jeton d'interaction) ─────
@@ -164,6 +165,16 @@ startWeb(cfg, publish, {
   },
   alerts(enabled) {
     store.update({ alertsEnabled: enabled });
+  },
+  async edit(messageId, e) {
+    const ch = await newsChannel();
+    if (!ch || !("messages" in ch)) return false;
+    const msg = await ch.messages.fetch(messageId).catch(() => null);
+    if (!msg || msg.author.id !== client.user?.id) return false;
+    // Sans `files`, Discord garde le logo et le bandeau déjà joints au message.
+    await msg.edit({ embeds: [announceEmbed(e)] });
+    store.record({ kind: "annonce", title: `Modifié : ${e.title}`, by: "panel" });
+    return true;
   },
   async postServices() {
     const { embed } = await servicesEmbed(cfg);

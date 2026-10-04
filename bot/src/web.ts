@@ -53,12 +53,15 @@ export type AdminApi = {
   presence(p: { mode: "auto" | "custom"; type: PresenceType; text: string }): void;
   alerts(enabled: boolean): void;
   postServices(): Promise<void>;
+  /** Modifie un message déjà publié par le bot dans le salon. false si le message n'existe plus. */
+  edit(messageId: string, e: { title: string; body: string; tag?: string }): Promise<boolean>;
 };
 
 const announceBody = z.object({ title: z.string().trim().min(1).max(200), body: z.string().trim().min(1).max(3500), url: z.url().optional(), tag: z.string().max(30).optional() });
+const editBody = announceBody.omit({ url: true }).extend({ messageId: z.string().regex(/^\d+$/) });
 const presenceBody = z.object({ mode: z.enum(["auto", "custom"]), type: z.enum(["watching", "playing", "listening", "competing"]).default("watching"), text: z.string().trim().max(100).default("") });
 
-export function startWeb(cfg: Config, publish: (embed: EmbedBuilder, entry: Omit<LogEntry, "at">) => Promise<void>, admin: AdminApi) {
+export function startWeb(cfg: Config, publish: (embed: EmbedBuilder, entry: Omit<LogEntry, "at">) => Promise<string>, admin: AdminApi) {
   const server = createServer(async (req, res) => {
     const send = (code: number, text = "") => {
       res.writeHead(code, { "Content-Type": "text/plain; charset=utf-8" });
@@ -81,8 +84,14 @@ export function startWeb(cfg: Config, publish: (embed: EmbedBuilder, entry: Omit
         if (path === "/api/announce") {
           const a = announceBody.safeParse(raw);
           if (!a.success) return json(400, { error: a.error.issues[0]?.message ?? "invalide" });
-          await publish(announceEmbed({ ...a.data, tag: a.data.tag ?? "Annonce" }), { kind: "annonce", title: a.data.title, by: "panel" });
-          return json(200, { ok: true });
+          const id = await publish(announceEmbed({ ...a.data, tag: a.data.tag ?? "Annonce" }), { kind: "annonce", title: a.data.title, by: "panel" });
+          return json(200, { ok: true, id });
+        }
+        if (path === "/api/edit") {
+          const e = editBody.safeParse(raw);
+          if (!e.success) return json(400, { error: e.error.issues[0]?.message ?? "invalide" });
+          const done = await admin.edit(e.data.messageId, { title: e.data.title, body: e.data.body, tag: e.data.tag ?? "Annonce" });
+          return done ? json(200, { ok: true }) : json(404, { error: "message introuvable" });
         }
         if (path === "/api/presence") {
           const p = presenceBody.safeParse(raw);

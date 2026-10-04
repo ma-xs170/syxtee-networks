@@ -3,7 +3,7 @@ import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui
 import { requireAdmin } from "@/lib/admin";
 import { formatVersion, type Version } from "@/lib/releases";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
-import { resendReleaseAction } from "./actions";
+import ReleaseItem from "./ReleaseItem";
 import ReleaseForm from "./ReleaseForm";
 
 export const metadata: Metadata = { title: "Admin · Versions", robots: { index: false } };
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 // Admin : notes de version. Le numéro est calculé tout seul (correctif, nouveauté, majeure) ; la note part dans le salon Discord.
 
-type Row = Version & { id: string; title: string; notes: string; created_by: string; discord_sent_at: string | null; created_at: string };
+type Row = Version & { id: string; title: string; notes: string; created_by: string; discord_sent_at: string | null; discord_message_id: string | null; updated_at: string | null; created_at: string };
 
 const when = (iso: string) => new Date(iso).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Guadeloupe" });
 
@@ -20,7 +20,7 @@ export default async function AdminVersionsPage() {
   const { data, error } = hasAdmin
     ? await createAdminClient()
         .from("releases")
-        .select("id, major, minor, patch, title, notes, created_by, discord_sent_at, created_at")
+        .select("id, major, minor, patch, title, notes, created_by, discord_sent_at, discord_message_id, updated_at, created_at")
         .order("major", { ascending: false })
         .order("minor", { ascending: false })
         .order("patch", { ascending: false })
@@ -49,25 +49,15 @@ export default async function AdminVersionsPage() {
             ) : (
               <ul className="mt-3 divide-y divide-line">
                 {rows.map((r) => (
-                  <li key={r.id} className="py-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium">
-                          <span className="font-mono">v{formatVersion(r)}</span> · {r.title}
-                        </p>
-                        <p className="mt-1 line-clamp-2 whitespace-pre-line text-sm text-muted">{r.notes}</p>
-                        <p className="mt-1.5 font-mono text-xs uppercase text-muted">
-                          {when(r.created_at)} · {r.discord_sent_at ? "envoyée sur Discord" : "pas envoyée"}
-                        </p>
-                      </div>
-                      <form action={resendReleaseAction}>
-                        <input type="hidden" name="id" value={r.id} />
-                        <button type="submit" className="whitespace-nowrap text-sm text-muted underline-offset-4 hover:text-foreground hover:underline">
-                          {r.discord_sent_at ? "Renvoyer" : "Envoyer"}
-                        </button>
-                      </form>
-                    </div>
-                  </li>
+                  <ReleaseItem
+                    key={r.id}
+                    id={r.id}
+                    version={formatVersion(r)}
+                    title={r.title}
+                    notes={r.notes}
+                    sent={!!r.discord_message_id}
+                    meta={`${when(r.created_at)} · ${r.discord_message_id ? "sur Discord" : r.discord_sent_at ? "sur Discord (non modifiable)" : "pas envoyée"}${r.updated_at ? " · modifiée" : ""}`}
+                  />
                 ))}
               </ul>
             )}

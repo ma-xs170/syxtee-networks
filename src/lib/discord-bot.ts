@@ -22,6 +22,8 @@ export type BotStatus = {
 };
 
 export class BotError extends Error {}
+/** Le message à modifier n'existe plus dans le salon (supprimé à la main). */
+export class BotMessageGone extends BotError {}
 
 async function call<T>(path: string, method: "GET" | "POST" = "GET", body?: unknown): Promise<T> {
   if (!hasBot) throw new BotError("Bot non configuré");
@@ -32,13 +34,18 @@ async function call<T>(path: string, method: "GET" | "POST" = "GET", body?: unkn
     cache: "no-store",
     signal: AbortSignal.timeout(10_000),
   });
-  if (res.status === 404) throw new BotError("Le bot tourne une version sans panel : mise à jour du VPS nécessaire");
+  if (res.status === 404) {
+    const j = (await res.json().catch(() => null)) as { error?: string } | null;
+    if (j?.error === "message introuvable") throw new BotMessageGone("Le message n'existe plus dans le salon");
+    throw new BotError("Le bot tourne une version sans panel : mise à jour du VPS nécessaire");
+  }
   if (!res.ok) throw new BotError(`Bot ${method} ${path} → ${res.status}`);
   return (await res.json()) as T;
 }
 
 export const getBotStatus = () => call<BotStatus>("/status");
-export const botAnnounce = (b: { title: string; body: string; url?: string; tag?: string }) => call("/announce", "POST", b);
+export const botAnnounce = (b: { title: string; body: string; url?: string; tag?: string }) => call<{ ok: true; id: string }>("/announce", "POST", b);
+export const botEdit = (b: { messageId: string; title: string; body: string; tag?: string }) => call("/edit", "POST", b);
 export const botPresence = (b: { mode: "auto" | "custom"; type: string; text: string }) => call("/presence", "POST", b);
 export const botAlerts = (enabled: boolean) => call("/alerts", "POST", { enabled });
 export const botPostServices = () => call("/services-post", "POST", {});

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin";
-import { botAnnounce, hasBot } from "@/lib/discord-bot";
+import { BotMessageGone, botAnnounce, botEdit, hasBot } from "@/lib/discord-bot";
 import { audit } from "@/lib/plan-admin";
 import { formatVersion, nextVersion, type Version } from "@/lib/releases";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -20,8 +20,11 @@ const input = z.object({
 
 type Row = Version & { id: string; title: string; notes: string };
 
+const embedOf = (v: Version, title: string, notes: string) => ({ title: `Version ${formatVersion(v)} · ${title}`, body: notes, tag: `Version ${formatVersion(v)}` });
+
+/** Publie la note dans le salon et renvoie l'identifiant du message (gardé pour pouvoir le modifier). */
 async function sendToDiscord(v: Version, title: string, notes: string) {
-  await botAnnounce({ title: `Version ${formatVersion(v)} · ${title}`, body: notes, tag: `Version ${formatVersion(v)}` });
+  return (await botAnnounce(embedOf(v, title, notes))).id;
 }
 
 export async function publishReleaseAction(_prev: ReleaseState, form: FormData): Promise<ReleaseState> {
@@ -45,8 +48,8 @@ export async function publishReleaseAction(_prev: ReleaseState, form: FormData):
   if (!send) return { ok: `Version ${formatVersion(v)} enregistrée.` };
   if (!hasBot) return { ok: `Version ${formatVersion(v)} enregistrée, mais le bot Discord n'est pas configuré.` };
   try {
-    await sendToDiscord(v, title, notes);
-    await db.from("releases").update({ discord_sent_at: new Date().toISOString() }).eq("id", row.id);
+    const messageId = await sendToDiscord(v, title, notes);
+    await db.from("releases").update({ discord_sent_at: new Date().toISOString(), discord_message_id: messageId }).eq("id", row.id);
     return { ok: `Version ${formatVersion(v)} publiée et envoyée dans le salon Discord.` };
   } catch (e) {
     return { error: `Version ${formatVersion(v)} enregistrée, mais l'envoi Discord a échoué (${e instanceof Error ? e.message : "bot injoignable"}). Utilise « Renvoyer sur Discord ».` };
@@ -62,11 +65,40 @@ export async function resendReleaseAction(form: FormData) {
   if (!data) return;
   const r = data as Row;
   try {
-    await sendToDiscord(r, r.title, r.notes);
-    await db.from("releases").update({ discord_sent_at: new Date().toISOString() }).eq("id", r.id);
+    const messageId = await sendToDiscord(r, r.title, r.notes);
+    await db.from("releases").update({ discord_sent_at: new Date().toISOString(), discord_message_id: messageId }).eq("id", r.id);
     await audit(admin.email!, "release.resend", null, null, { version: formatVersion(r) });
   } catch (e) {
     console.error("release resend", e);
   }
   revalidatePath("/admin/versions");
+}
+
+const edit = z.object({ id: z.uuid(), title: input.shape.title, notes: input.shape.notes });
+
+/** Modifie une version : texte enregistré, et message Discord mis à jour s'il existe. Le numéro ne change jamais. */
+export async function editReleaseAction(_prev: ReleaseState, form: FormData): Promise<ReleaseState> {
+  const admin = await requireAdmin();
+  const parsed = edit.safeParse({ id: form.get("id"), title: form.get("title"), notes: form.get("notes") });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide." };
+  const { id, title, notes } = parsed.data;
+  const db = createAdminClient();
+  const { data } = await db.from("releases").select("id, major, minor, patch, discord_message_id").eq("id", id).maybeSingle();
+  if (!data) return { error: "Version introuvable." };
+  const r = data as Version & { discord_message_id: string | null };
+  const { error } = await db.from("releases").update({ title, notes, updated_at: new Date().toISOString() }).eq("id", id);
+  if (error) {
+    console.error("releases edit", error.message);
+    return { error: "Enregistrement impossible (migration 0038 appliquée ?)." };
+  }
+  await audit(admin.email!, "release.edit", null, null, { version: formatVersion(r), title });
+  revalidatePath("/admin/versions");
+  if (!r.discord_message_id) return { ok: "Modifiée sur le site. Aucun message Discord n'est lié à cette version : utilise « Envoyer » ou « Renvoyer » pour le publier." };
+  try {
+    await botEdit({ messageId: r.discord_message_id, ...embedOf(r, title, notes) });
+    return { ok: "Modifiée, et le message Discord est mis à jour." };
+  } catch (e) {
+    if (e instanceof BotMessageGone) return { error: "Modifiée sur le site, mais le message n'existe plus dans le salon. Utilise « Renvoyer » pour le republier." };
+    return { error: `Modifiée sur le site, mais Discord n'a pas pu être mis à jour (${e instanceof Error ? e.message : "bot injoignable"}).` };
+  }
 }

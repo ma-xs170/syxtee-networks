@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Record as RecordIcon, Stop } from "@phosphor-icons/react";
 import { setRecordAction } from "@/app/(dashboard)/dashboard/relais/actions";
 import type { RelayProtocol } from "@/lib/core";
 import { useLiveStatus } from "./LiveStatus";
@@ -105,11 +106,14 @@ export default function LiveStudio({ sources, coreUrl, initial, chat }: { source
               onClick={toggleRecord}
               disabled={saving}
               aria-pressed={recOn}
-              className={`h-11 whitespace-nowrap rounded-full px-5 text-sm font-medium transition-colors disabled:opacity-60 ${recOn ? "bg-accent text-on-accent hover:bg-accent-hover" : "border border-line hover:bg-foreground/10"}`}
+              className={`inline-flex h-12 items-center gap-2.5 whitespace-nowrap rounded-full px-6 text-base font-semibold transition-colors active:scale-[0.98] disabled:opacity-60 ${
+                recOn ? "border-2 border-accent text-foreground hover:bg-foreground/10" : "bg-accent text-on-accent hover:bg-accent-hover"
+              }`}
             >
+              {recOn ? <Stop size={22} weight="fill" className="text-accent" aria-hidden="true" /> : <RecordIcon size={22} weight="fill" aria-hidden="true" />}
               {recOn ? "Arrêter l'enregistrement" : "Enregistrer"}
             </button>
-            <Link href="/dashboard/enregistrements" className="whitespace-nowrap text-sm text-muted underline-offset-4 hover:text-foreground hover:underline">
+            <Link href="/dashboard/enregistrements" className="whitespace-nowrap text-sm text-foreground/80 underline underline-offset-4 hover:text-foreground">
               Mes enregistrements
             </Link>
           </div>

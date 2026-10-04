@@ -15,6 +15,8 @@ const schema = z.object({
   CORE_URL: z.url().default("http://127.0.0.1:8787"),
   CORE_API_TOKEN: z.string().optional(),
   SUPABASE_URL: z.url().optional(),
+  // Clé secrète Supabase (déjà dans le .env du VPS) : sert à nommer les streamers en direct dans le statut du bot.
+  SUPABASE_SECRET_KEY: z.string().min(10).optional(),
 
   // Webhook GitHub (nouveautés = push sur main). Vide = désactivé.
   GITHUB_WEBHOOK_SECRET: z.string().min(16).optional(),

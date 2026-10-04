@@ -1,6 +1,5 @@
 import {
   ActionRowBuilder,
-  ActivityType,
   ButtonBuilder,
   ButtonStyle,
   type ChatInputCommandInteraction,
@@ -18,6 +17,7 @@ import {
 import { loadConfig } from "./config.ts";
 import { announceEmbed, helpEmbed, linksEmbed, liveEmbed, serverEmbed, servicesEmbed } from "./embeds.ts";
 import { startMonitor } from "./monitor.ts";
+import { startPresence } from "./presence.ts";
 import { baseEmbed, files } from "./theme.ts";
 import { startWeb } from "./web.ts";
 
@@ -131,7 +131,7 @@ client.on("interactionCreate", async (i: Interaction) => {
 
 client.once("clientReady", async () => {
   console.log(`Connecté : ${client.user?.tag}`);
-  client.user?.setPresence({ activities: [{ name: "syxtee-networks · /services", type: ActivityType.Watching }], status: "online" });
+  startPresence(client, cfg);
   startMonitor(client, cfg, newsChannel);
 });
 

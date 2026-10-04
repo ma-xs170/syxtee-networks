@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { setRecordAction } from "@/app/(dashboard)/dashboard/relais/actions";
 import type { RelayProtocol } from "@/lib/core";
 import { useLiveStatus } from "./LiveStatus";
 import MultiChat, { type ChatDefaults } from "./MultiChat";
@@ -12,7 +15,7 @@ import StreamPreview from "./StreamPreview";
 // et le mode, puis le flux en temps réel à côté du chat (même hauteur), puis la santé du flux (débit, latence, pertes).
 // « Multi » affiche toutes les sources en direct côte à côte (4 max) ; un clic sur une vignette l'ouvre en grand.
 
-type Source = { id: string; name: string; live: boolean; protocol: RelayProtocol };
+type Source = { id: string; name: string; live: boolean; protocol: RelayProtocol; record: boolean; recordAvailable: boolean };
 type Mode = "single" | "multi";
 
 const MULTI_MAX = 4;
@@ -21,12 +24,35 @@ export default function LiveStudio({ sources, coreUrl, initial, chat }: { source
   const [current, setCurrent] = useState(initial);
   const [mode, setMode] = useState<Mode>("single");
   const { state } = useLiveStatus();
+  const router = useRouter();
+  const [saving, startSaving] = useTransition();
+  const [recError, setRecError] = useState<string | null>(null);
+  // Choix en attente de confirmation du serveur, par relais (le bouton répond tout de suite).
+  const [recOverride, setRecOverride] = useState<Record<string, boolean>>({});
 
   // Le statut en temps réel du Core prime sur l'état chargé avec la page.
   const liveIds = new Set(state?.relays?.filter((r) => r.live).map((r) => r.id) ?? sources.filter((s) => s.live).map((s) => s.id));
   const isLive = (id: string) => liveIds.has(id);
   const selected = sources.find((s) => s.id === current) ?? sources[0];
   const multi = sources.filter((s) => isLive(s.id)).slice(0, MULTI_MAX);
+
+  const recOn = selected ? (recOverride[selected.id] ?? selected.record) : false;
+  function toggleRecord() {
+    if (!selected) return;
+    const id = selected.id;
+    const next = !recOn;
+    setRecError(null);
+    setRecOverride((o) => ({ ...o, [id]: next }));
+    startSaving(async () => {
+      const r = await setRecordAction(id, next);
+      if (r.error) {
+        setRecOverride((o) => ({ ...o, [id]: !next }));
+        setRecError(r.error);
+        return;
+      }
+      router.refresh();
+    });
+  }
 
   const tab = (m: Mode) =>
     `min-h-9 rounded-lg px-4 text-sm transition-colors ${mode === m ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`;
@@ -72,7 +98,31 @@ export default function LiveStudio({ sources, coreUrl, initial, chat }: { source
             );
           })}
         </ul>
+        {mode === "single" && selected?.recordAvailable && (
+          <div className="flex shrink-0 items-center gap-3">
+            <button
+              type="button"
+              onClick={toggleRecord}
+              disabled={saving}
+              aria-pressed={recOn}
+              className={`h-11 whitespace-nowrap rounded-full px-5 text-sm font-medium transition-colors disabled:opacity-60 ${recOn ? "bg-accent text-on-accent hover:bg-accent-hover" : "border border-line hover:bg-foreground/10"}`}
+            >
+              {recOn ? "Arrêter l'enregistrement" : "Enregistrer"}
+            </button>
+            <Link href="/dashboard/enregistrements" className="whitespace-nowrap text-sm text-muted underline-offset-4 hover:text-foreground hover:underline">
+              Mes enregistrements
+            </Link>
+          </div>
+        )}
       </div>
+      {recError && (
+        <p role="alert" className="text-sm text-red-400">
+          {recError}
+        </p>
+      )}
+      {mode === "single" && selected && recOn && (
+        <p className="text-sm text-muted">{isLive(selected.id) ? "L'enregistrement est en cours, il continue même si tu quittes la page." : "L'enregistrement démarrera dès que ton direct sera en ligne."}</p>
+      )}
 
       {mode === "single" && selected ? (
         <>

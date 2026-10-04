@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DashPage } from "@/components/dashboard/ui";
 import { requireAdmin } from "@/lib/admin";
-import { listRequests, type AccessRequest } from "@/lib/access";
+import { listRequests, TRASH_DAYS, type AccessRequest } from "@/lib/access";
 import { fmtAgo } from "@/lib/dashboard-data";
 import { site } from "@/lib/site";
-import { decideAccessAction, resendAccessEmailAction } from "./actions";
+import { decideAccessAction, purgeAccessAction, resendAccessEmailAction, restoreAccessAction, trashAccessAction } from "./actions";
 
 export const metadata: Metadata = { title: "Admin · Demandes d'accès", robots: { index: false } };
 
@@ -16,6 +16,7 @@ const TABS = [
   { id: "attente", label: "En attente", status: "pending" as const },
   { id: "approuvees", label: "Approuvées", status: "approved" as const },
   { id: "refusees", label: "Refusées", status: "refused" as const },
+  { id: "corbeille", label: "Corbeille", status: null },
 ];
 
 const PLATFORM: Record<AccessRequest["platform"], string> = { twitch: "Twitch", kick: "Kick", youtube: "YouTube", tiktok: "TikTok", autre: "Autre" };
@@ -34,8 +35,10 @@ export default async function AdminAccessPage({ searchParams }: { searchParams: 
   await requireAdmin();
   const { etat, mail, to, r: why } = await searchParams;
   const tab = TABS.find((t) => t.id === etat) ?? TABS[0];
-  const all = await listRequests();
-  const rows = all.filter((r) => r.status === tab.status);
+  const trash = tab.id === "corbeille";
+  const [all, trashed] = await Promise.all([listRequests(), listRequests(undefined, true)]);
+  const rows = trash ? trashed : all.filter((r) => r.status === tab.status);
+  const purgeOn = (d: string | null) => new Date(Date.parse(d ?? "") + TRASH_DAYS * 86_400_000).toLocaleDateString("fr-FR");
 
   return (
     <DashPage>
@@ -63,11 +66,19 @@ export default async function AdminAccessPage({ searchParams }: { searchParams: 
             className={`-mb-px border-b-2 pb-3 text-sm transition-colors ${t.id === tab.id ? "border-accent text-foreground" : "border-transparent text-muted hover:text-foreground"}`}
           >
             {t.label}
-            <span className="ml-2 tabular-nums text-muted">{all.filter((r) => r.status === t.status).length}</span>
+            <span className="ml-2 tabular-nums text-muted">{t.status ? all.filter((r) => r.status === t.status).length : trashed.length}</span>
           </Link>
         ))}
       </nav>
 
+      {trash && rows.length > 0 && (
+        <form action={purgeAccessAction} className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-muted">Les demandes de la corbeille sont supprimées définitivement après {TRASH_DAYS} jours.</p>
+          <button type="submit" className="h-9 whitespace-nowrap rounded-lg border border-red-400/40 px-4 text-sm text-red-300 transition-colors hover:bg-red-400/10">
+            Vider la corbeille
+          </button>
+        </form>
+      )}
       {rows.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-line p-10 text-center text-sm text-muted">Aucune demande dans cette liste.</p>
       ) : (
@@ -83,7 +94,23 @@ export default async function AdminAccessPage({ searchParams }: { searchParams: 
                     {r.email} · {fmtAgo(r.created_at)}
                   </p>
                 </div>
-                {r.status === "pending" ? (
+                {trash ? (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <p className="text-sm text-muted">Supprimée définitivement le {purgeOn(r.deleted_at)}</p>
+                    <form action={restoreAccessAction}>
+                      <input type="hidden" name="id" value={r.id} />
+                      <button type="submit" className="h-9 whitespace-nowrap rounded-lg border border-line-strong px-4 text-sm transition-colors hover:bg-foreground/10">
+                        Restaurer
+                      </button>
+                    </form>
+                    <form action={purgeAccessAction}>
+                      <input type="hidden" name="id" value={r.id} />
+                      <button type="submit" className="h-9 whitespace-nowrap rounded-lg border border-red-400/40 px-4 text-sm text-red-300 transition-colors hover:bg-red-400/10">
+                        Supprimer pour de bon
+                      </button>
+                    </form>
+                  </div>
+                ) : r.status === "pending" ? (
                   <form action={decideAccessAction} className="flex gap-2">
                     <input type="hidden" name="id" value={r.id} />
                     <button type="submit" name="decision" value="refused" className="h-10 whitespace-nowrap rounded-lg border border-line-strong px-4 text-sm transition-colors hover:bg-foreground/10">
@@ -109,6 +136,14 @@ export default async function AdminAccessPage({ searchParams }: { searchParams: 
                       </form>
                     )}
                   </div>
+                )}
+                {!trash && (
+                  <form action={trashAccessAction}>
+                    <input type="hidden" name="id" value={r.id} />
+                    <button type="submit" aria-label={`Supprimer la demande de ${r.first_name} ${r.last_name}`} className="h-9 whitespace-nowrap rounded-lg px-3 text-sm text-muted transition-colors hover:bg-foreground/10 hover:text-foreground">
+                      Supprimer
+                    </button>
+                  </form>
                 )}
               </div>
               <dl className="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-2 lg:grid-cols-4">

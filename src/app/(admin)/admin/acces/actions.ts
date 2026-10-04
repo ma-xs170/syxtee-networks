@@ -42,3 +42,39 @@ export async function resendAccessEmailAction(form: FormData) {
   await audit(admin.email!, "access.resend", null, null, { request: req.id, email: req.email, ...(mail.ok ? {} : { email_failed: mail.reason }) });
   redirect(`/admin/acces?etat=approuvees&${mail.ok ? `mail=ok&to=${encodeURIComponent(req.email)}` : `mail=ko&to=${encodeURIComponent(req.email)}&r=${encodeURIComponent(mail.reason)}`}`);
 }
+
+const idOf = (form: FormData) => z.uuid().safeParse(form.get("id"));
+
+/** Met la demande à la corbeille (supprimée définitivement après 30 jours, restaurable d'ici là). */
+export async function trashAccessAction(form: FormData) {
+  const admin = await requireAdmin();
+  const id = idOf(form);
+  if (!id.success) return;
+  const { error } = await createAdminClient().from("access_requests").update({ deleted_at: new Date().toISOString() }).eq("id", id.data);
+  if (error) return console.error("access trash", error.message);
+  await audit(admin.email!, "access.trash", null, null, { request: id.data });
+  revalidatePath("/admin/acces");
+}
+
+export async function restoreAccessAction(form: FormData) {
+  const admin = await requireAdmin();
+  const id = idOf(form);
+  if (!id.success) return;
+  const { error } = await createAdminClient().from("access_requests").update({ deleted_at: null }).eq("id", id.data);
+  if (error) return console.error("access restore", error.message);
+  await audit(admin.email!, "access.restore", null, null, { request: id.data });
+  revalidatePath("/admin/acces");
+}
+
+/** Suppression définitive d'une demande de la corbeille, ou de toute la corbeille (champ id absent). */
+export async function purgeAccessAction(form: FormData) {
+  const admin = await requireAdmin();
+  const one = form.get("id") ? idOf(form) : null;
+  if (one && !one.success) return;
+  let q = createAdminClient().from("access_requests").delete().not("deleted_at", "is", null);
+  if (one?.success) q = q.eq("id", one.data);
+  const { error } = await q;
+  if (error) return console.error("access purge", error.message);
+  await audit(admin.email!, "access.purge", null, null, { request: one?.success ? one.data : "all" });
+  revalidatePath("/admin/acces");
+}

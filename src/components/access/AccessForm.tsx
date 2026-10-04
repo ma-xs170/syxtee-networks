@@ -1,14 +1,27 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+import { DotsThree } from "@phosphor-icons/react";
+import { siKick, siTiktok, siTwitch, siYoutube } from "simple-icons";
 import { requestAccessAction, type AccessState } from "@/app/(site)/acces/actions";
 
 const field =
   "h-11 w-full rounded-xl border border-line bg-background px-4 text-sm text-foreground placeholder:text-muted focus:border-line-strong focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30";
 const label = "text-sm font-medium";
 
+// Plateformes avec leur logo. TikTok est noir : il prend la couleur du texte pour rester visible en thème sombre.
+const PLATFORMS = [
+  { value: "twitch", label: "Twitch", icon: siTwitch, color: true },
+  { value: "kick", label: "Kick", icon: siKick, color: true },
+  { value: "youtube", label: "YouTube", icon: siYoutube, color: true },
+  { value: "tiktok", label: "TikTok", icon: siTiktok, color: false },
+  { value: "autre", label: "Autre", icon: null, color: false },
+] as const;
+
 export default function AccessForm() {
   const [state, action, pending] = useActionState<AccessState, FormData>(requestAccessAction, {});
+  // Heure d'affichage du formulaire : le serveur refuse un envoi trop rapide (antispam).
+  const [openedAt] = useState(() => Date.now());
 
   if (state.ok) {
     return (
@@ -23,6 +36,7 @@ export default function AccessForm() {
 
   return (
     <form action={action} className="space-y-5">
+      <input type="hidden" name="t" value={openedAt} />
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <label htmlFor="a-first" className={label}>
@@ -44,29 +58,32 @@ export default function AccessForm() {
         <input id="a-email" name="email" type="email" required maxLength={160} autoComplete="email" className={field} />
         <p className="text-xs text-muted">Utilise cette même adresse pour créer ton compte : c&apos;est elle qui active ton accès.</p>
       </div>
-      <div className="grid gap-5 sm:grid-cols-[1fr_11rem]">
-        <div className="space-y-2">
-          <label htmlFor="a-channel" className={label}>
-            Lien de ta chaîne
-          </label>
-          <input id="a-channel" name="channel_url" required maxLength={200} placeholder="twitch.tv/ton-pseudo" className={field} />
-        </div>
-        <div className="space-y-2">
-          <label htmlFor="a-platform" className={label}>
-            Plateforme
-          </label>
-          <select id="a-platform" name="platform" required defaultValue="" className={field}>
-            <option value="" disabled>
-              Choisir
-            </option>
-            <option value="twitch">Twitch</option>
-            <option value="kick">Kick</option>
-            <option value="youtube">YouTube</option>
-            <option value="tiktok">TikTok</option>
-            <option value="autre">Autre</option>
-          </select>
-        </div>
+      <div className="space-y-2">
+        <label htmlFor="a-channel" className={label}>
+          Lien de ta chaîne
+        </label>
+        <input id="a-channel" name="channel_url" required maxLength={200} placeholder="twitch.tv/ton-pseudo" className={field} />
       </div>
+      <fieldset className="space-y-2">
+        <legend className={label}>Plateforme</legend>
+        <div className="flex flex-wrap gap-2">
+          {PLATFORMS.map((p) => (
+            <label key={p.value} className="cursor-pointer">
+              <input type="radio" name="platform" value={p.value} required className="peer sr-only" />
+              <span className="flex h-11 items-center gap-2.5 rounded-xl border border-line bg-background px-4 text-sm text-muted transition-colors hover:text-foreground peer-checked:border-line-strong peer-checked:bg-foreground/10 peer-checked:text-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-foreground/40">
+                {p.icon ? (
+                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill={p.color ? `#${p.icon.hex}` : "currentColor"} className="shrink-0">
+                    <path d={p.icon.path} />
+                  </svg>
+                ) : (
+                  <DotsThree size={18} aria-hidden="true" className="shrink-0" />
+                )}
+                {p.label}
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <label htmlFor="a-audience" className={label}>

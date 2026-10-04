@@ -20,13 +20,19 @@ export type AccessRequest = {
   decided_at: string | null;
   decided_by: string | null;
   redeemed_at: string | null;
+  /** Mise à la corbeille : supprimée définitivement après TRASH_DAYS jours. */
+  deleted_at: string | null;
 };
 
-const COLS = "id, created_at, first_name, last_name, email, channel_url, platform, audience, devices, message, status, decided_at, decided_by, redeemed_at";
+export const TRASH_DAYS = 30;
 
-export async function listRequests(status?: AccessRequest["status"]): Promise<AccessRequest[]> {
+const COLS = "id, created_at, first_name, last_name, email, channel_url, platform, audience, devices, message, status, decided_at, decided_by, redeemed_at, deleted_at";
+
+/** `trash` : la corbeille seulement ; sinon, les demandes non supprimées. */
+export async function listRequests(status?: AccessRequest["status"], trash = false): Promise<AccessRequest[]> {
   if (!hasAdmin) return [];
-  let q = createAdminClient().from("access_requests").select(COLS).order("created_at", { ascending: false }).limit(200);
+  let q = createAdminClient().from("access_requests").select(COLS).limit(200);
+  q = trash ? q.not("deleted_at", "is", null).order("deleted_at", { ascending: false }) : q.is("deleted_at", null).order("created_at", { ascending: false });
   if (status) q = q.eq("status", status);
   const { data, error } = await q;
   if (error) {
@@ -38,7 +44,7 @@ export async function listRequests(status?: AccessRequest["status"]): Promise<Ac
 
 export async function pendingCount(): Promise<number> {
   if (!hasAdmin) return 0;
-  const { count } = await createAdminClient().from("access_requests").select("id", { count: "exact", head: true }).eq("status", "pending");
+  const { count } = await createAdminClient().from("access_requests").select("id", { count: "exact", head: true }).eq("status", "pending").is("deleted_at", null);
   return count ?? 0;
 }
 
@@ -61,6 +67,7 @@ export async function grantInvitedPlan(user: User) {
       .select("id")
       .ilike("email", user.email)
       .eq("status", "approved")
+      .is("deleted_at", null)
       .is("redeemed_at", null)
       .order("decided_at", { ascending: false })
       .limit(1)
@@ -75,4 +82,16 @@ export async function grantInvitedPlan(user: User) {
   } catch (e) {
     console.error("grantInvitedPlan", e);
   }
+}
+
+/** Supprime pour de bon les demandes à la corbeille depuis plus de TRASH_DAYS jours (tâche quotidienne). Renvoie leur nombre. */
+export async function purgeTrash(): Promise<number> {
+  if (!hasAdmin) return 0;
+  const limit = new Date(Date.now() - TRASH_DAYS * 86_400_000).toISOString();
+  const { data, error } = await createAdminClient().from("access_requests").delete().lt("deleted_at", limit).select("id");
+  if (error) {
+    console.error("purgeTrash", error.message);
+    return 0;
+  }
+  return data?.length ?? 0;
 }

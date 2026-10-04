@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { purgeTrash } from "@/lib/access";
 import { runPlanExpiry } from "@/lib/plan-admin";
 import { hasAdmin } from "@/lib/supabase/admin";
 
@@ -13,7 +14,9 @@ export async function GET(request: NextRequest) {
   }
   if (!hasAdmin) return NextResponse.json({ error: "supabase_not_configured" }, { status: 500 });
   try {
-    return NextResponse.json({ ok: true, ...(await runPlanExpiry()) });
+    const expiry = await runPlanExpiry();
+    // Même passage quotidien : vide la corbeille des demandes d'accès (30 jours).
+    return NextResponse.json({ ok: true, ...expiry, trash_purged: await purgeTrash() });
   } catch (e) {
     console.error("cron formules", e);
     return NextResponse.json({ error: (e as Error).message }, { status: 502 });

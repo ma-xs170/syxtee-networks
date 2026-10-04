@@ -613,3 +613,39 @@ body::before {
   .float-slow:nth-child(even) { animation-duration: 9s; animation-delay: -3s; }
   @keyframes float-slow { from { transform: translateY(0); } to { transform: translateY(-14px); } }
 }
+
+/* Téléphone : comportements sans bug en direct (iOS Safari / Android Chrome). */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  /* Aucun défilement horizontal parasite, sans casser les éléments sticky. */
+  overflow-x: clip;
+}
+a,
+button,
+summary,
+label,
+select,
+[role="button"] {
+  /* Supprime le délai du double-tap : les boutons répondent tout de suite. */
+  touch-action: manipulation;
+}
+@layer base {
+  /* Modales : jamais plus hautes que l'écran visible (clavier, barre d'adresse), le contenu défile. */
+  dialog {
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+@media (pointer: coarse) {
+  /* iOS zoome la page au focus d'un champ sous 16 px et ne dézoome pas : on garde 16 px au doigt. */
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]),
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
+}

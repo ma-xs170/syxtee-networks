@@ -38,7 +38,7 @@ async function call<T>(path: string, method: "GET" | "POST" = "GET", body?: unkn
 }
 
 export const getBotStatus = () => call<BotStatus>("/status");
-export const botAnnounce = (b: { title: string; body: string; url?: string }) => call("/announce", "POST", b);
+export const botAnnounce = (b: { title: string; body: string; url?: string; tag?: string }) => call("/announce", "POST", b);
 export const botPresence = (b: { mode: "auto" | "custom"; type: string; text: string }) => call("/presence", "POST", b);
 export const botAlerts = (enabled: boolean) => call("/alerts", "POST", { enabled });
 export const botPostServices = () => call("/services-post", "POST", {});

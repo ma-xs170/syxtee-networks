@@ -8,6 +8,12 @@ import type { Email } from "@/emails/templates";
 // Sans RESEND_API_KEY (dev, tests) : rien n'est envoyé, l'email est seulement journalisé.
 
 export const hasEmail = !!process.env.RESEND_API_KEY;
+
+/** Pour l'admin : ce que le serveur voit réellement (jamais la valeur de la clé). */
+function envDiagnostic() {
+  const names = Object.keys(process.env).filter((k) => /resend|email_from/i.test(k));
+  return `environnement ${process.env.VERCEL_ENV ?? "local"}, variables vues : ${names.length ? names.map((k) => `${k} (${(process.env[k] ?? "").length} car.)`).join(", ") : "aucune"}`;
+}
 const FROM = process.env.EMAIL_FROM || "SYXTEE <onboarding@resend.dev>";
 
 let client: Resend | null = null;
@@ -25,7 +31,7 @@ export async function sendEmailResult(to: string, email: Email): Promise<SendRes
     const { subject, html, text } = await renderEmail(email);
     if (!hasEmail) {
       console.info(`[email non envoyé : RESEND_API_KEY absente] ${to} · ${subject}`);
-      return { ok: false, reason: "RESEND_API_KEY absente sur Vercel" };
+      return { ok: false, reason: `RESEND_API_KEY absente sur Vercel — ${envDiagnostic()}` };
     }
     client ??= new Resend(process.env.RESEND_API_KEY);
     const { error } = await client.emails.send({ from: FROM, to, subject, html, text });

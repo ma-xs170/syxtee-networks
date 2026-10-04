@@ -2,7 +2,10 @@
 
 import { useActionState, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
-import { addNoteAction, cutRelayAction, deleteAccountAction, keysAction, suspendAction, updateIdentityAction, type PlanState } from "./actions";
+import { ingestUrl } from "@/components/relais/RelayActions";
+import type { RelayView } from "@/lib/core";
+import { RELAY_SERVERS } from "@/lib/relay-servers";
+import { addNoteAction, adminCreateRelayAction, adminRelayAction, cutRelayAction, deleteAccountAction, keysAction, suspendAction, updateIdentityAction, type PlanState } from "./actions";
 
 type Action = (prev: PlanState, form: FormData) => Promise<PlanState>;
 
@@ -125,5 +128,118 @@ export function NoteForm({ userId }: { userId: string }) {
         <Button>Ajouter la note</Button>
       </div>
     </ActionForm>
+  );
+}
+
+const small = "h-9 whitespace-nowrap rounded-full border border-line px-4 text-sm transition-colors hover:bg-foreground/10 disabled:opacity-40";
+
+function OpButton({ op, children, danger = false }: { op: string; children: ReactNode; danger?: boolean }) {
+  const { pending } = useFormStatus();
+  return (
+    <button type="submit" name="op" value={op} disabled={pending} className={`${small} ${danger ? "border-red-400/40 text-red-300 hover:bg-red-400/10" : ""}`}>
+      {pending ? "…" : children}
+    </button>
+  );
+}
+
+/** Créer un relais sur le compte (limites de sa formule : le Core recompte). */
+export function CreateRelayForm({ userId }: { userId: string }) {
+  return (
+    <ActionForm action={adminCreateRelayAction} userId={userId} className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_9rem_11rem_auto] sm:items-end">
+      <div className="grid gap-2">
+        <label htmlFor="adm-relay-name" className={label}>Nom du relais</label>
+        <input id="adm-relay-name" name="name" required maxLength={40} placeholder="Ex. Osmo Pocket 3" className={field} />
+      </div>
+      <div className="grid gap-2">
+        <label htmlFor="adm-relay-proto" className={label}>Protocole</label>
+        <select id="adm-relay-proto" name="protocol" defaultValue="srtla" className={field}>
+          <option value="srtla">SRTLA</option>
+          <option value="rtmp">RTMP</option>
+          <option value="rist">RIST</option>
+        </select>
+      </div>
+      <div className="grid gap-2">
+        <label htmlFor="adm-relay-server" className={label}>Serveur</label>
+        <select id="adm-relay-server" name="server" defaultValue="bhs1" className={field}>
+          {RELAY_SERVERS.filter((s) => s.available).map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.city} ({s.id})
+            </option>
+          ))}
+        </select>
+      </div>
+      <Button>Créer le relais</Button>
+    </ActionForm>
+  );
+}
+
+export type AdminRelay = Pick<RelayView, "id" | "name" | "protocol" | "server" | "archived" | "live" | "record" | "record_available" | "urls" | "last_live_at">;
+
+/** Une ligne de relais : nom modifiable, état, et toutes les actions. */
+export function RelayRow({ userId, relay, lastLive }: { userId: string; relay: AdminRelay; lastLive: string }) {
+  const [state, run] = useActionState<PlanState, FormData>(adminRelayAction, {});
+  const [copied, setCopied] = useState(false);
+  const url = ingestUrl(relay);
+  return (
+    <li className={`rounded-xl border border-line p-4 ${relay.archived ? "opacity-70" : ""}`}>
+      <form
+        action={run}
+        onSubmit={(e) => {
+          const op = ((e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null)?.value;
+          const text: Record<string, string> = {
+            rotate: "Régénérer la clé ? Le flux en cours est coupé et le client doit recoller ses URLs.",
+            archive: "Archiver ce relais ? Ses URLs cessent de marcher.",
+            delete: "Supprimer ce relais définitivement ? Action irréversible.",
+          };
+          if (op && text[op] && !window.confirm(text[op])) e.preventDefault();
+        }}
+        className="grid gap-3"
+      >
+        <input type="hidden" name="userId" value={userId} />
+        <input type="hidden" name="relayId" value={relay.id} />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="flex min-w-0 items-center gap-2 font-mono text-xs uppercase text-muted">
+            {relay.live && <span className="live-dot" aria-label="En direct" />}
+            {relay.protocol} · {relay.server} · {relay.archived ? "archivé" : `dernier direct ${lastLive}`}
+            {relay.record && !relay.archived && " · enregistre"}
+          </p>
+          {url && !relay.archived && (
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(url);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                } catch {
+                  setCopied(false);
+                }
+              }}
+              className={small}
+            >
+              {copied ? "Copié" : "Copier l'URL"}
+            </button>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <label htmlFor={`adm-rn-${relay.id}`} className="sr-only">Nom du relais</label>
+          <input id={`adm-rn-${relay.id}`} name="name" defaultValue={relay.name} maxLength={40} className={`${field} h-9 max-w-xs`} />
+          <OpButton op="rename">Renommer</OpButton>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {relay.archived ? (
+            <OpButton op="restore">Réactiver</OpButton>
+          ) : (
+            <>
+              {relay.record_available && <OpButton op={relay.record ? "record_off" : "record_on"}>{relay.record ? "Arrêter l'enregistrement" : "Enregistrer le flux"}</OpButton>}
+              <OpButton op="rotate" danger>Régénérer la clé</OpButton>
+              <OpButton op="archive" danger>Archiver</OpButton>
+            </>
+          )}
+          <OpButton op="delete" danger>Supprimer</OpButton>
+        </div>
+        <Notice state={state} />
+      </form>
+    </li>
   );
 }

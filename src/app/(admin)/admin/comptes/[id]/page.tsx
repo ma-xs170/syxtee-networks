@@ -9,7 +9,8 @@ import { audit } from "@/lib/plan-admin";
 import { renews } from "@/lib/billing";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
-import { CutButton, DeleteForm, IdentityForm, KeysForms, NoteForm, SuspendForm } from "../AdminForms";
+import { hasCore, listRelays, type RelayView } from "@/lib/core";
+import { CreateRelayForm, DeleteForm, IdentityForm, KeysForms, NoteForm, RelayRow, SuspendForm } from "../AdminForms";
 import PlanForms from "../PlanForms";
 
 export const metadata: Metadata = { title: "Admin · Compte", robots: { index: false } };
@@ -41,6 +42,9 @@ export default async function AdminAccountPage({ params, searchParams }: { param
     liveNow(),
   ]);
   if (!p || !u.user) notFound();
+  // Onglet Relais : liste du Core (URLs, enregistrement), seule source complète. Sans Core, la liste de la base sert de repli en lecture.
+  let coreRelays: RelayView[] | null = null;
+  if (tab === "relais" && hasCore) coreRelays = await listRelays(id).catch(() => null);
   // Consultation d'un compte : tracée (données personnelles).
   await audit(admin.email!, "account.view", id, null, null);
   const liveIds = new Set(live.filter((l) => l.user_id === id).map((l) => l.relay_id));
@@ -48,7 +52,6 @@ export default async function AdminAccountPage({ params, searchParams }: { param
 
   const plan = PLANS[p.plan as PlanId]?.name ?? p.plan;
   const active = (relays ?? []).filter((r) => !r.archived);
-  const archived = (relays ?? []).filter((r) => r.archived);
   const facts: [string, string][] = [
     ["Inscrit le", day(p.created_at)],
     ["Dernière connexion", day(u.user.last_sign_in_at)],
@@ -134,42 +137,29 @@ export default async function AdminAccountPage({ params, searchParams }: { param
 
       {tab === "relais" && (
         <div className="grid max-w-3xl gap-4">
-          <Tile aria-labelledby="relais">
-            <TileLabel id="relais">{`Relais · ${active.length}`}</TileLabel>
-            {!active.length ? (
-              <p className="mt-4 text-sm text-muted">Aucun relais actif.</p>
+<Tile aria-labelledby="relais">
+            <TileLabel id="relais">{`Relais · ${coreRelays ? coreRelays.filter((r) => !r.archived).length : active.length}`}</TileLabel>
+            {!coreRelays ? (
+              <p className="mt-4 text-sm text-muted">Le serveur relais ne répond pas : les actions sont indisponibles pour le moment.</p>
             ) : (
-              <ul className="mt-4 grid gap-2">
-                {active.map((r) => (
-                  <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line px-4 py-3">
-                    <div className="min-w-0">
-                      <p className="flex items-center gap-2 text-sm">
-                        {liveIds.has(r.id) && <span className="live-dot" aria-label="En direct" />}
-                        <span className="truncate">{r.name}</span>
-                      </p>
-                      <p className="mt-0.5 font-mono text-xs uppercase text-muted">
-                        {r.protocol} · {r.server} · dernier direct {day(r.last_live_at)}
-                      </p>
-                    </div>
-                    <CutButton userId={id} relayId={r.id} />
-                  </li>
-                ))}
-              </ul>
-            )}
-            {archived.length > 0 && (
-              <details className="mt-3 text-sm">
-                <summary className="cursor-pointer text-muted hover:text-foreground">{`${archived.length} relais archivé${archived.length > 1 ? "s" : ""}`}</summary>
-                <ul className="mt-2 grid gap-1 pl-4 text-muted">
-                  {archived.map((r) => (
-                    <li key={r.id}>
-                      {r.name} <span className="font-mono text-xs uppercase">{r.protocol}</span>
-                    </li>
-                  ))}
-                </ul>
-              </details>
+              <>
+                {!coreRelays.length ? (
+                  <p className="mt-4 text-sm text-muted">Aucun relais sur ce compte.</p>
+                ) : (
+                  <ul className="mt-4 grid gap-3">
+                    {coreRelays.map((r) => (
+                      <RelayRow key={`${r.id}:${r.name}:${r.archived}:${r.record}`} userId={id} relay={r} lastLive={day(r.last_live_at)} />
+                    ))}
+                  </ul>
+                )}
+                <div className="mt-6 border-t border-line pt-5">
+                  <p className="mb-3 text-xs text-muted">Nouveau relais</p>
+                  <CreateRelayForm userId={id} />
+                </div>
+              </>
             )}
             <div className="mt-6 border-t border-line pt-5">
-              <p className="mb-3 text-xs text-muted">Clés de stream</p>
+              <p className="mb-3 text-xs text-muted">Clés de stream (tous les relais du compte)</p>
               <KeysForms userId={id} />
             </div>
           </Tile>

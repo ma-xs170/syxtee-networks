@@ -4,10 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin";
-import { CoreRefusal, deleteAllRelays, deleteCoverage, hasCore, listRelays, refreshCore, rotateRelay, updateRelay } from "@/lib/core";
+import { CoreOutdated, CoreRefusal, createRelay, deleteAllRelays, deleteCoverage, deleteRelay, hasCore, listRelays, refreshCore, rotateRelay, updateRelay } from "@/lib/core";
 import { audit, offerPaidDays, setPlan } from "@/lib/plan-admin";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ASSIGNABLE, type PlanId } from "@/lib/plans";
+import { ASSIGNABLE, effectivePlan, relayLimit, type PlanId } from "@/lib/plans";
+import { serverById } from "@/lib/relay-servers";
 
 // Fiche compte (admin) : formule, identité, clés, suspension, suppression, notes. Chaque action va au journal d'audit.
 
@@ -185,4 +186,87 @@ export async function offerDaysAction(_prev: PlanState, form: FormData): Promise
   }
   revalidatePath("/admin/comptes");
   return { ok: `${parsed.data.days} jours de Premium offerts.` };
+}
+
+// ───────────── Relais d'un compte (créer, renommer, archiver, supprimer, clés, enregistrement) ─────────────
+
+const relayRefusal = (e: unknown) =>
+  e instanceof CoreOutdated
+    ? "Le serveur relais n'est pas à jour."
+    : e instanceof CoreRefusal
+    ? e.code === "quota"
+      ? "Limite de relais de la formule atteinte : change d'abord la formule du compte."
+      : e.code === "forbidden"
+        ? "Compte suspendu ou formule sans relais : change d'abord sa formule."
+        : e.code === "rtmp_disabled" || e.code === "rist_disabled"
+          ? "Ce protocole n'est pas ouvert sur le serveur."
+          : e.code === "rist_ports_full"
+            ? "Plus de port RIST libre."
+            : `Refusé par le relais : ${e.code}`
+    : "Le relais ne répond pas.";
+
+/** Formule effective du compte, pour la limite transmise au Core (qui recompte). */
+async function limitOf(userId: string) {
+  const { data } = await createAdminClient().from("profiles").select("plan, plan_until").eq("id", userId).maybeSingle();
+  return relayLimit(effectivePlan(data));
+}
+
+export async function adminCreateRelayAction(_prev: PlanState, form: FormData): Promise<PlanState> {
+  const admin = await requireAdmin();
+  const p = z
+    .object({ userId: uid, name: z.string().trim().min(1, "Donne un nom au relais.").max(40, "40 caractères au plus."), protocol: z.enum(["srtla", "rtmp", "rist"]), server: z.string() })
+    .safeParse(Object.fromEntries(form));
+  if (!p.success) return { error: p.error.issues[0]?.message ?? "Formulaire invalide." };
+  if (!serverById(p.data.server)?.available) return { error: "Ce serveur n'est pas disponible." };
+  if (!hasCore) return { error: "Core non configuré." };
+  try {
+    const relay = await createRelay(p.data.userId, { name: p.data.name, protocol: p.data.protocol, server: p.data.server, limit: await limitOf(p.data.userId) });
+    await audit(admin.email!, "relay.create", p.data.userId, null, { relay: relay.id, name: p.data.name, protocol: p.data.protocol });
+  } catch (e) {
+    if (!(e instanceof CoreRefusal || e instanceof CoreOutdated)) console.error("adminCreateRelay", e);
+    return { error: relayRefusal(e) };
+  }
+  revalidatePath("/admin/relais");
+  done(p.data.userId);
+  return { ok: "Relais créé." };
+}
+
+const RELAY_OPS = ["rename", "archive", "restore", "record_on", "record_off", "rotate", "delete"] as const;
+
+export async function adminRelayAction(_prev: PlanState, form: FormData): Promise<PlanState> {
+  const admin = await requireAdmin();
+  const p = z.object({ userId: uid, relayId: uid, op: z.enum(RELAY_OPS), name: z.string().trim().max(40).optional() }).safeParse(Object.fromEntries(form));
+  if (!p.success) return { error: "Requête invalide." };
+  const { userId, relayId, op } = p.data;
+  if (!hasCore) return { error: "Core non configuré." };
+  let ok = "Enregistré.";
+  try {
+    if (op === "rename") {
+      if (!p.data.name) return { error: "Donne un nom au relais." };
+      await updateRelay(userId, relayId, { name: p.data.name });
+      ok = "Relais renommé.";
+    } else if (op === "archive") {
+      await updateRelay(userId, relayId, { archived: true });
+      ok = "Relais archivé : ses URLs sont coupées.";
+    } else if (op === "restore") {
+      await updateRelay(userId, relayId, { archived: false, limit: await limitOf(userId) });
+      ok = "Relais réactivé.";
+    } else if (op === "record_on" || op === "record_off") {
+      await updateRelay(userId, relayId, { record: op === "record_on" });
+      ok = op === "record_on" ? "Enregistrement activé." : "Enregistrement arrêté.";
+    } else if (op === "rotate") {
+      await rotateRelay(userId, relayId);
+      ok = "Nouvelle clé générée : l'ancienne est coupée.";
+    } else {
+      await deleteRelay(userId, relayId);
+      ok = "Relais supprimé.";
+    }
+  } catch (e) {
+    if (!(e instanceof CoreRefusal || e instanceof CoreOutdated)) console.error("adminRelayAction", e);
+    return { error: relayRefusal(e) };
+  }
+  await audit(admin.email!, `relay.${op}`, userId, null, { relay: relayId, ...(p.data.name ? { name: p.data.name } : {}) });
+  revalidatePath("/admin/relais");
+  done(userId);
+  return { ok };
 }

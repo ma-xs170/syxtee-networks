@@ -4,7 +4,8 @@ import { DashPage } from "@/components/dashboard/ui";
 import { requireAdmin } from "@/lib/admin";
 import { listRequests, type AccessRequest } from "@/lib/access";
 import { fmtAgo } from "@/lib/dashboard-data";
-import { decideAccessAction } from "./actions";
+import { site } from "@/lib/site";
+import { decideAccessAction, resendAccessEmailAction } from "./actions";
 
 export const metadata: Metadata = { title: "Admin · Demandes d'accès", robots: { index: false } };
 
@@ -29,9 +30,9 @@ function Row({ k, v }: { k: string; v: string }) {
   );
 }
 
-export default async function AdminAccessPage({ searchParams }: { searchParams: Promise<{ etat?: string }> }) {
+export default async function AdminAccessPage({ searchParams }: { searchParams: Promise<{ etat?: string; mail?: string; to?: string; r?: string }> }) {
   await requireAdmin();
-  const { etat } = await searchParams;
+  const { etat, mail, to, r: why } = await searchParams;
   const tab = TABS.find((t) => t.id === etat) ?? TABS[0];
   const all = await listRequests();
   const rows = all.filter((r) => r.status === tab.status);
@@ -39,6 +40,20 @@ export default async function AdminAccessPage({ searchParams }: { searchParams: 
   return (
     <DashPage>
       <h1 className="mb-6 text-2xl font-semibold tracking-tight sm:text-3xl">Demandes d&apos;accès</h1>
+      {mail === "ok" && to && (
+        <p role="status" className="mb-6 rounded-xl border border-line bg-surface p-4 text-sm">
+          Email envoyé à {to}.
+        </p>
+      )}
+      {mail === "ko" && to && (
+        <div role="alert" className="mb-6 rounded-xl border border-red-400/40 p-4 text-sm">
+          <p className="font-medium text-red-300">L&apos;email n&apos;est pas parti ({why ?? "raison inconnue"}).</p>
+          <p className="mt-2 text-muted">
+            La demande est bien approuvée. Envoie ce lien à la personne, ou clique sur « Renvoyer l&apos;email » après avoir corrigé :{" "}
+            <span className="break-all text-foreground">{`${site.url}/inscription?email=${encodeURIComponent(to)}`}</span>
+          </p>
+        </div>
+      )}
       <nav aria-label="Filtrer" className="mb-6 flex gap-6 border-b border-line">
         {TABS.map((t) => (
           <Link
@@ -79,11 +94,21 @@ export default async function AdminAccessPage({ searchParams }: { searchParams: 
                     </button>
                   </form>
                 ) : (
-                  <p className="text-sm text-muted">
-                    {r.status === "approved" ? "Approuvée" : "Refusée"}
-                    {r.decided_by ? ` par ${r.decided_by}` : ""}
-                    {r.status === "approved" && (r.redeemed_at ? " · compte créé, accès actif" : " · compte pas encore créé")}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <p className="text-sm text-muted">
+                      {r.status === "approved" ? "Approuvée" : "Refusée"}
+                      {r.decided_by ? ` par ${r.decided_by}` : ""}
+                      {r.status === "approved" && (r.redeemed_at ? " · compte créé, accès actif" : " · compte pas encore créé")}
+                    </p>
+                    {r.status === "approved" && !r.redeemed_at && (
+                      <form action={resendAccessEmailAction}>
+                        <input type="hidden" name="id" value={r.id} />
+                        <button type="submit" className="h-9 whitespace-nowrap rounded-lg border border-line-strong px-4 text-sm transition-colors hover:bg-foreground/10">
+                          Renvoyer l&apos;email
+                        </button>
+                      </form>
+                    )}
+                  </div>
                 )}
               </div>
               <dl className="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-2 lg:grid-cols-4">

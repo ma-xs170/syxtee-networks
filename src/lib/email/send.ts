@@ -17,23 +17,31 @@ export async function renderEmail(email: Email) {
   return { subject: email.subject, html, text };
 }
 
-/** Envoie un email ; renvoie false en cas d'échec (jamais d'exception : un email raté ne casse pas le parcours). */
-export async function sendEmail(to: string, email: Email): Promise<boolean> {
+export type SendResult = { ok: true } | { ok: false; reason: string };
+
+/** Envoie un email et dit pourquoi il a échoué (pour l'admin) ; ne lève jamais d'exception. */
+export async function sendEmailResult(to: string, email: Email): Promise<SendResult> {
   try {
     const { subject, html, text } = await renderEmail(email);
     if (!hasEmail) {
       console.info(`[email non envoyé : RESEND_API_KEY absente] ${to} · ${subject}`);
-      return false;
+      return { ok: false, reason: "RESEND_API_KEY absente sur Vercel" };
     }
     client ??= new Resend(process.env.RESEND_API_KEY);
     const { error } = await client.emails.send({ from: FROM, to, subject, html, text });
     if (error) {
       console.error("Resend", error.name, error.message);
-      return false;
+      const testSender = /own email|verify a domain|testing emails/i.test(error.message);
+      return { ok: false, reason: testSender ? "Resend n'envoie qu'à ton adresse tant que le domaine n'est pas vérifié (EMAIL_FROM)" : `Resend : ${error.message}` };
     }
-    return true;
+    return { ok: true };
   } catch (e) {
     console.error("sendEmail", e);
-    return false;
+    return { ok: false, reason: "erreur d'envoi inattendue" };
   }
+}
+
+/** Envoie un email ; renvoie false en cas d'échec (jamais d'exception : un email raté ne casse pas le parcours). */
+export async function sendEmail(to: string, email: Email): Promise<boolean> {
+  return (await sendEmailResult(to, email)).ok;
 }

@@ -5,7 +5,8 @@ import { expect, test } from "@playwright/test";
 test("/connexion : carte, OAuth, bouton email désactivé tant que l'email est invalide", async ({ page }) => {
   await page.goto("/connexion");
   await expect(page.getByRole("heading", { name: "Connexion à SYXTEE" })).toBeVisible();
-  for (const p of ["Twitch", "Discord", "Google"]) await expect(page.getByRole("button", { name: `Continuer avec ${p}` })).toBeVisible();
+  for (const p of ["Twitch", "Discord"]) await expect(page.getByRole("button", { name: `Continuer avec ${p}` })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Google : bientôt disponible" })).toBeDisabled();
   const submit = page.getByRole("button", { name: "Continuer avec l'email" });
   await expect(submit).toBeDisabled();
   await page.getByLabel("Email").fill("pas-un-email");

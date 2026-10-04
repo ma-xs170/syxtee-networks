@@ -84,6 +84,18 @@ export async function grantInvitedPlan(user: User) {
   }
 }
 
+/** L'adresse a-t-elle une demande d'accès approuvée (non supprimée) ? Seules ces adresses peuvent créer un compte par email. */
+export async function isApprovedEmail(email: string): Promise<boolean> {
+  if (!hasAdmin) return false;
+  const { count } = await createAdminClient()
+    .from("access_requests")
+    .select("id", { count: "exact", head: true })
+    .ilike("email", email.replace(/[%_\\]/g, "\\$&"))
+    .eq("status", "approved")
+    .is("deleted_at", null);
+  return (count ?? 0) > 0;
+}
+
 /** Supprime pour de bon les demandes à la corbeille depuis plus de TRASH_DAYS jours (tâche quotidienne). Renvoie leur nombre. */
 export async function purgeTrash(): Promise<number> {
   if (!hasAdmin) return 0;

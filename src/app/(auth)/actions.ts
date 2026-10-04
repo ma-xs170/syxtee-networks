@@ -10,6 +10,7 @@ import { checkNewDevice, sendPasswordChanged } from "@/lib/email/account";
 import { passwordProblem } from "@/lib/auth/password";
 import { personName } from "@/lib/auth/profileSchema";
 import { isPwned } from "@/lib/auth/pwned";
+import { isApprovedEmail } from "@/lib/access";
 import { allow, clientIp } from "@/lib/auth/rateLimit";
 import { clearRecovery, hasRecovery } from "@/lib/auth/recovery";
 import { hasSupabase } from "@/lib/supabase/env";
@@ -41,8 +42,6 @@ const fail = (message: string, fields?: Record<string, string>): AuthState => ({
 
 /** Inscription : prénom, nom, email, mot de passe. Le compte n'est actif qu'après le clic dans l'email. */
 export async function signUp(_prev: AuthState, f: FormData): Promise<AuthState> {
-  // Les comptes se créent uniquement par une connexion Google, Twitch ou Discord. ALLOW_EMAIL_SIGNUP=1 rouvre l'inscription par email (tests).
-  if (process.env.ALLOW_EMAIL_SIGNUP !== "1") return fail("Crée ton compte avec Google, Twitch ou Discord.");
   const fields = { first_name: str(f, "first_name"), last_name: str(f, "last_name"), email: str(f, "email") };
   const first = nameSchema("Prénom").safeParse(fields.first_name);
   if (!first.success) return fail(first.error.issues[0].message, fields);
@@ -56,6 +55,10 @@ export async function signUp(_prev: AuthState, f: FormData): Promise<AuthState> 
   if (password !== str(f, "password_confirm")) return fail("Les deux mots de passe ne correspondent pas.", fields);
   if (f.get("cgu") !== "on") return fail("Accepte les Conditions d'utilisation et la Politique de confidentialité.", fields);
   if (!hasSupabase) return fail(AUTH_ERRORS.indisponible, fields);
+  // Inscription par email réservée aux demandes d'accès approuvées. ALLOW_EMAIL_SIGNUP=1 la rouvre à tous (tests).
+  if (process.env.ALLOW_EMAIL_SIGNUP !== "1" && !(await isApprovedEmail(email.data))) {
+    return fail("Cette adresse n'a pas de demande d'accès approuvée. Fais une demande, ou utilise l'adresse de ta demande.", fields);
+  }
 
   if (!(await allow(`signup:ip:${await clientIp()}`, 10, 3600)) || !(await allow(`signup:email:${email.data}`, 5, 3600))) {
     return fail(AUTH_ERRORS.limite, fields);
@@ -155,9 +158,10 @@ export async function linkTwitch(formData: FormData) {
   redirect(data.url);
 }
 
-const OAUTH_PROVIDERS = ["google", "twitch", "discord"] as const;
+// Google : bientôt (bouton désactivé dans AuthCard).
+const OAUTH_PROVIDERS = ["twitch", "discord"] as const;
 
-/** Connexion ou inscription avec Google, Twitch ou Discord. Le retour passe par /auth/callback (afterLogin, puis /bienvenue si profil incomplet). */
+/** Connexion ou inscription avec Twitch ou Discord. Le retour passe par /auth/callback (afterLogin, puis /bienvenue si profil incomplet). */
 export async function signInWithProvider(formData: FormData) {
   const provider = OAUTH_PROVIDERS.find((p) => p === formData.get("provider"));
   const next = safeNext(String(formData.get("next") ?? ""), "");

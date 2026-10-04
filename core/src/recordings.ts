@@ -15,7 +15,7 @@ export const QUOTA_BYTES = 10 * 1024 ** 3;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const FILE = /^\d{8}-\d{6}\.mp4$/;
 
-export type RecordingFile = { relay_id: string; file: string; size: number; created_at: string; recording: boolean };
+export type RecordingFile = { relay_id: string; file: string; size: number; created_at: string; expires_at: string; recording: boolean };
 export type Stopped = "quota" | "disk" | null;
 
 export function recordArgs(o: { host: string; port: number; playId: string; dir: string; segmentS: number }) {
@@ -39,6 +39,8 @@ export function createRecordings(o: {
   /** Place libre minimale sur le disque du serveur : en dessous, plus aucun enregistrement. */
   minFreeBytes: number;
   segmentS?: number;
+  /** Durée de conservation : au-delà, les fichiers sont supprimés (purge). */
+  retentionDays?: number;
   log: (m: string) => void;
   /** Remplaçables dans les tests. */
   freeBytes?: () => Promise<number>;
@@ -46,6 +48,7 @@ export function createRecordings(o: {
 }) {
   const quota = o.quota ?? QUOTA_BYTES;
   const segmentS = o.segmentS ?? 900;
+  const retentionDays = o.retentionDays ?? 15;
   const run = o.superviseImpl ?? supervise;
   mkdirSync(o.dir, { recursive: true });
   const running = new Map<string, { p: Supervised; user: string }>();
@@ -69,7 +72,7 @@ export function createRecordings(o: {
         if (!FILE.test(f)) continue;
         const st = await stat(join(relayDir(user, rid), f)).catch(() => null);
         if (!st) continue;
-        out.push({ relay_id: rid, file: f, size: st.size, created_at: st.birthtime.getTime() > 0 ? st.birthtime.toISOString() : st.mtime.toISOString(), recording: running.has(rid) && Date.now() - st.mtimeMs < 20_000 });
+        out.push({ relay_id: rid, file: f, size: st.size, created_at: st.birthtime.getTime() > 0 ? st.birthtime.toISOString() : st.mtime.toISOString(), expires_at: new Date(st.mtimeMs + retentionDays * 86_400_000).toISOString(), recording: running.has(rid) && Date.now() - st.mtimeMs < 20_000 });
       }
     }
     return out.sort((a, b) => (a.file < b.file ? 1 : -1));
@@ -86,7 +89,7 @@ export function createRecordings(o: {
     files,
     /** Octets utilisés par le compte, quota et état (coupé pour quota plein ou disque du serveur plein). */
     async usage(user: string) {
-      return { used: total(await files(user)), quota, stopped: stopped.get(user) ?? null };
+      return { used: total(await files(user)), quota, retention_days: retentionDays, stopped: stopped.get(user) ?? null };
     },
 
     /** Aligne les enregistreurs sur les relais en direct (appelé à chaque changement de statut et toutes les 10 s). */
@@ -128,6 +131,20 @@ export function createRecordings(o: {
       if (!(await stat(path).catch(() => null))) return false;
       await rm(path, { force: true });
       return true;
+    },
+
+    /** Supprime les fichiers plus vieux que la durée de conservation (date de dernière écriture). Renvoie leur nombre. */
+    async purge(now = Date.now()): Promise<number> {
+      let n = 0;
+      for (const user of await readdir(o.dir).catch(() => [] as string[])) {
+        if (!UUID.test(user)) continue;
+        for (const f of await files(user)) {
+          if (f.recording || Date.parse(f.expires_at) > now) continue;
+          await rm(join(relayDir(user, f.relay_id), f.file), { force: true });
+          n++;
+        }
+      }
+      return n;
     },
 
     /** Compte supprimé : tous ses enregistrements disparaissent. */

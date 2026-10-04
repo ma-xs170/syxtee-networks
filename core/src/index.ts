@@ -100,6 +100,7 @@ const recordings = config.RECORD_ENABLED
       port: config.SRT_PLAY_PORT,
       secret: config.CORE_API_TOKEN,
       quota: config.RECORD_QUOTA_GB * 1024 ** 3,
+      retentionDays: config.RECORD_RETENTION_DAYS,
       minFreeBytes: config.RECORD_MIN_FREE_GB * 1024 ** 3,
       log,
     })
@@ -301,6 +302,7 @@ const timers = [
   setInterval(() => void supabase.rpc("security_purge").then(({ error }) => error && log(`security_purge : ${error.message}`)), 24 * 3_600_000),
   setInterval(() => void sessions.tick(), 5_000),
   setInterval(() => void health.tick(), 200),
+  ...(recordings ? [setInterval(() => void recordings.purge().then((n) => n && log(`enregistrements : ${n} fichier(s) expiré(s) supprimé(s)`)).catch((e) => log(`purge enregistrements : ${(e as Error).message}`)), 3_600_000)] : []),
   ...(recordings ? [setInterval(() => void recordings.sync(health.liveRelays()).catch((e) => log(`enregistrements : ${(e as Error).message}`)), 10_000)] : []),
   setInterval(() => void refreshKeys(), 30_000),
   ...(cam ? [setInterval(() => void cam.syncRelays(), 1_000)] : []),

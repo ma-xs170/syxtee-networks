@@ -17,7 +17,7 @@ export default async function EnregistrementsPage() {
   return (
     <DashPage>
       <PlanGate feature="relais">
-        <DashHeader lead="Tes" hl="enregistrements" sub="Le flux de tes relais est gardé sur notre serveur, jusqu'à 10 Go par compte. Télécharge-le quand tu veux." />
+        <DashHeader lead="Tes" hl="enregistrements" sub="Le flux de tes relais est gardé sur notre serveur, jusqu'à 10 Go par compte et 15 jours. Télécharge-le avant qu'il expire." />
         {status !== "ok" ? (
           <p className="text-sm text-muted">{coreStatusText[status]}</p>
         ) : active.length === 0 ? (

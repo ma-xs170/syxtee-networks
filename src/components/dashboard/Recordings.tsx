@@ -6,8 +6,8 @@ import { coreFetch } from "./coreClient";
 // Enregistrements du compte : espace utilisé sur le serveur (quota par compte), liste des fichiers MP4, téléchargement par lien
 // signé (5 min, reprise possible) et suppression. Les fichiers viennent du Core (/v1/me/recordings).
 
-type File = { relay_id: string; file: string; size: number; created_at: string; recording: boolean };
-type Data = { used: number; quota: number; stopped: "quota" | "disk" | null; files: File[] };
+type File = { relay_id: string; file: string; size: number; created_at: string; expires_at: string; recording: boolean };
+type Data = { used: number; quota: number; retention_days: number; stopped: "quota" | "disk" | null; files: File[] };
 
 const GB = 1024 ** 3;
 const size = (n: number) => (n >= GB ? `${(n / GB).toFixed(2)} Go` : `${Math.max(1, Math.round(n / 1024 ** 2))} Mo`);
@@ -87,6 +87,7 @@ export default function Recordings({ coreUrl, relays }: { coreUrl: string; relay
         </div>
         {data?.stopped === "quota" && <p className="mt-3 text-sm text-muted">Ton espace est plein : l&apos;enregistrement est en pause. Télécharge puis supprime des fichiers pour reprendre au prochain direct.</p>}
         {data?.stopped === "disk" && <p className="mt-3 text-sm text-muted">Le serveur manque de place pour le moment : l&apos;enregistrement est en pause. Il reprend dès qu&apos;il y en a de nouveau.</p>}
+        <p className="mt-3 text-sm text-muted">Chaque fichier est supprimé automatiquement {data?.retention_days ?? 15} jours après son enregistrement : pense à le télécharger.</p>
         <p className="mt-3 text-sm text-muted">
           {active.length
             ? `Enregistrement activé sur : ${active.map((r) => r.name).join(", ")}. Il démarre au début du direct.`
@@ -107,7 +108,7 @@ export default function Recordings({ coreUrl, relays }: { coreUrl: string; relay
         {!data ? (
           <p className="mt-4 text-sm text-muted">Chargement…</p>
         ) : data.files.length === 0 ? (
-          <p className="mt-4 text-sm text-muted">Aucun enregistrement pour le moment. Les fichiers sont coupés toutes les 15 minutes, au format MP4, sans perte de qualité.</p>
+          <p className="mt-4 text-sm text-muted">Aucun enregistrement pour le moment. Les fichiers sont coupés toutes les 15 minutes, au format MP4, sans perte de qualité, et supprimés automatiquement après 15 jours.</p>
         ) : (
           <ul className="mt-4 divide-y divide-line">
             {data.files.map((f) => {
@@ -117,7 +118,7 @@ export default function Recordings({ coreUrl, relays }: { coreUrl: string; relay
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{names.get(f.relay_id) ?? "Relais supprimé"}</p>
                     <p className="font-mono text-xs text-muted">
-                      {when(f.file)} · {size(f.size)}
+                      {when(f.file)} · {size(f.size)} · supprimé le {new Date(f.expires_at).toLocaleDateString("fr-FR")}
                       {f.recording && <span className="ml-2 text-[color:var(--live)]">● En cours</span>}
                     </p>
                   </div>

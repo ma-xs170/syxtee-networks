@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType, ReactNode } from "react";
-import { ChartLineUp, ClockCounterClockwise, Globe, Key, Lifebuoy, MapTrifold, Radio, ShieldWarning, SquaresFour, Users, UsersThree, Bell, type IconProps } from "@phosphor-icons/react";
+import { ChartLineUp, ClockCounterClockwise, Globe, Key, Lifebuoy, MapTrifold, Radio, ShieldWarning, SquaresFour, Users, UsersThree, Bell, Robot, type IconProps } from "@phosphor-icons/react";
 import { signOut } from "@/app/(auth)/actions";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -29,6 +29,7 @@ function groups(openTickets: number, pending: number): Group[] {
         { icon: Users, label: "Comptes", href: "/admin/comptes" },
         { icon: UsersThree, label: "Partenaires", href: "/admin/partenaires" },
         { icon: Bell, label: "Notifications", href: "/admin/notifications" },
+        { icon: Robot, label: "Discord", href: "/admin/discord" },
       ],
     },
     {

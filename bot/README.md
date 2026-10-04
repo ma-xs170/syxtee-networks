@@ -11,6 +11,7 @@ Bot du serveur Discord, hébergé sur le VPS dans le même `docker-compose.yml` 
 | `/annonce` | Publie une nouveauté dans le salon (gérants du serveur) |
 | Nouveautés auto | Chaque `git push` sur `main` arrive dans le salon (webhook GitHub) |
 | Alertes auto | Panne puis retour d'un service, dans le salon (vu 2 minutes de suite pour éviter les faux positifs) |
+| Panel `/admin/discord` | Depuis le site : annonce, statut du bot (auto « Regarde le stream de … » ou texte fixe), alertes, état des services. Routes `/discord/api/*`, jeton = `CORE_API_TOKEN`. Réglages gardés dans `./data/bot` |
 | `POST /discord/announce` | Annonce depuis un script : `{title, body, url?, tag?}` + `Authorization: Bearer <BOT_ANNOUNCE_TOKEN>` |
 
 ## 1. Créer le bot (portail développeurs Discord)

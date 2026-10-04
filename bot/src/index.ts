@@ -19,10 +19,15 @@ import { announceEmbed, helpEmbed, linksEmbed, liveEmbed, serverEmbed, servicesE
 import { startMonitor } from "./monitor.ts";
 import { startPresence } from "./presence.ts";
 import { baseEmbed, files } from "./theme.ts";
+import { createState, type LogEntry } from "./state.ts";
+import { runChecks } from "./checks.ts";
 import { startWeb } from "./web.ts";
 
 const cfg = loadConfig();
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const store = createState(cfg.DATA_DIR, cfg.ALERTS_ENABLED);
+const startedAt = Date.now();
+let presence: ReturnType<typeof startPresence> | null = null;
 
 const commands = [
   new SlashCommandBuilder().setName("services").setDescription("État des services SYXTEE, actualisé en direct"),
@@ -54,10 +59,11 @@ async function newsChannel(): Promise<TextBasedChannel | null> {
   return ch && ch.isTextBased() ? ch : null;
 }
 
-async function publish(embed: EmbedBuilder) {
+async function publish(embed: EmbedBuilder, entry: Omit<LogEntry, "at">) {
   const ch = await newsChannel();
   if (!ch || !("send" in ch)) throw new Error("salon introuvable ou sans droit d'écriture");
   await ch.send({ embeds: [embed], files: files(true) });
+  store.record(entry);
 }
 
 // ───── /services : message qui se réactualise (édition toutes les 20 s, ~14 min : limite du jeton d'interaction) ─────
@@ -110,7 +116,8 @@ async function onCommand(i: ChatInputCommandInteraction) {
     case "annonce": {
       if (!i.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) return i.reply({ content: "Réservé aux gérants du serveur.", flags: MessageFlags.Ephemeral });
       const body = i.options.getString("message", true).replaceAll("\\n", "\n");
-      await publish(announceEmbed({ title: i.options.getString("titre", true), body, url: i.options.getString("lien") ?? undefined, tag: "Annonce" }));
+      const titre = i.options.getString("titre", true);
+      await publish(announceEmbed({ title: titre, body, url: i.options.getString("lien") ?? undefined, tag: "Annonce" }), { kind: "annonce", title: titre, by: i.user.username });
       return i.reply({ content: "Annonce publiée.", flags: MessageFlags.Ephemeral });
     }
   }
@@ -131,11 +138,38 @@ client.on("interactionCreate", async (i: Interaction) => {
 
 client.once("clientReady", async () => {
   console.log(`Connecté : ${client.user?.tag}`);
-  startPresence(client, cfg);
-  startMonitor(client, cfg, newsChannel);
+  presence = startPresence(client, cfg, store);
+  startMonitor(client, cfg, store, newsChannel);
 });
 
-startWeb(cfg, publish);
+startWeb(cfg, publish, {
+  async status() {
+    const ch = await newsChannel();
+    return {
+      connected: client.isReady(),
+      tag: client.user?.tag ?? null,
+      pingMs: Math.round(client.ws.ping),
+      guilds: client.guilds.cache.size,
+      uptimeS: Math.round((Date.now() - startedAt) / 1000),
+      channel: { id: cfg.DISCORD_CHANNEL_ID, name: ch && "name" in ch ? ch.name : null, ok: ch !== null },
+      presence: { ...store.settings.presence, current: presence?.current() ?? null },
+      alertsEnabled: store.settings.alertsEnabled,
+      services: await runChecks(cfg),
+      log: store.log,
+    };
+  },
+  presence(p) {
+    store.update({ presence: p });
+    presence?.refresh();
+  },
+  alerts(enabled) {
+    store.update({ alertsEnabled: enabled });
+  },
+  async postServices() {
+    const { embed } = await servicesEmbed(cfg);
+    await publish(embed, { kind: "services", title: "État des services", by: "panel" });
+  },
+});
 await registerCommands();
 await client.login(cfg.DISCORD_TOKEN);
 

@@ -2,6 +2,7 @@ import type { Client, TextBasedChannel } from "discord.js";
 import { type Check, runChecks, STATUS_LABEL, type Status } from "./checks.ts";
 import type { Config } from "./config.ts";
 import { alertEmbed } from "./embeds.ts";
+import type { State } from "./state.ts";
 import { files } from "./theme.ts";
 
 // Surveille les services toutes les 60 s et publie dans le salon une alerte à la panne, une autre au retour.
@@ -9,7 +10,7 @@ import { files } from "./theme.ts";
 
 const INTERVAL_MS = 60_000;
 
-export function startMonitor(client: Client, cfg: Config, channel: () => Promise<TextBasedChannel | null>) {
+export function startMonitor(client: Client, cfg: Config, store: State, channel: () => Promise<TextBasedChannel | null>) {
   const stable = new Map<string, Status>();
   const pending = new Map<string, { status: Status; count: number }>();
   let first = true;
@@ -40,8 +41,9 @@ export function startMonitor(client: Client, cfg: Config, channel: () => Promise
       if (count < 2) continue;
       pending.delete(c.id);
       stable.set(c.id, state);
-      if (!cfg.ALERTS_ENABLED || first) continue;
+      if (!store.settings.alertsEnabled || first) continue;
       const ch = await channel();
+      store.record({ kind: "alerte", title: `${c.name} : ${c.status === "down" ? "hors ligne" : "de retour"}`, by: "auto" });
       if (ch && "send" in ch) await ch.send({ embeds: [alertEmbed(c, STATUS_LABEL[known])], files: files() }).catch((e) => console.error("alerte:", e));
     }
     first = false;

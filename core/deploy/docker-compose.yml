@@ -62,6 +62,9 @@ services:
       CORE_URL: http://127.0.0.1:8787
       BOT_HOST: 127.0.0.1
       BOT_PORT: "8790"
+      DATA_DIR: /app/data
+    volumes:
+      - ./data/bot:/app/data
     restart: unless-stopped
     logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
 

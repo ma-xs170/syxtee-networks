@@ -21,6 +21,7 @@ const schema = z.object({
   // Webhook GitHub (nouveautés = push sur main). Vide = désactivé.
   GITHUB_WEBHOOK_SECRET: z.string().min(16).optional(),
   GITHUB_BRANCH: z.string().default("main"),
+  DATA_DIR: z.string().default("./data"),
   BOT_PORT: z.coerce.number().default(8790),
   BOT_HOST: z.string().default("127.0.0.1"),
   // Jeton de POST /announce (annonce depuis un script ou Vercel). Vide = route désactivée.

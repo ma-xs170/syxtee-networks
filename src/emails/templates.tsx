@@ -1,7 +1,7 @@
 import { Link, Text } from "@react-email/components";
 import type { ReactElement } from "react";
 import { site } from "@/lib/site";
-import Layout, { C, Cta, mono, muted, p, RawLink, Title } from "./Layout";
+import Layout, { C, Callout, Cta, InfoPanel, mono, muted, p, RawLink, Title } from "./Layout";
 
 // Tous les emails SYXTEE. Chaque modèle renvoie le sujet et le composant ; send.ts produit le HTML et le texte brut.
 
@@ -63,14 +63,8 @@ export function accessRequested(o: { name: string; email: string; channel: strin
     element: (
       <Layout preview={`${o.name} demande l'accès.`} kicker="Admin" reason="Tu reçois cet email car tu es administrateur SYXTEE NETWORKS.">
         <Title lead="Nouvelle demande" hl="d'accès." />
-        {rows.map(([k, v]) => (
-          <Text key={k} style={{ ...p, margin: "0 0 8px" }}>
-            <span style={{ ...mono, color: C.muted, fontSize: "12px" }}>{k}</span>
-            <br />
-            {v}
-          </Text>
-        ))}
-        {o.message && <Text style={{ ...p, whiteSpace: "pre-wrap", borderLeft: `2px solid ${C.line}`, paddingLeft: "12px" }}>{o.message}</Text>}
+        <InfoPanel rows={rows} />
+        {o.message && <Text style={{ ...p, whiteSpace: "pre-wrap", textAlign: "left", borderLeft: `2px solid ${C.line}`, paddingLeft: "12px" }}>{o.message}</Text>}
         <Cta href={o.adminUrl}>Traiter la demande</Cta>
       </Layout>
     ),
@@ -93,7 +87,7 @@ export function welcome(o: { firstName?: string | null; lastName?: string | null
         <Hi name={o.firstName} />
         <Text style={p}>Ton compte SYXTEE NETWORKS est actif. Trois étapes pour ton premier live :</Text>
         {steps.map(([t, d, href], i) => (
-          <Text key={t} style={{ ...p, margin: "0 0 14px" }}>
+          <Text key={t} style={{ ...p, textAlign: "left", margin: "0 0 14px" }}>
             <span style={{ ...mono, color: C.muted, fontSize: "12px" }}>{i + 1}.</span>{" "}
             <Link href={href} style={{ color: C.fg, fontWeight: 600, textDecoration: "underline" }}>
               {t}
@@ -143,9 +137,9 @@ export function passwordChanged(o: { at: Date }): Email {
     element: (
       <Layout preview={`Mot de passe modifié le ${when(o.at)}.`} kicker="Alerte de sécurité" reason="Tu reçois cet email car le mot de passe de ton compte SYXTEE vient de changer. C'est une alerte de sécurité : on l'envoie toujours.">
         <Title lead="Mot de passe" hl="modifié." />
-        <Text style={p}>Le mot de passe de ton compte a été changé le {when(o.at)}.</Text>
-        <Text style={p}>C&apos;était toi ? Rien à faire.</Text>
-        <Text style={p}>Ce n&apos;était pas toi ? Reprends la main tout de suite, puis ouvre un ticket sur Discord.</Text>
+        <Text style={p}>Le mot de passe de ton compte vient d&apos;être changé.</Text>
+        <InfoPanel rows={[["Date et heure", when(o.at)]]} />
+        <Callout title="Ce n'était pas toi ?">Reprends la main tout de suite en choisissant un nouveau mot de passe, puis ouvre un ticket sur Discord. Si c&apos;était toi, rien à faire.</Callout>
         <Cta href={`${site.url}/mot-de-passe-oublie`}>Sécuriser mon compte</Cta>
       </Layout>
     ),
@@ -159,17 +153,10 @@ export function newDevice(o: { device: string; place: string | null; at: Date })
     element: (
       <Layout preview={`Connexion depuis ${o.device}${o.place ? `, ${o.place}` : ""}.`} kicker="Alerte de sécurité" reason="Tu reçois cet email car ton compte SYXTEE vient d'être ouvert depuis un appareil qu'on ne connaissait pas.">
         <Title lead="Nouvelle" hl="connexion." />
-        <Text style={p}>Ton compte vient d&apos;être ouvert depuis un nouvel appareil :</Text>
-        <Text style={{ ...p, ...mono, fontSize: "13px", lineHeight: "22px", color: C.fg }}>
-          Appareil : {o.device}
-          <br />
-          Lieu (approximatif) : {o.place ?? "inconnu"}
-          <br />
-          Heure : {when(o.at)}
-        </Text>
-        <Text style={p}>C&apos;était toi ? Rien à faire.</Text>
-        <Text style={p}>Ce n&apos;était pas toi ? Change ton mot de passe tout de suite.</Text>
-        <Cta href={`${site.url}/mot-de-passe-oublie`}>Ce n&apos;était pas moi</Cta>
+        <Text style={p}>Une nouvelle connexion à ton compte SYXTEE vient d&apos;être effectuée.</Text>
+        <InfoPanel rows={[["Date et heure", when(o.at)], ["Appareil", o.device], ["Lieu (approximatif)", o.place ?? "inconnu"]]} />
+        <Callout title="Ce n'était pas toi ?">Sécurise immédiatement ton compte en changeant ton mot de passe. Si c&apos;était toi, rien à faire.</Callout>
+        <Cta href={`${site.url}/mot-de-passe-oublie`}>Sécuriser mon compte</Cta>
       </Layout>
     ),
   };
@@ -187,11 +174,7 @@ export function emailChange(o: { to: "old" | "new"; oldEmail: string; newEmail: 
         reason={old ? "Tu reçois cet email car un changement d'adresse a été demandé pour ton compte SYXTEE." : "Tu reçois cet email car cette adresse a été indiquée comme nouvelle adresse d'un compte SYXTEE."}
       >
         <Title lead={old ? "Changement" : "Nouvelle"} hl={old ? "d'email." : "adresse."} />
-        <Text style={p}>
-          Ancienne adresse : <span style={{ color: C.fg }}>{o.oldEmail}</span>
-          <br />
-          Nouvelle adresse : <span style={{ color: C.fg }}>{o.newEmail}</span>
-        </Text>
+        <InfoPanel rows={[["Ancienne adresse", o.oldEmail], ["Nouvelle adresse", o.newEmail]]} />
         <Text style={p}>Le changement se fait quand les deux adresses ont confirmé. Lien valable 24 h.</Text>
         <Cta href={o.url}>Confirmer le changement</Cta>
         {old && <Text style={p}>Ce n&apos;est pas toi ? Ne clique pas, et change ton mot de passe.</Text>}

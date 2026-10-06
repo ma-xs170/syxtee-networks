@@ -125,7 +125,7 @@ export default function LinkDevices({ coreUrl }: { coreUrl: string }) {
               <div className="flex flex-wrap gap-2">
                 {confirm === d.id ? (
                   <>
-                    <button type="button" disabled={busy} onClick={() => void revoke(d.id)} className={`${btn} border-accent text-accent`}>
+                    <button type="button" disabled={busy} onClick={() => void revoke(d.id)} className={`${btn} border-accent text-foreground`}>
                       Confirmer la révocation
                     </button>
                     <button type="button" onClick={() => setConfirm("")} className={btn}>
@@ -160,7 +160,7 @@ export default function LinkDevices({ coreUrl }: { coreUrl: string }) {
                   {e.detail && <span className="text-muted"> · {e.detail}</span>}
                   <span className="text-muted"> · {nameOf(e.device_id)}</span>
                 </span>
-                <span className={e.ok ? "text-muted" : "text-accent"}>
+                <span className={e.ok ? "text-muted" : "text-foreground"}>
                   {e.ok ? ago(e.created_at, now) : `${e.error === "rate_limited" ? "trop rapide" : e.error === "not_allowed" ? "refusé" : "échec"} · ${ago(e.created_at, now)}`}
                 </span>
               </li>

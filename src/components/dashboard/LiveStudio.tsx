@@ -110,7 +110,7 @@ export default function LiveStudio({ sources, coreUrl, initial, chat }: { source
                 recOn ? "border-2 border-accent text-foreground hover:bg-foreground/10" : "bg-accent text-on-accent hover:bg-accent-hover"
               }`}
             >
-              {recOn ? <Stop size={22} weight="fill" className="text-accent" aria-hidden="true" /> : <RecordIcon size={22} weight="fill" aria-hidden="true" />}
+              {recOn ? <Stop size={22} weight="fill" className="text-foreground" aria-hidden="true" /> : <RecordIcon size={22} weight="fill" aria-hidden="true" />}
               {recOn ? "Arrêter l'enregistrement" : "Enregistrer"}
             </button>
             <Link href="/dashboard/enregistrements" className="whitespace-nowrap text-sm text-foreground/80 underline underline-offset-4 hover:text-foreground">

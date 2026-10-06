@@ -50,7 +50,7 @@ export default function AccessPage() {
                 <ul className="mt-6 space-y-3">
                   {premium.map((f) => (
                     <li key={f} className="flex items-start gap-3 text-sm">
-                      <Check size={18} weight="bold" className="mt-0.5 shrink-0 text-accent" aria-hidden="true" />
+                      <Check size={18} weight="bold" className="mt-0.5 shrink-0 text-foreground" aria-hidden="true" />
                       {f}
                     </li>
                   ))}

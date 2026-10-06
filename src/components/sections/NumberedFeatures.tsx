@@ -3,6 +3,9 @@ import type { ReactNode } from "react";
 import RelayServer from "../illustrations/RelayServer";
 import StudioWire from "../illustrations/StudioWire";
 import { CREATE_RELAY_HREF, Container } from "../ui";
+import PhoneLiveMock from "../mockups/PhoneLiveMock";
+import RemoteObsMock from "../mockups/RemoteObsMock";
+import WatchMock from "../mockups/WatchMock";
 import ChatDemo from "./ChatDemo";
 import DashboardViews from "./DashboardViews";
 
@@ -94,6 +97,35 @@ export default function NumberedFeatures() {
           <ChatDemo />
           <figcaption className="mt-3 text-xs text-muted">Exemple de messages.</figcaption>
         </figure>
+      </Row>
+
+      <Row
+        n="05"
+        title="Tu pilotes OBS depuis un onglet."
+        text="Change de scène depuis ton téléphone, au fond du jardin. Comme devant ton écran : aperçu du programme, sources, mixeur audio et contrôles du direct."
+        tags="Scènes · Aperçu du programme · Sources · Mixeur audio"
+      >
+        <RemoteObsMock />
+      </Row>
+
+      <Row
+        n="06"
+        title="Ton téléphone devient une caméra."
+        text="Connecte ton téléphone sans fil en quelques secondes. Utilise une app de streaming IRL ou un simple lien de streaming direct."
+        tags="Sans fil · Avec ou sans application"
+        flip
+      >
+        <PhoneLiveMock />
+      </Row>
+
+      <Row
+        n="07"
+        title="Ton chat au poignet."
+        text="Lis le chat de ton direct sur ta montre, sans sortir le téléphone de ta poche. Et bien d'autres outils pour ton direct."
+        tags="Chat sur la montre · Et d'autres outils"
+        actions={<span className="inline-flex h-9 items-center rounded-md border border-line px-3 font-mono text-xs uppercase tracking-[0.14em] text-muted">Bientôt</span>}
+      >
+        <WatchMock />
       </Row>
     </section>
   );

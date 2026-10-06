@@ -24,7 +24,7 @@ function Card({ d, now, pushing, outdated }: { d: LinkDevice; now: number; pushi
         <p className="mt-2 truncate text-lg font-semibold tracking-tight">{d.name}</p>
         <p className="mt-1 font-mono text-xs text-muted">
           Plugin {d.plugin_version || "?"}
-          {outdated && <span className="text-accent"> · mise à jour disponible</span>}
+          {outdated && <span className="text-foreground"> · mise à jour disponible</span>}
           {d.online && pushing.length > 0 && ` · pousse ${pushing.join(", ")}`}
         </p>
       </div>

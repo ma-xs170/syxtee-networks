@@ -103,7 +103,7 @@ export function DeviceRows({
                 <p className="mt-1 font-mono text-xs text-muted">
                   {d.plugin_version ? `Plugin ${d.plugin_version}` : "Plugin"}
                   {st === "ok" && ", à jour"}
-                  {st === "outdated" && latest && <span className="text-accent">, mise à jour disponible ({latest.version})</span>}
+                  {st === "outdated" && latest && <span className="text-foreground">, mise à jour disponible ({latest.version})</span>}
                   {d.online && pushing.length > 0 && ` · pousse ${pushing.join(", ")}`}
                 </p>
                 <p className="mt-0.5 text-xs text-muted">{d.online ? (d.online_since ? `Connecté depuis ${since(d.online_since, now)}` : "") : `Vu ${ago(d.last_seen, now)}`}</p>
@@ -122,7 +122,7 @@ export function DeviceRows({
                         setConfirm("");
                         if (!ok) setError("Révocation impossible.");
                       }}
-                      className={`${btnGhost} border-accent text-accent`}
+                      className={`${btnGhost} border-accent text-foreground`}
                     >
                       Confirmer la révocation
                     </button>

@@ -12,7 +12,9 @@
   --surface-2: #171718;
   --accent: #ffffff;
   --accent-hover: #e2e2e4;
-  --on-accent: #000000;
+  --on-accent: #ffffff;
+  --fill: #26262a;
+  --fill-hover: #333338;
   --live: #ff3b30;
   --img-filter: none;
   --img-filter-rev: invert(1);
@@ -33,6 +35,8 @@
   --accent: #0a0a0a;
   --accent-hover: #2b2b2e;
   --on-accent: #ffffff;
+  --fill: #0a0a0a;
+  --fill-hover: #2b2b2e;
   --live: #d92b20;
   --img-filter: invert(1);
   --img-filter-rev: none;
@@ -52,6 +56,8 @@
     --accent: #0a0a0a;
     --accent-hover: #2b2b2e;
     --on-accent: #ffffff;
+  --fill: #0a0a0a;
+  --fill-hover: #2b2b2e;
     --live: #d92b20;
     --img-filter: invert(1);
     --img-filter-rev: none;
@@ -103,6 +109,10 @@
 .dash-surface .font-medium:not([class*="text-on-accent"]):not([class*="text-accent"]):not([class*="text-red"]):not([class*="text-muted"]) {
   color: var(--foreground);
 }
+
+/* Pas d'aplat blanc en sombre : les fonds « accent » (boutons, pastilles, surlignage) prennent un gris profond ; le blanc reste pour les textes, traits et particules. */
+.bg-accent { background-color: var(--fill); }
+.bg-accent-hover, .hover\:bg-accent-hover:hover { background-color: var(--fill-hover); }
 
 @theme inline {
   --color-background: var(--background);
@@ -476,9 +486,10 @@ html[data-stream-mode="on"] [data-sensitive] {
   &:focus-visible { outline: 2px solid var(--foreground); outline-offset: 3px; }
 }
 @utility btn-primary {
-  background: var(--accent);
+  background: var(--fill);
   color: var(--on-accent);
-  &:hover { background: var(--accent-hover); }
+  border: 1px solid var(--line-strong);
+  &:hover { background: var(--fill-hover); }
 }
 @utility btn-secondary {
   border: 1px solid var(--line-strong);

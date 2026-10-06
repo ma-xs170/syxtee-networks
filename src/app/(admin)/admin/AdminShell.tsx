@@ -160,7 +160,7 @@ export default function AdminShell({ support, pendingAccess, name, children }: {
               className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm ${active(it.href.split("?")[0]) ? "bg-foreground/10 text-foreground" : "text-muted"}`}
             >
               {it.label}
-              {!!it.badge && <span className="ml-1.5 tabular-nums text-accent">{it.badge}</span>}
+              {!!it.badge && <span className="ml-1.5 tabular-nums text-foreground">{it.badge}</span>}
             </Link>
           ))}
         </nav>

@@ -26,7 +26,7 @@ export default function FinalCta() {
           <div className="mt-10 flex flex-col items-center gap-4">
             <Link
               href={CREATE_RELAY_HREF}
-              className="inline-flex h-12 items-center justify-center gap-3 whitespace-nowrap rounded-xl bg-foreground px-8 text-base font-medium text-background transition-[background-color,transform] hover:bg-foreground/85 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+              className="inline-flex h-12 items-center justify-center gap-3 whitespace-nowrap rounded-xl border border-line-strong bg-accent px-8 text-base font-medium text-on-accent transition-[background-color,transform] hover:bg-accent-hover active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
             >
               Commencer
               <span aria-hidden="true">↗</span>

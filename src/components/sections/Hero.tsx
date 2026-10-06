@@ -33,7 +33,7 @@ export default function Hero({ streamers = [] }: { streamers?: HomeStreamer[] })
             className="rise group mx-auto mb-7 inline-flex max-w-full items-center gap-3 rounded-3xl border border-foreground/20 bg-background/60 py-1.5 pl-1.5 pr-4 text-left text-sm leading-snug sm:rounded-full backdrop-blur-sm transition-colors hover:bg-background/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
             style={{ "--i": 0 } as React.CSSProperties}
           >
-            <span className="rounded-full bg-foreground px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-background">Nouveau</span>
+            <span className="rounded-full bg-accent px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-on-accent">Nouveau</span>
             <span className="min-w-0">
               <strong className="font-semibold">RIST</strong> : SYXTEE, premier site à l&apos;offrir aux particuliers
             </span>
@@ -51,7 +51,7 @@ export default function Hero({ streamers = [] }: { streamers?: HomeStreamer[] })
           </p>
 
           <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={{ "--i": 3 } as React.CSSProperties}>
-            <Link href={CREATE_RELAY_HREF} className={`${btn} bg-foreground text-background hover:bg-foreground/85`}>
+            <Link href={CREATE_RELAY_HREF} className={`${btn} bg-accent text-on-accent border border-line-strong hover:bg-accent-hover`}>
               Commencer
               <span aria-hidden="true">↗</span>
             </Link>

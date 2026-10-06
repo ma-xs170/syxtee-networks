@@ -19,7 +19,7 @@ export default function Highlight({ children }: { children: ReactNode }) {
     <motion.span
       ref={ref}
       style={reduce ? { backgroundSize: "100% 100%", color: "var(--on-accent)" } : { backgroundSize: size, color }}
-      className="rounded-[2px] bg-[linear-gradient(var(--accent),var(--accent))] bg-left bg-no-repeat px-1 [-webkit-box-decoration-break:clone] [box-decoration-break:clone]"
+      className="rounded-[2px] bg-[linear-gradient(var(--fill),var(--fill))] bg-left bg-no-repeat px-1 [-webkit-box-decoration-break:clone] [box-decoration-break:clone]"
     >
       {children}
     </motion.span>

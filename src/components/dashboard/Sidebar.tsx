@@ -223,7 +223,6 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
           <ArrowLeft size={14} aria-hidden="true" />
           Retour au site
         </Link>
-        <LowDataToggle initial={false} variant="pill" />
       </div>
 
       <nav aria-label="Navigation du dashboard" className="flex-1 space-y-6 overflow-y-auto px-3 pb-3" onMouseLeave={() => setHover(null)}>
@@ -262,6 +261,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
           <ThemeToggle />
           <StreamModeToggle />
         </div>
+        <LowDataToggle initial={false} variant="pill" />
         {account && <AccountFooter account={account} admin={admin} onNavigate={onNavigate} />}
       </div>
     </div>

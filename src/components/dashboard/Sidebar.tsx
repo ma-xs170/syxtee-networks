@@ -230,6 +230,11 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
         {GROUPS.map((g, i) => (
           <div key={g.title ?? i}>
             {g.title && <p className="px-3 pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-muted">{g.title}</p>}
+            {g.title === "Direct" && (
+              <div className="px-3 pb-2">
+                <LivePill />
+              </div>
+            )}
             <ul className="space-y-0.5">
               {g.items.map((it) => (
                 <li key={it.href}>
@@ -237,11 +242,6 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
                 </li>
               ))}
             </ul>
-            {g.title === "Direct" && (
-              <div className="px-3 pt-3">
-                <LivePill />
-              </div>
-            )}
           </div>
         ))}
 

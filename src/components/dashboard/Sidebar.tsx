@@ -215,7 +215,6 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
       </div>
 
       <div className="flex flex-wrap items-center gap-2 px-4 pb-3">
-        <LivePill />
         <Link
           href="/"
           onClick={onNavigate}
@@ -238,6 +237,11 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
                 </li>
               ))}
             </ul>
+            {g.title === "Direct" && (
+              <div className="px-3 pt-3">
+                <LivePill />
+              </div>
+            )}
           </div>
         ))}
 

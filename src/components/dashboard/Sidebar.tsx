@@ -35,6 +35,7 @@ import GlidePill from "../ui/GlidePill";
 import { LivePill } from "./LiveStatus";
 import NotificationsBell from "./NotificationsBell";
 import StreamModeToggle from "./StreamModeToggle";
+import LowDataToggle from "./LowDataToggle";
 import { restoreStreamMode } from "./streamMode";
 
 // Barre latérale du dashboard : groupes titrés, icônes, formule et compte en bas. Sur mobile, une barre en haut
@@ -223,6 +224,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
           <ArrowLeft size={14} aria-hidden="true" />
           Retour au site
         </Link>
+        <LowDataToggle initial={false} variant="pill" />
       </div>
 
       <nav aria-label="Navigation du dashboard" className="flex-1 space-y-6 overflow-y-auto px-3 pb-3" onMouseLeave={() => setHover(null)}>
@@ -334,6 +336,7 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
             <ArrowLeft size={20} />
           </Link>
           <LivePill compact />
+          <LowDataToggle initial={false} variant="icon" />
           <button type="button" onClick={() => setOpen(true)} aria-label="Ouvrir le menu" aria-expanded={open} className="grid h-11 w-11 place-items-center rounded-lg hover:bg-foreground/10">
             <List size={22} />
           </button>

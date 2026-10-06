@@ -21,14 +21,16 @@ export type Gate = {
   tone: "onair" | "preview" | "open" | "muted" | "off";
 };
 
-export function gateOf(r: MixRelay, o: { mode: AudioMode; program: string; preview: string; slate: boolean; soloOn: boolean }): Gate {
+const isIn = (set: string | string[], id: string) => (Array.isArray(set) ? set.includes(id) : set === id);
+
+export function gateOf(r: MixRelay, o: { mode: AudioMode; program: string | string[]; preview: string | string[]; slate: boolean; soloOn: boolean }): Gate {
   if (!isOn(r)) return { open: false, label: "HORS LIGNE", tone: "off" };
   if (r.mute) return { open: false, label: o.mode === "podcast" ? "FERMÉ" : "MUTE", tone: "muted" };
   if (o.soloOn && !r.solo) return { open: false, label: "SOLO AILLEURS", tone: "muted" };
   if (o.mode === "podcast") return { open: true, label: "OUVERT", tone: "open" };
   // BROADCAST : le slate (BRB) ne laisse passer aucun son.
   if (o.slate) return { open: false, label: "COUPÉ · SLATE", tone: "muted" };
-  if (r.id === o.program) return { open: true, label: "ON AIR", tone: "onair" };
-  if (r.id === o.preview) return { open: false, label: "COUPÉ · APERÇU", tone: "preview" };
+  if (isIn(o.program, r.id)) return { open: true, label: "ON AIR", tone: "onair" };
+  if (isIn(o.preview, r.id)) return { open: false, label: "COUPÉ · APERÇU", tone: "preview" };
   return { open: false, label: "COUPÉ", tone: "muted" };
 }

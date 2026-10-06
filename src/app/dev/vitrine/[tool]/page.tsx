@@ -9,7 +9,7 @@ import StreamerWall from "@/components/home/StreamerWall";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import AdminShell from "@/app/(admin)/admin/AdminShell";
 import StudioDemo from "@/components/studio/StudioDemo";
-import MixApp from "@/components/mix/MixApp";
+import CloudObs from "@/components/cloud/CloudObs";
 import { LiveStatusProvider } from "@/components/dashboard/LiveStatus";
 import RelayList from "@/components/relais/RelayList";
 import type { Overview as OverviewData, LiveSession } from "@/lib/dashboard-data";
@@ -133,7 +133,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
       {tool === "studio" && <StudioDemo />}
       {(tool === "commutateur" || tool === "commutateur-reel") && (
         <LiveStatusProvider coreUrl="">
-          <MixApp persist={false} account="demo@syxtee.fr" real={tool === "commutateur-reel" ? [{ id: "a1", name: "iPhone 16", protocol: "srtla", live: true }, { id: "a2", name: "Osmo", protocol: "rtmp", live: true }, { id: "a3", name: "BELABOX", protocol: "srtla", live: true }, { id: "a4", name: "GoPro", protocol: "rtmp", live: false }] : []} coreUrl={tool === "commutateur-reel" ? "http://localhost:9" : ""} />
+          <CloudObs persist={false} account="demo@syxtee.fr" real={tool === "commutateur-reel" ? [{ id: "a1", name: "iPhone 16", protocol: "srtla", live: true }, { id: "a2", name: "Osmo", protocol: "rtmp", live: true }, { id: "a3", name: "BELABOX", protocol: "srtla", live: true }, { id: "a4", name: "GoPro", protocol: "rtmp", live: false }] : []} coreUrl={tool === "commutateur-reel" ? "http://localhost:9" : ""} />
         </LiveStatusProvider>
       )}
       {tool === "admin" && (

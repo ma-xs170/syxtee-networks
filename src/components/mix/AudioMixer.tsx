@@ -111,8 +111,9 @@ function Master({ db, onDb, mute, onMute, locked, big, open, mode }: { db: numbe
 
 export default function AudioMixer({ relays, program, preview, slate, programMs, locked, master, onMaster, masterMute, onMasterMute, onPatch, settings, onSettings, listen, onListen, big = false, className = "" }: {
   relays: MixRelay[];
-  program: string;
-  preview: string;
+  /** Un relais, ou plusieurs (scène OBS Cloud avec plusieurs sources). */
+  program: string | string[];
+  preview: string | string[];
   slate: boolean;
   /** Durée du fondu vidéo : la voie « ON AIR » s'éteint ou s'allume sur la même durée (0 = CUT, instantané). */
   programMs: number;

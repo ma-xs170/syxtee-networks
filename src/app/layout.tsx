@@ -9,8 +9,22 @@ import { THEME_SCRIPT } from "@/components/ThemeToggle";
 const inter = Inter({ subsets: ["latin", "latin-ext"], variable: "--font-inter", display: "swap" });
 const jetbrains = JetBrains_Mono({ subsets: ["latin", "latin-ext"], variable: "--font-jetbrains-mono", display: "swap" });
 
+// Icône d'onglet sans fond, assortie à l'onglet (logo noir sur barre claire, blanc sur barre sombre).
+// Écran d'accueil iPhone : apple-touch-icon opaque (iOS refuse la transparence) et mode application plein écran.
+const icons: Metadata["icons"] = {
+  icon: [
+    { url: "/icons/tab-light.png", type: "image/png", sizes: "256x256", media: "(prefers-color-scheme: light)" },
+    { url: "/icons/tab-dark.png", type: "image/png", sizes: "256x256", media: "(prefers-color-scheme: dark)" },
+  ],
+  apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
+  icons,
+  appleWebApp: { capable: true, title: "SYXTEE", statusBarStyle: "black" },
+  applicationName: "SYXTEE",
+  formatDetection: { telephone: false },
   title: {
     default: `${site.name} - Relais IRL low-cost`,
     template: `%s · ${site.name}`,

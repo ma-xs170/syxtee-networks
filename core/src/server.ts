@@ -19,6 +19,7 @@ import type { SampleStore } from "./samples.ts";
 import type { SessionTracker } from "./sessions.ts";
 import type { Asn } from "./asn.ts";
 import type { Cam } from "./cam.ts";
+import type { ObsPreview } from "./obspreview.ts";
 import type { Studio } from "./studio.ts";
 import { readLatest } from "./plugin.ts";
 import type { Remote } from "./remote.ts";
@@ -40,6 +41,7 @@ export type Deps = {
   cam?: Cam | null;
   /** Diffusion depuis SYXTEE STUDIO (null si désactivée). */
   studio?: Studio | null;
+  obsPreview?: ObsPreview | null;
   /** SYXTEE Link : télécommande d'OBS (null si désactivée). */
   remote?: Remote | null;
   /** Enregistrement des flux (10 Go par compte ; null si désactivé). */
@@ -895,6 +897,33 @@ export function buildServer(d: Deps) {
       const rows = (await d.relays.list(dev.userId)).filter((r) => !r.archived).map(view);
       return { streams: rows.map((r) => ({ id: r.id, name: r.name, protocol: r.protocol, live: r.live, obs_srt_url: r.obs_srt_url })) };
     });
+    // ── Aperçu vidéo du programme (WHIP du plugin → MediaMTX → WHEP du navigateur, sans transcodage) ──
+    if (d.obsPreview) {
+      const preview = d.obsPreview;
+      app.post("/v1/link/preview/start", async (req, reply) => {
+        const dev = await remote.deviceAuth(req.headers.authorization);
+        if (!dev) return reply.code(401).send({ error: "unauthorized" });
+        return preview.start(dev.userId, dev.deviceId);
+      });
+      app.post("/v1/link/preview/touch", async (req, reply) => {
+        const dev = await remote.deviceAuth(req.headers.authorization);
+        if (!dev) return reply.code(401).send({ error: "unauthorized" });
+        preview.touch(dev.userId);
+        return { ok: true };
+      });
+      app.post("/v1/link/preview/stop", async (req, reply) => {
+        const dev = await remote.deviceAuth(req.headers.authorization);
+        if (!dev) return reply.code(401).send({ error: "unauthorized" });
+        preview.stop(dev.userId);
+        return { ok: true };
+      });
+      app.post("/v1/me/link/preview/watch", async (req, reply) => {
+        const id = await userId(req, reply);
+        if (!id) return;
+        if (!remote.canUse(id)) return reply.code(403).send({ error: "not_allowed" });
+        return preview.watch(id);
+      });
+    }
     app.get("/v1/me/link/audit", async (req, reply) => {
       const id = await userId(req, reply);
       if (!id) return;
@@ -1035,7 +1064,7 @@ export function buildServer(d: Deps) {
 
   // MediaMTX → Core : autorisation d'une publication (Cam en WebRTC, caméras en RTMP). Jamais accessible de
   // l'extérieur (bloqué dans Caddy, et refusé ici dès qu'une requête arrive par un proxy).
-  if (cam || d.rtmp || d.studio) {
+  if (cam || d.rtmp || d.studio || d.obsPreview) {
     app.post("/internal/mediamtx/auth", async (req, reply) => {
       const local = ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(req.socket.remoteAddress ?? "");
       if (!local || req.headers["x-forwarded-for"]) return reply.code(404).send();
@@ -1044,7 +1073,9 @@ export function buildServer(d: Deps) {
         ? !!(await d.rtmp?.authorize(p))
         : p.path?.startsWith("stu_")
           ? !!d.studio?.authorize(p)
-          : !!(await cam?.authorize(p));
+          : p.path?.startsWith("obs_")
+            ? !!d.obsPreview?.authorize(p)
+            : !!(await cam?.authorize(p));
       return reply.code(ok ? 200 : 401).send();
     });
   }

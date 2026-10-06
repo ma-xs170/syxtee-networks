@@ -6,6 +6,7 @@ import { Readable } from "node:stream";
 import { test } from "node:test";
 import { createBackups } from "../src/backups.ts";
 import { loadConfig } from "../src/config.ts";
+import { createObsPreview } from "../src/obspreview.ts";
 import { createRemote } from "../src/remote.ts";
 import { buildServer, type Deps } from "../src/server.ts";
 import { fakeDb } from "./fake-db.ts";
@@ -31,6 +32,7 @@ function make(quota = 1000) {
   const app = buildServer({
     config, relays: { list: async (id: string) => (id === U ? RELAYS : []) }, health: { state: () => null, relay: () => null, liveRelays: () => [], byUser: () => [], events: { on() {}, off() {} } }, rtmp: {}, samples: { history: () => [] }, sessions: { current: () => null },
     verifyUser, previewPath: () => "", onKeysChanged: () => {}, slsHealthy: async () => true, remote, backups,
+    obsPreview: createObsPreview({ whipBase: "https://cam.test", apiUrl: "http://127.0.0.1:9", log: () => {} }),
   } as unknown as Deps);
   return { app, data };
 }
@@ -193,4 +195,28 @@ test("plugin : dernière version lue du manifeste (versions et fichiers validés
   assert.equal((await app.inject({ method: "GET", url: "/v1/plugin/latest" })).json().macos.available, false);
   const { compareVersions } = await import("../src/plugin.ts");
   assert.ok(compareVersions("0.3.0", "0.4.0") < 0 && compareVersions("0.10.0", "0.9.0") > 0 && compareVersions("1.0.0", "1.0.0") === 0);
+});
+
+test("aperçu vidéo : l'agent démarre et rend la session, le navigateur lit, MediaMTX autorise (route interne locale seulement)", async () => {
+  const { app } = make();
+  const dev = await connectDevice(app);
+  // Sans jeton d'appareil : refusé. Compte non invité : refusé.
+  assert.equal((await app.inject({ method: "POST", url: "/v1/link/preview/start" })).statusCode, 401);
+  assert.equal((await app.inject({ method: "POST", url: "/v1/me/link/preview/watch", headers: { ...user, authorization: "Bearer user-v" } })).statusCode, 403);
+  // Rien en cours : pas d'adresse.
+  assert.deepEqual((await app.inject({ method: "POST", url: "/v1/me/link/preview/watch", headers: user })).json(), { whep_url: null, ready: false });
+  const st = (await app.inject({ method: "POST", url: "/v1/link/preview/start", headers: dev })).json();
+  assert.match(st.whip_url, /^https:\/\/cam\.test\/obs_[0-9a-f]{32}\/whip$/);
+  const w = (await app.inject({ method: "POST", url: "/v1/me/link/preview/watch", headers: user })).json();
+  assert.equal(w.whep_url, st.whip_url.replace("/whip", "/whep"));
+  assert.equal(w.ready, false); // MediaMTX absent en test
+  // Autorisation de MediaMTX : la publication du chemin de la session est acceptée, un autre chemin refusé.
+  const auth = (path: string, action: string) => app.inject({ method: "POST", url: "/internal/mediamtx/auth", remoteAddress: "127.0.0.1", payload: { path, action, protocol: "webrtc", ip: "9.9.9.9" } });
+  const path = /obs_[0-9a-f]{32}/.exec(st.whip_url)![0];
+  assert.equal((await auth(path, "publish")).statusCode, 200);
+  assert.equal((await auth(path, "read")).statusCode, 200);
+  assert.equal((await auth(`obs_${"1".repeat(32)}`, "publish")).statusCode, 401);
+  assert.equal((await app.inject({ method: "POST", url: "/v1/link/preview/stop", headers: dev })).statusCode, 200);
+  assert.equal((await auth(path, "publish")).statusCode, 401);
+  assert.deepEqual((await app.inject({ method: "POST", url: "/v1/me/link/preview/watch", headers: user })).json(), { whep_url: null, ready: false });
 });

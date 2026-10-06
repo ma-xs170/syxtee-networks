@@ -50,8 +50,20 @@ struct obs_volmeter {
 struct obs_output {
 	bool active = false;
 	uint64_t bytes = 0;
+	bool whip = false;
+	signal_handler sh;
+	obs_source *dummy = nullptr;
 };
-struct obs_encoder {};
+struct obs_encoder {
+	std::string id;
+	bool owned = false;
+	uint32_t w = 0, h = 0, divisor = 1;
+	QJsonObject settings;
+};
+struct obs_service {
+	std::string id;
+	QJsonObject settings;
+};
 
 namespace {
 std::vector<obs_source *> all;
@@ -67,6 +79,9 @@ std::vector<obs_volmeter *> meters;
 obs_output streamOut, recOut;
 obs_encoder enc;
 int64_t nextItemId = 1;
+bool whipAvailable = true, whipFails = false;
+QJsonObject whipLog;
+obs_output *whipOut = nullptr;
 }
 
 static void fire(signal_handler *h, const char *sig, calldata_t *cd)
@@ -473,7 +488,13 @@ uint64_t obs_output_get_total_bytes(const obs_output_t *o) { return o->bytes; }
 int obs_output_get_frames_dropped(const obs_output_t *) { return 3; }
 int obs_output_get_total_frames(const obs_output_t *) { return 500; }
 obs_encoder_t *obs_output_get_video_encoder(const obs_output_t *) { return &enc; }
-void obs_output_release(obs_output_t *) {}
+void obs_output_release(obs_output_t *o)
+{
+	if (o && o->whip) {
+		if (whipOut == o) whipOut = nullptr;
+		delete o;
+	}
+}
 const char *obs_encoder_get_id(const obs_encoder_t *) { return "stub_encoder"; }
 const char *obs_encoder_get_display_name(const char *) { return "Encodeur matériel (stub)"; }
 obs_data_t *obs_encoder_get_settings(const obs_encoder_t *)
@@ -619,3 +640,126 @@ void obs_frontend_recording_pause(bool p)
 	stub_fe(p ? OBS_FRONTEND_EVENT_RECORDING_PAUSED : OBS_FRONTEND_EVENT_RECORDING_UNPAUSED);
 }
 bool obs_frontend_recording_paused(void) { return paused; }
+
+// ───── Aperçu WHIP : encodeurs, service, sortie ─────
+void stub_whip_available(bool on) { whipAvailable = on; }
+void stub_whip_fails(bool on) { whipFails = on; }
+std::string stub_whip_info() { return QJsonDocument(whipLog).toJson(QJsonDocument::Compact).toStdString(); }
+void stub_whip_drop(const char *error)
+{
+	// L'envoi s'interrompt côté OBS (réseau, serveur) : signal « stop » avec un code d'erreur.
+	if (!whipOut) return;
+	whipOut->active = false;
+	calldata_t cd;
+	calldata_init(&cd);
+	calldata_set_ptr(&cd, "output", whipOut);
+	calldata_set_int(&cd, "code", -3);
+	whipLog["lastError"] = error;
+	fire(&whipOut->sh, "stop", &cd);
+	calldata_free(&cd);
+}
+
+static const std::vector<std::pair<std::string, std::string>> ENCODERS = {
+	{"obs_x264", "h264"}, {"com.apple.videotoolbox.videoencoder.ave.hevc", "hevc"}, {"com.apple.videotoolbox.videoencoder.ave.avc", "h264"}, {"ffmpeg_opus", "opus"}, {"ffmpeg_aac", "aac"},
+};
+bool obs_enum_encoder_types(size_t idx, const char **id)
+{
+	if (idx >= ENCODERS.size()) return false;
+	*id = ENCODERS[idx].first.c_str();
+	return true;
+}
+enum obs_encoder_type obs_get_encoder_type(const char *id) { return std::string(id) == "ffmpeg_opus" || std::string(id) == "ffmpeg_aac" ? OBS_ENCODER_AUDIO : OBS_ENCODER_VIDEO; }
+const char *obs_get_encoder_codec(const char *id)
+{
+	for (auto &e : ENCODERS)
+		if (e.first == id) return e.second.c_str();
+	return nullptr;
+}
+uint32_t obs_get_encoder_caps(const char *) { return 0; }
+obs_service_t *obs_service_create(const char *id, const char *, obs_data_t *settings, obs_data_t *)
+{
+	if (!whipAvailable) return nullptr;
+	auto *sv = new obs_service{id, settings ? settings->j : QJsonObject()};
+	whipLog["serviceKind"] = id;
+	whipLog["server"] = sv->settings.value("server");
+	return sv;
+}
+void obs_service_release(obs_service_t *sv) { delete sv; }
+obs_output_t *obs_output_create(const char *id, const char *, obs_data_t *, obs_data_t *)
+{
+	if (!whipAvailable) return nullptr;
+	auto *o = new obs_output;
+	o->whip = std::string(id) == "whip_output";
+	whipOut = o;
+	whipLog["outputKind"] = id;
+	return o;
+}
+obs_encoder_t *obs_video_encoder_create(const char *id, const char *, obs_data_t *settings, obs_data_t *)
+{
+	auto *e = new obs_encoder{id, true, 0, 0, 1, settings ? settings->j : QJsonObject()};
+	whipLog["videoEncoder"] = id;
+	whipLog["videoSettings"] = e->settings;
+	return e;
+}
+obs_encoder_t *obs_audio_encoder_create(const char *id, const char *, obs_data_t *settings, size_t, obs_data_t *)
+{
+	auto *e = new obs_encoder{id, true, 0, 0, 1, settings ? settings->j : QJsonObject()};
+	whipLog["audioEncoder"] = id;
+	whipLog["audioSettings"] = e->settings;
+	return e;
+}
+void obs_encoder_set_video(obs_encoder_t *, video_t *) {}
+void obs_encoder_set_audio(obs_encoder_t *, audio_t *) {}
+video_t *obs_get_video(void) { return nullptr; }
+audio_t *obs_get_audio(void) { return nullptr; }
+void obs_encoder_set_scaled_size(obs_encoder_t *e, uint32_t w, uint32_t h)
+{
+	e->w = w;
+	e->h = h;
+	whipLog["width"] = int(w);
+	whipLog["height"] = int(h);
+}
+bool obs_encoder_set_frame_rate_divisor(obs_encoder_t *e, uint32_t d)
+{
+	e->divisor = d;
+	whipLog["divisor"] = int(d);
+	return true;
+}
+void obs_encoder_release(obs_encoder_t *e)
+{
+	if (e && e->owned) delete e;
+}
+void obs_output_set_video_encoder(obs_output_t *, obs_encoder_t *) {}
+void obs_output_set_audio_encoder(obs_output_t *, obs_encoder_t *, size_t) {}
+void obs_output_set_service(obs_output_t *, obs_service_t *) {}
+void obs_output_set_reconnect_settings(obs_output_t *, int, int) {}
+signal_handler_t *obs_output_get_signal_handler(const obs_output_t *o) { return const_cast<signal_handler_t *>(&o->sh); }
+bool obs_output_start(obs_output_t *o)
+{
+	whipLog["started"] = !whipFails;
+	if (whipFails) return false;
+	o->active = true;
+	calldata_t cd;
+	calldata_init(&cd);
+	calldata_set_ptr(&cd, "output", o);
+	fire(&o->sh, "start", &cd);
+	calldata_free(&cd);
+	return true;
+}
+void obs_output_stop(obs_output_t *o)
+{
+	if (!o->whip) return;
+	whipLog["stopped"] = true;
+	o->active = false;
+}
+const char *obs_output_get_last_error(obs_output_t *)
+{
+	static QByteArray err;
+	err = whipFails ? QByteArray("HTTP 401") : whipLog.value("lastError").toString().toUtf8();
+	return err.constData();
+}
+bool obs_output_active(const obs_output_t *o) { return o->active; }
+obs_data_t *obs_data_create() { return new obs_data; }
+void obs_data_set_string(obs_data_t *d, const char *k, const char *v) { d->j[k] = v; }
+void obs_data_set_int(obs_data_t *d, const char *k, long long v) { d->j[k] = double(v); }
+void obs_data_set_bool(obs_data_t *d, const char *k, bool v) { d->j[k] = v; }

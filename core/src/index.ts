@@ -19,6 +19,7 @@ import { createPrivateRelay } from "./privaterelay.ts";
 import { createPrefixes } from "./link.ts";
 import { buildServer } from "./server.ts";
 import { createCam } from "./cam.ts";
+import { createObsPreview } from "./obspreview.ts";
 import { createStudio } from "./studio.ts";
 import { createRemote } from "./remote.ts";
 import { createBackups } from "./backups.ts";
@@ -168,6 +169,9 @@ const remote = config.LINK_ENABLED
   : null;
 const backups = remote ? createBackups({ db: supabase as never, dir: join(config.DATA_DIR, "link-backups"), log }) : null;
 
+// Aperçu vidéo du programme d'OBS (WHIP du plugin → MediaMTX → WHEP du navigateur) : même MediaMTX et même WHIP que la Cam, aucun transcodage.
+const obsPreview = remote && camWhipBase ? createObsPreview({ whipBase: camWhipBase, apiUrl: config.MEDIAMTX_API_URL, security, log }) : null;
+
 // SYXTEE STUDIO : le navigateur publie en WebRTC (même WHIP que la Cam), le Core diffuse en RTMP vers les plateformes.
 const studio =
   config.STUDIO_ENABLED && camWhipBase
@@ -244,6 +248,7 @@ const app = buildServer({
     reclassUser({ db: supabaseBackfillDb(supabase), salt: coverageSalt, userId, declared: await coverage.declared(userId), touch: coverage.touch }),
   cam,
   studio,
+  obsPreview,
   security,
   profile: async (id) => {
     const { data } = await supabase.from("profiles").select("username, first_name, last_name, twitch_display_name, twitch_login").eq("id", id).maybeSingle();
@@ -308,6 +313,7 @@ void runBackfill({ db: supabaseBackfillDb(supabase), salt: coverageSalt, aggrega
   .catch((e) => log(`couverture, backfill : ${(e as Error).message}`));
 const timers = [
   // Échéances de formule et suspensions faites hors du dashboard : réalignement du relais toutes les 5 min.
+  setInterval(() => obsPreview?.sweep(), 30_000),
   setInterval(() => void refreshKeys(), 5 * 60_000),
   setInterval(() => void coverage.flush(), 30_000),
   setInterval(() => void runAggregate(), 10 * 60_000),

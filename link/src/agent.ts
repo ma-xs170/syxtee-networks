@@ -11,6 +11,7 @@ import { statSync } from "node:fs";
 import { scenesDir } from "./obsconfig.ts";
 import { createArchive, plan, restoreArchive } from "./scenesync.ts";
 import { osLabel } from "./system.ts";
+import { coreCall } from "./corehttp.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
 
 export const VERSION = "0.4.0";
@@ -58,6 +59,16 @@ export class Agent {
   private tickTimer: ReturnType<typeof setInterval> | null = null;
   private autoTimer: ReturnType<typeof setInterval> | null = null;
   private autoFailedAt = new Map<string, number>();
+  private previewMgr: ReturnType<typeof setInterval> | null = null;
+  /** Aperçu vidéo (WHIP). `mode` : « video » (image + son), « jpeg » (repli, images sans son), « idle » (personne ne regarde). */
+  private whip: { active: boolean; starting: boolean; failedAt: number; reason: string; touchedAt: number } = { active: false, starting: false, failedAt: 0, reason: "", touchedAt: 0 };
+  get whipReason() {
+    return this.whip.reason;
+  }
+  get previewMode(): "video" | "jpeg" | "idle" {
+    if (this.whip.active) return "video";
+    return this.status.viewers > 0 && this.cfg.previewEnabled ? "jpeg" : "idle";
+  }
   private lastMeters = 0;
   /** Dernières mesures du poste (CPU, images, débit du direct), poussées par le plugin chaque seconde. */
   lastStats: Record<string, unknown> = {};
@@ -89,6 +100,7 @@ export class Agent {
     this.connectCore();
     this.tickTimer = setInterval(() => void this.watcher.tick(), 1000);
     this.autoTimer = setInterval(() => void this.autoBackupTick(), 30_000);
+    this.previewMgr = setInterval(() => void this.managePreview(), 5000);
     void this.previewLoop();
   }
 
@@ -97,6 +109,8 @@ export class Agent {
     this.timers.forEach(clearTimeout);
     if (this.tickTimer) clearInterval(this.tickTimer);
     if (this.autoTimer) clearInterval(this.autoTimer);
+    if (this.previewMgr) clearInterval(this.previewMgr);
+    void this.stopWhip();
     if (this.previewTimer) clearTimeout(this.previewTimer);
     this.core?.close();
     this.obs.close();
@@ -192,6 +206,76 @@ export class Agent {
     }
   }
 
+  // ───── Aperçu vidéo (WHIP vers le serveur) ─────
+
+  /** Démarre l'envoi quand quelqu'un regarde et que l'aperçu est actif, l'arrête sinon. Rien ne part sans spectateur. */
+  async managePreview(): Promise<void> {
+    if (this.stopped) return;
+    const want = this.status.viewers > 0 && this.cfg.previewEnabled && this.obs.connected && this.status.core === "on";
+    const w = this.whip;
+    if (want && !w.active && !w.starting && Date.now() - w.failedAt > 30_000) return this.startWhip();
+    if (!want && (w.active || w.starting)) return this.stopWhip();
+    // Signe de vie au serveur toutes les minutes : la session ne doit pas expirer pendant qu'on regarde.
+    if (want && w.active && Date.now() - w.touchedAt > 60_000) {
+      w.touchedAt = Date.now();
+      void coreCall(this.cfg, "POST", "/v1/link/preview/touch", {});
+    }
+  }
+
+  /** Active ou coupe l'aperçu (site ou fenêtre Studio d'OBS : même interrupteur). */
+  setPreviewEnabled(on: boolean) {
+    this.cfg.previewEnabled = on;
+    save(this.cfg);
+    this.send({ type: "event", name: "link.previewState", data: { enabled: on } });
+    void this.managePreview();
+  }
+
+  private setMode(reason = "") {
+    this.whip.reason = reason;
+    this.send({ type: "event", name: "link.previewMode", data: { mode: this.previewMode, reason } });
+  }
+
+  private async startWhip() {
+    const w = this.whip;
+    w.starting = true;
+    try {
+      const r = await coreCall(this.cfg, "POST", "/v1/link/preview/start", {});
+      const url = r.ok ? String(r.json.whip_url ?? "") : "";
+      if (!url) throw new Error(r.status === 0 ? "Serveur SYXTEE injoignable." : "Le serveur n'accepte pas l'aperçu vidéo.");
+      await this.obs.request("link.whipStart", { server: url });
+      if (!this.whip.starting) {
+        // Plus de spectateur pendant le démarrage : on referme tout de suite.
+        void this.obs.request("link.whipStop").catch(() => {});
+        void coreCall(this.cfg, "POST", "/v1/link/preview/stop", {});
+        return;
+      }
+      w.active = true;
+      w.touchedAt = Date.now();
+      this.log("aperçu vidéo démarré");
+      this.setMode();
+    } catch (e) {
+      w.active = false;
+      w.failedAt = Date.now();
+      this.log(`aperçu vidéo indisponible : ${(e as Error).message}`);
+      void coreCall(this.cfg, "POST", "/v1/link/preview/stop", {});
+      this.setMode((e as Error).message);
+    } finally {
+      w.starting = false;
+    }
+  }
+
+  private async stopWhip() {
+    const w = this.whip;
+    const was = w.active || w.starting;
+    w.starting = false;
+    w.active = false;
+    if (!was) return;
+    await this.obs.request("link.whipStop").catch(() => {});
+    void coreCall(this.cfg, "POST", "/v1/link/preview/stop", {});
+    this.log("aperçu vidéo arrêté");
+    this.setMode();
+  }
+
   /** Aperçu du programme pour le navigateur : environ 10 images par seconde, seulement si quelqu'un regarde.
    *  Boucle auto-cadencée : l'image suivante part dès que la précédente est faite, sans jamais en empiler. */
   private async previewLoop() {
@@ -209,7 +293,7 @@ export class Agent {
 
   /** Envoie une image. Renvoie false si rien n'a été envoyé (personne ne regarde, OBS fermé, réseau saturé). */
   private async preview(): Promise<boolean> {
-    if (this.status.viewers <= 0 || !this.obs.connected || !this.cfg.previewEnabled) return false;
+    if (this.status.viewers <= 0 || !this.obs.connected || !this.cfg.previewEnabled || this.whip.active || this.whip.starting) return false;
     // Réseau lent : on saute des images plutôt que d'accumuler du retard.
     if ((this.core?.bufferedAmount ?? 0) > 256 * 1024) return false;
     // La scène du programme change rarement : on la relit une fois par seconde, et dès qu'OBS la change.
@@ -273,6 +357,14 @@ export class Agent {
       this.log(`OBS ${this.status.obsVersion} connecté`);
       this.obs.onEvent = (name, data) => {
         if (name === "InputVolumeMeters") return this.meters(data);
+        if (name === "link.whip" && !data.active && this.whip.active) {
+          // L'envoi s'est interrompu côté OBS (réseau, serveur) : repli sur les images, nouvel essai dans 30 s.
+          this.whip.active = false;
+          this.whip.failedAt = Date.now();
+          void coreCall(this.cfg, "POST", "/v1/link/preview/stop", {});
+          this.setMode(String(data.error || "L'envoi vidéo s'est interrompu."));
+          return;
+        }
         if (name === "link.stats") {
           this.lastStats = data;
           if (this.status.viewers > 0) this.send({ type: "event", name, data });
@@ -372,6 +464,7 @@ export class Agent {
       } else if (m.type === "viewers") {
         this.status.viewers = Number((m as { n?: number }).n) || 0;
         this.emit();
+        void this.managePreview();
       } else if (m.type === "req" && typeof m.id === "string" && typeof m.method === "string") void this.handle(m.id, m.method, m.params ?? {});
     };
     ws.onclose = async (e) => {
@@ -414,12 +507,10 @@ export class Agent {
         return reply(true, { ...this.cfg.backup, liveScene: this.cfg.liveScene, state: this.watcher.state });
       }
       // Aperçu programme : « Couper l'aperçu » l'arrête sur le PC (aucun encodage, aucun envoi).
-      if (method === "link.getPreview") return reply(true, { enabled: this.cfg.previewEnabled });
+      if (method === "link.getPreview") return reply(true, { enabled: this.cfg.previewEnabled, mode: this.previewMode, reason: this.whip.reason });
       if (method === "link.setPreview") {
-        this.cfg.previewEnabled = params.enabled !== false;
-        save(this.cfg);
-        this.send({ type: "event", name: "link.previewState", data: { enabled: this.cfg.previewEnabled } });
-        return reply(true, { enabled: this.cfg.previewEnabled });
+        this.setPreviewEnabled(params.enabled !== false);
+        return reply(true, { enabled: this.cfg.previewEnabled, mode: this.previewMode, reason: this.whip.reason });
       }
       if (method === "link.collections") {
         const names = listCollections();

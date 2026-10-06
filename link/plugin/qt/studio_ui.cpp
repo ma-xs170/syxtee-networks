@@ -208,6 +208,8 @@ private:
 	// réglages
 	QComboBox *secScene_ = nullptr, *secSource_ = nullptr, *liveScene_ = nullptr, *dest_ = nullptr;
 	QWidget *destEmpty_ = nullptr, *liveAlert_ = nullptr;
+	Switch *previewSw_ = nullptr;
+	QLabel *previewHint_ = nullptr;
 	QLabel *liveAlertText_ = nullptr, *fixOut_ = nullptr, *hostOut_ = nullptr;
 	QPushButton *fixBtn_ = nullptr;
 	Switch *auto_ = nullptr;
@@ -444,10 +446,17 @@ private:
 		dh->addWidget(dest_);
 		destEmpty_ = create;
 		dh->addWidget(create);
-		auto *soon = label("Disponible bientôt", "muted");
-		soon->setWordWrap(false);
+		previewSw_ = new Switch;
+		previewHint_ = label("", "muted");
 		addRow(d, row("Flux de destination", "Le relais que lit la source « Flux SYXTEE » dans ta scène de direct", destBox), true);
-		addRow(d, row("Aperçu programme", "Montre ton direct sur le site. Tu pourras le désactiver si ton ordinateur est chargé.", soon));
+		addRow(d, row("Aperçu programme", "Montre l'image et le son de ton direct sur le site, seulement quand la page est ouverte. Coupe-le si ton ordinateur est chargé.", previewSw_));
+		static_cast<QVBoxLayout *>(d->layout())->addWidget(previewHint_);
+		QObject::connect(previewSw_, &QAbstractButton::toggled, this, [this](bool on) {
+			if (loadingSettings_) return;
+			QJsonObject b;
+			b["enabled"] = on;
+			post("/api/preview", b);
+		});
 		v->addWidget(d);
 		QObject::connect(dest_, &QComboBox::activated, this, [this](int i) {
 			QJsonObject b;
@@ -758,6 +767,18 @@ private:
 			} else loginErr_->hide();
 		}
 
+		// Aperçu programme : même interrupteur que sur le site (ce qu'on change d'un côté se voit de l'autre).
+		{
+			loadingSettings_ = true;
+			previewSw_->setChecked(s.value("previewEnabled").toBool(true));
+			loadingSettings_ = false;
+			const QString pm = s.value("previewMode").toString();
+			const QString why = s.value("previewReason").toString();
+			previewHint_->setText(!s.value("previewEnabled").toBool(true) ? "Aperçu coupé : rien n'est envoyé."
+					      : pm == "video" ? "En cours : image et son envoyés au site (vidéo réduite, encodeur matériel)."
+					      : pm == "jpeg" ? "Aperçu en images sans son" + (why.isEmpty() ? QString() : " : " + why)
+							     : "Prêt : l'envoi démarre quand la page Contrôle à distance est ouverte.");
+		}
 		vLink_->setText(coreOn ? "Connectée" : st.value("core").toString() == "connecting" ? "Connexion…" : "Hors ligne");
 		// OBS vient de devenir joignable : on recharge scènes, sources et diagnostic de la scène de direct.
 		const bool obsNow = st.value("obs").toString() == "on";

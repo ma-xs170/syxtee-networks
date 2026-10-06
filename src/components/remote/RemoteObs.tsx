@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { coreFetch } from "../dashboard/coreClient";
 import ProgramPreview, { type FrameSink } from "./ProgramPreview";
+import ProgramVideo, { type Watch } from "./ProgramVideo";
 import { useRemote, type LinkEvent } from "./useRemote";
 
 // Contrôle à distance : l'interface d'OBS sur le site. Chaque bouton agit sur le VRAI OBS du poste (par le plugin SYXTEE), et ce
@@ -91,6 +93,8 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
   const [fluxState, setFluxState] = useState<"none" | "waiting" | "received">("none");
   const [previewOn, setPreviewOn] = useState(true);
   const [muted, setMuted] = useState(true);
+  const [volume, setVolume] = useState(0.8);
+  const [pmode, setPmode] = useState<{ mode: "video" | "jpeg" | "idle"; reason: string }>({ mode: "idle", reason: "" });
   const [error, setError] = useState("");
   const [obsDown, setObsDown] = useState(false);
   const [confirm, setConfirm] = useState<"start" | "stop" | null>(null);
@@ -123,6 +127,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
       else if (name === "link.preview") frameSink.current?.(String(d.image));
       else if (name === "link.studioPreview") previewSink.current?.(String(d.image));
       else if (name === "link.previewState") setPreviewOn(!!d.enabled);
+      else if (name === "link.previewMode") setPmode({ mode: d.mode as "video" | "jpeg" | "idle", reason: String(d.reason ?? "") });
       else if (name === "link.backupState") setRoles((r) => (r ? { ...r, state: String(d.state) } : r));
       else if (name === "link.stats") {
         const st = (d.stream ?? {}) as Record<string, unknown>;
@@ -179,7 +184,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
       run<Roles>("link.getBackup"),
       run<{ profiles: string[]; currentProfileName: string }>("GetProfileList"),
       run<{ sceneCollections: string[]; currentSceneCollectionName: string }>("GetSceneCollectionList"),
-      run<{ enabled: boolean }>("link.getPreview"),
+      run<{ enabled: boolean; mode?: "video" | "jpeg" | "idle"; reason?: string }>("link.getPreview"),
     ]);
     setStudioMode(!!sm?.studioModeEnabled);
     if (sm?.studioModeEnabled) setPreview((await run<{ currentPreviewSceneName: string }>("GetCurrentPreviewScene"))?.currentPreviewSceneName ?? "");
@@ -192,6 +197,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
     setProfiles({ current: pl?.currentProfileName ?? "", list: pl?.profiles ?? [] });
     setCollections({ current: cl?.currentSceneCollectionName ?? "", list: cl?.sceneCollections ?? [] });
     setPreviewOn(pv?.enabled !== false);
+    setPmode({ mode: pv?.mode ?? "idle", reason: pv?.reason ?? "" });
     const inputs = il?.inputs ?? [];
     setInputNames(inputs.map((i) => i.inputName));
     setMixer(
@@ -200,6 +206,15 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
         .map((i) => ({ name: i.inputName, muted: !!i.inputMuted, db: i.inputVolumeMul && i.inputVolumeMul > 0 ? 20 * Math.log10(i.inputVolumeMul) : -100, mon: i.monitorType ?? "OBS_MONITORING_TYPE_NONE" })),
     );
   }, [run]);
+
+  /** Adresse de lecture de l'aperçu vidéo : demandée au Core avec la session du compte (jamais en clair dans la page). */
+  const watch = useCallback(async (): Promise<Watch> => {
+    const r = demoToken
+      ? await fetch(`${coreUrl}/v1/me/link/preview/watch`, { method: "POST", headers: { authorization: `Bearer ${demoToken}` } })
+      : await coreFetch(coreUrl, "/v1/me/link/preview/watch", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+    if (!r.ok) throw new Error(String(r.status));
+    return (await r.json()) as Watch;
+  }, [coreUrl, demoToken]);
 
   const ready = link === "on" && agent.online && !obsDown;
   // Comme dans OBS : en Mode Studio on édite la scène d'aperçu, sinon celle du programme.
@@ -219,7 +234,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
       void run<{ sceneItems: { sceneItemId: number; sourceName: string; sceneItemEnabled: boolean; inputKind?: string; sourceType?: string }[] }>("GetSceneItemList", { sceneName: editing }).then((r) => {
         if (live && r)
           setItems(
-            [...r.sceneItems].reverse().map((i) => ({ id: i.sceneItemId, name: i.sourceName, kind: i.sourceType === "OBS_SOURCE_TYPE_SCENE" ? "scene" : (i.inputKind ?? ""), on: i.sceneItemEnabled })),
+            [...(r.sceneItems ?? [])].reverse().map((i) => ({ id: i.sceneItemId, name: i.sourceName, kind: i.sourceType === "OBS_SOURCE_TYPE_SCENE" ? "scene" : (i.inputKind ?? ""), on: i.sceneItemEnabled })),
           );
       });
     }, 0);
@@ -401,8 +416,15 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
         <section aria-label="Programme" className="order-1 grid gap-2 lg:col-span-7">
           <div className={studioMode ? "grid grid-cols-1 gap-3 md:grid-cols-2" : ""}>
             {studioMode && <ProgramPreview sinkRef={previewSink} program={preview} live={false} title="Aperçu" tag="APERÇU" />}
-            {previewOn ? (
-              <ProgramPreview sinkRef={frameSink} program={program} live={streaming} title="Programme" tag={streaming ? "" : "HORS DIRECT"} />
+            {previewOn && pmode.mode === "jpeg" ? (
+              <div className="grid gap-2">
+                <ProgramPreview sinkRef={frameSink} program={program} live={streaming} title="Programme" tag={streaming ? "" : "HORS DIRECT"} />
+                <p role="status" className="rounded-xl border border-line px-3 py-2 text-xs text-muted">
+                  Aperçu en images, sans son{pmode.reason ? ` : ${pmode.reason}` : "."} La vidéo avec le son revient dès que possible.
+                </p>
+              </div>
+            ) : previewOn ? (
+              <ProgramVideo watch={watch} program={program} live={streaming} muted={muted} volume={volume} />
             ) : (
               <div className="grid aspect-video place-items-center rounded-2xl border border-line bg-surface-2 text-center">
                 <div>
@@ -419,7 +441,10 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
               <span className={`ml-3 font-mono text-[11px] uppercase tracking-[0.14em] ${streaming ? "text-live" : "text-muted"}`}>{streaming ? "en direct" : "hors direct"}</span>
             </p>
             <div className="flex gap-2">
-              <button type="button" disabled title="Le son de l'aperçu arrive avec la vidéo en direct" aria-pressed={!muted} onClick={() => setMuted((m) => !m)} className={`${btn} ${ghost} h-9 px-4 text-xs`}>
+              {!muted && pmode.mode === "video" && (
+                <input type="range" min={0} max={1} step={0.05} value={volume} onChange={(e) => setVolume(Number(e.target.value))} aria-label="Volume de l'aperçu" className="w-24 accent-current" />
+              )}
+              <button type="button" disabled={!previewOn || pmode.mode !== "video"} title={pmode.mode === "video" ? undefined : "Le son n'est disponible qu'avec l'aperçu vidéo"} aria-pressed={!muted} onClick={() => setMuted((m) => !m)} className={`${btn} ${ghost} h-9 px-4 text-xs`}>
                 {muted ? "Muet" : "Son"}
               </button>
               <button

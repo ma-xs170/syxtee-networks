@@ -24,3 +24,7 @@ std::string stub_profile();
 bool stub_item_visible(const char *scene, int64_t id);
 int stub_item_count(const char *scene);
 std::string stub_setting(const char *input, const char *key);
+void stub_whip_available(bool on);
+void stub_whip_fails(bool on);
+void stub_whip_drop(const char *error);
+std::string stub_whip_info();

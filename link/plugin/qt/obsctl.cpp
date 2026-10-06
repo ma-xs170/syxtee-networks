@@ -331,6 +331,142 @@ Json statsJson(bool withRates)
 	return r;
 }
 
+void onMain(std::function<void()> fn);
+
+// ───── Aperçu vidéo du programme : sortie WHIP native d'OBS (obs-webrtc), vidéo réduite + audio Opus ─────
+// Une sortie secondaire, avec ses propres encodeurs (matériel de préférence), vers le MediaMTX du serveur qui ne fait que retransmettre.
+// Elle ne tourne que lorsque l'agent la demande (quelqu'un regarde la page) ; rien ne part sinon.
+struct Whip {
+	obs_output_t *out = nullptr;
+	obs_encoder_t *video = nullptr, *audio = nullptr;
+	obs_service_t *service = nullptr;
+	QString encoder;
+} whip;
+
+/** Meilleur encodeur H.264 disponible : matériel d'abord (VideoToolbox, NVENC, AMF, Quick Sync), logiciel en dernier recours. */
+QString pickVideoEncoder()
+{
+	const char *id = nullptr;
+	int best = -1;
+	QString bestId;
+	for (size_t i = 0; obs_enum_encoder_types(i, &id); i++) {
+		if (obs_get_encoder_type(id) != OBS_ENCODER_VIDEO) continue;
+		if (obs_get_encoder_caps(id) & OBS_ENCODER_CAP_DEPRECATED) continue;
+		const char *codec = obs_get_encoder_codec(id);
+		if (!codec || strcmp(codec, "h264") != 0) continue;
+		const QString n = q(id).toLower();
+		if (n.contains("hevc") || n.contains("av1")) continue;
+		int score = 5;
+		if (n.contains("videotoolbox") || n.contains(".ave.")) score = 100;
+		else if (n.contains("nvenc")) score = 90;
+		else if (n.contains("amf")) score = 80;
+		else if (n.contains("qsv")) score = 70;
+		else if (n == "obs_x264") score = 10;
+		else if (n.contains("fallback")) score = 1;
+		if (score > best) {
+			best = score;
+			bestId = q(id);
+		}
+	}
+	return bestId;
+}
+
+void stopWhip()
+{
+	if (whip.out) {
+		obs_output_stop(whip.out);
+		obs_output_release(whip.out);
+	}
+	if (whip.video) obs_encoder_release(whip.video);
+	if (whip.audio) obs_encoder_release(whip.audio);
+	if (whip.service) obs_service_release(whip.service);
+	whip = Whip();
+}
+
+void whipSignalCb(void *param, calldata_t *cd)
+{
+	const bool started = param != nullptr;
+	obs_output_t *o = static_cast<obs_output_t *>(calldata_ptr(cd, "output"));
+	long long code = 0;
+	calldata_get_int(cd, "code", &code);
+	const QString err = (!started && code != 0 && o) ? q(obs_output_get_last_error(o)) : QString();
+	onMain([=] {
+		Json d;
+		d["active"] = started;
+		d["error"] = err;
+		emitEvent("link.whip", d);
+	});
+}
+
+Json startWhip(const Json &d)
+{
+	const QString server = d.value("server").toString();
+	if (!server.startsWith("https://") || server.size() > 400) throw Fail{"Adresse WHIP invalide."};
+	stopWhip();
+	const int kbps = std::min(3000, std::max(300, d.value("kbps").toInt(1200)));
+	const int height = std::min(720, std::max(270, d.value("height").toInt(540)));
+	obs_video_info ovi;
+	if (!obs_get_video_info(&ovi) || !ovi.base_width || !ovi.base_height) throw Fail{"Pas de vidéo."};
+	const int width = int(std::lround(double(height) * ovi.base_width / ovi.base_height / 2.0)) * 2;
+	const QString encId = pickVideoEncoder();
+	if (encId.isEmpty()) throw Fail{"Aucun encodeur H.264 disponible dans OBS."};
+
+	obs_data_t *sdata = obs_data_create();
+	obs_data_set_string(sdata, "server", server.toUtf8().constData());
+	whip.service = obs_service_create("whip_custom", "syxtee_preview_service", sdata, nullptr);
+	obs_data_release(sdata);
+	whip.out = obs_output_create("whip_output", "syxtee_preview", nullptr, nullptr);
+	if (!whip.service || !whip.out) {
+		stopWhip();
+		throw Fail{"Cet OBS ne sait pas envoyer en WHIP (obs-webrtc absent ou trop ancien)."};
+	}
+	// Vidéo : H.264 sans image B (exigé par WebRTC), image clé toutes les 2 s, débit constant.
+	obs_data_t *vs = obs_data_create();
+	obs_data_set_int(vs, "bitrate", kbps);
+	obs_data_set_string(vs, "rate_control", "CBR");
+	obs_data_set_int(vs, "keyint_sec", 2);
+	obs_data_set_string(vs, "profile", "baseline");
+	obs_data_set_int(vs, "bf", 0);
+	obs_data_set_bool(vs, "bframes", false);
+	obs_data_set_string(vs, "preset", "veryfast");
+	obs_data_set_string(vs, "tune", "zerolatency");
+	obs_data_set_string(vs, "x264opts", "bframes=0 scenecut=0");
+	whip.video = obs_video_encoder_create(encId.toUtf8().constData(), "syxtee_preview_video", vs, nullptr);
+	obs_data_release(vs);
+	obs_data_t *as = obs_data_create();
+	obs_data_set_int(as, "bitrate", 96);
+	whip.audio = obs_audio_encoder_create("ffmpeg_opus", "syxtee_preview_audio", as, 0, nullptr);
+	obs_data_release(as);
+	if (!whip.video || !whip.audio) {
+		stopWhip();
+		throw Fail{!whip.audio ? "L'encodeur audio Opus est absent d'OBS." : "L'encodeur vidéo n'a pas démarré."};
+	}
+	whip.encoder = encId;
+	obs_encoder_set_video(whip.video, obs_get_video());
+	obs_encoder_set_audio(whip.audio, obs_get_audio());
+	obs_encoder_set_scaled_size(whip.video, uint32_t(width), uint32_t(height));
+	// 60 images/s dans OBS : l'aperçu en garde une sur deux (30), largement assez et deux fois moins lourd.
+	if (ovi.fps_den && double(ovi.fps_num) / ovi.fps_den >= 50.0) obs_encoder_set_frame_rate_divisor(whip.video, 2);
+	obs_output_set_video_encoder(whip.out, whip.video);
+	obs_output_set_audio_encoder(whip.out, whip.audio, 0);
+	obs_output_set_service(whip.out, whip.service);
+	obs_output_set_reconnect_settings(whip.out, 0, 0);
+	signal_handler_t *sh = obs_output_get_signal_handler(whip.out);
+	signal_handler_connect(sh, "start", whipSignalCb, reinterpret_cast<void *>(1));
+	signal_handler_connect(sh, "stop", whipSignalCb, nullptr);
+	if (!obs_output_start(whip.out)) {
+		const QString err = q(obs_output_get_last_error(whip.out));
+		stopWhip();
+		throw Fail{err.isEmpty() ? "L'envoi WHIP n'a pas démarré." : err};
+	}
+	Json r;
+	r["encoder"] = encId;
+	r["width"] = width;
+	r["height"] = height;
+	r["kbps"] = kbps;
+	return r;
+}
+
 // ───── Demandes ─────
 using Handler = std::function<Json(const Json &)>;
 
@@ -528,6 +664,17 @@ std::map<QString, Handler> &handlers()
 			Src s(req(d, "inputName"));
 			obs_source_set_name(s.need("Entrée"), req(d, "newInputName").toUtf8().constData());
 			return okEmpty();
+		};
+		m["link.whipStart"] = [](const Json &d) { return startWhip(d); };
+		m["link.whipStop"] = [](const Json &) {
+			stopWhip();
+			return okEmpty();
+		};
+		m["link.whipStatus"] = [](const Json &) {
+			Json r;
+			r["active"] = whip.out && obs_output_active(whip.out);
+			r["encoder"] = whip.encoder;
+			return r;
 		};
 		m["GetSourceScreenshot"] = [](const Json &d) {
 			Src s(req(d, "sourceName"));
@@ -998,6 +1145,7 @@ bool syxtee_obsctl_start(const char *path)
 void syxtee_obsctl_stop()
 {
 	if (!server) return;
+	stopWhip();
 	obs_frontend_remove_event_callback(frontendEvent, nullptr);
 	signal_handler_t *g = obs_get_signal_handler();
 	signal_handler_disconnect(g, "source_create", sourceCreateCb, nullptr);

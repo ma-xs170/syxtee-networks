@@ -68,6 +68,9 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
     destination: cfg.destination,
     liveScene: cfg.liveScene,
     autoBackup: cfg.autoBackup,
+    previewEnabled: cfg.previewEnabled,
+    previewMode: agent?.previewMode ?? "idle",
+    previewReason: agent?.whipReason ?? "",
     lastBackup: cfg.lastBackup,
     sourceName: SOURCE_NAME,
     onboarded: cfg.onboarded,
@@ -182,6 +185,13 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
         }
         return json({ scene: cfg.liveScene, hasSource: has, obs: agent?.status.obs === "on", destination: cfg.destination !== "" });
       }
+      case "POST /api/preview":
+        if (agent) agent.setPreviewEnabled(body.enabled !== false);
+        else {
+          cfg.previewEnabled = body.enabled !== false;
+          save(cfg);
+        }
+        return json({ ok: true });
       case "POST /api/live-scene":
         cfg.liveScene = typeof body.scene === "string" ? body.scene.slice(0, 200) : "";
         save(cfg);

@@ -58,7 +58,13 @@ int main(int argc, char **argv)
 			else if (c == "stream") stub_stream(a.value(1) == "on");
 			else if (c == "bytes") stub_add_bytes(a.value(1).toULongLong());
 			else if (c == "meter") stub_meter(line.section(' ', 1, -2).trimmed().toUtf8().constData(), a.last().toFloat());
-			else if (c == "state") {
+			else if (c == "nowhip") stub_whip_available(false);
+			else if (c == "whipfail") stub_whip_fails(true);
+			else if (c == "whipdrop") stub_whip_drop("réseau coupé");
+			else if (c == "whipinfo") {
+				printf("WHIP %s\n", stub_whip_info().c_str());
+				fflush(stdout);
+			} else if (c == "state") {
 				QJsonObject o;
 				o["streaming"] = stub_streaming();
 				o["recording"] = stub_recording();

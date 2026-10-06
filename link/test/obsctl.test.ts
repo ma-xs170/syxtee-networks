@@ -4,6 +4,8 @@ import { existsSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { createServer } from "node:http";
+import type { AddressInfo } from "node:net";
 import { ObsIpc } from "../src/obsipc.ts";
 
 // Le VRAI code de pilotage du plugin (plugin/qt/obsctl.cpp) branché sur un faux OBS en mémoire (plugin/qt/test/obs-stub.cpp),
@@ -33,7 +35,8 @@ function start() {
     waiters.push({ re, ok });
     setTimeout(() => ko(new Error(`attendu ${re} dans « ${out} »`)), 5000).unref();
   });
-  return { sock, child, expect, cmd: (c: string) => child.stdin.write(c + "\n"), state: async () => { const before = out.length; child.stdin.write("state\n"); await new Promise((r) => setTimeout(r, 150)); const m = /STATE (\{.*\})/.exec(out.slice(before)); return m ? JSON.parse(m[1]) : null; } };
+  const whip = async () => { const before = out.length; child.stdin.write("whipinfo\n"); await new Promise((r) => setTimeout(r, 150)); const m = /WHIP (\{.*\})/.exec(out.slice(before)); return m ? JSON.parse(m[1]) : null; };
+  return { sock, child, expect, whip, cmd: (c: string) => child.stdin.write(c + "\n"), state: async () => { const before = out.length; child.stdin.write("state\n"); await new Promise((r) => setTimeout(r, 150)); const m = /STATE (\{.*\})/.exec(out.slice(before)); return m ? JSON.parse(m[1]) : null; } };
 }
 
 /** Attend l'événement `name` (le premier reçu à partir de maintenant). */
@@ -227,6 +230,144 @@ run("agent : se relie à OBS par le plugin (aucune configuration d'OBS), suit le
     agent.stop();
   } finally {
     delete process.env.SYXTEE_LINK_OBS_IPC;
+    h.child.kill();
+  }
+});
+
+run("aperçu vidéo : sortie WHIP native d'OBS, encodeur matériel, vidéo réduite, Opus, démarre et s'arrête à la demande", async () => {
+  const h = start();
+  try {
+    await h.expect(/READY/);
+    const obs = new ObsIpc(h.sock);
+    await obs.connect();
+    h.cmd("loaded");
+    await nextEvent(obs, "link.ready");
+
+    await assert.rejects(obs.request("link.whipStart", { server: "http://pas-securise/whip" }), /invalide/); // HTTPS obligatoire
+    assert.equal((await obs.request<any>("link.whipStatus")).active, false);
+    const started = nextEvent(obs, "link.whip");
+    const r = await obs.request<any>("link.whipStart", { server: "https://cam.example/obs_abc/whip" });
+    assert.equal((await started).active, true);
+    // Encodeur matériel Apple choisi (pas x264, pas HEVC), 960×540 (16:9), 1200 kbit/s, une image sur deux (OBS à 60 i/s), Opus
+    assert.equal(r.encoder, "com.apple.videotoolbox.videoencoder.ave.avc");
+    assert.deepEqual([r.width, r.height, r.kbps], [960, 540, 1200]);
+    const info = await h.whip();
+    assert.equal(info.serviceKind, "whip_custom");
+    assert.equal(info.outputKind, "whip_output");
+    assert.equal(info.server, "https://cam.example/obs_abc/whip");
+    assert.equal(info.videoEncoder, "com.apple.videotoolbox.videoencoder.ave.avc");
+    assert.equal(info.audioEncoder, "ffmpeg_opus");
+    assert.equal(info.divisor, 2);
+    assert.equal(info.videoSettings.bf, 0); // pas d'image B : exigé par WebRTC
+    assert.equal(info.videoSettings.bitrate, 1200);
+    assert.equal(info.videoSettings.rate_control, "CBR");
+    assert.equal(info.audioSettings.bitrate, 96);
+    assert.equal((await obs.request<any>("link.whipStatus")).active, true);
+
+    // L'envoi s'interrompt côté OBS : l'agent en est prévenu avec la raison
+    const dropped = nextEvent(obs, "link.whip");
+    h.cmd("whipdrop");
+    assert.deepEqual(await dropped, { active: false, error: "réseau coupé" });
+
+    // Arrêt demandé (plus personne ne regarde)
+    await obs.request("link.whipStart", { server: "https://cam.example/obs_def/whip", kbps: 900, height: 360 });
+    assert.equal((await h.whip()).server, "https://cam.example/obs_def/whip");
+    await obs.request("link.whipStop");
+    assert.equal((await h.whip()).stopped, true);
+    assert.equal((await obs.request<any>("link.whipStatus")).active, false);
+    obs.close();
+  } finally {
+    h.child.kill();
+  }
+});
+
+run("aperçu vidéo : sans obs-webrtc ou si le serveur refuse, message clair (l'agent retombe sur les images)", async () => {
+  const h = start();
+  try {
+    await h.expect(/READY/);
+    const obs = new ObsIpc(h.sock);
+    await obs.connect();
+    h.cmd("loaded");
+    await nextEvent(obs, "link.ready");
+    h.cmd("whipfail");
+    await new Promise((r) => setTimeout(r, 150));
+    await assert.rejects(obs.request("link.whipStart", { server: "https://cam.example/obs_abc/whip" }), /HTTP 401/);
+    assert.equal((await obs.request<any>("link.whipStatus")).active, false);
+    h.cmd("nowhip");
+    await new Promise((r) => setTimeout(r, 150));
+    await assert.rejects(obs.request("link.whipStart", { server: "https://cam.example/obs_abc/whip" }), /ne sait pas envoyer en WHIP/);
+    obs.close();
+  } finally {
+    h.child.kill();
+  }
+});
+
+run("agent : l'aperçu vidéo ne démarre que si quelqu'un regarde, s'arrête avec lui, se replie sur les images si le serveur refuse", async () => {
+  const h = start();
+  const calls: string[] = [];
+  let refuse = false;
+  const core = createServer((req, res) => {
+    calls.push(`${req.method} ${req.url}`);
+    const send = (code: number, v: unknown) => (res.writeHead(code, { "content-type": "application/json" }), res.end(JSON.stringify(v)));
+    if (req.url === "/v1/link/preview/start") return refuse ? send(503, { error: "off" }) : send(200, { path: "obs_x", whip_url: "https://cam.example/obs_x/whip" });
+    return send(200, { ok: true });
+  });
+  await new Promise<void>((r) => core.listen(0, "127.0.0.1", r));
+  process.env.SYXTEE_LINK_HOME = mkdtempSync(join(tmpdir(), "slk-home-"));
+  process.env.SYXTEE_LINK_OBS_IPC = h.sock;
+  let agent: InstanceType<typeof import("../src/agent.ts").Agent> | undefined;
+  try {
+    await h.expect(/READY/);
+    h.cmd("loaded");
+    const { Agent } = await import("../src/agent.ts");
+    const { defaults } = await import("../src/config.ts");
+    const cfg = { ...defaults(), core: `http://127.0.0.1:${(core.address() as AddressInfo).port}`, token: `slk_${"a".repeat(48)}` };
+    const a = (agent = new Agent(cfg));
+    const events: { name: string; data: any }[] = [];
+    (a as any).send = (m: any) => m.type === "event" && events.push({ name: m.name, data: m.data });
+    a.start();
+    for (let i = 0; i < 50 && a.status.obs !== "on"; i++) await new Promise((r) => setTimeout(r, 100));
+    a.status.core = "on"; // le Core de l'essai n'a pas de WebSocket : on simule la liaison établie
+
+    // Personne ne regarde : rien ne part
+    await a.managePreview();
+    assert.equal(a.previewMode, "idle");
+    assert.ok(!calls.includes("POST /v1/link/preview/start"));
+    // Quelqu'un ouvre la page : session demandée au serveur, WHIP lancé dans OBS
+    a.status.viewers = 1;
+    await a.managePreview();
+    assert.equal(a.previewMode, "video");
+    assert.ok(calls.includes("POST /v1/link/preview/start"));
+    assert.equal((await h.whip()).server, "https://cam.example/obs_x/whip");
+    const lastMode = () => events.filter((e) => e.name === "link.previewMode").at(-1);
+    assert.equal(lastMode()?.data.mode, "video");
+    // Plus personne : l'envoi s'arrête, le serveur rend la session
+    a.status.viewers = 0;
+    await a.managePreview();
+    assert.equal(a.previewMode, "idle");
+    assert.equal((await h.whip()).stopped, true);
+    assert.ok(calls.includes("POST /v1/link/preview/stop"));
+    // « Couper l'aperçu » : même avec des spectateurs, rien ne part
+    a.status.viewers = 2;
+    cfg.previewEnabled = false;
+    (a as any).whip.failedAt = 0;
+    await a.managePreview();
+    assert.equal(a.previewMode, "idle");
+    // Le serveur refuse : repli sur les images, avec la raison
+    cfg.previewEnabled = true;
+    refuse = true;
+    await a.managePreview();
+    assert.equal(a.previewMode, "jpeg");
+    assert.match(String(lastMode()?.data.reason), /n'accepte pas/);
+    // Pas de nouvel essai avant 30 s
+    const before = calls.filter((c) => c === "POST /v1/link/preview/start").length;
+    refuse = false;
+    await a.managePreview();
+    assert.equal(calls.filter((c) => c === "POST /v1/link/preview/start").length, before);
+  } finally {
+    agent?.stop();
+    delete process.env.SYXTEE_LINK_OBS_IPC;
+    core.close();
     h.child.kill();
   }
 });

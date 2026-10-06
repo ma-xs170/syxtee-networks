@@ -114,7 +114,7 @@ export function relayView(r: Relay, c: Config, live = false) {
 const RANGES = { "15m": 15 * 60_000, "1h": 3_600_000, "6h": 6 * 3_600_000, "24h": 24 * 3_600_000 } as const;
 
 export function buildServer(d: Deps) {
-  const app = Fastify({ logger: { level: "info" }, trustProxy: true, bodyLimit: 16 * 1024 });
+  const app = Fastify({ logger: { level: "info" }, trustProxy: true, bodyLimit: 16 * 1024, maxParamLength: 512 });
   const origins = d.config.CORS_ORIGINS.split(",").map((s) => s.trim()).filter(Boolean);
   // Corps JSON vide accepté (POST sans données depuis le dashboard).
   app.removeContentTypeParser("application/json");

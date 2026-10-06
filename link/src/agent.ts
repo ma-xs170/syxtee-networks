@@ -4,7 +4,8 @@ import { join } from "node:path";
 import { BackupWatcher, cleanBackup } from "./backup.ts";
 import { downloadArchive, uploadArchive } from "./cloud.ts";
 import { save, type LinkConfig } from "./config.ts";
-import { ObsClient } from "./obs.ts";
+import { ObsClient, type ObsEvent } from "./obs.ts";
+import { ipcPath, ObsIpc } from "./obsipc.ts";
 import { listCollections, readObsWebsocket } from "./obsconfig.ts";
 import { statSync } from "node:fs";
 import { scenesDir } from "./obsconfig.ts";
@@ -20,6 +21,7 @@ export const OBS_METHODS = new Set([
   "GetInputMute", "GetInputVolume", "GetStreamStatus", "GetRecordStatus", "GetStudioModeEnabled", "GetMediaInputStatus", "GetSourceScreenshot",
   "GetSceneTransitionList", "GetCurrentSceneTransition", "GetVideoSettings",
   "SetCurrentProgramScene", "SetCurrentSceneTransition", "SetCurrentPreviewScene", "SetStudioModeEnabled", "TriggerStudioModeTransition", "SetSceneItemEnabled",
+  "GetProfileList", "SetCurrentProfile", "GetSceneCollectionList", "SetCurrentSceneCollection", "GetInputAudioMonitorType", "SetInputAudioMonitorType", "GetOutputStats",
   "SetInputMute", "SetInputVolume", "StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord",
 ]);
 
@@ -27,6 +29,8 @@ export const OBS_METHODS = new Set([
 const EVENTS = new Set([
   "CurrentProgramSceneChanged", "CurrentPreviewSceneChanged", "SceneListChanged", "StreamStateChanged", "RecordStateChanged",
   "InputMuteStateChanged", "InputVolumeChanged", "SceneItemEnableStateChanged", "StudioModeStateChanged", "ExitStarted",
+  "CurrentSceneCollectionChanged", "CurrentProfileChanged", "InputCreated", "SceneCreated", "SceneItemCreated", "SceneItemRemoved",
+  "SceneItemListIndexingChanged", "SourceRenamed", "CurrentSceneTransitionChanged",
 ]);
 
 export type Job = { kind: "backup" | "restore"; state: "running" | "done" | "error"; progress: number; message: string } | null;
@@ -39,7 +43,14 @@ export type Status = { core: "off" | "connecting" | "on"; obs: "off" | "connecti
 export class Agent {
   status: Status = { core: "off", obs: "off", obsVersion: "", backup: "idle", lastError: "", viewers: 0, job: null };
   onStatus: (s: Status) => void = () => {};
-  private obs = new ObsClient();
+  /** OBS est piloté par le plugin (socket local) ; obs-websocket ne sert qu'en repli, sans le plugin (essais, Qt incompatible). */
+  private obs: {
+    connected: boolean;
+    onEvent: ObsEvent;
+    onClose: () => void;
+    request<T = Record<string, unknown>>(t: string, d?: Record<string, unknown>): Promise<T>;
+    close(): void;
+  } & ({ connect(): Promise<{ wsVersion: string }> } | { connect(host: string, port: number, password: string): Promise<{ wsVersion: string }> }) = ipcPath() ? new ObsIpc(ipcPath()) : new ObsClient();
   private core: WebSocket | null = null;
   private stopped = false;
   private watcher: BackupWatcher;
@@ -48,6 +59,8 @@ export class Agent {
   private autoTimer: ReturnType<typeof setInterval> | null = null;
   private autoFailedAt = new Map<string, number>();
   private lastMeters = 0;
+  /** Dernières mesures du poste (CPU, images, débit du direct), poussées par le plugin chaque seconde. */
+  lastStats: Record<string, unknown> = {};
   private obsBusy = false;
   private previewTimer: ReturnType<typeof setTimeout> | null = null;
   private previewScene = "";
@@ -242,13 +255,17 @@ export class Agent {
     this.status.obs = "connecting";
     this.emit();
     try {
-      // Réglages OBS : ceux d'OBS lui-même (lus dans sa configuration) tant que l'utilisateur n'en a pas imposé d'autres.
-      const found = readObsWebsocket();
-      const host = this.cfg.obs.host;
-      const port = this.cfg.obs.password || !found ? this.cfg.obs.port : found.port;
-      const password = this.cfg.obs.password || found?.password || "";
-      if (found && !found.enabled) throw new Error("Active le serveur WebSocket d'OBS : Outils, Paramètres du serveur WebSocket.");
-      const { wsVersion } = await this.obs.connect(host, port, password);
+      let wsVersion: string;
+      if (this.obs instanceof ObsIpc) {
+        ({ wsVersion } = await this.obs.connect());
+      } else {
+        // Repli sans le plugin : réglages lus dans la configuration d'OBS. Jamais montré à l'utilisateur.
+        const found = readObsWebsocket();
+        const port = this.cfg.obs.password || !found ? this.cfg.obs.port : found.port;
+        const password = this.cfg.obs.password || found?.password || "";
+        if (found && !found.enabled) throw new Error("OBS n'est pas joignable. Mets à jour le plugin SYXTEE, puis redémarre OBS.");
+        ({ wsVersion } = await (this.obs as ObsClient).connect(this.cfg.obs.host, port, password));
+      }
       const v = await this.obs.request<{ obsVersion?: string }>("GetVersion");
       this.status.obs = "on";
       this.status.obsVersion = String(v.obsVersion ?? wsVersion);
@@ -256,6 +273,11 @@ export class Agent {
       this.log(`OBS ${this.status.obsVersion} connecté`);
       this.obs.onEvent = (name, data) => {
         if (name === "InputVolumeMeters") return this.meters(data);
+        if (name === "link.stats") {
+          this.lastStats = data;
+          if (this.status.viewers > 0) this.send({ type: "event", name, data });
+          return;
+        }
         if (name === "CurrentProgramSceneChanged") this.previewScene = String(data.sceneName ?? "");
         if (name === "CurrentPreviewSceneChanged") this.studioScene = String(data.sceneName ?? "");
         if (name === "StudioModeStateChanged" && !data.studioModeEnabled) this.studioScene = "";

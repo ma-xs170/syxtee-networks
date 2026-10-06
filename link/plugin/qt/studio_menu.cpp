@@ -12,6 +12,9 @@
 #include <QUrl>
 #include <QVersionNumber>
 
+#include <cstdlib>
+
+#include "obsctl.h"
 #include "studio_ui.h"
 
 extern "C" const char *syxtee_ipc_token(void);
@@ -71,6 +74,10 @@ extern "C" bool syxtee_ui_load(void)
 		disabled = true;
 		return false;
 	}
+	// Pilotage d'OBS dans le plugin (socket local) : si le Qt est compatible, l'agent n'a besoin ni d'obs-websocket ni d'aucun réglage.
+	if (const char *sock = getenv("SYXTEE_LINK_OBS_IPC")) {
+		if (!syxtee_obsctl_start(sock)) blog(LOG_WARNING, "[syxtee-link] pilotage interne indisponible");
+	}
 	obs_frontend_add_event_callback(on_event, nullptr);
 	return true;
 }
@@ -78,6 +85,7 @@ extern "C" bool syxtee_ui_load(void)
 extern "C" void syxtee_ui_unload(void)
 {
 	if (disabled) return;
+	syxtee_obsctl_stop();
 	obs_frontend_remove_event_callback(on_event, nullptr);
 	delete window.data();
 	if (menu) {

@@ -205,18 +205,48 @@ static void open_panel(void *data)
 }
 #endif
 
+/* Socket local par lequel l'agent pilote OBS (plugin = serveur, agent = client). Réservé à l'utilisateur : ~/.syxtee-link, droits 0700. */
+static void set_obs_ipc_path(void)
+{
+#ifdef _WIN32
+	char name[96];
+	snprintf(name, sizeof(name), "syxtee-link-obs-%lu", (unsigned long)GetCurrentProcessId());
+	SetEnvironmentVariableA("SYXTEE_LINK_OBS_IPC", name);
+#else
+	const char *home = getenv("HOME");
+	if (!home)
+		return;
+	char dir[4096], path[4200];
+	snprintf(dir, sizeof(dir), "%s/.syxtee-link", home);
+	mkdir(dir, 0700);
+	snprintf(path, sizeof(path), "%s/obs-%d.sock", dir, (int)getpid());
+	setenv("SYXTEE_LINK_OBS_IPC", path, 1);
+#endif
+}
+
 bool obs_module_load(void)
 {
 	blog(LOG_INFO, "[syxtee-link] chargé");
 	make_ipc_token();
+	set_obs_ipc_path();
 #ifdef _WIN32
 	SetEnvironmentVariableA("SYXTEE_LINK_IPC", ipc_token);
 #else
 	setenv("SYXTEE_LINK_IPC", ipc_token, 1);
 #endif
+	/* L'interface Qt (et le pilotage interne d'OBS qui va avec) démarre AVANT l'agent : c'est elle qui décide si le socket existe.
+	 * Qt d'OBS incompatible avec celui du plugin : ni interface ni pilotage interne, jamais de plantage ; l'agent retombe sur obs-websocket
+	 * et la page de réglages reste accessible depuis le menu Outils. */
+	bool ui = syxtee_ui_load();
+	if (!ui) {
+#ifdef _WIN32
+		SetEnvironmentVariableA("SYXTEE_LINK_OBS_IPC", NULL);
+#else
+		unsetenv("SYXTEE_LINK_OBS_IPC");
+#endif
+	}
 	start_helper();
-	/* Qt d'OBS incompatible avec celui du plugin : pas d'interface Qt (jamais de plantage), mais l'agent tourne et la page web reste accessible. */
-	if (!syxtee_ui_load())
+	if (!ui)
 		obs_frontend_add_tools_menu_item("SYXTEE Link (page web)", open_panel, NULL);
 	return true;
 }

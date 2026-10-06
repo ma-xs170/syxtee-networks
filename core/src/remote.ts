@@ -18,10 +18,10 @@ export const ALLOWED = new Set([
   // OBS : lecture
   "GetVersion", "GetStats", "GetSceneList", "GetCurrentProgramScene", "GetCurrentPreviewScene", "GetSceneItemList", "GetInputList",
   "GetInputMute", "GetInputVolume", "GetStreamStatus", "GetRecordStatus", "GetStudioModeEnabled", "GetMediaInputStatus", "GetSourceScreenshot",
-  "GetSceneTransitionList", "GetCurrentSceneTransition", "GetVideoSettings",
+  "GetSceneTransitionList", "GetCurrentSceneTransition", "GetVideoSettings", "GetProfileList", "GetSceneCollectionList", "GetInputAudioMonitorType", "GetOutputStats",
   // OBS : actions
   "SetCurrentProgramScene", "SetCurrentPreviewScene", "SetStudioModeEnabled", "TriggerStudioModeTransition", "SetSceneItemEnabled",
-  "SetInputMute", "SetInputVolume", "SetCurrentSceneTransition", "StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord",
+  "SetInputMute", "SetInputVolume", "SetInputAudioMonitorType", "SetCurrentProfile", "SetCurrentSceneCollection", "SetCurrentSceneTransition", "StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord",
   // SYXTEE Link : bascule automatique sur une scène de secours, état de l'agent
   "link.getBackup", "link.setBackup", "link.getInfo", "link.preview", "link.collections", "link.backupNow", "link.restore",
 ]);

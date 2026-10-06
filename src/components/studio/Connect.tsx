@@ -37,7 +37,7 @@ export default function Connect({ coreUrl, link, agent, obsDown, compact }: { co
           : !agent.online
             ? "OBS n'est pas relié à ton compte. Installe SYXTEE Link, puis ouvre OBS sur ton ordinateur."
             : obsDown
-              ? "SYXTEE Link est là, mais OBS est fermé ou son serveur WebSocket est désactivé (Outils, Paramètres du serveur WebSocket)."
+              ? "SYXTEE Link est là, mais OBS n'est pas prêt. Ouvre OBS (menu SYXTEE) ou redémarre-le."
               : "";
 
   return (

@@ -200,7 +200,7 @@ private:
 	QLabel *loginText_ = nullptr, *loginCode_ = nullptr, *loginErr_ = nullptr;
 	QPushButton *connect_ = nullptr, *reopen_ = nullptr;
 	// direct
-	QLabel *vLink_ = nullptr, *vSource_ = nullptr, *vAccess_ = nullptr, *vObs_ = nullptr;
+	QLabel *vLink_ = nullptr, *vSource_ = nullptr, *vAccess_ = nullptr;
 	// collections
 	QVBoxLayout *localBox_ = nullptr, *cloudBox_ = nullptr;
 	QLabel *quota_ = nullptr, *job_ = nullptr;
@@ -378,9 +378,7 @@ private:
 		vLink_ = label("—");
 		vSource_ = label("En attente");
 		vAccess_ = label("—");
-		vObs_ = label("—");
 		addRow(c, row("Liaison SYXTEE", "Cet OBS et ton compte", vLink_), true);
-		addRow(c, row("OBS", "Serveur WebSocket d'OBS", vObs_));
 		addRow(c, row("Source vidéo", "Flux du relais dans la scène de direct", vSource_));
 		addRow(c, row("Accès au direct", "Compte autorisé sur SYXTEE", vAccess_));
 		v->addWidget(c);
@@ -765,7 +763,6 @@ private:
 		const bool obsNow = st.value("obs").toString() == "on";
 		if (obsNow && !obsOn_) lastData_ = 0;
 		obsOn_ = obsNow;
-		vObs_->setText(st.value("obs").toString() == "on" ? "Connecté · OBS " + st.value("obsVersion").toString() : "Non joignable (active le serveur WebSocket d'OBS)");
 		vAccess_->setText(coreOn ? "Actif" : "—");
 
 		const QJsonObject job = st.value("job").toObject();

@@ -98,7 +98,7 @@ const qtInc = ["QtCore", "QtGui", "QtWidgets", "QtNetwork"].map((m) => `-I${join
 const archs = ["-arch", "arm64", "-arch", "x86_64"];
 const common = ["-mmacosx-version-min=13.0", "-O2", "-Wall", "-fPIC", "-Wno-deprecated-declarations", `-I${join(headers, "libobs")}`, `-I${join(headers, "simde")}`, `-I${join(headers, "frontend", "api")}`];
 const objs = [];
-for (const [src, std] of [["syxtee-link.c", null], ["qt/studio_ui.cpp", "-std=c++17"], ["qt/studio_menu.cpp", "-std=c++17"]]) {
+for (const [src, std] of [["syxtee-link.c", null], ["qt/studio_ui.cpp", "-std=c++17"], ["qt/studio_menu.cpp", "-std=c++17"], ["qt/obsctl.cpp", "-std=c++17"]]) {
   const obj = join(work, `${src.replace(/\W/g, "_")}.o`);
   const cc = std ? "clang++" : "clang";
   run(cc, [...archs, "-c", ...common, ...(std ? [std, `-F${qtLib}`, ...qtInc] : []), join(root, "plugin", src), "-o", obj]);

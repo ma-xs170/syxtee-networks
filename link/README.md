@@ -18,7 +18,7 @@ L'agent (`src/`, Node, exécutable autonome) :
 
 1. **Connexion** : au premier lancement, il ouvre `/link?code=…` sur le site. L'utilisateur, connecté à son compte (invité), confirme ; l'agent reçoit un jeton d'appareil (seule l'empreinte SHA-256 est stockée côté serveur).
 2. **Proposition de sauvegarde** avant utilisation (boîte native sur macOS, sinon écran de la page locale).
-3. **OBS** : lit les réglages du serveur WebSocket d'OBS (`plugin_config/obs-websocket/config.json`), sans rien demander. Le serveur WebSocket doit être activé (Outils, Paramètres du serveur WebSocket).
+3. **OBS** : piloté par le plugin lui-même (libobs et obs-frontend-api), par un socket local réservé à l'utilisateur. Rien à activer ni à configurer dans OBS. obs-websocket n'est qu'un repli interne (essais hors OBS, Qt incompatible).
 4. **Commandes** : liste blanche de méthodes OBS (scènes, flux, enregistrement, audio, transitions, lecture), appliquée par le Core **et** par l'agent. Pas de suppression de scène, pas de réglages, pas de commande arbitraire.
 
 ## Installer (macOS)

@@ -64,8 +64,7 @@ pre{margin:0;padding:12px 16px;font:11.5px/1.6 ui-monospace,Menlo,monospace;colo
     <h2>Connexions</h2>
     <div class="card">
       <div class="row"><div><b>Serveur SYXTEE</b><small>télécommande Studio</small></div><span class="state"><span class="dot" id="coredot"></span><span id="coretext"></span></span></div>
-      <div class="row"><div><b>OBS Studio</b><small id="obssub">obs-websocket</small></div><span class="state"><span class="dot" id="obsdot"></span><span id="obstext"></span></span></div>
-      <div class="row"><div><b>SYXTEE Studio (site)</b><small id="viewsub">ouvert sur le site</small></div><span class="state"><span class="dot" id="viewdot"></span><span id="viewtext"></span></span></div>
+            <div class="row"><div><b>SYXTEE Studio (site)</b><small id="viewsub">ouvert sur le site</small></div><span class="state"><span class="dot" id="viewdot"></span><span id="viewtext"></span></span></div>
     </div>
     <p class="err" id="lasterr" hidden></p>
     <h2>Activité</h2><div class="card"><pre id="logs"></pre></div>
@@ -85,8 +84,6 @@ pre{margin:0;padding:12px 16px;font:11.5px/1.6 ui-monospace,Menlo,monospace;colo
     <div class="card"><div class="grid"><label class="f">Source surveillée<select id="bksource"></select></label><label class="f">Scène de secours<select id="bkscene"></select></label>
       <label class="f">Bascule après<select id="bkfreeze"><option value="2">2 s d'image figée</option><option value="3">3 s</option><option value="4">4 s</option><option value="6">6 s</option><option value="10">10 s</option></select></label></div>
       <div class="row"><div><b>Bascule automatique</b><small>Passe seul sur la scène de secours.</small></div><label class="switch"><input type="checkbox" id="bkon" aria-label="Bascule automatique" /><i></i></label></div></div>
-    <h2>OBS</h2><p class="sub" id="obshint">Les réglages WebSocket d'OBS sont détectés automatiquement.</p>
-    <div class="card"><div class="grid"><label class="f">Mot de passe imposé (laisser vide pour la détection automatique)<input id="obspw" type="password" autocomplete="off" /></label><div><button class="btn" id="obssave">Enregistrer</button></div></div></div>
     <h2>Compte</h2>
     <div class="card"><div class="row"><div><b>Ce PC est relié à ton compte</b><small>Retire aussi l'appareil dans SYXTEE Studio.</small></div><button class="btn" id="unpair">Déconnecter</button></div></div>
   </div>
@@ -114,15 +111,12 @@ function render(s){
   if(onboard){if(!cols.length)loadCols();job("ob",j);return}
   var names={on:"Connecté",connecting:"Connexion…",off:"Hors ligne"};
   $("coretext").textContent=names[s.status.core];dot("coredot",s.status.core==="on"?"on":"");
-  $("obstext").textContent=s.status.obs==="on"?"Connecté":s.status.obs==="connecting"?"Connexion…":"Injoignable";dot("obsdot",s.status.obs==="on"?"on":"");
-  $("obssub").textContent=s.status.obsVersion?"OBS "+s.status.obsVersion:"obs-websocket";
   $("viewtext").textContent=s.status.viewers>0?"Ouvert ("+s.status.viewers+")":"Fermé";dot("viewdot",s.status.viewers>0?"on":"");
   $("lasterr").hidden=!s.status.lastError;$("lasterr").textContent=s.status.lastError||"";
   var lg=$("logs"),bottom=lg.scrollTop+lg.clientHeight>=lg.scrollHeight-8;lg.textContent=s.logs.length?s.logs.join("\\n"):"Rien pour l'instant.";if(bottom)lg.scrollTop=lg.scrollHeight;
   job("",j);
   var b=s.backup;$("bkon").checked=b.enabled;$("bkon").disabled=!b.source||!b.scene;$("bkfreeze").value=String(b.freezeSeconds);
   if(document.activeElement.id!=="bksource"&&document.activeElement.id!=="bkscene")loadOptions();
-  $("obshint").textContent=s.obsCustom?"Mot de passe imposé enregistré.":"Les réglages WebSocket d'OBS sont détectés automatiquement."
 }
 function job(p,j){
   var prog=$(p?"obprog":"prog"),bar=$(p?"obbar":"bar"),msg=$(p?"obmsg":"msg"),err=$(p?"oberr":"msgerr"),go=$(p?"obgo":"gobackup");
@@ -152,7 +146,6 @@ $("obskip").onclick=function(){api("/api/onboarded",{})};
 $("gobackup").onclick=function(){if($("col").value)api("/api/backup",{collection:$("col").value})};
 $("bksource").onchange=function(e){sw({source:e.target.value})};$("bkscene").onchange=function(e){sw({scene:e.target.value})};
 $("bkfreeze").onchange=function(e){sw({freezeSeconds:Number(e.target.value)})};$("bkon").onchange=function(e){sw({enabled:e.target.checked})};
-$("obssave").onclick=function(){api("/api/obs",{password:$("obspw").value});$("obspw").value=""};
 $("unpair").onclick=function(){api("/api/unpair",{})};
 function tick(){api("/api/state").then(render).catch(function(){$("toptext").textContent="Application arrêtée"})}
 tick();setInterval(tick,1200);

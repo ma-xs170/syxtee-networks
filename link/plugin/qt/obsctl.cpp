@@ -189,6 +189,9 @@ const char *monitorName(obs_monitoring_type t)
 							       : "OBS_MONITORING_TYPE_NONE";
 }
 
+/** Noms des sources audio globales d'OBS (périphériques « Audio du bureau » / « Micro » : canaux de sortie 1 à 6). */
+QSet<QString> globalAudio;
+
 bool enumInput(void *param, obs_source_t *s)
 {
 	auto *arr = static_cast<QJsonArray *>(param);
@@ -202,6 +205,7 @@ bool enumInput(void *param, obs_source_t *s)
 		i["inputMuted"] = obs_source_muted(s);
 		i["inputVolumeMul"] = double(obs_source_get_volume(s));
 		i["monitorType"] = monitorName(obs_source_get_monitoring_type(s));
+		i["global"] = globalAudio.contains(q(obs_source_get_name(s)));
 	}
 	arr->append(i);
 	return true;
@@ -841,6 +845,13 @@ std::map<QString, Handler> &handlers()
 		// Entrées et audio
 		m["GetInputList"] = [](const Json &) {
 			QJsonArray arr;
+			globalAudio.clear();
+			for (uint32_t ch = 1; ch <= 6; ch++) {
+				if (obs_source_t *g = obs_get_output_source(ch)) {
+					globalAudio.insert(q(obs_source_get_name(g)));
+					obs_source_release(g);
+				}
+			}
 			obs_enum_sources(enumInput, &arr);
 			Json r;
 			r["inputs"] = arr;

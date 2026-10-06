@@ -364,6 +364,7 @@ obs_source_t *obs_get_source_by_name(const char *name)
 		}
 	return nullptr;
 }
+obs_source_t *obs_get_output_source(uint32_t) { return nullptr; } // aucun périphérique audio global dans le faux OBS
 void obs_source_release(obs_source_t *s) { s->refs--; }
 const char *obs_source_get_name(const obs_source_t *s) { return s->name.c_str(); }
 const char *obs_source_get_id(const obs_source_t *s) { return s->id.c_str(); }

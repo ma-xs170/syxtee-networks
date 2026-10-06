@@ -13,7 +13,7 @@ import { useRemote, type LinkEvent } from "./useRemote";
 // Mise en page volontairement sobre (fond noir, filets fins, texte petit, une seule typo) : c'est un OBS, pas un tableau de bord.
 
 type Item = { id: number; name: string; kind: string; on: boolean; flux?: boolean };
-type Mix = { name: string; muted: boolean; db: number; mon: string };
+type Mix = { name: string; muted: boolean; db: number; mon: string; global: boolean };
 type Trigger = "cut" | "cut_lowbitrate" | "sensitive";
 type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string };
 type Stats = { cpu: number; fps: number; kbps: number | null; dropped: number; total: number; encoder: string; congestion: number; streamMs: number; recMs: number };
@@ -77,6 +77,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
   const [preview, setPreview] = useState("");
   const [studioMode, setStudioMode] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
+  const [sceneAudio, setSceneAudio] = useState<Set<string>>(new Set());
   const [mixer, setMixer] = useState<Mix[]>([]);
   const [levels, setLevels] = useState<Record<string, number>>({});
   const [meterHold, setMeterHold] = useState(false);
@@ -209,7 +210,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
       read<{ outputActive: boolean; outputPaused: boolean }>("GetRecordStatus"),
     ]);
     const [il, pl, cl] = await Promise.all([
-      read<{ inputs: { inputName: string; inputKind?: string; hasAudio?: boolean; inputMuted?: boolean; inputVolumeMul?: number; monitorType?: string }[] }>("GetInputList"),
+      read<{ inputs: { inputName: string; inputKind?: string; hasAudio?: boolean; inputMuted?: boolean; inputVolumeMul?: number; monitorType?: string; global?: boolean }[] }>("GetInputList"),
       read<{ profiles: string[]; currentProfileName: string }>("GetProfileList"),
       read<{ sceneCollections: string[]; currentSceneCollectionName: string }>("GetSceneCollectionList"),
     ]);
@@ -245,7 +246,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
       setMixer(
         inputs
           .filter((i) => i.hasAudio !== false)
-          .map((i) => ({ name: i.inputName, muted: !!i.inputMuted, db: i.inputVolumeMul && i.inputVolumeMul > 0 ? 20 * Math.log10(i.inputVolumeMul) : -100, mon: i.monitorType ?? MON_OFF })),
+          .map((i) => ({ name: i.inputName, muted: !!i.inputMuted, db: i.inputVolumeMul && i.inputVolumeMul > 0 ? 20 * Math.log10(i.inputVolumeMul) : -100, mon: i.monitorType ?? MON_OFF, global: !!i.global })),
       );
     }
   }, [read]);
@@ -269,23 +270,37 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
     return () => clearTimeout(t);
   }, [link, agent.online, refresh, sync]);
 
-  // Sources de la scène éditée.
+  // Sources de la scène éditée, puis les noms de toutes les sources visibles qui la composent (scènes imbriquées comprises) :
+  // le mixer d'OBS ne montre que les entrées de la scène en cours, plus les périphériques audio globaux.
   useEffect(() => {
     if (!ready || !editing) return;
     let live = true;
+    type Row = { sceneItemId: number; sourceName: string; sceneItemEnabled: boolean; inputKind?: string; sourceType?: string };
     const t = setTimeout(() => {
-      void read<{ sceneItems: { sceneItemId: number; sourceName: string; sceneItemEnabled: boolean; inputKind?: string; sourceType?: string; syxteeRelayId?: string }[] }>("GetSceneItemList", { sceneName: editing }).then((r) => {
-        if (live && r)
-          setItems(
-            [...(r.sceneItems ?? [])].reverse().map((i) => ({ id: i.sceneItemId, name: i.sourceName, kind: i.sourceType === "OBS_SOURCE_TYPE_SCENE" ? "scene" : (i.inputKind ?? ""), on: i.sceneItemEnabled, flux: !!i.syxteeRelayId })),
-          );
-      });
+      void (async () => {
+        const top = await read<{ sceneItems: Row[] }>("GetSceneItemList", { sceneName: editing });
+        if (!live || !top) return;
+        setItems([...(top.sceneItems ?? [])].reverse().map((i) => ({ id: i.sceneItemId, name: i.sourceName, kind: i.sourceType === "OBS_SOURCE_TYPE_SCENE" ? "scene" : (i.inputKind ?? ""), on: i.sceneItemEnabled })));
+        const names = new Set<string>();
+        const walk = async (rows: Row[], depth: number) => {
+          for (const r of rows) {
+            if (!r.sceneItemEnabled) continue;
+            names.add(r.sourceName);
+            if (r.sourceType === "OBS_SOURCE_TYPE_SCENE" && depth < 4) {
+              const sub = await call<{ sceneItems: Row[] }>("GetSceneItemList", { sceneName: r.sourceName }).catch(() => null);
+              if (sub) await walk(sub.sceneItems ?? [], depth + 1);
+            }
+          }
+        };
+        await walk(top.sceneItems ?? [], 0);
+        if (live) setSceneAudio(names);
+      })();
     }, 0);
     return () => {
       live = false;
       clearTimeout(t);
     };
-  }, [ready, editing, read, sync]);
+  }, [ready, editing, read, call, sync]);
 
   // « Flux reçu » : une source « Flux … » de la collection est en lecture.
   useEffect(() => {
@@ -344,6 +359,8 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
     void run<Roles>("link.setBackup", next).then((r) => r && setRoles(r));
   }
 
+  // Mixer de la scène éditée : ses sources visibles qui ont du son, plus les périphériques globaux (comme dans OBS).
+  const visibleMixer = mixer.filter((i) => i.global || sceneAudio.has(i.name));
   const lost = link !== "on" || !agent.online;
   const statusText = link === "denied" ? "Accès sur invitation" : link === "connecting" ? "Connexion…" : !agent.online ? "OBS hors ligne" : obsDown ? "OBS fermé" : null;
   const received = fluxName !== "";
@@ -368,10 +385,10 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
                     disabled={!ready}
                     aria-pressed={studioMode ? isPreview : isProgram}
                     onClick={() => pick(sc)}
-                    className={`flex min-h-9 w-full items-center gap-2 rounded px-2 text-left text-[13px] disabled:opacity-50 ${isProgram ? "bg-[#2f4fc4] text-white" : isPreview ? "outline outline-1 -outline-offset-1 outline-[#2f4fc4]" : "text-neutral-300 hover:bg-[#161616]"}`}
+                    className={`flex min-h-9 w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[13px] disabled:opacity-50 ${isProgram ? "bg-[#2f4fc4] text-white" : isPreview ? "outline outline-1 -outline-offset-1 outline-[#2f4fc4]" : "text-neutral-300 hover:bg-[#161616]"}`}
                   >
                     <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${isProgram ? "bg-white" : "bg-neutral-600"}`} />
-                    <span className="min-w-0 flex-1 truncate">{sc}</span>
+                    <span className="min-w-0 flex-1 break-words leading-tight">{sc}</span>
                     {isProgram && <span className="shrink-0 text-[12px] opacity-80">direct</span>}
                     {isPreview && <span className="shrink-0 text-[12px] text-neutral-400">aperçu</span>}
                   </button>
@@ -435,13 +452,13 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
     <section aria-label="Mélangeur audio" className={`${panel} ${tab === "mixer" ? "" : "max-lg:hidden"}`}>
       <h2 className={panelTitle}>Mixer audio</h2>
       <div className="min-h-0 flex-1 overflow-x-auto p-1.5">
-        {mixer.length === 0 ? (
-          <p className="px-2 py-2 text-[13px] text-neutral-500">{ready ? "Aucune source audio dans OBS." : "En attente d'OBS…"}</p>
+        {visibleMixer.length === 0 ? (
+          <p className="px-2 py-2 text-[13px] text-neutral-500">{ready ? "Aucune source audio dans cette scène." : "En attente d'OBS…"}</p>
         ) : (
           <ul className="flex h-full gap-2">
-            {mixer.map((i) => (
+            {visibleMixer.map((i) => (
               <li key={i.name} className="flex h-full w-[5.5rem] shrink-0 flex-col items-center rounded bg-[#0d0d0d] px-1.5 py-1.5">
-                <span className="line-clamp-2 min-h-[2.3em] w-full break-words text-center text-[11px] font-medium uppercase leading-tight text-neutral-200" title={i.name}>
+                <span className="line-clamp-3 min-h-[2.3em] w-full break-words text-center text-[11px] font-medium uppercase leading-tight text-neutral-200" title={i.name}>
                   {i.name}
                 </span>
                 <div className="mt-1 flex min-h-0 flex-1 items-stretch gap-1">
@@ -706,7 +723,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
           ))}
         </nav>
 
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 max-lg:grid-rows-1 lg:grid-cols-[minmax(11rem,1fr)_3fr_3fr_minmax(12rem,1.15fr)]">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 max-lg:grid-rows-1 lg:grid-cols-[minmax(14rem,1.3fr)_3fr_3fr_minmax(13rem,1.15fr)]">
           {scenesPanel}
           {sourcesPanel}
           {mixerPanel}

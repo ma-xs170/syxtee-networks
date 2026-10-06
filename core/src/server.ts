@@ -9,7 +9,7 @@ import { isServiceToken } from "./auth.ts";
 import type { Config } from "./config.ts";
 import type { HealthMonitor, Live } from "./health.ts";
 import { createSysStats } from "./sysstats.ts";
-import { ForbiddenError, PortsError, QuotaError, type Relay, type RelayStore } from "./relays.ts";
+import { ForbiddenError, PortsError, QuotaError, SWITCH_TRIGGERS, type Relay, type RelayStore, type SwitchTrigger } from "./relays.ts";
 import type { Security } from "./security.ts";
 import type { SlsEvent } from "./sls-log.ts";
 import type { Rist } from "./rist.ts";
@@ -93,6 +93,7 @@ export function relayView(r: Relay, c: Config, live = false) {
     live: !r.archived && live,
     record: r.record === true,
     record_format: r.record_format === "mp4" ? ("mp4" as const) : ("mov" as const),
+    switch_trigger: SWITCH_TRIGGERS.includes(r.switch_trigger as SwitchTrigger) ? (r.switch_trigger as SwitchTrigger) : ("cut" as const),
     record_available: c.RECORD_ENABLED,
     mode: regie ? ("regie" as const) : r.mode,
     regie_available: c.REGIE_ENABLED,
@@ -201,6 +202,7 @@ export function buildServer(d: Deps) {
         mode: z.enum(["direct", "regie"]).optional(),
         record: z.boolean().optional(),
         record_format: z.enum(["mov", "mp4"]).optional(),
+        switch_trigger: z.enum(["cut", "cut_lowbitrate", "sensitive"]).optional(),
         /** Changer de serveur : même relais, mêmes clés. */
         server: z.string().regex(/^[a-z0-9]{2,12}$/).optional(),
         limit: z.number().int().min(0).default(0),
@@ -216,6 +218,7 @@ export function buildServer(d: Deps) {
         r = await d.relays.setRecord(r, body.record);
       }
       if (body.record_format !== undefined) r = await d.relays.setRecordFormat(r, body.record_format);
+      if (body.switch_trigger !== undefined) r = await d.relays.setSwitchTrigger(r, body.switch_trigger);
       if (body.server !== undefined) r = await d.relays.move(r, body.server);
       if (body.archived !== undefined) r = await d.relays.setArchived(r, body.archived, body.limit);
     } catch (e) {
@@ -882,6 +885,28 @@ export function buildServer(d: Deps) {
       if (!b.success) return reply.code(400).send({ error: "invalid" });
       return (await remote.rename(dev.userId, dev.deviceId, b.data.name)) ? { ok: true, name: b.data.name } : reply.code(404).send({ error: "no_device" });
     });
+    // Déclenchement de la bascule d'un flux du compte (panneau Appareil du contrôle à distance, via l'agent).
+    app.patch("/v1/link/streams/:rid", async (req, reply) => {
+      const dev = await remote.deviceAuth(req.headers.authorization);
+      if (!dev) return reply.code(401).send({ error: "unauthorized" });
+      const p = z.object({ rid: z.uuid() }).safeParse(req.params);
+      const b = z.object({ switch_trigger: z.enum(["cut", "cut_lowbitrate", "sensitive"]) }).safeParse(req.body ?? {});
+      if (!p.success || !b.success) return reply.code(400).send({ error: "invalid" });
+      const r = await d.relays.get(p.data.rid);
+      if (!r || r.user_id !== dev.userId) return reply.code(404).send({ error: "no_relay" });
+      return { ok: true, switch_trigger: (await d.relays.setSwitchTrigger(r, b.data.switch_trigger)).switch_trigger };
+    });
+    // Débit en direct d'un flux du compte : sert aux déclenchements « débit très bas » et « sensible ».
+    app.get("/v1/link/streams/:rid/status", async (req, reply) => {
+      const dev = await remote.deviceAuth(req.headers.authorization);
+      if (!dev) return reply.code(401).send({ error: "unauthorized" });
+      const p = z.object({ rid: z.uuid() }).safeParse(req.params);
+      if (!p.success) return reply.code(400).send({ error: "invalid" });
+      const r = await d.relays.get(p.data.rid);
+      if (!r || r.user_id !== dev.userId) return reply.code(404).send({ error: "no_relay" });
+      const st = d.health.state(r.id);
+      return { live: st?.live ?? false, kbps: st?.live ? Math.round(st.sample?.bitrate ?? 0) : 0 };
+    });
     app.get("/v1/link/me", async (req, reply) => {
       const dev = await remote.deviceAuth(req.headers.authorization);
       if (!dev) return reply.code(401).send({ error: "unauthorized" });
@@ -895,7 +920,7 @@ export function buildServer(d: Deps) {
       const dev = await remote.deviceAuth(req.headers.authorization);
       if (!dev) return reply.code(401).send({ error: "unauthorized" });
       const rows = (await d.relays.list(dev.userId)).filter((r) => !r.archived).map(view);
-      return { streams: rows.map((r) => ({ id: r.id, name: r.name, protocol: r.protocol, live: r.live, obs_srt_url: r.obs_srt_url })) };
+      return { streams: rows.map((r) => ({ id: r.id, name: r.name, protocol: r.protocol, live: r.live, switch_trigger: r.switch_trigger, obs_srt_url: r.obs_srt_url })) };
     });
     // ── Aperçu vidéo du programme (WHIP du plugin → MediaMTX → WHEP du navigateur, sans transcodage) ──
     if (d.obsPreview) {

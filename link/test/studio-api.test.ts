@@ -18,7 +18,7 @@ mkdirSync(join(obsDir, "basic", "scenes"), { recursive: true });
 const IPC = "b".repeat(40);
 process.env.SYXTEE_LINK_IPC = IPC;
 const { startHelper } = await import("../src/helper.ts");
-const { fixLiveScene, hasSource, SOURCE_NAME } = await import("../src/livescene.ts");
+const { fixLiveScene, hasSource, fluxName } = await import("../src/livescene.ts");
 const { Agent } = await import("../src/agent.ts");
 
 const call = (path: string, body?: unknown, token = IPC) =>
@@ -80,15 +80,27 @@ test("API locale : jeton du plugin accepté, compte, flux (adresse de lecture ja
   }
 });
 
-/** Faux OBS : scènes et entrées en mémoire, journal des requêtes. */
-function fakeObs(initial: { scenes: Record<string, string[]>; inputs?: string[] }) {
+/** Faux OBS : scènes et entrées en mémoire, journal des requêtes. `plugin` : sait créer les sources de flux (comme le plugin SYXTEE). */
+function fakeObs(initial: { scenes: Record<string, string[]>; inputs?: string[] }, plugin = false) {
   const scenes = structuredClone(initial.scenes);
   const inputs = new Set(initial.inputs ?? []);
+  const linked = new Map<string, string>(); // nom de source → identifiant du flux
   const log: { type: string; data?: Record<string, unknown> }[] = [];
   const req = async (type: string, data?: Record<string, unknown>) => {
     log.push({ type, data });
-    if (type === "GetSceneItemList") return { sceneItems: (scenes[String(data?.sceneName)] ?? []).map((sourceName) => ({ sourceName })) };
+    if (type === "GetSceneItemList")
+      return { sceneItems: (scenes[String(data?.sceneName)] ?? []).map((sourceName) => ({ sourceName, ...(plugin ? { syxteeRelayId: linked.get(sourceName) ?? "" } : {}) })) };
     if (type === "GetInputList") return { inputs: [...inputs].map((inputName) => ({ inputName })) };
+    if (type === "link.addRelaySources") {
+      if (!plugin) throw new Error("Demande inconnue : link.addRelaySources");
+      for (const id of data?.relayIds as string[]) {
+        const name = `Flux › ${id === "r1" ? "IPHONE 16" : id}`;
+        inputs.add(name);
+        linked.set(name, id);
+        for (const sc of data?.scenes as string[]) if (!scenes[sc].includes(name)) scenes[sc].push(name);
+      }
+      return {};
+    }
     if (type === "CreateInput") {
       inputs.add(String(data?.inputName));
       scenes[String(data?.sceneName)].push(String(data?.inputName));
@@ -99,31 +111,46 @@ function fakeObs(initial: { scenes: Record<string, string[]>; inputs?: string[] 
   return { req, log, scenes };
 }
 
-test("Corriger : ajoute « Flux SYXTEE » dans la scène de direct, réutilise ou met à jour la source existante", async () => {
-  const url = "srt://relais.test:9000?streamid=play";
+test("Corriger : ajoute « Flux › NOM » du flux de destination dans la scène de direct (plugin : source liée au flux, réutilisée, sans doublon)", async () => {
+  const relay = { id: "r1", name: "IPHONE 16", url: "srt://relais.test:9000?streamid=play" };
+  const o = fakeObs({ scenes: { "EN DIRECT": ["Caméra"], DRONE: [] } }, true);
+  assert.equal(await hasSource(o.req, "EN DIRECT", "r1"), false);
+  assert.equal(await hasSource(o.req, "", "r1"), false);
+  assert.deepEqual(await fixLiveScene(o.req, "", relay), { ok: false, message: "Choisis d'abord la scène de direct." });
+  assert.deepEqual(await fixLiveScene(o.req, "EN DIRECT", undefined), { ok: false, message: "Choisis d'abord un flux de destination." });
+  const r = await fixLiveScene(o.req, "EN DIRECT", relay);
+  assert.equal(r.ok, true);
+  assert.equal(r.source, "Flux › IPHONE 16");
+  assert.deepEqual(o.log.find((l) => l.type === "link.addRelaySources")?.data, { relayIds: ["r1"], scenes: ["EN DIRECT"] });
+  assert.equal(await hasSource(o.req, "EN DIRECT", "r1"), true);
+  assert.equal(await hasSource(o.req, "EN DIRECT", "autre"), false); // une source d'un autre flux ne compte pas
+
+  // Déjà là : seule l'adresse est remise à jour, rien n'est recréé
+  const before = o.log.filter((l) => l.type === "link.addRelaySources").length;
+  const again = await fixLiveScene(o.req, "EN DIRECT", { ...relay, url: relay.url + "2" });
+  assert.equal(again.ok, true);
+  assert.equal(o.log.filter((l) => l.type === "link.addRelaySources").length, before);
+  assert.equal(o.log.at(-1)?.type, "SetInputSettings");
+  // Autre scène : la même source y est rattachée
+  assert.equal((await fixLiveScene(o.req, "DRONE", relay)).ok, true);
+  assert.ok(o.scenes.DRONE.includes("Flux › IPHONE 16"));
+});
+
+test("Corriger sans le plugin (repli sur les commandes d'OBS) : crée l'entrée média, la réutilise, jamais de doublon", async () => {
+  const relay = { id: "r1", name: "IPHONE 16", url: "srt://relais.test:9000?streamid=play" };
   const o = fakeObs({ scenes: { "EN DIRECT": ["Caméra"], DRONE: [] } });
-  assert.equal(await hasSource(o.req, "EN DIRECT"), false);
-  assert.equal(await hasSource(o.req, ""), false);
-  assert.deepEqual(await fixLiveScene(o.req, "", url), { ok: false, message: "Choisis d'abord la scène de direct." });
-  assert.deepEqual(await fixLiveScene(o.req, "EN DIRECT", ""), { ok: false, message: "Choisis d'abord un flux de destination." });
-  assert.equal((await fixLiveScene(o.req, "EN DIRECT", url)).ok, true);
+  assert.equal((await fixLiveScene(o.req, "EN DIRECT", relay)).ok, true);
   const created = o.log.find((l) => l.type === "CreateInput")!;
   assert.equal(created.data?.inputKind, "ffmpeg_source");
-  assert.equal(created.data?.inputName, SOURCE_NAME);
-  assert.equal((created.data?.inputSettings as { input: string }).input, url);
-  assert.equal((created.data?.inputSettings as { is_local_file: boolean }).is_local_file, false);
-  assert.equal(await hasSource(o.req, "EN DIRECT"), true);
-
-  // Déjà présente : adresse remise à jour, rien n'est créé.
-  const before = o.log.filter((l) => l.type === "CreateInput").length;
-  assert.equal((await fixLiveScene(o.req, "EN DIRECT", url + "2")).ok, true);
-  assert.equal(o.log.filter((l) => l.type === "CreateInput").length, before);
-  assert.equal(o.log.at(-1)?.type, "SetInputSettings");
-
-  // Source existante dans une autre scène : rattachée à celle-ci, pas dupliquée.
-  assert.equal((await fixLiveScene(o.req, "DRONE", url)).ok, true);
+  assert.equal(created.data?.inputName, fluxName("IPHONE 16"));
+  assert.equal((created.data?.inputSettings as { input: string }).input, relay.url);
+  assert.equal((created.data?.inputSettings as { syxtee_relay_id: string }).syxtee_relay_id, "r1");
+  assert.equal(await hasSource(o.req, "EN DIRECT", "r1"), true);
+  // Source déjà dans une autre scène : rattachée, pas dupliquée
+  const n = o.log.filter((l) => l.type === "CreateInput").length;
+  assert.equal((await fixLiveScene(o.req, "DRONE", relay)).ok, true);
   assert.ok(o.log.some((l) => l.type === "CreateSceneItem" && l.data?.sceneName === "DRONE"));
-  assert.equal(o.log.filter((l) => l.type === "CreateInput").length, before);
+  assert.equal(o.log.filter((l) => l.type === "CreateInput").length, n);
 });
 
 test("sauvegarde automatique : seulement si modifiée depuis la dernière sauvegarde, stable depuis 1 min, pas de boucle sur échec", async () => {

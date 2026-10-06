@@ -30,7 +30,11 @@ function make(quota = 1000) {
   });
   const backups = createBackups({ db: db as never, dir: join(data, "link-backups"), quota });
   const app = buildServer({
-    config, relays: { list: async (id: string) => (id === U ? RELAYS : []) }, health: { state: () => null, relay: () => null, liveRelays: () => [], byUser: () => [], events: { on() {}, off() {} } }, rtmp: {}, samples: { history: () => [] }, sessions: { current: () => null },
+    config, relays: {
+      list: async (id: string) => (id === U ? RELAYS : []),
+      get: async (rid: string) => RELAYS.find((r) => r.id === rid) ?? null,
+      setSwitchTrigger: async (r: (typeof RELAYS)[number], t: string) => Object.assign(r, { switch_trigger: t }),
+    }, health: { state: (id: string) => (id === RELAYS[0].id ? { live: true, sample: { bitrate: 4321.6 } } : null), relay: () => null, liveRelays: () => [], byUser: () => [], events: { on() {}, off() {} } }, rtmp: {}, samples: { history: () => [] }, sessions: { current: () => null },
     verifyUser, previewPath: () => "", onKeysChanged: () => {}, slsHealthy: async () => true, remote, backups,
     obsPreview: createObsPreview({ whipBase: "https://cam.test", apiUrl: "http://127.0.0.1:9", log: () => {} }),
   } as unknown as Deps);
@@ -219,4 +223,25 @@ test("aperçu vidéo : l'agent démarre et rend la session, le navigateur lit, M
   assert.equal((await app.inject({ method: "POST", url: "/v1/link/preview/stop", headers: dev })).statusCode, 200);
   assert.equal((await auth(path, "publish")).statusCode, 401);
   assert.deepEqual((await app.inject({ method: "POST", url: "/v1/me/link/preview/watch", headers: user })).json(), { whep_url: null, ready: false });
+});
+
+test("déclenchement de la bascule : lu et changé par le plugin sur ses propres flux ; débit du flux", async () => {
+  const { app } = make();
+  const dev = await connectDevice(app);
+  const rid = RELAYS[0].id;
+  const json = { ...dev, "content-type": "application/json" };
+  const list = (await app.inject({ method: "GET", url: "/v1/link/streams", headers: dev })).json().streams;
+  assert.equal(list[0].switch_trigger, "cut"); // par défaut
+  // Sans jeton, valeur inconnue, flux d'un autre compte : refusés
+  assert.equal((await app.inject({ method: "PATCH", url: `/v1/link/streams/${rid}`, headers: { "content-type": "application/json" }, payload: { switch_trigger: "sensitive" } })).statusCode, 401);
+  assert.equal((await app.inject({ method: "PATCH", url: `/v1/link/streams/${rid}`, headers: json, payload: { switch_trigger: "n'importe quoi" } })).statusCode, 400);
+  assert.equal((await app.inject({ method: "PATCH", url: "/v1/link/streams/00000000-0000-4000-8000-0000000000ff", headers: json, payload: { switch_trigger: "sensitive" } })).statusCode, 404);
+  const ok = await app.inject({ method: "PATCH", url: `/v1/link/streams/${rid}`, headers: json, payload: { switch_trigger: "sensitive" } });
+  assert.equal(ok.statusCode, 200);
+  assert.equal(ok.json().switch_trigger, "sensitive");
+  assert.equal((await app.inject({ method: "GET", url: "/v1/link/streams", headers: dev })).json().streams[0].switch_trigger, "sensitive");
+  // Débit du flux en direct (arrondi), 0 hors direct ; jeton requis
+  assert.deepEqual((await app.inject({ method: "GET", url: `/v1/link/streams/${rid}/status`, headers: dev })).json(), { live: true, kbps: 4322 });
+  assert.deepEqual((await app.inject({ method: "GET", url: `/v1/link/streams/${RELAYS[1].id}/status`, headers: dev })).json(), { live: false, kbps: 0 });
+  assert.equal((await app.inject({ method: "GET", url: `/v1/link/streams/${rid}/status` })).statusCode, 401);
 });

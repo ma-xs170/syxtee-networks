@@ -10,6 +10,7 @@ export const hasCore = coreUrl !== "" && token !== "";
 export const publicCoreUrl = coreUrl;
 
 export type RelayProtocol = "srtla" | "rtmp" | "rist";
+export type SwitchTrigger = "cut" | "cut_lowbitrate" | "sensitive";
 
 /** Un relais, tel que le Core le montre au dashboard. */
 export type RelayView = {
@@ -26,6 +27,8 @@ export type RelayView = {
   record: boolean;
   record_format: "mov" | "mp4";
   record_available: boolean;
+  /** Déclenchement de la bascule automatique vers la scène de secours. */
+  switch_trigger: SwitchTrigger;
   urls: {
     srtla_url?: string;
     srt_url?: string;
@@ -84,7 +87,7 @@ export async function createRelay(userId: string, body: { name: string; protocol
   if (!relay) throw new CoreOutdated("Core sans /relays : mise à jour du VPS nécessaire");
   return relay;
 }
-export const updateRelay = (userId: string, relayId: string, patch: { name?: string; archived?: boolean; mode?: RelayView["mode"]; record?: boolean; record_format?: "mov" | "mp4"; server?: string; limit?: number }) =>
+export const updateRelay = (userId: string, relayId: string, patch: { name?: string; archived?: boolean; mode?: RelayView["mode"]; record?: boolean; record_format?: "mov" | "mp4"; switch_trigger?: SwitchTrigger; server?: string; limit?: number }) =>
   core<RelayView>(`/v1/users/${userId}/relays/${relayId}`, "PATCH", patch);
 /** Nouvelle clé : l'ancienne cesse de marcher immédiatement. */
 export const rotateRelay = (userId: string, relayId: string) => core<RelayView>(`/v1/users/${userId}/relays/${relayId}/rotate`, "POST");

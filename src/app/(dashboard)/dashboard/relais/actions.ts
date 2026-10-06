@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/dal";
 import { allow } from "@/lib/auth/rateLimit";
-import { CoreOutdated, CoreRefusal, createRelay, deleteRelay, rotateRelay, updateRelay, type RelayView } from "@/lib/core";
+import { CoreOutdated, CoreRefusal, createRelay, deleteRelay, rotateRelay, updateRelay, type RelayView, type SwitchTrigger } from "@/lib/core";
 import { forgetOverview } from "@/lib/dashboard-overview";
 import { getPlan, LOCKED_MESSAGE } from "@/lib/auth/plan";
 import { can, relayLimit, type Feature } from "@/lib/plans";
@@ -88,6 +88,14 @@ export async function renameRelayAction(relayId: string, name: string) {
   const n = name.trim();
   if (n.length < 1 || n.length > 40) return { error: "Entre 1 et 40 caractères." };
   return run(relayId, "relay-edit", 60, (u) => updateRelay(u, relayId, { name: n }));
+}
+
+/** Déclenchement de la bascule automatique de ce flux (coupure seulement, coupure et débit très bas, sensible). Lu par le plugin OBS. */
+export async function setSwitchTriggerAction(relayId: string, switch_trigger: SwitchTrigger) {
+  if (!["cut", "cut_lowbitrate", "sensitive"].includes(switch_trigger)) return { error: "Déclenchement inconnu." };
+  const r = await run(relayId, "relay-edit", 60, (u) => updateRelay(u, relayId, { switch_trigger }));
+  revalidatePath("/dashboard/controle-a-distance");
+  return r;
 }
 
 /** Nouvelle clé : l'ancienne cesse de marcher immédiatement (encodeur et OBS doivent recoller les URLs). */

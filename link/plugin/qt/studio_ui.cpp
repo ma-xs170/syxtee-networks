@@ -448,7 +448,7 @@ private:
 		dh->addWidget(create);
 		previewSw_ = new Switch;
 		previewHint_ = label("", "muted");
-		addRow(d, row("Flux de destination", "Le relais que lit la source « Flux SYXTEE » dans ta scène de direct", destBox), true);
+		addRow(d, row("Flux de destination", "Le flux que lit la source « Flux › NOM » de ta scène de direct", destBox), true);
 		addRow(d, row("Aperçu programme", "Montre l'image et le son de ton direct sur le site, seulement quand la page est ouverte. Coupe-le si ton ordinateur est chargé.", previewSw_));
 		static_cast<QVBoxLayout *>(d->layout())->addWidget(previewHint_);
 		QObject::connect(previewSw_, &QAbstractButton::toggled, this, [this](bool on) {
@@ -472,7 +472,7 @@ private:
 		secSource_ = new QComboBox;
 		liveScene_ = new QComboBox;
 		auto_ = new Switch;
-		addRow(s, row("Scène de direct", "La scène qui contient ton flux SYXTEE", liveScene_), true);
+		addRow(s, row("Scène de direct", "La scène qui contient la source de ton flux", liveScene_), true);
 		liveAlert_ = new QWidget;
 		auto *la = new QVBoxLayout(liveAlert_);
 		la->setContentsMargins(0, 4, 0, 10);
@@ -635,8 +635,8 @@ private:
 			liveAlert_->setVisible(chosen && obsOn && !has);
 			if (chosen && obsOn && !has) {
 				const bool dest = o.value("destination").toBool();
-				liveAlertText_->setText(dest ? "Aucune source « Flux SYXTEE » dans la scène de direct. Sans elle, SYXTEE ne peut pas détecter une coupure."
-							     : "Aucune source « Flux SYXTEE » dans la scène de direct. Choisis d'abord un flux de destination, puis clique sur Corriger.");
+				liveAlertText_->setText(dest ? "Aucune source de ton flux (« Flux › NOM ») dans la scène de direct. Sans elle, SYXTEE ne peut pas détecter une coupure."
+							     : "Aucune source de ton flux (« Flux › NOM ») dans la scène de direct. Choisis d'abord un flux de destination, puis clique sur Corriger.");
 			}
 			if (has) fixOut_->hide();
 		});

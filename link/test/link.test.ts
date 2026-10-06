@@ -126,3 +126,45 @@ test("client OBS : identification avec mot de passe, requête, erreur", async ()
   wss.close();
   server.close();
 });
+
+test("déclenchements : coupure seulement ignore le débit ; débit très bas bascule avant que l'image se fige ; sensible bascule en 2 s", async () => {
+  const base = { enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 4, recoverSeconds: 2 };
+  const run = async (trigger: "cut" | "cut_lowbitrate" | "sensitive", kbps: number | null, ticks: number) => {
+    const { o, req } = fakeObs();
+    const w = new BackupWatcher(req);
+    w.set({ ...base, trigger });
+    w.setBitrate(kbps);
+    let n = 0;
+    for (let i = 0; i < ticks; i++) {
+      o.image = `f${++n}`; // l'image bouge toujours
+      await w.tick();
+    }
+    return { state: w.state, scene: o.scene };
+  };
+  // Image qui bouge, débit effondré (150 kbit/s) :
+  assert.deepEqual(await run("cut", 150, 8), { state: "ok", scene: "Live" }); // coupure seulement : rien ne bascule
+  assert.deepEqual(await run("cut_lowbitrate", 150, 8), { state: "backup", scene: "BRB" }); // débit sous 300 : bascule après freezeSeconds
+  assert.deepEqual(await run("cut_lowbitrate", 500, 8), { state: "ok", scene: "Live" }); // 500 > 300 : normal
+  assert.deepEqual(await run("sensitive", 500, 8), { state: "backup", scene: "BRB" }); // sensible : sous 800 = bascule
+  assert.deepEqual(await run("sensitive", 1500, 8), { state: "ok", scene: "Live" });
+  assert.deepEqual(await run("cut_lowbitrate", null, 8), { state: "ok", scene: "Live" }); // débit inconnu : sans effet
+  // « Sensible » bascule dès 2 s d'image figée (alors que le réglage de base attend 4 s)
+  const { o, req } = fakeObs();
+  const w = new BackupWatcher(req);
+  w.set({ ...base, trigger: "sensitive" });
+  o.image = "x";
+  await w.tick(); // 1re capture
+  await w.tick(); // figée 1
+  assert.equal(w.state, "frozen");
+  await w.tick(); // figée 2
+  assert.equal(w.state, "backup");
+  // Retour : le débit remonte et l'image repart
+  w.setBitrate(2000);
+  let n2 = 0;
+  for (let i = 0; i < 2; i++) {
+    o.image = `g${++n2}`;
+    await w.tick();
+  }
+  assert.equal(w.state, "ok");
+  assert.equal(o.scene, "Live");
+});

@@ -16,6 +16,7 @@
 int main(int argc, char **argv)
 {
 	QCoreApplication app(argc, argv);
+	setvbuf(stdout, nullptr, _IOLBF, 0);
 	if (argc < 2) return 2;
 
 	stub_boot();
@@ -50,6 +51,7 @@ int main(int argc, char **argv)
 			// Les noms contenant des espaces : tout ce qui suit la commande.
 			const QByteArray rest = line.section(' ', 1).trimmed().toUtf8();
 			const QString c = a[0];
+			fflush(stdout);
 			if (c == "loaded") stub_fe(OBS_FRONTEND_EVENT_FINISHED_LOADING);
 			else if (c == "scene") stub_set_scene(rest.constData());
 			else if (c == "mute") stub_mute(line.section(' ', 1, -2).trimmed().toUtf8().constData(), a.last() == "1");
@@ -58,6 +60,11 @@ int main(int argc, char **argv)
 			else if (c == "stream") stub_stream(a.value(1) == "on");
 			else if (c == "bytes") stub_add_bytes(a.value(1).toULongLong());
 			else if (c == "meter") stub_meter(line.section(' ', 1, -2).trimmed().toUtf8().constData(), a.last().toFloat());
+			else if (c == "wizard") printf("WIZARD %s\n", stub_wizard_open().c_str());
+			else if (c == "wizardprops") printf("PROPS %s\n", stub_wizard_props().c_str());
+			else if (c == "wizardset") stub_wizard_set(line.section(' ', 1, -2).trimmed().toUtf8().constData(), a.last() == "1");
+			else if (c == "wizardclick") printf("CLICK %d\n", stub_wizard_click(rest.constData()) ? 1 : 0);
+			else if (c == "dump") printf("DUMP %s ALIVE %d\n", stub_dump().c_str(), stub_wizard_alive() ? 1 : 0);
 			else if (c == "nowhip") stub_whip_available(false);
 			else if (c == "whipfail") stub_whip_fails(true);
 			else if (c == "whipdrop") stub_whip_drop("réseau coupé");

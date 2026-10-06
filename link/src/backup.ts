@@ -43,6 +43,15 @@ type Req = (type: string, data?: Record<string, unknown>) => Promise<Record<stri
 export class BackupWatcher {
   cfg: BackupConfig = DEFAULT_BACKUP;
   state: "idle" | "ok" | "frozen" | "backup" = "idle";
+  /** Débit du flux surveillé (kbit/s), donné par l'agent ; null = inconnu (les déclenchements au débit sont alors sans effet). */
+  private bitrate: number | null = null;
+  setBitrate(kbps: number | null) {
+    this.bitrate = kbps;
+  }
+  /** Seuil de « débit très bas » selon le déclenchement choisi. */
+  static lowBitrate(t: Trigger): number {
+    return t === "sensitive" ? 800 : t === "cut_lowbitrate" ? 300 : 0;
+  }
   private last = "";
   private still = 0;
   private moving = 0;
@@ -87,7 +96,10 @@ export class BackupWatcher {
     } catch {
       shot = ""; // source introuvable ou flux coupé
     }
-    const frozen = shot === "" || shot === this.last;
+    // Débit très bas (déclenchements « débit » et « sensible ») : compte comme une image figée, avant même que l'image ne se fige.
+    const threshold = BackupWatcher.lowBitrate(c.trigger);
+    const low = threshold > 0 && this.bitrate !== null && this.bitrate < threshold;
+    const frozen = shot === "" || shot === this.last || low;
     this.last = shot;
     if (frozen) {
       this.still++;
@@ -98,7 +110,9 @@ export class BackupWatcher {
     }
 
     if (this.state !== "backup") {
-      if (this.still >= c.freezeSeconds) await this.engage();
+      // « Sensible » : bascule dès 2 secondes, même si le réglage de base est plus patient.
+      const needed = c.trigger === "sensitive" ? Math.min(c.freezeSeconds, 2) : c.freezeSeconds;
+      if (this.still >= needed) await this.engage();
       else this.setState(this.still > 0 ? "frozen" : "ok");
     } else if (this.moving >= c.recoverSeconds) {
       await this.release();

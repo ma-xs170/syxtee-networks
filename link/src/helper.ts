@@ -6,7 +6,7 @@ import { cleanBackup } from "./backup.ts";
 import { cloudError } from "./cloud.ts";
 import { load, save, type LinkConfig } from "./config.ts";
 import { coreCall } from "./corehttp.ts";
-import { fixLiveScene, hasSource, SOURCE_NAME } from "./livescene.ts";
+import { fixLiveScene, hasSource } from "./livescene.ts";
 import { Login } from "./login.ts";
 import { setTokens } from "./tokens.ts";
 import { listCollections } from "./obsconfig.ts";
@@ -72,7 +72,6 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
     previewMode: agent?.previewMode ?? "idle",
     previewReason: agent?.whipReason ?? "",
     lastBackup: cfg.lastBackup,
-    sourceName: SOURCE_NAME,
     onboarded: cfg.onboarded,
     login: login.state,
     status: agent?.status ?? { core: "off", obs: "off", obsVersion: "", backup: "idle", lastError: "", viewers: 0, job: null },
@@ -81,13 +80,12 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
     logs,
   });
 
-  /** Flux du compte, avec l'adresse de lecture pour OBS : gardée ici, jamais renvoyée à l'interface. */
-  let streams: { id: string; name: string; protocol: string; live: boolean; obs_srt_url: string }[] = [];
+  /** Flux du compte (l'agent les garde et les donne au plugin) : l'adresse de lecture pour OBS reste côté agent. */
   async function loadStreams(): Promise<boolean> {
-    const r = await coreCall(cfg, "GET", "/v1/link/streams");
-    if (r.ok) streams = (r.json.streams as typeof streams) ?? [];
-    return r.ok;
+    if (agent) return agent.syncRelays(true);
+    return false;
   }
+  const streams = () => agent?.relays ?? [];
 
   async function route(req: IncomingMessage, res: ServerResponse) {
     const host = String(req.headers.host ?? "");
@@ -155,16 +153,16 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
         const ok = await loadStreams();
         if (!ok) return json({ error: "Serveur injoignable.", streams: [], selected: cfg.destination });
         // Un flux supprimé ou archivé ne reste pas sélectionné.
-        if (cfg.destination && !streams.some((s) => s.id === cfg.destination)) {
+        if (cfg.destination && !streams().some((s) => s.id === cfg.destination)) {
           cfg.destination = "";
           save(cfg);
         }
-        return json({ streams: streams.map(({ id, name, protocol, live }) => ({ id, name, protocol, live })), selected: cfg.destination });
+        return json({ streams: streams().map(({ id, name, protocol, live }) => ({ id, name, protocol, live })), selected: cfg.destination });
       }
       case "POST /api/destination": {
         const id = typeof body.id === "string" ? body.id.slice(0, 64) : "";
-        if (id && streams.length === 0) await loadStreams();
-        if (id && !streams.some((s) => s.id === id)) return end(res, 400, "flux inconnu");
+        if (id && streams().length === 0) await loadStreams();
+        if (id && !streams().some((s) => s.id === id)) return end(res, 400, "flux inconnu");
         cfg.destination = id;
         save(cfg);
         return json({ ok: true });
@@ -179,7 +177,7 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
         // `obs` : OBS est joignable. Une scène de direct disparue (renommée, supprimée) compte comme « source absente ».
         let has = false;
         try {
-          has = await hasSource((t, d) => agent!.obsRequest(t, d), cfg.liveScene);
+          has = await hasSource((t, d) => agent!.obsRequest(t, d), cfg.liveScene, cfg.destination || undefined);
         } catch {
           // scène introuvable ou OBS occupé
         }
@@ -199,12 +197,13 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
       case "POST /api/fix": {
         if (!agent) return json({ ok: false, message: "Agent arrêté." });
         try {
-          if (cfg.destination && streams.length === 0) await loadStreams();
-          const url = streams.find((s) => s.id === cfg.destination)?.obs_srt_url ?? "";
-          const r = await fixLiveScene((t, d) => agent!.obsRequest(t, d), cfg.liveScene, url);
+          if (cfg.destination && streams().length === 0) await loadStreams();
+          await agent.syncRelays(true); // le plugin doit connaître le flux avant de créer sa source
+          const dest = streams().find((s) => s.id === cfg.destination);
+          const r = await fixLiveScene((t, d) => agent!.obsRequest(t, d), cfg.liveScene, dest ? { id: dest.id, name: dest.name, url: dest.obs_srt_url } : undefined);
           if (r.ok) {
             // La source ajoutée devient la source surveillée de la bascule automatique.
-            cfg.backup = cleanBackup({ source: SOURCE_NAME }, cfg.backup);
+            cfg.backup = cleanBackup({ source: r.source ?? "" }, cfg.backup);
             save(cfg);
             agent.setBackup(cfg.backup);
           }

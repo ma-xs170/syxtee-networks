@@ -15,6 +15,8 @@
 #include <QBuffer>
 #include <QByteArray>
 #include <QCoreApplication>
+#include <QDesktopServices>
+#include <QUrl>
 #include <QElapsedTimer>
 #include <QImage>
 #include <QJsonArray>
@@ -115,6 +117,8 @@ void emitEvent(const QString &name, const Json &data = {})
 }
 
 // ───── Scènes, sources ─────
+QString relayIdOf(obs_source_t *s);
+
 struct SceneList {
 	obs_frontend_source_list l{};
 	SceneList() { obs_frontend_get_scenes(&l); }
@@ -164,6 +168,7 @@ bool enumItem(obs_scene_t *, obs_sceneitem_t *item, void *param)
 	it["sourceType"] = scene ? "OBS_SOURCE_TYPE_SCENE" : "OBS_SOURCE_TYPE_INPUT";
 	it["inputKind"] = scene ? QString() : q(obs_source_get_id(src));
 	it["isGroup"] = obs_sceneitem_is_group(item);
+	if (!scene) it["syxteeRelayId"] = relayIdOf(src); // source liée à un flux du compte
 	c->arr.append(it);
 	return true;
 }
@@ -470,6 +475,272 @@ Json startWhip(const Json &d)
 	return r;
 }
 
+// ───── Flux SYXTEE : sources OBS liées aux flux (relais) du compte ─────
+// Chaque flux du compte devient une entrée média « Flux › NOM » qui lit le relais en SRT, avec reconnexion automatique. L'identifiant du
+// relais est gardé dans les réglages de la source (`syxtee_relay_id`) : renommer la caméra sur le site renomme la source dans OBS,
+// et un relais supprimé marque la source « relais supprimé » et la désactive. La liste des flux vient de l'agent (`link.syncRelays`).
+struct RelayInfo {
+	QString id, name, url;
+	bool live = false;
+};
+std::vector<RelayInfo> relayCache;
+
+QString fluxName(const QString &relayName) { return QString::fromUtf8("Flux › ") + relayName; }
+const QString kDeletedSuffix = QString::fromUtf8(" (relais supprimé)");
+
+QString relayIdOf(obs_source_t *s)
+{
+	obs_data_t *d = obs_source_get_settings(s);
+	const QString id = d ? q(obs_data_get_string(d, "syxtee_relay_id")) : QString();
+	if (d) obs_data_release(d);
+	return id;
+}
+
+/** Entrées liées à un flux : nom d'OBS → identifiant du relais. */
+std::vector<std::pair<QString, QString>> fluxSources()
+{
+	std::vector<std::pair<QString, QString>> out;
+	obs_enum_sources(
+		[](void *param, obs_source_t *src) {
+			if (obs_source_get_type(src) != OBS_SOURCE_TYPE_INPUT) return true;
+			const QString id = relayIdOf(src);
+			if (!id.isEmpty()) static_cast<std::vector<std::pair<QString, QString>> *>(param)->push_back({q(obs_source_get_name(src)), id});
+			return true;
+		},
+		&out);
+	return out;
+}
+
+const RelayInfo *relayById(const QString &id)
+{
+	for (const auto &r : relayCache)
+		if (r.id == id) return &r;
+	return nullptr;
+}
+
+/** Nom libre dans OBS : `base`, sinon `base (2)`, `base (3)`… (`except` : la source qui porte déjà ce nom ne compte pas). */
+QString freeName(const QString &base, const QString &except = QString())
+{
+	for (int n = 1; n < 100; n++) {
+		const QString cand = n == 1 ? base : QString("%1 (%2)").arg(base).arg(n);
+		if (cand == except) return cand;
+		Src probe(cand);
+		if (!probe.s) return cand;
+	}
+	return base;
+}
+
+Json fluxSettings(const RelayInfo &r)
+{
+	return Json{{"input", r.url}, {"is_local_file", false}, {"close_when_inactive", false}, {"restart_on_activate", false},
+		    {"hw_decode", true}, {"buffering_mb", 2}, {"reconnect_delay_sec", 3}, {"syxtee_relay_id", r.id}, {"syxtee_deleted", false}};
+}
+
+/** Crée (ou réutilise) la source de chaque flux et la place dans chaque scène demandée, une seule fois par scène. */
+Json addRelaySources(const QStringList &relayIds, const QStringList &scenes)
+{
+	if (relayCache.empty()) throw Fail{"La liste de tes flux n'est pas encore chargée : réessaie dans un instant."};
+	QJsonArray created, placed;
+	const auto existing = fluxSources();
+	for (const QString &rid : relayIds) {
+		const RelayInfo *r = relayById(rid);
+		if (!r) throw Fail{"Flux inconnu : il a peut-être été supprimé."};
+		if (r->url.isEmpty()) throw Fail{"Ce flux n'a pas d'adresse de lecture."};
+		QString name;
+		for (const auto &e : existing)
+			if (e.second == rid) name = e.first;
+		if (name.isEmpty()) {
+			name = freeName(fluxName(r->name));
+			obs_data_t *st = dataFrom(fluxSettings(*r));
+			obs_source_t *src = obs_source_create("ffmpeg_source", name.toUtf8().constData(), st, nullptr);
+			obs_data_release(st);
+			if (!src) throw Fail{"Création de la source impossible."};
+			obs_source_release(src);
+			created.append(name);
+		} else {
+			// Déjà dans OBS : on la réutilise (même image partout), adresse remise à jour.
+			Src have(name);
+			obs_data_t *st = dataFrom(fluxSettings(*r));
+			obs_source_update(have.need(), st);
+			obs_data_release(st);
+		}
+		Src source(name);
+		for (const QString &sceneName : scenes) {
+			Src scene(sceneName);
+			obs_scene_t *sc = obs_scene_from_source(scene.s);
+			if (!sc) continue;
+			ItemCtx c;
+			bool already = false;
+			obs_scene_enum_items(sc, enumItem, &c);
+			for (const auto &it : c.arr) already = already || it.toObject().value("sourceName").toString() == name;
+			if (already) continue;
+			obs_sceneitem_t *item = obs_scene_add(sc, source.need());
+			if (item) obs_sceneitem_set_visible(item, true);
+			placed.append(Json{{"scene", sceneName}, {"source", name}});
+		}
+	}
+	Json r;
+	r["created"] = created;
+	r["placed"] = placed;
+	return r;
+}
+
+/** Aligne les sources sur la liste des flux du compte : noms, adresses, relais supprimés. */
+Json syncRelays(const QJsonArray &list)
+{
+	relayCache.clear();
+	for (const auto &v : list) {
+		const Json o = v.toObject();
+		relayCache.push_back({o.value("id").toString(), o.value("name").toString(), o.value("url").toString(), o.value("live").toBool()});
+	}
+	int renamed = 0, updated = 0, removed = 0;
+	for (const auto &[name, rid] : fluxSources()) {
+		Src src(name);
+		if (!src.s) continue;
+		const RelayInfo *r = relayById(rid);
+		if (r) {
+			const QString want = fluxName(r->name);
+			// « Flux › NOM » : on ne renomme que les sources encore nommées ainsi (le nom donné à la main par l'utilisateur est respecté).
+			const QString oldBase = name.endsWith(kDeletedSuffix) ? name.left(name.size() - kDeletedSuffix.size()) : name;
+			const bool followsAccount = oldBase.startsWith(QString::fromUtf8("Flux › "));
+			if (followsAccount && oldBase != want && !name.startsWith(want + " (")) {
+				obs_source_set_name(src.s, freeName(want, name).toUtf8().constData());
+				renamed++;
+			} else if (name.endsWith(kDeletedSuffix) && followsAccount) {
+				obs_source_set_name(src.s, freeName(oldBase, name).toUtf8().constData());
+			}
+			obs_data_t *cur = obs_source_get_settings(src.s);
+			const bool urlChanged = !r->url.isEmpty() && q(obs_data_get_string(cur, "input")) != r->url;
+			const bool wasDeleted = obs_data_get_bool(cur, "syxtee_deleted");
+			obs_data_release(cur);
+			if (urlChanged || wasDeleted) {
+				obs_data_t *st = obs_data_create();
+				if (urlChanged) obs_data_set_string(st, "input", r->url.toUtf8().constData());
+				obs_data_set_bool(st, "syxtee_deleted", false);
+				obs_source_update(src.s, st);
+				obs_data_release(st);
+				if (urlChanged) updated++;
+			}
+			if (wasDeleted) obs_source_set_enabled(src.s, true);
+		} else {
+			obs_data_t *cur = obs_source_get_settings(src.s);
+			const bool already = obs_data_get_bool(cur, "syxtee_deleted");
+			obs_data_release(cur);
+			if (already) continue;
+			obs_data_t *st = obs_data_create();
+			obs_data_set_bool(st, "syxtee_deleted", true);
+			obs_source_update(src.s, st);
+			obs_data_release(st);
+			obs_source_set_enabled(src.s, false); // désactivée : plus rien ne s'affiche ni ne s'entend
+			if (!name.endsWith(kDeletedSuffix)) obs_source_set_name(src.s, freeName(name + kDeletedSuffix, name).toUtf8().constData());
+			removed++;
+		}
+	}
+	Json out;
+	out["renamed"] = renamed;
+	out["updated"] = updated;
+	out["removed"] = removed;
+	return out;
+}
+
+// Type de source « Flux SYXTEE » (Ajouter une source) : assistant à cases à cocher. Il crée une source par flux coché puis disparaît.
+struct Wizard {
+	obs_source_t *src;
+};
+
+const char *wizardName(void *) { return "Flux SYXTEE"; }
+
+void *wizardCreate(obs_data_t *settings, obs_source_t *source)
+{
+	// Par défaut : la scène courante est cochée.
+	const QString cur = currentSceneName(obs_frontend_get_current_scene);
+	if (!cur.isEmpty()) obs_data_set_default_bool(settings, ("scene:" + cur).toUtf8().constData(), true);
+	emitEvent("link.needRelays"); // l'agent rafraîchit la liste des flux tout de suite
+	return new Wizard{source};
+}
+void wizardDestroy(void *data) { delete static_cast<Wizard *>(data); }
+uint32_t wizardSize(void *) { return 0; }
+void wizardRender(void *, gs_effect_t *) {}
+
+bool wizardAdd(obs_properties_t *, obs_property_t *, void *data)
+{
+	auto *w = static_cast<Wizard *>(data);
+	obs_data_t *st = obs_source_get_settings(w->src);
+	QStringList ids, scenes;
+	for (const auto &r : relayCache)
+		if (obs_data_get_bool(st, ("relay:" + r.id).toUtf8().constData())) ids << r.id;
+	SceneList sl;
+	for (size_t i = 0; i < sl.l.sources.num; i++) {
+		const QString n = q(obs_source_get_name(sl.l.sources.array[i]));
+		if (obs_data_get_bool(st, ("scene:" + n).toUtf8().constData())) scenes << n;
+	}
+	obs_data_release(st);
+	if (ids.isEmpty()) return false;
+	if (scenes.isEmpty()) scenes << currentSceneName(obs_frontend_get_current_scene);
+	const QString self = q(obs_source_get_name(w->src));
+	try {
+		const Json r = addRelaySources(ids, scenes);
+		blog(LOG_INFO, "[syxtee-link] flux ajoutés : %d créé(s), %d placement(s)", int(r.value("created").toArray().size()), int(r.value("placed").toArray().size()));
+	} catch (const Fail &f) {
+		blog(LOG_WARNING, "[syxtee-link] flux non ajoutés : %s", f.message.toUtf8().constData());
+		return false;
+	}
+	// L'assistant a fini son travail : on le retire (la fenêtre de propriétés se ferme avec lui).
+	onMain([self] {
+		Src me(self);
+		if (me.s && q(obs_source_get_id(me.s)) == "syxtee_flux") obs_source_remove(me.s);
+	});
+	return true;
+}
+
+bool wizardCreateRelay(obs_properties_t *, obs_property_t *, void *)
+{
+	QDesktopServices::openUrl(QUrl("https://syxtee-networks.vercel.app/dashboard/relais"));
+	return false;
+}
+
+obs_properties_t *wizardProps(void *)
+{
+	obs_properties_t *p = obs_properties_create();
+	obs_properties_add_text(p, "info1", u("Coche les flux à ajouter. Chacun devient une source « Flux › NOM », du nom de ta caméra sur le compte, et reste synchronisée avec lui."), OBS_TEXT_INFO);
+	if (relayCache.empty()) {
+		obs_properties_add_text(p, "none", u("Aucun flux sur ton compte (ou liste en cours de chargement)."), OBS_TEXT_INFO);
+	} else {
+		const auto have = fluxSources();
+		for (const auto &r : relayCache) {
+			bool inObs = false;
+			for (const auto &h : have) inObs = inObs || h.second == r.id;
+			const QString label = r.name + (r.live ? QString::fromUtf8(" · en ligne") : QString::fromUtf8(" · hors ligne")) + (inObs ? QString::fromUtf8(" · déjà dans OBS") : QString());
+			obs_properties_add_bool(p, ("relay:" + r.id).toUtf8().constData(), label.toUtf8().constData());
+		}
+	}
+	obs_properties_add_button(p, "createRelay", u("Créer un relais (ouvre le site)"), wizardCreateRelay);
+	obs_properties_add_text(p, "info2", u("Ajouter à ces scènes (la même source est réutilisée dans chacune) :"), OBS_TEXT_INFO);
+	SceneList sl;
+	for (size_t i = 0; i < sl.l.sources.num; i++) {
+		const QString n = q(obs_source_get_name(sl.l.sources.array[i]));
+		obs_properties_add_bool(p, ("scene:" + n).toUtf8().constData(), n.toUtf8().constData());
+	}
+	obs_properties_add_button(p, "add", u("Ajouter les flux cochés"), wizardAdd);
+	return p;
+}
+
+void registerFluxSource()
+{
+	static obs_source_info info = {};
+	info.id = "syxtee_flux";
+	info.type = OBS_SOURCE_TYPE_INPUT;
+	info.output_flags = OBS_SOURCE_VIDEO;
+	info.get_name = wizardName;
+	info.create = wizardCreate;
+	info.destroy = wizardDestroy;
+	info.get_width = wizardSize;
+	info.get_height = wizardSize;
+	info.get_properties = wizardProps;
+	info.video_render = wizardRender;
+	obs_register_source(&info);
+}
+
 // ───── Demandes ─────
 using Handler = std::function<Json(const Json &)>;
 
@@ -667,6 +938,13 @@ std::map<QString, Handler> &handlers()
 			Src s(req(d, "inputName"));
 			obs_source_set_name(s.need("Entrée"), req(d, "newInputName").toUtf8().constData());
 			return okEmpty();
+		};
+		m["link.syncRelays"] = [](const Json &d) { return syncRelays(d.value("relays").toArray()); };
+		m["link.addRelaySources"] = [](const Json &d) {
+			QStringList ids, scenes;
+			for (const auto &v : d.value("relayIds").toArray()) ids << v.toString();
+			for (const auto &v : d.value("scenes").toArray()) scenes << v.toString();
+			return addRelaySources(ids, scenes);
 		};
 		m["link.whipStart"] = [](const Json &d) { return startWhip(d); };
 		m["link.whipStop"] = [](const Json &) {
@@ -1121,6 +1399,7 @@ void onNewConnection()
 bool syxtee_obsctl_start(const char *path)
 {
 	if (server) return true;
+	registerFluxSource(); // le type « Flux SYXTEE » apparaît dans Ajouter une source
 	QLocalServer::removeServer(QString::fromUtf8(path));
 	server = new QLocalServer;
 	server->setSocketOptions(QLocalServer::UserAccessOption); // lisible et écrivable par l'utilisateur seul

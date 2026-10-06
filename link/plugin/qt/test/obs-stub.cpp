@@ -5,6 +5,7 @@
 #include <obs-audio-controls.h>
 #include <util/platform.h>
 
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <algorithm>
@@ -36,6 +37,7 @@ struct obs_source {
 	signal_handler sh;
 	std::vector<struct obs_scene_item *> items;
 	QJsonObject settings;
+	bool enabled = true;
 };
 struct obs_scene_item {
 	int64_t id;
@@ -763,3 +765,111 @@ obs_data_t *obs_data_create() { return new obs_data; }
 void obs_data_set_string(obs_data_t *d, const char *k, const char *v) { d->j[k] = v; }
 void obs_data_set_int(obs_data_t *d, const char *k, long long v) { d->j[k] = double(v); }
 void obs_data_set_bool(obs_data_t *d, const char *k, bool v) { d->j[k] = v; }
+
+// ───── Sources liées aux flux : réglages, propriétés, assistant « Flux SYXTEE » ─────
+struct obs_properties {
+	struct P {
+		std::string name, desc;
+		int kind; // 0 bool, 1 texte, 2 bouton
+		obs_property_clicked_t click;
+	};
+	std::vector<P> list;
+};
+static obs_source_info registered;
+static bool haveRegistered = false;
+static void *wizardData = nullptr;
+static obs_source *wizardSource = nullptr;
+
+void obs_register_source_s(const struct obs_source_info *info, size_t) { registered = *info; haveRegistered = true; }
+obs_data_t *obs_source_get_settings(const obs_source_t *s)
+{
+	auto *d = new obs_data;
+	d->j = s->settings;
+	return d;
+}
+void obs_source_remove(obs_source_t *s)
+{
+	all.erase(std::remove(all.begin(), all.end(), s), all.end());
+	if (s == wizardSource) wizardSource = nullptr;
+}
+void obs_source_set_enabled(obs_source_t *s, bool e) { s->enabled = e; }
+const char *obs_data_get_string(obs_data_t *d, const char *k)
+{
+	static QByteArray ring[32];
+	static unsigned i = 0;
+	QByteArray &slot = ring[i++ % 32];
+	slot = d->j.value(k).toString().toUtf8();
+	return slot.constData();
+}
+bool obs_data_get_bool(obs_data_t *d, const char *k) { return d->j.value(k).toBool(); }
+void obs_data_set_default_bool(obs_data_t *d, const char *k, bool v)
+{
+	if (!d->j.contains(k)) d->j[k] = v;
+}
+obs_properties_t *obs_properties_create(void) { return new obs_properties; }
+obs_property_t *obs_properties_add_bool(obs_properties_t *p, const char *n, const char *d)
+{
+	p->list.push_back({n, d, 0, nullptr});
+	return nullptr;
+}
+obs_property_t *obs_properties_add_text(obs_properties_t *p, const char *n, const char *d, enum obs_text_type)
+{
+	p->list.push_back({n, d, 1, nullptr});
+	return nullptr;
+}
+obs_property_t *obs_properties_add_button(obs_properties_t *p, const char *n, const char *d, obs_property_clicked_t cb)
+{
+	p->list.push_back({n, d, 2, cb});
+	return nullptr;
+}
+
+std::string stub_wizard_open()
+{
+	if (!haveRegistered) return "{}";
+	wizardSource = stub_make("Flux SYXTEE", "syxtee_flux", OBS_SOURCE_TYPE_INPUT, OBS_SOURCE_VIDEO);
+	auto *settings = new obs_data;
+	wizardData = registered.create(settings, wizardSource);
+	wizardSource->settings = settings->j;
+	delete settings;
+	return registered.id;
+}
+std::string stub_wizard_props()
+{
+	QJsonArray arr;
+	if (wizardData) {
+		obs_properties *p = registered.get_properties(wizardData);
+		for (auto &x : p->list) arr.append(QJsonObject{{"name", QString::fromStdString(x.name)}, {"label", QString::fromStdString(x.desc)}, {"kind", x.kind}});
+		delete p;
+	}
+	return QJsonDocument(arr).toJson(QJsonDocument::Compact).toStdString();
+}
+void stub_wizard_set(const char *key, bool on)
+{
+	if (wizardSource) wizardSource->settings[key] = on;
+}
+bool stub_wizard_click(const char *name)
+{
+	if (!wizardData) return false;
+	obs_properties *p = registered.get_properties(wizardData);
+	bool r = false;
+	for (auto &x : p->list)
+		if (x.name == name && x.click) r = x.click(p, nullptr, wizardData);
+	delete p;
+	return r;
+}
+bool stub_wizard_alive() { return wizardSource != nullptr; }
+std::string stub_dump()
+{
+	QJsonArray sources;
+	QJsonObject scenes;
+	for (auto *s : all) {
+		if (s->type == OBS_SOURCE_TYPE_SCENE) {
+			QJsonArray names;
+			for (auto *it : s->items) names.append(QString::fromStdString(it->src->name));
+			scenes[QString::fromStdString(s->name)] = names;
+		} else if (s->type == OBS_SOURCE_TYPE_INPUT) {
+			sources.append(QJsonObject{{"name", QString::fromStdString(s->name)}, {"id", QString::fromStdString(s->id)}, {"enabled", s->enabled}, {"settings", s->settings}});
+		}
+	}
+	return QJsonDocument(QJsonObject{{"sources", sources}, {"scenes", scenes}}).toJson(QJsonDocument::Compact).toStdString();
+}

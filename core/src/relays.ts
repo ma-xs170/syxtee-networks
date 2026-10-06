@@ -17,6 +17,8 @@ import type { Sls } from "./sls.ts";
 
 export type Mode = "direct" | "regie";
 export type Protocol = "srtla" | "rtmp" | "rist";
+export type SwitchTrigger = "cut" | "cut_lowbitrate" | "sensitive";
+export const SWITCH_TRIGGERS: SwitchTrigger[] = ["cut", "cut_lowbitrate", "sensitive"];
 export type Relay = StreamIds & {
   id: string;
   user_id: string;
@@ -32,6 +34,8 @@ export type Relay = StreamIds & {
   record?: boolean;
   /** Format des fichiers enregistrés : MOV par défaut, MP4 au choix. */
   record_format?: "mov" | "mp4";
+  /** Déclenchement de la bascule automatique (migration 0043). */
+  switch_trigger?: SwitchTrigger;
   status: "live" | "offline";
   archived: boolean;
   created_at: string;
@@ -49,7 +53,7 @@ export class PortsError extends Error {}
 export class ForbiddenError extends Error {}
 
 const UNIQUE_VIOLATION = "23505";
-const PUBLIC_COLUMNS = "id, user_id, name, protocol, server, mode, record, record_format, status, archived, created_at, rotated_at, last_live_at, rist_port, keys_enc";
+const PUBLIC_COLUMNS = "id, user_id, name, protocol, server, mode, record, record_format, switch_trigger, status, archived, created_at, rotated_at, last_live_at, rist_port, keys_enc";
 
 /** Paire du relais créée par SYXTEE et sans relais autorisé correspondant. */
 export function orphanPair(p: { player: string; description?: string }, known: Set<string>) {
@@ -274,6 +278,7 @@ export function createRelayStore(
     setMode: (r: Relay, mode: Mode) => update(r.id, { mode }),
     setRecord: (r: Relay, record: boolean) => update(r.id, { record }),
     setRecordFormat: (r: Relay, record_format: "mov" | "mp4") => update(r.id, { record_format }),
+    setSwitchTrigger: (r: Relay, switch_trigger: SwitchTrigger) => update(r.id, { switch_trigger }),
 
     /** Archiver retire la paire du SLS (sessions coupées) ; réactiver la redéclare (dans la limite de la formule). */
     async setArchived(r: Relay, archived: boolean, limit: number): Promise<Relay> {

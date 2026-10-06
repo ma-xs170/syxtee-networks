@@ -2,14 +2,20 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { archiveRelayAction, changeServerAction, deleteRelayAction, renameRelayAction, rotateRelayAction, setRecordAction, setRecordFormatAction, type RelayActionState } from "@/app/(dashboard)/dashboard/relais/actions";
-import type { RelayView } from "@/lib/core";
+import { archiveRelayAction, changeServerAction, deleteRelayAction, renameRelayAction, rotateRelayAction, setRecordAction, setRecordFormatAction, setSwitchTriggerAction, type RelayActionState } from "@/app/(dashboard)/dashboard/relais/actions";
+import type { RelayView, SwitchTrigger } from "@/lib/core";
 import { flag, RELAY_SERVERS } from "@/lib/relay-servers";
 
 // Actions d'un relais : Copier l'URL (clé jamais affichée ici), Voir, et un menu (Renommer, Régénérer la clé,
 // Archiver ou Réactiver, Supprimer). Les actions qui coupent des URLs passent par une confirmation.
 
-type Pending = "rename" | "server" | "rotate" | "archive" | "delete" | null;
+type Pending = "rename" | "trigger" | "server" | "rotate" | "archive" | "delete" | null;
+
+const TRIGGERS: { id: SwitchTrigger; title: string; text: string }[] = [
+  { id: "cut", title: "Coupure seulement", text: "Bascule sur la scène de secours quand l'image se fige ou que le flux est coupé." },
+  { id: "cut_lowbitrate", title: "Coupure et débit très bas", text: "Bascule aussi quand le débit du flux tombe sous 300 kbit/s, avant que l'image ne se fige." },
+  { id: "sensitive", title: "Sensible", text: "Réagit aux micro-coupures : bascule dès 2 secondes d'image figée ou sous 800 kbit/s. Peut basculer un peu trop souvent." },
+];
 
 /** URL que l'encodeur colle : SRTLA pour Moblin, URL RTMP ou RIST complète sinon. */
 export const ingestUrl = (r: Pick<RelayView, "protocol" | "urls">) => (r.protocol === "rist" ? r.urls.rist_url : r.protocol === "rtmp" ? r.urls.rtmp_url : r.urls.srtla_url) ?? "";
@@ -23,6 +29,7 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState(relay.name);
+  const [trig, setTrig] = useState<SwitchTrigger>(relay.switch_trigger ?? "cut");
   const otherServers = RELAY_SERVERS.filter((s) => s.available && s.id !== relay.server);
   const [target, setTarget] = useState(otherServers[0]?.id ?? "");
   const [pending, start] = useTransition();
@@ -63,6 +70,7 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
     setMenu(false);
     setError(null);
     setName(relay.name);
+    setTrig(relay.switch_trigger ?? "cut");
     setAsk(p);
   }
 
@@ -90,6 +98,7 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
     start(async () => {
       let r: RelayActionState = {};
       if (ask === "rename") r = await renameRelayAction(relay.id, name);
+      if (ask === "trigger") r = await setSwitchTriggerAction(relay.id, trig);
       if (ask === "server") r = await changeServerAction(relay.id, target);
       if (ask === "rotate") r = await rotateRelayAction(relay.id);
       if (ask === "archive") r = await archiveRelayAction(relay.id, !relay.archived);
@@ -101,7 +110,8 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
   }
 
   const texts: Record<Exclude<Pending, null>, { title: string; body: string; cta: string; danger?: boolean }> = {
-    rename: { title: "Renommer le relais", body: "Le nom de l'appareil qui utilise ce relais. Les URLs ne changent pas.", cta: "Renommer" },
+    rename: { title: "Renommer la caméra", body: "Le nom de la caméra qui utilise ce flux. Les URLs ne changent pas. Dans OBS, la source « Flux › NOM » prend le nouveau nom toute seule.", cta: "Renommer" },
+    trigger: { title: "Déclenchement de la bascule", body: "Quand OBS doit passer seul sur ta scène de secours. Le plugin lit ce réglage (aussi modifiable dans Contrôle à distance, panneau Appareil).", cta: "Enregistrer" },
     server: {
       title: "Changer de serveur",
       body: "Le relais garde le même identifiant, la même clé et la même adresse : rien à recoller dans ton encodeur ni dans OBS. Si tu diffuses en ce moment, le direct est coupé quelques secondes.",
@@ -161,6 +171,7 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
             {(
               [
                 ["rename", "Renommer"],
+                ...(relay.archived ? [] : [["trigger", "Déclenchement de la bascule"]]),
                 ...(otherServers.length > 0 ? [["server", "Changer de serveur"]] : []),
                 ...(relay.archived ? [] : [["rotate", "Régénérer la clé"]]),
                 ["archive", relay.archived ? "Réactiver" : "Archiver"],
@@ -213,7 +224,7 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
             {ask === "rename" && (
               <div className="mt-4">
                 <label htmlFor={`name-${relay.id}`} className="text-sm">
-                  Nom de l&apos;appareil
+                  Nom de la caméra
                 </label>
                 <input
                   id={`name-${relay.id}`}
@@ -224,6 +235,20 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
                   className="mt-2 h-11 w-full rounded-xl border border-line bg-background px-4 text-sm text-foreground focus:border-foreground/70 focus:outline-none"
                 />
               </div>
+            )}
+            {ask === "trigger" && (
+              <fieldset className="mt-4 grid gap-2">
+                <legend className="sr-only">Déclenchement</legend>
+                {TRIGGERS.map((x) => (
+                  <label key={x.id} className={`cursor-pointer rounded-xl border p-3 text-sm transition-colors ${trig === x.id ? "border-foreground" : "border-line hover:border-line-strong"}`}>
+                    <span className="flex items-center gap-2 font-medium">
+                      <input type="radio" name={`trigger-${relay.id}`} checked={trig === x.id} onChange={() => setTrig(x.id)} className="accent-current" />
+                      {x.title}
+                    </span>
+                    <span className="mt-1 block pl-6 text-xs text-muted">{x.text}</span>
+                  </label>
+                ))}
+              </fieldset>
             )}
             {ask === "server" && (
               <div className="mt-4">

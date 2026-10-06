@@ -1,7 +1,7 @@
 import { rm } from "node:fs/promises";
 import { hostname, tmpdir } from "node:os";
 import { join } from "node:path";
-import { BackupWatcher, cleanBackup } from "./backup.ts";
+import { BackupWatcher, cleanBackup, TRIGGERS, type Trigger } from "./backup.ts";
 import { downloadArchive, uploadArchive } from "./cloud.ts";
 import { save, type LinkConfig } from "./config.ts";
 import { ObsClient, type ObsEvent } from "./obs.ts";
@@ -34,6 +34,8 @@ const EVENTS = new Set([
   "SceneItemListIndexingChanged", "SourceRenamed", "CurrentSceneTransitionChanged",
 ]);
 
+export type RelayLite = { id: string; name: string; protocol: string; live: boolean; switch_trigger: Trigger; obs_srt_url: string };
+
 export type Job = { kind: "backup" | "restore"; state: "running" | "done" | "error"; progress: number; message: string } | null;
 
 export type Status = { core: "off" | "connecting" | "on"; obs: "off" | "connecting" | "on"; obsVersion: string; backup: BackupWatcher["state"]; lastError: string; viewers: number; job: Job };
@@ -60,6 +62,11 @@ export class Agent {
   private autoTimer: ReturnType<typeof setInterval> | null = null;
   private autoFailedAt = new Map<string, number>();
   private previewMgr: ReturnType<typeof setInterval> | null = null;
+  private relayMgr: ReturnType<typeof setInterval> | null = null;
+  private bitrateMgr: ReturnType<typeof setInterval> | null = null;
+  /** Flux (relais) du compte, avec l'adresse de lecture pour OBS : jamais montrée dans une interface. */
+  relays: RelayLite[] = [];
+  private relaysAt = 0;
   /** Aperçu vidéo (WHIP). `mode` : « video » (image + son), « jpeg » (repli, images sans son), « idle » (personne ne regarde). */
   private whip: { active: boolean; starting: boolean; failedAt: number; reason: string; touchedAt: number } = { active: false, starting: false, failedAt: 0, reason: "", touchedAt: 0 };
   get whipReason() {
@@ -101,6 +108,8 @@ export class Agent {
     this.tickTimer = setInterval(() => void this.watcher.tick(), 1000);
     this.autoTimer = setInterval(() => void this.autoBackupTick(), 30_000);
     this.previewMgr = setInterval(() => void this.managePreview(), 5000);
+    this.relayMgr = setInterval(() => void this.syncRelays(), 30_000);
+    this.bitrateMgr = setInterval(() => void this.pollBitrate(), 2000);
     void this.previewLoop();
   }
 
@@ -110,6 +119,8 @@ export class Agent {
     if (this.tickTimer) clearInterval(this.tickTimer);
     if (this.autoTimer) clearInterval(this.autoTimer);
     if (this.previewMgr) clearInterval(this.previewMgr);
+    if (this.relayMgr) clearInterval(this.relayMgr);
+    if (this.bitrateMgr) clearInterval(this.bitrateMgr);
     void this.stopWhip();
     if (this.previewTimer) clearTimeout(this.previewTimer);
     this.core?.close();
@@ -220,6 +231,53 @@ export class Agent {
       w.touchedAt = Date.now();
       void coreCall(this.cfg, "POST", "/v1/link/preview/touch", {});
     }
+  }
+
+  // ───── Flux du compte : sources d'OBS, déclenchement de la bascule, débit surveillé ─────
+
+  /** Relit les flux du compte, les donne au plugin (noms, adresses, relais supprimés) et applique le déclenchement du flux de destination. */
+  async syncRelays(force = false): Promise<boolean> {
+    if (this.stopped || !this.cfg.token) return false;
+    if (!force && Date.now() - this.relaysAt < 20_000) return true;
+    const r = await coreCall(this.cfg, "GET", "/v1/link/streams");
+    if (!r.ok) return false;
+    this.relaysAt = Date.now();
+    this.relays = ((r.json.streams as RelayLite[]) ?? []).map((s) => ({ ...s, switch_trigger: TRIGGERS.includes(s.switch_trigger) ? s.switch_trigger : "cut" }));
+    if (this.cfg.destination && !this.relays.some((s) => s.id === this.cfg.destination)) {
+      this.cfg.destination = "";
+      save(this.cfg);
+    }
+    const dest = this.relays.find((s) => s.id === this.cfg.destination);
+    if (dest && dest.switch_trigger !== this.cfg.backup.trigger) {
+      this.cfg.backup = { ...this.cfg.backup, trigger: dest.switch_trigger };
+      this.watcher.set(this.cfg.backup);
+      save(this.cfg);
+    }
+    if (this.obs.connected) {
+      await this.obs.request("link.syncRelays", { relays: this.relays.map((s) => ({ id: s.id, name: s.name, url: s.obs_srt_url, live: s.live })) }).catch(() => {});
+    }
+    return true;
+  }
+
+  /** Débit du flux de destination, une fois toutes les 2 s, seulement si un déclenchement au débit est choisi. */
+  private async pollBitrate() {
+    const c = this.cfg.backup;
+    if (this.stopped || !c.enabled || c.trigger === "cut" || !this.cfg.destination) return this.watcher.setBitrate(null);
+    const r = await coreCall(this.cfg, "GET", `/v1/link/streams/${encodeURIComponent(this.cfg.destination)}/status`);
+    this.watcher.setBitrate(r.ok ? (r.json.live ? Number(r.json.kbps) || 0 : 0) : null);
+  }
+
+  /** Change le déclenchement : sur le flux de destination (compte) et ici. Renvoie le déclenchement retenu. */
+  async setTrigger(t: Trigger): Promise<Trigger> {
+    this.cfg.backup = { ...this.cfg.backup, trigger: t };
+    this.watcher.set(this.cfg.backup);
+    save(this.cfg);
+    if (this.cfg.destination) {
+      const r = await coreCall(this.cfg, "PATCH", `/v1/link/streams/${encodeURIComponent(this.cfg.destination)}`, { switch_trigger: t });
+      const dest = this.relays.find((s) => s.id === this.cfg.destination);
+      if (r.ok && dest) dest.switch_trigger = t;
+    }
+    return t;
   }
 
   /** Active ou coupe l'aperçu (site ou fenêtre Studio d'OBS : même interrupteur). */
@@ -357,6 +415,10 @@ export class Agent {
       this.log(`OBS ${this.status.obsVersion} connecté`);
       this.obs.onEvent = (name, data) => {
         if (name === "InputVolumeMeters") return this.meters(data);
+        if (name === "link.needRelays") {
+          void this.syncRelays(true);
+          return;
+        }
         if (name === "link.whip" && !data.active && this.whip.active) {
           // L'envoi s'est interrompu côté OBS (réseau, serveur) : repli sur les images, nouvel essai dans 30 s.
           this.whip.active = false;
@@ -384,6 +446,7 @@ export class Agent {
         this.later(() => void this.connectObs(), 3000);
       };
       this.watcher.set(this.cfg.backup);
+      void this.syncRelays(true);
       this.send({ type: "event", name: "link.obsOpened", data: {} });
     } catch (e) {
       this.status.obs = "off";
@@ -500,7 +563,10 @@ export class Agent {
       // Rôles des scènes (scène de direct, scène de secours), bascule automatique et déclenchement.
       if (method === "link.getBackup") return reply(true, { ...this.watcher.cfg, liveScene: this.cfg.liveScene, state: this.watcher.state });
       if (method === "link.setBackup") {
+        const before = this.cfg.backup.trigger;
         this.cfg.backup = cleanBackup(params, this.cfg.backup);
+        // Déclenchement : se règle sur le flux de destination (même réglage que « Mes relais » sur le site).
+        if (this.cfg.backup.trigger !== before) await this.setTrigger(this.cfg.backup.trigger);
         if (typeof params.liveScene === "string") this.cfg.liveScene = params.liveScene.slice(0, 200);
         this.watcher.set(this.cfg.backup);
         save(this.cfg);

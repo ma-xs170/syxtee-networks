@@ -611,6 +611,9 @@ body::before {
   .btn-primary:hover::after { transform: translateX(120%); }
   .float-slow { animation: float-slow 7s ease-in-out infinite alternate; }
   .float-slow:nth-child(even) { animation-duration: 9s; animation-delay: -3s; }
+  /* Logo de chargement : respiration douce (échelle + opacité), pour dire « ça arrive ». */
+  .logo-load { animation: logo-load 1.4s ease-in-out infinite; }
+  @keyframes logo-load { 0%, 100% { opacity: 0.35; transform: scale(0.92); } 50% { opacity: 1; transform: scale(1.04); } }
   @keyframes float-slow { from { transform: translateY(0); } to { transform: translateY(-14px); } }
 }
 

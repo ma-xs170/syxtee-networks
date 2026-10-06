@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { hostname } from "node:os";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { Agent, VERSION } from "./agent.ts";
 import { cleanBackup } from "./backup.ts";
@@ -26,6 +27,8 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
     opts.log?.(m);
   };
   const csrf = randomBytes(24).toString("hex");
+  // Jeton local donné par le plugin OBS à l'agent qu'il lance : la fenêtre « SYXTEE Studio » (Qt) l'utilise comme la page web utilise `csrf`.
+  const ipc = /^[0-9a-f]{32,}$/.test(process.env.SYXTEE_LINK_IPC ?? "") ? process.env.SYXTEE_LINK_IPC! : "";
   let agent: Agent | null = null;
 
   const login = new Login(cfg.core, cfg.site, (t) => {
@@ -57,6 +60,8 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
 
   const state = () => ({
     version: VERSION,
+    host: hostname().slice(0, 40),
+    core: cfg.core,
     paired: cfg.token !== "",
     onboarded: cfg.onboarded,
     login: login.state,
@@ -75,7 +80,7 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
       res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "x-frame-options": "DENY" });
       return void res.end(PANEL.replace("__CSRF__", csrf));
     }
-    if (!url.pathname.startsWith("/api/") || req.headers["x-syxtee"] !== csrf) return end(res, 403, "refusé");
+    if (!url.pathname.startsWith("/api/") || (req.headers["x-syxtee"] !== csrf && !(ipc && req.headers["x-syxtee"] === ipc))) return end(res, 403, "refusé");
     let body: Record<string, unknown> = {};
     if (req.method === "POST") {
       const parts: Buffer[] = [];
@@ -111,6 +116,18 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
         } catch {
           return json({ scenes: [], inputs: [] });
         }
+      }
+      case "POST /api/ping": {
+        // Test de connexion : durée d'un aller-retour vers le serveur SYXTEE (médiane de 3 essais).
+        const times: number[] = [];
+        for (let i = 0; i < 3; i++) {
+          const t0 = performance.now();
+          const r = await fetch(`${cfg.core}/health`, { signal: AbortSignal.timeout(5000) }).catch(() => null);
+          if (!r?.ok) return json({ ok: false });
+          times.push(performance.now() - t0);
+        }
+        times.sort((a, b) => a - b);
+        return json({ ok: true, ms: Math.round(times[1]) });
       }
       case "POST /api/login/start":
         void login.start();

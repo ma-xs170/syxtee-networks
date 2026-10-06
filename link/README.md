@@ -12,7 +12,7 @@ téléphone / navigateur (Studio) ──WS──► Core ◄──WS (sortant)�
 
 ## Fonctionnement
 
-Le plugin (`plugin/syxtee-link.c`, C, sans Qt) est minimal : il lance l'agent livré dans le même paquet quand OBS s'ouvre et le ferme avec lui. Il ajoute « SYXTEE Link » au menu Outils d'OBS (page de réglages locale sur `http://127.0.0.1:47831`).
+Le plugin lance l'agent livré dans le même paquet quand OBS s'ouvre et le ferme avec lui (`plugin/syxtee-link.c`). Une couche C++/Qt (`plugin/qt/`, sans moc) ajoute le menu **SYXTEE** dans la barre d'OBS, à côté d'Aide, et la fenêtre **SYXTEE Studio** (onglets Direct, Collections, Réglages ; écran « Connecte ton compte » si l'OBS n'est pas relié). La fenêtre parle à l'agent local en HTTP sur `127.0.0.1:47831`, avec un jeton que le plugin génère à chaque lancement et passe à l'agent (`SYXTEE_LINK_IPC`). Le Qt utilisé à l'exécution est celui d'OBS.
 
 L'agent (`src/`, Node, exécutable autonome) :
 
@@ -35,7 +35,7 @@ npm test             # agent, sauvegardes (archive et restauration), page locale
 npm run plugin       # macOS : syxtee-link.plugin et SYXTEE-Link-<version>.pkg dans ~/syxtee-link-plugin
 ```
 
-`npm run plugin` télécharge les en-têtes de l'API d'OBS (`OBS_TAG`), compile le module (universel arm64 et x86_64, symboles d'OBS résolus au chargement), construit l'agent (Node « single executable » de la machine de build) et signe ad hoc. Sur un Mac Intel, construire sur un Mac Intel pour que l'agent soit en x86_64.
+Prérequis : OBS installé et les en-têtes Qt (`brew install qt`). `npm run plugin` télécharge les en-têtes de l'API d'OBS (`OBS_TAG`), compile le module (universel arm64 et x86_64, symboles d'OBS résolus au chargement), construit l'agent (Node « single executable » de la machine de build) et signe ad hoc. Sur un Mac Intel, construire sur un Mac Intel pour que l'agent soit en x86_64.
 
 **Windows** : le code du plugin gère déjà Windows (`CreateProcess`), mais le build n'est pas fait : `cl` avec les bibliothèques d'OBS (obs.lib, obs-frontend-api.lib) ou le gabarit `obs-plugintemplate` sur une machine Windows, et un agent construit avec `node --build-sea` sur Windows.
 
@@ -46,3 +46,16 @@ npm run plugin       # macOS : syxtee-link.plugin et SYXTEE-Link-<version>.pkg d
 - Archives : lecture stricte (noms de fichiers sûrs, tailles bornées), médias écrits sous `~/SYXTEE Link/Médias/<id>/` seulement.
 - Configuration locale dans `~/.syxtee-link/config.json` (droits 600).
 - Accès réservé aux comptes invités, comme les relais.
+
+## Essayer la fenêtre sans OBS
+
+`plugin/qt/test/ui-shot.cpp` ouvre la fenêtre contre un agent local et enregistre une capture par onglet (Qt de Homebrew, rendu hors écran).
+
+```
+SYXTEE_LINK_HOME=/tmp/h SYXTEE_LINK_PORT=47833 SYXTEE_LINK_IPC=<32 caractères hex ou plus> node --experimental-strip-types src/main.ts run &
+QT_QPA_PLATFORM=offscreen ui-shot 47833 <jeton> <dossier>
+```
+
+## Installer le .pkg (macOS, signature ad hoc)
+
+Sans compte Apple Developer, le `.pkg` n'est pas notarisé : clic droit sur le fichier, Ouvrir, Ouvrir quand même (ou Réglages Système > Confidentialité et sécurité > « Ouvrir quand même » juste après un premier refus). Il s'installe sans mot de passe dans `~/Library/Application Support/obs-studio/plugins`. Quitter puis rouvrir OBS : le menu **SYXTEE** apparaît dans la barre.

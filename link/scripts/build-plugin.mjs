@@ -1,7 +1,7 @@
 // Construit le plugin OBS SYXTEE Link pour macOS : syxtee-link.plugin (module natif + agent) et l'installeur .pkg.
 //   npm run plugin
 // Sortie : PLUGIN_OUT (défaut ~/syxtee-link-plugin) : syxtee-link.plugin, SYXTEE-Link-<version>.pkg
-// Prérequis : Node 24+, outils en ligne de commande Xcode (clang, pkgbuild, productbuild, codesign). Pas besoin de CMake ni de Qt.
+// Prérequis : Node 24+, outils en ligne de commande Xcode (clang, pkgbuild, productbuild, codesign), OBS installé, en-têtes Qt (`brew install qt`).
 import { execFileSync } from "node:child_process";
 import { chmodSync, existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -15,7 +15,7 @@ if (process.platform !== "darwin") {
 
 const root = resolve(fileURLToPath(import.meta.url), "../..");
 const out = resolve((process.env.PLUGIN_OUT || "~/syxtee-link-plugin").replace(/^~(?=$|\/)/, homedir()));
-const VERSION = "0.2.0";
+const VERSION = "0.3.0";
 const OBS_TAG = "32.0.0"; // en-têtes de l'API d'OBS : seule l'interface (stable) est utilisée, le plugin se lie à OBS au chargement
 const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { stdio: "inherit", ...opts });
 
@@ -55,11 +55,37 @@ if (!existsSync(join(headers, "simde", "simde", "x86", "sse2.h"))) {
   run("sh", ["-c", `curl -sSL https://github.com/simd-everywhere/simde/archive/refs/tags/v0.8.2.tar.gz | tar -xz -C "${join(headers, "simde")}" --strip-components=1 --include '*/simde/*'`]);
 }
 
-// 3. Module natif, universel (Apple Silicon et Intel). Les symboles d'OBS sont résolus par OBS au chargement.
-run("clang", [
-  "-arch", "arm64", "-arch", "x86_64", "-bundle", "-undefined", "dynamic_lookup", "-mmacosx-version-min=13.0", "-O2", "-Wall",
-  `-I${join(headers, "libobs")}`, `-I${join(headers, "simde")}`, `-I${join(headers, "frontend", "api")}`,
-  "-o", join(contents, "MacOS", "syxtee-link"), join(root, "plugin", "syxtee-link.c"),
+// 3. Module natif, universel (Apple Silicon et Intel) : partie C (lancement de l'agent) + partie C++/Qt (menu « SYXTEE », fenêtre Studio).
+// Les symboles d'OBS sont résolus par OBS au chargement. Qt : en-têtes de Homebrew (`brew install qt`), mais l'édition de liens se fait
+// contre les frameworks Qt d'OBS (même version majeure, chargés par OBS : jamais deux Qt dans le processus).
+const obsApp = process.env.OBS_APP || "/Applications/OBS.app";
+const obsFrameworks = join(obsApp, "Contents", "Frameworks");
+let qtLib = process.env.QT_LIB || "";
+if (!qtLib) {
+  try {
+    qtLib = join(execFileSync("brew", ["--prefix", "qt"], { encoding: "utf8" }).trim(), "lib");
+  } catch {
+    // pas de Homebrew
+  }
+}
+if (!existsSync(join(obsFrameworks, "QtWidgets.framework")) || !qtLib || !existsSync(join(qtLib, "QtWidgets.framework", "Headers"))) {
+  console.error("Qt introuvable : installe OBS (/Applications/OBS.app) et les en-têtes Qt avec `brew install qt`, ou donne QT_LIB et OBS_APP.");
+  process.exit(1);
+}
+const qtInc = ["QtCore", "QtGui", "QtWidgets", "QtNetwork"].map((m) => `-I${join(qtLib, `${m}.framework`, "Headers")}`);
+const archs = ["-arch", "arm64", "-arch", "x86_64"];
+const common = ["-mmacosx-version-min=13.0", "-O2", "-Wall", "-fPIC", "-Wno-deprecated-declarations", `-I${join(headers, "libobs")}`, `-I${join(headers, "simde")}`, `-I${join(headers, "frontend", "api")}`];
+const objs = [];
+for (const [src, std] of [["syxtee-link.c", null], ["qt/studio_ui.cpp", "-std=c++17"], ["qt/studio_menu.cpp", "-std=c++17"]]) {
+  const obj = join(work, `${src.replace(/\W/g, "_")}.o`);
+  const cc = std ? "clang++" : "clang";
+  run(cc, [...archs, "-c", ...common, ...(std ? [std, `-F${qtLib}`, ...qtInc] : []), join(root, "plugin", src), "-o", obj]);
+  objs.push(obj);
+}
+run("clang++", [
+  ...archs, "-bundle", "-undefined", "dynamic_lookup", "-mmacosx-version-min=13.0", ...objs,
+  `-F${obsFrameworks}`, "-framework", "QtCore", "-framework", "QtGui", "-framework", "QtWidgets", "-framework", "QtNetwork",
+  "-Wl,-rpath,@executable_path/../Frameworks", "-o", join(contents, "MacOS", "syxtee-link"),
 ]);
 
 writeFileSync(

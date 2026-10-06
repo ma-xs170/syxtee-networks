@@ -6,6 +6,9 @@
 //
 // Aucune dépendance à Qt : seule l'API d'OBS (libobs et obs-frontend-api) est utilisée.
 
+#ifdef _WIN32
+#define _CRT_RAND_S
+#endif
 #include <obs-module.h>
 #include <obs-frontend-api.h>
 
@@ -14,6 +17,36 @@
 #include <string.h>
 
 #define PANEL_URL "http://127.0.0.1:47831/"
+
+/* Interface Qt (qt/studio_menu.cpp) : menu « SYXTEE » dans la barre d'OBS et fenêtre « SYXTEE Studio ». */
+void syxtee_ui_load(void);
+void syxtee_ui_unload(void);
+
+/* Jeton local : donné à l'agent (variable d'environnement) et à la fenêtre Qt, pour que seule la fenêtre parle à l'agent. */
+static char ipc_token[65];
+const char *syxtee_ipc_token(void)
+{
+	return ipc_token;
+}
+static void make_ipc_token(void)
+{
+	static const char hex[] = "0123456789abcdef";
+	unsigned char b[32];
+#ifdef _WIN32
+	for (int i = 0; i < 32; i++) {
+		unsigned int r = 0;
+		rand_s(&r);
+		b[i] = (unsigned char)r;
+	}
+#else
+	arc4random_buf(b, sizeof(b));
+#endif
+	for (int i = 0; i < 32; i++) {
+		ipc_token[i * 2] = hex[b[i] >> 4];
+		ipc_token[i * 2 + 1] = hex[b[i] & 15];
+	}
+	ipc_token[64] = '\0';
+}
 
 OBS_DECLARE_MODULE()
 OBS_MODULE_AUTHOR("SYXTEE NETWORKS")
@@ -80,12 +113,6 @@ static void stop_helper(void)
 	CloseHandle(helper.hProcess);
 	CloseHandle(helper.hThread);
 	helper_running = false;
-}
-
-static void open_panel(void *data)
-{
-	(void)data;
-	ShellExecuteA(NULL, "open", PANEL_URL, NULL, NULL, SW_SHOWNORMAL);
 }
 
 #else
@@ -162,25 +189,25 @@ static void stop_helper(void)
 	helper_pid = 0;
 }
 
-static void open_panel(void *data)
-{
-	(void)data;
-	pid_t p;
-	char *argv[] = {(char *)"/usr/bin/open", (char *)PANEL_URL, NULL};
-	posix_spawn(&p, "/usr/bin/open", NULL, NULL, argv, environ);
-}
 #endif
 
 bool obs_module_load(void)
 {
 	blog(LOG_INFO, "[syxtee-link] chargé");
+	make_ipc_token();
+#ifdef _WIN32
+	SetEnvironmentVariableA("SYXTEE_LINK_IPC", ipc_token);
+#else
+	setenv("SYXTEE_LINK_IPC", ipc_token, 1);
+#endif
 	start_helper();
-	obs_frontend_add_tools_menu_item("SYXTEE Link", open_panel, NULL);
+	syxtee_ui_load();
 	return true;
 }
 
 void obs_module_unload(void)
 {
+	syxtee_ui_unload();
 	stop_helper();
 	blog(LOG_INFO, "[syxtee-link] déchargé");
 }

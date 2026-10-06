@@ -164,7 +164,7 @@ Dans `.env` :
 | `SUPABASE_URL` | `https://lhtxardbrdpbfojedpvc.supabase.co` |
 | `SUPABASE_SECRET_KEY` | clé `sb_secret_…` (Supabase → Project Settings → API Keys) |
 | `SLS_API_KEY` | contenu de `.apikey` (étape 3) |
-| `RELAY_PUBLIC_HOST` | `<IP>` ou un domaine du relais (ce que les streamers collent dans Moblin/OBS) |
+| `RELAY_PUBLIC_HOST` | `relais.syxtee-networks.fr` (enregistrement DNS A vers `<IP>`). Toujours le domaine, jamais l'IP : les streamers collent cette adresse dans Moblin/OBS |
 
 ```bash
 mkdir -p data && chown -R 1000:1000 data   # le Core tourne en utilisateur « node » (uid 1000)

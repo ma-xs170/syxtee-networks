@@ -8,7 +8,7 @@ Les relais, les clés (chiffrées) et les comptes sont dans Supabase : ils ne bo
 - **`RELAY_KEYS_SECRET` est vital.** Les clés des relais sont chiffrées en base avec ce secret. Sans la même valeur sur le nouveau serveur, toutes les URLs deviennent illisibles. Copie-le depuis `/opt/syxtee/.env` de l'ancien serveur, ne le régénère pas.
 - **`CORE_API_TOKEN`** doit être identique à celui de Vercel (sinon le dashboard ne parle plus au Core).
 - **`SLS_API_KEY` change** : le nouveau `srtla-receiver` génère sa propre clé. `setup-env.sh` la détecte tout seul.
-- **L'adresse des relais change** (nouvelle IP, donc nouveau `RELAY_PUBLIC_HOST` et nouveau domaine `…sslip.io`). Les streamers devront recoller leurs URLs dans Moblin, OBS et leurs caméras. Sans nom de domaine à toi, il n'y a pas de moyen de l'éviter.
+- **L'adresse des relais ne change plus** : `RELAY_PUBLIC_HOST=relais.syxtee-networks.fr`. À la bascule, repointer l'enregistrement DNS A `relais` vers la nouvelle IP (TTL bas, 300 s, la veille). Les streamers ne touchent à rien. Seul `CORE_DOMAIN` (API du Core, en `…sslip.io`) suit l'IP.
 - Les relais seront coupés pendant la bascule finale (quelques minutes).
 
 ## 0. Avant de commander (sur l'ancien serveur)
@@ -77,7 +77,7 @@ mkdir -p data && chown -R 1000:1000 data
 - [ ] Créer `/opt/syxtee/.env` : copier celui de l'ancien serveur, puis changer **seulement** :
   - `CORE_DOMAIN` : `<NOUVELLE_IP avec des tirets>.sslip.io` (ex. `203-0-113-7.sslip.io`)
   - `CAM_DOMAIN` : `cam.<NOUVELLE_IP avec des tirets>.sslip.io` (si utilisé)
-  - `RELAY_PUBLIC_HOST` : `<NOUVELLE_IP>`
+  - `RELAY_PUBLIC_HOST` : **ne pas changer** (`relais.syxtee-networks.fr`) ; repointer le DNS A à la bascule
   - `SLS_API_KEY` : la valeur de `.apikey` du nouveau srtla-receiver
   - `SECURITY_ALLOW_IPS` : `<NOUVELLE_IP>`
   - **Garder** `RELAY_KEYS_SECRET`, `CORE_API_TOKEN`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `RELAY_NAME`, `CORS_ORIGINS`

@@ -16,7 +16,8 @@ IP=$(curl -s -4 -m 5 https://ifconfig.me || true)
 DOMAIN=$(get CORE_DOMAIN)
 [ -z "$DOMAIN" ] && DOMAIN="${IP//./-}.sslip.io"
 HOST=$(get RELAY_PUBLIC_HOST)
-[ -z "$HOST" ] && HOST="$IP"
+# Nom de domaine stable (jamais l'IP) : en cas de changement de serveur, seul l'enregistrement DNS A bouge.
+[ -z "$HOST" ] && HOST="relais.syxtee-networks.fr"
 
 KEY=$(get SLS_API_KEY)
 [ ${#KEY} -lt 8 ] && KEY=$(cat /root/.apikey 2>/dev/null || true)

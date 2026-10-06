@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { preconnect } from "react-dom";
+import { supabaseUrl } from "@/lib/supabase/env";
 import { LOW_DATA_COOKIE, LOW_DATA_PAGE } from "@/lib/low-data";
 import { LiveStatusProvider } from "@/components/dashboard/LiveStatus";
 import NamesModal from "@/components/auth/NamesModal";
@@ -15,6 +17,9 @@ import { accountTimezone } from "@/lib/regions";
 // Dashboard : barre latérale (Sidebar.tsx), statut du direct partagé par toutes les pages.
 // Pas de footer : l'ID support et le ticket Discord vivent sur la page Support.
 export default async function DashboardLayout({ children }: LayoutProps<"/">) {
+  // Connexions TLS ouvertes d'avance vers le Core et Supabase : le premier appel du navigateur part sans attendre la poignée de main.
+  if (publicCoreUrl) preconnect(publicCoreUrl, { crossOrigin: "anonymous" });
+  if (supabaseUrl) preconnect(supabaseUrl, { crossOrigin: "anonymous" });
   const [user, profile] = await Promise.all([requireUser("/dashboard"), getProfile()]);
   if (!profile?.onboarded_at) redirect("/bienvenue");
   // Connexion basse : coque minimale (pas de menu, de fonds animés ni de statut en direct), la page se charge seule.

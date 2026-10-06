@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import {
   ArrowLeft,
@@ -115,7 +115,7 @@ function NavLink({ item, active, locked, soon, onNavigate, hovered, onHover }: {
       {inner}
     </a>
   ) : (
-    <Link href={item.href} aria-current={active ? "page" : undefined} className={cls} onClick={onNavigate} onMouseEnter={onHover} onFocus={onHover}>
+    <Link href={item.href} prefetch aria-current={active ? "page" : undefined} className={cls} onClick={onNavigate} onMouseEnter={onHover} onFocus={onHover}>
       {inner}
     </Link>
   );
@@ -285,7 +285,7 @@ function MobileTabs({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolea
           const locked = !!t.feature && !!account && !account.features.includes(t.feature);
           return (
             <li key={t.href}>
-              <Link href={t.href} aria-current={on ? "page" : undefined} className={`${cell} ${on ? "text-foreground" : "text-muted"}`}>
+              <Link href={t.href} prefetch aria-current={on ? "page" : undefined} className={`${cell} ${on ? "text-foreground" : "text-muted"}`}>
                 {on && <span aria-hidden="true" className="absolute inset-x-4 top-0 h-0.5 rounded-full bg-accent" />}
                 <Icon size={22} weight={on ? "fill" : "regular"} aria-hidden="true" />
                 <span className="max-w-full truncate">{t.label === "Vue d'ensemble" ? "Accueil" : t.label === "Mes relais" ? "Relais" : t.label === "Caméras externes" ? "Caméras" : t.label}</span>
@@ -309,10 +309,24 @@ function MobileTabs({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolea
 export default function DashboardShell({ admin, children }: { admin: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     restoreStreamMode();
   }, []);
+  // Pré-chargement : au repos, toutes les pages du menu sont préparées une à une (pas en rafale), donc le tiroir mobile
+  // (dont les liens ne sont pas à l'écran) ouvre ses pages instantanément. Sauté en économie de données ou connexion lente.
+  useEffect(() => {
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    if (conn?.saveData || /(^|-)2g$|3g/.test(conn?.effectiveType ?? "")) return;
+    const hrefs = [...GROUPS, { items: HELP }].flatMap((g) => g.items).filter((i) => !i.external && !i.soon).map((i) => i.href);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const start = setTimeout(() => hrefs.forEach((h, i) => timers.push(setTimeout(() => router.prefetch(h), i * 250))), 1500);
+    return () => {
+      clearTimeout(start);
+      timers.forEach(clearTimeout);
+    };
+  }, [router]);
   useEffect(() => setOpen(false), [pathname]);
   // Tiroir ouvert : la page derrière ne défile plus.
   useEffect(() => {

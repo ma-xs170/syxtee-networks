@@ -617,6 +617,46 @@ body::before {
   @keyframes float-slow { from { transform: translateY(0); } to { transform: translateY(-14px); } }
 }
 
+/* Icônes animées partout (Phosphor = viewBox 256, plus les petites icônes en ligne dans les boutons et liens).
+   Trois niveaux, tout en transform/opacity et coupé en mouvement réduit :
+   1. apparition : l'icône « pop » une fois à l'affichage ;
+   2. survol / focus / appui d'un lien ou bouton : l'icône se tortille ;
+   3. repos : les grandes icônes (28 px et plus) et l'icône de la page active respirent doucement.
+   Exclure une icône : classe .no-icon-anim. */
+@media (prefers-reduced-motion: no-preference) {
+  :is(svg[viewBox="0 0 256 256"], svg:is([viewBox="0 0 16 16"], [viewBox="0 0 24 24"])[aria-hidden="true"], :is(a, button, summary, label, [role="button"], [role="tab"], [role="switch"]) svg:is([viewBox="0 0 16 16"], [viewBox="0 0 24 24"]):not([role="img"])):not(.no-icon-anim) {
+    animation: icon-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  :is(svg[viewBox="0 0 256 256"][width="28"], svg[viewBox="0 0 256 256"][width="32"], svg[viewBox="0 0 256 256"][width="36"], svg[viewBox="0 0 256 256"][width="40"], svg[viewBox="0 0 256 256"][width="44"], svg[viewBox="0 0 256 256"][width="48"], svg[viewBox="0 0 256 256"][width="56"], svg[viewBox="0 0 256 256"][width="64"], [aria-current="page"] svg[viewBox="0 0 256 256"]):not(.no-icon-anim) {
+    animation: icon-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both, icon-breathe 3.4s ease-in-out 0.6s infinite alternate;
+  }
+  @media (hover: hover) {
+    :is(a, button, summary, label, [role="button"], [role="tab"]):is(:hover, :focus-visible) svg:is([viewBox="0 0 256 256"], [viewBox="0 0 16 16"], [viewBox="0 0 24 24"]):not(.no-icon-anim, [role="img"]) {
+      animation: icon-wiggle 0.6s ease-in-out both;
+    }
+  }
+  :is(a, button, summary, label, [role="button"], [role="tab"]):active svg:is([viewBox="0 0 256 256"], [viewBox="0 0 16 16"], [viewBox="0 0 24 24"]):not(.no-icon-anim, [role="img"]) {
+    animation: icon-press 0.2s ease-out both;
+  }
+}
+@keyframes icon-pop {
+  0% { opacity: 0; transform: scale(0.45) rotate(-14deg); }
+  70% { opacity: 1; transform: scale(1.14) rotate(5deg); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes icon-wiggle {
+  0% { transform: none; }
+  25% { transform: scale(1.18) rotate(-14deg); }
+  50% { transform: scale(1.18) rotate(10deg); }
+  75% { transform: scale(1.1) rotate(-5deg); }
+  100% { transform: scale(1.08) rotate(0); }
+}
+@keyframes icon-press { to { transform: scale(0.88); } }
+@keyframes icon-breathe {
+  from { transform: translateY(0) scale(1); }
+  to { transform: translateY(-2px) scale(1.06); }
+}
+
 /* Téléphone : comportements sans bug en direct (iOS Safari / Android Chrome). */
 html {
   -webkit-text-size-adjust: 100%;

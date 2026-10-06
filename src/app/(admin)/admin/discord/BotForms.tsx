@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { type BotState, sendAnnounceAction, setPresenceAction } from "./actions";
+import { type BotState, postServicesAction, sendAnnounceAction, setPresenceAction } from "./actions";
 
 const field = "w-full rounded-xl border border-line bg-background px-4 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60";
 const label = "text-xs text-muted";
@@ -83,6 +83,18 @@ export function PresenceForm({ mode: initialMode, type, text }: { mode: "auto" |
       <button type="submit" disabled={pending} className={button}>
         {pending ? "Enregistrement…" : "Enregistrer le statut"}
       </button>
+    </form>
+  );
+}
+
+export function PostServicesForm({ className }: { className: string }) {
+  const [state, action, pending] = useActionState<BotState, FormData>(postServicesAction, {});
+  return (
+    <form action={action} className="flex flex-col items-end gap-2">
+      <button type="submit" disabled={pending} className={className}>
+        {pending ? "Publication…" : "Publier dans le salon"}
+      </button>
+      <Feedback state={state} />
     </form>
   );
 }

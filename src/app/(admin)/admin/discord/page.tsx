@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
 import { requireAdmin } from "@/lib/admin";
 import { type BotStatus, getBotStatus, hasBot } from "@/lib/discord-bot";
-import { postServicesAction, toggleAlertsAction } from "./actions";
-import { AnnounceForm, PresenceForm } from "./BotForms";
+import { toggleAlertsAction } from "./actions";
+import { AnnounceForm, PostServicesForm, PresenceForm } from "./BotForms";
 
 export const metadata: Metadata = { title: "Admin · Discord", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -76,9 +76,7 @@ export default async function AdminDiscordPage() {
             <Tile>
               <TileLabel
                 right={
-                  <form action={postServicesAction}>
-                    <button type="submit" className={btn}>Publier dans le salon</button>
-                  </form>
+                  <PostServicesForm className={btn} />
                 }
               >
                 État des services

@@ -67,13 +67,15 @@ export async function toggleAlertsAction(form: FormData) {
   revalidatePath("/admin/discord");
 }
 
-export async function postServicesAction() {
+export async function postServicesAction(): Promise<BotState> {
   const admin = await requireAdmin();
   try {
     await botPostServices();
-    await audit(admin.email!, "discord.services_post", null, null, null);
   } catch (e) {
     console.error("discord services", e);
+    return fail(e);
   }
+  await audit(admin.email!, "discord.services_post", null, null, null);
   revalidatePath("/admin/discord");
+  return { ok: "État des services publié dans le salon." };
 }

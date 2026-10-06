@@ -20,10 +20,11 @@ export type RecordFormat = "mov" | "mp4";
 export type RecordingFile = { relay_id: string; file: string; size: number; created_at: string; expires_at: string; recording: boolean };
 export type Stopped = "quota" | "disk" | null;
 
-/** Codec vidéo du flux (ffprobe, 8 s max) ; null si le flux ne répond pas. */
+/** Codec vidéo du flux (ffprobe, 15 s max) ; null si le flux ne répond pas. */
 export function probeCodec(host: string, port: number, playId: string): Promise<string | null> {
   return new Promise((resolve) => {
-    execFile("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=codec_name", "-of", "csv=p=0", `srt://${host}:${port}?streamid=${playId}&mode=caller&latency=200000`], { timeout: 8000 }, (err, out) => resolve(err ? null : out.trim() || null));
+    // Analyse bornée (3 s / 2 Mo) : avec la valeur par défaut (5 Mo), un flux à bas débit dépassait le délai et le codec restait inconnu.
+    execFile("ffprobe", ["-v", "error", "-analyzeduration", "3000000", "-probesize", "2000000", "-select_streams", "v:0", "-show_entries", "stream=codec_name", "-of", "csv=p=0", `srt://${host}:${port}?streamid=${playId}&mode=caller&latency=200000`], { timeout: 15000 }, (err, out) => resolve(err ? null : out.trim().split("\n")[0] || null));
   });
 }
 
@@ -67,6 +68,7 @@ export function createRecordings(o: {
   const retentionDays = o.retentionDays ?? 15;
   const run = o.superviseImpl ?? supervise;
   const probe = o.probeImpl ?? probeCodec;
+  const unknown = new Map<string, number>(); // échecs d'analyse du codec par relais
   const starting = new Set<string>(); // relais dont le codec est en cours d'analyse
   mkdirSync(o.dir, { recursive: true });
   const running = new Map<string, { p: Supervised; user: string }>();
@@ -99,6 +101,7 @@ export function createRecordings(o: {
 
   function stopRelay(id: string) {
     starting.delete(id);
+    unknown.delete(id);
     running.get(id)?.p.stop();
     running.delete(id);
   }
@@ -135,6 +138,9 @@ export function createRecordings(o: {
         launches.push(probe(o.host, o.port, r.play_id)
           .then((codec) => {
             if (!starting.has(r.id) || running.has(r.id)) return;
+            // Codec inconnu : on réessaie au prochain passage (10 s) ; au 3e échec on enregistre quand même, sans étiquette.
+            if (!codec && (unknown.set(r.id, (unknown.get(r.id) ?? 0) + 1).get(r.id) ?? 0) < 3) return;
+            unknown.delete(r.id);
             running.set(r.id, { user: r.user_id, p: run(`enregistrement ${r.id.slice(0, 8)}`, "ffmpeg", recordArgs({ host: o.host, port: o.port, playId: r.play_id, dir, segmentS, hevc: codec === "hevc", format: r.record_format === "mp4" ? "mp4" : "mov" }), o.log) });
           })
           .finally(() => starting.delete(r.id)));

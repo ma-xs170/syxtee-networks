@@ -82,7 +82,7 @@ function ControlCenter({ data, onLaunch }: { data: OverviewData; onLaunch: () =>
             </>
           ) : (
             <>
-              <p className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Aucun direct en cours</p>
+              <p className="mt-3 text-2xl font-semibold tracking-tight sm:text-4xl">Aucun direct en cours</p>
               <p className="mt-2 text-sm text-muted">{data.lastEndedAt ? `Dernier direct ${fmtAgo(data.lastEndedAt)}.` : "Ton premier direct apparaîtra ici."}</p>
             </>
           )}

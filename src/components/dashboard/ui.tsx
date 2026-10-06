@@ -8,7 +8,7 @@ import type { DashIcon, SectionTab } from "@/lib/dashboard-nav";
 // Briques communes des pages du dashboard : en-tête de page, tuile, libellé mono, page « bientôt ».
 
 export function DashPage({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`mx-auto w-full max-w-7xl px-4 pb-20 pt-10 sm:px-6 sm:pt-12 ${className}`}>{children}</div>;
+  return <div className={`mx-auto w-full max-w-7xl px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-12 ${className}`}>{children}</div>;
 }
 
 /** Onglets d'une section (Statistiques, Scanner) : une page par onglet, adresse inchangée. */
@@ -39,9 +39,9 @@ export function SectionTabs({ tabs, current, label, className = "mb-8" }: { tabs
 /** `highlight` : surligne `hl` (réservé à l'accueil du dashboard). Ailleurs, le titre reste simple. */
 export function DashHeader({ lead, hl, sub, children, highlight = false }: { lead: string; hl: string; sub?: ReactNode; children?: ReactNode; highlight?: boolean }) {
   return (
-    <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-6 flex flex-wrap items-end sm:mb-8 justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+        <h1 className="text-xl font-semibold tracking-tight sm:text-3xl">
           {lead}
           {hl && (
             <>
@@ -59,7 +59,7 @@ export function DashHeader({ lead, hl, sub, children, highlight = false }: { lea
 
 export function Tile({ children, className = "", as: As = "section", ...rest }: { children: ReactNode; className?: string; as?: "section" | "div"; id?: string; "aria-labelledby"?: string }) {
   return (
-    <As className={`rounded-2xl border border-line bg-surface p-5 sm:p-6 ${className}`} {...rest}>
+    <As className={`rounded-2xl border border-line bg-surface p-4 sm:p-6 ${className}`} {...rest}>
       {children}
     </As>
   );

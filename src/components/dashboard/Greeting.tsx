@@ -21,8 +21,8 @@ export default function Greeting({ now, timezone, name, flag, region }: { now: n
   const time = new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: timezone }).format(date);
 
   return (
-    <div className="mb-8">
-      <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+    <div className="mb-6 sm:mb-8">
+      <h1 className="text-xl font-semibold tracking-tight sm:text-3xl">
         <AnimatedEmoji key={part.emoji}>{part.emoji}</AnimatedEmoji> {part.hello}
         {name ? (
           <>

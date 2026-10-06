@@ -622,6 +622,10 @@ html {
   /* iOS Safari ignore overflow-x sur body seul : sans ça la page glisse de côté. */
   overflow-x: clip;
 }
+@media (max-width: 639px) {
+  /* Téléphone : tout est en rem (textes, marges, boutons), 15 px réduit l'ensemble de 6 % d'un coup. */
+  html { font-size: 15px; }
+}
 body {
   /* Aucun défilement horizontal parasite, sans casser les éléments sticky. */
   overflow-x: clip;

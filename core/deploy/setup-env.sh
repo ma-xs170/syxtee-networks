@@ -59,7 +59,7 @@ SUPABASE_SECRET_KEY=$SECRET
 SLS_API_KEY=$KEY
 RELAY_PUBLIC_HOST=$HOST
 RELAY_NAME=$(get RELAY_NAME | grep . || echo nyc1)
-CORS_ORIGINS=https://syxtee-networks.vercel.app,http://localhost:3000
+CORS_ORIGINS=https://syxtee-networks.fr,https://www.syxtee-networks.fr,https://syxtee-networks.vercel.app,http://localhost:3000
 TZ=America/Guadeloupe
 REGIE_ENABLED=false
 EOF

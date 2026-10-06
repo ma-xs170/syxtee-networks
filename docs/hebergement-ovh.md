@@ -30,7 +30,7 @@ cp core/deploy/docker-compose.yml core/deploy/Caddyfile /opt/syxtee/
 
 ## 4. Lancement
 
-80 et 443 sont déjà ouverts. Le site écoute seulement sur 127.0.0.1:3000.
+80 et 443 sont déjà ouverts. Le site écoute seulement sur 127.0.0.1:3100.
 
 ```bash
 cd /opt/syxtee
@@ -44,8 +44,8 @@ curl -I https://staging.syxtee-networks.fr
 `crontab -e` :
 
 ```
-30 7 * * * curl -fsS -H "Authorization: Bearer $(grep ^CRON_SECRET= /opt/syxtee/.env.web | cut -d= -f2-)" http://127.0.0.1:3000/api/cron/antennes >/dev/null
-0 6 * * *  curl -fsS -H "Authorization: Bearer $(grep ^CRON_SECRET= /opt/syxtee/.env.web | cut -d= -f2-)" http://127.0.0.1:3000/api/cron/formules >/dev/null
+30 7 * * * curl -fsS -H "Authorization: Bearer $(grep ^CRON_SECRET= /opt/syxtee/.env.web | cut -d= -f2-)" http://127.0.0.1:3100/api/cron/antennes >/dev/null
+0 6 * * *  curl -fsS -H "Authorization: Bearer $(grep ^CRON_SECRET= /opt/syxtee/.env.web | cut -d= -f2-)" http://127.0.0.1:3100/api/cron/formules >/dev/null
 ```
 
 ## 6. Tester sur `staging.syxtee-networks.fr`

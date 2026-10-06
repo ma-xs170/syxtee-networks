@@ -27,7 +27,7 @@ const features = [
 export default function StudioPage() {
   return (
     <>
-      <section data-theme="light" className="relative -mt-[4.75rem] overflow-hidden border-b border-line bg-background text-foreground">
+      <section data-theme="dark" className="relative -mt-[4.0625rem] overflow-hidden border-b border-line bg-background text-foreground">
         <CloudBackdrop />
         <Container className="relative pb-16 pt-[8.5rem] sm:pb-24 sm:pt-[10rem]">
           <div className="mx-auto max-w-3xl text-center">

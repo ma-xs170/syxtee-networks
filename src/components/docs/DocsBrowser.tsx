@@ -27,7 +27,7 @@ export default function DocsBrowser({ sections, backdrop, title }: { sections: S
 
   return (
     <>
-      <section data-theme="light" className="relative -mt-[4.75rem] overflow-hidden border-b border-line bg-background pb-20 pt-[9rem] text-foreground sm:pb-24 sm:pt-[10.5rem]">
+      <section data-theme="dark" className="relative -mt-[4.0625rem] overflow-hidden border-b border-line bg-background pb-20 pt-[9rem] text-foreground sm:pb-24 sm:pt-[10.5rem]">
         {backdrop}
         <div className="relative mx-auto w-full max-w-6xl px-4 text-center sm:px-6">
           {title}

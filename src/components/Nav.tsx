@@ -62,9 +62,9 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
   }, [dash]);
 
   return (
-    <header data-theme={dash ? undefined : "dark"} className={dash ? "sticky top-0 z-50 border-b border-line bg-background/75 backdrop-blur-md" : "sticky top-0 z-50 px-3 pt-3 sm:px-4"}>
+    <header className="sticky top-0 z-50 border-b border-line bg-background/75 backdrop-blur-md">
       {/* 3 zones : logo à gauche, menus centrés, compte + Discord à droite */}
-      <div className={`mx-auto flex h-16 items-center justify-between gap-6 px-4 sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] ${dash ? "max-w-[1400px]" : "max-w-6xl rounded-full border border-foreground/20 bg-background shadow-[0_10px_30px_-12px_rgba(0,0,0,0.55)]"}`}>
+      <div className={`mx-auto flex h-16 items-center justify-between gap-6 px-4 sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] ${dash ? "max-w-[1400px]" : "max-w-6xl"}`}>
         <Link href={dash ? "/dashboard" : "/"} onClick={() => setOpen(false)} className="flex shrink-0 items-center gap-3 justify-self-start" aria-label={dash ? "Dashboard SYXTEE" : "SYXTEE NETWORKS, accueil"}>
           <Image src="/logo-400.png" alt="" width={20} height={28} priority style={{ width: 20, height: "auto" }} className="ink-img" />
           <span className="whitespace-nowrap text-sm font-semibold tracking-[0.18em]">
@@ -104,7 +104,7 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
       </div>
 
       {open && (
-        <div className={`max-h-[calc(100dvh-5.5rem)] overflow-y-auto bg-background px-4 pb-6 pt-2 lg:hidden ${dash ? "border-t border-line" : "mx-auto mt-2 max-w-6xl rounded-3xl border border-foreground/25"}`}>
+        <div className={`max-h-[calc(100dvh-5.5rem)] overflow-y-auto bg-background px-4 pb-6 pt-2 lg:hidden border-t border-line`}>
           <nav aria-label="Navigation principale" className="flex flex-col">
             {items.map((item) =>
               "children" in item ? (

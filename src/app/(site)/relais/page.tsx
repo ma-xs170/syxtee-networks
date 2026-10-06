@@ -26,7 +26,7 @@ const latency = [
 export default function RelaisPage() {
   return (
     <>
-      <section data-theme="light" className="relative -mt-[4.75rem] overflow-hidden border-b border-line bg-background pb-16 pt-[9rem] text-foreground sm:pb-20 sm:pt-[10.5rem]">
+      <section data-theme="dark" className="relative -mt-[4.0625rem] overflow-hidden border-b border-line bg-background pb-16 pt-[9rem] text-foreground sm:pb-20 sm:pt-[10.5rem]">
         <CloudBackdrop />
         <Container className="relative text-center">
           <h1 className="h-hero mx-auto max-w-3xl">

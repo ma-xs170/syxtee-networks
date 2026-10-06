@@ -24,7 +24,7 @@ const premium = [
 export default function AccessPage() {
   return (
     <>
-      <section data-theme="light" className="relative -mt-[4.75rem] overflow-hidden border-b border-line bg-background pb-16 pt-[9rem] text-foreground sm:pb-20 sm:pt-[10.5rem]">
+      <section data-theme="dark" className="relative -mt-[4.0625rem] overflow-hidden border-b border-line bg-background pb-16 pt-[9rem] text-foreground sm:pb-20 sm:pt-[10.5rem]">
         <CloudBackdrop />
         <Container className="relative text-center">
           <p className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-foreground/25 px-4 py-1.5 font-mono text-xs uppercase tracking-[0.16em]">Ouverture au public : bientôt</p>

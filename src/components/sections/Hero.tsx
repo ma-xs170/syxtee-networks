@@ -18,7 +18,7 @@ const btn =
 export default function Hero({ streamers = [] }: { streamers?: HomeStreamer[] }) {
   const faces = streamers.filter((s) => s.avatar).slice(0, 4);
   return (
-    <section data-theme="dark" className="relative -mt-[4.75rem] overflow-hidden border-b border-line bg-background text-foreground">
+    <section data-theme="dark" className="relative -mt-[4.0625rem] overflow-hidden border-b border-line bg-background text-foreground">
       {/* Nuages et grain, sous la barre de menu (la section remonte derrière elle). */}
       <CloudBackdrop />
       <Container className="relative pb-16 pt-[8.5rem] sm:pb-24 sm:pt-[10rem]">

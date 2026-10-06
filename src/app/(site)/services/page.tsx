@@ -7,6 +7,7 @@ import DetailSection, { IllustrationCard, Point } from "@/components/blocks/Deta
 import DiscordChat from "@/components/illustrations/DiscordChat";
 import ObsInterface from "@/components/illustrations/ObsInterface";
 import PhoneMoblin from "@/components/illustrations/PhoneMoblin";
+import WatchChat from "@/components/illustrations/WatchChat";
 import StarlinkMini from "@/components/illustrations/StarlinkMini";
 
 export const metadata: Metadata = {
@@ -136,8 +137,12 @@ export default function ServicesPage() {
         reverse
         visual={
           <IllustrationCard label="Un ticket, un salon privé, une vraie personne">
-            <DiscordChat />
-          </IllustrationCard>        }
+            <div className="grid h-full grid-cols-[1.6fr_1fr] items-center gap-2">
+              <DiscordChat />
+              <WatchChat />
+            </div>
+          </IllustrationCard>
+        }
       >
         <Point label="Ce que c'est">
           <p>

@@ -8,7 +8,8 @@ import { presenceOf } from "@/lib/presence";
 import { getThread, whoIs } from "@/lib/support";
 import { categoryLabel } from "@/lib/support-categories";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { setTicketStatusAction, staffReplyAction } from "../actions";
+import DeleteTicketButton from "@/components/support/DeleteTicketButton";
+import { deleteTicketStaffAction, setTicketStatusAction, staffReplyAction } from "../actions";
 
 export const metadata: Metadata = { title: "Admin · Demande", robots: { index: false } };
 
@@ -42,11 +43,14 @@ export default async function AdminTicketPage({ params }: { params: Promise<{ id
             {client} · {categoryLabel(ticket.category)} · {ticket.status === "resolved" ? "Résolu" : "En cours"}
           </p>
         </div>
-        <form action={setTicketStatusAction.bind(null, ticket.id, ticket.status === "open" ? "resolved" : "open")}>
-          <button type="submit" className="h-10 whitespace-nowrap rounded-lg border border-line-strong px-4 text-sm transition-colors hover:bg-foreground/10">
-            {ticket.status === "open" ? "Marquer comme résolu" : "Rouvrir"}
-          </button>
-        </form>
+        <div className="flex flex-wrap items-center gap-2">
+          <form action={setTicketStatusAction.bind(null, ticket.id, ticket.status === "open" ? "resolved" : "open")}>
+            <button type="submit" className="h-10 whitespace-nowrap rounded-lg border border-line-strong px-4 text-sm transition-colors hover:bg-foreground/10">
+              {ticket.status === "open" ? "Marquer comme résolu" : "Rouvrir"}
+            </button>
+          </form>
+          <DeleteTicketButton action={deleteTicketStaffAction.bind(null, ticket.id)} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">

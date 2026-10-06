@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/dal";
-import { getThread, savePhotos } from "@/lib/support";
+import { deleteTicket, getThread, savePhotos } from "@/lib/support";
 import { isCategory } from "@/lib/support-categories";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -65,4 +65,13 @@ export async function closeTicketAction(ticketId: string) {
   await createAdminClient().from("support_tickets").update({ status: "resolved", resolved_at: now, updated_at: now }).eq("id", ticketId);
   revalidatePath(`/dashboard/support/${ticketId}`);
   revalidatePath("/dashboard/support");
+}
+
+/** Le membre supprime sa propre demande (messages et photos compris). */
+export async function deleteTicketAction(ticketId: string) {
+  const user = await requireUser("/dashboard/support");
+  if (!(await getThread(ticketId, user.id))) return;
+  await deleteTicket(ticketId);
+  revalidatePath("/dashboard/support");
+  redirect("/dashboard/support");
 }

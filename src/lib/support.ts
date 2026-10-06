@@ -121,3 +121,15 @@ export async function savePhotos(ticketId: string, form: FormData): Promise<{ at
   }
   return { attachments: out };
 }
+
+/** Supprime un ticket, ses messages (cascade) et ses photos du stockage. L'appelant a déjà vérifié le droit de le faire. */
+export async function deleteTicket(ticketId: string): Promise<boolean> {
+  if (!hasAdmin || !/^[0-9a-f-]{36}$/i.test(ticketId)) return false;
+  const db = createAdminClient();
+  const { data: msgs } = await db.from("support_messages").select("attachments").eq("ticket_id", ticketId);
+  const paths = (msgs ?? []).flatMap((m) => ((m.attachments ?? []) as Attachment[]).map((a) => a.path)).filter((p) => p.startsWith(`${ticketId}/`));
+  if (paths.length) await db.storage.from("support").remove(paths);
+  const { error } = await db.from("support_tickets").delete().eq("id", ticketId);
+  if (error) console.error("support delete", error.message);
+  return !error;
+}

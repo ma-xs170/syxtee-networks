@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin";
 import { audit } from "@/lib/plan-admin";
-import { getThread, savePhotos } from "@/lib/support";
+import { redirect } from "next/navigation";
+import { deleteTicket, getThread, savePhotos } from "@/lib/support";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // Support côté équipe : répondre à un ticket (le client reçoit une notification dans sa cloche) et le clore ou le rouvrir.
@@ -51,4 +52,15 @@ export async function setTicketStatusAction(ticketId: string, status: "open" | "
   await audit(admin.email!, `support.${status}`, thread.ticket.user_id, null, { ticket: ticketId });
   revalidatePath(`/admin/support/${ticketId}`);
   revalidatePath("/admin/support");
+}
+
+/** L'admin supprime une demande (journalisé). */
+export async function deleteTicketStaffAction(ticketId: string) {
+  const admin = await requireAdmin();
+  const thread = await getThread(ticketId);
+  if (!thread) return;
+  await deleteTicket(ticketId);
+  await audit(admin.email!, "support.delete", thread.ticket.user_id, null, { ticket: ticketId, subject: thread.ticket.subject });
+  revalidatePath("/admin/support");
+  redirect("/admin/support");
 }

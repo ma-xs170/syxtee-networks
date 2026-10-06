@@ -6,7 +6,8 @@ import TicketChat from "@/components/support/TicketChat";
 import { requireUser } from "@/lib/auth/dal";
 import { getThread } from "@/lib/support";
 import { categoryLabel } from "@/lib/support-categories";
-import { closeTicketAction, replyAction } from "../actions";
+import DeleteTicketButton from "@/components/support/DeleteTicketButton";
+import { closeTicketAction, deleteTicketAction, replyAction } from "../actions";
 
 export const metadata: Metadata = { title: "Demande de support", robots: { index: false } };
 
@@ -30,13 +31,16 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
           <h1 className="break-words text-2xl font-semibold tracking-tight sm:text-3xl">{ticket.subject}</h1>
           <p className="mt-2 text-sm text-muted">{categoryLabel(ticket.category)} · {ticket.status === "resolved" ? "Résolu" : "En cours"}</p>
         </div>
-        {ticket.status === "open" && (
-          <form action={closeTicketAction.bind(null, ticket.id)}>
-            <button type="submit" className="h-10 whitespace-nowrap rounded-lg border border-line-strong px-4 text-sm transition-colors hover:bg-foreground/10">
-              Marquer comme résolu
-            </button>
-          </form>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {ticket.status === "open" && (
+            <form action={closeTicketAction.bind(null, ticket.id)}>
+              <button type="submit" className="h-10 whitespace-nowrap rounded-lg border border-line-strong px-4 text-sm transition-colors hover:bg-foreground/10">
+                Marquer comme résolu
+              </button>
+            </form>
+          )}
+          <DeleteTicketButton action={deleteTicketAction.bind(null, ticket.id)} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_240px]">

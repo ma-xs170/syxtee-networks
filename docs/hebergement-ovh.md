@@ -7,7 +7,7 @@ Limite : le site partage les 6 vCPU avec les relais. Le conteneur est plafonné 
 ## 1. DNS (chez le registrar du domaine)
 
 - [ ] Baisser le TTL du domaine à 300 s la veille.
-- [ ] Créer `staging.<domaine>` : enregistrement A vers `15.235.25.77`, pour tester avant la bascule.
+- [ ] Créer `staging.syxtee-networks.fr` : enregistrement A vers `15.235.25.77`, pour tester avant la bascule.
 
 ## 2. Récupérer le code complet sur le VPS
 
@@ -21,7 +21,7 @@ cp core/deploy/docker-compose.yml core/deploy/Caddyfile /opt/syxtee/
 ## 3. Variables
 
 - [ ] Dans `/opt/syxtee/.env` (lu par Caddy et au build), ajouter :
-  - `SITE_DOMAIN=staging.<domaine>` (puis `<domaine>` à la bascule)
+  - `SITE_DOMAIN=staging.syxtee-networks.fr` (puis `syxtee-networks.fr` à la bascule)
   - `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (valeurs de Vercel, publiques)
   - `CORS_ORIGINS` : ajouter l'URL du site (Core)
 - [ ] Créer `/opt/syxtee/.env.web` (`chmod 600`) avec les variables serveur de Vercel (voir `.env.example`) :
@@ -36,7 +36,7 @@ cp core/deploy/docker-compose.yml core/deploy/Caddyfile /opt/syxtee/
 cd /opt/syxtee
 docker compose up -d --build web caddy
 docker compose logs --tail 50 web
-curl -I https://staging.<domaine>
+curl -I https://staging.syxtee-networks.fr
 ```
 
 ## 5. Tâches planifiées (remplacent les crons Vercel)
@@ -48,14 +48,14 @@ curl -I https://staging.<domaine>
 0 6 * * *  curl -fsS -H "Authorization: Bearer $(grep ^CRON_SECRET= /opt/syxtee/.env.web | cut -d= -f2-)" http://127.0.0.1:3000/api/cron/formules >/dev/null
 ```
 
-## 6. Tester sur `staging.<domaine>`
+## 6. Tester sur `staging.syxtee-networks.fr`
 
 - [ ] Accueil, connexion, dashboard, un relais, images (avatars Twitch), `/api/cron/antennes` en `curl` (401 sans jeton, 200 avec).
-- [ ] Supabase, Authentication, URL Configuration : ajouter `https://staging.<domaine>/**` aux Redirect URLs.
+- [ ] Supabase, Authentication, URL Configuration : ajouter `https://staging.syxtee-networks.fr/**` aux Redirect URLs.
 
 ## 7. Bascule
 
-- [ ] `.env` : `SITE_DOMAIN=<domaine>`, puis `docker compose up -d caddy`. Enregistrement A du domaine vers `15.235.25.77` (retirer l'ancien CNAME Vercel).
+- [ ] `.env` : `SITE_DOMAIN=syxtee-networks.fr`, puis `docker compose up -d caddy`. Enregistrement A du domaine vers `15.235.25.77` (retirer l'ancien CNAME Vercel).
 - [ ] Mettre à jour avec le domaine final : Supabase (Site URL, Redirect URLs), Stripe (webhook `/api/stripe/webhook`), redirections OAuth Twitch / Kick / Google (`/api/chat/callback/*`), liens Discord, `CORS_ORIGINS` du Core (puis `docker compose up -d core`).
 - [ ] Vérifier une connexion, un paiement test Stripe et le multichat.
 

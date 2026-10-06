@@ -113,7 +113,7 @@ function ControlCenter({ data, onLaunch }: { data: OverviewData; onLaunch: () =>
         <Stat label="Formule" value={data.plan.name} href="/dashboard/abonnement" />
         <Stat label="Relais actifs" value={`${data.relays.active} / ${unlimited ? "∞" : data.relays.max}`} href="/dashboard/relais" />
         <Stat label="Flux simultanés" value={`${used} / ${data.plan.streams}`} />
-        <Stat label="Dernier direct" value={data.last ? fmtDuration(data.last.duration_s) : "–"} href={data.last ? `/dashboard/lives/${data.last.id}` : undefined} />
+        <Stat label="Dernier direct" value={data.last ? fmtDuration(data.last.duration_s) : "-"} href={data.last ? `/dashboard/lives/${data.last.id}` : undefined} />
       </dl>
     </section>
   );
@@ -196,10 +196,10 @@ function Kpis({ data, pending }: { data: OverviewData; pending: boolean }) {
       <Kpi label="Nombre de directs" value={fmtInt(kpis.count)}>
         <Delta current={kpis.count} previous={previous.count} />
       </Kpi>
-      <Kpi label="Durée moyenne" value={kpis.count ? fmtDuration(kpis.avgSeconds) : "–"}>
+      <Kpi label="Durée moyenne" value={kpis.count ? fmtDuration(kpis.avgSeconds) : "-"}>
         <Delta current={kpis.avgSeconds} previous={previous.avgSeconds} />
       </Kpi>
-      <Kpi label="Débit moyen" value={kpis.avgKbps ? fmtInt(kpis.avgKbps) : "–"} unit={kpis.avgKbps ? "kbit/s" : undefined}>
+      <Kpi label="Débit moyen" value={kpis.avgKbps ? fmtInt(kpis.avgKbps) : "-"} unit={kpis.avgKbps ? "kbit/s" : undefined}>
         <p className="mt-1 font-mono text-xs text-muted">{kpis.peakKbps ? `Crête ${fmtInt(kpis.peakKbps)} kbit/s` : "Pas de mesure"}</p>
       </Kpi>
     </div>

@@ -12,13 +12,13 @@ const jetbrains = JetBrains_Mono({ subsets: ["latin", "latin-ext"], variable: "-
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.name} — Relais IRL low-cost`,
+    default: `${site.name} - Relais IRL low-cost`,
     template: `%s · ${site.name}`,
   },
   description: site.description,
   keywords: ["IRL", "SRTLA", "relais SRT", "Moblin", "IRL Pro", "BELABOX", "streaming", "Twitch", "Kick", "bonding 4G"],
   openGraph: {
-    title: `${site.name} — Relais IRL low-cost`,
+    title: `${site.name} - Relais IRL low-cost`,
     description: site.description,
     url: site.url,
     siteName: site.name,

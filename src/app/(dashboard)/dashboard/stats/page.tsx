@@ -60,9 +60,9 @@ export default async function StatsPage({ searchParams }: PageProps<"/dashboard/
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <Figure label="Temps de direct" value={fmtDuration(k.seconds)} sub={cmp(k.seconds, p.seconds)} />
             <Figure label="Nombre de directs" value={fmtInt(k.count)} sub={cmp(k.count, p.count)} />
-            <Figure label="Durée moyenne" value={k.count ? fmtDuration(k.avgSeconds) : "–"} sub={cmp(k.avgSeconds, p.avgSeconds)} />
-            <Figure label="Débit moyen" value={k.avgKbps ? fmtInt(k.avgKbps) : "–"} sub={k.peakKbps ? `kbit/s, crête à ${fmtInt(k.peakKbps)}` : "kbit/s"} />
-            <Figure label="Plus long direct" value={longest ? fmtDuration(longest.duration_s) : "–"} />
+            <Figure label="Durée moyenne" value={k.count ? fmtDuration(k.avgSeconds) : "-"} sub={cmp(k.avgSeconds, p.avgSeconds)} />
+            <Figure label="Débit moyen" value={k.avgKbps ? fmtInt(k.avgKbps) : "-"} sub={k.peakKbps ? `kbit/s, crête à ${fmtInt(k.peakKbps)}` : "kbit/s"} />
+            <Figure label="Plus long direct" value={longest ? fmtDuration(longest.duration_s) : "-"} />
             <Figure label="Coupures" value={fmtInt(reconnects)} sub="reconnexions en direct" />
             <Figure label="Directs de moins d'une minute" value={fmtInt(short)} />
             <Figure label="Période précédente" value={fmtDuration(p.seconds)} sub={`${fmtInt(p.count)} directs`} />

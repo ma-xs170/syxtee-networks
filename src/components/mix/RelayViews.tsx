@@ -31,7 +31,7 @@ export function RelayCell({ relay: r, program, preview, locked, onPreview, onPro
           <ProtocolBadge protocol={r.protocol} />
           <StatusPill status={r.status} />
         </div>
-        <p className="font-mono text-[11px] tabular-nums text-muted">{on && r.kbps ? `${r.kbps.toLocaleString("fr-FR")} kbps` : "– kbps"}</p>
+        <p className="font-mono text-[11px] tabular-nums text-muted">{on && r.kbps ? `${r.kbps.toLocaleString("fr-FR")} kbps` : "- kbps"}</p>
       </div>
       <div className="pointer-events-none w-9 shrink-0 py-0.5">
         <LevelMeter active={on && !r.mute} seed={r.n * 2.3} hot={r.status === "unstable"} barWidth={5} label={`Niveau ${r.name}`} />
@@ -63,9 +63,9 @@ export function RelayCard({ relay: r, program, preview, locked, onPreview, onPro
         <StatusPill status={r.status} />
         {on && (
           <dl className="grid grid-cols-3 gap-x-2 gap-y-1 font-mono text-xs tabular-nums text-muted">
-            <div><dt className="sr-only">Débit</dt><dd className="text-foreground">{r.kbps ? r.kbps.toLocaleString("fr-FR") : "–"} <span className="text-muted">kbps</span></dd></div>
-            <div><dt className="sr-only">Images par seconde</dt><dd className="text-foreground">{r.fps || "–"} <span className="text-muted">fps</span></dd></div>
-            <div><dt className="sr-only">Latence</dt><dd className="text-foreground">{r.latencyMs || "–"} <span className="text-muted">ms</span></dd></div>
+            <div><dt className="sr-only">Débit</dt><dd className="text-foreground">{r.kbps ? r.kbps.toLocaleString("fr-FR") : "-"} <span className="text-muted">kbps</span></dd></div>
+            <div><dt className="sr-only">Images par seconde</dt><dd className="text-foreground">{r.fps || "-"} <span className="text-muted">fps</span></dd></div>
+            <div><dt className="sr-only">Latence</dt><dd className="text-foreground">{r.latencyMs || "-"} <span className="text-muted">ms</span></dd></div>
           </dl>
         )}
         <LevelMeter active={on && !r.mute} vertical={false} seed={r.n * 2.3} barWidth={6} label={`Niveau ${r.name}`} />

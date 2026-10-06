@@ -39,10 +39,10 @@ export default function MiniHealth() {
   const last = live ? samples[samples.length - 1] : undefined;
   const lost = live ? samples.filter((s) => last && s.t > last.t - 60_000).reduce((a, s) => a + s.dropped, 0) : 0;
   const values: [string, string][] = [
-    ["Débit", last ? `${fmtInt(state?.kbps ?? last.bitrate)} kbps` : "–"],
-    ["RTT", last ? `${fmtInt(last.rtt)} ms` : "–"],
-    ["Congestion", last ? `${fmtInt(last.congestion * 100)} %` : "–"],
-    ["Perdus/min", last ? fmtInt(lost) : "–"],
+    ["Débit", last ? `${fmtInt(state?.kbps ?? last.bitrate)} kbps` : "-"],
+    ["RTT", last ? `${fmtInt(last.rtt)} ms` : "-"],
+    ["Congestion", last ? `${fmtInt(last.congestion * 100)} %` : "-"],
+    ["Perdus/min", last ? fmtInt(lost) : "-"],
   ];
 
   return (

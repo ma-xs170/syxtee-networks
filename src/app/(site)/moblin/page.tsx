@@ -281,7 +281,7 @@ export default function MoblinPage() {
           </p>
           {iconCredit && (
             <p className="mt-2 text-xs text-muted">
-              Logo Moblin © {iconCredit.author} — licence{" "}
+              Logo Moblin © {iconCredit.author} - licence{" "}
               <a href={iconCredit.licenseUrl} target="_blank" rel="noopener noreferrer license" className="underline underline-offset-4 hover:text-foreground">
                 {iconCredit.license}
               </a>

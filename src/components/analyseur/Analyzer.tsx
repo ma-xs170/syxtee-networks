@@ -15,8 +15,8 @@ type Entry = { t: number; operator: string | null; link: LinkType; up: number | 
 
 const HISTORY = "syxtee:scan-history";
 const nf = new Intl.NumberFormat("fr-FR");
-const mbps = (k: number | null | undefined) => (k ? `${nf.format(Math.round(k / 100) / 10)} Mbit/s` : "–");
-const ms = (v: number | null | undefined) => (v != null ? `${nf.format(Math.round(v))} ms` : "–");
+const mbps = (k: number | null | undefined) => (k ? `${nf.format(Math.round(k / 100) / 10)} Mbit/s` : "-");
+const ms = (v: number | null | undefined) => (v != null ? `${nf.format(Math.round(v))} ms` : "-");
 const linkLabel = (l: LinkType | null) => (l === "cellular" ? "4G/5G" : isWifi(l) ? "Wi-Fi" : l === "starlink" ? "Starlink" : "Inconnu");
 const ZONE = { bonne: "Bonne", moyenne: "Moyenne", mauvaise: "Mauvaise", inconnue: "Inconnue" } as const;
 
@@ -226,11 +226,11 @@ export default function Analyzer({
               <Figure label="Descendant" value={mbps(last?.down_kbps)} big />
               <Figure label="RTT" value={ms(last?.rtt_ms)} big />
               <Figure label="Gigue" value={ms(last?.jitter_ms)} />
-              <Figure label="Pertes" value={last?.loss_pct != null ? `${nf.format(last.loss_pct)} %` : "–"} />
-              <Figure label="Opérateur" value={net?.operator ?? "–"} />
-              <Figure label="Réseau" value={net ? linkLabel(link) : "–"} />
-              <Figure label="Position" value={pos ? `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)} ±${Math.round(pos.coords.accuracy)} m` : "–"} />
-              <Figure label="Data du test" value={used ? `${nf.format(Math.round(used / 1e5) / 10)} Mo` : "–"} />
+              <Figure label="Pertes" value={last?.loss_pct != null ? `${nf.format(last.loss_pct)} %` : "-"} />
+              <Figure label="Opérateur" value={net?.operator ?? "-"} />
+              <Figure label="Réseau" value={net ? linkLabel(link) : "-"} />
+              <Figure label="Position" value={pos ? `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)} ±${Math.round(pos.coords.accuracy)} m` : "-"} />
+              <Figure label="Data du test" value={used ? `${nf.format(Math.round(used / 1e5) / 10)} Mo` : "-"} />
             </dl>
 
             {wifi && (
@@ -293,7 +293,7 @@ export default function Analyzer({
           <h2 id="an-zone" className="font-mono text-xs uppercase tracking-[0.15em]">
             Ta zone
           </h2>
-          <p className="mt-4 text-2xl font-semibold tracking-tight">{pos ? (score ? ZONE[score] : "Inconnue") : "–"}</p>
+          <p className="mt-4 text-2xl font-semibold tracking-tight">{pos ? (score ? ZONE[score] : "Inconnue") : "-"}</p>
           <p className="mt-2 text-sm leading-relaxed text-muted">
             {!pos
               ? "Lance un test pour voir la note de la zone où tu es."
@@ -373,7 +373,7 @@ export default function Analyzer({
                     <td className="whitespace-nowrap py-2 pr-4 text-muted">
                       {new Date(e.t).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
                     </td>
-                    <td className="py-2 pr-4">{e.operator ?? "–"}</td>
+                    <td className="py-2 pr-4">{e.operator ?? "-"}</td>
                     <td className="py-2 pr-4">{linkLabel(e.link)}</td>
                     <td className="py-2 pr-4 tabular-nums">{mbps(e.up)}</td>
                     <td className="py-2 pr-4 tabular-nums">{mbps(e.down)}</td>

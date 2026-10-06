@@ -50,7 +50,7 @@ function plane(o: V3, a: V3, b: V3) {
 
 export const LAYERS = [
   { key: "stand", label: ["Béquille"] },
-  { key: "case", label: ["Boîtier + alimentation", "12–48 V / USB-C PD 100 W"] },
+  { key: "case", label: ["Boîtier + alimentation", "12-48 V / USB-C PD 100 W"] },
   { key: "router", label: ["Routeur Wi-Fi 5 intégré"] },
   { key: "antenna", label: ["Antenne à réseau phasé"] },
   { key: "cover", label: ["Capot de protection"] },

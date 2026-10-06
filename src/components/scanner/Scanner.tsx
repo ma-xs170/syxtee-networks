@@ -39,7 +39,7 @@ type Session = {
 };
 
 const nf = new Intl.NumberFormat("fr-FR");
-const mbit = (k: number | null | undefined) => (k == null ? "–" : nf.format(Math.round(k / 100) / 10));
+const mbit = (k: number | null | undefined) => (k == null ? "-" : nf.format(Math.round(k / 100) / 10));
 const LABEL: Record<Score, string> = { bonne: "BONNE", moyenne: "MOYENNE", mauvaise: "MAUVAISE", inconnue: "INCONNUE" };
 const OPERATORS: Declared[] = ["orange", "sfr", "digicel", "free", "other"];
 /** Même seuils que la carte (core/src/aggregate.ts) : débit montant médian. */
@@ -75,7 +75,7 @@ function Gauge({ label, value, unit, max, invert = false }: { label: string; val
         />
       </svg>
       <p className="-mt-3 font-mono text-xl tabular-nums sm:text-2xl" aria-live="off">
-        {value == null ? "–" : unit === "ms" ? nf.format(Math.round(value)) : mbit(value)}
+        {value == null ? "-" : unit === "ms" ? nf.format(Math.round(value)) : mbit(value)}
       </p>
       <p className="mt-0.5 text-xs text-muted">
         {label} <span className="normal-case tracking-normal">{unit === "ms" ? "ms" : "Mbit/s"}</span>
@@ -465,7 +465,7 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
             <Gauge label="Ping" value={live.ping} unit="ms" max={300} invert />
           </div>
           <p className="font-mono text-xs text-muted">
-            gigue {last?.jitter_ms != null ? `${nf.format(last.jitter_ms)} ms` : "–"} · pertes {last?.loss_pct != null ? `${nf.format(last.loss_pct)} %` : "–"}
+            gigue {last?.jitter_ms != null ? `${nf.format(last.jitter_ms)} ms` : "-"} · pertes {last?.loss_pct != null ? `${nf.format(last.loss_pct)} %` : "-"}
           </p>
           {status && (
             <p className="text-center text-sm text-muted" role="status">

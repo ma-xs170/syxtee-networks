@@ -46,7 +46,7 @@ export default function MixApp({ account, real, coreUrl, initialAudio = DEFAULT_
           scene: "street",
           kbps: live && liveState?.relay_id === r.id ? (liveState?.kbps ?? 0) : 0,
           fps: 0,
-          res: "–",
+          res: "-",
           latencyMs: 0,
           lossPct: 0,
           links: 0,

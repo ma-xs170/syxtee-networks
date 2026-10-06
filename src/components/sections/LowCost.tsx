@@ -28,7 +28,7 @@ export default function LowCost() {
             <ul className="mt-6 space-y-4">
               {classic.map((t) => (
                 <li key={t} className="flex gap-3 text-sm text-muted">
-                  <span aria-hidden="true" className="text-foreground/30">—</span>
+                  <span aria-hidden="true" className="text-foreground/30">-</span>
                   <span className="line-through decoration-accent/20">{t}</span>
                 </li>
               ))}

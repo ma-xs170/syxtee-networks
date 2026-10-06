@@ -35,7 +35,7 @@ const STATUS_LABEL = ["En service", "Maintenance", "Incident", "Statut non publi
 const BRAND: Record<string, string> = { "Outremer Telecom": "SFR Caraïbe", SRR: "SFR Réunion" };
 const nf = new Intl.NumberFormat("fr-FR");
 const monthFmt = new Intl.DateTimeFormat("fr-FR", { month: "short", year: "numeric", timeZone: "UTC" });
-const mbps = (kbps: number | null) => (kbps ? `${nf.format(Math.round(kbps / 100) / 10)} Mbit/s` : "–");
+const mbps = (kbps: number | null) => (kbps ? `${nf.format(Math.round(kbps / 100) / 10)} Mbit/s` : "-");
 const monthLabel = (m: string) => monthFmt.format(new Date(`${m}-15T00:00:00Z`));
 const dataUrl = (t: TerritoryId) => `${(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").trim()}/storage/v1/object/public/open-data/antennes/${t}.json`;
 
@@ -296,7 +296,7 @@ export default function CoverageMap() {
   }
 
   const a = detail?.all;
-  const period_ = a ? (a.first_month === a.last_month ? monthLabel(a.last_month) : `${monthLabel(a.first_month)} – ${monthLabel(a.last_month)}`) : null;
+  const period_ = a ? (a.first_month === a.last_month ? monthLabel(a.last_month) : `${monthLabel(a.first_month)} - ${monthLabel(a.last_month)}`) : null;
 
   return (
     <div className="space-y-4">
@@ -423,7 +423,7 @@ export default function CoverageMap() {
                   </div>
                   <div>
                     <dt className="text-muted">RTT</dt>
-                    <dd>{a.rtt_ms ? `${nf.format(a.rtt_ms)} ms` : "–"}</dd>
+                    <dd>{a.rtt_ms ? `${nf.format(a.rtt_ms)} ms` : "-"}</dd>
                   </div>
                   <div>
                     <dt className="text-muted">Mesures</dt>

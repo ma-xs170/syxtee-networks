@@ -164,10 +164,10 @@ export default function StreamHealth({ coreUrl, relayId, demo }: { coreUrl: stri
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Metric label="Débit reçu" value={s ? nf.format(Math.round(s.bitrate)) : "–"} unit="kbps" />
-        <Metric label="RTT" value={s ? nf.format(Math.round(s.rtt)) : "–"} unit="ms" />
-        <Metric label="Congestion" value={s ? nf.format(Math.round(s.congestion * 100)) : "–"} unit="%" />
-        <Metric label="Perdus/min" value={s ? nf.format(lostMinute) : "–"} unit="paquets" />
+        <Metric label="Débit reçu" value={s ? nf.format(Math.round(s.bitrate)) : "-"} unit="kbps" />
+        <Metric label="RTT" value={s ? nf.format(Math.round(s.rtt)) : "-"} unit="ms" />
+        <Metric label="Congestion" value={s ? nf.format(Math.round(s.congestion * 100)) : "-"} unit="%" />
+        <Metric label="Perdus/min" value={s ? nf.format(lostMinute) : "-"} unit="paquets" />
       </div>
 
       <div className="mt-4">

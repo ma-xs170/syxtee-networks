@@ -31,7 +31,7 @@ export async function sendEmailResult(to: string, email: Email): Promise<SendRes
     const { subject, html, text } = await renderEmail(email);
     if (!hasEmail) {
       console.info(`[email non envoyé : RESEND_API_KEY absente] ${to} · ${subject}`);
-      return { ok: false, reason: `RESEND_API_KEY absente sur Vercel — ${envDiagnostic()}` };
+      return { ok: false, reason: `RESEND_API_KEY absente sur Vercel - ${envDiagnostic()}` };
     }
     client ??= new Resend(process.env.RESEND_API_KEY);
     const { error } = await client.emails.send({ from: FROM, to, subject, html, text });

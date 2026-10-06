@@ -35,7 +35,7 @@ const specs = [
     text: "Powerbank USB-C PD 100 W (20 V / 5 A minimum), avec le câble Starlink USB-C vers prise coaxiale (accessoire).",
   },
   {
-    big: "25–40 W",
+    big: "25-40 W",
     title: "Consommation moyenne",
     text: "De quoi tenir une session IRL sur batterie, sans groupe électrogène.",
     note: "Estimation : environ 2 à 3 h avec une powerbank de 100 Wh selon l'usage.",

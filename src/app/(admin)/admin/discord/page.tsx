@@ -52,7 +52,7 @@ export default async function AdminDiscordPage() {
             </Tile>
             <Tile>
               <TileLabel>Statut affiché</TileLabel>
-              <p className="mt-3 text-lg font-semibold">{status.presence.current ?? "—"}</p>
+              <p className="mt-3 text-lg font-semibold">{status.presence.current ?? "-"}</p>
               <p className="mt-1 font-mono text-xs text-muted">{status.presence.mode === "auto" ? "AUTOMATIQUE" : "TEXTE FIXE"}</p>
             </Tile>
           </div>

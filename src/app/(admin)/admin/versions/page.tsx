@@ -37,7 +37,7 @@ export default async function AdminVersionsPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[3fr_2fr]">
           <Tile>
-            <TileLabel right={<span className="font-mono text-xs text-muted">ACTUELLE {latest ? `v${formatVersion(latest)}` : "—"}</span>}>Nouvelle version</TileLabel>
+            <TileLabel right={<span className="font-mono text-xs text-muted">ACTUELLE {latest ? `v${formatVersion(latest)}` : "-"}</span>}>Nouvelle version</TileLabel>
             <div className="mt-4">
               <ReleaseForm latest={latest ? { major: latest.major, minor: latest.minor, patch: latest.patch } : null} />
             </div>

@@ -13,8 +13,7 @@ export const metadata: Metadata = { title: "Aperçu", robots: { index: false } }
 export default async function ApercuPage({ searchParams }: PageProps<"/dashboard/apercu">) {
   const user = await requireUser("/dashboard/apercu");
   const { relay: wanted } = await searchParams;
-  const profile = await getProfile();
-  const { relays, status } = await loadRelays(user.id);
+  const [profile, { relays, status }] = await Promise.all([getProfile(), loadRelays(user.id)]);
   const active = relays.filter((r) => !r.archived);
   const current = active.find((r) => r.id === wanted) ?? defaultRelay(active);
 

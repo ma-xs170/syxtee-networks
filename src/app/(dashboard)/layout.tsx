@@ -15,8 +15,7 @@ import { accountTimezone } from "@/lib/regions";
 // Dashboard : barre latérale (Sidebar.tsx), statut du direct partagé par toutes les pages.
 // Pas de footer : l'ID support et le ticket Discord vivent sur la page Support.
 export default async function DashboardLayout({ children }: LayoutProps<"/">) {
-  const user = await requireUser("/dashboard");
-  const profile = await getProfile();
+  const [user, profile] = await Promise.all([requireUser("/dashboard"), getProfile()]);
   if (!profile?.onboarded_at) redirect("/bienvenue");
   // Connexion basse : coque minimale (pas de menu, de fonds animés ni de statut en direct), la page se charge seule.
   if ((await cookies()).get(LOW_DATA_COOKIE)?.value === "1") {

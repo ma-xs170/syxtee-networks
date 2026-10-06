@@ -11,9 +11,10 @@ export const metadata: Metadata = { title: "Dashboard", robots: { index: false }
 
 // Vue d'ensemble : statut du direct, alertes, activité, derniers directs, URLs, santé.
 export default async function DashboardPage() {
-  const user = await requireUser("/dashboard");
-  const profile = (await getProfile())!;
-  const initial = await getOverview(user.id, profile, "7d", await getPlan());
+  // Utilisateur, profil et formule en parallèle (une seule requête chacun, partagée), puis l'aperçu.
+  const [user, profileRow, plan] = await Promise.all([requireUser("/dashboard"), getProfile(), getPlan()]);
+  const profile = profileRow!;
+  const initial = await getOverview(user.id, profile, "7d", plan);
   const first = profile.first_name?.trim();
   const region = profile.country ? regionList().find((r) => r.code === profile.country) : undefined;
   return (

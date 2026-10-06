@@ -125,3 +125,10 @@ export async function setRecordAction(relayId: string, record: boolean) {
   revalidatePath("/dashboard/enregistrements");
   return r;
 }
+
+/** Format des fichiers enregistrés : MOV (défaut) ou MP4. S'applique aux prochains fichiers. */
+export async function setRecordFormatAction(relayId: string, record_format: "mov" | "mp4") {
+  const r = await run(relayId, "record", 60, (u) => updateRelay(u, relayId, { record_format }));
+  revalidatePath("/dashboard/enregistrements");
+  return r;
+}

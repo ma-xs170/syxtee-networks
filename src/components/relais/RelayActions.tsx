@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { archiveRelayAction, changeServerAction, deleteRelayAction, renameRelayAction, rotateRelayAction, setRecordAction, type RelayActionState } from "@/app/(dashboard)/dashboard/relais/actions";
+import { archiveRelayAction, changeServerAction, deleteRelayAction, renameRelayAction, rotateRelayAction, setRecordAction, setRecordFormatAction, type RelayActionState } from "@/app/(dashboard)/dashboard/relais/actions";
 import type { RelayView } from "@/lib/core";
 import { flag, RELAY_SERVERS } from "@/lib/relay-servers";
 
@@ -76,6 +76,16 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
     });
   }
 
+  function toggleFormat() {
+    setMenu(false);
+    setError(null);
+    start(async () => {
+      const r = await setRecordFormatAction(relay.id, relay.record_format === "mp4" ? "mov" : "mp4");
+      if (r.error) return setError(r.error);
+      router.refresh();
+    });
+  }
+
   function confirm() {
     start(async () => {
       let r: RelayActionState = {};
@@ -141,6 +151,11 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
             {!relay.archived && relay.record_available && (
               <button type="button" role="menuitemcheckbox" aria-checked={relay.record} onClick={toggleRecord} className="block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-foreground/10">
                 {relay.record ? "Arrêter l'enregistrement" : "Enregistrer le flux"}
+              </button>
+            )}
+            {!relay.archived && relay.record_available && (
+              <button type="button" role="menuitem" onClick={toggleFormat} className="block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-foreground/10">
+                Format : {relay.record_format === "mp4" ? "MP4" : "MOV"} <span className="text-muted">(passer en {relay.record_format === "mp4" ? "MOV" : "MP4"})</span>
               </button>
             )}
             {(

@@ -30,6 +30,8 @@ export type Relay = StreamIds & {
   mode: Mode;
   /** Enregistrer le flux sur le serveur (quota par compte, voir recordings.ts). */
   record?: boolean;
+  /** Format des fichiers enregistrés : MOV par défaut, MP4 au choix. */
+  record_format?: "mov" | "mp4";
   status: "live" | "offline";
   archived: boolean;
   created_at: string;
@@ -47,7 +49,7 @@ export class PortsError extends Error {}
 export class ForbiddenError extends Error {}
 
 const UNIQUE_VIOLATION = "23505";
-const PUBLIC_COLUMNS = "id, user_id, name, protocol, server, mode, record, status, archived, created_at, rotated_at, last_live_at, rist_port, keys_enc";
+const PUBLIC_COLUMNS = "id, user_id, name, protocol, server, mode, record, record_format, status, archived, created_at, rotated_at, last_live_at, rist_port, keys_enc";
 
 /** Paire du relais créée par SYXTEE et sans relais autorisé correspondant. */
 export function orphanPair(p: { player: string; description?: string }, known: Set<string>) {
@@ -271,6 +273,7 @@ export function createRelayStore(
     rename: (r: Relay, name: string) => update(r.id, { name }),
     setMode: (r: Relay, mode: Mode) => update(r.id, { mode }),
     setRecord: (r: Relay, record: boolean) => update(r.id, { record }),
+    setRecordFormat: (r: Relay, record_format: "mov" | "mp4") => update(r.id, { record_format }),
 
     /** Archiver retire la paire du SLS (sessions coupées) ; réactiver la redéclare (dans la limite de la formule). */
     async setArchived(r: Relay, archived: boolean, limit: number): Promise<Relay> {

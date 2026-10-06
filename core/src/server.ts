@@ -89,6 +89,7 @@ export function relayView(r: Relay, c: Config, live = false) {
     archived: r.archived,
     live: !r.archived && live,
     record: r.record === true,
+    record_format: r.record_format === "mp4" ? ("mp4" as const) : ("mov" as const),
     record_available: c.RECORD_ENABLED,
     mode: regie ? ("regie" as const) : r.mode,
     regie_available: c.REGIE_ENABLED,
@@ -196,6 +197,7 @@ export function buildServer(d: Deps) {
         archived: z.boolean().optional(),
         mode: z.enum(["direct", "regie"]).optional(),
         record: z.boolean().optional(),
+        record_format: z.enum(["mov", "mp4"]).optional(),
         /** Changer de serveur : même relais, mêmes clés. */
         server: z.string().regex(/^[a-z0-9]{2,12}$/).optional(),
         limit: z.number().int().min(0).default(0),
@@ -210,6 +212,7 @@ export function buildServer(d: Deps) {
         if (body.record && !d.recordings) return reply.code(409).send({ error: "record_disabled" });
         r = await d.relays.setRecord(r, body.record);
       }
+      if (body.record_format !== undefined) r = await d.relays.setRecordFormat(r, body.record_format);
       if (body.server !== undefined) r = await d.relays.move(r, body.server);
       if (body.archived !== undefined) r = await d.relays.setArchived(r, body.archived, body.limit);
     } catch (e) {
@@ -470,7 +473,7 @@ export function buildServer(d: Deps) {
     req.raw.on("close", close);
   });
 
-  // ───── Enregistrements des flux (fichiers MP4 sur le serveur, quota par compte) ─────
+  // ───── Enregistrements des flux (fichiers MOV ou MP4 sur le serveur, quota par compte) ─────
   const rec = d.recordings;
   if (rec) {
     app.get("/v1/me/recordings", async (req, reply) => {
@@ -515,7 +518,7 @@ export function buildServer(d: Deps) {
       if (!body) return reply.code(404).send({ error: "not_found" });
       return reply
         .code(m ? 206 : 200)
-        .header("Content-Type", "video/mp4")
+        .header("Content-Type", t.file.endsWith(".mov") ? "video/quicktime" : "video/mp4")
         .header("Content-Disposition", `attachment; filename="syxtee-${t.file}"`)
         .header("Accept-Ranges", "bytes")
         .header("Content-Length", String(end - start + 1))

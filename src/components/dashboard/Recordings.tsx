@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { coreFetch } from "./coreClient";
 
-// Enregistrements du compte : espace utilisé sur le serveur (quota par compte), liste des fichiers MP4, téléchargement par lien
+// Enregistrements du compte : espace utilisé sur le serveur (quota par compte), liste des fichiers MOV ou MP4, téléchargement par lien
 // signé (5 min, reprise possible) et suppression. Les fichiers viennent du Core (/v1/me/recordings).
 
 type File = { relay_id: string; file: string; size: number; created_at: string; expires_at: string; recording: boolean };
@@ -12,7 +12,7 @@ type Data = { used: number; quota: number; retention_days: number; stopped: "quo
 const GB = 1024 ** 3;
 const size = (n: number) => (n >= GB ? `${(n / GB).toFixed(2)} Go` : `${Math.max(1, Math.round(n / 1024 ** 2))} Mo`);
 const when = (f: string) => {
-  const m = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})\.mp4$/.exec(f);
+  const m = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})\.(?:mp4|mov)$/.exec(f);
   return m ? `${m[3]}/${m[2]}/${m[1]} ${m[4]}:${m[5]}` : f;
 };
 
@@ -108,7 +108,7 @@ export default function Recordings({ coreUrl, relays }: { coreUrl: string; relay
         {!data ? (
           <p className="mt-4 text-sm text-muted">Chargement…</p>
         ) : data.files.length === 0 ? (
-          <p className="mt-4 text-sm text-muted">Aucun enregistrement pour le moment. Les fichiers sont coupés toutes les 15 minutes, au format MP4, sans perte de qualité, et supprimés automatiquement après 15 jours.</p>
+          <p className="mt-4 text-sm text-muted">Aucun enregistrement pour le moment. Les fichiers sont coupés toutes les 15 minutes, au format MOV (ou MP4, au choix dans le menu « Plus » du relais), sans perte de qualité, et supprimés automatiquement après 15 jours.</p>
         ) : (
           <ul className="mt-4 divide-y divide-line">
             {data.files.map((f) => {

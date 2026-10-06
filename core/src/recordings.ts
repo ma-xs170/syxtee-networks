@@ -14,7 +14,8 @@ import { supervise, type Supervised } from "./supervisor.ts";
 
 export const QUOTA_BYTES = 10 * 1024 ** 3;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-const FILE = /^\d{8}-\d{6}\.mp4$/;
+const FILE = /^\d{8}-\d{6}\.(mp4|mov)$/;
+export type RecordFormat = "mov" | "mp4";
 
 export type RecordingFile = { relay_id: string; file: string; size: number; created_at: string; expires_at: string; recording: boolean };
 export type Stopped = "quota" | "disk" | null;
@@ -26,17 +27,21 @@ export function probeCodec(host: string, port: number, playId: string): Promise<
   });
 }
 
-export function recordArgs(o: { host: string; port: number; playId: string; dir: string; segmentS: number; hevc?: boolean }) {
+export function recordArgs(o: { host: string; port: number; playId: string; dir: string; segmentS: number; hevc?: boolean; format?: RecordFormat }) {
   return [
     "-hide_banner", "-loglevel", "error",
+    // Analyse plus longue : sans elle, l'audio arrivé après la vidéo n'était parfois pas détecté et le fichier restait muet.
+    "-analyzeduration", "5000000", "-probesize", "10000000",
     "-i", `srt://${o.host}:${o.port}?streamid=${o.playId}&mode=caller&latency=200000`,
     "-map", "0:v:0", "-map", "0:a:0?",
-    "-c", "copy",
+    "-c:v", "copy",
+    // Audio ré-encodé en AAC stéréo 48 kHz (quelques kb/s de CPU) : lisible partout, resynchronisé sur la vidéo.
+    "-c:a", "aac", "-b:a", "160k", "-ar", "48000", "-ac", "2", "-af", "aresample=async=1:first_pts=0",
     // H.265 : étiquette hvc1 (hev1 par défaut), sinon QuickTime, Aperçu et Safari refusent d'ouvrir le fichier.
     ...(o.hevc ? ["-tag:v", "hvc1"] : []),
     "-f", "segment", "-segment_time", String(o.segmentS), "-reset_timestamps", "1", "-strftime", "1",
-    "-segment_format", "mp4", "-segment_format_options", "movflags=frag_keyframe+empty_moov+default_base_moof",
-    join(o.dir, "%Y%m%d-%H%M%S.mp4"),
+    "-segment_format", o.format ?? "mov", "-segment_format_options", "movflags=frag_keyframe+empty_moov+default_base_moof",
+    join(o.dir, `%Y%m%d-%H%M%S.${o.format ?? "mov"}`),
   ];
 }
 
@@ -114,6 +119,7 @@ export function createRecordings(o: {
       const diskOk = (await freeBytes().catch(() => Number.POSITIVE_INFINITY)) >= o.minFreeBytes;
       const used = new Map<string, number>();
       stopped.clear();
+      const launches: Promise<unknown>[] = [];
       for (const r of want) {
         if (!used.has(r.user_id)) used.set(r.user_id, total(await files(r.user_id)));
         const reason: Stopped = !diskOk ? "disk" : (used.get(r.user_id) ?? 0) >= quota ? "quota" : null;
@@ -126,13 +132,14 @@ export function createRecordings(o: {
         const dir = relayDir(r.user_id, r.id);
         mkdirSync(dir, { recursive: true });
         starting.add(r.id);
-        void probe(o.host, o.port, r.play_id)
+        launches.push(probe(o.host, o.port, r.play_id)
           .then((codec) => {
             if (!starting.has(r.id) || running.has(r.id)) return;
-            running.set(r.id, { user: r.user_id, p: run(`enregistrement ${r.id.slice(0, 8)}`, "ffmpeg", recordArgs({ host: o.host, port: o.port, playId: r.play_id, dir, segmentS, hevc: codec === "hevc" }), o.log) });
+            running.set(r.id, { user: r.user_id, p: run(`enregistrement ${r.id.slice(0, 8)}`, "ffmpeg", recordArgs({ host: o.host, port: o.port, playId: r.play_id, dir, segmentS, hevc: codec === "hevc", format: r.record_format === "mp4" ? "mp4" : "mov" }), o.log) });
           })
-          .finally(() => starting.delete(r.id));
+          .finally(() => starting.delete(r.id)));
       }
+      await Promise.all(launches);
     },
 
     /** Flux de lecture (avec plage d'octets) d'un fichier du compte, ou null. */

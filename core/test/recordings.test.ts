@@ -17,6 +17,7 @@ function harness(o: { quota?: number; free?: number } = {}) {
   const rec = createRecordings({
     dir, host: "127.0.0.1", port: 4000, secret: "s".repeat(32), quota: o.quota ?? 1000, minFreeBytes: 100, log: () => {},
     freeBytes: async () => o.free ?? 10_000,
+    probeImpl: async () => "h264",
     superviseImpl: ((_n: string, _c: string, args: string[]) => {
       const p = { args, stopped: false };
       started.push(p);
@@ -30,12 +31,22 @@ function harness(o: { quota?: number; free?: number } = {}) {
   return { rec, started, put };
 }
 
-test("arguments ffmpeg : lit le flux de lecture, copie sans réencodage, segments MP4 fragmentés", () => {
+test("arguments ffmpeg : vidéo copiée, audio AAC, segments MOV fragmentés par défaut", () => {
   const a = recordArgs({ host: "h", port: 4000, playId: "play_x", dir: "/d", segmentS: 900 });
   assert.match(a[a.indexOf("-i") + 1], /streamid=play_x/);
-  assert.equal(a[a.indexOf("-c") + 1], "copy");
+  assert.equal(a[a.indexOf("-c:v") + 1], "copy");
+  assert.equal(a[a.indexOf("-c:a") + 1], "aac");
+  assert.ok(a.includes("-analyzeduration"));
+  assert.equal(a[a.indexOf("-segment_format") + 1], "mov");
+  assert.equal(a.at(-1), "/d/%Y%m%d-%H%M%S.mov");
+  assert.ok(!a.includes("-tag:v"));
+});
+
+test("arguments ffmpeg : MP4 au choix, étiquette hvc1 pour le H.265", () => {
+  const a = recordArgs({ host: "h", port: 4000, playId: "play_x", dir: "/d", segmentS: 900, format: "mp4", hevc: true });
   assert.equal(a[a.indexOf("-segment_format") + 1], "mp4");
   assert.equal(a.at(-1), "/d/%Y%m%d-%H%M%S.mp4");
+  assert.equal(a[a.indexOf("-tag:v") + 1], "hvc1");
 });
 
 test("n'enregistre que les relais en direct dont l'option est activée, et s'arrête avec eux", async () => {

@@ -20,6 +20,7 @@ import type { SessionTracker } from "./sessions.ts";
 import type { Asn } from "./asn.ts";
 import type { Cam } from "./cam.ts";
 import type { Studio } from "./studio.ts";
+import { readLatest } from "./plugin.ts";
 import type { Remote } from "./remote.ts";
 import type { Backups } from "./backups.ts";
 import { median } from "./aggregate.ts";
@@ -827,6 +828,13 @@ export function buildServer(d: Deps) {
       };
     });
   }
+
+  // Dernière version du plugin (manifeste + tailles des installeurs) : lue par la page « Plugin OBS » et la carte « Mes OBS ».
+  app.get("/v1/plugin/latest", async (_req, reply) => {
+    const latest = readLatest(d.config.DATA_DIR);
+    if (!latest) return reply.code(404).send({ error: "no_release" });
+    return reply.header("cache-control", "public, max-age=60").send(latest);
+  });
 
   // ───── Téléchargements publics (installeurs de SYXTEE Link), posés à la main dans DATA_DIR/downloads ─────
   app.get("/dl/:file", async (req, reply) => {

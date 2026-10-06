@@ -1,0 +1,7 @@
+{
+  "0.4.0": [
+    "OBS est piloté par le plugin lui-même : plus rien à activer dans OBS",
+    "Fenêtre SYXTEE Studio : réglages complets, sauvegarde automatique, scène de direct avec correction en un clic",
+    "Renouvellement automatique de la connexion"
+  ]
+}

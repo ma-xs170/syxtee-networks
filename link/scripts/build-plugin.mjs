@@ -3,7 +3,8 @@
 // Sortie : PLUGIN_OUT (défaut ~/syxtee-link-plugin) : syxtee-link.plugin, SYXTEE-Link-<version>.pkg
 // Prérequis : Node 24+, outils en ligne de commande Xcode (clang, pkgbuild, productbuild, codesign), OBS installé, en-têtes de la même version de Qt que celle d'OBS (voir le message d'erreur du script).
 import { execFileSync } from "node:child_process";
-import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,7 +16,7 @@ if (process.platform !== "darwin") {
 
 const root = resolve(fileURLToPath(import.meta.url), "../..");
 const out = resolve((process.env.PLUGIN_OUT || "~/syxtee-link-plugin").replace(/^~(?=$|\/)/, homedir()));
-const VERSION = "0.3.0";
+const VERSION = "0.4.0";
 const OBS_TAG = "32.0.0"; // en-têtes de l'API d'OBS : seule l'interface (stable) est utilisée, le plugin se lie à OBS au chargement
 const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { stdio: "inherit", ...opts });
 
@@ -158,4 +159,25 @@ writeFileSync(
 const pkg = join(out, `SYXTEE-Link-${VERSION}.pkg`);
 rmSync(pkg, { force: true });
 run("productbuild", ["--distribution", join(work, "distribution.xml"), "--package-path", work, pkg]);
-console.log(`\nPrêt :\n  ${bundle}\n  ${pkg}`);
+// 5. Publication : SYXTEE-Link-mac.pkg + manifest.json à poser dans DATA_DIR/downloads du serveur (le Core les sert : /dl/ et /v1/plugin/latest).
+const published = join(out, "SYXTEE-Link-mac.pkg");
+copyFileSync(pkg, published);
+const notes = (() => {
+  try {
+    return JSON.parse(readFileSync(join(root, "release-notes.json"), "utf8"))[VERSION] ?? [];
+  } catch {
+    return [];
+  }
+})();
+const manifest = join(out, "manifest.json");
+let previous = {};
+try {
+  previous = JSON.parse(readFileSync(manifest, "utf8"));
+} catch {
+  // premier manifeste
+}
+writeFileSync(
+  manifest,
+  JSON.stringify({ ...previous, version: VERSION, released_at: new Date().toISOString(), notes, mac: { file: "SYXTEE-Link-mac.pkg", sha256: createHash("sha256").update(readFileSync(published)).digest("hex") } }, null, 2),
+);
+console.log(`\nPrêt :\n  ${bundle}\n  ${pkg}\nÀ publier (même dossier sur le serveur : DATA_DIR/downloads) :\n  ${published}\n  ${manifest}`);

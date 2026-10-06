@@ -172,3 +172,25 @@ test("API de l'appareil : renommer le poste, compte connecté, flux du compte (c
   const list = (await app.inject({ method: "GET", url: "/v1/me/link/devices", headers: user })).json();
   assert.equal(list.devices[0].name, "Régie"); // se reflète dans le registre (Mes OBS, Contrôle à distance)
 });
+
+test("plugin : dernière version lue du manifeste (versions et fichiers validés, tailles réelles)", async () => {
+  const { app, data } = make();
+  assert.equal((await app.inject({ method: "GET", url: "/v1/plugin/latest" })).statusCode, 404); // rien de publié
+  mkdirSync(join(data, "downloads"), { recursive: true });
+  writeFileSync(join(data, "downloads", "SYXTEE-Link-mac.pkg"), "x".repeat(1234));
+  writeFileSync(join(data, "downloads", "manifest.json"), JSON.stringify({ version: "0.4.0", released_at: "2026-10-07T10:00:00Z", notes: ["Pilotage d'OBS dans le plugin"], mac: { file: "SYXTEE-Link-mac.pkg", sha256: "a".repeat(64) }, windows: { file: "SYXTEE-Link-windows.exe", beta: true } }));
+  const r = await app.inject({ method: "GET", url: "/v1/plugin/latest" });
+  assert.equal(r.statusCode, 200);
+  const j = r.json();
+  assert.equal(j.version, "0.4.0");
+  assert.deepEqual(j.macos, { available: true, url: "/dl/SYXTEE-Link-mac.pkg", size: 1234, sha256: "a".repeat(64), beta: false });
+  assert.equal(j.windows.available, false); // fichier absent : pas proposé
+  assert.equal(j.linux.available, false);
+  // Manifeste piégé : version ou nom de fichier hors format = rejeté
+  writeFileSync(join(data, "downloads", "manifest.json"), JSON.stringify({ version: "0.4.0; rm -rf", mac: { file: "../../etc/passwd" } }));
+  assert.equal((await app.inject({ method: "GET", url: "/v1/plugin/latest" })).statusCode, 404);
+  writeFileSync(join(data, "downloads", "manifest.json"), JSON.stringify({ version: "0.4.0", mac: { file: "../../etc/passwd" } }));
+  assert.equal((await app.inject({ method: "GET", url: "/v1/plugin/latest" })).json().macos.available, false);
+  const { compareVersions } = await import("../src/plugin.ts");
+  assert.ok(compareVersions("0.3.0", "0.4.0") < 0 && compareVersions("0.10.0", "0.9.0") > 0 && compareVersions("1.0.0", "1.0.0") === 0);
+});

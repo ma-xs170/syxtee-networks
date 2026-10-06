@@ -13,7 +13,7 @@ import { createArchive, plan, restoreArchive } from "./scenesync.ts";
 import { osLabel } from "./system.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
 
-export const VERSION = "0.3.0";
+export const VERSION = "0.4.0";
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
 export const OBS_METHODS = new Set([

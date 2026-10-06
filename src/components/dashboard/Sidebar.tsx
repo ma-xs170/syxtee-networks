@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import {
   ArrowLeft,
+  Archive,
   CaretUpDown,
   ChatsCircle,
   ChartBar,
@@ -51,6 +52,7 @@ const GROUPS: Group[] = [
     items: [
       { label: "Vue d'ensemble", href: "/dashboard", icon: SquaresFour },
       { label: "Mes relais", href: "/dashboard/relais", icon: Radio, feature: "relais" },
+      { label: "Contrôle à distance", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais" },
       { label: "Aperçu", href: "/dashboard/apercu", icon: Eye, feature: "apercu" },
       { label: "Enregistrements", href: "/dashboard/enregistrements", icon: FilmStrip, feature: "relais" },
       { label: "Multichat", href: "/dashboard/multichat", icon: ChatsCircle },
@@ -58,9 +60,12 @@ const GROUPS: Group[] = [
     ],
   },
   {
+    title: "Contenu",
+    items: [{ label: "Backups de scènes", href: "/dashboard/backups", icon: Archive, feature: "relais" }],
+  },
+  {
     title: "Outils",
     items: [
-      { label: "SYXTEE Commutateur", href: "/commutateur", icon: SlidersHorizontal, external: true, wordmark: "COMMUTATEUR", feature: "commutateur", soon: true },
       { label: "Scanner", href: "/dashboard/scanner", icon: MapTrifold },
       { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },
     ],

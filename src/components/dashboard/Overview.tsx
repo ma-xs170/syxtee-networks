@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
-import { ChartBar, ChatsCircle, Eye, MapTrifold, Radio, SlidersHorizontal, type IconProps } from "@/components/icons";
+import { Archive, ChartBar, ChatsCircle, Eye, MapTrifold, Radio, SlidersHorizontal, type IconProps } from "@/components/icons";
 import {
   delta,
   deviceLabel,
@@ -14,12 +14,11 @@ import {
   type Overview as OverviewData,
   type Range,
 } from "@/lib/dashboard-data";
-import PhoneMoblin from "../illustrations/PhoneMoblin";
 import { DailyBars, Sparkline } from "./charts";
 import { useLiveClock, useLiveStatus } from "./LiveStatus";
 import MaskedUrl from "./MaskedUrl";
-import MultiChat, { type ChatDefaults } from "./MultiChat";
-import LiveNow from "./LiveNow";
+import MesObs from "./MesObs";
+import type { DevicesDemo } from "./useLinkDevices";
 import { SessionList } from "./sessions";
 import { ArrowLink, Tile, TileLabel } from "./ui";
 
@@ -29,92 +28,42 @@ import { ArrowLink, Tile, TileLabel } from "./ui";
 
 // ─────────────── 1. Centre de contrôle ───────────────
 
-function Stat({ label, value, href }: { label: string; value: string; href?: string }) {
-  const body = (
-    <>
-      <p className="text-xs text-muted">{label}</p>
-      <p className="mt-1 font-mono text-sm tabular-nums text-foreground">{value}</p>
-    </>
-  );
-  return href ? (
-    <Link href={href} className="block rounded-lg transition-opacity hover:opacity-70">
-      {body}
-    </Link>
-  ) : (
-    <div>{body}</div>
-  );
-}
-
 const btnPrimary =
   "inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-accent px-6 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98]";
-const btnGhost = "inline-flex h-11 items-center whitespace-nowrap rounded-full border border-line-strong px-5 text-sm transition-colors hover:bg-foreground/10";
 
-function ControlCenter({ data, onLaunch }: { data: OverviewData; onLaunch: () => void }) {
+/** Ligne fine de statut : « Hors ligne · dernier direct il y a X » + « Lancer un direct » ; en direct, le chrono et l'aperçu. */
+function StatusLine({ data, onLaunch }: { data: OverviewData; onLaunch: () => void }) {
   const { state, link } = useLiveStatus();
   const clock = useLiveClock();
-  const live = !!state?.live;
   const reconnecting = !!state?.reconnecting;
-  const on = live || reconnecting;
-  const used = state?.relays ? state.relays.filter((r) => r.live || r.reconnecting).length : on ? 1 : 0;
+  const on = !!state?.live || reconnecting;
   const liveName = state?.relays?.find((r) => r.id === state.relay_id)?.name;
-  const unlimited = data.relays.max >= 1_000_000;
-
   return (
-    <section aria-label="Statut du direct" className={`rounded-2xl border bg-surface p-5 sm:p-7 ${on ? "border-live/40" : "border-line"}`}>
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-        <div aria-live="polite">
-          <p className="flex items-center gap-2.5 font-mono text-xs uppercase tracking-[0.16em] text-muted">
-            {on ? <span className="live-dot" aria-hidden="true" /> : <span className="h-2 w-2 rounded-full border border-muted" aria-hidden="true" />}
-            {on ? (reconnecting ? "Reconnexion" : "En live") : link === "error" ? "Relais injoignable" : "Hors ligne"}
-          </p>
-          {on ? (
-            <>
-              <p className="mt-3 font-mono text-4xl tabular-nums tracking-tight text-foreground sm:text-5xl">{clock ?? "00:00:00"}</p>
-              <p className="mt-2 text-sm text-muted">
-                {state?.kbps != null && <span className="font-mono tabular-nums text-foreground">{fmtInt(state.kbps)} kbit/s</span>}
-                {(used > 1 || liveName) && (
-                  <span>
-                    {state?.kbps != null ? " sur " : "Sur "}
-                    {used > 1 ? `${used} relais` : liveName}
-                  </span>
-                )}
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="mt-3 text-2xl font-semibold tracking-tight sm:text-4xl">Aucun direct en cours</p>
-              <p className="mt-2 text-sm text-muted">{data.lastEndedAt ? `Dernier direct ${fmtAgo(data.lastEndedAt)}.` : "Ton premier direct apparaîtra ici."}</p>
-            </>
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          {on ? (
-            <>
-              <Link href="/dashboard/apercu" className={btnPrimary}>
-                Ouvrir l&apos;aperçu <span aria-hidden="true">→</span>
-              </Link>
-              <Link href="/dashboard/relais" className={btnGhost}>
-                Mes relais
-              </Link>
-            </>
-          ) : (
-            <>
-              <button type="button" onClick={onLaunch} className={btnPrimary}>
-                Lancer un direct <span aria-hidden="true">→</span>
-              </button>
-              <Link href="/dashboard/relais" className={btnGhost}>
-                Mes relais
-              </Link>
-            </>
-          )}
-        </div>
-      </div>
-      <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-line pt-5 sm:grid-cols-4">
-        <Stat label="Formule" value={data.plan.name} href="/dashboard/abonnement" />
-        <Stat label="Relais actifs" value={`${data.relays.active} / ${unlimited ? "∞" : data.relays.max}`} href="/dashboard/relais" />
-        <Stat label="Flux simultanés" value={`${used} / ${data.plan.streams}`} />
-        <Stat label="Dernier direct" value={data.last ? fmtDuration(data.last.duration_s) : "-"} href={data.last ? `/dashboard/lives/${data.last.id}` : undefined} />
-      </dl>
+    <section aria-label="Statut du direct" className={`flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-2xl border bg-surface px-5 py-4 ${on ? "border-live/40" : "border-line"}`}>
+      <p aria-live="polite" className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+        <span className="flex items-center gap-2.5 font-mono text-xs uppercase tracking-[0.16em]">
+          {on ? <span className="live-dot" aria-hidden="true" /> : <span className="h-2 w-2 rounded-full border border-muted" aria-hidden="true" />}
+          {on ? (reconnecting ? "Reconnexion" : "En direct") : link === "error" ? "Relais injoignable" : "Hors ligne"}
+        </span>
+        {on ? (
+          <span className="font-mono tabular-nums text-foreground">
+            {clock ?? "00:00:00"}
+            {state?.kbps != null && <span className="ml-3 text-muted">{fmtInt(state.kbps)} kbit/s</span>}
+            {liveName && <span className="ml-3 font-sans text-muted">sur {liveName}</span>}
+          </span>
+        ) : (
+          <span className="text-muted">{data.lastEndedAt ? `Dernier direct ${fmtAgo(data.lastEndedAt)}` : "Aucun direct pour le moment"}</span>
+        )}
+      </p>
+      {on ? (
+        <Link href="/dashboard/apercu" className={btnPrimary}>
+          Ouvrir l&apos;aperçu <span aria-hidden="true">→</span>
+        </Link>
+      ) : (
+        <button type="button" onClick={onLaunch} className={btnPrimary}>
+          Lancer un direct <span aria-hidden="true">→</span>
+        </button>
+      )}
     </section>
   );
 }
@@ -122,21 +71,24 @@ function ControlCenter({ data, onLaunch }: { data: OverviewData; onLaunch: () =>
 // ─────────────── 2. À vérifier ───────────────
 
 function Alerts({ alerts }: { alerts: OverviewData["alerts"] }) {
-  if (!alerts.length) return null;
   return (
-    <section aria-labelledby="attention">
-      <h2 id="attention" className="mb-3 flex items-center gap-2 text-sm font-semibold">
-        À vérifier
-        <span className="rounded-full border border-line px-2 py-0.5 font-mono text-xs font-normal tabular-nums text-muted">{alerts.length}</span>
+    <section aria-labelledby="attention" className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
+      <h2 id="attention" className="flex items-center gap-2 text-sm font-semibold">
+        Ce qui demande ton attention
+        {alerts.length > 0 && <span className="rounded-full border border-line px-2 py-0.5 font-mono text-xs font-normal tabular-nums text-muted">{alerts.length}</span>}
       </h2>
-      <ul className={`grid gap-3 ${alerts.length === 1 ? "" : alerts.length === 2 ? "md:grid-cols-2" : "md:grid-cols-2 xl:grid-cols-3"}`}>
-        {alerts.map((a) => (
-          <li key={a.id} className="flex flex-col justify-between gap-4 rounded-xl border border-line border-l-2 border-l-accent bg-surface p-4">
-            <p className="text-sm leading-relaxed text-foreground">{a.text}</p>
-            <ArrowLink href={a.href}>{a.cta}</ArrowLink>
-          </li>
-        ))}
-      </ul>
+      {alerts.length === 0 ? (
+        <p className="mt-2 text-sm text-muted">Rien à signaler.</p>
+      ) : (
+        <ul className="mt-3 grid gap-3">
+          {alerts.map((a) => (
+            <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 border-l-2 border-accent pl-3">
+              <p className="text-sm leading-relaxed">{a.text}</p>
+              <ArrowLink href={a.href}>{a.cta}</ArrowLink>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }
@@ -313,149 +265,62 @@ function LaunchGuide({ open, onClose, keys }: { open: boolean; onClose: () => vo
   );
 }
 
-function Onboarding({ keys }: { keys: OverviewData["keys"] }) {
-  const steps = [
-    { t: "Copier l'URL dans Moblin", d: "Réglages → Streams → URL." },
-    { t: "Ajouter la source dans OBS", d: "Source Média, sans « Fichier local »." },
-    { t: "Lancer", d: "Tes chiffres apparaissent ici après ton premier direct." },
-  ];
-  return (
-    <Tile className="grid grid-cols-1 items-center gap-8 md:grid-cols-[minmax(0,1fr)_220px]" aria-labelledby="onboarding">
-      <div>
-        <h2 id="onboarding" className="text-2xl font-semibold tracking-tight">
-          Ton premier direct en trois gestes.
-        </h2>
-        <ol className="mt-6 space-y-4">
-          {steps.map((s, i) => (
-            <li key={s.t} className="flex gap-4">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-line font-mono text-xs text-muted">{i + 1}</span>
-              <span>
-                <span className="block text-sm font-medium text-foreground">{s.t}</span>
-                <span className="block text-sm text-muted">{s.d}</span>
-              </span>
-            </li>
-          ))}
-        </ol>
-        {keys ? (
-          <div className="mt-6 max-w-xl">
-            <MaskedUrl url={keys.moblin} label="Moblin" size="sm" />
-          </div>
-        ) : (
-          <div className="mt-6">
-            <ArrowLink href="/dashboard/relais">Créer mon premier relais</ArrowLink>
-          </div>
-        )}
-      </div>
-      <div className="mx-auto hidden h-56 w-full max-w-[220px] md:block">
-        <PhoneMoblin />
-      </div>
-    </Tile>
-  );
-}
-
-function Urls({ data }: { data: OverviewData }) {
-  return (
-    <Tile aria-labelledby="urls-courtes" className="flex flex-col">
-      <TileLabel id="urls-courtes">{data.keys ? data.keys.relay : "Tes URLs"}</TileLabel>
-      {data.keys ? (
-        <div className="mt-4 space-y-3">
-          {(
-            [
-              ["Moblin", data.keys.moblin],
-              ["SRT", data.keys.srt],
-              ["OBS", data.keys.obs],
-            ] as const
-          ).map(([label, url]) => (
-            <div key={label}>
-              <p className="mb-1.5 text-xs text-muted">{label}</p>
-              <MaskedUrl url={url} label={label} size="sm" />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="mt-4 text-sm text-muted">
-          {data.coreStatus === "down"
-            ? "Le relais ne répond pas pour le moment."
-            : data.coreStatus === "off"
-              ? "Le relais n'est pas encore branché au dashboard."
-              : "Pas encore de relais."}
-        </p>
-      )}
-      <div className="mt-auto pt-5">
-        <ArrowLink href="/dashboard/relais">Mes relais</ArrowLink>
-      </div>
-    </Tile>
-  );
-}
-
-
-type Shortcut = { label: string; href: string; icon: ComponentType<IconProps>; soon?: boolean };
+type Shortcut = { label: string; href: string; icon: ComponentType<IconProps> };
 const shortcuts: Shortcut[] = [
+  { label: "Contrôle à distance", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal },
   { label: "Aperçu", href: "/dashboard/apercu", icon: Eye },
-  { label: "Multichat", href: "/dashboard/multichat", icon: ChatsCircle },
   { label: "Mes relais", href: "/dashboard/relais", icon: Radio },
+  { label: "Multichat", href: "/dashboard/multichat", icon: ChatsCircle },
+  { label: "Backups de scènes", href: "/dashboard/backups", icon: Archive },
   { label: "Scanner", href: "/dashboard/scanner", icon: MapTrifold },
   { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },
-  { label: "SYXTEE COMMUTATEUR", href: "/commutateur", icon: SlidersHorizontal, soon: true },
 ];
-
-function ChatTile({ chat }: { chat: ChatDefaults }) {
-  if (!(chat.twitch || chat.kick))
-    return (
-      <Tile aria-labelledby="chat-setup" className="flex flex-col">
-        <TileLabel id="chat-setup">Multichat</TileLabel>
-        <p className="mt-3 text-sm leading-relaxed text-muted">YouTube, Twitch et Kick au même endroit. Connecte ton compte pour le voir ici.</p>
-        <div className="mt-auto pt-4">
-          <ArrowLink href="/dashboard/multichat">Configurer le chat</ArrowLink>
-        </div>
-      </Tile>
-    );
-  return (
-    <div className="flex min-h-[22rem] flex-col">
-      <div className="mb-3">
-        <TileLabel right={<ArrowLink href="/dashboard/multichat">Multichat</ArrowLink>}>Chat</TileLabel>
-      </div>
-      <MultiChat defaults={chat} height="min-h-0 flex-1" compact />
-    </div>
-  );
-}
 
 function GoTo() {
   return (
-    <section aria-labelledby="aller">
-      <h2 id="aller" className="mb-3 text-sm font-semibold">
-        Accès rapides
-      </h2>
-      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {shortcuts.map((s) =>
-          s.soon ? (
-            <li key={s.href}>
-              <div aria-disabled="true" className="flex h-full flex-col gap-4 rounded-xl border border-line bg-surface p-4 text-muted">
-                <s.icon size={22} aria-hidden="true" />
-                <span className="text-sm font-medium">{s.label}</span>
-                <span className="w-fit rounded border border-line px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em]">À venir</span>
-              </div>
-            </li>
-          ) : (
-            <li key={s.href}>
-              <Link
-                href={s.href}
-                className="flex h-full flex-col gap-4 rounded-xl border border-line bg-surface p-4 text-muted transition-colors hover:border-line-strong hover:bg-foreground/[0.06] hover:text-foreground"
-              >
-                <s.icon size={22} aria-hidden="true" />
-                <span className="text-sm font-medium text-foreground">{s.label}</span>
-              </Link>
-            </li>
-          ),
-        )}
+    <Tile aria-labelledby="aller">
+      <TileLabel id="aller">Aller à</TileLabel>
+      <ul className="mt-3 grid gap-1">
+        {shortcuts.map((s) => (
+          <li key={s.href}>
+            <Link href={s.href} className="flex items-center gap-3 rounded-lg px-2 py-2 text-sm text-muted transition-colors hover:bg-foreground/[0.06] hover:text-foreground">
+              <s.icon size={18} aria-hidden="true" />
+              {s.label}
+            </Link>
+          </li>
+        ))}
       </ul>
-    </section>
+    </Tile>
+  );
+}
+
+function Plan({ data }: { data: OverviewData }) {
+  const unlimited = data.relays.max >= 1_000_000;
+  return (
+    <Tile aria-labelledby="formule">
+      <TileLabel id="formule" right={<ArrowLink href="/dashboard/abonnement">Gérer</ArrowLink>}>
+        Ton abonnement
+      </TileLabel>
+      <p className="mt-3 text-2xl font-semibold tracking-tight">{data.plan.name}</p>
+      <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <dt className="text-xs text-muted">Relais actifs</dt>
+          <dd className="mt-0.5 font-mono tabular-nums">
+            {data.relays.active} / {unlimited ? "∞" : data.relays.max}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted">Flux simultanés</dt>
+          <dd className="mt-0.5 font-mono tabular-nums">{data.plan.streams >= 1_000_000 ? "∞" : data.plan.streams}</dd>
+        </div>
+      </dl>
+    </Tile>
   );
 }
 
 // ─────────────── Page ───────────────
 
-export default function Overview({ initial, chat = { twitch: "", kick: "", youtube: "" } }: { initial: OverviewData; chat?: ChatDefaults }) {
+export default function Overview({ initial, coreUrl = "", demo }: { initial: OverviewData; coreUrl?: string; demo?: DevicesDemo }) {
   const [range, setRange] = useState<Range>(initial.range);
   const [data, setData] = useState(initial);
   const [pending, setPending] = useState(false);
@@ -483,17 +348,16 @@ export default function Overview({ initial, chat = { twitch: "", kick: "", youtu
   }
 
   return (
-    <div className="space-y-8">
-      <ControlCenter data={data} onLaunch={() => setGuide(true)} />
-      <LaunchGuide open={guide} onClose={() => setGuide(false)} keys={data.keys} />
-      <LiveNow sources={data.sources} />
-      <Alerts alerts={data.alerts} />
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+      <div className="min-w-0 space-y-6">
+        <StatusLine data={data} onLaunch={() => setGuide(true)} />
+        <LaunchGuide open={guide} onClose={() => setGuide(false)} keys={data.keys} />
+        <Alerts alerts={data.alerts} />
 
-      {data.hasEverStreamed ? (
         <section aria-labelledby="periode" className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 id="periode" className="text-sm font-semibold">
-              Ton activité
+              Ton activité en direct
             </h2>
             <RangeToggle range={range} onChange={changeRange} pending={pending} />
           </div>
@@ -503,38 +367,28 @@ export default function Overview({ initial, chat = { twitch: "", kick: "", youtu
             </p>
           )}
           <Kpis data={data} pending={pending} />
+          {!data.hasEverStreamed && <p className="text-sm text-muted">Tes chiffres apparaissent ici après ton premier direct.</p>}
         </section>
-      ) : (
-        <Onboarding keys={data.keys} />
-      )}
 
-      {/* Trois rangées de même structure (2/3 + 1/3) : chaque tuile remplit sa cellule, les bords haut et bas sont alignés. */}
-      {data.hasEverStreamed && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-[auto_auto]">
-          <DailyTile data={data} range={range} className="lg:col-span-2" />
-          <ChatTile chat={chat} />
-          {data.last ? <LastLive s={data.last} timezone={data.timezone} className="lg:col-span-2" /> : <div className="hidden lg:col-span-2 lg:block" />}
-          <Urls data={data} />
-        </div>
-      )}
-      {!data.hasEverStreamed && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <ChatTile chat={chat} />
-          <Urls data={data} />
-        </div>
-      )}
-      {data.hasEverStreamed && (
-        <Tile aria-labelledby="derniers">
-          <TileLabel id="derniers" right={<ArrowLink href="/dashboard/lives">Tout l&apos;historique</ArrowLink>}>
-            Derniers directs
-          </TileLabel>
-          <div className="mt-3">
-            <SessionList sessions={data.recent} timezone={data.timezone} />
-          </div>
-        </Tile>
-      )}
+        {data.last && <LastLive s={data.last} timezone={data.timezone} />}
+        {data.hasEverStreamed && <DailyTile data={data} range={range} />}
+        {data.recent.length > 0 && (
+          <Tile aria-labelledby="derniers">
+            <TileLabel id="derniers" right={<ArrowLink href="/dashboard/lives">Tout l&apos;historique</ArrowLink>}>
+              3 derniers directs
+            </TileLabel>
+            <div className="mt-3">
+              <SessionList sessions={data.recent.slice(0, 3)} timezone={data.timezone} />
+            </div>
+          </Tile>
+        )}
+      </div>
 
-      <GoTo />
+      <aside className="min-w-0 space-y-6">
+        <Plan data={data} />
+        <MesObs coreUrl={coreUrl} demo={demo} />
+        <GoTo />
+      </aside>
     </div>
   );
 }

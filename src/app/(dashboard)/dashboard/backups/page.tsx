@@ -1,0 +1,18 @@
+import type { Metadata } from "next";
+import BackupsList from "@/components/dashboard/BackupsList";
+import { DashHeader, DashPage } from "@/components/dashboard/ui";
+import { requireUser } from "@/lib/auth/dal";
+import { publicCoreUrl } from "@/lib/core";
+
+export const metadata: Metadata = { title: "Backups de scènes", robots: { index: false } };
+
+// Backups de scènes : tes collections OBS sauvegardées (scènes, sources, filtres et médias), versions, quota.
+export default async function BackupsPage() {
+  await requireUser("/dashboard/backups");
+  return (
+    <DashPage>
+      <DashHeader lead="Backups" hl="de scènes" sub="Tes collections de scènes OBS, avec leurs médias. Les scripts Lua et Python ne sont pas sauvegardés." />
+      <BackupsList coreUrl={publicCoreUrl} />
+    </DashPage>
+  );
+}

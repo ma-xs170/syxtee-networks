@@ -9,8 +9,9 @@ import StreamerWall from "@/components/home/StreamerWall";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import AdminShell from "@/app/(admin)/admin/AdminShell";
 import StudioDemo from "@/components/studio/StudioDemo";
-import CloudObs from "@/components/cloud/CloudObs";
-import { LiveStatusProvider } from "@/components/dashboard/LiveStatus";
+import PluginDownload from "@/components/dashboard/PluginDownload";
+import RemoteList from "@/components/dashboard/RemoteList";
+import type { DevicesDemo } from "@/components/dashboard/useLinkDevices";
 import RelayList from "@/components/relais/RelayList";
 import type { Overview as OverviewData, LiveSession } from "@/lib/dashboard-data";
 import type { RelayRow } from "@/lib/relay-groups";
@@ -100,11 +101,19 @@ const LIVE_STATE = {
   relays: [{ id: RELAYS[0].id, name: RELAYS[0].name, live: true, reconnecting: false, started_at: NOW - 5_400_000, kbps: 6120, reconnects: 0 }],
 };
 
+const DEMO_DEVICES: DevicesDemo = {
+  latest: { version: "0.4.0", released_at: iso(DAY), notes: ["OBS est piloté par le plugin lui-même : plus rien à activer dans OBS", "Renouvellement automatique de la connexion"], macos: { available: true, url: "/dl/SYXTEE-Link-mac.pkg", size: 43_867_489, sha256: null, beta: false }, windows: { available: false, url: null, size: null, sha256: null, beta: true }, linux: { available: false, url: null, size: null, sha256: null, beta: false } },
+  devices: [
+    { id: "d1", name: "OBS-DJ-SYXTEE.local", platform: "darwin", os: "macOS 27.0", host: "OBS-DJ-SYXTEE.local", plugin_version: "0.4.0", online: true, online_since: iso(39_000), last_seen: iso(1000), created_at: iso(9 * DAY) },
+    { id: "d2", name: "OBS SYXTEE", platform: "win32", os: "Windows 11", host: "PC-REGIE", plugin_version: "0.3.0", online: false, online_since: null, last_seen: iso(45 * 60_000), created_at: iso(20 * DAY) },
+  ],
+};
+
 export default async function VitrinePage({ params }: { params: Promise<{ tool: string }> }) {
   if (process.env.NODE_ENV === "production") notFound();
   const { tool } = await params;
   return (
-    <div id="capture" data-theme="dark" className={`mx-auto bg-background p-8 text-foreground ${tool === "accueil" ? "w-[1500px]" : tool.startsWith("commutateur") ? "w-full !p-0" : "w-[1100px]"}`}>
+    <div id="capture" data-theme="dark" className={`mx-auto bg-background p-8 text-foreground ${tool === "accueil" ? "w-[1500px]" : "w-[1100px]"}`}>
       {tool === "relais" && <RelayList relays={RELAYS} active={6} max={10} coreUrl="" geo={null} />}
       {tool === "sante" && (
         <div className="space-y-4">
@@ -131,11 +140,8 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
         </div>
       )}
       {tool === "studio" && <StudioDemo />}
-      {(tool === "commutateur" || tool === "commutateur-reel") && (
-        <LiveStatusProvider coreUrl="">
-          <CloudObs persist={false} account="demo@syxtee.fr" real={tool === "commutateur-reel" ? [{ id: "a1", name: "iPhone 16", protocol: "srtla", live: true }, { id: "a2", name: "Osmo", protocol: "rtmp", live: true }, { id: "a3", name: "BELABOX", protocol: "srtla", live: true }, { id: "a4", name: "GoPro", protocol: "rtmp", live: false }] : []} coreUrl={tool === "commutateur-reel" ? "http://localhost:9" : ""} />
-        </LiveStatusProvider>
-      )}
+      {tool === "controle" && <RemoteList coreUrl="" demo={DEMO_DEVICES} />}
+      {tool === "plugin" && <PluginDownload coreUrl="" latest={DEMO_DEVICES.latest} demo={DEMO_DEVICES} />}
       {tool === "admin" && (
         <div className="-m-8">
           <AdminShell support={{ all: 3, byCategory: { relais: 2, compte: 1, facturation: 0, bug: 0, suggestion: 0, autre: 0 } }} pendingAccess={2} name="admin@syxtee.fr">
@@ -161,14 +167,14 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           <div className="relative">
             <h1 className="mb-8 text-2xl font-semibold tracking-tight sm:text-3xl">Salut Mathis.</h1>
             <DemoLive state={LIVE_STATE}>
-              <Overview initial={OVERVIEW} />
+              <Overview initial={OVERVIEW} demo={DEMO_DEVICES} />
             </DemoLive>
           </div>
         </div>
       )}
       {tool === "accueil" && (
         <DemoLive state={LIVE_STATE}>
-          <Overview initial={OVERVIEW} />
+          <Overview initial={OVERVIEW} demo={DEMO_DEVICES} />
         </DemoLive>
       )}
       {tool === "mur" && (
@@ -184,7 +190,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           }))}
         />
       )}
-      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "commutateur", "commutateur-reel"].includes(tool) && notFound()}
+      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle"].includes(tool) && notFound()}
     </div>
   );
 }

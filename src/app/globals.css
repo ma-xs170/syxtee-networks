@@ -3,60 +3,60 @@
 :root,
 [data-theme="dark"] {
   color-scheme: dark;
-  --background: #15171c;
-  --foreground: #f2f3f5;
-  --muted: #9aa0ab;
+  --background: #050505;
+  --foreground: #ffffff;
+  --muted: #a1a1a6;
   --line: rgba(255, 255, 255, 0.08);
   --line-strong: rgba(255, 255, 255, 0.16);
-  --surface: #1b1e24;
-  --surface-2: #23262d;
-  --accent: #d92d2d;
-  --accent-hover: #c42525;
-  --on-accent: #ffffff;
+  --surface: #0e0e0f;
+  --surface-2: #171718;
+  --accent: #ffffff;
+  --accent-hover: #e2e2e4;
+  --on-accent: #000000;
   --live: #ff3b30;
   --img-filter: none;
   --img-filter-rev: invert(1);
   --shadow-pop: rgba(0, 0, 0, 0.9);
-  --glow: rgba(217, 45, 45, 0.28);
+  --glow: rgba(255, 255, 255, 0.12);
 }
 
 /* Clair : explicite, ou automatique quand le système est en clair et qu'aucun choix n'est mémorisé. */
 [data-theme="light"] {
   color-scheme: light;
-  --background: #f4f5f7;
-  --foreground: #14161b;
-  --muted: #596070;
-  --line: rgba(20, 22, 27, 0.12);
-  --line-strong: rgba(20, 22, 27, 0.25);
-  --surface: #eceef1;
-  --surface-2: #e1e4e8;
-  --accent: #d92d2d;
-  --accent-hover: #c42525;
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --muted: #5c5c61;
+  --line: rgba(10, 10, 10, 0.12);
+  --line-strong: rgba(10, 10, 10, 0.25);
+  --surface: #f4f4f5;
+  --surface-2: #e9e9eb;
+  --accent: #0a0a0a;
+  --accent-hover: #2b2b2e;
   --on-accent: #ffffff;
   --live: #d92b20;
   --img-filter: invert(1);
   --img-filter-rev: none;
   --shadow-pop: rgba(0, 0, 0, 0.18);
-  --glow: rgba(217, 45, 45, 0.2);
+  --glow: rgba(0, 0, 0, 0.1);
 }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
     color-scheme: light;
-    --background: #f4f5f7;
-    --foreground: #14161b;
-    --muted: #596070;
-    --line: rgba(20, 22, 27, 0.12);
-    --line-strong: rgba(20, 22, 27, 0.25);
-    --surface: #eceef1;
-    --surface-2: #e1e4e8;
-    --accent: #d92d2d;
-    --accent-hover: #c42525;
+    --background: #ffffff;
+    --foreground: #0a0a0a;
+    --muted: #5c5c61;
+    --line: rgba(10, 10, 10, 0.12);
+    --line-strong: rgba(10, 10, 10, 0.25);
+    --surface: #f4f4f5;
+    --surface-2: #e9e9eb;
+    --accent: #0a0a0a;
+    --accent-hover: #2b2b2e;
     --on-accent: #ffffff;
     --live: #d92b20;
     --img-filter: invert(1);
     --img-filter-rev: none;
     --shadow-pop: rgba(0, 0, 0, 0.18);
-    --glow: rgba(217, 45, 45, 0.2);
+    --glow: rgba(0, 0, 0, 0.1);
   }
 }
 
@@ -64,23 +64,23 @@
    Le thème clair garde ses tokens. S'applique à la coque du dashboard (classe dash-surface). */
 .dash-surface { background: var(--background); }
 [data-theme="dark"] .dash-surface {
-  --background: #111214;
-  --surface: #191b1f;
-  --surface-2: #212328;
+  --background: #050505;
+  --surface: #0e0e0f;
+  --surface-2: #171718;
   --line: rgba(255, 255, 255, 0.11);
   --line-strong: rgba(255, 255, 255, 0.2);
   --foreground: #ffffff;
-  --muted: #bcc0ca;
+  --muted: #c4c4c8;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) .dash-surface {
-    --background: #111214;
-    --surface: #191b1f;
-    --surface-2: #212328;
+    --background: #050505;
+    --surface: #0e0e0f;
+    --surface-2: #171718;
     --line: rgba(255, 255, 255, 0.11);
     --line-strong: rgba(255, 255, 255, 0.2);
     --foreground: #ffffff;
-    --muted: #bcc0ca;
+    --muted: #c4c4c8;
   }
 }
 
@@ -88,12 +88,12 @@
    titres et mots en gras toujours à la couleur principale, jamais en gris. */
 [data-theme="light"] .dash-surface {
   --foreground: #050505;
-  --muted: #3f4652;
+  --muted: #3f3f44;
 }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) .dash-surface {
     --foreground: #050505;
-    --muted: #3f4652;
+    --muted: #3f3f44;
   }
 }
 .dash-surface :is(h1, h2, h3, h4, strong, b):not([class*="text-on-accent"]) {
@@ -605,7 +605,7 @@ body::before {
   .btn-primary { position: relative; overflow: hidden; }
   .btn-primary::after {
     content: ""; position: absolute; inset: 0; transform: translateX(-120%);
-    background: linear-gradient(105deg, transparent 30%, rgb(255 255 255 / 0.35) 50%, transparent 70%);
+    background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--on-accent) 30%, transparent) 50%, transparent 70%);
     transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none;
   }
   .btn-primary:hover::after { transform: translateX(120%); }

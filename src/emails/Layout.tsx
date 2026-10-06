@@ -2,14 +2,14 @@ import { Body, Button, Container, Head, Html, Img, Link, Preview, Section, Text 
 import type { ReactNode } from "react";
 import { site } from "@/lib/site";
 
-// Mise en page commune des emails SYXTEE : même charte que le site (gris doux et non noir pur, un seul rouge d'accent,
-// logo S, libellé mono, titre avec mot-clé surligné en rouge, bouton pilule rouge). Styles en ligne (Gmail, Apple Mail, Outlook).
+// Mise en page commune des emails SYXTEE : même charte que le site (gris doux et non noir pur, noir et blanc,
+// logo S, libellé mono, titre avec mot-clé surligné en blanc, bouton pilule blanc). Styles en ligne (Gmail, Apple Mail, Outlook).
 // Valeurs reprises de globals.css (mode Sombre) : --background, --surface, --foreground, --muted, --line, --accent, --on-accent.
 // Lisible sans images (texte « SYXTEE NETWORKS » à côté du logo) et en mode clair forcé (contrastes francs).
 
 const MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 const SANS = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
-export const C = { bg: "#15171c", card: "#1b1e24", line: "#2a2d33", fg: "#f2f3f5", muted: "#9aa0ab", accent: "#d92d2d", onAccent: "#ffffff" };
+export const C = { bg: "#050505", card: "#0e0e0f", line: "#26262a", fg: "#ffffff", muted: "#a1a1a6", accent: "#ffffff", onAccent: "#000000" };
 
 export const p = { color: C.fg, fontFamily: SANS, fontSize: "15px", lineHeight: "24px", margin: "0 0 16px", textAlign: "center" } as const;
 export const muted = { ...p, color: C.muted, fontSize: "13px", lineHeight: "20px" } as const;
@@ -88,7 +88,7 @@ export default function Layout({ preview, reason, children }: { preview: string;
           <Section style={{ padding: "8px 0 28px", textAlign: "center" }}>
             <Img src={`${site.url}/logo-400.png`} width={34} height={47} alt="SYXTEE NETWORKS" style={{ display: "block", margin: "0 auto" }} />
           </Section>
-          <Section style={{ backgroundColor: C.card, border: `1px solid ${C.line}`, borderTop: `3px solid ${C.accent}`, borderRadius: "16px", padding: "36px 28px 16px", backgroundImage: "radial-gradient(ellipse 80% 120px at 20% 0%, rgba(217,45,45,0.16), rgba(217,45,45,0))", backgroundRepeat: "no-repeat" }}>
+          <Section style={{ backgroundColor: C.card, border: `1px solid ${C.line}`, borderTop: `3px solid ${C.accent}`, borderRadius: "16px", padding: "36px 28px 16px", backgroundImage: "radial-gradient(ellipse 80% 120px at 20% 0%, rgba(255,255,255,0.08), rgba(255,255,255,0))", backgroundRepeat: "no-repeat" }}>
             {children}
           </Section>
           <Section style={{ padding: "24px 4px 0", textAlign: "center" }}>

@@ -5,6 +5,8 @@ import { Agent, VERSION } from "./agent.ts";
 import { cleanBackup } from "./backup.ts";
 import { cloudError } from "./cloud.ts";
 import { load, save, type LinkConfig } from "./config.ts";
+import { coreCall } from "./corehttp.ts";
+import { fixLiveScene, hasSource, SOURCE_NAME } from "./livescene.ts";
 import { Login } from "./login.ts";
 import { setTokens } from "./tokens.ts";
 import { listCollections } from "./obsconfig.ts";
@@ -63,6 +65,11 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
     host: hostname().slice(0, 40),
     core: cfg.core,
     paired: cfg.token !== "",
+    destination: cfg.destination,
+    liveScene: cfg.liveScene,
+    autoBackup: cfg.autoBackup,
+    lastBackup: cfg.lastBackup,
+    sourceName: SOURCE_NAME,
     onboarded: cfg.onboarded,
     login: login.state,
     status: agent?.status ?? { core: "off", obs: "off", obsVersion: "", backup: "idle", lastError: "", viewers: 0, job: null },
@@ -70,6 +77,14 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
     obsCustom: cfg.obs.password !== "",
     logs,
   });
+
+  /** Flux du compte, avec l'adresse de lecture pour OBS : gardée ici, jamais renvoyée à l'interface. */
+  let streams: { id: string; name: string; protocol: string; live: boolean; obs_srt_url: string }[] = [];
+  async function loadStreams(): Promise<boolean> {
+    const r = await coreCall(cfg, "GET", "/v1/link/streams");
+    if (r.ok) streams = (r.json.streams as typeof streams) ?? [];
+    return r.ok;
+  }
 
   async function route(req: IncomingMessage, res: ServerResponse) {
     const host = String(req.headers.host ?? "");
@@ -128,6 +143,73 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
         }
         times.sort((a, b) => a - b);
         return json({ ok: true, ms: Math.round(times[1]) });
+      }
+      case "GET /api/account": {
+        const r = await coreCall(cfg, "GET", "/v1/link/me");
+        return json(r.ok ? { name: r.json.name, email: r.json.email, avatar_url: r.json.avatar_url ?? null, device_name: r.json.device_name ?? "" } : { error: r.status === 0 ? "Serveur injoignable." : "Compte indisponible." });
+      }
+      case "GET /api/streams": {
+        const ok = await loadStreams();
+        if (!ok) return json({ error: "Serveur injoignable.", streams: [], selected: cfg.destination });
+        // Un flux supprimé ou archivé ne reste pas sélectionné.
+        if (cfg.destination && !streams.some((s) => s.id === cfg.destination)) {
+          cfg.destination = "";
+          save(cfg);
+        }
+        return json({ streams: streams.map(({ id, name, protocol, live }) => ({ id, name, protocol, live })), selected: cfg.destination });
+      }
+      case "POST /api/destination": {
+        const id = typeof body.id === "string" ? body.id.slice(0, 64) : "";
+        if (id && streams.length === 0) await loadStreams();
+        if (id && !streams.some((s) => s.id === id)) return end(res, 400, "flux inconnu");
+        cfg.destination = id;
+        save(cfg);
+        return json({ ok: true });
+      }
+      case "POST /api/rename": {
+        const name = typeof body.name === "string" ? body.name.trim().slice(0, 40) : "";
+        if (!name) return end(res, 400, "nom vide");
+        const r = await coreCall(cfg, "PATCH", "/v1/link/device", { name });
+        return json(r.ok ? { ok: true, name } : { ok: false, error: r.status === 0 ? "Serveur injoignable." : "Renommage impossible." });
+      }
+      case "GET /api/live": {
+        // `obs` : OBS est joignable. Une scène de direct disparue (renommée, supprimée) compte comme « source absente ».
+        let has = false;
+        try {
+          has = await hasSource((t, d) => agent!.obsRequest(t, d), cfg.liveScene);
+        } catch {
+          // scène introuvable ou OBS occupé
+        }
+        return json({ scene: cfg.liveScene, hasSource: has, obs: agent?.status.obs === "on", destination: cfg.destination !== "" });
+      }
+      case "POST /api/live-scene":
+        cfg.liveScene = typeof body.scene === "string" ? body.scene.slice(0, 200) : "";
+        save(cfg);
+        return json({ ok: true });
+      case "POST /api/fix": {
+        if (!agent) return json({ ok: false, message: "Agent arrêté." });
+        try {
+          if (cfg.destination && streams.length === 0) await loadStreams();
+          const url = streams.find((s) => s.id === cfg.destination)?.obs_srt_url ?? "";
+          const r = await fixLiveScene((t, d) => agent!.obsRequest(t, d), cfg.liveScene, url);
+          if (r.ok) {
+            // La source ajoutée devient la source surveillée de la bascule automatique.
+            cfg.backup = cleanBackup({ source: SOURCE_NAME }, cfg.backup);
+            save(cfg);
+            agent.setBackup(cfg.backup);
+          }
+          return json(r);
+        } catch (e) {
+          return json({ ok: false, message: `OBS a refusé : ${(e as Error).message}` });
+        }
+      }
+      case "POST /api/auto": {
+        const c = typeof body.collection === "string" ? body.collection.slice(0, 200) : "";
+        if (!c || !listCollections().includes(c)) return end(res, 400, "collection inconnue");
+        if (body.enabled === true) cfg.autoBackup[c] = true;
+        else delete cfg.autoBackup[c];
+        save(cfg);
+        return json({ ok: true });
       }
       case "POST /api/login/start":
         void login.start();

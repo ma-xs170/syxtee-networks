@@ -13,15 +13,23 @@ import { fakeDb } from "./fake-db.ts";
 const U = "00000000-0000-4000-8000-000000000001";
 const V = "00000000-0000-4000-8000-000000000002";
 
+const RELAYS = [
+  { id: "00000000-0000-4000-8000-0000000000a1", user_id: U, name: "Moblin", protocol: "srtla", server: "bhs1", archived: false, mode: "direct", status: "offline", created_at: "", rotated_at: null, last_live_at: null, publish_id: "pub_secret", play_id: "play_secret", out_play_id: "out_secret" },
+  { id: "00000000-0000-4000-8000-0000000000a2", user_id: U, name: "Ancien", protocol: "rtmp", server: "bhs1", archived: true, mode: "direct", status: "offline", created_at: "", rotated_at: null, last_live_at: null, publish_id: "p2", play_id: "q2", out_play_id: "o2" },
+];
+
 function make(quota = 1000) {
   const data = mkdtempSync(join(tmpdir(), "core-data-"));
   const config = loadConfig({ CORE_API_TOKEN: "t".repeat(40), SUPABASE_URL: "https://x.supabase.co", SUPABASE_SECRET_KEY: "sb_secret_x", SLS_API_KEY: "slskey123", RELAY_KEYS_SECRET: "k".repeat(64), RELAY_PUBLIC_HOST: "relais.test", DATA_DIR: data });
   const db = fakeDb({ link_devices: ["token_hash", "refresh_hash"] }, { link_devices: () => ({ id: crypto.randomUUID(), created_at: "", last_seen: null }), link_backups: () => ({ id: crypto.randomUUID(), created_at: new Date().toISOString() }) });
   const verifyUser = async (h: string | undefined) => (h === "Bearer user-u" ? U : h === "Bearer user-v" ? V : null);
-  const remote = createRemote({ db: db as never, canUse: (id) => id === U, verifyUser, log: () => {} });
+  const remote = createRemote({
+    db: db as never, canUse: (id) => id === U, verifyUser, log: () => {},
+    account: async (id) => (id === U ? { email: "mathis@example.com", name: "Mathis D", avatar_url: "https://img.example/a.png", plan: "pro" } : null),
+  });
   const backups = createBackups({ db: db as never, dir: join(data, "link-backups"), quota });
   const app = buildServer({
-    config, relays: {}, health: { state: () => null, relay: () => null, liveRelays: () => [], byUser: () => [], events: { on() {}, off() {} } }, rtmp: {}, samples: { history: () => [] }, sessions: { current: () => null },
+    config, relays: { list: async (id: string) => (id === U ? RELAYS : []) }, health: { state: () => null, relay: () => null, liveRelays: () => [], byUser: () => [], events: { on() {}, off() {} } }, rtmp: {}, samples: { history: () => [] }, sessions: { current: () => null },
     verifyUser, previewPath: () => "", onKeysChanged: () => {}, slsHealthy: async () => true, remote, backups,
   } as unknown as Deps);
   return { app, data };
@@ -139,4 +147,28 @@ test("jetons : renouvellement HTTP, rotation, révocation, refus d'un appareil p
   assert.equal((await app.inject({ method: "GET", url: "/v1/link/backups", headers: { authorization: `Bearer ${r1.json().token}` } })).statusCode, 401);
   const audit = (await app.inject({ method: "GET", url: "/v1/me/link/audit", headers: user })).json();
   assert.ok(audit.entries.some((e: { method: string }) => e.method === "device.revoke"));
+});
+
+test("API de l'appareil : renommer le poste, compte connecté, flux du compte (clés de publication jamais renvoyées)", async () => {
+  const { app } = make();
+  const dev = await connectDevice(app);
+  const none = { authorization: "Bearer slk_" + "0".repeat(48) };
+  for (const [m, u] of [["PATCH", "/v1/link/device"], ["GET", "/v1/link/me"], ["GET", "/v1/link/streams"]] as const)
+    assert.equal((await app.inject({ method: m, url: u, headers: { ...none, "content-type": "application/json" }, payload: m === "PATCH" ? { name: "x" } : undefined })).statusCode, 401, u);
+
+  const me = (await app.inject({ method: "GET", url: "/v1/link/me", headers: dev })).json();
+  assert.deepEqual(me, { email: "mathis@example.com", name: "Mathis D", avatar_url: "https://img.example/a.png", plan: "pro", device_name: "Mac" });
+
+  const st = (await app.inject({ method: "GET", url: "/v1/link/streams", headers: dev })).json();
+  assert.equal(st.streams.length, 1); // le relais archivé n'est pas proposé
+  assert.equal(st.streams[0].name, "Moblin");
+  assert.match(st.streams[0].obs_srt_url, /^srt:\/\/relais\.test:\d+\?streamid=/);
+  assert.ok(!JSON.stringify(st).includes("pub_secret")); // la clé de publication ne sort jamais
+
+  const rn = await app.inject({ method: "PATCH", url: "/v1/link/device", headers: { ...dev, "content-type": "application/json" }, payload: { name: "  Régie  " } });
+  assert.equal(rn.statusCode, 200);
+  assert.equal(rn.json().name, "Régie");
+  assert.equal((await app.inject({ method: "PATCH", url: "/v1/link/device", headers: { ...dev, "content-type": "application/json" }, payload: { name: "" } })).statusCode, 400);
+  const list = (await app.inject({ method: "GET", url: "/v1/me/link/devices", headers: user })).json();
+  assert.equal(list.devices[0].name, "Régie"); // se reflète dans le registre (Mes OBS, Contrôle à distance)
 });

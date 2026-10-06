@@ -10,6 +10,7 @@
 #include <QMenuBar>
 #include <QPointer>
 #include <QUrl>
+#include <QVersionNumber>
 
 #include "studio_ui.h"
 
@@ -18,6 +19,7 @@ extern "C" const char *syxtee_ipc_token(void);
 namespace {
 QPointer<QMenu> menu;
 QPointer<QWidget> window;
+bool disabled = false;
 
 void open_window()
 {
@@ -47,13 +49,35 @@ void on_event(enum obs_frontend_event e, void *)
 }
 } // namespace
 
-extern "C" void syxtee_ui_load(void)
+// Le plugin est compilé contre les en-têtes d'une version de Qt, mais exécuté avec le Qt d'OBS. Qt garantit la compatibilité binaire
+// dans une même version majeure à condition que le Qt d'exécution ne soit pas plus ancien que celui de la compilation.
+// Sinon on ne touche à rien de Qt : l'interface se désactive proprement (message dans le log d'OBS), OBS ne plante pas.
+bool qt_compatible()
 {
+	const QVersionNumber run = QVersionNumber::fromString(QString::fromLatin1(qVersion()));
+	const QVersionNumber built = QVersionNumber::fromString(QString::fromLatin1(QT_VERSION_STR));
+	const bool ok = run.majorVersion() == built.majorVersion() && run >= built;
+	if (ok)
+		blog(LOG_INFO, "[syxtee-link] Qt %s (compilé avec %s) : compatible", qVersion(), QT_VERSION_STR);
+	else
+		blog(LOG_WARNING, "[syxtee-link] Qt %s d'OBS incompatible avec Qt %s utilisé à la compilation : interface SYXTEE désactivée (l'agent continue, page de réglages dans le navigateur). Mets à jour le plugin.",
+		     qVersion(), QT_VERSION_STR);
+	return ok;
+}
+
+extern "C" bool syxtee_ui_load(void)
+{
+	if (!qt_compatible()) {
+		disabled = true;
+		return false;
+	}
 	obs_frontend_add_event_callback(on_event, nullptr);
+	return true;
 }
 
 extern "C" void syxtee_ui_unload(void)
 {
+	if (disabled) return;
 	obs_frontend_remove_event_callback(on_event, nullptr);
 	delete window.data();
 	if (menu) {

@@ -1,9 +1,9 @@
 // Construit le plugin OBS SYXTEE Link pour macOS : syxtee-link.plugin (module natif + agent) et l'installeur .pkg.
 //   npm run plugin
 // Sortie : PLUGIN_OUT (défaut ~/syxtee-link-plugin) : syxtee-link.plugin, SYXTEE-Link-<version>.pkg
-// Prérequis : Node 24+, outils en ligne de commande Xcode (clang, pkgbuild, productbuild, codesign), OBS installé, en-têtes Qt (`brew install qt`).
+// Prérequis : Node 24+, outils en ligne de commande Xcode (clang, pkgbuild, productbuild, codesign), OBS installé, en-têtes de la même version de Qt que celle d'OBS (voir le message d'erreur du script).
 import { execFileSync } from "node:child_process";
-import { chmodSync, existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -56,22 +56,44 @@ if (!existsSync(join(headers, "simde", "simde", "x86", "sse2.h"))) {
 }
 
 // 3. Module natif, universel (Apple Silicon et Intel) : partie C (lancement de l'agent) + partie C++/Qt (menu « SYXTEE », fenêtre Studio).
-// Les symboles d'OBS sont résolus par OBS au chargement. Qt : en-têtes de Homebrew (`brew install qt`), mais l'édition de liens se fait
+// Les symboles d'OBS sont résolus par OBS au chargement. Qt : en-têtes de la version exacte d'OBS (~/Qt/<version>), et l'édition de liens se fait
 // contre les frameworks Qt d'OBS (même version majeure, chargés par OBS : jamais deux Qt dans le processus).
 const obsApp = process.env.OBS_APP || "/Applications/OBS.app";
 const obsFrameworks = join(obsApp, "Contents", "Frameworks");
-let qtLib = process.env.QT_LIB || "";
-if (!qtLib) {
-  try {
-    qtLib = join(execFileSync("brew", ["--prefix", "qt"], { encoding: "utf8" }).trim(), "lib");
-  } catch {
-    // pas de Homebrew
-  }
-}
-if (!existsSync(join(obsFrameworks, "QtWidgets.framework")) || !qtLib || !existsSync(join(qtLib, "QtWidgets.framework", "Headers"))) {
-  console.error("Qt introuvable : installe OBS (/Applications/OBS.app) et les en-têtes Qt avec `brew install qt`, ou donne QT_LIB et OBS_APP.");
+if (!existsSync(join(obsFrameworks, "QtWidgets.framework"))) {
+  console.error(`OBS introuvable (${obsApp}). Installe OBS ou donne OBS_APP.`);
   process.exit(1);
 }
+// Les en-têtes Qt doivent être CEUX de la version de Qt embarquée dans OBS : on lit celle d'OBS, puis on cherche des en-têtes identiques.
+const obsQt = execFileSync("/usr/libexec/PlistBuddy", ["-c", "Print CFBundleVersion", join(obsFrameworks, "QtCore.framework", "Versions", "A", "Resources", "Info.plist")], { encoding: "utf8" }).trim();
+const headersVersion = (lib) => {
+  try {
+    return /QTCORE_VERSION_STR\s+"([\d.]+)"/.exec(readFileSync(join(lib, "QtCore.framework", "Headers", "qtcoreversion.h"), "utf8"))?.[1] ?? "";
+  } catch {
+    return "";
+  }
+};
+const candidates = [process.env.QT_LIB, join(homedir(), "Qt", obsQt, "macos", "lib")];
+try {
+  candidates.push(join(execFileSync("brew", ["--prefix", "qt"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim(), "lib"));
+} catch {
+  // pas de Homebrew
+}
+const found = candidates.filter((c) => c && headersVersion(c));
+let qtLib = found.find((c) => headersVersion(c) === obsQt);
+if (!qtLib && process.env.ALLOW_QT_MISMATCH && found[0]) {
+  qtLib = found[0];
+  console.warn(`Attention : en-têtes Qt ${headersVersion(qtLib)} pour un OBS en Qt ${obsQt} (ALLOW_QT_MISMATCH).`);
+}
+if (!qtLib) {
+  console.error(
+    `OBS embarque Qt ${obsQt} : il faut les en-têtes de CETTE version.\n` +
+      `  pip install aqtinstall && aqt install-qt mac desktop ${obsQt} clang_64 -O ~/Qt\n` +
+      `(ou donne QT_LIB=<dossier lib de Qt ${obsQt}>). En-têtes trouvés : ${found.map((c) => `${headersVersion(c)} (${c})`).join(", ") || "aucun"}.`,
+  );
+  process.exit(1);
+}
+console.log(`Qt ${obsQt} : en-têtes ${qtLib}`);
 const qtInc = ["QtCore", "QtGui", "QtWidgets", "QtNetwork"].map((m) => `-I${join(qtLib, `${m}.framework`, "Headers")}`);
 const archs = ["-arch", "arm64", "-arch", "x86_64"];
 const common = ["-mmacosx-version-min=13.0", "-O2", "-Wall", "-fPIC", "-Wno-deprecated-declarations", `-I${join(headers, "libobs")}`, `-I${join(headers, "simde")}`, `-I${join(headers, "frontend", "api")}`];

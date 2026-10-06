@@ -107,7 +107,7 @@ test("agent, navigateur : ordres transmis, réponses routées, événements diff
   const ready = await rem.next();
   assert.equal(ready.type, "ready");
   assert.equal(ready.agent.online, true);
-  assert.equal(ready.agent.name, "Mac de Mathis");
+  assert.equal(ready.agent.name, "Mac"); // le nom du registre (base) fait foi, pas celui du hello
   assert.equal(ready.agent.version, "0.1.0");
   assert.equal((await rem.next()).type, "instances");
   assert.deepEqual(await agent.next(), { type: "viewers", n: 1 });

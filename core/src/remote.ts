@@ -75,6 +75,8 @@ export function createRemote(o: {
   /** Compte autorisé à utiliser SYXTEE (accès sur invitation). */
   canUse: (userId: string) => boolean;
   verifyUser: (authorization: string | undefined) => Promise<string | null>;
+  /** Nom, email, avatar du compte (affichés dans la fenêtre SYXTEE Studio d'OBS). */
+  account?: (userId: string) => Promise<{ email: string; name: string; avatar_url: string | null; plan: string | null } | null>;
   log: (m: string) => void;
   now?: () => number;
 }) {
@@ -286,7 +288,7 @@ export function createRemote(o: {
         const prev = userAgents.get(dev.id);
         const agent: Agent = {
           ws, id, userId: dev.user_id, deviceId: dev.id,
-          name: text(m.name, 40, dev.name) || dev.name, platform: text(m.platform, 20, dev.platform), version: text(m.version, 20),
+          name: dev.name, platform: text(m.platform, 20, dev.platform), version: text(m.version, 20),
           os: text(m.os, 40), host: text(m.host, 60), since: now(), expires: null,
         };
         userAgents.set(dev.id, agent);
@@ -556,6 +558,14 @@ export function createRemote(o: {
       const dev = await findDevice(t);
       return dev && o.canUse(dev.user_id) ? dev.user_id : null;
     },
+    /** Compte et appareil du jeton d'accès (en-tête Authorization), ou null. */
+    async deviceAuth(authorization: string | undefined): Promise<{ userId: string; deviceId: string } | null> {
+      const t = authorization?.startsWith("Bearer ") ? authorization.slice(7) : "";
+      if (!isDeviceToken(t)) return null;
+      const dev = await findDevice(t);
+      return dev && o.canUse(dev.user_id) ? { userId: dev.user_id, deviceId: dev.id } : null;
+    },
+    account: (userId: string) => o.account?.(userId) ?? Promise.resolve(null),
     status: (userId: string) => ({ agent: agentInfo(pick(userId)), remotes: remotes.get(userId)?.size ?? 0 }),
 
     close() {

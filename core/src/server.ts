@@ -126,7 +126,7 @@ export function buildServer(d: Deps) {
       done(e as Error, undefined);
     }
   });
-  app.register(cors, { origin: origins, methods: ["GET", "POST", "PUT", "DELETE"], allowedHeaders: ["Authorization", "Content-Type"] });
+  app.register(cors, { origin: origins, methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], allowedHeaders: ["Authorization", "Content-Type"] });
 
   const service = async (req: FastifyRequest, reply: FastifyReply) => {
     if (!isServiceToken(req.headers.authorization, d.config.CORE_API_TOKEN)) return reply.code(401).send({ error: "unauthorized" });
@@ -863,6 +863,29 @@ export function buildServer(d: Deps) {
       const b = z.object({ name: z.string().trim().min(1).max(40) }).safeParse(req.body ?? {});
       if (!did.success || !b.success) return reply.code(400).send({ error: "invalid" });
       return (await remote.rename(id, did.data.did, b.data.name)) ? { ok: true } : reply.code(404).send({ error: "no_device" });
+    });
+    // ── API de l'appareil (jeton d'accès de l'agent) : renommer ce poste, compte connecté, flux du compte ──
+    app.patch("/v1/link/device", async (req, reply) => {
+      const dev = await remote.deviceAuth(req.headers.authorization);
+      if (!dev) return reply.code(401).send({ error: "unauthorized" });
+      const b = z.object({ name: z.string().trim().min(1).max(40) }).safeParse(req.body ?? {});
+      if (!b.success) return reply.code(400).send({ error: "invalid" });
+      return (await remote.rename(dev.userId, dev.deviceId, b.data.name)) ? { ok: true, name: b.data.name } : reply.code(404).send({ error: "no_device" });
+    });
+    app.get("/v1/link/me", async (req, reply) => {
+      const dev = await remote.deviceAuth(req.headers.authorization);
+      if (!dev) return reply.code(401).send({ error: "unauthorized" });
+      const acc = await remote.account(dev.userId);
+      if (!acc) return reply.code(404).send({ error: "no_account" });
+      const device = (await remote.devices(dev.userId)).find((x) => x.id === dev.deviceId);
+      return { ...acc, device_name: device?.name ?? "" };
+    });
+    // Flux (relais) du compte. `obs_srt_url` (lecture dans OBS) ne sert qu'à l'agent : il ne la montre jamais dans son interface.
+    app.get("/v1/link/streams", async (req, reply) => {
+      const dev = await remote.deviceAuth(req.headers.authorization);
+      if (!dev) return reply.code(401).send({ error: "unauthorized" });
+      const rows = (await d.relays.list(dev.userId)).filter((r) => !r.archived).map(view);
+      return { streams: rows.map((r) => ({ id: r.id, name: r.name, protocol: r.protocol, live: r.live, obs_srt_url: r.obs_srt_url })) };
     });
     app.get("/v1/me/link/audit", async (req, reply) => {
       const id = await userId(req, reply);

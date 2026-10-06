@@ -147,7 +147,25 @@ const cam =
 // SYXTEE Link : télécommande d'OBS. Comptes autorisés = ceux qui ont un relais autorisé (accès sur invitation), mis à jour avec les clés.
 const verifyUser = createUserVerifier(config.SUPABASE_URL);
 const linkUsers = new Set<string>();
-const remote = config.LINK_ENABLED ? createRemote({ db: supabase as never, canUse: (id) => linkUsers.has(id), verifyUser, log }) : null;
+const remote = config.LINK_ENABLED
+  ? createRemote({
+      db: supabase as never,
+      canUse: (id) => linkUsers.has(id),
+      verifyUser,
+      log,
+      account: async (id) => {
+        const [{ data: u }, { data: p }] = await Promise.all([
+          supabase.auth.admin.getUserById(id),
+          supabase.from("profiles").select("first_name, last_name, username, twitch_display_name, avatar_url, plan").eq("id", id).maybeSingle(),
+        ]);
+        if (!u?.user) return null;
+        const email = u.user.email ?? "";
+        const full = [p?.first_name, p?.last_name].filter(Boolean).join(" ");
+        const name = full || p?.twitch_display_name || p?.username || email.split("@")[0];
+        return { email, name, avatar_url: p?.avatar_url ?? null, plan: p?.plan ?? null };
+      },
+    })
+  : null;
 const backups = remote ? createBackups({ db: supabase as never, dir: join(config.DATA_DIR, "link-backups"), log }) : null;
 
 // SYXTEE STUDIO : le navigateur publie en WebRTC (même WHIP que la Cam), le Core diffuse en RTMP vers les plateformes.

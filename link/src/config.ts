@@ -11,6 +11,13 @@ export type LinkConfig = {
   token: string;
   refresh: string;
   expires: number;
+  /** Flux (relais) de destination : celui que la source « Flux SYXTEE » lit. */
+  destination: string;
+  /** Scène de direct d'OBS (celle qui doit contenir la source « Flux SYXTEE »). */
+  liveScene: string;
+  /** Sauvegarde automatique par collection de scènes, et date de la dernière sauvegarde faite depuis ce poste. */
+  autoBackup: Record<string, boolean>;
+  lastBackup: Record<string, string>;
   /** Fait une fois après la connexion : la proposition de sauvegarde a été vue (acceptée ou repoussée). */
   onboarded: boolean;
   obs: { host: string; port: number; password: string };
@@ -20,7 +27,14 @@ export type LinkConfig = {
 export const DEFAULT_CORE = "https://15-235-25-77.sslip.io";
 export const DEFAULT_SITE = "https://syxtee-networks.vercel.app";
 
-export const defaults = (): LinkConfig => ({ core: DEFAULT_CORE, site: DEFAULT_SITE, token: "", refresh: "", expires: 0, onboarded: false, obs: { host: "127.0.0.1", port: 4455, password: "" }, backup: DEFAULT_BACKUP });
+export const defaults = (): LinkConfig => ({ core: DEFAULT_CORE, site: DEFAULT_SITE, token: "", refresh: "", expires: 0, destination: "", liveScene: "", autoBackup: {}, lastBackup: {}, onboarded: false, obs: { host: "127.0.0.1", port: 4455, password: "" }, backup: DEFAULT_BACKUP });
+
+/** Dictionnaire nettoyé : clés courtes, valeurs acceptées par `ok` seulement. */
+function recordOf<T>(v: unknown, ok: (x: unknown) => boolean): Record<string, T> {
+  const out: Record<string, T> = {};
+  if (v && typeof v === "object") for (const [k, x] of Object.entries(v as Record<string, unknown>).slice(0, 200)) if (k.length <= 200 && ok(x)) out[k] = x as T;
+  return out;
+}
 
 /** Dossier de configuration : ~/.syxtee-link (SYXTEE_LINK_HOME pour les tests). */
 export const dir = () => process.env.SYXTEE_LINK_HOME || join(homedir(), ".syxtee-link");
@@ -37,6 +51,10 @@ export function load(): LinkConfig {
       token: typeof j.token === "string" ? j.token : "",
       refresh: typeof j.refresh === "string" ? j.refresh : "",
       expires: Number(j.expires) || 0,
+      destination: typeof j.destination === "string" ? j.destination.slice(0, 64) : "",
+      liveScene: typeof j.liveScene === "string" ? j.liveScene.slice(0, 200) : "",
+      autoBackup: recordOf(j.autoBackup, (v) => v === true),
+      lastBackup: recordOf(j.lastBackup, (v) => typeof v === "string" && !Number.isNaN(Date.parse(v))),
       onboarded: j.onboarded === true,
       obs: { host: j.obs?.host || d.obs.host, port: Number(j.obs?.port) || d.obs.port, password: j.obs?.password ?? "" },
       backup: cleanBackup(j.backup),

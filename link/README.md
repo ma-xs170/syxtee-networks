@@ -12,7 +12,7 @@ téléphone / navigateur (Studio) ──WS──► Core ◄──WS (sortant)�
 
 ## Fonctionnement
 
-Le plugin lance l'agent livré dans le même paquet quand OBS s'ouvre et le ferme avec lui (`plugin/syxtee-link.c`). Une couche C++/Qt (`plugin/qt/`, sans moc) ajoute le menu **SYXTEE** dans la barre d'OBS, à côté d'Aide, et la fenêtre **SYXTEE Studio** (onglets Direct, Collections, Réglages ; écran « Connecte ton compte » si l'OBS n'est pas relié). La fenêtre parle à l'agent local en HTTP sur `127.0.0.1:47831`, avec un jeton que le plugin génère à chaque lancement et passe à l'agent (`SYXTEE_LINK_IPC`). Le Qt utilisé à l'exécution est celui d'OBS.
+Le plugin lance l'agent livré dans le même paquet quand OBS s'ouvre et le ferme avec lui (`plugin/syxtee-link.c`). Une couche C++/Qt (`plugin/qt/`, sans moc) ajoute le menu **SYXTEE** dans la barre d'OBS, à côté d'Aide, et la fenêtre **SYXTEE Studio** (onglets Direct, Collections, Réglages ; écran « Connecte ton compte » si l'OBS n'est pas relié). La fenêtre parle à l'agent local en HTTP sur `127.0.0.1:47831`, avec un jeton que le plugin génère à chaque lancement et passe à l'agent (`SYXTEE_LINK_IPC`). Le Qt utilisé à l'exécution est celui d'OBS ; au chargement, le plugin vérifie qu'il est de la même version majeure et pas plus ancien que celui de la compilation, sinon l'interface Qt se désactive (message dans le log d'OBS) et seule la page de réglages du navigateur reste disponible, sans plantage.
 
 L'agent (`src/`, Node, exécutable autonome) :
 
@@ -35,7 +35,7 @@ npm test             # agent, sauvegardes (archive et restauration), page locale
 npm run plugin       # macOS : syxtee-link.plugin et SYXTEE-Link-<version>.pkg dans ~/syxtee-link-plugin
 ```
 
-Prérequis : OBS installé et les en-têtes Qt (`brew install qt`). `npm run plugin` télécharge les en-têtes de l'API d'OBS (`OBS_TAG`), compile le module (universel arm64 et x86_64, symboles d'OBS résolus au chargement), construit l'agent (Node « single executable » de la machine de build) et signe ad hoc. Sur un Mac Intel, construire sur un Mac Intel pour que l'agent soit en x86_64.
+Prérequis : OBS installé et les en-têtes de **la même version de Qt que celle d'OBS** (le script lit la version d'OBS et refuse une autre) : `pip install aqtinstall && aqt install-qt mac desktop <version> clang_64 -O ~/Qt`. `npm run plugin` télécharge les en-têtes de l'API d'OBS (`OBS_TAG`), compile le module (universel arm64 et x86_64, symboles d'OBS résolus au chargement), construit l'agent (Node « single executable » de la machine de build) et signe ad hoc. Sur un Mac Intel, construire sur un Mac Intel pour que l'agent soit en x86_64.
 
 **Windows** : le code du plugin gère déjà Windows (`CreateProcess`), mais le build n'est pas fait : `cl` avec les bibliothèques d'OBS (obs.lib, obs-frontend-api.lib) ou le gabarit `obs-plugintemplate` sur une machine Windows, et un agent construit avec `node --build-sea` sur Windows.
 

@@ -19,7 +19,7 @@
 #define PANEL_URL "http://127.0.0.1:47831/"
 
 /* Interface Qt (qt/studio_menu.cpp) : menu « SYXTEE » dans la barre d'OBS et fenêtre « SYXTEE Studio ». */
-void syxtee_ui_load(void);
+bool syxtee_ui_load(void);
 void syxtee_ui_unload(void);
 
 /* Jeton local : donné à l'agent (variable d'environnement) et à la fenêtre Qt, pour que seule la fenêtre parle à l'agent. */
@@ -115,6 +115,12 @@ static void stop_helper(void)
 	helper_running = false;
 }
 
+static void open_panel(void *data)
+{
+	(void)data;
+	ShellExecuteA(NULL, "open", PANEL_URL, NULL, NULL, SW_SHOWNORMAL);
+}
+
 #else
 #include <errno.h>
 #include <fcntl.h>
@@ -189,6 +195,14 @@ static void stop_helper(void)
 	helper_pid = 0;
 }
 
+
+static void open_panel(void *data)
+{
+	(void)data;
+	pid_t p;
+	char *argv[] = {(char *)"/usr/bin/open", (char *)PANEL_URL, NULL};
+	posix_spawn(&p, "/usr/bin/open", NULL, NULL, argv, environ);
+}
 #endif
 
 bool obs_module_load(void)
@@ -201,7 +215,9 @@ bool obs_module_load(void)
 	setenv("SYXTEE_LINK_IPC", ipc_token, 1);
 #endif
 	start_helper();
-	syxtee_ui_load();
+	/* Qt d'OBS incompatible avec celui du plugin : pas d'interface Qt (jamais de plantage), mais l'agent tourne et la page web reste accessible. */
+	if (!syxtee_ui_load())
+		obs_frontend_add_tools_menu_item("SYXTEE Link (page web)", open_panel, NULL);
 	return true;
 }
 

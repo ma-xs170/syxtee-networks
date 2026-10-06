@@ -6,6 +6,8 @@ import { downloadArchive, uploadArchive } from "./cloud.ts";
 import { save, type LinkConfig } from "./config.ts";
 import { ObsClient } from "./obs.ts";
 import { listCollections, readObsWebsocket } from "./obsconfig.ts";
+import { statSync } from "node:fs";
+import { scenesDir } from "./obsconfig.ts";
 import { createArchive, plan, restoreArchive } from "./scenesync.ts";
 import { osLabel } from "./system.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
@@ -43,6 +45,8 @@ export class Agent {
   private watcher: BackupWatcher;
   private timers: ReturnType<typeof setTimeout>[] = [];
   private tickTimer: ReturnType<typeof setInterval> | null = null;
+  private autoTimer: ReturnType<typeof setInterval> | null = null;
+  private autoFailedAt = new Map<string, number>();
   private lastMeters = 0;
   private obsBusy = false;
   private previewTimer: ReturnType<typeof setTimeout> | null = null;
@@ -71,6 +75,7 @@ export class Agent {
     void this.connectObs();
     this.connectCore();
     this.tickTimer = setInterval(() => void this.watcher.tick(), 1000);
+    this.autoTimer = setInterval(() => void this.autoBackupTick(), 30_000);
     void this.previewLoop();
   }
 
@@ -78,6 +83,7 @@ export class Agent {
     this.stopped = true;
     this.timers.forEach(clearTimeout);
     if (this.tickTimer) clearInterval(this.tickTimer);
+    if (this.autoTimer) clearInterval(this.autoTimer);
     if (this.previewTimer) clearTimeout(this.previewTimer);
     this.core?.close();
     this.obs.close();
@@ -115,6 +121,8 @@ export class Agent {
       };
       const a = await createArchive(collection, file, { obs: this.status.obsVersion, host: hostName(), onProgress: (d, t) => tick(t ? (d / t) * 0.5 : 0, "Compression des scènes et médias…") });
       await uploadArchive(this.cfg.core, await freshToken(this.cfg), file, a.size, { name: collection, collection, media: a.media, obs: this.status.obsVersion, host: hostName() }, (s, t) => tick(0.5 + (s / t) * 0.5, "Envoi vers ton espace…"));
+      this.cfg.lastBackup[collection] = new Date().toISOString();
+      save(this.cfg);
       this.setJob({ kind: "backup", state: "done", progress: 1, message: `« ${collection} » sauvegardée (${a.media} média${a.media > 1 ? "s" : ""}).` });
       this.log(`sauvegarde « ${collection} » terminée`);
       return true;
@@ -124,6 +132,29 @@ export class Agent {
       return false;
     } finally {
       await rm(file, { force: true });
+    }
+  }
+
+  /**
+   * Sauvegarde automatique : toutes les 30 s, chaque collection cochée dont le fichier a changé depuis sa dernière sauvegarde
+   * (et n'a plus bougé depuis une minute : OBS a fini d'écrire) est envoyée. Un échec n'est pas retenté avant 10 minutes.
+   */
+  async autoBackupTick(): Promise<void> {
+    if (this.stopped || this.status.core !== "on" || this.status.job?.state === "running") return;
+    for (const [name, on] of Object.entries(this.cfg.autoBackup)) {
+      if (!on) continue;
+      let mtime = 0;
+      try {
+        mtime = statSync(join(scenesDir(), `${name}.json`)).mtimeMs;
+      } catch {
+        continue; // collection supprimée
+      }
+      const last = Date.parse(this.cfg.lastBackup[name] ?? "") || 0;
+      if (mtime <= last || Date.now() - mtime < 60_000) continue;
+      if (Date.now() - (this.autoFailedAt.get(name) ?? 0) < 600_000) continue;
+      this.log(`sauvegarde automatique de « ${name} »`);
+      if (!(await this.runBackup(name))) this.autoFailedAt.set(name, Date.now());
+      return; // une collection par passage
     }
   }
 

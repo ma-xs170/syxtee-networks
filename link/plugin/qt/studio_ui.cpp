@@ -12,6 +12,9 @@
 #include <QJsonObject>
 #include <QLabel>
 #include <QLayoutItem>
+#include <QLineEdit>
+#include <QPainterPath>
+#include <QPixmap>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -53,6 +56,8 @@ QPushButton#tab:checked { color: #f2f3f5; border-bottom: 2px solid #d92d2d; }
 QComboBox { background: #15171c; color: #f2f3f5; border: 1px solid rgba(255,255,255,0.16); border-radius: 8px; padding: 5px 10px; min-width: 150px; font-size: 12px; }
 QComboBox:disabled { color: #596070; border-color: rgba(255,255,255,0.08); }
 QComboBox QAbstractItemView { background: #1b1e24; color: #f2f3f5; selection-background-color: #23262d; border: 1px solid rgba(255,255,255,0.16); }
+QLineEdit { background: #15171c; color: #f2f3f5; border: 1px solid rgba(255,255,255,0.16); border-radius: 8px; padding: 6px 10px; min-width: 190px; font-size: 12px; }
+QLabel#ok { color: #9aa0ab; font-size: 12px; }
 QProgressBar { background: #23262d; border: none; border-radius: 3px; max-height: 6px; min-height: 6px; }
 QProgressBar::chunk { background: #f2f3f5; border-radius: 3px; }
 QScrollArea { background: transparent; border: none; }
@@ -62,11 +67,13 @@ QScrollBar::handle:vertical { background: rgba(255,255,255,0.16); border-radius:
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
 )";
 
+// Tailles en unités binaires affichées « Go / Mo / Ko » (le quota de 5 Go est 5 × 1024³ octets).
 QString fmtSize(double n)
 {
-	if (n >= 1e9) return QString::number(n / 1e9, 'f', 1) + " Go";
-	if (n >= 1e6) return QString::number(n / 1e6, 'f', 0) + " Mo";
-	return QString::number(qMax(1.0, n / 1e3), 'f', 0) + " Ko";
+	const double go = 1024.0 * 1024 * 1024, mo = 1024.0 * 1024;
+	if (n >= go) return QString::number(n / go, 'f', n >= 10 * go || qFuzzyCompare(n / go, qRound(n / go) + 0.0) ? 0 : 1) + " Go";
+	if (n >= mo) return QString::number(n / mo, 'f', 0) + " Mo";
+	return QString::number(qMax(1.0, n / 1024.0), 'f', 0) + " Ko";
 }
 
 QLabel *label(const QString &text, const char *name = nullptr)
@@ -181,7 +188,7 @@ private:
 	QNetworkAccessManager nam_;
 	QTimer *timer_ = nullptr;
 	qint64 lastData_ = 0;
-	bool paired_ = false, built_ = false;
+	bool paired_ = false, built_ = false, obsOn_ = false;
 	QString jobDone_;
 	QJsonObject state_, cloud_, optionsCache_;
 	QJsonArray cols_;
@@ -199,9 +206,14 @@ private:
 	QLabel *quota_ = nullptr, *job_ = nullptr;
 	QProgressBar *bar_ = nullptr;
 	// réglages
-	QComboBox *secScene_ = nullptr, *secSource_ = nullptr;
+	QComboBox *secScene_ = nullptr, *secSource_ = nullptr, *liveScene_ = nullptr, *dest_ = nullptr;
+	QWidget *destEmpty_ = nullptr, *liveAlert_ = nullptr;
+	QLabel *liveAlertText_ = nullptr, *fixOut_ = nullptr, *hostOut_ = nullptr;
+	QPushButton *fixBtn_ = nullptr;
 	Switch *auto_ = nullptr;
-	QLabel *host_ = nullptr, *pingOut_ = nullptr, *account_ = nullptr;
+	QLineEdit *hostEdit_ = nullptr;
+	QLabel *pingOut_ = nullptr, *accName_ = nullptr, *accMail_ = nullptr, *avatar_ = nullptr;
+	QString avatarUrl_, hostSaved_;
 	bool loadingSettings_ = false;
 
 	void request(const QString &method, const QString &path, const QJsonObject &body, std::function<void(const QJsonObject &)> cb)
@@ -422,48 +434,118 @@ private:
 		QVBoxLayout *v;
 		auto *w = page(&v);
 
+		// DIFFUSION : flux (relais) du compte. Aperçu programme arrive avec l'étape suivante.
 		v->addWidget(label("DIFFUSION", "section"));
 		auto *d = card();
-		auto *dest = new QComboBox;
-		dest->addItem("Bientôt");
-		dest->setEnabled(false);
-		auto *prev = new Switch;
-		prev->setEnabled(false);
-		addRow(d, row("Flux de destination", "Bientôt : choisir le relais qui reçoit ton direct", dest), true);
-		addRow(d, row("Aperçu programme", "Bientôt : montre ton direct sur le site. Désactive-le si ton ordinateur est chargé.", prev));
+		dest_ = new QComboBox;
+		auto *create = new QPushButton("Créer un relais");
+		QObject::connect(create, &QPushButton::clicked, this, [] { QDesktopServices::openUrl(QUrl("https://syxtee-networks.vercel.app/dashboard/relais")); });
+		auto *destBox = new QWidget;
+		auto *dh = new QHBoxLayout(destBox);
+		dh->setContentsMargins(0, 0, 0, 0);
+		dh->addWidget(dest_);
+		destEmpty_ = create;
+		dh->addWidget(create);
+		auto *soon = label("Disponible bientôt", "muted");
+		soon->setWordWrap(false);
+		addRow(d, row("Flux de destination", "Le relais que lit la source « Flux SYXTEE » dans ta scène de direct", destBox), true);
+		addRow(d, row("Aperçu programme", "Montre ton direct sur le site. Tu pourras le désactiver si ton ordinateur est chargé.", soon));
 		v->addWidget(d);
+		QObject::connect(dest_, &QComboBox::activated, this, [this](int i) {
+			QJsonObject b;
+			b["id"] = dest_->itemData(i).toString();
+			post("/api/destination", b, [this](const QJsonObject &) { refreshLive(); });
+		});
 
+		// SCÈNES
 		v->addSpacing(6);
 		v->addWidget(label("SCÈNES", "section"));
 		auto *s = card();
 		secScene_ = new QComboBox;
 		secSource_ = new QComboBox;
-		auto *live = new QComboBox;
-		live->addItem("Bientôt");
-		live->setEnabled(false);
+		liveScene_ = new QComboBox;
 		auto_ = new Switch;
-		addRow(s, row("Scène de direct", "Bientôt : la scène qui contient ton flux SYXTEE", live), true);
+		addRow(s, row("Scène de direct", "La scène qui contient ton flux SYXTEE", liveScene_), true);
+		liveAlert_ = new QWidget;
+		auto *la = new QVBoxLayout(liveAlert_);
+		la->setContentsMargins(0, 4, 0, 10);
+		auto *box = new QFrame;
+		box->setObjectName("alertbox");
+		box->setStyleSheet("QFrame#alertbox { background: rgba(217,45,45,0.14); border: 1px solid rgba(217,45,45,0.45); border-radius: 10px; } QLabel { color: #ff8a80; font-size: 12px; }");
+		auto *bh = new QHBoxLayout(box);
+		bh->setContentsMargins(12, 10, 12, 10);
+		liveAlertText_ = label("");
+		fixBtn_ = new QPushButton("Corriger");
+		fixBtn_->setObjectName("primary");
+		bh->addWidget(liveAlertText_, 1);
+		bh->addWidget(fixBtn_, 0, Qt::AlignVCenter);
+		la->addWidget(box);
+		liveAlert_->hide();
+		static_cast<QVBoxLayout *>(s->layout())->addWidget(liveAlert_);
+		fixOut_ = label("", "ok");
+		fixOut_->hide();
+		static_cast<QVBoxLayout *>(s->layout())->addWidget(fixOut_);
 		addRow(s, row("Source surveillée", "L'entrée OBS qui lit ton relais", secSource_));
 		addRow(s, row("Scène de secours", "Affichée quand l'image se fige ou coupe", secScene_));
 		addRow(s, row("Bascule automatique", "Passe sur la scène de secours, puis revient quand l'image repart", auto_));
 		v->addWidget(s);
+		QObject::connect(liveScene_, &QComboBox::activated, this, [this] {
+			QJsonObject b;
+			b["scene"] = liveScene_->currentData().toString();
+			post("/api/live-scene", b, [this](const QJsonObject &) { refreshLive(); });
+		});
+		QObject::connect(fixBtn_, &QPushButton::clicked, this, [this] {
+			fixBtn_->setEnabled(false);
+			post("/api/fix", {}, [this](const QJsonObject &o) {
+				fixBtn_->setEnabled(true);
+				fixOut_->setText(o.value("message").toString(o.value("_error").toBool() ? "Agent injoignable." : ""));
+				fixOut_->show();
+				lastData_ = 0;
+				refreshData();
+			});
+		});
 		auto saveSwitch = [this] {
 			if (loadingSettings_) return;
 			QJsonObject b;
 			b["enabled"] = auto_->isChecked();
-			b["source"] = secSource_->currentText();
-			b["scene"] = secScene_->currentText();
+			b["source"] = secSource_->currentData().toString();
+			b["scene"] = secScene_->currentData().toString();
 			post("/api/switch", b);
 		};
 		QObject::connect(auto_, &QAbstractButton::toggled, this, saveSwitch);
 		QObject::connect(secScene_, &QComboBox::activated, this, saveSwitch);
 		QObject::connect(secSource_, &QComboBox::activated, this, saveSwitch);
 
+		// CETTE MACHINE
 		v->addSpacing(6);
 		v->addWidget(label("CETTE MACHINE", "section"));
 		auto *m = card();
-		host_ = label("—", "muted");
+		hostEdit_ = new QLineEdit;
+		hostEdit_->setMaxLength(40);
+		hostOut_ = label("", "ok");
+		hostOut_->setWordWrap(false);
+		auto *save = new QPushButton("Enregistrer");
+		auto doRename = [this, save] {
+			const QString n = hostEdit_->text().trimmed();
+			if (n.isEmpty()) return;
+			save->setEnabled(false);
+			QJsonObject b;
+			b["name"] = n;
+			post("/api/rename", b, [this, save](const QJsonObject &o) {
+				save->setEnabled(true);
+				hostOut_->setText(o.value("ok").toBool() ? "Enregistré" : o.value("error").toString("Échec"));
+				hostEdit_->setText(o.value("ok").toBool() ? o.value("name").toString() : hostEdit_->text());
+			});
+		};
+		QObject::connect(save, &QPushButton::clicked, this, doRename);
+		QObject::connect(hostEdit_, &QLineEdit::returnPressed, this, doRename);
+		auto *hw = new QWidget;
+		auto *hh = new QHBoxLayout(hw);
+		hh->setContentsMargins(0, 0, 0, 0);
+		hh->addWidget(hostEdit_);
+		hh->addWidget(save);
 		pingOut_ = label("", "muted");
+		pingOut_->setWordWrap(false);
 		auto *ping = new QPushButton("Tester");
 		QObject::connect(ping, &QPushButton::clicked, this, [this, ping] {
 			ping->setEnabled(false);
@@ -478,17 +560,33 @@ private:
 		ph->setContentsMargins(0, 0, 0, 0);
 		ph->addWidget(pingOut_);
 		ph->addWidget(ping);
-		addRow(m, row("Nom du poste", "", host_), true);
+		addRow(m, row("Nom du poste", "Affiché sur le site, dans Mes OBS et Contrôle à distance", hw), true);
+		m->layout()->addWidget(hostOut_);
 		addRow(m, row("Test de connexion", "Latence vers les serveurs SYXTEE", pw));
 		v->addWidget(m);
 
+		// COMPTE
 		v->addSpacing(6);
 		v->addWidget(label("COMPTE", "section"));
 		auto *a = card();
-		account_ = label("Compte SYXTEE", "muted");
+		avatar_ = new QLabel;
+		avatar_->setFixedSize(44, 44);
+		accName_ = label("Compte SYXTEE");
+		accMail_ = label("", "muted");
 		auto *out = new QPushButton("Déconnecter");
 		QObject::connect(out, &QPushButton::clicked, this, [this] { post("/api/unpair", {}, [this](const QJsonObject &) { poll(); }); });
-		addRow(a, row("Compte connecté", "Cet OBS est relié à ton compte SYXTEE", out), true);
+		auto *aw = new QWidget;
+		auto *ah = new QHBoxLayout(aw);
+		ah->setContentsMargins(0, 10, 0, 10);
+		ah->setSpacing(12);
+		ah->addWidget(avatar_);
+		auto *at = new QVBoxLayout;
+		at->setSpacing(2);
+		at->addWidget(accName_);
+		at->addWidget(accMail_);
+		ah->addLayout(at, 1);
+		ah->addWidget(out, 0, Qt::AlignVCenter);
+		static_cast<QVBoxLayout *>(a->layout())->addWidget(aw);
 		v->addWidget(a);
 		v->addStretch(1);
 		return w;
@@ -515,6 +613,99 @@ private:
 			renderCollections();
 		});
 		get("/api/options", [this](const QJsonObject &o) { fillSettings(o); });
+		get("/api/streams", [this](const QJsonObject &o) { fillStreams(o); });
+		get("/api/account", [this](const QJsonObject &o) { fillAccount(o); });
+		refreshLive();
+	}
+
+	void refreshLive()
+	{
+		if (!paired_) return;
+		get("/api/live", [this](const QJsonObject &o) {
+			const bool chosen = !o.value("scene").toString().isEmpty();
+			const bool has = o.value("hasSource").toBool();
+			const bool obsOn = o.value("obs").toBool(true);
+			liveAlert_->setVisible(chosen && obsOn && !has);
+			if (chosen && obsOn && !has) {
+				const bool dest = o.value("destination").toBool();
+				liveAlertText_->setText(dest ? "Aucune source « Flux SYXTEE » dans la scène de direct. Sans elle, SYXTEE ne peut pas détecter une coupure."
+							     : "Aucune source « Flux SYXTEE » dans la scène de direct. Choisis d'abord un flux de destination, puis clique sur Corriger.");
+			}
+			if (has) fixOut_->hide();
+		});
+	}
+
+	void fillStreams(const QJsonObject &o)
+	{
+		loadingSettings_ = true;
+		dest_->clear();
+		const QJsonArray arr = o.value("streams").toArray();
+		const QString sel = o.value("selected").toString();
+		if (!sel.isEmpty() || !arr.isEmpty()) dest_->addItem("Choisir un flux…", "");
+		for (const auto &sv : arr) {
+			const QJsonObject st = sv.toObject();
+			dest_->addItem(st.value("name").toString() + " · " + st.value("protocol").toString().toUpper() + (st.value("live").toBool() ? " · en direct" : ""), st.value("id").toString());
+		}
+		const int idx = dest_->findData(sel);
+		dest_->setCurrentIndex(idx >= 0 ? idx : 0);
+		const bool empty = arr.isEmpty();
+		dest_->setVisible(!empty);
+		destEmpty_->setVisible(empty);
+		loadingSettings_ = false;
+	}
+
+	void fillAccount(const QJsonObject &o)
+	{
+		if (o.contains("error")) {
+			accName_->setText("Compte SYXTEE");
+			accMail_->setText(o.value("error").toString());
+			return;
+		}
+		const QString name = o.value("name").toString();
+		if (!hostEdit_->hasFocus() && !o.value("device_name").toString().isEmpty() && o.value("device_name").toString() != hostSaved_) {
+			hostSaved_ = o.value("device_name").toString();
+			hostEdit_->setText(hostSaved_);
+		}
+		accName_->setText(name);
+		accMail_->setText(o.value("email").toString());
+		const QString url = o.value("avatar_url").toString();
+		if (url == avatarUrl_ && avatar_->pixmap().cacheKey() != 0) return;
+		avatarUrl_ = url;
+		setAvatar(QPixmap(), name);
+		if (url.startsWith("https://")) {
+			QNetworkReply *r = nam_.get(QNetworkRequest(QUrl(url)));
+			QObject::connect(r, &QNetworkReply::finished, this, [this, r, name] {
+				QPixmap px;
+				if (r->error() == QNetworkReply::NoError) px.loadFromData(r->readAll());
+				r->deleteLater();
+				if (!px.isNull()) setAvatar(px, name);
+			});
+		}
+	}
+
+	// Avatar rond : image du compte, sinon l'initiale sur fond neutre.
+	void setAvatar(const QPixmap &src, const QString &name)
+	{
+		const int n = 44;
+		QPixmap out(n, n);
+		out.fill(Qt::transparent);
+		QPainter p(&out);
+		p.setRenderHint(QPainter::Antialiasing);
+		QPainterPath clip;
+		clip.addEllipse(0, 0, n, n);
+		p.setClipPath(clip);
+		if (!src.isNull()) {
+			p.drawPixmap(0, 0, src.scaled(n, n, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+		} else {
+			p.fillRect(0, 0, n, n, QColor("#23262d"));
+			p.setPen(QColor("#f2f3f5"));
+			QFont f = p.font();
+			f.setPixelSize(18);
+			f.setBold(true);
+			p.setFont(f);
+			p.drawText(QRect(0, 0, n, n), Qt::AlignCenter, name.left(1).toUpper());
+		}
+		avatar_->setPixmap(out);
 	}
 
 	void applyState(const QJsonObject &s)
@@ -539,7 +730,7 @@ private:
 		badge_->setProperty("ok", ok);
 		badge_->style()->unpolish(badge_);
 		badge_->style()->polish(badge_);
-		host_->setText(s.value("host").toString());
+		if (hostEdit_ && hostEdit_->text().isEmpty()) hostEdit_->setText(s.value("host").toString()); // remplacé par le nom du registre dès qu'il arrive
 
 		if (paired != paired_) {
 			paired_ = paired;
@@ -570,6 +761,10 @@ private:
 		}
 
 		vLink_->setText(coreOn ? "Connectée" : st.value("core").toString() == "connecting" ? "Connexion…" : "Hors ligne");
+		// OBS vient de devenir joignable : on recharge scènes, sources et diagnostic de la scène de direct.
+		const bool obsNow = st.value("obs").toString() == "on";
+		if (obsNow && !obsOn_) lastData_ = 0;
+		obsOn_ = obsNow;
 		vObs_->setText(st.value("obs").toString() == "on" ? "Connecté · OBS " + st.value("obsVersion").toString() : "Non joignable (active le serveur WebSocket d'OBS)");
 		vAccess_->setText(coreOn ? "Actif" : "—");
 
@@ -596,14 +791,15 @@ private:
 		for (const auto &cv : cols_) {
 			const QJsonObject c = cv.toObject();
 			const QString name = c.value("name").toString();
-			QString last;
+			// Dernière sauvegarde : la plus récente entre celle de ce poste (gardée dans sa config) et celles de l'espace SYXTEE.
+			QDateTime best = QDateTime::fromString(state_.value("lastBackup").toObject().value(name).toString(), Qt::ISODate);
 			for (const auto &bv : backups) {
 				const QJsonObject b = bv.toObject();
-				if (b.value("collection").toString() == name) {
-					last = QDateTime::fromString(b.value("created_at").toString(), Qt::ISODate).toLocalTime().toString("dd/MM HH:mm");
-					break;
-				}
+				if (b.value("collection").toString() != name) continue;
+				const QDateTime t = QDateTime::fromString(b.value("created_at").toString(), Qt::ISODate);
+				if (!best.isValid() || t > best) best = t;
 			}
+			const QString last = best.isValid() ? best.toLocalTime().toString("dd/MM HH:mm") : QString();
 			auto *btn = new QPushButton("Sauvegarder");
 			btn->setEnabled(!running);
 			QObject::connect(btn, &QPushButton::clicked, this, [this, name] {
@@ -611,9 +807,27 @@ private:
 				b["collection"] = name;
 				post("/api/backup", b, [this](const QJsonObject &) { poll(); });
 			});
+			auto *sw = new Switch;
+			sw->setChecked(state_.value("autoBackup").toObject().value(name).toBool());
+			sw->setToolTip("Sauvegarde automatique à chaque modification de la collection");
+			QObject::connect(sw, &QAbstractButton::toggled, this, [this, name](bool on) {
+				QJsonObject b;
+				b["collection"] = name;
+				b["enabled"] = on;
+				post("/api/auto", b);
+			});
+			auto *ctl = new QWidget;
+			auto *ch = new QHBoxLayout(ctl);
+			ch->setContentsMargins(0, 0, 0, 0);
+			ch->setSpacing(10);
+			auto *auto_ = label("Auto", "muted");
+			auto_->setWordWrap(false);
+			ch->addWidget(auto_);
+			ch->addWidget(sw);
+			ch->addWidget(btn);
 			const QString sub = (last.isEmpty() ? QString("Jamais sauvegardée") : "Sauvegardée le " + last) + " · " + QString::number(c.value("media").toInt()) + " médias · " + fmtSize(c.value("bytes").toDouble());
 			if (!first) localBox_->addWidget(sep());
-			localBox_->addWidget(row(name, sub, btn));
+			localBox_->addWidget(row(name, sub, ctl));
 			first = false;
 		}
 
@@ -653,10 +867,12 @@ private:
 		const QJsonObject b = state_.value("backup").toObject();
 		auto fill = [](QComboBox *c, const QJsonArray &items, const QString &cur) {
 			c->clear();
-			c->addItem("");
-			for (const auto &i : items) c->addItem(i.toString());
-			c->setCurrentText(cur);
+			c->addItem("Choisir…", "");
+			for (const auto &i : items) c->addItem(i.toString(), i.toString());
+			const int idx = c->findData(cur);
+			c->setCurrentIndex(idx >= 0 ? idx : 0);
 		};
+		fill(liveScene_, o.value("scenes").toArray(), state_.value("liveScene").toString());
 		fill(secScene_, o.value("scenes").toArray(), b.value("scene").toString());
 		fill(secSource_, o.value("inputs").toArray(), b.value("source").toString());
 		auto_->setChecked(b.value("enabled").toBool());

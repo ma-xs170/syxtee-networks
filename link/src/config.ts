@@ -18,6 +18,8 @@ export type LinkConfig = {
   /** Sauvegarde automatique par collection de scènes, et date de la dernière sauvegarde faite depuis ce poste. */
   autoBackup: Record<string, boolean>;
   lastBackup: Record<string, string>;
+  /** Aperçu programme poussé vers le site (désactivable si le PC est chargé). */
+  previewEnabled: boolean;
   /** Fait une fois après la connexion : la proposition de sauvegarde a été vue (acceptée ou repoussée). */
   onboarded: boolean;
   obs: { host: string; port: number; password: string };
@@ -27,7 +29,7 @@ export type LinkConfig = {
 export const DEFAULT_CORE = "https://15-235-25-77.sslip.io";
 export const DEFAULT_SITE = "https://syxtee-networks.vercel.app";
 
-export const defaults = (): LinkConfig => ({ core: DEFAULT_CORE, site: DEFAULT_SITE, token: "", refresh: "", expires: 0, destination: "", liveScene: "", autoBackup: {}, lastBackup: {}, onboarded: false, obs: { host: "127.0.0.1", port: 4455, password: "" }, backup: DEFAULT_BACKUP });
+export const defaults = (): LinkConfig => ({ core: DEFAULT_CORE, site: DEFAULT_SITE, token: "", refresh: "", expires: 0, destination: "", liveScene: "", autoBackup: {}, lastBackup: {}, previewEnabled: true, onboarded: false, obs: { host: "127.0.0.1", port: 4455, password: "" }, backup: DEFAULT_BACKUP });
 
 /** Dictionnaire nettoyé : clés courtes, valeurs acceptées par `ok` seulement. */
 function recordOf<T>(v: unknown, ok: (x: unknown) => boolean): Record<string, T> {
@@ -55,6 +57,7 @@ export function load(): LinkConfig {
       liveScene: typeof j.liveScene === "string" ? j.liveScene.slice(0, 200) : "",
       autoBackup: recordOf(j.autoBackup, (v) => v === true),
       lastBackup: recordOf(j.lastBackup, (v) => typeof v === "string" && !Number.isNaN(Date.parse(v))),
+      previewEnabled: j.previewEnabled !== false,
       onboarded: j.onboarded === true,
       obs: { host: j.obs?.host || d.obs.host, port: Number(j.obs?.port) || d.obs.port, password: j.obs?.password ?? "" },
       backup: cleanBackup(j.backup),

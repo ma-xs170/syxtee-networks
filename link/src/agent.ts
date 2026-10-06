@@ -209,7 +209,7 @@ export class Agent {
 
   /** Envoie une image. Renvoie false si rien n'a été envoyé (personne ne regarde, OBS fermé, réseau saturé). */
   private async preview(): Promise<boolean> {
-    if (this.status.viewers <= 0 || !this.obs.connected) return false;
+    if (this.status.viewers <= 0 || !this.obs.connected || !this.cfg.previewEnabled) return false;
     // Réseau lent : on saute des images plutôt que d'accumuler du retard.
     if ((this.core?.bufferedAmount ?? 0) > 256 * 1024) return false;
     // La scène du programme change rarement : on la relit une fois par seconde, et dès qu'OBS la change.
@@ -404,12 +404,22 @@ export class Agent {
     const reply = (ok: boolean, result?: unknown, error?: string) => this.send({ type: "res", id, ok, result, error });
     try {
       if (method === "link.getInfo") return reply(true, { version: VERSION, platform: process.platform, ...this.status });
-      if (method === "link.getBackup") return reply(true, { ...this.watcher.cfg, state: this.watcher.state });
+      // Rôles des scènes (scène de direct, scène de secours), bascule automatique et déclenchement.
+      if (method === "link.getBackup") return reply(true, { ...this.watcher.cfg, liveScene: this.cfg.liveScene, state: this.watcher.state });
       if (method === "link.setBackup") {
         this.cfg.backup = cleanBackup(params, this.cfg.backup);
+        if (typeof params.liveScene === "string") this.cfg.liveScene = params.liveScene.slice(0, 200);
         this.watcher.set(this.cfg.backup);
         save(this.cfg);
-        return reply(true, { ...this.cfg.backup, state: this.watcher.state });
+        return reply(true, { ...this.cfg.backup, liveScene: this.cfg.liveScene, state: this.watcher.state });
+      }
+      // Aperçu programme : « Couper l'aperçu » l'arrête sur le PC (aucun encodage, aucun envoi).
+      if (method === "link.getPreview") return reply(true, { enabled: this.cfg.previewEnabled });
+      if (method === "link.setPreview") {
+        this.cfg.previewEnabled = params.enabled !== false;
+        save(this.cfg);
+        this.send({ type: "event", name: "link.previewState", data: { enabled: this.cfg.previewEnabled } });
+        return reply(true, { enabled: this.cfg.previewEnabled });
       }
       if (method === "link.collections") {
         const names = listCollections();

@@ -15,7 +15,7 @@ test("authentification obs-websocket : vecteur connu", async () => {
 
 test("cleanBackup : bornes et types", () => {
   const c = cleanBackup({ enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 999, recoverSeconds: -4 });
-  assert.deepEqual(c, { enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 60, recoverSeconds: 1 });
+  assert.deepEqual(c, { enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 60, recoverSeconds: 1, trigger: "cut" });
   assert.deepEqual(cleanBackup("n'importe quoi"), DEFAULT_BACKUP);
   assert.equal(cleanBackup({ source: 3 }, { ...DEFAULT_BACKUP, source: "A" }).source, "A");
 });
@@ -42,7 +42,7 @@ function fakeObs(initial = "Live") {
 test("backup : image figée → scène de secours → retour quand l'image repart", async () => {
   const { o, req } = fakeObs();
   const w = new BackupWatcher(req);
-  w.set({ enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 3, recoverSeconds: 2 });
+  w.set({ enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 3, recoverSeconds: 2, trigger: "cut" });
   let n = 0;
   const moving = async () => ((o.image = `f${++n}`), await w.tick());
   await moving(); await moving();
@@ -66,11 +66,11 @@ test("backup : image figée → scène de secours → retour quand l'image repar
 test("backup : capture en échec (flux coupé) = figée ; désactivé = aucune action", async () => {
   const { o, req } = fakeObs();
   const w = new BackupWatcher(req);
-  w.set({ enabled: false, source: "SRT", scene: "BRB", freezeSeconds: 1, recoverSeconds: 1 });
+  w.set({ enabled: false, source: "SRT", scene: "BRB", freezeSeconds: 1, recoverSeconds: 1, trigger: "cut" });
   o.fail = true;
   await w.tick(); await w.tick();
   assert.equal(o.scene, "Live");
-  w.set({ enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 2, recoverSeconds: 1 });
+  w.set({ enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 2, recoverSeconds: 1, trigger: "cut" });
   await w.tick(); await w.tick();
   assert.equal(o.scene, "BRB");
 });
@@ -78,7 +78,7 @@ test("backup : capture en échec (flux coupé) = figée ; désactivé = aucune a
 test("backup : si l'utilisateur change de scène à la main pendant le secours, on ne la remplace pas", async () => {
   const { o, req } = fakeObs();
   const w = new BackupWatcher(req);
-  w.set({ enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 1, recoverSeconds: 1 });
+  w.set({ enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 1, recoverSeconds: 1, trigger: "cut" });
   o.image = "x";
   await w.tick();
   await w.tick(); // figée → BRB
@@ -93,7 +93,7 @@ test("backup : si l'utilisateur change de scène à la main pendant le secours, 
 test("backup : déjà sur la scène de secours, ne bascule pas et ne mémorise rien", async () => {
   const { o, req } = fakeObs("BRB");
   const w = new BackupWatcher(req);
-  w.set({ enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 1, recoverSeconds: 1 });
+  w.set({ enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 1, recoverSeconds: 1, trigger: "cut" });
   await w.tick(); await w.tick();
   assert.deepEqual(o.switches, []);
 });

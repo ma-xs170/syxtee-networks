@@ -29,7 +29,7 @@ function Card({ d, now, pushing, outdated }: { d: LinkDevice; now: number; pushi
         </p>
       </div>
       {d.online ? (
-        <Link href={`/dashboard/controle-a-distance/${d.id}`} className={pilot}>
+        <Link href={`/controle-a-distance/${d.id}`} className={pilot}>
           Piloter OBS
         </Link>
       ) : (

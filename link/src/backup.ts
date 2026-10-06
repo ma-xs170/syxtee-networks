@@ -11,9 +11,14 @@ export type BackupConfig = {
   freezeSeconds: number;
   /** Secondes d'image mobile avant de revenir. */
   recoverSeconds: number;
+  /** Déclenchement : « cut » coupure seulement ; « cut_lowbitrate » coupure ou débit très bas ; « sensitive » plus réactif. */
+  trigger: Trigger;
 };
 
-export const DEFAULT_BACKUP: BackupConfig = { enabled: false, source: "", scene: "", freezeSeconds: 4, recoverSeconds: 3 };
+export type Trigger = "cut" | "cut_lowbitrate" | "sensitive";
+export const TRIGGERS: Trigger[] = ["cut", "cut_lowbitrate", "sensitive"];
+
+export const DEFAULT_BACKUP: BackupConfig = { enabled: false, source: "", scene: "", freezeSeconds: 4, recoverSeconds: 3, trigger: "cut" };
 
 export function cleanBackup(v: unknown, prev: BackupConfig = DEFAULT_BACKUP): BackupConfig {
   const o = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
@@ -25,6 +30,7 @@ export function cleanBackup(v: unknown, prev: BackupConfig = DEFAULT_BACKUP): Ba
     scene: str(o.scene, prev.scene),
     freezeSeconds: num(o.freezeSeconds, prev.freezeSeconds, 1, 60),
     recoverSeconds: num(o.recoverSeconds, prev.recoverSeconds, 1, 60),
+    trigger: TRIGGERS.includes(o.trigger as Trigger) ? (o.trigger as Trigger) : prev.trigger,
   };
 }
 

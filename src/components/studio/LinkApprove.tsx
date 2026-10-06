@@ -70,12 +70,12 @@ export default function LinkApprove({ code: initial, coreUrl, email = "" }: { co
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">SYXTEE Link</p>
       {state === "done" ? (
         <>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight">C&apos;est connecté.</h1>
+          <h1 className="mt-3 text-2xl font-semibold tracking-tight">Appareil autorisé</h1>
           <p className="mt-3 text-sm text-muted">
-            Retourne dans OBS : SYXTEE Link te propose de <strong>sauvegarder tes scènes</strong> avant de commencer. Ensuite, tout se commande depuis SYXTEE Studio.
+            Retourne dans OBS : le plugin se connecte automatiquement. Il te propose ensuite de <strong>sauvegarder tes scènes</strong> avant de commencer.
           </p>
-          <Link href="/studio" className={`${btn} mt-6 bg-accent text-on-accent hover:bg-accent-hover`}>
-            Ouvrir SYXTEE Studio
+          <Link href="/dashboard/controle-a-distance" className={`${btn} mt-6 bg-accent text-on-accent hover:bg-accent-hover`}>
+            Ouvrir le contrôle à distance
           </Link>
         </>
       ) : state === "refused" ? (

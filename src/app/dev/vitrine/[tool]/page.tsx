@@ -11,6 +11,7 @@ import AdminShell from "@/app/(admin)/admin/AdminShell";
 import StudioDemo from "@/components/studio/StudioDemo";
 import PluginDownload from "@/components/dashboard/PluginDownload";
 import RemoteList from "@/components/dashboard/RemoteList";
+import RemoteObs from "@/components/remote/RemoteObs";
 import type { DevicesDemo } from "@/components/dashboard/useLinkDevices";
 import RelayList from "@/components/relais/RelayList";
 import type { Overview as OverviewData, LiveSession } from "@/lib/dashboard-data";
@@ -113,7 +114,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
   if (process.env.NODE_ENV === "production") notFound();
   const { tool } = await params;
   return (
-    <div id="capture" data-theme="dark" className={`mx-auto bg-background p-8 text-foreground ${tool === "accueil" ? "w-[1500px]" : "w-[1100px]"}`}>
+    <div id="capture" data-theme="dark" className={`mx-auto bg-background p-8 text-foreground ${tool === "accueil" ? "w-[1500px]" : tool === "controle-obs" ? "w-full !p-0" : "w-[1100px]"}`}>
       {tool === "relais" && <RelayList relays={RELAYS} active={6} max={10} coreUrl="" geo={null} />}
       {tool === "sante" && (
         <div className="space-y-4">
@@ -140,6 +141,9 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
         </div>
       )}
       {tool === "studio" && <StudioDemo />}
+      {tool === "controle-obs" && (
+        <RemoteObs coreUrl="http://localhost:9" deviceId="d1" demoToken="demo" />
+      )}
       {tool === "controle" && <RemoteList coreUrl="" demo={DEMO_DEVICES} />}
       {tool === "plugin" && <PluginDownload coreUrl="" latest={DEMO_DEVICES.latest} demo={DEMO_DEVICES} />}
       {tool === "admin" && (
@@ -190,7 +194,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           }))}
         />
       )}
-      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle"].includes(tool) && notFound()}
+      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "controle-obs"].includes(tool) && notFound()}
     </div>
   );
 }

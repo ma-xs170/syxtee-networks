@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Dossier de build séparé pour les tests e2e (un `next dev` peut déjà tourner sur .next).
+  // Image Docker autonome (hébergement OVH, voir Dockerfile). Sans effet sur Vercel.
+  output: "standalone",
   distDir: process.env.NEXT_DIST_DIR || ".next",
   images: {
     remotePatterns: [

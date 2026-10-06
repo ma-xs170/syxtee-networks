@@ -1,5 +1,6 @@
 # HTTPS automatique (Let's Encrypt). Domaines dans .env :
 #   CORE_DOMAIN : API du Core (ex. 147-182-220-5.sslip.io)
+#   SITE_DOMAIN : le site (ex. syxtee.com)
 #   CAM_DOMAIN  : WHIP de SYXTEE Cam vers MediaMTX (ex. cam.147-182-220-5.sslip.io)
 {$CORE_DOMAIN} {
 	encode gzip
@@ -26,6 +27,19 @@
 	reverse_proxy 127.0.0.1:8889
 	header {
 		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+}
+
+{$SITE_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:3000 {
+		# Flux en direct (SSE, multichat) : pas de mise en tampon.
+		flush_interval -1
+	}
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
 		-Server
 	}
 }

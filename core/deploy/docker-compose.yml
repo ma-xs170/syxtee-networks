@@ -68,6 +68,24 @@ services:
     restart: unless-stopped
     logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
 
+  # SYXTEE Web : le site Next.js (image standalone). Écoute sur 127.0.0.1:3000, Caddy le publie sur SITE_DOMAIN.
+  # Variables serveur dans .env.web ; les 2 NEXT_PUBLIC_SUPABASE_* (publiques) sont lues dans .env au build.
+  web:
+    build:
+      context: ./repo
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
+    network_mode: host
+    env_file: .env.web
+    environment:
+      HOSTNAME: 127.0.0.1
+      PORT: "3000"
+    restart: unless-stopped
+    mem_limit: 3g
+    logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
+
   caddy:
     image: caddy:2
     network_mode: host

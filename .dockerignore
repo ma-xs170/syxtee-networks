@@ -1,0 +1,16 @@
+node_modules
+.next
+.next-*
+.git
+.claude
+.agents
+.vercel
+.env*
+!.env.example
+test-results
+e2e
+core
+bot
+docs
+link
+*.tsbuildinfo

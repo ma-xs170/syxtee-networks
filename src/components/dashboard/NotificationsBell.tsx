@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bell, X } from "@phosphor-icons/react";
+import { Bell, X } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import { fmtAgo } from "@/lib/dashboard-data";
 

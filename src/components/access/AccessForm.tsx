@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { DotsThree } from "@phosphor-icons/react";
+import { DotsThree } from "@/components/icons";
 import { siKick, siTiktok, siTwitch, siYoutube } from "simple-icons";
 import { requestAccessAction, type AccessState } from "@/app/(site)/acces/actions";
 

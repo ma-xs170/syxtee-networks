@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType, ReactNode } from "react";
-import { ChartLineUp, ClockCounterClockwise, Globe, Key, Lifebuoy, MapTrifold, Radio, ShieldWarning, SquaresFour, Users, UsersThree, Bell, Robot, Tag, type IconProps } from "@phosphor-icons/react";
+import { ChartLineUp, ClockCounterClockwise, Globe, Key, Lifebuoy, MapTrifold, Radio, ShieldWarning, SquaresFour, Users, UsersThree, Bell, Robot, Tag, type IconProps } from "@/components/icons";
 import { signOut } from "@/app/(auth)/actions";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import ThemeToggle from "@/components/ThemeToggle";

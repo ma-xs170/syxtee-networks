@@ -23,7 +23,7 @@ import {
   VideoCamera,
   X,
   type IconProps,
-} from "@phosphor-icons/react";
+} from "@/components/icons";
 import { signOut } from "@/app/(auth)/actions";
 import type { Feature } from "@/lib/plans";
 import { activeAlso } from "@/lib/dashboard-nav";

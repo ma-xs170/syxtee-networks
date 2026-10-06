@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Camera, Flag, Record, Broadcast, FilmSlate } from "@phosphor-icons/react";
+import { Camera, Flag, Record, Broadcast, FilmSlate } from "@/components/icons";
 import { tc } from "@/lib/mix-sim";
 
 // Diffusion : LANCER DIRECT, REC, Capture, Marqueur, Slate. LANCER DIRECT et REC demandent une double validation : un premier

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef } from "react";
-import { PaperPlaneTilt } from "@phosphor-icons/react";
+import { PaperPlaneTilt } from "@/components/icons";
 
 // Fil de discussion d'un ticket (espace client et admin). Les messages de celui qui regarde sont à droite, ceux de
 // l'autre à gauche. La page se rafraîchit toute seule toutes les 10 s tant qu'elle est visible ; Entrée envoie,

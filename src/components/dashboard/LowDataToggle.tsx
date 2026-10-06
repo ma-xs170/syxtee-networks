@@ -1,6 +1,6 @@
 "use client";
 
-import { WifiLow } from "@phosphor-icons/react";
+import { WifiLow } from "@/components/icons";
 import { useState } from "react";
 import { LOW_DATA_COOKIE, LOW_DATA_PAGE } from "@/lib/low-data";
 

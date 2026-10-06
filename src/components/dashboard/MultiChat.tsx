@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { siKick, siTwitch, siYoutube } from "simple-icons";
-import { Gear } from "@phosphor-icons/react";
+import { Gear } from "@/components/icons";
 
 // Multichat : Twitch et Kick dans un seul fil (lecture seule, connexion anonyme directement depuis le navigateur),
 // YouTube dans un onglet à part (son chat n'est lisible que dans son propre lecteur).

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { DiscordLogo } from "@phosphor-icons/react/ssr";
+import { DiscordLogo } from "@/components/icons";
 import Link from "next/link";
 import { rich } from "@/lib/rich";
 import { site } from "@/lib/site";

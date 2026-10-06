@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, LinkSimple, Lock, LockOpen } from "@phosphor-icons/react";
+import { ArrowLeft, LinkSimple, Lock, LockOpen } from "@/components/icons";
 import Wordmark from "../Wordmark";
 
 // Barre du haut : nom, PROTECTION (verrou général), heure en direct, état global, ping, compte.

@@ -1,6 +1,6 @@
 "use client";
 
-import { Gear } from "@phosphor-icons/react";
+import { Gear } from "@/components/icons";
 import ProtocolBadge from "../relais/ProtocolBadge";
 import LevelMeter from "./LevelMeter";
 import { Feed, StatusPill } from "./parts";

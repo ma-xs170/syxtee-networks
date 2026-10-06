@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Broadcast, Faders, Rows, SquaresFour } from "@phosphor-icons/react";
+import { Broadcast, Faders, Rows, SquaresFour } from "@/components/icons";
 import AudioMixer from "./AudioMixer";
 import DirectPanel from "./DirectPanel";
 import type { MixModel } from "./model";

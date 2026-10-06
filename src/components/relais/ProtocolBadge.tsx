@@ -1,4 +1,4 @@
-import { Broadcast, GitMerge, ShieldCheck } from "@phosphor-icons/react/ssr";
+import { Broadcast, GitMerge, ShieldCheck } from "@/components/icons";
 import type { RelayProtocol } from "@/lib/core";
 
 // Mini badge du protocole d'un relais : SRTLA (liens agrégés), RTMP (diffusion), RIST (chiffré). Même badge partout

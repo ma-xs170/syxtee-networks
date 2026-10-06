@@ -2,7 +2,7 @@
 
 import { useState, type ComponentType } from "react";
 import { useReducedMotion } from "motion/react";
-import { Broadcast, Gauge, Gear, Microphone, SlidersHorizontal, SpeakerSimpleSlash, SpeakerSimpleHigh, SquaresFour } from "@phosphor-icons/react";
+import { Broadcast, Gauge, Gear, Microphone, SlidersHorizontal, SpeakerSimpleSlash, SpeakerSimpleHigh, SquaresFour } from "@/components/icons";
 import { DEMO_HEALTH } from "@/lib/demo-health";
 import StreamHealth from "../dashboard/StreamHealth";
 import HeroStreet from "../home/HeroStreet";

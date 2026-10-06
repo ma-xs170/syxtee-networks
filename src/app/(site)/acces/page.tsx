@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Check } from "@phosphor-icons/react/ssr";
+import { Check } from "@/components/icons";
 import AccessForm from "@/components/access/AccessForm";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import { Container } from "@/components/ui";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Headphones, Lock } from "@phosphor-icons/react";
+import { Headphones, Lock } from "@/components/icons";
 import Fader, { fmtDb } from "./Fader";
 import LevelMeter from "./LevelMeter";
 import { gateOf, type AudioMode, type AudioSettings, type Gate } from "@/lib/mix-audio";

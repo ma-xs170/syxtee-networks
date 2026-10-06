@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Record as RecordIcon, Stop } from "@phosphor-icons/react";
+import { Record as RecordIcon, Stop } from "@/components/icons";
 import { setRecordAction } from "@/app/(dashboard)/dashboard/relais/actions";
 import type { RelayProtocol } from "@/lib/core";
 import { useLiveStatus } from "./LiveStatus";

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CaretDown } from "@phosphor-icons/react/ssr";
+import { CaretDown } from "@/components/icons";
 import type { ReactNode } from "react";
 import { EmailForm, PasswordForm } from "@/components/auth/AccountForms";
 import Card from "@/components/compte/Card";

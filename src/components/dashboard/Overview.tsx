@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
-import { ChartBar, ChatsCircle, Eye, MapTrifold, Radio, SlidersHorizontal, type IconProps } from "@phosphor-icons/react";
+import { ChartBar, ChatsCircle, Eye, MapTrifold, Radio, SlidersHorizontal, type IconProps } from "@/components/icons";
 import {
   delta,
   deviceLabel,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { X } from "@phosphor-icons/react";
+import { X } from "@/components/icons";
 
 // Tiroir latéral (Lien OBS, réglages d'un relais) : Échap ou clic à côté pour fermer, le focus entre dans le tiroir.
 export default function Drawer({ open, title, onClose, children }: { open: boolean; title: string; onClose: () => void; children: React.ReactNode }) {

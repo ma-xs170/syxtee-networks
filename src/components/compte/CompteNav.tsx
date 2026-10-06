@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LockKey, PlugsConnected, ShareNetwork, SquaresFour, Trash, UserCircle } from "@phosphor-icons/react";
+import { LockKey, PlugsConnected, ShareNetwork, SquaresFour, Trash, UserCircle } from "@/components/icons";
 
 // Menu de Mon compte : une page par section. Pastilles défilantes sur mobile, colonne collée à gauche sur ordinateur.
 export const COMPTE_SECTIONS = [

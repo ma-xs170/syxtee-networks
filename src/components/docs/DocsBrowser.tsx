@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
-import { MagnifyingGlass } from "@phosphor-icons/react";
+import { MagnifyingGlass } from "@/components/icons";
 import { ToolArt } from "@/components/NavTools";
 import type { ToolIcon } from "@/lib/site";
 

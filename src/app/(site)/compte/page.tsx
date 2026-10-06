@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Key, LockKey, PlugsConnected, ShareNetwork, Trash, UserCircle } from "@phosphor-icons/react/ssr";
+import { Key, LockKey, PlugsConnected, ShareNetwork, Trash, UserCircle } from "@/components/icons";
 import { listConnections } from "@/lib/chat/providers";
 import { authErrorMessage } from "@/lib/auth/errors";
 import { getProfile, requireUser } from "@/lib/auth/dal";

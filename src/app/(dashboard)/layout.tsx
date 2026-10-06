@@ -1,4 +1,7 @@
+import Link from "next/link";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { LOW_DATA_COOKIE, LOW_DATA_PAGE } from "@/lib/low-data";
 import { LiveStatusProvider } from "@/components/dashboard/LiveStatus";
 import NamesModal from "@/components/auth/NamesModal";
 import DashboardShell from "@/components/dashboard/Sidebar";
@@ -15,6 +18,21 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
   const user = await requireUser("/dashboard");
   const profile = await getProfile();
   if (!profile?.onboarded_at) redirect("/bienvenue");
+  // Connexion basse : coque minimale (pas de menu, de fonds animés ni de statut en direct), la page se charge seule.
+  if ((await cookies()).get(LOW_DATA_COOKIE)?.value === "1") {
+    return (
+      <div className="dash-surface min-h-dvh">
+        <header className="flex h-12 items-center justify-between gap-3 border-b border-line px-4">
+          <Link href={LOW_DATA_PAGE} className="text-sm font-semibold tracking-[0.18em]">SYXTEE</Link>
+          <nav aria-label="Connexion basse" className="flex gap-4 text-sm text-muted">
+            <Link href={LOW_DATA_PAGE} className="hover:text-foreground">Relais</Link>
+            <Link href="/dashboard/parametres" className="hover:text-foreground">Paramètres</Link>
+          </nav>
+        </header>
+        <main>{children}</main>
+      </div>
+    );
+  }
   return (
     <LiveStatusProvider coreUrl={publicCoreUrl}>
       <TimezoneProvider timezone={accountTimezone(profile)}>

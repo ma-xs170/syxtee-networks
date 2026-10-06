@@ -377,6 +377,36 @@ export function buildServer(d: Deps) {
     });
   });
 
+  // Mode connexion basse : un seul petit JSON (quelques centaines d'octets) avec l'état de tous les relais actifs du compte,
+  // lu à la demande par la page « Connexion basse » (aucune connexion ouverte, aucun historique).
+  app.get("/v1/me/status/lite", async (req, reply) => {
+    const id = await userId(req, reply);
+    if (!id) return;
+    const since = Date.now() - 60_000;
+    const relays = d.health
+      .byUser(id)
+      .filter(({ relay }) => !relay.archived)
+      .map(({ relay, state: s }) => {
+        const sm = s.live ? s.sample : null;
+        const peers = s.live ? (s.peers ?? []) : [];
+        const net = peers.reduce((a, p) => a + (p.throughput ?? 0), 0);
+        return {
+          id: relay.id,
+          name: relay.name,
+          live: s.live,
+          kbps: sm ? Math.round(sm.bitrate) : null,
+          net_kbps: net > 0 ? Math.round(net) : null,
+          rtt: sm ? Math.round(sm.rtt) : null,
+          latency: sm?.latency ?? null,
+          buffer: sm?.buffer ?? null,
+          links: sm?.links ?? null,
+          lost_1m: sm ? d.samples.history(relay.id, since).reduce((a, x) => a + x.dropped, 0) : null,
+          since: s.live ? s.since : null,
+        };
+      });
+    return reply.header("Cache-Control", "no-store").send({ t: Date.now(), relays });
+  });
+
   // Santé d'un relais en temps réel (Server-Sent Events).
   app.get("/v1/me/relays/:rid/health/stream", async (req, reply) => {
     const r = await myRelay(req, reply);

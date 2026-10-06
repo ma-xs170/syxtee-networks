@@ -3,6 +3,9 @@ import { signOut } from "@/app/(auth)/actions";
 import { DeleteAccountForm, EmailForm, NamesForm, PasswordForm } from "@/components/auth/AccountForms";
 import { ConsentToggle, EraseCoverage, PrivateZones, type PrivateZone } from "@/components/dashboard/CoverageSettings";
 import { DiscordTicketButton, SupportId } from "@/components/SupportId";
+import LowDataToggle from "@/components/dashboard/LowDataToggle";
+import { cookies } from "next/headers";
+import { LOW_DATA_COOKIE } from "@/lib/low-data";
 import StreamModeToggle from "@/components/dashboard/StreamModeToggle";
 import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
 import { getProfile, requireUser } from "@/lib/auth/dal";
@@ -14,6 +17,7 @@ export default async function ParametresPage({ searchParams }: PageProps<"/dashb
   const user = await requireUser("/dashboard/parametres");
   const { email: emailDone } = await searchParams;
   const profile = await getProfile();
+  const low = (await cookies()).get(LOW_DATA_COOKIE)?.value === "1";
   const supabase = await createClient();
   const { data: zones } = await supabase.from("private_zones").select("id, label, lat, lng, radius_m").order("created_at");
   return (
@@ -48,6 +52,13 @@ export default async function ParametresPage({ searchParams }: PageProps<"/dashb
           <p className="mt-4 text-sm leading-relaxed text-muted">Floute clés, URLs et e-mail pour montrer ton dashboard en live. Le réglage reste actif sur ce navigateur.</p>
           <div className="mt-5">
             <StreamModeToggle withLabel />
+          </div>
+        </Tile>
+        <Tile>
+          <TileLabel>Connexion basse</TileLabel>
+          <p className="mt-4 text-sm leading-relaxed text-muted">Pour une mauvaise connexion mobile : le dashboard se réduit à une page de texte avec tes relais actifs, leur débit et leur latence. Réglage gardé sur ce navigateur.</p>
+          <div className="mt-5">
+            <LowDataToggle initial={low} />
           </div>
         </Tile>
         <Tile>

@@ -10,8 +10,7 @@ export const metadata: Metadata = { title: "Scanner réseau", robots: { index: f
 // Outils → Scanner réseau : scan 4G / 5G plein écran pour la carte communautaire. Ouvert à tous les comptes,
 // y compris gratuits (seule fonction active pour eux).
 export default async function ScannerPage() {
-  await requireUser("/dashboard/scanner");
-  const profile = await getProfile();
+  const [, profile] = await Promise.all([requireUser("/dashboard/scanner"), getProfile()]);
   if (!hasCore)
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center">

@@ -8,8 +8,8 @@ import { getProfile, requireUser } from "@/lib/auth/dal";
 export const metadata: Metadata = { title: "Profil & réseaux", robots: { index: false } };
 
 export default async function ProfilPage() {
-  const user = await requireUser("/dashboard/profil");
-  const profile = (await getProfile())!;
+  const [user, profileRow] = await Promise.all([requireUser("/dashboard/profil"), getProfile()]);
+  const profile = profileRow!;
   return (
     <DashPage>
       <DashHeader lead="Profil &" hl="réseaux" sub="Ce que les viewers voient de toi sur le site SYXTEE." />

@@ -23,8 +23,7 @@ const TEXT: Record<Plan["id"], string> = {
 };
 
 export default async function AccesPage() {
-  await requireUser("/dashboard/abonnement");
-  const plan = await getPlan();
+  const [, plan] = await Promise.all([requireUser("/dashboard/abonnement"), getPlan()]);
   const included =
     plan.id === "free"
       ? ["Scanner réseau", "Analyseur réseau", "Carte de couverture"]

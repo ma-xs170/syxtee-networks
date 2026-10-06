@@ -22,9 +22,8 @@ function Figure({ label, value, sub }: { label: string; value: string; sub?: str
 }
 
 export default async function StatsPage({ searchParams }: PageProps<"/dashboard/stats">) {
-  await requireUser("/dashboard/stats");
-  const timezone = accountTimezone(await getProfile());
-  const { range: r } = await searchParams;
+  const [, profile, { range: r }] = await Promise.all([requireUser("/dashboard/stats"), getProfile(), searchParams]);
+  const timezone = accountTimezone(profile);
   const range = isRange(r) ? r : "7d";
   const { days, any, kpis: k, previous: p, longest, reconnects, short, daily } = await getStats(range, timezone);
   const cmp = (a: number, b: number) => delta(a, b)?.text ?? "rien avant";

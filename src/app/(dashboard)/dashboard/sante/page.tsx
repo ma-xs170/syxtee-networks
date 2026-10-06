@@ -13,8 +13,7 @@ import PlanGate from "@/components/plans/PlanGate";
 export const metadata: Metadata = { title: "Santé du flux", robots: { index: false } };
 
 export default async function SantePage({ searchParams }: PageProps<"/dashboard/sante">) {
-  const user = await requireUser("/dashboard/sante");
-  const { relay: wanted } = await searchParams;
+  const [user, { relay: wanted }] = await Promise.all([requireUser("/dashboard/sante"), searchParams]);
   const { relays, status } = await loadRelays(user.id);
   const active = relays.filter((r) => !r.archived);
   const current = active.find((r) => r.id === wanted) ?? defaultRelay(active);

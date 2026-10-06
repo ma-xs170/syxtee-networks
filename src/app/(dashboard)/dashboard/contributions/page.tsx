@@ -14,10 +14,8 @@ const nf = new Intl.NumberFormat("fr-FR");
 // Outils → Mes contributions : ce que tes scans et tes lives (en 4G/5G, jamais en Wi-Fi) ont apporté à la carte /couverture.
 // Lien compte ↔ hexagones gardé 90 jours (table contributions, RLS), lu par my_coverage().
 export default async function ContributionsPage() {
-  await requireUser("/dashboard/contributions");
-  const profile = await getProfile();
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("my_coverage");
+  const [, profile, { data, error }] = await Promise.all([requireUser("/dashboard/contributions"), getProfile(), supabase.rpc("my_coverage")]);
   if (error) console.error("my_coverage", error.message);
   const mine: Mine = { measurements: 0, hexes: 0, discovered: 0, improved: 0, cells: [], ...((data as Mine | null) ?? {}) };
   const contributor = mine.measurements > 0;

@@ -14,12 +14,15 @@ import { createClient } from "@/lib/supabase/server";
 export const metadata: Metadata = { title: "Paramètres", robots: { index: false } };
 
 export default async function ParametresPage({ searchParams }: PageProps<"/dashboard/parametres">) {
-  const user = await requireUser("/dashboard/parametres");
-  const { email: emailDone } = await searchParams;
-  const profile = await getProfile();
-  const low = (await cookies()).get(LOW_DATA_COOKIE)?.value === "1";
   const supabase = await createClient();
-  const { data: zones } = await supabase.from("private_zones").select("id, label, lat, lng, radius_m").order("created_at");
+  const [user, { email: emailDone }, profile, jar, { data: zones }] = await Promise.all([
+    requireUser("/dashboard/parametres"),
+    searchParams,
+    getProfile(),
+    cookies(),
+    supabase.from("private_zones").select("id, label, lat, lng, radius_m").order("created_at"),
+  ]);
+  const low = jar.get(LOW_DATA_COOKIE)?.value === "1";
   return (
     <DashPage>
       <DashHeader lead="Tes" hl="paramètres" />

@@ -14,7 +14,7 @@ const NOTICES: Record<string, string> = {
 };
 
 export default async function MultichatPage({ searchParams }: PageProps<"/dashboard/multichat">) {
-  const { chat, chat_erreur: err } = await searchParams;
+  const [{ chat, chat_erreur: err }, , profile] = await Promise.all([searchParams, requireUser("/dashboard/multichat"), getProfile()]);
   const label = (p: string) => ({ twitch: "Twitch", kick: "Kick", youtube: "YouTube" })[p] ?? p;
   const notice =
     typeof chat === "string"
@@ -25,8 +25,6 @@ export default async function MultichatPage({ searchParams }: PageProps<"/dashbo
             return `${label(p)} ${NOTICES[`-${rest.join("-")}`] ?? "n'a pas pu être relié."}`;
           })()
         : undefined;
-  await requireUser("/dashboard/multichat");
-  const profile = await getProfile();
   return (
     <DashPage>
       <DashHeader lead="Tous tes chats," hl="un seul fil" sub="Un clic sur un logo affiche une plateforme ou plusieurs : YouTube, Twitch et Kick. Relie ton compte (roue) pour écrire dans le chat." />

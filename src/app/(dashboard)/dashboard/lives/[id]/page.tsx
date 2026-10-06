@@ -12,10 +12,9 @@ export const metadata: Metadata = { title: "Direct", robots: { index: false } };
 
 export default async function LivePage({ params }: PageProps<"/dashboard/lives/[id]">) {
   const { id } = await params;
-  await requireUser(`/dashboard/lives/${id}`);
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
-  const timezone = accountTimezone(await getProfile());
-  const s = await getSession(id);
+  const [, profile, s] = await Promise.all([requireUser(`/dashboard/lives/${id}`), getProfile(), getSession(id)]);
+  const timezone = accountTimezone(profile);
   if (!s) notFound();
 
   const facts: [string, string][] = [

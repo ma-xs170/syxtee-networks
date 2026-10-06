@@ -10,9 +10,8 @@ export const metadata: Metadata = { title: "Analyseur réseau", robots: { index:
 
 // Outils → Analyseur réseau : même moteur que le mode Scan de SYXTEE Cam, avec le compte (scan continu, carte).
 export default async function AnalyseurPage() {
-  await requireUser("/dashboard/analyseur");
   const supabase = await createClient();
-  const { data } = await supabase.rpc("my_coverage");
+  const [, { data }] = await Promise.all([requireUser("/dashboard/analyseur"), supabase.rpc("my_coverage")]);
   const mine = (data as { measurements?: number; hexes?: number } | null) ?? {};
   return (
     <DashPage>

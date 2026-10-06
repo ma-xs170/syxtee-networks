@@ -12,8 +12,7 @@ import PlanGate from "@/components/plans/PlanGate";
 export const metadata: Metadata = { title: "Historique des lives", robots: { index: false } };
 
 export default async function LivesPage({ searchParams }: PageProps<"/dashboard/lives">) {
-  const user = await requireUser("/dashboard/lives");
-  const { relay: wanted } = await searchParams;
+  const [user, { relay: wanted }, profile] = await Promise.all([requireUser("/dashboard/lives"), searchParams, getProfile()]);
   const { relays } = await loadRelays(user.id);
   const current = relays.find((r) => r.id === wanted)?.id ?? null;
   const sessions = await listSessions({ limit: 100, relayId: current ?? undefined });
@@ -32,7 +31,7 @@ export default async function LivesPage({ searchParams }: PageProps<"/dashboard/
               <span>Débit</span>
               <span className="text-right">Durée</span>
             </div>
-            <SessionList sessions={sessions} spark timezone={accountTimezone(await getProfile())} />
+            <SessionList sessions={sessions} spark timezone={accountTimezone(profile)} />
           </>
         ) : (
           <>

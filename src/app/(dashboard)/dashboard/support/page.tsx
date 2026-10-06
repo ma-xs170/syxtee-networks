@@ -15,11 +15,9 @@ const TABS = [
 ];
 
 export default async function SupportPage({ searchParams }: { searchParams: Promise<{ etat?: string }> }) {
-  const user = await requireUser("/dashboard/support");
-  const { etat } = await searchParams;
+  const [user, { etat }] = await Promise.all([requireUser("/dashboard/support"), searchParams]);
   const tab = TABS.find((t) => t.id === etat) ?? TABS[0];
-  const profile = await getProfile();
-  const [tickets, counts] = await Promise.all([listTickets({ userId: user.id, state: tab.state }), ticketCounts(user.id)]);
+  const [profile, tickets, counts] = await Promise.all([getProfile(), listTickets({ userId: user.id, state: tab.state }), ticketCounts(user.id)]);
 
   return (
     <DashPage>

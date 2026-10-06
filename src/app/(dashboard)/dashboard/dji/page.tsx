@@ -10,8 +10,7 @@ export const metadata: Metadata = { title: "Caméras externes", robots: { index:
 // Caméras externes (menu Direct) : DJI lancées en Bluetooth, GoPro et drones DJI en RTMP. Chacune liée à un relais RTMP
 // (protocole de Moblin, licence MIT). ?relais=<id> : relais présélectionné pour l'ajout (lien depuis la fiche relais).
 export default async function DjiPage({ searchParams }: { searchParams: Promise<{ relais?: string }> }) {
-  const user = await requireUser("/dashboard/dji");
-  const { relais } = await searchParams;
+  const [user, { relais }] = await Promise.all([requireUser("/dashboard/dji"), searchParams]);
   let relays: RtmpRelay[] = [];
   let down = !hasCore;
   if (hasCore) {

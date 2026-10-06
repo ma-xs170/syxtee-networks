@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { execFile } from "node:child_process";
 import { createReadStream, mkdirSync } from "node:fs";
 import { readdir, rm, stat, statfs } from "node:fs/promises";
 import { join } from "node:path";
@@ -18,12 +19,21 @@ const FILE = /^\d{8}-\d{6}\.mp4$/;
 export type RecordingFile = { relay_id: string; file: string; size: number; created_at: string; expires_at: string; recording: boolean };
 export type Stopped = "quota" | "disk" | null;
 
-export function recordArgs(o: { host: string; port: number; playId: string; dir: string; segmentS: number }) {
+/** Codec vidéo du flux (ffprobe, 8 s max) ; null si le flux ne répond pas. */
+export function probeCodec(host: string, port: number, playId: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    execFile("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=codec_name", "-of", "csv=p=0", `srt://${host}:${port}?streamid=${playId}&mode=caller&latency=200000`], { timeout: 8000 }, (err, out) => resolve(err ? null : out.trim() || null));
+  });
+}
+
+export function recordArgs(o: { host: string; port: number; playId: string; dir: string; segmentS: number; hevc?: boolean }) {
   return [
     "-hide_banner", "-loglevel", "error",
     "-i", `srt://${o.host}:${o.port}?streamid=${o.playId}&mode=caller&latency=200000`,
     "-map", "0:v:0", "-map", "0:a:0?",
     "-c", "copy",
+    // H.265 : étiquette hvc1 (hev1 par défaut), sinon QuickTime, Aperçu et Safari refusent d'ouvrir le fichier.
+    ...(o.hevc ? ["-tag:v", "hvc1"] : []),
     "-f", "segment", "-segment_time", String(o.segmentS), "-reset_timestamps", "1", "-strftime", "1",
     "-segment_format", "mp4", "-segment_format_options", "movflags=frag_keyframe+empty_moov+default_base_moof",
     join(o.dir, "%Y%m%d-%H%M%S.mp4"),
@@ -44,12 +54,15 @@ export function createRecordings(o: {
   log: (m: string) => void;
   /** Remplaçables dans les tests. */
   freeBytes?: () => Promise<number>;
+  probeImpl?: typeof probeCodec;
   superviseImpl?: typeof supervise;
 }) {
   const quota = o.quota ?? QUOTA_BYTES;
   const segmentS = o.segmentS ?? 900;
   const retentionDays = o.retentionDays ?? 15;
   const run = o.superviseImpl ?? supervise;
+  const probe = o.probeImpl ?? probeCodec;
+  const starting = new Set<string>(); // relais dont le codec est en cours d'analyse
   mkdirSync(o.dir, { recursive: true });
   const running = new Map<string, { p: Supervised; user: string }>();
   const stopped = new Map<string, Exclude<Stopped, null>>(); // par compte : pourquoi l'enregistrement est coupé
@@ -80,6 +93,7 @@ export function createRecordings(o: {
   const total = (list: RecordingFile[]) => list.reduce((n, f) => n + f.size, 0);
 
   function stopRelay(id: string) {
+    starting.delete(id);
     running.get(id)?.p.stop();
     running.delete(id);
   }
@@ -108,10 +122,16 @@ export function createRecordings(o: {
           stopRelay(r.id);
           continue;
         }
-        if (running.has(r.id)) continue;
+        if (running.has(r.id) || starting.has(r.id)) continue;
         const dir = relayDir(r.user_id, r.id);
         mkdirSync(dir, { recursive: true });
-        running.set(r.id, { user: r.user_id, p: run(`enregistrement ${r.id.slice(0, 8)}`, "ffmpeg", recordArgs({ host: o.host, port: o.port, playId: r.play_id, dir, segmentS }), o.log) });
+        starting.add(r.id);
+        void probe(o.host, o.port, r.play_id)
+          .then((codec) => {
+            if (!starting.has(r.id) || running.has(r.id)) return;
+            running.set(r.id, { user: r.user_id, p: run(`enregistrement ${r.id.slice(0, 8)}`, "ffmpeg", recordArgs({ host: o.host, port: o.port, playId: r.play_id, dir, segmentS, hevc: codec === "hevc" }), o.log) });
+          })
+          .finally(() => starting.delete(r.id));
       }
     },
 

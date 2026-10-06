@@ -30,18 +30,25 @@ export default function ReleaseForm({ latest }: { latest: Version | null }) {
         <input id="r-title" name="title" required maxLength={120} className={`${field} h-11`} />
       </div>
       <div className="space-y-2">
-        <label htmlFor="r-notes" className={label}>Notes de version</label>
+        <label htmlFor="r-notes" className={label}>Patchnote</label>
         <textarea id="r-notes" name="notes" required rows={8} maxLength={3500} placeholder={"**Nouveau**\n- …\n\n**Corrigé**\n- …"} className={`${field} py-3`} />
-        <p className="text-xs text-muted">Le texte s&apos;affiche dans Discord : **gras**, listes avec « - » et [liens](https://…) fonctionnent.</p>
+        <p className="text-xs text-muted">Discord garde le Markdown (**gras**, « - », liens). Sur le site, la cloche affiche un résumé de 500 caractères sans mise en forme.</p>
       </div>
-      <label className="flex items-center gap-3 text-sm">
-        <input type="checkbox" name="discord" defaultChecked className="size-4 accent-[var(--accent)]" />
-        Envoyer dans le salon Discord
-      </label>
+      <fieldset className="space-y-2">
+        <legend className={label}>Où publier ce patchnote</legend>
+        <label className="flex items-center gap-3 text-sm">
+          <input type="checkbox" name="site" defaultChecked className="size-4 accent-[var(--accent)]" />
+          Notifier tous les comptes sur le site (cloche)
+        </label>
+        <label className="flex items-center gap-3 text-sm">
+          <input type="checkbox" name="discord" defaultChecked className="size-4 accent-[var(--accent)]" />
+          Envoyer dans le salon Discord
+        </label>
+      </fieldset>
       {state.error && <p role="alert" className="text-sm text-red-400/90">{state.error}</p>}
       {state.ok && <p role="status" className="text-sm text-muted">{state.ok}</p>}
       <button type="submit" disabled={pending} className="h-11 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60">
-        {pending ? "Publication…" : `Publier la version ${formatVersion(nextVersion(latest, bump))}`}
+        {pending ? "Publication…" : `Publier le patchnote ${formatVersion(nextVersion(latest, bump))}`}
       </button>
     </form>
   );

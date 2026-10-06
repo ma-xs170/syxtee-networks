@@ -18,3 +18,17 @@ export function nextVersion(latest: Version | null, bump: Bump): Version {
 }
 
 export const formatVersion = (v: Version) => `${v.major}.${v.minor}.${v.patch}`;
+
+/** Notification du site (cloche) pour une note de version : titre 80 caractères, texte 500 au plus, sans balises Markdown. */
+export function releaseNotification(v: Version, title: string, notes: string): { title: string; body: string } {
+  const plain = notes
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/\*\*|__|`/g, "")
+    .replace(/^\s*[-*]\s+/gm, "• ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  const head = `${title}\n`;
+  const room = 500 - head.length;
+  const body = head + (plain.length > room ? `${plain.slice(0, room - 1).trimEnd()}…` : plain);
+  return { title: `Patchnote v${formatVersion(v)}`, body: body.slice(0, 500) };
+}

@@ -31,7 +31,7 @@ export default async function AdminVersionsPage() {
 
   return (
     <DashPage>
-      <DashHeader lead="Admin" hl="Versions" sub="Notes de version : le numéro change tout seul, la note est publiée dans le salon Discord des nouveautés." />
+      <DashHeader lead="Admin" hl="Versions" sub="Notes de version : le numéro change tout seul, le patchnote notifie les comptes du site et part dans le salon Discord." />
       {error ? (
         <p className="text-sm text-muted">Lecture impossible : applique d&apos;abord la migration 0037_releases.sql dans Supabase.</p>
       ) : (

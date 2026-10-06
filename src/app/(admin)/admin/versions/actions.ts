@@ -5,7 +5,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/admin";
 import { BotMessageGone, botAnnounce, botEdit, hasBot } from "@/lib/discord-bot";
 import { audit } from "@/lib/plan-admin";
-import { formatVersion, nextVersion, type Version } from "@/lib/releases";
+import { formatVersion, nextVersion, releaseNotification, type Version } from "@/lib/releases";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // Notes de version (admin) : le numéro est calculé ici (jamais saisi), la note est enregistrée puis envoyée dans le salon Discord.
@@ -20,7 +20,7 @@ const input = z.object({
 
 type Row = Version & { id: string; title: string; notes: string };
 
-const embedOf = (v: Version, title: string, notes: string) => ({ title: `Version ${formatVersion(v)} · ${title}`, body: notes, tag: `Version ${formatVersion(v)}` });
+const embedOf = (v: Version, title: string, notes: string) => ({ title: `Patchnote v${formatVersion(v)} · ${title}`, body: notes, tag: "Patchnote" });
 
 /** Publie la note dans le salon et renvoie l'identifiant du message (gardé pour pouvoir le modifier). */
 async function sendToDiscord(v: Version, title: string, notes: string) {
@@ -33,6 +33,7 @@ export async function publishReleaseAction(_prev: ReleaseState, form: FormData):
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide." };
   const { bump, title, notes } = parsed.data;
   const send = form.get("discord") === "on";
+  const notify = form.get("site") === "on";
   const db = createAdminClient();
 
   const { data: last } = await db.from("releases").select("major, minor, patch").order("major", { ascending: false }).order("minor", { ascending: false }).order("patch", { ascending: false }).limit(1).maybeSingle();
@@ -45,12 +46,18 @@ export async function publishReleaseAction(_prev: ReleaseState, form: FormData):
   await audit(admin.email!, "release.publish", null, null, { version: formatVersion(v), title });
   revalidatePath("/admin/versions");
 
-  if (!send) return { ok: `Version ${formatVersion(v)} enregistrée.` };
-  if (!hasBot) return { ok: `Version ${formatVersion(v)} enregistrée, mais le bot Discord n'est pas configuré.` };
+  let siteNote = "";
+  if (notify) {
+    const { error: nErr } = await db.from("notifications").insert({ user_id: null, ...releaseNotification(v, title, notes) });
+    if (nErr) console.error("release notification", nErr.message);
+    siteNote = nErr ? " La notification du site a échoué." : " Tous les comptes sont notifiés sur le site.";
+  }
+  if (!send) return { ok: `Patchnote ${formatVersion(v)} enregistrée.${siteNote}` };
+  if (!hasBot) return { ok: `Patchnote ${formatVersion(v)} enregistrée, mais le bot Discord n'est pas configuré.${siteNote}` };
   try {
     const messageId = await sendToDiscord(v, title, notes);
     await db.from("releases").update({ discord_sent_at: new Date().toISOString(), discord_message_id: messageId }).eq("id", row.id);
-    return { ok: `Version ${formatVersion(v)} publiée et envoyée dans le salon Discord.` };
+    return { ok: `Patchnote ${formatVersion(v)} publiée et envoyée dans le salon Discord.${siteNote}` };
   } catch (e) {
     return { error: `Version ${formatVersion(v)} enregistrée, mais l'envoi Discord a échoué (${e instanceof Error ? e.message : "bot injoignable"}). Utilise « Renvoyer sur Discord ».` };
   }

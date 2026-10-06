@@ -32,13 +32,13 @@ const confirmUrl = async (next: string) => `${await origin()}/auth/confirm${next
 export type AuthState =
   | { status: "idle" }
   | { status: "sent"; email: string; at: number }
-  | { status: "error"; message: string; fields?: Record<string, string> };
+  | { status: "error"; message: string; fields?: Record<string, string>; code?: string };
 
 const emailSchema = z.string().trim().toLowerCase().pipe(z.email());
 const nameSchema = personName;
 
 const str = (f: FormData, k: string) => String(f.get(k) ?? "");
-const fail = (message: string, fields?: Record<string, string>): AuthState => ({ status: "error", message, fields });
+const fail = (message: string, fields?: Record<string, string>, code?: string): AuthState => ({ status: "error", message, fields, code });
 
 /** Inscription : prénom, nom, email, mot de passe. Le compte n'est actif qu'après le clic dans l'email. */
 export async function signUp(_prev: AuthState, f: FormData): Promise<AuthState> {
@@ -107,7 +107,7 @@ export async function signIn(_prev: AuthState, f: FormData): Promise<AuthState> 
   if (error || !data.user) {
     const code = error?.code === "email_not_confirmed" ? "email-non-verifie" : error?.code === "invalid_credentials" ? "identifiants" : mapSupabaseError(error?.code);
     if (code !== "identifiants" && code !== "email-non-verifie") console.error("signIn", error?.code, error?.message);
-    return fail(AUTH_ERRORS[code], fields);
+    return fail(AUTH_ERRORS[code], fields, code);
   }
   await checkNewDevice(data.user);
   redirect(await afterLogin(data.user, str(f, "next") || null));

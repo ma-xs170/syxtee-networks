@@ -30,7 +30,12 @@ export function LogoTile() {
   );
 }
 
-function Shell({ title, sub, children }: { title: string; sub?: ReactNode; children: ReactNode }) {
+/** Mot-clé d'un titre : même surlignage rouge que les titres du site. */
+function Mark({ children }: { children: ReactNode }) {
+  return <span className="box-decoration-clone bg-accent px-2 text-on-accent">{children}</span>;
+}
+
+function Shell({ title, sub, children }: { title: ReactNode; sub?: ReactNode; children: ReactNode }) {
   return (
     <motion.div initial="hidden" animate="show" variants={list} className="w-full max-w-[420px]">
       <LogoTile />
@@ -218,17 +223,47 @@ function ResendButton({ at }: { at: number }) {
   );
 }
 
+/** Lien direct vers la webmail de l'adresse (les adresses d'un autre domaine n'ont pas de bouton). */
+function mailbox(email: string): { name: string; url: string } | null {
+  const d = email.split("@")[1]?.toLowerCase() ?? "";
+  if (d === "gmail.com" || d === "googlemail.com") return { name: "Gmail", url: "https://mail.google.com/mail/u/0/#inbox" };
+  if (/^(outlook|hotmail|live|msn)\./.test(d)) return { name: "Outlook", url: "https://outlook.live.com/mail/0/inbox" };
+  if (/^yahoo\./.test(d) || d === "ymail.com") return { name: "Yahoo Mail", url: "https://mail.yahoo.com" };
+  if (d === "icloud.com" || d === "me.com") return { name: "iCloud Mail", url: "https://www.icloud.com/mail" };
+  if (/^(proton\.me|protonmail\.com|pm\.me)$/.test(d)) return { name: "Proton Mail", url: "https://mail.proton.me/u/0/inbox" };
+  if (/^(orange|wanadoo)\.fr$/.test(d)) return { name: "Orange Mail", url: "https://messagerie.orange.fr" };
+  if (d === "free.fr") return { name: "Free Mail", url: "https://webmail.free.fr" };
+  if (d === "sfr.fr") return { name: "SFR Mail", url: "https://webmail.sfr.fr" };
+  return null;
+}
+
 /** « Vérifie ta boîte mail » : après l'inscription (avec renvoi) ou une demande de réinitialisation. */
 function CheckMail({ email, at, lead, resend, next, onBack }: { email: string; at: number; lead: ReactNode; resend?: (p: AuthState, f: FormData) => Promise<AuthState>; next?: string; onBack: () => void }) {
   const [state, action] = useActionState<AuthState, FormData>(resend ?? (async (s) => s), IDLE);
   const sentAt = state.status === "sent" ? state.at : at;
   return (
-    <Shell title="Vérifie ta boîte mail" sub={lead}>
+    <Shell title={<>Vérifie ta <Mark>boîte mail</Mark></>} sub={lead}>
       <motion.p variants={item} className="mt-2 text-center text-sm text-foreground/60">
         <span className="font-medium text-foreground">{email}</span>
       </motion.p>
-      <motion.p variants={item} className="mt-4 text-center text-xs leading-relaxed text-foreground/45">
-        Rien reçu ? Regarde dans les spams, ou vérifie l&apos;adresse.
+      <motion.ol variants={item} className="mt-8 space-y-3 rounded-xl border border-foreground/20 bg-foreground/[0.08] p-4 text-sm text-foreground/80">
+        {(resend
+          ? ["Ouvre l'email « Confirme ton adresse » reçu à l'instant.", "Clique sur le bouton de confirmation.", "Tu arrives directement dans ton dashboard."]
+          : ["Ouvre l'email reçu à l'instant.", "Clique sur le lien.", "Choisis ton nouveau mot de passe."]
+        ).map((t, i) => (
+          <li key={t} className="flex items-start gap-3">
+            <span aria-hidden="true" className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent font-mono text-[11px] text-on-accent">{i + 1}</span>
+            <span>{t}</span>
+          </li>
+        ))}
+      </motion.ol>
+      {mailbox(email) && (
+        <motion.a variants={item} href={mailbox(email)!.url} target="_blank" rel="noopener noreferrer" className="mt-4 flex h-12 w-full items-center justify-center rounded-xl bg-accent text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
+          Ouvrir {mailbox(email)!.name}
+        </motion.a>
+      )}
+      <motion.p variants={item} className="mt-4 text-center text-xs leading-relaxed text-foreground/60">
+        Rien reçu ? Regarde dans les spams, ou renvoie l&apos;email. Le lien marche sur n&apos;importe quel appareil.
       </motion.p>
       {resend && (
         <motion.form variants={item} action={action} className="mt-8">
@@ -241,6 +276,14 @@ function CheckMail({ email, at, lead, resend, next, onBack }: { email: string; a
         <motion.div variants={item} className="mt-4">
           <ErrorText>{state.message}</ErrorText>
         </motion.div>
+      )}
+      {resend && (
+        <motion.p variants={item} className="mt-6 text-center text-sm text-foreground/70">
+          Adresse déjà confirmée ?{" "}
+          <Link href={`/connexion?email=${encodeURIComponent(email)}${next ? `&next=${encodeURIComponent(next)}` : ""}`} className="font-medium text-foreground underline underline-offset-4">
+            Connecte-toi
+          </Link>
+        </motion.p>
       )}
       <motion.div variants={item} className="mt-4 text-center">
         <button type="button" onClick={onBack} className="text-sm text-foreground/60 underline-offset-4 transition-colors hover:text-foreground hover:underline">
@@ -267,16 +310,23 @@ function Legal() {
 
 // ─────────────────────────── Connexion ───────────────────────────
 
-export function SignInCard({ next = "", error }: { next?: string; error?: string | null }) {
+export function SignInCard({ next = "", error, email: prefill = "" }: { next?: string; error?: string | null; email?: string }) {
   const [state, action] = useActionState<AuthState, FormData>(signIn, IDLE);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(prefill);
+  const [resent, resendAction] = useActionState<AuthState, FormData>(resendVerification, IDLE);
+  const [dismissed, setDismissed] = useState<AuthState | null>(null);
   const [password, setPassword] = useState("");
   const nextQ = next ? `?next=${encodeURIComponent(next)}` : "";
   const message = state.status === "error" ? state.message : error;
+  const unverified = state.status === "error" && state.code === "email-non-verifie";
+
+  if (resent.status === "sent" && dismissed !== resent) {
+    return <CheckMail email={resent.email} at={resent.at} next={next} resend={resendVerification} onBack={() => setDismissed(resent)} lead="On t'a renvoyé un lien pour activer ton compte. Il est valable 24 h." />;
+  }
 
   return (
     <Shell
-      title="Connexion à SYXTEE"
+      title={<>Connexion à <Mark>SYXTEE</Mark></>}
       sub={
         <>
           Pas encore de compte ?{" "}
@@ -315,6 +365,15 @@ export function SignInCard({ next = "", error }: { next?: string; error?: string
         <motion.div variants={item} className="mt-4">
           <ErrorText>{message}</ErrorText>
         </motion.div>
+      )}
+      {unverified && (
+        <motion.form variants={item} action={resendAction} className="mt-3">
+          <input type="hidden" name="email" value={email.trim()} />
+          <input type="hidden" name="next" value={next} />
+          <button type="submit" className="h-11 w-full rounded-xl border border-foreground/20 bg-foreground/[0.08] text-sm font-medium text-foreground transition-colors hover:bg-foreground/[0.14]">
+            Renvoyer l&apos;email de confirmation
+          </button>
+        </motion.form>
       )}
 
       <motion.p variants={item} className="mt-10 rounded-xl border border-foreground/20 bg-foreground/[0.08] p-4 text-center text-xs leading-relaxed text-foreground/55">
@@ -355,7 +414,7 @@ export function SignUpCard({ next = "", error, email: prefill = "" }: { next?: s
   const mismatch = confirm.length > 0 && confirm !== password;
   return (
     <Shell
-      title="Crée ton compte SYXTEE"
+      title={<>Crée ton compte <Mark>SYXTEE</Mark></>}
       sub={
         <>
           Déjà un compte ?{" "}
@@ -429,7 +488,7 @@ export function ForgotCard({ email: initial = "", error }: { email?: string; err
     );
   }
   return (
-    <Shell title="Mot de passe oublié" sub="Indique ton adresse : on t'envoie un lien pour en choisir un nouveau.">
+    <Shell title={<>Mot de passe <Mark>oublié</Mark></>} sub="Indique ton adresse : on t'envoie un lien pour en choisir un nouveau.">
       <motion.form variants={item} action={action} className="mt-10 space-y-5">
         <Field id="email" label="Email">
           <input id="email" name="email" type="email" inputMode="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="toi@exemple.com" className={fieldCls} />
@@ -458,7 +517,7 @@ export function ResetCard({ email }: { email: string }) {
   const [confirm, setConfirm] = useState("");
   const mismatch = confirm.length > 0 && confirm !== password;
   return (
-    <Shell title="Nouveau mot de passe" sub={<>Pour le compte <span className="font-medium text-foreground">{email}</span>.</>}>
+    <Shell title={<>Nouveau <Mark>mot de passe</Mark></>} sub={<>Pour le compte <span className="font-medium text-foreground">{email}</span>.</>}>
       <motion.form variants={item} action={action} className="mt-10 space-y-5">
         {/* Aide les gestionnaires de mots de passe à associer le nouveau mot de passe au bon compte. */}
         <input type="email" name="username" autoComplete="username" value={email} readOnly hidden />

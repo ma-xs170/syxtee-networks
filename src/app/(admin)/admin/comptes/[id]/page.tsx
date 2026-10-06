@@ -1,3 +1,4 @@
+import { presenceOf } from "@/lib/presence";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArrowLink, DashHeader, DashPage, SectionTabs, Tile, TileLabel } from "@/components/dashboard/ui";
@@ -54,6 +55,7 @@ export default async function AdminAccountPage({ params, searchParams }: { param
   const active = (relays ?? []).filter((r) => !r.archived);
   const facts: [string, string][] = [
     ["Inscrit le", day(p.created_at)],
+    ["Présence", presenceOf(p.last_seen_at, u.user.last_sign_in_at).label],
     ["Dernière connexion", day(u.user.last_sign_in_at)],
     ["Relais", `${active.length} actif${active.length > 1 ? "s" : ""}${liveIds.size ? ` · ${liveIds.size} en direct` : ""}`],
     ["Twitch", p.twitch_login ? `@${p.twitch_login}` : "non lié"],

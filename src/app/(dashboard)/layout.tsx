@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { preconnect } from "react-dom";
 import { supabaseUrl } from "@/lib/supabase/env";
 import { LOW_DATA_COOKIE, LOW_DATA_PAGE } from "@/lib/low-data";
+import Heartbeat from "@/components/dashboard/Heartbeat";
 import { LiveStatusProvider } from "@/components/dashboard/LiveStatus";
 import NamesModal from "@/components/auth/NamesModal";
 import DashboardShell from "@/components/dashboard/Sidebar";
@@ -33,6 +34,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
             <Link href="/dashboard/parametres" className="hover:text-foreground">Paramètres</Link>
           </nav>
         </header>
+        <Heartbeat />
         <main>{children}</main>
       </div>
     );
@@ -43,6 +45,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
       <DashboardShell admin={isAdminEmail(user.email)}>
       {/* Prénom/nom manquants : modale hors live, bandeau pendant un live (en haut, sous la barre). */}
       {!hasNames(profile) && <NamesModal />}
+      <Heartbeat />
       <main className="flex-1">{children}</main>
       </DashboardShell>
       </TimezoneProvider>

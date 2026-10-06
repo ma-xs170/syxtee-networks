@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   // Cache navigateur : une page déjà vue ou pré-chargée reste instantanée (retour arrière, aller-retour entre onglets).
   // Les actions serveur (revalidatePath) vident ce cache, donc les listes modifiées se rafraîchissent quand même.
-  experimental: { staleTimes: { dynamic: 30, static: 180 } },
+  experimental: { staleTimes: { dynamic: 30, static: 180 }, serverActions: { bodySizeLimit: "20mb" } },
   distDir: process.env.NEXT_DIST_DIR || ".next",
   images: {
     remotePatterns: [

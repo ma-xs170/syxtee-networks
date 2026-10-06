@@ -5,6 +5,7 @@ import { DiscordTicketButton, SupportId } from "@/components/SupportId";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { fmtAgo } from "@/lib/dashboard-data";
 import { listTickets, ticketCounts } from "@/lib/support";
+import { categoryLabel } from "@/lib/support-categories";
 
 export const metadata: Metadata = { title: "Support", robots: { index: false } };
 
@@ -90,7 +91,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{t.subject}</span>
                   <span className="mt-1 block text-xs text-muted">
-                    {t.status === "resolved" ? "Résolu" : t.last_from === "staff" ? "Réponse de l'équipe" : "En attente de réponse"} · {fmtAgo(t.updated_at)}
+                    {categoryLabel(t.category)} · {t.status === "resolved" ? "Résolu" : t.last_from === "staff" ? "Réponse de l'équipe" : "En attente de réponse"} · {fmtAgo(t.updated_at)}
                   </span>
                 </span>
                 {t.status === "open" && t.last_from === "staff" && <span className="shrink-0 rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-on-accent">Nouveau</span>}

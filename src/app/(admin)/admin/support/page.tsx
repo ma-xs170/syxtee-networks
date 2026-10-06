@@ -4,6 +4,7 @@ import { DashPage } from "@/components/dashboard/ui";
 import { requireAdmin } from "@/lib/admin";
 import { fmtAgo } from "@/lib/dashboard-data";
 import { listTickets, whoIs } from "@/lib/support";
+import { categoryLabel, isCategory } from "@/lib/support-categories";
 
 export const metadata: Metadata = { title: "Admin · Support", robots: { index: false } };
 
@@ -15,23 +16,26 @@ const TABS = [
   { id: "resolus", label: "Résolues" },
 ] as const;
 
-export default async function AdminSupportPage({ searchParams }: { searchParams: Promise<{ etat?: string }> }) {
+export default async function AdminSupportPage({ searchParams }: { searchParams: Promise<{ etat?: string; categorie?: string }> }) {
   await requireAdmin();
-  const { etat } = await searchParams;
+  const { etat, categorie } = await searchParams;
   const tab = TABS.find((t) => t.id === etat) ?? TABS[0];
-  const all = await listTickets({ state: "all", limit: 300 });
+  const cat = isCategory(categorie) ? categorie : null;
+  // Une catégorie à la fois (menu de gauche) : « Tous » les regroupe, chaque catégorie reste séparée.
+  const all = (await listTickets({ state: "all", limit: 300 })).filter((t) => !cat || t.category === cat);
+  const qs = (e: string) => `?${[cat ? `categorie=${cat}` : "", e ? `etat=${e}` : ""].filter(Boolean).join("&")}`;
   const rows = all.filter((t) => (tab.id === "resolus" ? t.status === "resolved" : tab.id === "ouverts" ? t.status === "open" : t.status === "open" && t.last_from === "user"));
   const names = await whoIs(rows.map((t) => t.user_id));
   const count = (id: (typeof TABS)[number]["id"]) => all.filter((t) => (id === "resolus" ? t.status === "resolved" : id === "ouverts" ? t.status === "open" : t.status === "open" && t.last_from === "user")).length;
 
   return (
     <DashPage>
-      <h1 className="mb-6 text-2xl font-semibold tracking-tight sm:text-3xl">Support</h1>
+      <h1 className="mb-6 text-2xl font-semibold tracking-tight sm:text-3xl">Support{cat ? ` : ${categoryLabel(cat)}` : ""}</h1>
       <nav aria-label="Filtrer" className="mb-6 flex gap-6 border-b border-line">
         {TABS.map((t) => (
           <Link
             key={t.id}
-            href={t.id === "attente" ? "/admin/support" : `/admin/support?etat=${t.id}`}
+            href={`/admin/support${qs(t.id === "attente" ? "" : t.id)}`}
             aria-current={t.id === tab.id ? "page" : undefined}
             className={`-mb-px border-b-2 pb-3 text-sm transition-colors ${t.id === tab.id ? "border-accent text-foreground" : "border-transparent text-muted hover:text-foreground"}`}
           >
@@ -50,7 +54,7 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{t.subject}</span>
                   <span className="mt-1 block text-xs text-muted">
-                    {names.get(t.user_id) ?? "Compte"} · {t.status === "resolved" ? "Résolu" : t.last_from === "user" ? "Attend ta réponse" : "Réponse envoyée"} · {fmtAgo(t.updated_at)}
+                    {names.get(t.user_id) ?? "Compte"} · {categoryLabel(t.category)} · {t.status === "resolved" ? "Résolu" : t.last_from === "user" ? "Attend ta réponse" : "Réponse envoyée"} · {fmtAgo(t.updated_at)}
                   </span>
                 </span>
                 {t.status === "open" && t.last_from === "user" && <span className="shrink-0 rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-on-accent">À répondre</span>}

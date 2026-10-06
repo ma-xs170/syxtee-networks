@@ -5,6 +5,7 @@ import { DashPage } from "@/components/dashboard/ui";
 import TicketChat from "@/components/support/TicketChat";
 import { requireUser } from "@/lib/auth/dal";
 import { getThread } from "@/lib/support";
+import { categoryLabel } from "@/lib/support-categories";
 import { closeTicketAction, replyAction } from "../actions";
 
 export const metadata: Metadata = { title: "Demande de support", robots: { index: false } };
@@ -27,7 +28,7 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
       <div className="mb-8 mt-4 flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <h1 className="break-words text-2xl font-semibold tracking-tight sm:text-3xl">{ticket.subject}</h1>
-          <p className="mt-2 text-sm text-muted">{ticket.status === "resolved" ? "Résolu" : "En cours"}</p>
+          <p className="mt-2 text-sm text-muted">{categoryLabel(ticket.category)} · {ticket.status === "resolved" ? "Résolu" : "En cours"}</p>
         </div>
         {ticket.status === "open" && (
           <form action={closeTicketAction.bind(null, ticket.id)}>
@@ -41,7 +42,7 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_240px]">
         <TicketChat
           viewer="user"
-          messages={messages.map((m) => ({ id: m.id, from_staff: m.from_staff, body: m.body, created_at: m.created_at, name: "Équipe SYXTEE" }))}
+          messages={messages.map((m) => ({ id: m.id, from_staff: m.from_staff, body: m.body, created_at: m.created_at, name: "Équipe SYXTEE", photos: m.photos }))}
           action={replyAction.bind(null, ticket.id)}
           hint={ticket.status === "resolved" ? "Écrire ici rouvre la demande." : undefined}
         />

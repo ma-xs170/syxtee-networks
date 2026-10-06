@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin";
 import { audit } from "@/lib/plan-admin";
-import { getThread } from "@/lib/support";
+import { getThread, savePhotos } from "@/lib/support";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // Support côté équipe : répondre à un ticket (le client reçoit une notification dans sa cloche) et le clore ou le rouvrir.
@@ -12,16 +12,20 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export type StaffReplyState = { error?: string };
 
-const body = z.string().trim().min(1, "Écris ta réponse.").max(4000, "Réponse : 4000 caractères au plus.");
+const body = z.string().trim().max(4000, "Réponse : 4000 caractères au plus.");
 
 export async function staffReplyAction(ticketId: string, _prev: StaffReplyState, form: FormData): Promise<StaffReplyState> {
   const admin = await requireAdmin();
   const parsed = body.safeParse(form.get("body"));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Écris ta réponse." };
+  const withPhotos = form.getAll("photos").some((f) => f instanceof File && f.size > 0);
+  if (!parsed.data && !withPhotos) return { error: "Écris ta réponse ou ajoute une photo." };
   const thread = await getThread(ticketId);
   if (!thread) return { error: "Demande introuvable." };
+  const photos = await savePhotos(ticketId, form);
+  if ("error" in photos) return { error: photos.error };
   const db = createAdminClient();
-  const { error } = await db.from("support_messages").insert({ ticket_id: ticketId, author_id: admin.id, from_staff: true, body: parsed.data });
+  const { error } = await db.from("support_messages").insert({ ticket_id: ticketId, author_id: admin.id, from_staff: true, body: parsed.data, attachments: photos.attachments });
   if (error) return { error: "Envoi impossible." };
   const now = new Date().toISOString();
   await db

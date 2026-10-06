@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { SUPPORT_CATEGORIES, type SupportCategory } from "@/lib/support-categories";
 import type { ComponentType, ReactNode } from "react";
 import { ChartLineUp, ClockCounterClockwise, Globe, Key, Lifebuoy, MapTrifold, Radio, ShieldWarning, SquaresFour, Users, UsersThree, Bell, Robot, Tag, type IconProps } from "@/components/icons";
 import { signOut } from "@/app/(auth)/actions";
@@ -15,17 +16,27 @@ import { useState } from "react";
 // /admin/2fa (double authentification) la barre est masquée. Mobile : navigation en rangée défilante.
 
 type Icon = ComponentType<IconProps>;
-type Item = { label: string; href: string; badge?: number; icon: Icon };
+type Item = { label: string; href: string; badge?: number; icon: Icon; children?: { label: string; href: string; badge: number; key: string }[] };
+export type SupportBadges = { all: number; byCategory: Record<SupportCategory, number> };
 type Group = { title?: string; items: Item[] };
 
-function groups(openTickets: number, pending: number): Group[] {
+function groups(support: SupportBadges, pending: number): Group[] {
   return [
     { items: [{ icon: SquaresFour, label: "Vue d'ensemble", href: "/admin" }] },
     {
       title: "Clients",
       items: [
         { icon: Key, label: "Demandes d'accès", href: "/admin/acces", badge: pending },
-        { icon: Lifebuoy, label: "Support", href: "/admin/support", badge: openTickets },
+        {
+          icon: Lifebuoy,
+          label: "Support",
+          href: "/admin/support",
+          // Tous, puis chaque catégorie séparément : une pastille par catégorie (demandes qui attendent une réponse).
+          children: [
+            { key: "tous", label: "Tous", href: "/admin/support", badge: support.all },
+            ...SUPPORT_CATEGORIES.map((c) => ({ key: c.id, label: c.label, href: `/admin/support?categorie=${c.id}`, badge: support.byCategory[c.id] })),
+          ],
+        },
         { icon: Users, label: "Comptes", href: "/admin/comptes" },
         { icon: UsersThree, label: "Partenaires", href: "/admin/partenaires" },
         { icon: Bell, label: "Notifications", href: "/admin/notifications" },
@@ -52,11 +63,13 @@ function groups(openTickets: number, pending: number): Group[] {
   ];
 }
 
-export default function AdminShell({ openTickets, pendingAccess, name, children }: { openTickets: number; pendingAccess: number; name: string; children: ReactNode }) {
+export default function AdminShell({ support, pendingAccess, name, children }: { support: SupportBadges; pendingAccess: number; name: string; children: ReactNode }) {
   const path = usePathname();
+  const category = useSearchParams().get("categorie");
   const [hover, setHover] = useState<string | null>(null);
   if (path === "/admin/2fa") return <>{children}</>;
-  const all = groups(openTickets, pendingAccess);
+  const all = groups(support, pendingAccess);
+  const onSupport = path === "/admin/support" || path.startsWith("/admin/support/");
   const active = (href: string) => (href === "/admin" ? path === "/admin" : path === href || path.startsWith(`${href}/`));
 
   return (
@@ -91,6 +104,25 @@ export default function AdminShell({ openTickets, pendingAccess, name, children 
                         <span className="relative z-10 flex-1">{it.label}</span>
                         {!!it.badge && <span className="relative z-10 rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold tabular-nums text-on-accent">{it.badge}</span>}
                       </Link>
+                      {it.children && (
+                        <ul aria-label="Catégories du support" className="ml-5 mt-1 space-y-0.5 border-l border-line pl-3">
+                          {it.children.map((c) => {
+                            const here = onSupport && (c.key === "tous" ? !category : category === c.key);
+                            return (
+                              <li key={c.key}>
+                                <Link
+                                  href={c.href}
+                                  aria-current={here && path === "/admin/support" ? "page" : undefined}
+                                  className={`flex items-center justify-between gap-2 rounded-md px-2.5 py-1.5 text-[13px] transition-colors ${here ? "bg-foreground/10 font-semibold text-foreground" : "text-muted hover:bg-foreground/[0.06] hover:text-foreground"}`}
+                                >
+                                  <span className="truncate">{c.label}</span>
+                                  {c.badge > 0 && <span className="rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-on-accent">{c.badge}</span>}
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
                     </li>
                   );
                 })}
@@ -120,12 +152,12 @@ export default function AdminShell({ openTickets, pendingAccess, name, children 
           <Link href="/dashboard" className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm text-muted">
             ← Dashboard
           </Link>
-          {all.flatMap((g) => g.items).map((it) => (
+          {all.flatMap((g) => g.items).flatMap((it) => (it.children ? it.children.map((c) => ({ ...it, key: c.key, label: c.key === "tous" ? "Support" : c.label, href: c.href, badge: c.badge, children: undefined })) : [{ ...it, key: it.href }])).map((it) => (
             <Link
-              key={it.href}
+              key={it.key}
               href={it.href}
-              aria-current={active(it.href) ? "page" : undefined}
-              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm ${active(it.href) ? "bg-foreground/10 text-foreground" : "text-muted"}`}
+              aria-current={active(it.href.split("?")[0]) ? "page" : undefined}
+              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm ${active(it.href.split("?")[0]) ? "bg-foreground/10 text-foreground" : "text-muted"}`}
             >
               {it.label}
               {!!it.badge && <span className="ml-1.5 tabular-nums text-accent">{it.badge}</span>}

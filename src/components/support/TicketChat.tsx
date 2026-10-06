@@ -3,12 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef } from "react";
 import { PaperPlaneTilt } from "@/components/icons";
+import PhotoPicker from "./PhotoPicker";
 
 // Fil de discussion d'un ticket (espace client et admin). Les messages de celui qui regarde sont à droite, ceux de
 // l'autre à gauche. La page se rafraîchit toute seule toutes les 10 s tant qu'elle est visible ; Entrée envoie,
 // Maj + Entrée passe à la ligne.
 
-export type ChatMessage = { id: string; from_staff: boolean; body: string; created_at: string; name: string };
+export type ChatMessage = { id: string; from_staff: boolean; body: string; created_at: string; name: string; photos?: { url: string; name: string }[] };
 type ReplyState = { error?: string };
 
 const time = (iso: string) =>
@@ -54,13 +55,25 @@ export default function TicketChat({
           return (
             <li key={m.id} className={`flex flex-col gap-1 ${mine ? "items-end" : "items-start"}`}>
               <p className="px-1 text-xs text-muted">{mine ? "Toi" : m.name}</p>
-              <p
-                className={`max-w-[min(34rem,85%)] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                  mine ? "rounded-br-md bg-accent text-on-accent" : "rounded-bl-md border border-line bg-surface"
-                }`}
-              >
-                {m.body}
-              </p>
+              {m.body && (
+                <p
+                  className={`max-w-[min(40rem,88%)] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                    mine ? "rounded-br-md bg-accent text-on-accent" : "rounded-bl-md border border-line bg-surface"
+                  }`}
+                >
+                  {m.body}
+                </p>
+              )}
+              {!!m.photos?.length && (
+                <div className={`flex max-w-[min(40rem,88%)] flex-wrap gap-2 ${mine ? "justify-end" : ""}`}>
+                  {m.photos.map((ph) => (
+                    <a key={ph.url} href={ph.url} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-xl border border-line">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- URL signée du stockage, pas une image du site */}
+                      <img src={ph.url} alt={ph.name || "Photo jointe"} loading="lazy" className="max-h-56 max-w-full object-cover" />
+                    </a>
+                  ))}
+                </div>
+              )}
               <p className="px-1 font-mono text-[11px] text-muted">{time(m.created_at)}</p>
             </li>
           );
@@ -78,7 +91,6 @@ export default function TicketChat({
             name="body"
             rows={3}
             maxLength={4000}
-            required
             placeholder="Écris ton message"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
@@ -88,8 +100,9 @@ export default function TicketChat({
             }}
             className="block w-full resize-none bg-transparent px-1 text-sm text-foreground placeholder:text-muted focus:outline-none"
           />
-          <div className="flex items-center justify-between gap-3 pt-2">
-            <p className="text-xs text-muted">{hint ?? "Entrée pour envoyer, Maj + Entrée pour un retour à la ligne."}</p>
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <PhotoPicker />
+            <p className="order-last basis-full text-xs text-muted sm:order-none sm:basis-auto">{hint ?? "Entrée pour envoyer, Maj + Entrée pour un retour à la ligne."}</p>
             <button
               type="submit"
               disabled={pending}

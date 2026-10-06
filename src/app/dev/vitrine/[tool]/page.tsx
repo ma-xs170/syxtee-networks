@@ -138,7 +138,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
       )}
       {tool === "admin" && (
         <div className="-m-8">
-          <AdminShell openTickets={3} pendingAccess={2} name="admin@syxtee.fr">
+          <AdminShell support={{ all: 3, byCategory: { relais: 2, compte: 1, facturation: 0, bug: 0, suggestion: 0, autre: 0 } }} pendingAccess={2} name="admin@syxtee.fr">
             <div className="mx-auto max-w-7xl px-6 pb-20 pt-12">
               <h1 className="mb-8 text-2xl font-semibold tracking-tight sm:text-3xl">Demandes d&apos;accès</h1>
               <ul className="space-y-4">

@@ -196,6 +196,8 @@ export function buildServer(d: Deps) {
         archived: z.boolean().optional(),
         mode: z.enum(["direct", "regie"]).optional(),
         record: z.boolean().optional(),
+        /** Changer de serveur : même relais, mêmes clés. */
+        server: z.string().regex(/^[a-z0-9]{2,12}$/).optional(),
         limit: z.number().int().min(0).default(0),
       })
       .parse(req.body);
@@ -208,8 +210,10 @@ export function buildServer(d: Deps) {
         if (body.record && !d.recordings) return reply.code(409).send({ error: "record_disabled" });
         r = await d.relays.setRecord(r, body.record);
       }
+      if (body.server !== undefined) r = await d.relays.move(r, body.server);
       if (body.archived !== undefined) r = await d.relays.setArchived(r, body.archived, body.limit);
     } catch (e) {
+      if (e instanceof PortsError) return reply.code(409).send({ error: "rist_ports_full" });
       if (e instanceof QuotaError) return reply.code(403).send({ error: "quota" });
       if (e instanceof ForbiddenError) return reply.code(403).send({ error: "forbidden" });
       throw e;

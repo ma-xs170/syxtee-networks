@@ -246,6 +246,28 @@ export function createRelayStore(
       return data ? decode(data as unknown as Row) : (await get(r.id))!;
     },
 
+    /**
+     * Change le relais de serveur sans le recréer : même id, mêmes clés, mêmes URLs (seul le serveur qui répond change).
+     * Ce Core retire la paire du SLS s'il quitte ce serveur, la déclare s'il l'accueille ; l'autre Core se réaligne
+     * tout seul (reconcile). Le port RIST est propre à chaque serveur : repris ici, ou attribué par le Core d'arrivée.
+     */
+    async move(r: Relay, target: string): Promise<Relay> {
+      if (r.server === target) return r;
+      const leaves = r.server === server && !r.archived;
+      const arrives = target === server && !r.archived;
+      const rist = r.protocol === "rist" ? { rist_port: target === server ? await freeRistPort() : null } : {};
+      if (arrives) await register(r, r);
+      let moved: Relay;
+      try {
+        moved = await update(r.id, { server: target, ...rist, ...(leaves ? { status: "offline" } : {}) });
+      } catch (e) {
+        if (arrives) await unregister(r).catch(() => {});
+        throw e;
+      }
+      if (leaves) await unregister(r).catch((e) => log(`déplacement ${r.id.slice(0, 8)} : retrait du SLS à refaire (${(e as Error).message})`));
+      return moved;
+    },
+
     rename: (r: Relay, name: string) => update(r.id, { name }),
     setMode: (r: Relay, mode: Mode) => update(r.id, { mode }),
     setRecord: (r: Relay, record: boolean) => update(r.id, { record }),
@@ -304,6 +326,11 @@ export function createRelayStore(
      */
     async reconcile(): Promise<{ relays: Relay[]; added: number; removed: number }> {
       const ok = await allowed(); // base illisible : exception, on ne retire rien
+      // Relais RIST arrivé d'un autre serveur : il n'a pas encore de port sur celui-ci.
+      for (let i = 0; i < ok.length; i++) {
+        const r = ok[i]!;
+        if (r.protocol === "rist" && !r.rist_port && o.ristPorts) ok[i] = await update(r.id, { rist_port: await freeRistPort() }).catch(() => r);
+      }
       const want = new Map<string, { r: Relay; publisher: string; regie: boolean }>();
       for (const r of ok) {
         want.set(r.play_id, { r, publisher: r.publish_id, regie: false });

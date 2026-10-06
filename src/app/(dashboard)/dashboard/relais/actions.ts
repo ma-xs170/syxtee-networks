@@ -106,6 +106,12 @@ export async function deleteRelayAction(relayId: string) {
   return run(relayId, "relay-delete", 20, (u) => deleteRelay(u, relayId), null);
 }
 
+/** Change le relais de serveur sans le recréer : même id, mêmes clés. Le direct en cours est coupé. */
+export async function changeServerAction(relayId: string, server: string) {
+  if (!serverById(server)?.available) return { error: "Ce serveur n'est pas encore disponible." };
+  return run(relayId, "relay-move", 10, (u) => updateRelay(u, relayId, { server }));
+}
+
 /** Mode de sortie d'un relais : Direct (OBS lit l'encodeur) ou Régie (mire automatique si l'encodeur coupe). */
 export async function changeModeAction(relayId: string, mode: "direct" | "regie") {
   const r = await run(relayId, "mode", 20, (u) => updateRelay(u, relayId, { mode }), "mire");

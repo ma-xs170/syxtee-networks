@@ -2,13 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { archiveRelayAction, deleteRelayAction, renameRelayAction, rotateRelayAction, setRecordAction, type RelayActionState } from "@/app/(dashboard)/dashboard/relais/actions";
+import { archiveRelayAction, changeServerAction, deleteRelayAction, renameRelayAction, rotateRelayAction, setRecordAction, type RelayActionState } from "@/app/(dashboard)/dashboard/relais/actions";
 import type { RelayView } from "@/lib/core";
+import { flag, RELAY_SERVERS } from "@/lib/relay-servers";
 
 // Actions d'un relais : Copier l'URL (clé jamais affichée ici), Voir, et un menu (Renommer, Régénérer la clé,
 // Archiver ou Réactiver, Supprimer). Les actions qui coupent des URLs passent par une confirmation.
 
-type Pending = "rename" | "rotate" | "archive" | "delete" | null;
+type Pending = "rename" | "server" | "rotate" | "archive" | "delete" | null;
 
 /** URL que l'encodeur colle : SRTLA pour Moblin, URL RTMP ou RIST complète sinon. */
 export const ingestUrl = (r: Pick<RelayView, "protocol" | "urls">) => (r.protocol === "rist" ? r.urls.rist_url : r.protocol === "rtmp" ? r.urls.rtmp_url : r.urls.srtla_url) ?? "";
@@ -22,6 +23,8 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState(relay.name);
+  const otherServers = RELAY_SERVERS.filter((s) => s.available && s.id !== relay.server);
+  const [target, setTarget] = useState(otherServers[0]?.id ?? "");
   const [pending, start] = useTransition();
   const menuRef = useRef<HTMLDivElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -77,6 +80,7 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
     start(async () => {
       let r: RelayActionState = {};
       if (ask === "rename") r = await renameRelayAction(relay.id, name);
+      if (ask === "server") r = await changeServerAction(relay.id, target);
       if (ask === "rotate") r = await rotateRelayAction(relay.id);
       if (ask === "archive") r = await archiveRelayAction(relay.id, !relay.archived);
       if (ask === "delete") r = await deleteRelayAction(relay.id);
@@ -88,6 +92,11 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
 
   const texts: Record<Exclude<Pending, null>, { title: string; body: string; cta: string; danger?: boolean }> = {
     rename: { title: "Renommer le relais", body: "Le nom de l'appareil qui utilise ce relais. Les URLs ne changent pas.", cta: "Renommer" },
+    server: {
+      title: "Changer de serveur",
+      body: "Le relais garde le même identifiant, la même clé et la même adresse : rien à recoller dans ton encodeur ni dans OBS. Si tu diffuses en ce moment, le direct est coupé quelques secondes.",
+      cta: "Changer de serveur",
+    },
     rotate: {
       title: "Régénérer la clé",
       body: "Les URLs actuelles de ce relais cesseront de marcher immédiatement. Tu devras coller les nouvelles dans ton encodeur et dans OBS.",
@@ -137,6 +146,7 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
             {(
               [
                 ["rename", "Renommer"],
+                ...(otherServers.length > 0 ? [["server", "Changer de serveur"]] : []),
                 ...(relay.archived ? [] : [["rotate", "Régénérer la clé"]]),
                 ["archive", relay.archived ? "Réactiver" : "Archiver"],
                 ["delete", "Supprimer"],
@@ -200,6 +210,25 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
                 />
               </div>
             )}
+            {ask === "server" && (
+              <div className="mt-4">
+                <label htmlFor={`server-${relay.id}`} className="text-sm">
+                  Nouveau serveur
+                </label>
+                <select
+                  id={`server-${relay.id}`}
+                  value={target}
+                  onChange={(e) => setTarget(e.target.value)}
+                  className="mt-2 h-11 w-full rounded-xl border border-line bg-background px-4 text-sm text-foreground focus:border-foreground/70 focus:outline-none"
+                >
+                  {otherServers.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {flag(s.cc)} {s.city}, {s.country}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             {error && (
               <p role="alert" className="mt-4 text-sm text-red-400">
                 {error}
@@ -208,7 +237,7 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <button
                 type="submit"
-                disabled={pending || (ask === "rename" && !name.trim())}
+                disabled={pending || (ask === "rename" && !name.trim()) || (ask === "server" && !target)}
                 className={`h-11 whitespace-nowrap rounded-full px-5 text-sm font-medium transition-colors disabled:opacity-60 ${
                   t.danger ? "border border-red-400/40 text-red-300 hover:bg-red-400/10" : "bg-accent text-on-accent hover:bg-accent-hover"
                 }`}

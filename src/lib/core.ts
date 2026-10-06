@@ -83,7 +83,7 @@ export async function createRelay(userId: string, body: { name: string; protocol
   if (!relay) throw new CoreOutdated("Core sans /relays : mise à jour du VPS nécessaire");
   return relay;
 }
-export const updateRelay = (userId: string, relayId: string, patch: { name?: string; archived?: boolean; mode?: RelayView["mode"]; record?: boolean; limit?: number }) =>
+export const updateRelay = (userId: string, relayId: string, patch: { name?: string; archived?: boolean; mode?: RelayView["mode"]; record?: boolean; server?: string; limit?: number }) =>
   core<RelayView>(`/v1/users/${userId}/relays/${relayId}`, "PATCH", patch);
 /** Nouvelle clé : l'ancienne cesse de marcher immédiatement. */
 export const rotateRelay = (userId: string, relayId: string) => core<RelayView>(`/v1/users/${userId}/relays/${relayId}/rotate`, "POST");

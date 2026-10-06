@@ -170,7 +170,16 @@ const remote = config.LINK_ENABLED
 const backups = remote ? createBackups({ db: supabase as never, dir: join(config.DATA_DIR, "link-backups"), log }) : null;
 
 // Aperçu vidéo du programme d'OBS (WHIP du plugin → MediaMTX → WHEP du navigateur) : même MediaMTX et même WHIP que la Cam, aucun transcodage.
-const obsPreview = remote && camWhipBase ? createObsPreview({ whipBase: camWhipBase, apiUrl: config.MEDIAMTX_API_URL, security, log }) : null;
+/** WEBRTC_ICE_SERVERS : tableau JSON, ignoré s'il est invalide. */
+function parseIce(raw?: string): unknown[] {
+  try {
+    const v = raw ? JSON.parse(raw) : [];
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
+const obsPreview = remote && camWhipBase ? createObsPreview({ whipBase: camWhipBase, apiUrl: config.MEDIAMTX_API_URL, security, iceServers: parseIce(config.WEBRTC_ICE_SERVERS), log }) : null;
 
 // SYXTEE STUDIO : le navigateur publie en WebRTC (même WHIP que la Cam), le Core diffuse en RTMP vers les plateformes.
 const studio =

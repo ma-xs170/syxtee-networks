@@ -88,6 +88,8 @@ const schema = z.object({
   // Adresse publique du WHIP (Caddy → MediaMTX). Par défaut : https://cam.<CORE_DOMAIN>
   CAM_WHIP_BASE: z.string().optional(),
   CORE_DOMAIN: z.string().optional(),
+  // Serveurs STUN/TURN donnés au navigateur pour l'aperçu (secours en 4G / réseaux qui bloquent l'UDP), JSON : [{"urls":["turn:..."],"username":"..","credential":".."}]
+  WEBRTC_ICE_SERVERS: z.string().optional(),
   // Sortie du relais Cam ; {host}, {port}, {publish_id} sont remplacés.
   CAM_RELAY_URL: z.string().default("srt://{host}:{port}?streamid={publish_id}&pkt_size=1316&latency=200000"),
 });

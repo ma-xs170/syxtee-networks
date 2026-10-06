@@ -24,6 +24,8 @@ export function createObsPreview(o: {
   whipBase: string;
   apiUrl: string;
   security?: Pick<Security, "isBanned"> | null;
+  /** Serveurs STUN/TURN remis au navigateur (secours quand l'UDP direct est bloqué). */
+  iceServers?: unknown[];
   log: (m: string) => void;
   now?: () => number;
   fetchImpl?: typeof fetch;
@@ -60,7 +62,7 @@ export function createObsPreview(o: {
     },
 
     /** Le navigateur du compte veut lire : adresse WHEP si une session existe. `ready` : l'image arrive (vérifié auprès de MediaMTX). */
-    async watch(userId: string): Promise<{ whep_url: string | null; ready: boolean }> {
+    async watch(userId: string): Promise<{ whep_url: string | null; ready: boolean; ice_servers?: unknown[] }> {
       const path = byUser.get(userId);
       const s = path ? sessions.get(path) : undefined;
       if (!path || !s) return { whep_url: null, ready: false };
@@ -72,7 +74,7 @@ export function createObsPreview(o: {
       } catch {
         // MediaMTX absent : pas prêt
       }
-      return { whep_url: `${o.whipBase}/${path}/whep`, ready };
+      return { whep_url: `${o.whipBase}/${path}/whep`, ready, ...(o.iceServers?.length ? { ice_servers: o.iceServers } : {}) };
     },
 
     /** Signe de vie de l'agent (il publie encore). */

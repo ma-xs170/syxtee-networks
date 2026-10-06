@@ -72,7 +72,23 @@ try {
   const pub = await browser.newPage();
   await pub.goto(`http://127.0.0.1:${P.auth}/pub`);
   const published = await pub.evaluate(async (url) => {
-    const media = await navigator.mediaDevices.getUserMedia({ video: { width: 960, height: 540 }, audio: true });
+    // Image : un canevas 960×540 où l'heure (ms, 40 bits) est dessinée en blocs noir/blanc à chaque image. Le lecteur la relit et en
+    // déduit la latence réelle de bout en bout (même horloge : même machine). Le son vient du micro factice de Chromium.
+    const cv = Object.assign(document.createElement("canvas"), { width: 960, height: 540 });
+    const g = cv.getContext("2d");
+    const draw = () => {
+      g.fillStyle = "#777";
+      g.fillRect(0, 0, 960, 540);
+      let t = Date.now();
+      for (let i = 0; i < 40; i++) {
+        g.fillStyle = Math.floor(t / 2 ** i) % 2 ? "#fff" : "#000";
+        g.fillRect(i * 24, 0, 24, 48);
+      }
+      requestAnimationFrame(draw);
+    };
+    draw();
+    const mic = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const media = new MediaStream([...cv.captureStream(30).getVideoTracks(), ...mic.getAudioTracks()]);
     const pc = new RTCPeerConnection();
     media.getTracks().forEach((t) => pc.addTrack(t, media));
     await pc.setLocalDescription(await pc.createOffer());
@@ -129,6 +145,31 @@ try {
   await page.getByRole("button", { name: "Muet" }).click();
   await page.waitForTimeout(300);
   check("bouton Son : le son se remet, volume local", (await page.evaluate(() => document.querySelector("video")?.muted)) === false && (await page.getByLabel("Volume de l'aperçu").count()) === 1);
+  // Latence réelle : l'heure dessinée par l'éditeur, relue dans l'image affichée (voir plus haut). 60 mesures sur 6 s.
+  const lat = await page.evaluate(async () => {
+    const v = document.querySelector("video");
+    const c = Object.assign(document.createElement("canvas"), { width: 960, height: 540 });
+    const g = c.getContext("2d", { willReadFrequently: true });
+    const out = [];
+    for (let n = 0; n < 60; n++) {
+      await new Promise((r) => setTimeout(r, 100));
+      g.drawImage(v, 0, 0, 960, 540);
+      let t = 0;
+      for (let i = 0; i < 40; i++) {
+        const d = g.getImageData(i * 24 + 8, 16, 8, 16).data;
+        let sum = 0;
+        for (let k = 0; k < d.length; k += 4) sum += d[k];
+        if (sum / (d.length / 4) > 128) t += 2 ** i;
+      }
+      const ms = (((Date.now() - t) % 2 ** 40) + 2 ** 40) % 2 ** 40; // heure dessinée sur 40 bits
+      if (ms > 0 && ms < 5000) out.push(ms);
+    }
+    return out;
+  });
+  lat.sort((a, b) => a - b);
+  const med = lat[Math.floor(lat.length / 2)];
+  console.log(`   latence bout en bout (publication WHIP → MediaMTX → WHEP → image affichée), ${lat.length} mesures : médiane ${med} ms, min ${lat[0]} ms, p95 ${lat[Math.floor(lat.length * 0.95)]} ms`);
+  check("latence médiane sous 500 ms", lat.length > 20 && med < 500);
   await page.screenshot({ path: process.env.SHOT ?? join(dir, "preview.png") });
 
   // Fin de session : le flux est coupé, plus aucune lecture possible.

@@ -66,20 +66,9 @@ export default function ProgramPreview({ sinkRef, program, live, title = "Progra
   }, [sinkRef]);
 
   return (
-    <section aria-label={title} className="overflow-hidden rounded-2xl border border-line bg-surface-2">
-      <div className="relative aspect-video w-full bg-foreground/5">
-        <canvas ref={canvas} role="img" aria-label={`${title} : ${program}`} className={`h-full w-full object-contain transition-opacity duration-300 ${hasFrame ? "opacity-100" : "opacity-0"}`} />
-        {!hasFrame && (
-          <div className="absolute inset-0 flex animate-pulse items-center justify-center font-mono text-xs uppercase tracking-wider text-muted">Aperçu en attente</div>
-        )}
-        {program && (
-          <span className="absolute left-3 top-3 max-w-[70%] truncate rounded-md bg-background/80 px-2 py-1 font-mono text-[11px] text-foreground backdrop-blur-sm">
-            {tag && <span className="mr-2 text-muted">{tag}</span>}
-            {program}
-          </span>
-        )}
-        {live && <span className="absolute right-3 top-3 rounded-md bg-live px-2 py-1 font-mono text-[11px] font-semibold text-white">EN DIRECT</span>}
-      </div>
-    </section>
+    <div className="relative h-full w-full" data-live={live} data-tag={tag}>
+      <canvas ref={canvas} role="img" aria-label={`${title} : ${program}`} className={`h-full w-full object-contain ${hasFrame ? "opacity-100" : "opacity-0"}`} />
+      {!hasFrame && <div className="absolute inset-0 grid place-items-center text-[13px] text-neutral-400">En attente de l&apos;image…</div>}
+    </div>
   );
 }

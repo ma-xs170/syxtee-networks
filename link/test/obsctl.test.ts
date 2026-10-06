@@ -261,7 +261,9 @@ run("aperçu vidéo : sortie WHIP native d'OBS, encodeur matériel, vidéo rédu
     assert.equal(info.videoSettings.bf, 0); // pas d'image B : exigé par WebRTC
     assert.equal(info.videoSettings.bitrate, 1200);
     assert.equal(info.videoSettings.rate_control, "CBR");
-    assert.equal(info.audioSettings.bitrate, 96);
+    assert.equal(info.audioSettings.bitrate, 64);
+    assert.equal(info.videoSettings.keyint_sec, 1); // image clé chaque seconde
+    assert.equal(info.videoSettings.allow_frame_reordering, false);
     assert.equal((await obs.request<any>("link.whipStatus")).active, true);
 
     // L'envoi s'interrompt côté OBS : l'agent en est prévenu avec la raison

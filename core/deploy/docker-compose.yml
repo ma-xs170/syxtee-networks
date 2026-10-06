@@ -51,6 +51,18 @@ services:
     restart: unless-stopped
     logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
 
+  # TURN (coturn) : secours de l'aperçu du Contrôle à distance quand le navigateur (4G, réseau d'entreprise) ne joint pas MediaMTX en UDP.
+  # Ouvrir 3478/udp+tcp et 49160-49200/udp (UFW). Puis dans .env : TURN_USER, TURN_PASSWORD, TURN_HOST et
+  # WEBRTC_ICE_SERVERS='[{"urls":["turn:<TURN_HOST>:3478?transport=udp","turn:<TURN_HOST>:3478?transport=tcp"],"username":"<TURN_USER>","credential":"<TURN_PASSWORD>"}]'
+  coturn:
+    image: coturn/coturn:4.6
+    network_mode: host
+    env_file: .env
+    command: ["-n", "--lt-cred-mech", "--realm=syxtee-networks.fr", "--fingerprint", "--no-multicast-peers", "--no-cli", "--min-port=49160", "--max-port=49200", "--user=${TURN_USER}:${TURN_PASSWORD}", "--external-ip=${TURN_EXTERNAL_IP}"]
+    profiles: ["turn"]
+    restart: unless-stopped
+    logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
+
   # SYXTEE Bot : bot Discord (nouveautés, /services, alertes). HTTP sur 127.0.0.1:8790 (webhook GitHub, /announce).
   bot:
     build:

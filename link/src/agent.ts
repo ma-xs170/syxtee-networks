@@ -26,7 +26,7 @@ export const OBS_METHODS = new Set([
   "SetInputMute", "SetInputVolume", "StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord",
 ]);
 
-/** Événements OBS relayés vers le navigateur (les niveaux audio sont limités à 5 images par seconde). */
+/** Événements OBS relayés vers le navigateur (les niveaux audio sont limités à 20 images par seconde). */
 const EVENTS = new Set([
   "CurrentProgramSceneChanged", "CurrentPreviewSceneChanged", "SceneListChanged", "StreamStateChanged", "RecordStateChanged",
   "InputMuteStateChanged", "InputVolumeChanged", "SceneItemEnableStateChanged", "StudioModeStateChanged", "ExitStarted",
@@ -398,7 +398,7 @@ export class Agent {
   /** Niveaux audio : 5 fois par seconde au plus, en dB, par entrée. */
   private meters(data: Record<string, unknown>) {
     const t = Date.now();
-    if (t - this.lastMeters < 200) return;
+    if (t - this.lastMeters < 45) return;
     this.lastMeters = t;
     const inputs = (data.inputs as { inputName: string; inputLevelsMul: number[][] }[]) ?? [];
     const levels: Record<string, number> = {};

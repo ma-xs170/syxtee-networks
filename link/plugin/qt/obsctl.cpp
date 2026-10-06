@@ -420,21 +420,24 @@ Json startWhip(const Json &d)
 		stopWhip();
 		throw Fail{"Cet OBS ne sait pas envoyer en WHIP (obs-webrtc absent ou trop ancien)."};
 	}
-	// Vidéo : H.264 sans image B (exigé par WebRTC), image clé toutes les 2 s, débit constant.
+	// Vidéo : H.264 sans image B (exigé par WebRTC), image clé toutes les secondes, débit constant, réglages faible latence.
 	obs_data_t *vs = obs_data_create();
 	obs_data_set_int(vs, "bitrate", kbps);
 	obs_data_set_string(vs, "rate_control", "CBR");
-	obs_data_set_int(vs, "keyint_sec", 2);
+	obs_data_set_int(vs, "keyint_sec", 1);
 	obs_data_set_string(vs, "profile", "baseline");
 	obs_data_set_int(vs, "bf", 0);
 	obs_data_set_bool(vs, "bframes", false);
+	// VideoToolbox : encodage temps réel, pas de réordonnancement d'images.
+	obs_data_set_bool(vs, "realtime", true);
+	obs_data_set_bool(vs, "allow_frame_reordering", false);
 	obs_data_set_string(vs, "preset", "veryfast");
 	obs_data_set_string(vs, "tune", "zerolatency");
 	obs_data_set_string(vs, "x264opts", "bframes=0 scenecut=0");
 	whip.video = obs_video_encoder_create(encId.toUtf8().constData(), "syxtee_preview_video", vs, nullptr);
 	obs_data_release(vs);
 	obs_data_t *as = obs_data_create();
-	obs_data_set_int(as, "bitrate", 96);
+	obs_data_set_int(as, "bitrate", 64);
 	whip.audio = obs_audio_encoder_create("ffmpeg_opus", "syxtee_preview_audio", as, 0, nullptr);
 	obs_data_release(as);
 	if (!whip.video || !whip.audio) {
@@ -1134,7 +1137,7 @@ bool syxtee_obsctl_start(const char *path)
 	signal_handler_connect(g, "source_destroy", sourceDestroyCb, nullptr);
 	meterTimer = new QTimer(server);
 	QObject::connect(meterTimer, &QTimer::timeout, meterTimer, [] { tickMeters(); });
-	meterTimer->start(200);
+	meterTimer->start(50);
 	statsTimer = new QTimer(server);
 	QObject::connect(statsTimer, &QTimer::timeout, statsTimer, [] { tickStats(); });
 	statsTimer->start(1000);

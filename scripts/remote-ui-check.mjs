@@ -57,7 +57,7 @@ function handle(ws, m) {
 }
 
 const browser = await chromium.launch();
-const ctx = await browser.newContext({ viewport: { width: 1400, height: 1000 }, colorScheme: "dark", reducedMotion: "reduce" });
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: "dark", reducedMotion: "reduce" });
 const page = await ctx.newPage();
 page.on("pageerror", (e) => console.log("pageerror", e.message));
 page.on("console", (m) => m.type() === "error" && console.log("console.error", m.text().slice(0, 200)));
@@ -82,7 +82,7 @@ await page.waitForTimeout(1500);
 await page.screenshot({ path: `${out}/remote-1-desktop.png` });
 check("scènes réelles (emoji inclus)", (await page.locator('section[aria-label="Scènes"] button').allTextContents()).length === 5);
 check("profil et collection chargés", (await page.locator('select[aria-label="Profil OBS"]').inputValue()) === "Sans titre" && (await page.locator('select[aria-label="Collection de scènes"]').inputValue()) === "SYXTEE");
-check("état du flux : aucun flux reçu → reçu", (await page.getByText("Flux reçu").count()) === 1);
+check("état du flux : flux reçu avec son nom", (await page.getByText("Flux › IPHONE 16").count()) >= 1);
 
 // clic site → OBS
 await page.locator('section[aria-label="Scènes"] button', { hasText: "DRONE" }).click();
@@ -102,10 +102,10 @@ await page.locator('button[aria-label="Masquer Titre"]').click();
 await page.waitForTimeout(300);
 check("œil → SetSceneItemEnabled", calls.some((c) => c.startsWith("SetSceneItemEnabled") && c.includes('"sceneItemEnabled":false')));
 // mixeur
-check("mixeur : 2 pistes audio (pas le texte)", (await page.locator('section[aria-label="Mélangeur audio"] > ul > li').count()) === 2);
-await page.locator('section[aria-label="Mélangeur audio"] button', { hasText: "Actif" }).first().click();
+check("mixeur : 2 pistes audio (pas le texte)", (await page.locator('section[aria-label="Mélangeur audio"] li').count()) === 2);
+await page.getByRole("button", { name: "Couper Micro" }).click();
 await page.waitForTimeout(300);
-check("mute → SetInputMute + événement", (await page.locator('section[aria-label="Mélangeur audio"] button', { hasText: "Muet" }).count()) >= 1);
+check("mute → SetInputMute + événement", (await page.getByRole("button", { name: "Réactiver Micro" }).count()) === 1);
 
 // direct avec confirmation
 await page.getByRole("button", { name: "Partir en direct" }).first().click();
@@ -114,7 +114,7 @@ await page.screenshot({ path: `${out}/remote-2-confirm.png` });
 await page.locator("dialog button", { hasText: "Partir en direct" }).click();
 await page.waitForTimeout(1800);
 check("StartStream envoyé", calls.includes("StartStream"));
-check("état retour : en direct + durée", (await page.getByRole("button", { name: /En direct \d\d:\d\d:\d\d · arrêter/ }).count()) === 1);
+check("état retour : en direct + durée", (await page.getByRole("button", { name: /Arrêter le direct · \d\d:\d\d:\d\d/ }).count()) === 1);
 check("panneau Flux : débit 5120 kbit/s", (await page.locator('section[aria-label="Flux"]').textContent())?.includes("5120 kbit/s"));
 await page.screenshot({ path: `${out}/remote-3-live.png` });
 // profil refusé pendant le direct
@@ -122,7 +122,7 @@ await page.locator('select[aria-label="Profil OBS"]').selectOption("Mobile 4G");
 await page.waitForTimeout(400);
 check("profil refusé pendant le direct : message d'OBS", (await page.getByRole("alert").first().textContent())?.includes("pendant un direct"));
 // arrêt avec confirmation
-await page.getByRole("button", { name: /arrêter/ }).first().click();
+await page.getByRole("button", { name: /Arrêter le direct ·/ }).click();
 check("confirmation avant d'arrêter", await page.getByRole("heading", { name: "Arrêter le direct ?" }).isVisible());
 await page.locator("dialog button", { hasText: "Arrêter le direct" }).click();
 await page.waitForTimeout(500);
@@ -138,7 +138,7 @@ check("collection → SetCurrentSceneCollection", calls.some((c) => c.startsWith
 // mode studio
 await page.getByRole("switch", { name: "Mode studio" }).click();
 await page.waitForTimeout(600);
-check("mode studio : aperçu + transition", (await page.getByText("Envoyer l'aperçu en direct").count()) === 1);
+check("mode studio : aperçu + transition", (await page.getByRole("button", { name: "Transition" }).count()) === 1);
 await page.getByRole("switch", { name: "Mode studio" }).click();
 // Appareil
 await page.getByRole("button", { name: "Appareil" }).click();
@@ -156,7 +156,7 @@ check("aperçu coupé affiché", (await page.getByText("Aperçu coupé").count()
 // perte de connexion explicite
 await page.close();
 const mobile = await ctx.newPage();
-await mobile.setViewportSize({ width: 390, height: 900 });
+await mobile.setViewportSize({ width: 390, height: 844 });
 await mobile.routeWebSocket(/\/v1\/link\/remote/, (ws) => {
   ws.onMessage((raw) => {
     const m = JSON.parse(String(raw));
@@ -165,7 +165,7 @@ await mobile.routeWebSocket(/\/v1\/link\/remote/, (ws) => {
   });
 });
 await mobile.goto(`${BASE}/dev/vitrine/controle-obs`, { waitUntil: "load" });
-await mobile.waitForSelector("text=EN DIRECT");
+await mobile.waitForSelector("text=ON COMMENCE");
 await mobile.waitForTimeout(1200);
 await mobile.screenshot({ path: `${out}/remote-5-mobile.png`, fullPage: true });
 await mobile.getByRole("button", { name: "Appareil" }).click();

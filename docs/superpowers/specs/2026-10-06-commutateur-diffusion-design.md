@@ -34,16 +34,17 @@ Un process `ffmpeg` par sortie active. Une sortie qui échoue n'arrête pas les 
 
 ### 1. Données (migration `0042_mix_outputs`)
 
-Table `mix_outputs` : `id`, `user_id`, `platform` (`youtube|twitch|kick`), `url` (RTMP/RTMPS), `key_enc` (AES-GCM, même schéma que `chat_connections` avec `CHAT_TOKEN_KEY`), `enabled`, dates. Unique `(user_id, platform)`. RLS : le propriétaire seul. La clé n'est jamais renvoyée au navigateur après enregistrement (seulement `has_key`).
+Table `mix_outputs` : `id`, `user_id`, `platform` (`youtube|twitch|kick`), `url` (RTMP/RTMPS), `key_enc` (AES-GCM, même schéma que `chat_connections` avec `CHAT_TOKEN_KEY`), `enabled`, dates. Unique `(user_id, platform)`. RLS : le propriétaire seul. La clé n’est jamais renvoyée au navigateur après enregistrement (seulement un indice `••••` + 4 caractères) ; elle est déchiffrée pour le propriétaire seulement au Go live.
 
-### 2. Core (`core/src/mix-out.ts`)
+### 2. Core (`core/src/studio.ts`, existant, étendu)
 
-- `PUT /v1/me/mix/outputs/:platform` : enregistre URL et clé (validation : schéma `rtmp://` ou `rtmps://`, hôte attendu par plateforme, longueur de clé).
-- `POST /v1/me/mix/outputs/:platform/start` et `/stop`, `GET /v1/me/mix/outputs` (état).
-- Démarrage : lit `mix_<hex>` sur MediaMTX en local, lance `ffmpeg -c:v copy -c:a aac -b:a 160k -f flv <url>/<clé>`. Refus si le programme WHIP n'est pas publié.
-- États : `idle | connecting | live | error`. Redémarrage automatique avec backoff, 5 essais, puis `error`. Message lisible (clé refusée, hôte injoignable).
-- Arrêt automatique des sorties 10 s après la coupure du programme.
-- Plafond : 3 sorties par compte, réservées à la formule qui a le Commutateur (`src/lib/plans.ts`). Compte suspendu : refus. La clé n'apparaît jamais dans les logs ni dans la ligne de commande visible (passer l'URL par entrée standard ou variable d'environnement du process enfant).
+Le module Studio fait déjà : session WHIP `stu_<hex>`, ffmpeg RTSP local vers RTMP, anti-SSRF, aucune clé dans les logs. On ajoute :
+
+- mode `copy` (défaut) : un ffmpeg **par destination**, `-c:v copy -c:a aac -b:a 160k`. L'ancien mode `encode` (x264, un seul ffmpeg en tee) reste disponible comme repli si les images clés de Chrome sont trop espacées ;
+- `PUT /v1/me/studio/destinations` : remplace la liste des destinations d'une session ouverte (mode `copy`) ; les ffmpeg des destinations retirées s'arrêtent, les nouvelles démarrent, les autres ne sont pas touchées ;
+- `GET /v1/me/studio/status` : ajoute `outputs: [{ name, state: "connecting" | "live" | "retrying", error: "refused" | "unreachable" | "failed" | null }]`.
+
+Le Core ne stocke aucune clé : le navigateur les envoie à l'ouverture de session, comme aujourd'hui. Le chiffrement en base est côté Next (`mix_outputs`, `CHAT_TOKEN_KEY`) ; une server action déchiffre pour le propriétaire seulement.
 
 ### 3. Page Commutateur
 

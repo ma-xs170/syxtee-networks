@@ -53,7 +53,7 @@ test("télécommande de bout en bout : scène, backup enregistré, commande inte
   const obsPort = await listen(obsHttp);
 
   // Vrai Core (partie télécommande)
-  const db = fakeDb({ link_devices: ["token_hash"] }, { link_devices: () => ({ id: crypto.randomUUID(), created_at: new Date().toISOString(), last_seen: null }) });
+  const db = fakeDb({ link_devices: ["token_hash", "refresh_hash"] }, { link_devices: () => ({ id: crypto.randomUUID(), created_at: new Date().toISOString(), last_seen: null }) });
   const remote = createRemote({ db: db as never, canUse: (id) => id === U, verifyUser: async (h) => (h === "Bearer jwt" ? U : null), log: () => {} });
   const core = createServer();
   core.on("upgrade", (req, socket, head) => void (remote.upgrade(req, socket, head) || socket.destroy()));

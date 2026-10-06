@@ -1,4 +1,8 @@
 import { execFile } from "node:child_process";
+import { release, type as osType } from "node:os";
+
+/** Système du PC, pour l'écran d'autorisation et le registre des postes (ex. « macOS 24.1.0 »). */
+export const osLabel = () => `${osType() === "Darwin" ? "macOS" : osType() === "Windows_NT" ? "Windows" : osType()} ${release()}`.slice(0, 40);
 
 /** Ouvre une adresse https ou http locale dans le navigateur par défaut (arguments en tableau : aucune interprétation par un shell). */
 export function openUrl(url: string) {

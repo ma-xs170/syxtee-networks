@@ -16,7 +16,7 @@ const V = "00000000-0000-4000-8000-000000000002";
 function make(quota = 1000) {
   const data = mkdtempSync(join(tmpdir(), "core-data-"));
   const config = loadConfig({ CORE_API_TOKEN: "t".repeat(40), SUPABASE_URL: "https://x.supabase.co", SUPABASE_SECRET_KEY: "sb_secret_x", SLS_API_KEY: "slskey123", RELAY_KEYS_SECRET: "k".repeat(64), RELAY_PUBLIC_HOST: "relais.test", DATA_DIR: data });
-  const db = fakeDb({ link_devices: ["token_hash"] }, { link_devices: () => ({ id: crypto.randomUUID(), created_at: "", last_seen: null }), link_backups: () => ({ id: crypto.randomUUID(), created_at: new Date().toISOString() }) });
+  const db = fakeDb({ link_devices: ["token_hash", "refresh_hash"] }, { link_devices: () => ({ id: crypto.randomUUID(), created_at: "", last_seen: null }), link_backups: () => ({ id: crypto.randomUUID(), created_at: new Date().toISOString() }) });
   const verifyUser = async (h: string | undefined) => (h === "Bearer user-u" ? U : h === "Bearer user-v" ? V : null);
   const remote = createRemote({ db: db as never, canUse: (id) => id === U, verifyUser, log: () => {} });
   const backups = createBackups({ db: db as never, dir: join(data, "link-backups"), quota });
@@ -103,4 +103,40 @@ test("sauvegardes : quota (413), taille manquante (411), taille mensongère (400
   assert.equal((await send(500, 500)).statusCode, 413); // 600 + 500 > 1000
   assert.equal((await send(100, 100)).statusCode, 200);
   assert.equal((await send(100, 50)).statusCode, 400); // plus long que annoncé
+});
+
+test("jetons : renouvellement HTTP, rotation, révocation, refus d'un appareil par l'utilisateur, journal", async () => {
+  const { app } = make();
+  const s = (await app.inject({ method: "POST", url: "/v1/link/device/start", payload: { name: "Mac", platform: "darwin", os: "macOS 15", version: "0.2.0" } })).json();
+  const info = (await app.inject({ method: "GET", url: `/v1/me/link/approve?code=${s.user_code}`, headers: user })).json();
+  assert.equal(info.os, "macOS 15");
+  assert.ok(info.scopes.includes("obs.control"));
+  assert.equal((await app.inject({ method: "POST", url: "/v1/me/link/deny", payload: { code: s.user_code } })).statusCode, 401);
+  assert.equal((await app.inject({ method: "POST", url: "/v1/me/link/deny", headers: user, payload: { code: s.user_code } })).statusCode, 200);
+  assert.equal((await app.inject({ method: "POST", url: "/v1/link/device/poll", payload: { device_code: s.device_code } })).json().status, "denied");
+
+  const s2 = (await app.inject({ method: "POST", url: "/v1/link/device/start", payload: { name: "Mac" } })).json();
+  await app.inject({ method: "POST", url: "/v1/me/link/approve", headers: user, payload: { code: s2.user_code } });
+  const p = (await app.inject({ method: "POST", url: "/v1/link/device/poll", payload: { device_code: s2.device_code } })).json();
+  assert.ok(p.token.startsWith("slk_") && p.refresh.startsWith("slr_") && p.expires_in === 3600);
+
+  const r1 = await app.inject({ method: "POST", url: "/v1/link/token/refresh", payload: { refresh: p.refresh } });
+  assert.equal(r1.statusCode, 200);
+  assert.notEqual(r1.json().token, p.token);
+  assert.equal((await app.inject({ method: "POST", url: "/v1/link/token/refresh", payload: { refresh: p.refresh } })).statusCode, 401); // rejoué
+  assert.equal((await app.inject({ method: "GET", url: "/v1/link/backups", headers: { authorization: `Bearer ${p.token}` } })).statusCode, 401); // ancien accès mort
+  assert.equal((await app.inject({ method: "GET", url: "/v1/link/backups", headers: { authorization: `Bearer ${r1.json().token}` } })).statusCode, 200);
+
+  // Registre : jamais d'empreinte ; renommer ; révoquer.
+  const list = (await app.inject({ method: "GET", url: "/v1/me/link/devices", headers: user })).json();
+  assert.equal(list.devices.length, 1);
+  assert.ok(!JSON.stringify(list).includes("hash"));
+  const did = list.devices[0].id;
+  assert.equal((await app.inject({ method: "PATCH", url: `/v1/me/link/devices/${did}`, headers: user, payload: { name: "Mac studio" } })).statusCode, 200);
+  assert.equal((await app.inject({ method: "PATCH", url: `/v1/me/link/devices/${did}`, headers: { ...user, authorization: "Bearer user-v" }, payload: { name: "x" } })).statusCode, 404);
+  assert.equal((await app.inject({ method: "DELETE", url: `/v1/me/link/devices/${did}`, headers: user })).statusCode, 200);
+  assert.equal((await app.inject({ method: "POST", url: "/v1/link/token/refresh", payload: { refresh: r1.json().refresh } })).statusCode, 401);
+  assert.equal((await app.inject({ method: "GET", url: "/v1/link/backups", headers: { authorization: `Bearer ${r1.json().token}` } })).statusCode, 401);
+  const audit = (await app.inject({ method: "GET", url: "/v1/me/link/audit", headers: user })).json();
+  assert.ok(audit.entries.some((e: { method: string }) => e.method === "device.revoke"));
 });

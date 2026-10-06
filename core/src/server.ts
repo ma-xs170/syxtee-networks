@@ -856,6 +856,21 @@ export function buildServer(d: Deps) {
       if (!id) return;
       return { devices: await remote.devices(id), ...remote.status(id) };
     });
+    app.patch("/v1/me/link/devices/:did", async (req, reply) => {
+      const id = await userId(req, reply);
+      if (!id) return;
+      const did = z.object({ did: z.uuid() }).safeParse(req.params);
+      const b = z.object({ name: z.string().trim().min(1).max(40) }).safeParse(req.body ?? {});
+      if (!did.success || !b.success) return reply.code(400).send({ error: "invalid" });
+      return (await remote.rename(id, did.data.did, b.data.name)) ? { ok: true } : reply.code(404).send({ error: "no_device" });
+    });
+    app.get("/v1/me/link/audit", async (req, reply) => {
+      const id = await userId(req, reply);
+      if (!id) return;
+      const q = z.object({ limit: z.coerce.number().int().min(1).max(200).default(50) }).safeParse(req.query);
+      if (!q.success) return reply.code(400).send({ error: "invalid" });
+      return { entries: await remote.auditLog(id, q.data.limit) };
+    });
     app.delete("/v1/me/link/devices/:did", async (req, reply) => {
       const id = await userId(req, reply);
       if (!id) return;
@@ -908,9 +923,9 @@ export function buildServer(d: Deps) {
     }
     // Connexion depuis le plugin (sans taper de code) : démarrer, approuver depuis le site, interroger.
     app.post("/v1/link/device/start", async (req, reply) => {
-      const b = z.object({ name: z.string().max(40).optional(), platform: z.string().max(20).optional() }).safeParse(req.body ?? {});
+      const b = z.object({ name: z.string().max(40).optional(), platform: z.string().max(20).optional(), os: z.string().max(40).optional(), version: z.string().max(20).optional() }).safeParse(req.body ?? {});
       if (!b.success) return reply.code(400).send({ error: "invalid" });
-      const r = remote.deviceStart(req.ip, b.data.name, b.data.platform);
+      const r = remote.deviceStart(req.ip, b.data.name, b.data.platform, b.data.os, b.data.version);
       return "error" in r ? reply.code(429).send(r) : r;
     });
     app.post("/v1/link/device/poll", async (req, reply) => {
@@ -925,6 +940,21 @@ export function buildServer(d: Deps) {
       if (!q.success) return reply.code(400).send({ error: "invalid" });
       if (!remote.canUse(id)) return reply.code(403).send({ error: "not_allowed" });
       return remote.deviceLookup(q.data.code) ?? reply.code(404).send({ error: "invalid_code" });
+    });
+    app.post("/v1/me/link/deny", async (req, reply) => {
+      const id = await userId(req, reply);
+      if (!id) return;
+      const b = z.object({ code: z.string().max(20) }).safeParse(req.body ?? {});
+      if (!b.success) return reply.code(400).send({ error: "invalid" });
+      return remote.deviceDeny(id, b.data.code) ? { ok: true } : reply.code(404).send({ error: "invalid_code" });
+    });
+    // Renouvellement des jetons d'appareil (l'ancien jeton de renouvellement meurt à l'usage).
+    app.post("/v1/link/token/refresh", async (req, reply) => {
+      const b = z.object({ refresh: z.string().max(100) }).safeParse(req.body ?? {});
+      if (!b.success) return reply.code(400).send({ error: "invalid" });
+      const r = await remote.refresh(req.ip, b.data.refresh);
+      if ("error" in r) return reply.code(r.error === "too_many" ? 429 : r.error === "server" ? 500 : 401).send({ error: r.error });
+      return r;
     });
     app.post("/v1/me/link/approve", async (req, reply) => {
       const id = await userId(req, reply);

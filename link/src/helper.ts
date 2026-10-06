@@ -5,6 +5,7 @@ import { cleanBackup } from "./backup.ts";
 import { cloudError } from "./cloud.ts";
 import { load, save, type LinkConfig } from "./config.ts";
 import { Login } from "./login.ts";
+import { setTokens } from "./tokens.ts";
 import { listCollections } from "./obsconfig.ts";
 import { PANEL } from "./panel.ts";
 import { plan } from "./scenesync.ts";
@@ -27,8 +28,8 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
   const csrf = randomBytes(24).toString("hex");
   let agent: Agent | null = null;
 
-  const login = new Login(cfg.core, cfg.site, (token) => {
-    cfg.token = token;
+  const login = new Login(cfg.core, cfg.site, (t) => {
+    setTokens(cfg, t);
     cfg.onboarded = false;
     save(cfg);
     startAgent();
@@ -122,6 +123,8 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
         return json({ ok: true });
       case "POST /api/unpair":
         cfg.token = "";
+        cfg.refresh = "";
+        cfg.expires = 0;
         save(cfg);
         startAgent();
         return json({ ok: true });

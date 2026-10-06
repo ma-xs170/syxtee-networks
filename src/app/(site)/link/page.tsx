@@ -10,11 +10,11 @@ export const metadata: Metadata = { title: "Connecter OBS", robots: { index: fal
 export default async function LinkPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { code } = await searchParams;
   const clean = typeof code === "string" ? code.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12) : "";
-  await requireUser(clean ? `/link?code=${clean}` : "/link");
+  const user = await requireUser(clean ? `/link?code=${clean}` : "/link");
   return (
     <section className="flex min-h-[70dvh] items-center py-24">
       <Container className="max-w-xl">
-        <LinkApprove code={clean} coreUrl={publicCoreUrl} />
+        <LinkApprove code={clean} coreUrl={publicCoreUrl} email={user.email ?? ""} />
       </Container>
     </section>
   );

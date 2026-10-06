@@ -6,9 +6,11 @@ import { DiscordTicketButton, SupportId } from "@/components/SupportId";
 import LowDataToggle from "@/components/dashboard/LowDataToggle";
 import { cookies } from "next/headers";
 import { LOW_DATA_COOKIE } from "@/lib/low-data";
+import LinkDevices from "@/components/dashboard/LinkDevices";
 import StreamModeToggle from "@/components/dashboard/StreamModeToggle";
 import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
 import { getProfile, requireUser } from "@/lib/auth/dal";
+import { publicCoreUrl } from "@/lib/core";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Paramètres", robots: { index: false } };
@@ -74,6 +76,11 @@ export default async function ParametresPage({ searchParams }: PageProps<"/dashb
               Déconnexion
             </button>
           </form>
+        </Tile>
+        <Tile id="appareils" className="lg:col-span-2">
+          <TileLabel>Appareils</TileLabel>
+          <p className="mt-4 text-sm leading-relaxed text-muted">Les ordinateurs reliés à ton compte avec SYXTEE Link. Révoquer un poste coupe sa connexion tout de suite.</p>
+          <LinkDevices coreUrl={publicCoreUrl} />
         </Tile>
         {profile?.support_id && (
           <Tile id="support" className="lg:col-span-2">

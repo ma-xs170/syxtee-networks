@@ -7,7 +7,7 @@ const U = "00000000-0000-4000-8000-000000000001";
 const OTHER = "00000000-0000-4000-8000-000000000002";
 
 function make(now = () => Date.now()) {
-  const db = fakeDb({ link_devices: ["token_hash"] }, { link_devices: () => ({ id: crypto.randomUUID(), created_at: "", last_seen: null }) });
+  const db = fakeDb({ link_devices: ["token_hash", "refresh_hash"] }, { link_devices: () => ({ id: crypto.randomUUID(), created_at: "", last_seen: null }) });
   const remote = createRemote({ db: db as never, canUse: (id) => id === U, verifyUser: async () => null, log: () => {}, now });
   return { remote, db };
 }
@@ -19,11 +19,14 @@ test("connexion depuis le plugin : démarrer, approuver sur le site, récupérer
   if (!("device_code" in s)) return;
   assert.match(s.user_code, /^[A-HJ-NP-Z2-9]{8}$/);
   assert.deepEqual(await remote.devicePoll(s.device_code), { status: "pending" });
-  assert.deepEqual(remote.deviceLookup(s.user_code), { name: "Mac de Mathis", platform: "darwin" });
+  const looked = remote.deviceLookup(s.user_code);
+  assert.equal(looked?.name, "Mac de Mathis");
+  assert.equal(looked?.platform, "darwin");
+  assert.ok(looked?.scopes.includes("obs.control"));
   // Compte sans invitation, ou mauvais code : refusé.
   assert.equal(remote.deviceApprove(OTHER, s.user_code), null);
   assert.equal(remote.deviceApprove(U, "ZZZZZZZZ"), null);
-  assert.deepEqual(remote.deviceApprove(U, s.user_code.toLowerCase()), { name: "Mac de Mathis", platform: "darwin" });
+  assert.equal(remote.deviceApprove(U, s.user_code.toLowerCase())?.name, "Mac de Mathis");
   const p = await remote.devicePoll(s.device_code);
   assert.equal(p.status, "approved");
   assert.ok("token" in p && isDeviceToken(p.token));

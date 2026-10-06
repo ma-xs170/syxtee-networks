@@ -1,5 +1,7 @@
 import { hostname } from "node:os";
-import { openUrl } from "./system.ts";
+import { VERSION } from "./agent.ts";
+import { openUrl, osLabel } from "./system.ts";
+import type { Tokens } from "./tokens.ts";
 
 // Connexion de ce PC au compte SYXTEE, sans taper de code : le plugin ouvre le site avec un code, l'utilisateur confirme
 // (connecté à son compte), le plugin récupère son jeton d'appareil.
@@ -15,9 +17,9 @@ export class Login {
   private run = 0;
   private core: string;
   private site: string;
-  private onToken: (token: string) => void;
+  private onToken: (t: Tokens) => void;
 
-  constructor(core: string, site: string, onToken: (token: string) => void) {
+  constructor(core: string, site: string, onToken: (t: Tokens) => void) {
     this.core = core;
     this.site = site;
     this.onToken = onToken;
@@ -29,7 +31,7 @@ export class Login {
     const res = await fetch(`${this.core}/v1/link/device/start`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: hostname().slice(0, 40) || "OBS", platform: process.platform }),
+      body: JSON.stringify({ name: hostname().slice(0, 40) || "OBS", platform: process.platform, os: osLabel(), version: VERSION }),
       signal: AbortSignal.timeout(10_000),
     }).catch(() => null);
     if (run !== this.run) return;
@@ -53,11 +55,15 @@ export class Login {
         body: JSON.stringify({ device_code: j.device_code }),
         signal: AbortSignal.timeout(10_000),
       }).catch(() => null);
-      const p = r ? ((await r.json().catch(() => ({}))) as { status?: string; token?: string }) : null;
+      const p = r ? ((await r.json().catch(() => ({}))) as { status?: string } & Partial<Tokens>) : null;
       if (run !== this.run) return;
       if (p?.status === "approved" && p.token) {
         this.state = { state: "idle" };
-        this.onToken(p.token);
+        this.onToken({ token: p.token, refresh: p.refresh, expires_in: p.expires_in });
+        return;
+      }
+      if (p?.status === "denied") {
+        this.state = { state: "error", message: "Connexion refusée depuis ton compte." };
         return;
       }
       if (p?.status === "expired" || p?.status === "error") {

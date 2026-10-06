@@ -8,7 +8,10 @@ import type { Readable } from "node:stream";
 
 export const QUOTA_BYTES = 5 * 1024 ** 3;
 
-export type BackupRow = { id: string; user_id: string; name: string; collection: string; size: number; media_count: number; obs_version: string; host: string; created_at: string };
+/** Versions gardées par collection : les plus anciennes sont supprimées à l'envoi suivant. */
+export const KEEP_VERSIONS = 4;
+
+export type BackupRow = { id: string; user_id: string; name: string; collection: string; version: number; size: number; media_count: number; obs_version: string; host: string; created_at: string };
 export type PutMeta = { name: string; collection: string; media: number; obs: string; host: string };
 export type DbLike = { from: (t: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -21,8 +24,8 @@ export function createBackups(o: { db: DbLike; dir: string; quota?: number; log?
   const file = (userId: string, id: string) => join(o.dir, userId, `${id}.tgz`);
 
   async function list(userId: string): Promise<BackupRow[]> {
-    const { data } = await o.db.from("link_backups").select("id, user_id, name, collection, size, media_count, obs_version, host, created_at").eq("user_id", userId);
-    return ((data as BackupRow[] | null) ?? []).map((r) => ({ ...r, size: Number(r.size) })).sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+    const { data } = await o.db.from("link_backups").select("id, user_id, name, collection, version, size, media_count, obs_version, host, created_at").eq("user_id", userId);
+    return ((data as BackupRow[] | null) ?? []).map((r) => ({ ...r, size: Number(r.size), version: Number(r.version ?? 1) })).sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
   }
   const usedOf = (rows: BackupRow[]) => rows.reduce((n, r) => n + r.size, 0);
 
@@ -34,7 +37,7 @@ export function createBackups(o: { db: DbLike; dir: string; quota?: number; log?
     list,
 
     /** Enregistre l'archive reçue. `length` : taille annoncée (Content-Length), vérifiée octet par octet. */
-    async put(userId: string, meta: PutMeta, body: Readable, length: number): Promise<{ id: string; size: number } | { error: "length_required" | "quota" | "aborted" | "server" }> {
+    async put(userId: string, meta: PutMeta, body: Readable, length: number): Promise<{ id: string; size: number; version: number } | { error: "length_required" | "quota" | "aborted" | "server" }> {
       if (!Number.isFinite(length) || length <= 0) return { error: "length_required" };
       const used = usedOf(await list(userId));
       const pending = reserved.get(userId) ?? 0;
@@ -83,12 +86,21 @@ export function createBackups(o: { db: DbLike; dir: string; quota?: number; log?
         });
         if (seen !== length) throw new Error("short");
         await rename(part, dest);
+        const collection = clean(meta.collection, 80);
+        const siblings = collection ? (await list(userId)).filter((r) => r.collection === collection) : [];
+        const version = siblings.reduce((n, r) => Math.max(n, r.version), 0) + 1;
         const { error } = await o.db.from("link_backups").insert({
-          id, user_id: userId, name: clean(meta.name, 60) || "Sauvegarde", collection: clean(meta.collection, 80), size: length,
+          id, user_id: userId, name: clean(meta.name, 60) || "Sauvegarde", collection, version, size: length,
           media_count: Math.max(0, Math.min(100000, Math.floor(Number(meta.media) || 0))), obs_version: clean(meta.obs, 20), host: clean(meta.host, 60),
         });
         if (error) throw new Error("db");
-        return { id, size: length };
+        // Versions : on ne garde que les plus récentes de cette collection.
+        const old = [...siblings].sort((a, b) => b.version - a.version).slice(KEEP_VERSIONS - 1);
+        for (const r of old) {
+          await o.db.from("link_backups").delete().eq("id", r.id).eq("user_id", userId);
+          await rm(file(userId, r.id), { force: true });
+        }
+        return { id, size: length, version };
       } catch (e) {
         log(`sauvegarde : envoi échoué (${(e as Error).message})`);
         await rm(part, { force: true });

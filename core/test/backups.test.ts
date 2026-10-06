@@ -82,3 +82,23 @@ test("métadonnées nettoyées (nom, caractères de contrôle)", async () => {
   assert.ok(row.name.length <= 60);
   assert.equal(row.media_count, 0);
 });
+
+test("versions : numérotées par collection, les 4 dernières gardées, fichiers purgés", async () => {
+  const { b, dir } = setup(100000);
+  const ids: string[] = [];
+  for (let i = 0; i < 6; i++) {
+    const r = await b.put(U, meta, body(10, 65 + i), 10);
+    assert.ok("version" in r);
+    assert.equal(r.version, i + 1);
+    ids.push(r.id);
+  }
+  const rows = await b.list(U);
+  assert.deepEqual(rows.map((r) => r.version).sort(), [3, 4, 5, 6]);
+  assert.deepEqual(readdirSync(join(dir, U)).sort(), ids.slice(2).map((i) => `${i}.tgz`).sort());
+  // Une autre collection, et un autre compte, ont leur propre numérotation.
+  const o = await b.put(U, { ...meta, collection: "AUTRE" }, body(10), 10);
+  assert.ok("version" in o && o.version === 1);
+  const v = await b.put(V, meta, body(10), 10);
+  assert.ok("version" in v && v.version === 1);
+  assert.equal((await b.list(U)).length, 5);
+});

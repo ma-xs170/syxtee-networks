@@ -1,6 +1,7 @@
 import { dir, load, save } from "./config.ts";
 import { startHelper } from "./helper.ts";
 import { claimCode } from "./pair.ts";
+import { setTokens } from "./tokens.ts";
 import { openUrl } from "./system.ts";
 
 // Agent SYXTEE Link. Lancé par le plugin OBS (syxtee-link --parent-pid <pid>), ou à la main :
@@ -26,12 +27,14 @@ async function main() {
     if (!code) return fail("Usage : syxtee-link pair CODE");
     const r = await claimCode(cfg.core, code);
     if ("error" in r) return fail(r.error);
-    cfg.token = r.token;
+    setTokens(cfg, r);
     cfg.onboarded = false;
     save(cfg);
     console.log(`Connecté. Configuration dans ${dir()}.`);
   } else if (cmd === "unpair") {
     cfg.token = "";
+    cfg.refresh = "";
+    cfg.expires = 0;
     save(cfg);
     console.log("Ce PC est déconnecté. Retire aussi l'appareil dans SYXTEE Studio.");
   } else if (cmd === "panel") {

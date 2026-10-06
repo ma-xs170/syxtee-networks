@@ -59,8 +59,14 @@ async function newsChannel(): Promise<TextBasedChannel | null> {
   return ch && ch.isTextBased() ? ch : null;
 }
 
-async function publish(embed: EmbedBuilder, entry: Omit<LogEntry, "at">): Promise<string> {
-  const ch = await newsChannel();
+async function servicesChannel(): Promise<TextBasedChannel | null> {
+  if (!cfg.DISCORD_SERVICES_CHANNEL_ID) return newsChannel();
+  const ch = await client.channels.fetch(cfg.DISCORD_SERVICES_CHANNEL_ID).catch(() => null);
+  return ch && ch.isTextBased() ? ch : newsChannel();
+}
+
+async function publish(embed: EmbedBuilder, entry: Omit<LogEntry, "at">, channel: () => Promise<TextBasedChannel | null> = newsChannel): Promise<string> {
+  const ch = await channel();
   if (!ch || !("send" in ch)) throw new Error("salon introuvable ou sans droit d'écriture");
   const msg = await ch.send({ embeds: [embed], files: files(true) });
   store.record(entry);
@@ -140,7 +146,7 @@ client.on("interactionCreate", async (i: Interaction) => {
 client.once("clientReady", async () => {
   console.log(`Connecté : ${client.user?.tag}`);
   presence = startPresence(client, cfg, store);
-  startMonitor(client, cfg, store, newsChannel);
+  startMonitor(client, cfg, store, servicesChannel);
 });
 
 startWeb(cfg, publish, {
@@ -178,7 +184,7 @@ startWeb(cfg, publish, {
   },
   async postServices() {
     const { embed } = await servicesEmbed(cfg);
-    await publish(embed, { kind: "services", title: "État des services", by: "panel" });
+    await publish(embed, { kind: "services", title: "État des services", by: "panel" }, servicesChannel);
   },
 });
 await registerCommands();

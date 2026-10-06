@@ -23,6 +23,7 @@ Bot du serveur Discord, hébergé sur le VPS dans le même `docker-compose.yml` 
 5. Mode développeur Discord > clic droit sur le serveur > **Copier l'identifiant** (`DISCORD_GUILD_ID`, les commandes apparaissent alors tout de suite).
 
 Le salon des nouveautés est `1553431479302758571` (`DISCORD_CHANNEL_ID`, déjà par défaut). Le bot doit y avoir le droit d'écrire.
+Les alertes de panne / retour et `/services` vont dans #stats-services : mets son ID dans `DISCORD_SERVICES_CHANNEL_ID` (sans lui, tout reste dans les nouveautés).
 
 ## 2. Variables à ajouter dans `/opt/syxtee/.env`
 

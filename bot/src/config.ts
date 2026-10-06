@@ -7,6 +7,8 @@ const schema = z.object({
   DISCORD_CLIENT_ID: z.string().regex(/^\d+$/, "DISCORD_CLIENT_ID : ID de l'application"),
   // Salon des nouveautés et des alertes.
   DISCORD_CHANNEL_ID: z.string().regex(/^\d+$/).default("1553431479302758571"),
+  // Salon #stats-services : alertes de panne / retour et état des services. Vide = salon des nouveautés.
+  DISCORD_SERVICES_CHANNEL_ID: z.string().regex(/^\d+$/).optional(),
   // Serveur Discord : les commandes y apparaissent tout de suite (les commandes globales mettent jusqu'à 1 h).
   DISCORD_GUILD_ID: z.string().regex(/^\d+$/).optional(),
 

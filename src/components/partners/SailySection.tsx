@@ -21,7 +21,7 @@ const cards = [
 
 function Step({ n, title, visual, children }: { n: string; title: string; visual: ReactNode; children?: ReactNode }) {
   return (
-    <li className="grid items-center gap-8 border-b border-line py-10 last:border-b-0 md:grid-cols-[1fr_260px] md:gap-16">
+    <li className="grid grid-cols-1 items-center gap-8 border-b border-line py-10 last:border-b-0 md:grid-cols-[1fr_260px] md:gap-16">
       <div className="min-w-0">
         <p className="font-mono text-sm text-muted">{n}</p>
         <h4 className="mt-3 text-xl font-semibold tracking-tight">{title}</h4>
@@ -34,7 +34,7 @@ function Step({ n, title, visual, children }: { n: string; title: string; visual
 
 function Box({ kicker, children, art }: { kicker: string; children: ReactNode; art?: ReactNode }) {
   return (
-    <div className="grid items-center gap-6 rounded-2xl border border-line bg-foreground/[0.08] p-6 sm:grid-cols-[1fr_auto] sm:p-8">
+    <div className="grid grid-cols-1 items-center gap-6 rounded-2xl border border-line bg-foreground/[0.08] p-6 sm:grid-cols-[1fr_auto] sm:p-8">
       <div>
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">{kicker}</p>
         <div className="mt-3 text-base leading-relaxed">{children}</div>
@@ -74,7 +74,7 @@ export default function SailySection({ header = "full" }: { header?: "full" | "c
         )}
 
         {/* a) Les 3 atouts */}
-        <div className={`grid gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3 mt-14`}>
+        <div className={`grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3 mt-14`}>
           {cards.map((c) => (
             <article key={c.t} className="bg-background p-8">
               <h3 className="text-base font-semibold">{c.t}</h3>
@@ -141,7 +141,7 @@ export default function SailySection({ header = "full" }: { header?: "full" | "c
         </ol>
 
         {/* c) et d) Encadrés */}
-        <div className="mt-12 grid gap-4 lg:grid-cols-2">
+        <div className="mt-12 grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Box kicker="Variante" art={<PocketRouter />}>
             <p>
               Pas de 2e téléphone Android ? Un routeur 4G de poche avec l&apos;eSIM ou la SIM, connecté en Wi-Fi à l&apos;iPhone,

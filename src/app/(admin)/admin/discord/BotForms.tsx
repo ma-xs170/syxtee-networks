@@ -62,7 +62,7 @@ export function PresenceForm({ mode: initialMode, type, text }: { mode: "auto" |
         </div>
       </fieldset>
       {mode === "custom" && (
-        <div className="grid gap-4 sm:grid-cols-[160px_1fr]">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-[160px_1fr]">
           <div className="space-y-2">
             <label htmlFor="p-type" className={label}>Type</label>
             <select id="p-type" name="type" defaultValue={type} className={`${field} h-11`}>

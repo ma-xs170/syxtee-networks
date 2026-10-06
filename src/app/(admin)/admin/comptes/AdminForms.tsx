@@ -48,7 +48,7 @@ function ActionForm({ action, userId, confirm, children, className = "flex flex-
 export function IdentityForm({ userId, first, last, email }: { userId: string; first: string; last: string; email: string }) {
   return (
     <ActionForm action={updateIdentityAction} userId={userId} className="grid gap-4">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
           <label htmlFor="adm-first" className={label}>Prénom</label>
           <input id="adm-first" name="first_name" defaultValue={first} required maxLength={50} className={field} />
@@ -145,7 +145,7 @@ function OpButton({ op, children, danger = false }: { op: string; children: Reac
 /** Créer un relais sur le compte (limites de sa formule : le Core recompte). */
 export function CreateRelayForm({ userId }: { userId: string }) {
   return (
-    <ActionForm action={adminCreateRelayAction} userId={userId} className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_9rem_11rem_auto] sm:items-end">
+    <ActionForm action={adminCreateRelayAction} userId={userId} className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_9rem_11rem_auto] sm:items-end">
       <div className="grid gap-2">
         <label htmlFor="adm-relay-name" className={label}>Nom du relais</label>
         <input id="adm-relay-name" name="name" required maxLength={40} placeholder="Ex. Osmo Pocket 3" className={field} />

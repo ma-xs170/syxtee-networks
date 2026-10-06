@@ -14,7 +14,7 @@ export default function ReleaseForm({ latest }: { latest: Version | null }) {
     <form action={action} className="space-y-4">
       <fieldset className="space-y-2">
         <legend className={label}>Type de version</legend>
-        <div className="grid gap-2 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           {BUMPS.map((b) => (
             <label key={b.id} className={`cursor-pointer rounded-xl border px-4 py-3 ${bump === b.id ? "border-foreground" : "border-line"}`}>
               <input type="radio" name="bump" value={b.id} checked={bump === b.id} onChange={() => setBump(b.id)} className="sr-only" />

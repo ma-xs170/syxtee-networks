@@ -28,7 +28,7 @@ export default function PlanCards({ mode }: { mode: "signup" | "subscribe" }) {
         ))}
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
         {TIERS.map((t) => {
           const c = CATALOG[t];
           return (

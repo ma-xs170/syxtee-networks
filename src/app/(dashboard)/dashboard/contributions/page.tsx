@@ -31,7 +31,7 @@ export default async function ContributionsPage() {
     <DashPage>
       <SectionTabs tabs={statsTabs} current="/dashboard/contributions" label="Statistiques" />
       <DashHeader lead="Mes" hl="contributions" sub="Tes mesures 4G/5G sur la carte communautaire, sur les 90 derniers jours." />
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Tile className="lg:col-span-1">
           <TileLabel
             right={

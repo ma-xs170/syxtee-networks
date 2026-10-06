@@ -59,7 +59,7 @@ function Regie({ live, animated }: { live: boolean; animated: boolean }) {
   const scene = SCENES[active];
   const Art = scene.art;
   return (
-    <div className="grid gap-5 lg:grid-cols-[210px_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[210px_minmax(0,1fr)]">
       <div className="rounded-xl border border-line p-3">
         <p className="px-2 pb-2 text-sm font-medium">Scènes</p>
         <ul role="listbox" aria-label="Scènes" className="space-y-1">
@@ -98,7 +98,7 @@ function Mixeur({ live }: { live: boolean }) {
   const [vals, setVals] = useState(SOURCES.map((s) => s.level));
   const [muted, setMuted] = useState([false, false, false]);
   return (
-    <ul className="grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-3">
       {SOURCES.map((s, i) => {
         const level = muted[i] || !live ? 0 : vals[i];
         return (
@@ -170,7 +170,7 @@ export default function StudioDemo() {
 
   return (
     <div data-theme="dark" className="overflow-hidden rounded-3xl border border-line bg-background text-foreground shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)]">
-      <div className="grid md:grid-cols-[220px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 md:grid-cols-[220px_minmax(0,1fr)]">
         <aside className="hidden border-r border-line p-4 md:block">
           <p className="px-2 pb-5 pt-2 text-sm font-semibold tracking-[0.18em]">
             SYXTEE<span className="font-normal text-muted"> STUDIO</span>

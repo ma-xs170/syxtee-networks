@@ -44,7 +44,7 @@ export default function DjiDocPage() {
         DJI en Bluetooth, GoPro et drones DJI en RTMP : ta caméra diffuse directement vers ton relais SYXTEE.
       </PageHero>
       <section className="border-b border-line py-16 sm:py-20">
-        <Container className="grid gap-12 lg:grid-cols-2">
+        <Container className="grid grid-cols-1 gap-12 lg:grid-cols-2">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight">DJI : étapes</h2>
             <ol className="mt-6 space-y-4">

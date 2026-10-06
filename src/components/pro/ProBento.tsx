@@ -178,7 +178,7 @@ export default function ProBento() {
         <h2 id="pro-bento" className="max-w-2xl h-section">
           Ce que tu peux faire avec.
         </h2>
-        <ul className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {cards.map((c) => (
             <li key={c.text} className={`relative overflow-hidden rounded-2xl border border-line p-6 ${c.className ?? ""}`}>
               {c.tone === "grid" && <div className="bg-grid pointer-events-none absolute inset-0 opacity-60" aria-hidden="true" />}

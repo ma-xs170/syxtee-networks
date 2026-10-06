@@ -39,7 +39,7 @@ const guides: { href: string; kicker: string; title: string; text: string; art: 
 export default function Guides() {
   return (
     <section className="bg-field bg-field-bottom border-b border-line pb-24 pt-40 md:pt-48">
-      <Container className="grid gap-x-6 gap-y-36 md:grid-cols-2 lg:grid-cols-3">
+      <Container className="grid grid-cols-1 gap-x-6 gap-y-36 md:grid-cols-2 lg:grid-cols-3">
         {guides.map((g) => (
           <div key={g.href} className="relative flex flex-col">
             <Link href={g.href} className="group block flex-1">

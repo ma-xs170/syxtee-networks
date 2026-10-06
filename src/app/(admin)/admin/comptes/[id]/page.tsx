@@ -92,7 +92,7 @@ export default async function AdminAccountPage({ params, searchParams }: { param
       <SectionTabs label="Sections du compte" current={`/admin/comptes/${id}${tab === "resume" ? "" : `?onglet=${tab}`}`} tabs={TABS.map((t) => ({ label: t.label, href: `/admin/comptes/${id}${t.id === "resume" ? "" : `?onglet=${t.id}`}` }))} />
 
       {tab === "resume" && (
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
           <Tile aria-labelledby="formule">
             <TileLabel id="formule">Formule</TileLabel>
             <div className="mt-4">
@@ -168,7 +168,7 @@ export default async function AdminAccountPage({ params, searchParams }: { param
       )}
 
       {tab === "compte" && (
-        <div className="grid items-start gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
           <div className="grid gap-4">
           <Tile aria-labelledby="identite">
             <TileLabel id="identite">Identité</TileLabel>
@@ -242,7 +242,7 @@ export default async function AdminAccountPage({ params, searchParams }: { param
           <h2 id="sensible" className="text-sm font-semibold text-red-300">
             Zone sensible
           </h2>
-          <div className="mt-5 grid gap-8 md:grid-cols-2">
+          <div className="mt-5 grid grid-cols-1 gap-8 md:grid-cols-2">
             <div>
               <p className="mb-3 text-sm text-muted">{p.suspended_at ? "Le compte est suspendu : aucun flux possible." : "Suspendre coupe tous les flux du compte."}</p>
               <SuspendForm userId={id} suspended={!!p.suspended_at} />

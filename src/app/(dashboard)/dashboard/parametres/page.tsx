@@ -24,7 +24,7 @@ export default async function ParametresPage({ searchParams }: PageProps<"/dashb
           Adresse confirmée. Si tu as aussi cliqué le lien reçu sur l&apos;autre adresse, ton email est changé.
         </p>
       )}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Tile className="lg:col-span-2">
           <TileLabel>Identité</TileLabel>
           <div className="mt-5 max-w-xl">

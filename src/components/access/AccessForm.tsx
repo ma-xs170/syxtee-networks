@@ -37,7 +37,7 @@ export default function AccessForm() {
   return (
     <form action={action} className="space-y-5">
       <input type="hidden" name="t" value={openedAt} />
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <label htmlFor="a-first" className={label}>
             Prénom
@@ -84,7 +84,7 @@ export default function AccessForm() {
           ))}
         </div>
       </fieldset>
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <label htmlFor="a-audience" className={label}>
             Audience moyenne en live

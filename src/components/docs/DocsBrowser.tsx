@@ -62,7 +62,7 @@ export default function DocsBrowser({ sections, backdrop, title }: { sections: S
                 <h2 id={`d-${s.title}`} className="mb-5 text-xl font-semibold tracking-tight">
                   {s.title}
                 </h2>
-                <ul className="grid gap-4 md:grid-cols-2">
+                <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   {s.guides.map((g) => (
                     <li key={g.href}>
                       <Link

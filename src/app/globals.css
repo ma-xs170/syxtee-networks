@@ -619,6 +619,8 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
+  /* iOS Safari ignore overflow-x sur body seul : sans ça la page glisse de côté. */
+  overflow-x: clip;
 }
 body {
   /* Aucun défilement horizontal parasite, sans casser les éléments sticky. */

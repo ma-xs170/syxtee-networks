@@ -13,7 +13,7 @@ export default function HowItWorks() {
       <Container>
         <SectionHeader kicker="Fonctionnement" title="De ta poche à ton live, en 3 étapes." />
 
-        <ol className="mt-14 grid gap-10 md:grid-cols-3">
+        <ol className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-3">
           {steps.map((s) => (
             <li key={s.n}>
               <span className="flex h-10 w-10 items-center justify-center rounded-full border border-line font-mono text-sm">{s.n}</span>

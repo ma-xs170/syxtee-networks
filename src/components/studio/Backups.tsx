@@ -64,7 +64,7 @@ export default function Backups({ coreUrl, ready, call, job }: { coreUrl: string
   const pct = Math.min(100, (used / quota) * 100);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
       <section className="grid content-start gap-4 rounded-2xl border border-line bg-surface p-4" aria-label="Sauvegarder">
         <h2 className="font-mono text-xs uppercase tracking-[0.18em] text-muted">Sauvegarder mes scènes</h2>
         {!ready ? (

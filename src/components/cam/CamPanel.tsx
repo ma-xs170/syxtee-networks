@@ -23,7 +23,7 @@ export default function CamPanel({ link, qrSvg }: { link: string; qrSvg: string 
   const streamMode = useStreamMode();
 
   return (
-    <div className="grid gap-6 sm:grid-cols-[200px_minmax(0,1fr)] sm:items-start">
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-[200px_minmax(0,1fr)] sm:items-start">
       <div className="relative aspect-square w-full max-w-[200px] overflow-hidden rounded-xl bg-white p-3">
         {/* Le QR contient la clé : caché en mode stream (écran partagé en live). */}
         {streamMode ? (

@@ -34,12 +34,12 @@ export default async function AccesPage() {
     <DashPage>
       <DashHeader lead="Ton" hl="abonnement" sub="Pas d'abonnement : l'accès est ouvert sur invitation." />
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
         <Tile aria-labelledby="actuel">
           <TileLabel id="actuel">Abonnement actuel</TileLabel>
           <p className="mt-4 text-3xl font-semibold tracking-tight">{plan.name}</p>
           <p className="mt-3 max-w-[60ch] text-sm leading-relaxed text-muted">{TEXT[plan.id]}</p>
-          <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+          <ul className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2">
             {included.map((i) => (
               <li key={i} className="flex gap-3 text-sm">
                 <span aria-hidden="true" className="text-muted">

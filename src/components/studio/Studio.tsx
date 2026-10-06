@@ -268,12 +268,12 @@ export default function Studio({ coreUrl, chat }: { coreUrl: string; chat: ChatD
         {tab === "control" && ready && (
           <div className="grid gap-4">
             {/* Comme OBS : le programme (ce qui part en direct) et, en Mode Studio, l'aperçu (la scène qu'on prépare). */}
-            <div className={studioMode ? "grid gap-4 md:grid-cols-2" : "mx-auto w-full max-w-[920px]"}>
+            <div className={studioMode ? "grid grid-cols-1 gap-4 md:grid-cols-2" : "mx-auto w-full max-w-[920px]"}>
               {studioMode && <ProgramPreview sinkRef={previewSink} program={preview} live={false} title="Aperçu" tag="APERÇU" />}
               <ProgramPreview sinkRef={frameSink} program={program} live={streaming} title="Programme" tag="PROGRAMME" />
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-12">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
               <section aria-label="Scènes" className={`${card} lg:col-span-3`}>
                 <div className="flex items-center justify-between gap-3">
                   <h2 className={label}>Scènes</h2>
@@ -400,7 +400,7 @@ export default function Studio({ coreUrl, chat }: { coreUrl: string; chat: ChatD
               </section>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-12">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
               <section aria-label="Diffusion" className={`${card} grid content-start gap-3 lg:col-span-5`}>
                 <h2 className={label}>Contrôles</h2>
                 <button type="button" onClick={() => toggle("stream")} className={`${btn} ${streaming ? "bg-live text-white" : "bg-accent text-on-accent hover:bg-accent-hover"}`}>
@@ -451,7 +451,7 @@ export default function Studio({ coreUrl, chat }: { coreUrl: string; chat: ChatD
                       {backup.enabled ? (backup.state === "backup" ? "Secours actif" : "Activé") : "Désactivé"}
                     </button>
                   </div>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <Select label="Source surveillée" value={backup.source} options={inputs} onChange={(v) => saveBackup({ source: v })} />
                     <Select label="Scène de secours" value={backup.scene} options={scenes} onChange={(v) => saveBackup({ scene: v })} />
                     <label className="grid gap-1 text-xs text-muted">

@@ -22,7 +22,7 @@ export default async function DevEmailsPage() {
         </div>
         <SendTest emailKey="all" label="M'envoyer tous les tests" />
       </div>
-      <div className="mt-10 grid gap-8 lg:grid-cols-2">
+      <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-2">
         {list.map((e) => (
           <section key={e.key} className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">

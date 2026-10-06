@@ -47,7 +47,7 @@ export function ServerLabel({ id }: { id: string }) {
 
 function Row({ relay, live, onOpen }: { relay: RelayRow; live: boolean; onOpen: (r: RelayRow) => void }) {
   return (
-    <li className="grid gap-4 rounded-2xl border border-line p-4 transition-colors hover:border-foreground/30 sm:p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+    <li className="grid grid-cols-1 gap-4 rounded-2xl border border-line p-4 transition-colors hover:border-foreground/30 sm:p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2.5">
           {live ? <span className="live-dot" aria-label="En live" /> : <span className="h-2 w-2 rounded-full border border-muted" aria-hidden="true" />}
@@ -133,7 +133,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
       </div>
 
       {relays.length === 0 ? (
-        <section className="grid items-center gap-8 rounded-2xl border border-dashed border-line p-8 md:grid-cols-[minmax(0,1fr)_240px]">
+        <section className="grid grid-cols-1 items-center gap-8 rounded-2xl border border-dashed border-line p-8 md:grid-cols-[minmax(0,1fr)_240px]">
           <div>
             <h2 className="text-xl font-semibold tracking-tight">Aucun relais pour l&apos;instant</h2>
             <p className="mt-2 max-w-[55ch] text-sm leading-relaxed text-muted">

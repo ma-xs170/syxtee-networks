@@ -35,7 +35,7 @@ export default async function AdminVersionsPage() {
       {error ? (
         <p className="text-sm text-muted">Lecture impossible : applique d&apos;abord la migration 0037_releases.sql dans Supabase.</p>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[3fr_2fr]">
           <Tile>
             <TileLabel right={<span className="font-mono text-xs text-muted">ACTUELLE {latest ? `v${formatVersion(latest)}` : "—"}</span>}>Nouvelle version</TileLabel>
             <div className="mt-4">

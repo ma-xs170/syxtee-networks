@@ -73,7 +73,7 @@ const tips = [
 
 function Step({ n, title, img, alt, children }: { n: string; title: string; img: string; alt: string; children: ReactNode }) {
   return (
-    <li className="grid items-center gap-8 border-b border-line py-12 last:border-b-0 md:grid-cols-[1fr_220px] md:gap-16">
+    <li className="grid grid-cols-1 items-center gap-8 border-b border-line py-12 last:border-b-0 md:grid-cols-[1fr_220px] md:gap-16">
       <div className="min-w-0">
         <p className="font-mono text-sm text-muted">{n}</p>
         <h3 className="mt-4 text-2xl font-semibold tracking-tight">{title}</h3>
@@ -130,7 +130,7 @@ export default function MoblinPage() {
       <section className="border-b border-line py-20 sm:py-24">
         <Container>
           <SectionHeader kicker="Pourquoi Moblin" title="Pourquoi on la recommande." />
-          <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2">
+          <div className="mt-14 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2">
             {reasons.map((r) => (
               <article key={r.n} className="bg-background p-8 transition-colors hover:bg-surface">
                 <p className="font-mono text-sm text-muted">{r.n}</p>
@@ -228,7 +228,7 @@ export default function MoblinPage() {
         <Container>
           <Link
             href="/saily"
-            className="group grid items-center gap-6 rounded-3xl border border-line bg-gradient-to-b from-accent/[0.06] to-transparent p-6 transition-colors hover:bg-foreground/[0.08] sm:grid-cols-[auto_1fr_auto] sm:p-8"
+            className="group grid grid-cols-1 items-center gap-6 rounded-3xl border border-line bg-gradient-to-b from-accent/[0.06] to-transparent p-6 transition-colors hover:bg-foreground/[0.08] sm:grid-cols-[auto_1fr_auto] sm:p-8"
           >
             <span className="mx-auto h-32 w-28 transition-transform duration-300 group-hover:-translate-y-1 sm:mx-0">
               <PhoneAndroid screen="moblink" />
@@ -252,7 +252,7 @@ export default function MoblinPage() {
       </section>
 
       <section className="border-b border-line py-20 sm:py-24">
-        <Container className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
+        <Container className="grid grid-cols-1 gap-12 lg:grid-cols-[0.8fr_1.2fr]">
           <SectionHeader kicker="Terrain" title="Astuces terrain." />
           <ul className="divide-y divide-line border-y border-line">
             {tips.map((t) => (

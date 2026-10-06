@@ -18,7 +18,7 @@ export default async function AdminTeamPage() {
   return (
     <DashPage>
       <h1 className="mb-6 text-2xl font-semibold tracking-tight sm:text-3xl">Équipe</h1>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Tile>
           <TileLabel>Admins</TileLabel>
           <ul className="mt-4 divide-y divide-line">

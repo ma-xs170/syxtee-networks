@@ -22,7 +22,7 @@ export default function LowCost() {
           On a construit SYXTEE NETWORKS pour les créateurs qui démarrent : l&apos;essentiel pour un live stable, rien de superflu.
         </SectionHeader>
 
-        <div className="mt-14 grid gap-4 md:grid-cols-2">
+        <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-line p-8">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Setup IRL classique</p>
             <ul className="mt-6 space-y-4">

@@ -34,7 +34,7 @@ export default async function LivePage({ params }: PageProps<"/dashboard/lives/[
         <ArrowLink href="/dashboard/lives">Historique des lives</ArrowLink>
       </div>
       <DashHeader lead="Direct du" hl={fmtDate(s.started_at, timezone)} />
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Tile className="lg:col-span-2">
           <TileLabel>Débit reçu au relais</TileLabel>
           <div className="mt-6">

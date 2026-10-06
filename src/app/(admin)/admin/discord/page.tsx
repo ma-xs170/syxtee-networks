@@ -37,7 +37,7 @@ export default async function AdminDiscordPage() {
         <p className="text-sm text-muted">Le bot ne répond pas{problem ? ` (${problem})` : ""}. Vérifie qu&apos;il tourne sur le VPS : <span className="font-mono">docker compose logs bot</span>.</p>
       ) : (
         <div className="grid gap-4">
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <Tile>
               <TileLabel>Bot</TileLabel>
               <p className="mt-3 text-lg font-semibold">{status.tag ?? "Déconnecté"}</p>
@@ -57,7 +57,7 @@ export default async function AdminDiscordPage() {
             </Tile>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Tile>
               <TileLabel>Publier une annonce</TileLabel>
               <div className="mt-4">
@@ -72,7 +72,7 @@ export default async function AdminDiscordPage() {
             </Tile>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Tile>
               <TileLabel
                 right={

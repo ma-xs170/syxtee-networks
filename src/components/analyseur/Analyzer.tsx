@@ -207,7 +207,7 @@ export default function Analyzer({
   const best = zone?.best;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
       <section className="rounded-2xl border border-line bg-background p-5 sm:p-6 lg:col-span-2" aria-labelledby="an-live">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 id="an-live" className="font-mono text-xs uppercase tracking-[0.15em]">

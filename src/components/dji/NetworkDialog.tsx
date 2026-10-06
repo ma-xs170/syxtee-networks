@@ -47,7 +47,7 @@ export default function NetworkDialog({ open, initial, onClose, onSave }: { open
 
       <fieldset className="mt-6">
         <legend className="text-sm text-muted">Par où la caméra envoie le direct</legend>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {KINDS.map((k) => (
             <label
               key={k.id}

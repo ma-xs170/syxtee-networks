@@ -75,7 +75,7 @@ export default async function AdminSecuritePage({ searchParams }: { searchParams
         <p className="text-sm text-muted">Le Core ne répond pas, ou n&apos;a pas encore la page Sécurité. Réessaie après sa mise à jour.</p>
       ) : (
         <div className="grid gap-4">
-          <div className="grid gap-4 lg:grid-cols-[1fr_2fr]">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_2fr]">
             <Tile>
               <TileLabel>Dernières 24 h</TileLabel>
               <p className="mt-4 font-mono text-4xl tabular-nums">{refused24h}</p>

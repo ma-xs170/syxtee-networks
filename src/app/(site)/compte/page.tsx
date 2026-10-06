@@ -35,7 +35,7 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
           {error}
         </p>
       )}
-      <ul className="grid gap-4 sm:grid-cols-2">
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {cards.map((c) => (
           <li key={c.href}>
             <Link

@@ -148,7 +148,7 @@ function StaticScene({ scene, range }: { scene: StoryScene; range: SceneRange })
   return (
     <div className="relative overflow-hidden border-b border-line py-16 last:border-b-0">
       {scene.staticBackdrop?.(global)}
-      <Container className="relative grid items-center gap-10 lg:grid-cols-2">
+      <Container className="relative grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
         <div>
           {scene.header}
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">{scene.kicker}</p>

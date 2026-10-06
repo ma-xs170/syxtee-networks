@@ -62,7 +62,7 @@ export default function RelayWorld({ coreUrl, geo = null, initial = "bhs1", onSe
   };
 
   return (
-    <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+    <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <RelayGlobe servers={servers} selected={selected} onSelect={pick} geo={geo} className="mx-auto max-w-[640px]" />
       <ul className="divide-y divide-line rounded-2xl border border-line">
         {RELAY_SERVERS.map((s) => {

@@ -367,7 +367,7 @@ export default function Scanner({ coreUrl, declared: initialDeclared }: { coreUr
     );
 
   return (
-    <div className="mx-auto grid w-full max-w-6xl gap-4 px-4 pb-10 pt-4 sm:px-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:pt-8">
+    <div className="mx-auto grid grid-cols-1 w-full max-w-6xl gap-4 px-4 pb-10 pt-4 sm:px-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:pt-8">
       {/* ───── Colonne scan ───── */}
       <div className="flex min-h-[calc(100dvh-9rem)] flex-col gap-4 lg:min-h-0">
         <header className="rounded-2xl border border-line p-5">

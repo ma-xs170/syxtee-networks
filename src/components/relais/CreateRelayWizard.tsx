@@ -216,7 +216,7 @@ export default function CreateRelayWizard({
           ) : step === 0 ? (
             <fieldset>
               <legend className="text-base text-muted">Comment ton appareil va envoyer la vidéo ?</legend>
-              <div className="mt-4 grid gap-3 md:grid-cols-3">
+              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
                 {PROTOCOLS.map((p) => (
                   <label
                     key={p.id}
@@ -336,7 +336,7 @@ export default function CreateRelayWizard({
             </fieldset>
           ) : (
             <div>
-              <dl className="grid gap-3 sm:grid-cols-3">
+              <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 {[
                   ["Protocole", protocol.toUpperCase()],
                   ["Appareil", name.trim()],
@@ -437,7 +437,7 @@ function Success({ relay }: { relay: RelayView }) {
       <RelayUrls relay={relay} />
       <div>
         <h3 className="text-xs">Comment configurer</h3>
-        <ul className="mt-4 grid gap-3 md:grid-cols-2">
+        <ul className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
           {GUIDES[relay.protocol].map((g) => (
             <li key={g.title} className="rounded-2xl border border-line p-5">
               <p className="text-sm font-medium">{g.title}</p>

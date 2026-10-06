@@ -93,7 +93,7 @@ export function ComingSoonPage({ icon, lead, hl, text, points }: { icon: DashIco
   return (
     <DashPage>
       <DashHeader lead={lead} hl={hl} />
-      <Tile className="grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_280px]">
+      <Tile className="grid grid-cols-1 items-center gap-8 md:grid-cols-[minmax(0,1fr)_280px]">
         <div>
           <Badge>Bientôt</Badge>
           <p className="mt-4 max-w-[60ch] text-base leading-relaxed text-muted">{text}</p>

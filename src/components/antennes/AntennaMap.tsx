@@ -190,7 +190,7 @@ export default function AntennaMap() {
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
       {/* Filtres + légende (sous la carte sur mobile) */}
       <div className="order-2 space-y-6 lg:order-1">
         <div>

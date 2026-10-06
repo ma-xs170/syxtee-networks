@@ -63,7 +63,7 @@ function LiveStats({ cameras, relays, runs, live, adapted }: { cameras: Camera[]
   const now = useNow(anyLive);
   if (!cameras.length) return null;
   return (
-    <section aria-label="En direct" className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <section aria-label="En direct" className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {cameras.map((c) => {
         const r = live.find((x) => x.id === c.relayId);
         const run = runs[c.id];
@@ -442,7 +442,7 @@ function CameraCard({
 function Networks({ store, onEdit, onChange }: { store: DjiStore; onEdit: (id: string) => void; onChange: (s: DjiStore) => void }) {
   const users = (id: string) => store.cameras.filter((c) => c.networkId === id).map((c) => c.name);
   return (
-    <div role="tabpanel" className="grid gap-3 md:grid-cols-2">
+    <div role="tabpanel" className="grid grid-cols-1 gap-3 md:grid-cols-2">
       {!store.networks.length && (
         <div className="rounded-2xl border border-dashed border-foreground/35 p-6 text-sm md:col-span-2">
           <p className="text-base">Aucun réseau enregistré.</p>

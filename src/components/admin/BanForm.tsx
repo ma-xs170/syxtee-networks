@@ -10,7 +10,7 @@ const field = "h-11 w-full rounded-full border border-line bg-background px-4 te
 export default function BanForm({ ip = "" }: { ip?: string }) {
   const [state, action, pending] = useActionState<BanState, FormData>(banAction, {});
   return (
-    <form action={action} className="grid gap-4 sm:grid-cols-[1.4fr_0.8fr_2fr_auto] sm:items-end">
+    <form action={action} className="grid grid-cols-1 gap-4 sm:grid-cols-[1.4fr_0.8fr_2fr_auto] sm:items-end">
       <div className="grid gap-2">
         <label htmlFor="ban-ip" className="text-xs text-muted">IP</label>
         <input id="ban-ip" name="ip" required defaultValue={ip} placeholder="203.0.113.7" className={`${field} font-mono`} />

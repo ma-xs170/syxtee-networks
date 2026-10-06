@@ -51,7 +51,7 @@ export default function StudioPage() {
       </section>
 
       <section className="bg-field border-b border-line py-20">
-        <Container className="grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+        <Container className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <h2 className="h-section">
               Un multiview de régie TV.
@@ -69,7 +69,7 @@ export default function StudioPage() {
       <section className="border-b border-line py-20">
         <Container>
           <h2 className="h-section max-w-2xl">Tout ce qu&apos;il faut pour diffuser.</h2>
-          <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-6">
+          <div className="mt-12 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-6">
             {features.map((f) => (
               <article key={f.title} className={`bg-background p-6 sm:p-8 ${f.wide ? "md:col-span-3" : "md:col-span-2"}`}>
                 <h3 className="text-xl font-semibold">{f.title}</h3>
@@ -81,7 +81,7 @@ export default function StudioPage() {
       </section>
 
       <section className="bg-field bg-field-bottom border-b border-line py-20">
-        <Container className="grid gap-12 lg:grid-cols-2">
+        <Container className="grid grid-cols-1 gap-12 lg:grid-cols-2">
           <div>
             <h2 className="h-section">Bas débit : il bascule seulement si c&apos;est figé.</h2>
             <p className="mt-5 text-base leading-relaxed text-muted">Tu choisis d&apos;activer ou non le changement automatique de scène.</p>

@@ -47,14 +47,14 @@ export default async function AdminOverviewPage() {
   return (
     <DashPage>
       <DashHeader lead="Vue" hl="d'ensemble" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Kpi label="Comptes" value={nf.format(d.total)} hint={`+${d.new7} sur 7 j · +${d.new30} sur 30 j`} />
         <Kpi label="Abonnés actifs" value={nf.format(d.subscribers)} hint="Basique, Premium, Extra et Partenaire" />
         <Kpi label="Relais actifs" value={nf.format(d.relays)} hint={`+${d.relays30} créés sur 30 j`} />
         <Kpi label="Heures de live" value={nf.format(d.hours)} hint="30 derniers jours" />
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1.5fr_1fr]">
         <Tile>
           <TileLabel>En direct maintenant · {d.live.length}</TileLabel>
           {d.live.length === 0 ? (

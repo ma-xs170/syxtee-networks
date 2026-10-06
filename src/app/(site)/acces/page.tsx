@@ -39,7 +39,7 @@ export default function AccessPage() {
       </section>
 
       <section className="border-b border-line py-20 sm:py-24">
-        <Container className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+        <Container className="grid grid-cols-1 gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
           <div>
             <div className="relative overflow-hidden rounded-3xl border border-line bg-surface p-7 sm:p-9">
               <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_20%_0%,color-mix(in_srgb,var(--accent)_26%,transparent),transparent_70%)]" />

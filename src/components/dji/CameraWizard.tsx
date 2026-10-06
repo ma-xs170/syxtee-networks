@@ -152,7 +152,7 @@ export default function CameraWizard({
             <div className="grid gap-6">
               <fieldset>
                 <legend className="text-base text-muted">Quelle marque ?</legend>
-                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {(
                     [
                       { v: "dji", t: "DJI", d: "Osmo Pocket, Action, 360. Lancée en Bluetooth depuis cette page." },
@@ -199,7 +199,7 @@ export default function CameraWizard({
                 )}
               </div>
               )}
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label htmlFor="wiz-name" className="block text-sm text-muted">
                     Nom
@@ -252,7 +252,7 @@ export default function CameraWizard({
           {id === "net" && (
             <fieldset>
               <legend className="text-base text-muted">Par quel réseau la caméra envoie le direct ?</legend>
-              <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
                 {networks.map((n) => (
                   <label key={n.id} className={card(c.networkId === n.id)}>
                     <input type="radio" name="wiz-net" checked={c.networkId === n.id} onChange={() => set("networkId", n.id)} className="sr-only" />
@@ -319,7 +319,7 @@ export default function CameraWizard({
             <div className="grid gap-6">
               <fieldset>
                 <legend className="text-base text-muted">Qualité du direct</legend>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {PRESETS.map((p) => (
                     <label key={p.id} className={card(preset === p.id)}>
                       <input

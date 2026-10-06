@@ -26,7 +26,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
       <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Support</h1>
       <p className="mt-2 max-w-[65ch] text-sm text-muted">Choisis comment nous écrire. Pour une question de la documentation, lis d&apos;abord la <Link href="/docs" className="text-foreground underline underline-offset-4">documentation</Link>.</p>
 
-      <div className="mt-8 grid gap-4 md:grid-cols-2">
+      <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
         <section aria-labelledby="canal-discord" className="flex flex-col rounded-2xl border border-line-strong bg-surface p-5 sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <h2 id="canal-discord" className="text-lg font-semibold tracking-tight">

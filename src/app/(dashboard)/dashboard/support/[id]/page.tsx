@@ -38,7 +38,7 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
         )}
       </div>
 
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_240px]">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_240px]">
         <TicketChat
           viewer="user"
           messages={messages.map((m) => ({ id: m.id, from_staff: m.from_staff, body: m.body, created_at: m.created_at, name: "Équipe SYXTEE" }))}

@@ -113,13 +113,13 @@ export default function FonctionnementPage() {
       </DetailSection>
 
       <section className="border-b border-line py-20 sm:py-24">
-        <Container className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
+        <Container className="grid grid-cols-1 gap-12 lg:grid-cols-[0.8fr_1.2fr]">
           <SectionHeader kicker="Glossaire" title="Les mots à connaître.">
             Cinq termes que tu vas croiser dans Moblin, OBS et sur le Discord.
           </SectionHeader>
           <dl className="divide-y divide-line border-y border-line">
             {glossary.map((g) => (
-              <div key={g.term} className="grid gap-2 py-5 sm:grid-cols-[8rem_1fr] sm:gap-6">
+              <div key={g.term} className="grid grid-cols-1 gap-2 py-5 sm:grid-cols-[8rem_1fr] sm:gap-6">
                 <dt className="font-mono text-sm uppercase tracking-[0.1em]">{g.term}</dt>
                 <dd className="text-sm leading-relaxed text-muted">{g.def}</dd>
               </div>

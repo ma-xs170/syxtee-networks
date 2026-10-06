@@ -130,7 +130,7 @@ export default function LiveStudio({ sources, coreUrl, initial, chat }: { source
 
       {mode === "single" && selected ? (
         <>
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <div className="lg:col-span-2">
               <StreamPreview key={selected.id} coreUrl={coreUrl} relayId={selected.id} />
             </div>
@@ -139,14 +139,14 @@ export default function LiveStudio({ sources, coreUrl, initial, chat }: { source
           <StreamHealth key={selected.id} coreUrl={coreUrl} relayId={selected.id} />
         </>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2">
             {multi.length === 0 ? (
               <div className="flex min-h-64 items-center justify-center rounded-2xl border border-line bg-surface px-6 text-center text-sm text-muted">
                 Aucune source en direct. Lance ton live : les aperçus apparaissent ici.
               </div>
             ) : (
-              <ul className={`grid gap-4 ${multi.length > 1 ? "md:grid-cols-2" : ""}`}>
+              <ul className={`grid grid-cols-1 gap-4 ${multi.length > 1 ? "md:grid-cols-2" : ""}`}>
                 {multi.map((s) => (
                   <li key={s.id}>
                     <div className="mb-2 flex items-center justify-between gap-3">

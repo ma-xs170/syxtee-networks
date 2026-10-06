@@ -45,7 +45,7 @@ export default function Services() {
           Un relais simple, pensé pour les créateurs qui veulent faire de l&apos;IRL sans investir dans du matériel broadcast.
         </SectionHeader>
 
-        <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2">
+        <div className="mt-14 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2">
           {services.map((s) => (
             <article key={s.n} className="group bg-background p-8 transition-colors hover:bg-surface">
               <div className="hover-play mb-6 h-32 w-full transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-[1.03]">

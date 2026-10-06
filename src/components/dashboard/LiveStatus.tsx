@@ -77,12 +77,12 @@ export function LivePill({ compact = false }: { compact?: boolean }) {
     <span
       role="status"
       aria-live="polite"
-      className={`inline-flex h-8 items-center gap-2 whitespace-nowrap rounded-full border px-3 font-mono text-[11px] uppercase tracking-[0.12em] ${
+      className={`inline-flex h-8 max-w-full shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-3 font-mono text-[11px] uppercase tracking-[0.12em] ${
         live || state?.reconnecting ? "border-live/40 text-foreground" : "border-line text-muted"
       }`}
     >
       {live || state?.reconnecting ? <span className="live-dot" aria-hidden="true" /> : <span className="h-2 w-2 rounded-full border border-muted" aria-hidden="true" />}
-      <span className={compact && (live || state?.reconnecting) ? "sr-only" : ""}>{label}</span>
+      <span className={compact ? (live || state?.reconnecting ? "sr-only" : "sr-only sm:not-sr-only") : ""}>{label}</span>
       {clock && <span className="tabular-nums">{clock}</span>}
     </span>
   );

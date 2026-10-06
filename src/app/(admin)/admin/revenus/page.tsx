@@ -62,7 +62,7 @@ export default async function AdminRevenusPage() {
   return (
     <DashPage>
       <DashHeader lead="Revenus" hl="du mois" sub={hasStripe ? undefined : "Stripe n'est pas encore configuré sur ce déploiement : aucun paiement ne peut arriver."} />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           ["Chiffre d'affaires du mois", eur(revenue)],
           ["MRR", eur(mrrCents(subs))],
@@ -75,7 +75,7 @@ export default async function AdminRevenusPage() {
           </Tile>
         ))}
       </div>
-      <div className="mt-4 grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1.5fr_1fr]">
         <Tile>
           <TileLabel>Historique mensuel</TileLabel>
           <div className="mt-6 grid h-40 grid-cols-12 items-end gap-2">

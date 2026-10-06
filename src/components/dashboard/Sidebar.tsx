@@ -319,17 +319,17 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
   }, [open]);
 
   return (
-    <div className="dash-surface min-h-dvh lg:grid lg:grid-cols-[264px_1fr]">
+    <div className="dash-surface min-h-dvh lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
       <aside className="sticky top-0 hidden h-dvh border-r border-line bg-surface lg:block">
         <Content admin={admin} onNavigate={() => {}} />
       </aside>
 
-      <header className="sticky top-0 z-40 flex h-[calc(3.5rem+env(safe-area-inset-top))] items-center justify-between border-b border-line bg-background/90 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-md lg:hidden">
+      <header className="sticky top-0 z-40 flex h-[calc(3.5rem+env(safe-area-inset-top))] items-center justify-between gap-2 border-b border-line bg-background/90 px-3 pt-[env(safe-area-inset-top)] backdrop-blur-md lg:hidden">
         <Link href="/dashboard" className="flex items-center gap-3" aria-label="Dashboard SYXTEE">
           <Image src="/logo-400.png" alt="" width={20} height={28} style={{ width: 20, height: "auto" }} className="ink-img" priority />
           <span className="text-sm font-semibold tracking-[0.18em]">SYXTEE</span>
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1">
           <Link href="/" aria-label="Retour au site" className="grid h-11 w-11 place-items-center rounded-lg text-muted hover:bg-foreground/10 hover:text-foreground">
             <ArrowLeft size={20} />
           </Link>

@@ -75,7 +75,7 @@ export default function StarlinkPage() {
       <section className="overflow-x-clip border-b border-line py-20 sm:py-24">
         <Container>
           <SectionHeader kicker="Pourquoi le Mini" title="Pensé pour bouger." />
-          <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-14 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
             {specs.map((s) => (
               <article key={s.big} className="bg-background p-8 transition-colors hover:bg-surface">
                 <p className="font-mono text-3xl tracking-tight text-foreground sm:text-4xl">{s.big}</p>
@@ -115,7 +115,7 @@ export default function StarlinkPage() {
       </section>
 
       <section className="overflow-x-clip border-b border-line py-20 sm:py-24">
-        <Container className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
+        <Container className="grid grid-cols-1 gap-12 lg:grid-cols-[0.8fr_1.2fr]">
           <SectionHeader kicker="Conseils terrain" title="Avant de partir." />
           <ul className="divide-y divide-line border-y border-line">
             {tips.map((t) => (
@@ -137,7 +137,7 @@ export default function StarlinkPage() {
       </section>
 
       <section className="overflow-x-clip border-b border-line py-20 sm:py-24">
-        <Container className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
+        <Container className="grid grid-cols-1 gap-12 lg:grid-cols-[0.8fr_1.2fr]">
           <SectionHeader kicker="Réglages" title="Réglages Moblin avec le Mini.">
             Une latence plus haute qu&apos;en 4G pure absorbe les micro-coupures du satellite.
           </SectionHeader>

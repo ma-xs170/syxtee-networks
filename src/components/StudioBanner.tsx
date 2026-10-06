@@ -8,7 +8,7 @@ export default function StudioBanner() {
   return (
     <section aria-labelledby="mix-banner" className="border-b border-line py-16">
       <Container>
-        <div className="panel-lg grid items-center gap-8 p-6 sm:p-10 md:grid-cols-[1.1fr_0.9fr]">
+        <div className="panel-lg grid grid-cols-1 items-center gap-8 p-6 sm:p-10 md:grid-cols-[1.1fr_0.9fr]">
           <div>
             <Wordmark name="COMMUTATEUR" />
             <h2 id="mix-banner" className="h-section mt-3">

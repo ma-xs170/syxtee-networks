@@ -12,7 +12,7 @@ import DashboardViews from "./DashboardViews";
 function Row({ n, title, text, tags, flip = false, actions, children }: { n: string; title: string; text: string; tags: string; flip?: boolean; actions?: ReactNode; children: ReactNode }) {
   return (
     <Container>
-      <article aria-labelledby={`f-${n}`} className="grid items-center gap-12 border-t border-line py-20 lg:grid-cols-2 lg:gap-20 lg:py-28">
+      <article aria-labelledby={`f-${n}`} className="grid grid-cols-1 items-center gap-12 border-t border-line py-20 lg:grid-cols-2 lg:gap-20 lg:py-28">
         <div className={flip ? "lg:order-2" : ""}>
           <p aria-hidden="true" className="font-mono text-6xl font-semibold text-foreground/15 sm:text-7xl">
             {n}

@@ -92,7 +92,7 @@ export function PrivateZones({ zones }: { zones: PrivateZone[] }) {
         </ul>
       )}
       {zones.length < 3 ? (
-        <form action={action} className="grid gap-4 sm:grid-cols-2">
+        <form action={action} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="grid gap-2 sm:col-span-2">
             <label htmlFor="zone-label" className="text-sm text-foreground">
               Nom

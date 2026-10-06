@@ -5,7 +5,7 @@ import { site } from "@/lib/site";
 // SYXTEE Cam en pause (FEATURE_CAM=false) : page d'attente sur /cam et /dashboard/cam.
 export default function CamSoon({ scanner = true }: { scanner?: boolean }) {
   return (
-    <div className="mx-auto grid min-h-[70dvh] w-full max-w-5xl items-center gap-10 px-4 py-12 sm:px-6 md:grid-cols-[minmax(0,1fr)_300px]">
+    <div className="mx-auto grid grid-cols-1 min-h-[70dvh] w-full max-w-5xl items-center gap-10 px-4 py-12 sm:px-6 md:grid-cols-[minmax(0,1fr)_300px]">
       <div>
         <p className="font-mono text-xs uppercase tracking-[0.16em] text-muted">Bientôt disponible</p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">

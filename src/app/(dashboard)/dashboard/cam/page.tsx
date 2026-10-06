@@ -48,7 +48,7 @@ export default async function CamPage() {
     <DashPage>
       <PlanGate feature="cam">
       <DashHeader lead="SYXTEE" hl="Cam" sub="Un téléphone devient une caméra de ton direct, en un scan. Il arrive dans OBS avec ta clé habituelle : aucune URL de plus." />
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Tile className="lg:col-span-2">
           <TileLabel>Lien caméra</TileLabel>
           <div className="mt-5">

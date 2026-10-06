@@ -60,7 +60,7 @@ export default function AdminShell({ openTickets, pendingAccess, name, children 
   const active = (href: string) => (href === "/admin" ? path === "/admin" : path === href || path.startsWith(`${href}/`));
 
   return (
-    <div className="dash-surface min-h-dvh lg:grid lg:grid-cols-[250px_1fr]">
+    <div className="dash-surface min-h-dvh lg:grid lg:grid-cols-[250px_minmax(0,1fr)]">
       <aside className="sticky top-0 hidden h-dvh flex-col border-r border-line bg-surface lg:flex">
         <Link href="/admin" className="flex items-center gap-3 px-5 pb-4 pt-5" aria-label="Espace admin SYXTEE">
           <Image src="/logo-400.png" alt="" width={18} height={25} className="ink-img" priority />

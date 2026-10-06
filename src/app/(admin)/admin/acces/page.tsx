@@ -146,7 +146,7 @@ export default async function AdminAccessPage({ searchParams }: { searchParams: 
                   </form>
                 )}
               </div>
-              <dl className="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-2 lg:grid-cols-4">
+              <dl className="mt-5 grid grid-cols-1 gap-4 border-t border-line pt-5 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
                   <dt className="text-xs text-muted">Chaîne</dt>
                   <dd className="mt-0.5 break-words text-sm">

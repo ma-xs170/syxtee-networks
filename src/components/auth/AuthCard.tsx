@@ -373,7 +373,7 @@ export function SignUpCard({ next = "", error, email: prefill = "" }: { next?: s
       </motion.p>
       <motion.form variants={item} action={action} className="mt-6 space-y-5">
         <input type="hidden" name="next" value={next} />
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <Field id="first_name" label="Prénom">
             <input id="first_name" name="first_name" autoComplete="given-name" required maxLength={50} defaultValue={fields?.first_name} className={fieldCls} />
           </Field>

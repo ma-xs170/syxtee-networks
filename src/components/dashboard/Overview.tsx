@@ -233,7 +233,7 @@ function LastLive({ s, timezone, className = "" }: { s: NonNullable<OverviewData
         Dernier direct
       </TileLabel>
       <p className="mt-1 text-sm text-muted">{fmtDate(s.started_at, timezone)}</p>
-      <div className="mt-5 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] md:items-end">
+      <div className="mt-5 grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] md:items-end">
         <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
           {facts.map(([k, v]) => (
             <div key={k}>
@@ -320,7 +320,7 @@ function Onboarding({ keys }: { keys: OverviewData["keys"] }) {
     { t: "Lancer", d: "Tes chiffres apparaissent ici après ton premier direct." },
   ];
   return (
-    <Tile className="grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_220px]" aria-labelledby="onboarding">
+    <Tile className="grid grid-cols-1 items-center gap-8 md:grid-cols-[minmax(0,1fr)_220px]" aria-labelledby="onboarding">
       <div>
         <h2 id="onboarding" className="text-2xl font-semibold tracking-tight">
           Ton premier direct en trois gestes.
@@ -510,7 +510,7 @@ export default function Overview({ initial, chat = { twitch: "", kick: "", youtu
 
       {/* Trois rangées de même structure (2/3 + 1/3) : chaque tuile remplit sa cellule, les bords haut et bas sont alignés. */}
       {data.hasEverStreamed && (
-        <div className="grid gap-4 lg:grid-cols-3 lg:grid-rows-[auto_auto]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-[auto_auto]">
           <DailyTile data={data} range={range} className="lg:col-span-2" />
           <ChatTile chat={chat} />
           {data.last ? <LastLive s={data.last} timezone={data.timezone} className="lg:col-span-2" /> : <div className="hidden lg:col-span-2 lg:block" />}
@@ -518,7 +518,7 @@ export default function Overview({ initial, chat = { twitch: "", kick: "", youtu
         </div>
       )}
       {!data.hasEverStreamed && (
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <ChatTile chat={chat} />
           <Urls data={data} />
         </div>

@@ -48,7 +48,7 @@ export default async function CompteLayout({ children }: LayoutProps<"/compte">)
         </div>
       </header>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-12">
+      <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-12">
         <CompteNav />
         <div className="min-w-0 space-y-6">{children}</div>
       </div>

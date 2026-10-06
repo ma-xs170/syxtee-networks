@@ -26,7 +26,7 @@ function Choice({ name, note, selected }: { name: string; note?: string; selecte
 
 const PANES: Record<string, ReactNode> = {
   protocole: (
-    <div className="grid gap-3 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
       <div className="rounded-xl border border-foreground/60 bg-foreground/[0.12] p-4">
         <p className="flex items-center justify-between gap-3 text-sm font-medium">
           SRTLA
@@ -57,7 +57,7 @@ const PANES: Record<string, ReactNode> = {
     </div>
   ),
   appareil: (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       <Choice name="iPhone 16" selected />
       <Choice name="Galaxy S24" />
       <Choice name="Pixel 9" />
@@ -92,7 +92,7 @@ export default function CreateSteps() {
           Crée ton relais en 3 étapes.
         </h2>
 
-        <div className="mt-14 grid items-start gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+        <div className="mt-14 grid grid-cols-1 items-start gap-10 lg:grid-cols-[0.8fr_1.2fr]">
           <div className="flex flex-col gap-2">
             {STEPS.map((s, i) => (
               <button

@@ -82,7 +82,7 @@ export default function RelaisPage() {
         </Point>
         <dl className="divide-y divide-line border-y border-line">
           {latency.map((l) => (
-            <div key={l.k} className="grid gap-1 py-4 sm:grid-cols-[10rem_9rem_1fr] sm:items-baseline sm:gap-6">
+            <div key={l.k} className="grid grid-cols-1 gap-1 py-4 sm:grid-cols-[10rem_9rem_1fr] sm:items-baseline sm:gap-6">
               <dt className="font-mono text-xs uppercase tracking-[0.1em] text-muted">{l.k}</dt>
               <dd className="text-sm font-medium">{l.v}</dd>
               <dd className="text-sm text-muted">{l.note}</dd>

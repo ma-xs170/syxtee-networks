@@ -13,7 +13,7 @@ export default async function ProfilPage() {
   return (
     <DashPage>
       <DashHeader lead="Profil &" hl="réseaux" sub="Ce que les viewers voient de toi sur le site SYXTEE." />
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Tile>
           <TileLabel>Avatar</TileLabel>
           <div className="mt-4">

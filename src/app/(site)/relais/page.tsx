@@ -10,9 +10,9 @@ import Highlight from "@/components/ui/Highlight";
 import { Container, SectionHeader } from "@/components/ui";
 
 export const metadata: Metadata = {
-  title: "Relais",
+  title: "Flux",
   description:
-    "Les relais SRTLA SYXTEE NETWORKS en ligne, comment choisir le plus adapté à l'endroit où tu streames, et la latence à laquelle t'attendre en IRL.",
+    "Les serveurs de flux SRTLA SYXTEE NETWORKS en ligne, comment choisir le plus adapté à l'endroit où tu streames, et la latence à laquelle t'attendre en IRL.",
   alternates: { canonical: "/relais" },
 };
 
@@ -30,7 +30,7 @@ export default function RelaisPage() {
         <CloudBackdrop />
         <Container className="relative text-center">
           <h1 className="h-hero mx-auto max-w-3xl">
-            Nos <Highlight>relais.</Highlight>
+            Nos <Highlight>flux.</Highlight>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-foreground/75 sm:text-lg">Des serveurs SRTLA, RTMP et RIST dans le monde entier. Choisis le plus proche de toi.</p>
         </Container>
@@ -38,7 +38,7 @@ export default function RelaisPage() {
 
       <section className="border-b border-line py-20 sm:py-24">
         <Container>
-          <SectionHeader kicker="Relais" title="Nos serveurs.">
+          <SectionHeader kicker="Flux" title="Nos serveurs.">
             Les relais SYXTEE tournent 24h/24. De nouvelles régions ouvrent selon la demande de la communauté : vote pour la
             tienne sur le Discord.
           </SectionHeader>
@@ -51,7 +51,7 @@ export default function RelaisPage() {
         </Container>
       </section>
 
-      <DetailSection n="01" title="Comment choisir ton relais">
+      <DetailSection n="01" title="Comment choisir ton serveur">
         <Point label="Le plus proche de là où tu streames">
           <p>
             Choisis le relais le plus proche de <strong>l&apos;endroit où tu vas filmer</strong>, pas de chez toi. C&apos;est

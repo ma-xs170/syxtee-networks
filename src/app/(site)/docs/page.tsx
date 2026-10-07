@@ -34,7 +34,6 @@ const sections: Section[] = [
     title: "Produits et matériel",
     guides: [
       { href: "/syxtee-mix", title: "SYXTEE COMMUTATEUR", text: "Toutes tes caméras sur un écran, un seul lien pour OBS.", icon: "studio", keywords: "regie obs telecommande scenes", badge: "Nouveau" },
-      { href: "/docs/dji", title: "Caméras externes", text: "DJI Osmo en Bluetooth, GoPro et drones DJI en RTMP : diffuser vers ton relais.", icon: "phone", keywords: "dji osmo gopro insta360 drone mini air mavic avata camera rtmp bluetooth" },
     ],
   },
   {

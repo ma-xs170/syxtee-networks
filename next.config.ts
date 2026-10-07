@@ -28,6 +28,7 @@ const nextConfig: NextConfig = {
       { source: "/dashboard/dji", destination: "/dashboard", permanent: true },
       { source: "/dashboard/scanner", destination: "/dashboard", permanent: true },
       { source: "/dashboard/analyseur", destination: "/dashboard", permanent: true },
+      { source: "/docs/dji", destination: "/docs", permanent: true },
       { source: "/analyseur", destination: "/", permanent: true },
       { source: "/dashboard/commutateur", destination: "/commutateur", permanent: true },
     ];

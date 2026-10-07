@@ -2,42 +2,56 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ThemeRow } from "@/components/ThemeToggle";
 import { LockKey, PlugsConnected, ShareNetwork, SquaresFour, Trash, UserCircle } from "@/components/icons";
 
 // Menu de Mon compte : une page par section. Pastilles défilantes sur mobile, colonne collée à gauche sur ordinateur.
 export const COMPTE_SECTIONS = [
-  { href: "/compte", label: "Vue d'ensemble", Icon: SquaresFour },
-  { href: "/compte/profil", label: "Profil", Icon: UserCircle },
-  { href: "/compte/reseaux", label: "Réseaux et visibilité", Icon: ShareNetwork },
-  { href: "/compte/comptes-relies", label: "Comptes reliés", Icon: PlugsConnected },
-  { href: "/compte/securite", label: "Sécurité", Icon: LockKey },
-  { href: "/compte/supprimer", label: "Supprimer mon compte", Icon: Trash },
+  { href: "/compte", label: "Général", Icon: SquaresFour, group: "Mon espace" },
+  { href: "/compte/profil", label: "Profil", Icon: UserCircle, group: "Ton compte" },
+  { href: "/compte/securite", label: "Sécurité", Icon: LockKey, group: "Ton compte" },
+  { href: "/compte/comptes-relies", label: "Comptes reliés", Icon: PlugsConnected, group: "Ton compte" },
+  { href: "/compte/reseaux", label: "Réseaux et visibilité", Icon: ShareNetwork, group: "Ton compte" },
+  { href: "/compte/supprimer", label: "Supprimer mon compte", Icon: Trash, group: "Zone sensible" },
 ] as const;
 
 export default function CompteNav() {
   const pathname = usePathname();
+  const groups = [...new Set(COMPTE_SECTIONS.map((s) => s.group))];
   return (
-    <nav aria-label="Mon compte" className="-mx-4 overflow-x-auto px-4 lg:sticky lg:top-24 lg:mx-0 lg:self-start lg:overflow-visible lg:px-0">
-      <ul className="flex gap-2 lg:flex-col lg:gap-0.5">
-        {COMPTE_SECTIONS.map((s) => {
-          const on = s.href === "/compte" ? pathname === s.href : pathname === s.href || pathname.startsWith(`${s.href}/`);
-          return (
-            <li key={s.href} className="shrink-0">
-              <Link
-                href={s.href}
-                aria-current={on ? "page" : undefined}
-                className={`relative flex items-center gap-2.5 whitespace-nowrap rounded-full border px-4 py-2 text-sm transition-colors lg:rounded-lg lg:border-transparent lg:px-3 ${
-                  on ? "border-line-strong bg-foreground/10 text-foreground" : "border-line text-muted hover:text-foreground lg:hover:bg-foreground/[0.06]"
-                } ${s.href === "/compte/supprimer" && !on ? "hover:text-red-300" : ""}`}
-              >
-                {on && <span aria-hidden="true" className="absolute inset-y-1.5 left-0 hidden w-0.5 rounded-full bg-accent lg:block" />}
-                <s.Icon size={18} weight={on ? "fill" : "regular"} aria-hidden="true" className="shrink-0" />
-                {s.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+    <nav aria-label="Mon compte" className="lg:sticky lg:top-24 lg:self-start">
+      <Link href="/dashboard" className="mb-6 flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground">
+        <span aria-hidden="true">←</span> Retour à l&apos;espace client
+      </Link>
+      <div className="space-y-6">
+        {groups.map((g) => (
+          <div key={g}>
+            <p className="px-3 pb-2 text-[11px] font-medium uppercase tracking-[0.12em] text-muted">{g}</p>
+            <ul className="space-y-0.5">
+              {COMPTE_SECTIONS.filter((s) => s.group === g).map((s) => {
+                const on = s.href === "/compte" ? pathname === s.href : pathname === s.href || pathname.startsWith(`${s.href}/`);
+                return (
+                  <li key={s.href}>
+                    <Link
+                      href={s.href}
+                      aria-current={on ? "page" : undefined}
+                      className={`relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${on ? "bg-foreground/10 font-medium text-foreground" : "text-muted hover:text-foreground"}`}
+                    >
+                      {on && <span aria-hidden="true" className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-foreground" />}
+                      <s.Icon size={18} weight={on ? "fill" : "regular"} aria-hidden="true" className="shrink-0" />
+                      {s.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+        <div>
+          <p className="px-3 pb-2 text-[11px] font-medium uppercase tracking-[0.12em] text-muted">Cet appareil</p>
+          <ThemeRow className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted transition-colors hover:text-foreground" />
+        </div>
+      </div>
     </nav>
   );
 }

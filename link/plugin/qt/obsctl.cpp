@@ -17,7 +17,9 @@
 #include <QCoreApplication>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QDateTime>
 #include <QElapsedTimer>
+#include <QFile>
 #include <QImage>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -745,6 +747,253 @@ void registerFluxSource()
 	obs_register_source(&info);
 }
 
+// ───── Multistream : envoyer le même direct vers d'autres plateformes (comme Aitum Multistream) ─────
+// Chaque sortie = un service RTMP personnalisé (adresse du serveur + clé de stream) et une sortie RTMP d'OBS. Si le direct principal tourne,
+// la sortie réutilise ses encodeurs (aucune charge en plus) ; sinon elle crée les siens. La clé reste sur le PC (fichier réservé à
+// l'utilisateur) : elle n'est jamais renvoyée au navigateur, seulement « hasKey ».
+struct MsOut {
+	QString id, name, service, server, key;
+	obs_output_t *out = nullptr;
+	obs_service_t *svc = nullptr;
+	obs_encoder_t *video = nullptr, *audio = nullptr; // encodeurs à nous (null : ceux du direct principal)
+	bool active = false, starting = false;
+	QString error;
+};
+std::vector<std::unique_ptr<MsOut>> msOuts;
+bool msLoaded = false;
+
+QString msPath()
+{
+	char *dir = os_get_config_path_ptr("obs-studio/plugin_config/syxtee-link");
+	if (!dir) return QString();
+	os_mkdirs(dir);
+	const QString p = q(dir) + "/multistream.json";
+	bfree(dir);
+	return p;
+}
+
+MsOut *msFind(const QString &id)
+{
+	for (auto &o : msOuts)
+		if (o->id == id) return o.get();
+	return nullptr;
+}
+
+void msSave()
+{
+	QJsonArray arr;
+	for (auto &o : msOuts) arr.append(Json{{"id", o->id}, {"name", o->name}, {"service", o->service}, {"server", o->server}, {"key", o->key}});
+	QFile f(msPath());
+	if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) return;
+	f.setPermissions(QFile::ReadOwner | QFile::WriteOwner);
+	f.write(QJsonDocument(arr).toJson(QJsonDocument::Compact));
+}
+
+void msLoad()
+{
+	if (msLoaded) return;
+	msLoaded = true;
+	QFile f(msPath());
+	if (!f.open(QIODevice::ReadOnly)) return;
+	for (const QJsonValue &v : QJsonDocument::fromJson(f.readAll()).array()) {
+		const Json j = v.toObject();
+		auto o = std::make_unique<MsOut>();
+		o->id = j.value("id").toString();
+		o->name = j.value("name").toString();
+		o->service = j.value("service").toString();
+		o->server = j.value("server").toString();
+		o->key = j.value("key").toString();
+		if (!o->id.isEmpty()) msOuts.push_back(std::move(o));
+	}
+}
+
+Json msListJson()
+{
+	msLoad();
+	QJsonArray arr;
+	for (auto &o : msOuts)
+		arr.append(Json{{"id", o->id}, {"name", o->name}, {"service", o->service}, {"server", o->server}, {"hasKey", !o->key.isEmpty()}, {"active", o->active}, {"starting", o->starting}, {"error", o->error}});
+	return Json{{"outputs", arr}, {"mainActive", obs_frontend_streaming_active()}};
+}
+
+void msRelease(MsOut *o)
+{
+	if (o->out) {
+		obs_output_stop(o->out);
+		obs_output_release(o->out);
+	}
+	if (o->video) obs_encoder_release(o->video);
+	if (o->audio) obs_encoder_release(o->audio);
+	if (o->svc) obs_service_release(o->svc);
+	o->out = nullptr;
+	o->video = o->audio = nullptr;
+	o->svc = nullptr;
+	o->active = o->starting = false;
+}
+
+void msStartedCb(void *param, calldata_t *)
+{
+	const QString id = static_cast<MsOut *>(param)->id;
+	onMain([id] {
+		MsOut *m = msFind(id);
+		if (!m) return;
+		m->active = true;
+		m->starting = false;
+		m->error.clear();
+		emitEvent("link.multistream", msListJson());
+	});
+}
+
+void msStoppedCb(void *param, calldata_t *cd)
+{
+	const QString id = static_cast<MsOut *>(param)->id;
+	long long code = 0;
+	calldata_get_int(cd, "code", &code);
+	obs_output_t *out = static_cast<obs_output_t *>(calldata_ptr(cd, "output"));
+	const QString err = (code != 0 && out) ? q(obs_output_get_last_error(out)) : QString();
+	onMain([id, code, err] {
+		MsOut *m = msFind(id);
+		if (!m) return;
+		m->active = false;
+		m->starting = false;
+		m->error = code != 0 ? (err.isEmpty() ? QString::fromUtf8("Connexion coupée par la plateforme.") : err) : QString();
+		// Libère les ressources une fois la sortie vraiment arrêtée.
+		QTimer::singleShot(0, [id] {
+			MsOut *x = msFind(id);
+			if (x && !x->active && !x->starting) msRelease(x);
+			emitEvent("link.multistream", msListJson());
+		});
+	});
+}
+
+Json msStart(const QString &id)
+{
+	msLoad();
+	MsOut *o = msFind(id);
+	if (!o) throw Fail{"Sortie introuvable."};
+	if (o->active || o->starting) throw Fail{"Cette sortie est déjà en cours."};
+	if (o->server.isEmpty() || o->key.isEmpty()) throw Fail{"Renseigne l'adresse du serveur et la clé de stream."};
+	msRelease(o);
+	o->error.clear();
+
+	obs_data_t *sd = obs_data_create();
+	obs_data_set_string(sd, "server", o->server.toUtf8().constData());
+	obs_data_set_string(sd, "key", o->key.toUtf8().constData());
+	o->svc = obs_service_create("rtmp_custom", (std::string("syxtee_ms_svc_") + o->id.toStdString()).c_str(), sd, nullptr);
+	obs_data_release(sd);
+	const bool rtmps = o->server.startsWith("rtmps://", Qt::CaseInsensitive);
+	o->out = obs_output_create(rtmps ? "rtmp_output" : "rtmp_output", (std::string("syxtee_ms_out_") + o->id.toStdString()).c_str(), nullptr, nullptr);
+	if (!o->svc || !o->out) {
+		msRelease(o);
+		throw Fail{"Impossible de créer la sortie RTMP dans OBS."};
+	}
+
+	obs_encoder_t *mainVideo = nullptr, *mainAudio = nullptr;
+	if (obs_output_t *main = obs_frontend_get_streaming_output()) {
+		if (obs_output_active(main)) {
+			mainVideo = obs_output_get_video_encoder(main);
+			mainAudio = obs_output_get_audio_encoder(main, 0);
+		}
+		obs_output_release(main);
+	}
+	if (mainVideo && mainAudio) {
+		obs_output_set_video_encoder(o->out, mainVideo);
+		obs_output_set_audio_encoder(o->out, mainAudio, 0);
+	} else {
+		const QString encId = pickVideoEncoder();
+		if (encId.isEmpty()) {
+			msRelease(o);
+			throw Fail{"Aucun encodeur H.264 disponible dans OBS."};
+		}
+		obs_data_t *vs = obs_data_create();
+		obs_data_set_int(vs, "bitrate", 6000);
+		obs_data_set_string(vs, "rate_control", "CBR");
+		obs_data_set_int(vs, "keyint_sec", 2);
+		obs_data_set_string(vs, "profile", "high");
+		o->video = obs_video_encoder_create(encId.toUtf8().constData(), (std::string("syxtee_ms_v_") + o->id.toStdString()).c_str(), vs, nullptr);
+		obs_data_release(vs);
+		obs_data_t *as = obs_data_create();
+		obs_data_set_int(as, "bitrate", 160);
+		o->audio = obs_audio_encoder_create("ffmpeg_aac", (std::string("syxtee_ms_a_") + o->id.toStdString()).c_str(), as, 0, nullptr);
+		obs_data_release(as);
+		if (!o->video || !o->audio) {
+			msRelease(o);
+			throw Fail{"L'encodeur n'a pas démarré."};
+		}
+		obs_encoder_set_video(o->video, obs_get_video());
+		obs_encoder_set_audio(o->audio, obs_get_audio());
+		obs_output_set_video_encoder(o->out, o->video);
+		obs_output_set_audio_encoder(o->out, o->audio, 0);
+	}
+	obs_output_set_service(o->out, o->svc);
+	obs_output_set_reconnect_settings(o->out, 20, 10);
+	signal_handler_t *sh = obs_output_get_signal_handler(o->out);
+	signal_handler_connect(sh, "start", msStartedCb, o);
+	signal_handler_connect(sh, "stop", msStoppedCb, o);
+	o->starting = true;
+	if (!obs_output_start(o->out)) {
+		const QString err = q(obs_output_get_last_error(o->out));
+		msRelease(o);
+		o->error = err.isEmpty() ? QString::fromUtf8("L'envoi n'a pas démarré.") : err;
+		throw Fail{o->error};
+	}
+	return msListJson();
+}
+
+Json msStop(const QString &id)
+{
+	MsOut *o = msFind(id);
+	if (!o) throw Fail{"Sortie introuvable."};
+	if (o->out) obs_output_stop(o->out);
+	return msListJson();
+}
+
+void msShutdown()
+{
+	for (auto &o : msOuts) msRelease(o.get());
+	msOuts.clear();
+	msLoaded = false;
+}
+
+Json msSaveOutput(const Json &d)
+{
+	msLoad();
+	QString id = d.value("id").toString();
+	const QString server = d.value("server").toString().trimmed();
+	const QString key = d.value("key").toString().trimmed();
+	const QString name = d.value("name").toString().trimmed().left(40);
+	if (name.isEmpty()) throw Fail{"Donne un nom à cette sortie."};
+	if (!(server.startsWith("rtmp://", Qt::CaseInsensitive) || server.startsWith("rtmps://", Qt::CaseInsensitive)) || server.size() > 300) throw Fail{"L'adresse du serveur doit commencer par rtmp:// ou rtmps://."};
+	MsOut *o = id.isEmpty() ? nullptr : msFind(id);
+	if (!o) {
+		if (key.isEmpty()) throw Fail{"Renseigne la clé de stream."};
+		if (msOuts.size() >= 12) throw Fail{"12 sorties au plus."};
+		auto n = std::make_unique<MsOut>();
+		n->id = id.isEmpty() ? QString::number(QDateTime::currentMSecsSinceEpoch(), 36) : id;
+		o = n.get();
+		msOuts.push_back(std::move(n));
+	} else if (o->active || o->starting) {
+		throw Fail{"Arrête cette sortie avant de la modifier."};
+	}
+	o->name = name;
+	o->service = d.value("service").toString().left(24);
+	o->server = server;
+	if (!key.isEmpty()) o->key = key.left(512); // vide : on garde la clé déjà enregistrée
+	msSave();
+	return msListJson();
+}
+
+Json msRemove(const QString &id)
+{
+	msLoad();
+	MsOut *o = msFind(id);
+	if (!o) throw Fail{"Sortie introuvable."};
+	msRelease(o);
+	msOuts.erase(std::remove_if(msOuts.begin(), msOuts.end(), [&](const std::unique_ptr<MsOut> &x) { return x->id == id; }), msOuts.end());
+	msSave();
+	return msListJson();
+}
+
 // ───── Demandes ─────
 using Handler = std::function<Json(const Json &)>;
 
@@ -957,6 +1206,11 @@ std::map<QString, Handler> &handlers()
 			for (const auto &v : d.value("scenes").toArray()) scenes << v.toString();
 			return addRelaySources(ids, scenes);
 		};
+		m["link.multistreamList"] = [](const Json &) { return msListJson(); };
+		m["link.multistreamSave"] = [](const Json &d) { return msSaveOutput(d); };
+		m["link.multistreamRemove"] = [](const Json &d) { return msRemove(req(d, "id")); };
+		m["link.multistreamStart"] = [](const Json &d) { return msStart(req(d, "id")); };
+		m["link.multistreamStop"] = [](const Json &d) { return msStop(req(d, "id")); };
 		m["link.whipStart"] = [](const Json &d) { return startWhip(d); };
 		m["link.whipStop"] = [](const Json &) {
 			stopWhip();
@@ -1439,6 +1693,7 @@ void syxtee_obsctl_stop()
 {
 	if (!server) return;
 	stopWhip();
+	msShutdown();
 	obs_frontend_remove_event_callback(frontendEvent, nullptr);
 	signal_handler_t *g = obs_get_signal_handler();
 	signal_handler_disconnect(g, "source_create", sourceCreateCb, nullptr);

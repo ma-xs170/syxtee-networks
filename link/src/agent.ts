@@ -27,11 +27,14 @@ export const OBS_METHODS = new Set([
   "SetInputMute", "SetInputVolume", "StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord",
 ]);
 
+/** Sorties multistream gérées par le plugin (liste, ajout, retrait, démarrage, arrêt). */
+export const MULTISTREAM_METHODS = new Set(["link.multistreamList", "link.multistreamSave", "link.multistreamRemove", "link.multistreamStart", "link.multistreamStop"]);
+
 /** Événements OBS relayés vers le navigateur (les niveaux audio sont limités à 20 images par seconde). */
 const EVENTS = new Set([
   "CurrentProgramSceneChanged", "CurrentPreviewSceneChanged", "SceneListChanged", "StreamStateChanged", "RecordStateChanged",
   "InputMuteStateChanged", "InputVolumeChanged", "SceneItemEnableStateChanged", "StudioModeStateChanged", "ExitStarted",
-  "CurrentSceneCollectionChanged", "CurrentProfileChanged", "InputCreated", "SceneCreated", "SceneItemCreated", "SceneItemRemoved",
+  "CurrentSceneCollectionChanged", "CurrentProfileChanged", "link.multistream", "InputCreated", "SceneCreated", "SceneItemCreated", "SceneItemRemoved",
   "SceneItemListIndexingChanged", "SourceRenamed", "CurrentSceneTransitionChanged",
 ]);
 
@@ -624,6 +627,8 @@ export class Agent {
         return reply(true, { started: true });
       }
       if (method === "link.preview") return reply(true, {});
+      // Multistream : les sorties (adresse + clé) vivent dans le plugin, sur le PC.
+      if (MULTISTREAM_METHODS.has(method)) return reply(true, await this.obs.request(method, params));
       if (!OBS_METHODS.has(method)) return reply(false, undefined, "method_not_allowed");
       reply(true, await this.obs.request(method, params));
     } catch (e) {

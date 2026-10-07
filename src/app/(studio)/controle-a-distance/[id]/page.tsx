@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import RemoteObs from "@/components/remote/RemoteObs";
-import { requireUser } from "@/lib/auth/dal";
+import { getProfile, requireUser } from "@/lib/auth/dal";
 import { publicCoreUrl } from "@/lib/core";
 
 export const metadata: Metadata = { title: "Contrôle à distance", robots: { index: false } };
@@ -11,5 +11,6 @@ export default async function RemoteObsPage({ params }: { params: Promise<{ id: 
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   await requireUser(`/controle-a-distance/${id}`);
-  return <RemoteObs coreUrl={publicCoreUrl} deviceId={id} />;
+  const profile = await getProfile();
+  return <RemoteObs coreUrl={publicCoreUrl} deviceId={id} chatDefaults={{ twitch: profile?.twitch_login || profile?.twitch || "", kick: profile?.kick ?? "", youtube: "" }} />;
 }

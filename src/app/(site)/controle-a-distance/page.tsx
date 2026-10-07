@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import type { ComponentType, CSSProperties } from "react";
 import { DeviceMobile, Faders, LockKey, Rows, ShieldCheck, type IconProps } from "@/components/icons";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import FloatingPhone from "@/components/remote-showcase/FloatingPhone";
+import ProgramPeek from "@/components/mockups/ProgramPeek";
 import PhoneStory, { type Step } from "@/components/remote-showcase/PhoneStory";
 import { Container } from "@/components/ui";
 import Highlight from "@/components/ui/Highlight";
@@ -118,9 +118,7 @@ export default function ControlePage() {
               return (
                 <article key={t.title} className={`relative flex flex-col overflow-hidden rounded-2xl border border-line bg-surface p-6 sm:p-7 ${t.className}`}>
                   {t.image && (
-                    <div aria-hidden="true" className="pointer-events-none absolute inset-x-6 bottom-0 top-[46%] overflow-hidden rounded-t-xl border border-b-0 border-line-strong sm:inset-x-10">
-                      <Image src="/images/remote/controle-mobile.png" alt="" fill sizes="(min-width: 1024px) 40vw, 90vw" className="object-cover object-[50%_28%]" />
-                    </div>
+                    <ProgramPeek className="pointer-events-none absolute inset-x-6 bottom-0 sm:inset-x-10" />
                   )}
                   {Icon && <Icon size={26} weight="regular" className="text-foreground" aria-hidden="true" />}
                   <h3 className={`font-semibold tracking-tight ${t.image ? "text-2xl sm:text-3xl" : "mt-5 text-lg"}`}>{t.title}</h3>

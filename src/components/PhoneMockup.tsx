@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import Image from "next/image";
 import ScreenLandscape from "./moblin/ScreenLandscape";
+import RemotePhoneScreen, { type RemoteTab } from "./mockups/RemotePhoneScreen";
 
 // iPhone filaire en portrait (même cadre que le téléphone du ScrollStory /moblin) autour d'une capture d'écran.
 // Remplit la largeur de son conteneur. Tant que la capture n'existe pas, affiche l'interface illustrée :
@@ -11,11 +12,14 @@ export default function PhoneMockup({
   alt,
   sizes = "240px",
   eager = false,
+  screen,
 }: {
   src: string;
   alt: string;
   sizes?: string;
   eager?: boolean;
+  /** Écran du Contrôle à distance dessiné en HTML (jamais rogné) à la place d'une capture. */
+  screen?: RemoteTab;
 }) {
   const exists = existsSync(path.join(process.cwd(), "public", src));
 
@@ -30,7 +34,9 @@ export default function PhoneMockup({
       <span className="absolute -right-[3px] top-[22%] h-[11%] w-[3px] rounded-full border border-foreground/70" aria-hidden="true" />
 
       <div className="relative h-full w-full overflow-hidden rounded-[14%/6.5%] bg-black [container-type:size]">
-        {exists ? (
+        {screen ? (
+          <RemotePhoneScreen tab={screen} />
+        ) : exists ? (
           <Image
             src={src}
             alt={alt}

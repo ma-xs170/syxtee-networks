@@ -32,7 +32,7 @@ export default function ApplicationPage() {
             </div>
           </div>
           <div className="mx-auto w-full max-w-[16rem]">
-            <PhoneMockup src="/images/remote/controle-mobile.png" alt="Contrôle à distance sur téléphone : scènes, aperçu du programme et direct" sizes="256px" eager />
+            <PhoneMockup src="" screen="scenes" alt="Contrôle à distance sur téléphone : scènes, aperçu du programme et direct" />
           </div>
         </div>
 

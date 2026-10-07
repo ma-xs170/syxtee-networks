@@ -168,7 +168,7 @@ await mobile.goto(`${BASE}/dev/vitrine/controle-obs`, { waitUntil: "load" });
 await mobile.waitForSelector("text=ON COMMENCE");
 await mobile.waitForTimeout(1200);
 await mobile.screenshot({ path: `${out}/remote-5-mobile.png`, fullPage: true });
-await mobile.getByRole("button", { name: "Appareil" }).click();
+await mobile.getByRole("button", { name: "Réglages" }).click();
 await mobile.waitForTimeout(300);
 await mobile.screenshot({ path: `${out}/remote-6-mobile-appareil.png` });
 await mobile.keyboard.press("Escape");

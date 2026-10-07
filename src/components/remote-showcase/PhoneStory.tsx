@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import RemotePhoneScreen, { type RemoteTab } from "../mockups/RemotePhoneScreen";
 import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
 import { useRef } from "react";
 
@@ -8,7 +8,8 @@ import { useRef } from "react";
 // l'interface). Le mouvement sert à une chose : montrer une fonction après l'autre, dans l'ordre où on s'en sert en direct.
 // prefers-reduced-motion : pas de défilement piloté, les quatre étapes se lisent à la suite, chacune avec sa capture.
 
-export type Step = { title: string; text: string; src: string; alt: string };
+export type Step = { title: string; text: string; src?: string; alt: string };
+const TABS: RemoteTab[] = ["scenes", "sources", "mixer", "controls"];
 
 const N = 4;
 
@@ -40,7 +41,7 @@ function Shot({ step, i, p }: { step: Step; i: number; p: MotionValue<number> })
   const opacity = useWindow(p, i);
   return (
     <motion.div style={{ opacity }} className="absolute inset-0">
-      <Image src={step.src} alt={step.alt} fill sizes="280px" className="object-cover object-top" priority={i === 0} />
+      <RemotePhoneScreen tab={TABS[i] ?? "scenes"} />
     </motion.div>
   );
 }
@@ -64,7 +65,7 @@ export default function PhoneStory({ steps }: { steps: Step[] }) {
   if (reduce)
     return (
       <ol className="mx-auto grid max-w-5xl gap-20 px-4 py-20 sm:px-6">
-        {steps.map((s) => (
+        {steps.map((s, i) => (
           <li key={s.title} className="grid items-center gap-10 sm:grid-cols-2">
             <div>
               <h3 className="text-3xl font-semibold tracking-tight">{s.title}</h3>
@@ -72,7 +73,7 @@ export default function PhoneStory({ steps }: { steps: Step[] }) {
             </div>
             <div className="mx-auto w-full max-w-[16rem]">
               <Frame>
-                <Image src={s.src} alt={s.alt} fill sizes="256px" className="object-cover object-top" />
+                <RemotePhoneScreen tab={TABS[i] ?? "scenes"} />
               </Frame>
             </div>
           </li>

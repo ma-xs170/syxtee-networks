@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import PhoneMockup from "../PhoneMockup";
 import PocketRouter from "../illustrations/PocketRouter";
-import RelayServer from "../illustrations/RelayServer";
+import BondingDiagram from "../mockups/BondingDiagram";
 import { CREATE_RELAY_HREF, Container } from "../ui";
 import RemoteObsMock from "../mockups/RemoteObsMock";
 
@@ -35,9 +35,9 @@ export default function NumberedFeatures() {
     <section aria-label="Fonctionnalités" className="border-b border-line">
       <Row
         n="01"
-        title="Des flux fiables, partout."
-        text="SRTLA pour le bonding en mobilité, RTMP pour une caméra ou OBS, et le RIST, le protocole des régies de télévision, chiffré en AES-256."
-        tags="SRTLA · RTMP · RIST · 4G, 5G, Wi-Fi et Starlink"
+        title="Une connexion qui ne lâche pas."
+        text="Ton téléphone envoie la vidéo par plusieurs connexions à la fois. SYXTEE les réunit en un seul flux stable : si une connexion faiblit, les autres continuent."
+        tags="4G · 5G · Wi-Fi · Starlink · Twitch, YouTube, Kick"
         actions={
           <>
             <Link href={CREATE_RELAY_HREF} className="btn btn-primary">
@@ -49,8 +49,8 @@ export default function NumberedFeatures() {
           </>
         }
       >
-        <div className="hover-play relative flex h-72 items-center justify-center rounded-2xl border border-line bg-surface p-8 sm:h-80" aria-hidden="true">
-          <RelayServer />
+        <div className="rounded-2xl border border-line bg-surface p-5 sm:p-8" aria-hidden="true">
+          <BondingDiagram />
         </div>
       </Row>
 
@@ -71,10 +71,10 @@ export default function NumberedFeatures() {
           </>
         }
       >
-        <div className="relative pb-12 pr-[24%]">
+        <div className="relative pb-24">
           <RemoteObsMock />
-          <div className="absolute -bottom-2 right-0 w-[36%] max-w-[15rem]">
-            <PhoneMockup src="/images/remote/controle-mobile.png" alt="Contrôle à distance sur téléphone : scènes, aperçu du programme et direct" sizes="240px" />
+          <div className="absolute -bottom-4 right-3 w-[34%] max-w-[13.5rem]">
+            <PhoneMockup src="" screen="scenes" alt="Contrôle à distance sur téléphone : scènes, aperçu du programme et direct" />
           </div>
         </div>
       </Row>

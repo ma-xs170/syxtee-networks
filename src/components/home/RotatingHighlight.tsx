@@ -8,7 +8,7 @@ import { useReducedMotion } from "motion/react";
 // en flou. Se met en pause au survol et au focus. En mouvement réduit : première phrase, fixe, pour tout le monde
 // y compris les lecteurs d'écran (les autres phrases sont masquées à l'accessibilité).
 
-const PHRASES = ["Sans le budget pro.", "Sans coupure.", "En 4G, 5G et Wi-Fi.", "Partout dans le monde."];
+const PHRASES = ["Sans jamais couper.", "Avec ton téléphone.", "Sans matériel coûteux.", "Piloté à distance."];
 const EVERY = 3200;
 
 export default function RotatingHighlight() {

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
+import HowItWorks3 from "@/components/sections/HowItWorks3";
 import NumberedFeatures from "@/components/sections/NumberedFeatures";
 import FinalCta from "@/components/sections/FinalCta";
 import { getHomeStreamers } from "@/lib/streamers";
@@ -18,6 +19,7 @@ export default async function Home() {
   return (
     <>
       <Hero streamers={streamers} />
+      <HowItWorks3 />
       <NumberedFeatures />
       <FinalCta />
     </>

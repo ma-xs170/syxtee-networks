@@ -613,7 +613,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
   );
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden overscroll-none bg-black pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] text-[13px] text-neutral-100 [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [touch-action:manipulation]">
+    <div className="flex h-dvh w-full min-w-0 max-w-[100vw] flex-col overflow-hidden overscroll-none bg-black pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] text-[13px] text-neutral-100 [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [touch-action:manipulation]">
       <header className="flex h-11 shrink-0 items-center justify-between border-b border-[#262626] px-3.5">
         <h1 className="text-[14px] font-medium">Contrôle à distance</h1>
         <Link href="/dashboard/controle-a-distance" className="inline-flex h-8 items-center gap-1.5 rounded border border-[#2e2e2e] px-3 text-[13px] text-neutral-300 hover:bg-[#161616] max-lg:h-9">
@@ -626,7 +626,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
           {agent.name ?? "OBS"}
           {(statusText || latency != null) && <span className="ml-2 text-[12px] font-normal text-neutral-500">{statusText ?? `${latency} ms`}</span>}
         </span>
-        <label className="flex shrink-0 items-center gap-1.5 text-neutral-400">
+        <label className="flex shrink-0 items-center gap-1.5 text-neutral-400 max-lg:hidden">
           Profil
           <select aria-label="Profil OBS" className={`${field} max-w-[13rem]`} disabled={!ready || profiles.list.length === 0} value={profiles.current} onChange={(e) => void run("SetCurrentProfile", { profileName: e.target.value }).then((r) => r && later())}>
             {profiles.list.map((p) => (
@@ -634,7 +634,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
             ))}
           </select>
         </label>
-        <label className="flex shrink-0 items-center gap-1.5 text-neutral-400">
+        <label className="flex shrink-0 items-center gap-1.5 text-neutral-400 max-lg:hidden">
           Collection
           <select aria-label="Collection de scènes" className={`${field} max-w-[13rem]`} disabled={!ready || collections.list.length === 0} value={collections.current} onChange={(e) => void run("SetCurrentSceneCollection", { sceneCollectionName: e.target.value }).then((r) => r && later())}>
             {collections.list.map((c) => (
@@ -648,10 +648,18 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
         </span>
         <div className="relative shrink-0" ref={devicePanel}>
           <button type="button" aria-expanded={deviceOpen} disabled={!roles} onClick={() => setDeviceOpen((o) => !o)} className={`${flat} h-7 gap-1.5 px-2.5`}>
-            <span aria-hidden="true">⚙</span> Appareil
+            <span aria-hidden="true">⚙</span> <span className="max-lg:hidden">Appareil</span><span className="lg:hidden">Réglages</span>
           </button>
           {deviceOpen && roles && (
             <div role="dialog" aria-label="Appareil" className="fixed inset-x-2 top-24 z-40 max-h-[calc(100dvh-7rem)] overflow-y-auto rounded-md border border-[#333] bg-[#0b0b0b] p-4 shadow-xl sm:absolute sm:inset-x-auto sm:left-0 sm:top-9 sm:w-[26rem]">
+              <div className="mb-4 grid gap-3 border-b border-[#262626] pb-4 lg:hidden">
+                <PopSelect label="Profil" value={profiles.current} options={profiles.list} onChange={(v) => void run("SetCurrentProfile", { profileName: v }).then((r) => r && later())} />
+                <PopSelect label="Collection de scènes" value={collections.current} options={collections.list} onChange={(v) => void run("SetCurrentSceneCollection", { sceneCollectionName: v }).then((r) => r && later())} />
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-medium">Mode studio</p>
+                  <Switch label="Mode studio" on={studioMode} disabled={!ready} onClick={() => void run("SetStudioModeEnabled", { studioModeEnabled: !studioMode })} />
+                </div>
+              </div>
               <h2 className="text-[13px] font-semibold">Rôles des scènes</h2>
               <div className="mt-3 grid gap-3">
                 <PopSelect label="Scène Live" value={roles.liveScene} options={scenes} onChange={(v) => saveRoles({ liveScene: v })} />
@@ -682,7 +690,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
             </div>
           )}
         </div>
-        <label className="ml-auto flex shrink-0 items-center gap-2">
+        <label className="ml-auto flex shrink-0 items-center gap-2 max-lg:hidden">
           <span className="sr-only">Mode studio</span>
           <button type="button" role="switch" aria-label="Mode studio" aria-checked={studioMode} disabled={!ready} onClick={() => void run("SetStudioModeEnabled", { studioModeEnabled: !studioMode })} className={`${flat} h-7 px-2.5 ${studioMode ? "!border-[#2f4fc4] !bg-[#2f4fc4] !text-white" : ""}`}>
             Mode studio
@@ -707,7 +715,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
       )}
 
       {/* Programme (et, en Mode Studio, aperçu à gauche) */}
-      <main className="flex min-h-0 flex-1 flex-col gap-2 p-2 max-lg:landscape:flex-row">
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 p-2 max-lg:landscape:flex-row">
         <section aria-label="Programme" className="relative grid min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-md border border-[#262626] bg-black max-lg:aspect-[16/10.5] max-lg:h-auto max-lg:landscape:aspect-auto max-lg:landscape:h-full max-lg:landscape:w-[56%] max-lg:landscape:shrink-0 lg:h-[55%]">
           <div className="flex items-center justify-between gap-2 px-3 py-2">
             {programLabel}
@@ -760,8 +768,8 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
         </section>
 
         {/* Mobile : panneaux en onglets (en paysage : à droite de l'aperçu) */}
-        <div className="flex min-h-0 flex-1 flex-col gap-2 lg:contents">
-        <nav role="tablist" aria-label="Panneaux" className="grid shrink-0 grid-cols-4 gap-1 lg:hidden">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 lg:contents">
+        <nav role="tablist" aria-label="Panneaux" className="grid shrink-0 grid-cols-4 border-[#262626] bg-black max-lg:order-last max-lg:-mx-2 max-lg:-mb-2 max-lg:border-t max-lg:px-1 max-lg:pt-1 lg:hidden">
           {(
             [
               ["scenes", "Scènes"],
@@ -770,13 +778,15 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
               ["controls", "Contrôles"],
             ] as const
           ).map(([id, text]) => (
-            <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={`h-11 rounded border text-[13px] ${tab === id ? "border-[#2f4fc4] bg-[#2f4fc4] text-white" : "border-[#2e2e2e] bg-[#141414] text-neutral-300"}`}>
-              {text}
+            <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={`relative flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-[11px] transition-colors active:scale-[0.97] ${tab === id ? "text-white" : "text-neutral-500"}`}>
+              {tab === id && <span aria-hidden="true" className="absolute inset-x-5 top-0 h-0.5 rounded-full bg-white" />}
+              <TabIcon id={id} />
+              <span className="max-w-full truncate">{text}</span>
             </button>
           ))}
         </nav>
 
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 max-lg:grid-rows-1 lg:grid-cols-[minmax(14rem,1.3fr)_3fr_3fr_minmax(13rem,1.15fr)]">
+        <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 gap-2 max-lg:grid-cols-[minmax(0,1fr)] max-lg:grid-rows-1 lg:grid-cols-[minmax(14rem,1.3fr)_3fr_3fr_minmax(13rem,1.15fr)]">
           {scenesPanel}
           {sourcesPanel}
           {mixerPanel}
@@ -853,6 +863,36 @@ function Svg({ children, size = "size-4" }: { children: ReactNode; size?: string
     <svg {...ico} className={size}>
       {children}
     </svg>
+  );
+}
+
+function TabIcon({ id }: { id: Tab }) {
+  return (
+    <Svg size="size-[22px]">
+      {id === "scenes" ? (
+        <>
+          <rect x="3" y="5" width="18" height="14" rx="2" />
+          <path d="M3 10h18M8 5l-2 5M14 5l-2 5M20 5l-2 5" />
+        </>
+      ) : id === "sources" ? (
+        <>
+          <path d="M12 3l9 5-9 5-9-5 9-5Z" />
+          <path d="M3 13l9 5 9-5" />
+        </>
+      ) : id === "mixer" ? (
+        <>
+          <path d="M6 4v16M12 4v16M18 4v16" />
+          <circle cx="6" cy="9" r="2" fill="currentColor" />
+          <circle cx="12" cy="15" r="2" fill="currentColor" />
+          <circle cx="18" cy="8" r="2" fill="currentColor" />
+        </>
+      ) : (
+        <>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M10 8.5v7l6-3.5-6-3.5Z" />
+        </>
+      )}
+    </Svg>
   );
 }
 

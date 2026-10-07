@@ -1016,6 +1016,8 @@ export function buildServer(d: Deps) {
       // Un fichier (flux brut) : taille d'origine et encodage (raw ou gzip) dans les en-têtes ; vérifié par son SHA-256.
       // Encapsulé : son lecteur de flux brut ne doit pas entrer en conflit avec celui de /v1/cam/scan/up (octet-stream en mémoire).
       app.register((blobs, _opts, next) => {
+        // Le parent (cam/scan/up) en déclare déjà un : on le retire dans ce module avant de poser le lecteur de flux.
+        blobs.removeContentTypeParser("application/octet-stream");
         blobs.addContentTypeParser("application/octet-stream", (_req, payload, done) => done(null, payload));
         blobs.put("/v1/link/blobs/:sha", { bodyLimit: backups.quota + 1024 * 1024 }, async (req, reply) => {
           const id = await remote.deviceUser(req.headers.authorization);

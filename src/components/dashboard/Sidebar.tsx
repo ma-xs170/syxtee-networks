@@ -221,6 +221,12 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
               <span className="min-w-0 flex-1">Créer un espace partagé</span>
               <span className="shrink-0 text-[13px] text-muted">{ws.left === null ? "illimité" : ws.left > 0 ? `${ws.left} restante${ws.left > 1 ? "s" : ""}` : "non inclus"}</span>
             </button>
+            {active && active.role !== "member" && (
+              <Link role="menuitem" href="/dashboard/invitations#ws-settings" onClick={() => { setOpen(false); onNavigate(); }} className={row}>
+                <span aria-hidden="true" className="grid size-2 shrink-0 place-items-center text-muted">⚙</span>
+                <span className="min-w-0 flex-1 truncate">Renommer ou supprimer « {active.name} »</span>
+              </Link>
+            )}
             <div className="mt-1 border-t border-line">
               <Link role="menuitem" href="/compte" onClick={() => { setOpen(false); onNavigate(); }} className={item}>
                 Mon compte

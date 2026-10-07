@@ -37,6 +37,8 @@ const ACCESS_TTL_MS = 3_600_000;
 const REFRESH_TTL_MS = 90 * 86_400_000;
 /** Actions d'OBS (hors lectures) : 60 par 10 s et par appareil. */
 const ACTION_LIMIT = 60;
+/** Volume (fader glissé) : 400 par 10 s et par appareil. */
+const VOLUME_LIMIT = 400;
 const KEEP_BACKUP_VERSIONS = 4;
 
 /** Permissions montrées à l'utilisateur à l'appairage, enregistrées avec l'appareil. */
@@ -231,10 +233,13 @@ export function createRemote(o: {
       if (!agent) return send(ws, { type: "res", id: m.id, ok: false, error: "agent_offline" });
       // Plafond d'actions par appareil, tous navigateurs confondus.
       if (!isRead(m.method)) {
-        let b = buckets.get(agent.deviceId);
-        if (!b || now() - b.since > 10_000) buckets.set(agent.deviceId, (b = { n: 0, since: now() }));
-        if (++b.n > ACTION_LIMIT) {
-          if (b.n === ACTION_LIMIT + 1) audit(conn.userId, agent.deviceId, m.method, false, "rate_limited");
+        // Un fader qu'on glisse envoie des dizaines d'ordres : compteur à part, bien plus large, pour ne pas bloquer les autres actions.
+        const key = m.method === "SetInputVolume" ? `${agent.deviceId}:volume` : agent.deviceId;
+        const limit = m.method === "SetInputVolume" ? VOLUME_LIMIT : ACTION_LIMIT;
+        let b = buckets.get(key);
+        if (!b || now() - b.since > 10_000) buckets.set(key, (b = { n: 0, since: now() }));
+        if (++b.n > limit) {
+          if (b.n === limit + 1) audit(conn.userId, agent.deviceId, m.method, false, "rate_limited");
           return send(ws, { type: "res", id: m.id, ok: false, error: "rate_limited" });
         }
       }

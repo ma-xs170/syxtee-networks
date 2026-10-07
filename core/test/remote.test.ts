@@ -3,14 +3,14 @@ import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { test } from "node:test";
 import { WebSocket } from "ws";
-import { ALLOWED, createRemote, hashToken, isDeviceToken, isRefreshToken, newDeviceToken, newPairCode } from "../src/remote.ts";
+import { ALLOWED, createRemote, guestAllows, hashToken, isDeviceToken, isInviteToken, isRefreshToken, newDeviceToken, newPairCode } from "../src/remote.ts";
 import { fakeDb } from "./fake-db.ts";
 
 const U = "00000000-0000-4000-8000-000000000001";
 const OTHER = "00000000-0000-4000-8000-000000000002";
 
 function setup(allowed = new Set([U])) {
-  const db = fakeDb({ link_devices: ["token_hash", "refresh_hash"] }, { link_devices: () => ({ id: crypto.randomUUID(), created_at: new Date().toISOString(), last_seen: null }) });
+  const db = fakeDb({ link_devices: ["token_hash", "refresh_hash"], link_invites: ["token_hash"] }, { link_devices: () => ({ id: crypto.randomUUID(), created_at: new Date().toISOString(), last_seen: null }), link_invites: () => ({ id: crypto.randomUUID(), created_at: new Date().toISOString(), revoked_at: null, last_used_at: null }) });
   const logs: string[] = [];
   const remote = createRemote({
     db: db as never,
@@ -451,4 +451,89 @@ test("appairage par appareil : poste affiché, refus possible, jetons donnés un
   assert.equal(row.org_id, undefined); // colonne réservée, jamais renseignée
   assert.deepEqual(await s.remote.devicePoll("device_code" in st2 ? st2.device_code : ""), { status: "expired" });
   s.stop();
+});
+
+test("invitation : droits par niveau, jamais de sauvegardes ni de commande hors liste", () => {
+  for (const m of ["GetSceneList", "GetInputList", "link.getPreview", "link.getBackup"]) assert.ok(guestAllows("view", m), m);
+  for (const m of ["SetCurrentProgramScene", "SetInputVolume", "StartStream", "SetCurrentProfile"]) assert.ok(!guestAllows("view", m), m);
+  for (const m of ["SetCurrentProgramScene", "SetInputVolume", "SetSceneItemEnabled"]) assert.ok(guestAllows("scenes", m), m);
+  for (const m of ["StartStream", "StopStream", "StartRecord", "SetCurrentProfile"]) assert.ok(!guestAllows("scenes", m), m);
+  for (const m of ["StartStream", "StopRecord", "SetCurrentSceneCollection", "SetCurrentProgramScene"]) assert.ok(guestAllows("full", m), m);
+  for (const lvl of ["view", "scenes", "full"] as const) for (const m of ["link.setBackup", "link.backupNow", "link.restore", "link.setPreview", "link.collections", "RemoveScene", "CallVendorRequest"]) assert.ok(!guestAllows(lvl, m), `${lvl} ${m}`);
+});
+
+test("invitation : lien secret sans compte, droits appliqués par le serveur, révocation immédiate", async () => {
+  const { remote, db, port, stop } = await setup();
+  const sockets: { ws: WebSocket }[] = [];
+  try {
+  const { code } = remote.newCode(U);
+  const claim = await remote.claim("1.1.1.1", code, "Mac", "darwin");
+  const token = "token" in claim ? claim.token : "";
+  const agent = client(port, "/v1/link/agent");
+  sockets.push(agent);
+  await agent.open();
+  agent.send({ type: "hello", token, name: "Mac", platform: "darwin", version: "0.1.0" });
+  assert.equal((await agent.next()).type, "ready");
+
+  assert.deepEqual(await remote.createInvite(U, { label: "", level: "view" }), { error: "invalid" });
+  assert.deepEqual(await remote.createInvite(U, { label: "Modo", level: "root" }), { error: "invalid" });
+  assert.deepEqual(await remote.createInvite(U, { label: "Modo", level: "view", email: "pas-un-email" }), { error: "invalid" });
+  const inv = await remote.createInvite(U, { label: "Modo Léa", email: "Lea@Example.com", level: "scenes", expiresHours: 24 });
+  assert.ok("token" in inv && isInviteToken(inv.token));
+  const secret = "token" in inv ? inv.token : "";
+  const row = db.rows("link_invites")[0];
+  assert.equal(row.token_hash, hashToken(secret));
+  assert.ok(!JSON.stringify(row).includes(secret)); // jamais le secret en base
+  assert.equal(row.email, "lea@example.com");
+
+  // Mauvais secret : refusé.
+  const bad = client(port, "/v1/link/remote");
+  sockets.push(bad);
+  await bad.open();
+  bad.send({ type: "hello", invite: "sli_" + "0".repeat(48) });
+  assert.equal(await bad.closed, 4003);
+
+  // Le bon : connecté, avec ses droits.
+  const g = client(port, "/v1/link/remote");
+  sockets.push(g);
+  await g.open();
+  g.send({ type: "hello", invite: secret });
+  const ready = await g.next();
+  assert.equal(ready.type, "ready");
+  assert.equal(ready.guest.level, "scenes");
+  assert.equal(ready.agent.online, true);
+  await g.next(); // instances
+
+  // Changer de scène : passe jusqu'à l'agent. Démarrer le direct : refusé par le serveur, sans toucher l'agent.
+  g.send({ type: "req", id: "1", method: "SetCurrentProgramScene", params: { sceneName: "Jeu" } });
+  let toAgent = await agent.next();
+  while (toAgent.type !== "req") toAgent = await agent.next(); // sauter les messages « viewers »
+  assert.equal(toAgent.method, "SetCurrentProgramScene");
+  agent.send({ type: "res", id: toAgent.id, ok: true, result: {} });
+  assert.equal((await g.next()).ok, true);
+  g.send({ type: "req", id: "2", method: "StartStream" });
+  const denied = await g.next();
+  assert.deepEqual([denied.ok, denied.error], [false, "forbidden"]);
+  g.send({ type: "req", id: "3", method: "link.backupNow", params: {} });
+  assert.equal((await g.next()).error, "forbidden");
+
+  // Liste : état, jamais d'empreinte ni de secret.
+  const list = await remote.invites(U);
+  assert.equal(list.length, 1);
+  assert.equal(list[0].connected, 1);
+  assert.ok(!JSON.stringify(list).includes(secret) && !JSON.stringify(list).includes("token_hash"));
+
+  // Un autre compte ne peut pas révoquer ; le propriétaire oui : l'invité est coupé sur le champ.
+  assert.equal(await remote.revokeInvite(OTHER, list[0].id), false);
+  assert.equal(await remote.revokeInvite(U, list[0].id), true);
+  assert.equal(await g.closed, 4005);
+  const again = client(port, "/v1/link/remote");
+  sockets.push(again);
+  await again.open();
+  again.send({ type: "hello", invite: secret });
+  assert.equal(await again.closed, 4003);
+  } finally {
+    for (const c of sockets) c.ws.terminate();
+    stop();
+  }
 });

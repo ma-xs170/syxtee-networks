@@ -40,6 +40,25 @@ const ACTION_LIMIT = 60;
 /** Volume (fader glissé) : 400 par 10 s et par appareil. */
 const VOLUME_LIMIT = 400;
 const KEEP_BACKUP_VERSIONS = 4;
+const MAX_ACTIVE_INVITES = 20;
+
+/** Droits d'une invitation (migration 0045). Le serveur applique ces règles : l'interface n'est qu'un confort. */
+export type InviteLevel = "view" | "scenes" | "full";
+export const INVITE_LEVELS: InviteLevel[] = ["view", "scenes", "full"];
+const GUEST_SCENES = new Set([
+  "SetCurrentProgramScene", "SetCurrentPreviewScene", "SetStudioModeEnabled", "TriggerStudioModeTransition", "SetSceneItemEnabled",
+  "SetInputMute", "SetInputVolume", "SetInputAudioMonitorType", "SetCurrentSceneTransition",
+]);
+const GUEST_FULL = new Set(["StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord", "SetCurrentProfile", "SetCurrentSceneCollection"]);
+/** Lectures permises à un invité : tout `Get…` d'OBS, plus l'état de l'aperçu et des rôles. Jamais les sauvegardes. */
+const GUEST_LINK_READS = new Set(["link.getPreview", "link.getInfo", "link.getBackup", "link.preview"]);
+export function guestAllows(level: InviteLevel, method: string): boolean {
+  if (method.startsWith("link.")) return GUEST_LINK_READS.has(method);
+  if (method.startsWith("Get")) return true;
+  if (level === "view") return false;
+  if (GUEST_SCENES.has(method)) return true;
+  return level === "full" && GUEST_FULL.has(method);
+}
 
 /** Permissions montrées à l'utilisateur à l'appairage, enregistrées avec l'appareil. */
 export const LINK_SCOPES = ["profile", "email", "offline", "obs.control", "backups"] as const;
@@ -53,6 +72,8 @@ export const newDeviceToken = () => `slk_${randomBytes(24).toString("hex")}`;
 export const newRefreshToken = () => `slr_${randomBytes(24).toString("hex")}`;
 export const isDeviceToken = (s: unknown): s is string => typeof s === "string" && /^slk_[0-9a-f]{48}$/.test(s);
 export const isRefreshToken = (s: unknown): s is string => typeof s === "string" && /^slr_[0-9a-f]{48}$/.test(s);
+export const newInviteToken = () => `sli_${randomBytes(24).toString("hex")}`;
+export const isInviteToken = (s: unknown): s is string => typeof s === "string" && /^sli_[0-9a-f]{48}$/.test(s);
 export const hashToken = (t: string) => createHash("sha256").update(t).digest("hex");
 
 /** Sous-ensemble du client Supabase utilisé ici (table link_devices, migration 0023). */
@@ -69,7 +90,8 @@ const PUBLIC_COLS = "id, name, platform, os, host, plugin_version, online_since,
 
 type Pending = { remote: Conn; rid: string; agent: Agent; method: string; detail: string | null; timer: ReturnType<typeof setTimeout> };
 /** `device` : poste que ce navigateur pilote (par défaut, le dernier connecté). */
-type Conn = { ws: WebSocket; id: string; userId: string; device?: string };
+/** `guest` : invité sans compte (lien d'invitation) : il pilote le compte `userId` avec les droits de son invitation. */
+type Conn = { ws: WebSocket; id: string; userId: string; device?: string; guest?: { id: string; level: InviteLevel; label: string; locked: boolean } };
 type Agent = Conn & { deviceId: string; name: string; platform: string; version: string; os: string; host: string; since: number; expires: number | null; expiry?: ReturnType<typeof setTimeout> };
 
 export function createRemote(o: {
@@ -89,6 +111,7 @@ export function createRemote(o: {
   const agents = new Map<string, Map<string, Agent>>(); // compte → appareil → agent connecté
   const buckets = new Map<string, { n: number; since: number }>(); // appareil → actions récentes
   const remotes = new Map<string, Set<Conn>>(); // compte → navigateurs connectés
+  const guests = new Map<string, Set<Conn>>(); // invitation → navigateurs invités connectés
   const pending = new Map<string, Pending>(); // id routé → demande en attente
   let seq = 0;
   // Connexion depuis le plugin : l'agent demande un code, ouvre le site, l'utilisateur (connecté) l'approuve, l'agent récupère son jeton.
@@ -135,7 +158,10 @@ export function createRemote(o: {
   }
   /** Action finie (réponse, délai, agent parti) : écrite au journal, sauf les lectures. */
   function finish(p: Pending, ok: boolean, error?: string) {
-    if (!isRead(p.method)) audit(p.remote.userId, p.agent.deviceId, p.method, ok, error, p.detail);
+    if (!isRead(p.method)) {
+      const g = p.remote.guest;
+      audit(p.remote.userId, p.agent.deviceId, p.method, ok, error, g ? `invité « ${g.label} »${p.detail ? ` ${p.detail}` : ""}`.slice(0, 120) : p.detail);
+    }
   }
 
   /** 10 échecs d'appairage par minute et par IP au plus. */
@@ -216,7 +242,7 @@ export function createRemote(o: {
       }
       if (m.type === "select") {
         // Changer de poste piloté.
-        conn.device = typeof m.device === "string" ? m.device : undefined;
+        if (!conn.guest?.locked) conn.device = typeof m.device === "string" ? m.device : undefined;
         send(ws, { type: "agent", ...agentInfo(pick(conn.userId, conn.device)) });
         const a = [...(agents.get(conn.userId)?.values() ?? [])];
         a.forEach((x) => send(x.ws, { type: "viewers", n: viewersOf(x) }));
@@ -228,6 +254,10 @@ export function createRemote(o: {
       if (!ALLOWED.has(m.method)) {
         audit(conn.userId, null, m.method, false, "not_allowed");
         return send(ws, { type: "res", id: m.id, ok: false, error: "method_not_allowed" });
+      }
+      if (conn.guest && !guestAllows(conn.guest.level, m.method)) {
+        audit(conn.userId, null, m.method, false, "forbidden", `invité « ${conn.guest.label} »`);
+        return send(ws, { type: "res", id: m.id, ok: false, error: "forbidden" });
       }
       const agent = pick(conn.userId, conn.device);
       if (!agent) return send(ws, { type: "res", id: m.id, ok: false, error: "agent_offline" });
@@ -265,6 +295,11 @@ export function createRemote(o: {
       const set = remotes.get(conn.userId);
       set?.delete(conn);
       if (set && set.size === 0) remotes.delete(conn.userId);
+      if (conn.guest) {
+        const g = guests.get(conn.guest.id);
+        g?.delete(conn);
+        if (g && g.size === 0) guests.delete(conn.guest.id);
+      }
       for (const a of agents.get(conn.userId)?.values() ?? []) send(a.ws, { type: "viewers", n: viewersOf(a) });
     });
   }
@@ -274,7 +309,7 @@ export function createRemote(o: {
     const timer = setTimeout(() => ws.close(4001, "hello_timeout"), HELLO_TIMEOUT_MS);
     ws.once("message", async (raw) => {
       clearTimeout(timer);
-      let m: { type?: string; token?: unknown; access?: unknown; name?: unknown; platform?: unknown; version?: unknown; os?: unknown; host?: unknown; device?: unknown };
+      let m: { type?: string; token?: unknown; access?: unknown; invite?: unknown; name?: unknown; platform?: unknown; version?: unknown; os?: unknown; host?: unknown; device?: unknown };
       try {
         m = JSON.parse(String(raw));
       } catch {
@@ -309,13 +344,33 @@ export function createRemote(o: {
         o.log(`link ${dev.user_id.slice(0, 8)} : agent « ${agent.name} » connecté`);
         handleAgent(ws, agent);
       } else {
-        const userId = typeof m.access === "string" ? await o.verifyUser(`Bearer ${m.access}`) : null;
+        let guest: Conn["guest"];
+        let userId: string | null = null;
+        let device = typeof m.device === "string" ? m.device : undefined;
+        if (isInviteToken(m.invite)) {
+          // Invité sans compte : le lien porte le secret ; le compte piloté est celui qui a invité.
+          if (throttled(ip)) return ws.close(4008, "too_many");
+          const inv = await findInvite(m.invite);
+          if (!inv || !o.canUse(inv.owner_id)) {
+            fail(ip);
+            return ws.close(4003, "unauthorized");
+          }
+          userId = inv.owner_id;
+          guest = { id: inv.id, level: inv.level, label: inv.label, locked: !!inv.device_id };
+          if (inv.device_id) device = inv.device_id;
+          touchInvite(inv.id);
+        } else userId = typeof m.access === "string" ? await o.verifyUser(`Bearer ${m.access}`) : null;
         if (!userId || !o.canUse(userId)) return ws.close(4003, "unauthorized");
-        const conn: Conn = { ws, id, userId, device: typeof m.device === "string" ? m.device : undefined };
+        const conn: Conn = { ws, id, userId, device, guest };
+        if (guest) {
+          const g = guests.get(guest.id) ?? new Set<Conn>();
+          g.add(conn);
+          guests.set(guest.id, g);
+        }
         const set = remotes.get(userId) ?? new Set<Conn>();
         set.add(conn);
         remotes.set(userId, set);
-        send(ws, { type: "ready", agent: agentInfo(pick(userId, conn.device)) });
+        send(ws, { type: "ready", agent: agentInfo(pick(userId, conn.device)), ...(guest ? { guest: { level: guest.level, label: guest.label } } : {}) });
         send(ws, { type: "instances", online: [...(agents.get(userId)?.values() ?? [])].map((a) => ({ id: a.deviceId, name: a.name, platform: a.platform, version: a.version, since: a.since })) });
         for (const a of agents.get(userId)?.values() ?? []) send(a.ws, { type: "viewers", n: viewersOf(a) });
         setTimeout(() => ws.close(4004, "session_expired"), SESSION_MAX_MS).unref();
@@ -332,6 +387,22 @@ export function createRemote(o: {
     if (!d || d.revoked_at) return null;
     if (d.token_expires_at && Date.parse(d.token_expires_at) <= now()) return null;
     return d;
+  }
+  type InviteRow = { id: string; owner_id: string; device_id: string | null; label: string; email: string | null; level: InviteLevel; expires_at: string | null; revoked_at: string | null; last_used_at: string | null; created_at: string };
+  const INVITE_COLS = "id, owner_id, device_id, label, email, level, expires_at, revoked_at, last_used_at, created_at";
+  /** Invitation du lien : introuvable, révoquée ou expirée = null. */
+  async function findInvite(token: string): Promise<InviteRow | null> {
+    const { data } = await o.db.from("link_invites").select(INVITE_COLS).eq("token_hash", hashToken(token)).maybeSingle();
+    const r = data as InviteRow | null;
+    if (!r || r.revoked_at) return null;
+    if (r.expires_at && Date.parse(r.expires_at) <= now()) return null;
+    return r;
+  }
+  const lastInviteTouch = new Map<string, number>();
+  function touchInvite(id: string) {
+    if (now() - (lastInviteTouch.get(id) ?? 0) < 60_000) return;
+    lastInviteTouch.set(id, now());
+    void Promise.resolve(o.db.from("link_invites").update({ last_used_at: new Date(now()).toISOString() }).eq("id", id)).catch(() => {});
   }
   /** La session de l'agent se ferme à l'expiration du jeton d'accès, sauf renouvellement (`reauth`). Null : ancien jeton sans échéance. */
   function armExpiry(a: Agent, at: number | null) {
@@ -547,6 +618,56 @@ export function createRemote(o: {
       const ok = Array.isArray(data) && data.length > 0;
       if (ok) audit(userId, deviceId, "device.revoke", true);
       return ok;
+    },
+
+    // ── Invitations (invités sans compte) ──
+    /** Crée une invitation. Le secret n'est renvoyé qu'ici : seule son empreinte est gardée. */
+    async createInvite(userId: string, i: { label: unknown; email?: unknown; level: unknown; deviceId?: unknown; expiresHours?: unknown }): Promise<{ error: string } | { id: string; token: string; expires_at: string | null }> {
+      const label = text(i.label, 40);
+      const level = INVITE_LEVELS.find((l) => l === i.level);
+      const email = i.email ? text(i.email, 254).toLowerCase() : null;
+      if (!label || !level) return { error: "invalid" };
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "invalid" };
+      const hours = typeof i.expiresHours === "number" && i.expiresHours > 0 ? Math.min(i.expiresHours, 24 * 365) : null;
+      const deviceId = typeof i.deviceId === "string" && i.deviceId ? i.deviceId : null;
+      if (deviceId) {
+        const { data: dev } = await o.db.from("link_devices").select("id").eq("id", deviceId).eq("user_id", userId).is("revoked_at", null).maybeSingle();
+        if (!dev) return { error: "no_device" };
+      }
+      const { data: active } = await o.db.from("link_invites").select("id").eq("owner_id", userId).is("revoked_at", null);
+      if (Array.isArray(active) && active.length >= MAX_ACTIVE_INVITES) return { error: "quota" };
+      const token = newInviteToken();
+      const expires_at = hours ? new Date(now() + hours * 3_600_000).toISOString() : null;
+      const { data, error } = await o.db.from("link_invites").insert({ owner_id: userId, device_id: deviceId, label, email, level, token_hash: hashToken(token), expires_at }).select("id").single();
+      if (error || !data) return { error: "server" };
+      audit(userId, deviceId, "invite.create", true, undefined, `${label} (${level})`.slice(0, 120));
+      return { id: (data as { id: string }).id, token, expires_at };
+    },
+    /** Invitations actives du compte, avec leur état de connexion. Jamais le secret ni son empreinte. */
+    async invites(userId: string): Promise<(Omit<InviteRow, "owner_id" | "revoked_at"> & { connected: number; expired: boolean })[]> {
+      const { data } = await o.db.from("link_invites").select(INVITE_COLS).eq("owner_id", userId).is("revoked_at", null);
+      return ((data as InviteRow[] | null) ?? []).map((r) => ({
+        id: r.id, device_id: r.device_id, label: r.label, email: r.email, level: r.level, expires_at: r.expires_at, last_used_at: r.last_used_at, created_at: r.created_at,
+        connected: guests.get(r.id)?.size ?? 0, expired: !!r.expires_at && Date.parse(r.expires_at) <= now(),
+      }));
+    },
+    /** Révoque une invitation : le lien ne marche plus, les invités connectés sont déconnectés tout de suite. */
+    async revokeInvite(userId: string, inviteId: string): Promise<boolean> {
+      const { data } = await o.db.from("link_invites").update({ revoked_at: new Date(now()).toISOString() }).eq("id", inviteId).eq("owner_id", userId).is("revoked_at", null).select("id");
+      for (const c of guests.get(inviteId) ?? []) c.ws.close(4005, "revoked");
+      const ok = Array.isArray(data) && data.length > 0;
+      if (ok) audit(userId, null, "invite.revoke", true);
+      return ok;
+    },
+    /** Compte propriétaire et droits d'un lien d'invitation (pour l'aperçu vidéo de l'invité), ou null. */
+    async inviteAuth(token: unknown, ip = ""): Promise<{ userId: string; level: InviteLevel } | null> {
+      if (!isInviteToken(token) || throttled(ip)) return null;
+      const inv = await findInvite(token);
+      if (!inv || !o.canUse(inv.owner_id)) {
+        fail(ip);
+        return null;
+      }
+      return { userId: inv.owner_id, level: inv.level };
     },
 
     /** Dernières actions du compte (journal d'audit). */

@@ -1014,17 +1014,21 @@ export function buildServer(d: Deps) {
         return "error" in r ? reply.code(r.error === "quota" ? 413 : 400).send(r) : r;
       });
       // Un fichier (flux brut) : taille d'origine et encodage (raw ou gzip) dans les en-têtes ; vérifié par son SHA-256.
-      app.addContentTypeParser("application/octet-stream", (_req, payload, done) => done(null, payload));
-      app.put("/v1/link/blobs/:sha", { bodyLimit: backups.quota + 1024 * 1024 }, async (req, reply) => {
-        const id = await remote.deviceUser(req.headers.authorization);
-        if (!id) return reply.code(401).send({ error: "unauthorized" });
-        const p = z.object({ sha: z.string().length(64) }).safeParse(req.params);
-        const enc = String(req.headers["x-syxtee-encoding"] ?? "raw");
-        const size = Number(req.headers["x-syxtee-size"]);
-        if (!p.success || (enc !== "raw" && enc !== "gzip") || !Number.isInteger(size)) return reply.code(400).send({ error: "invalid" });
-        const r = await backups.putBlob(id, p.data.sha, { size, encoding: enc }, req.body as import("node:stream").Readable, Number(req.headers["content-length"]));
-        if ("error" in r) return reply.code(r.error === "quota" ? 413 : r.error === "length_required" ? 411 : r.error === "server" ? 500 : 400).send({ error: r.error });
-        return r;
+      // Encapsulé : son lecteur de flux brut ne doit pas entrer en conflit avec celui de /v1/cam/scan/up (octet-stream en mémoire).
+      app.register((blobs, _opts, next) => {
+        blobs.addContentTypeParser("application/octet-stream", (_req, payload, done) => done(null, payload));
+        blobs.put("/v1/link/blobs/:sha", { bodyLimit: backups.quota + 1024 * 1024 }, async (req, reply) => {
+          const id = await remote.deviceUser(req.headers.authorization);
+          if (!id) return reply.code(401).send({ error: "unauthorized" });
+          const p = z.object({ sha: z.string().length(64) }).safeParse(req.params);
+          const enc = String(req.headers["x-syxtee-encoding"] ?? "raw");
+          const size = Number(req.headers["x-syxtee-size"]);
+          if (!p.success || (enc !== "raw" && enc !== "gzip") || !Number.isInteger(size)) return reply.code(400).send({ error: "invalid" });
+          const r = await backups.putBlob(id, p.data.sha, { size, encoding: enc }, req.body as import("node:stream").Readable, Number(req.headers["content-length"]));
+          if ("error" in r) return reply.code(r.error === "quota" ? 413 : r.error === "length_required" ? 411 : r.error === "server" ? 500 : 400).send({ error: r.error });
+          return r;
+        });
+        next();
       });
       app.post("/v1/link/backups/commit", { bodyLimit: 8 * 1024 * 1024 }, async (req, reply) => {
         const id = await remote.deviceUser(req.headers.authorization);

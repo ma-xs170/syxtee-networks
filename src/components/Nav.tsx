@@ -13,7 +13,6 @@ import StreamModeToggle from "./dashboard/StreamModeToggle";
 import { restoreStreamMode } from "./dashboard/streamMode";
 import { DesktopMenus, NavAccordion } from "./NavTools";
 import { SupportId } from "./SupportId";
-import { DiscordButton } from "./ui";
 
 // Barre du site. Sur /dashboard/* (variant « dashboard ») : mêmes logo, hauteur, flou et méga-menus, mais les menus
 // du dashboard au centre et, à droite, seulement le statut du direct, le mode stream et l'avatar. Tout le reste
@@ -39,7 +38,6 @@ function dashboardGroups(admin: boolean): MenuGroup[] {
       label: "Aide",
       links: [
         { label: "Documentation", href: "/docs" },
-        { label: "Discord", href: site.discord, external: true },
         { label: "Retour au site", href: "/" },
       ],
     },
@@ -82,8 +80,9 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
           </div>
         ) : (
           <div className="hidden shrink-0 items-center gap-6 justify-self-end lg:flex">
-            <AccountMenu account={account} />
-            <DiscordButton size="sm">Discord</DiscordButton>
+            <Link href="/dashboard" className="inline-flex h-9 items-center rounded-lg bg-foreground px-4 text-sm font-semibold text-background transition-colors hover:bg-foreground/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
+              Espace client
+            </Link>
           </div>
         )}
 
@@ -169,7 +168,9 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
           </div>
           {!dash && (
             <div className="mt-6">
-              <DiscordButton>Discord</DiscordButton>
+              <Link href="/dashboard" onClick={() => setOpen(false)} className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-foreground px-4 text-sm font-semibold text-background">
+                Espace client
+              </Link>
             </div>
           )}
         </div>

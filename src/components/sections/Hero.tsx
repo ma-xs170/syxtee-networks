@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { DiscordLogo } from "@/components/icons";
 import Link from "next/link";
 import { rich } from "@/lib/rich";
 import { site } from "@/lib/site";
@@ -47,7 +46,7 @@ export default function Hero({ streamers = [] }: { streamers?: HomeStreamer[] })
           </h1>
 
           <p className="rise mx-auto mt-6 max-w-xl text-base leading-relaxed text-foreground/75 sm:text-lg" style={{ "--i": 2 } as React.CSSProperties}>
-            {rich("Un **relais SRTLA, RTMP ou RIST** pour streamer en IRL : **bonding** 4G, 5G, Wi-Fi et Starlink.")}
+            {rich("Un **flux SRTLA, RTMP ou RIST** pour streamer en mobilité : **bonding** 4G, 5G, Wi-Fi et Starlink.")}
           </p>
 
           <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={{ "--i": 3 } as React.CSSProperties}>
@@ -55,15 +54,8 @@ export default function Hero({ streamers = [] }: { streamers?: HomeStreamer[] })
               Commencer
               <span aria-hidden="true">↗</span>
             </Link>
-            <Link
-              href={site.discord}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${btn} border border-foreground/20 bg-background/60 text-foreground backdrop-blur-sm hover:bg-background/90`}
-            >
-              <DiscordLogo size={22} weight="fill" aria-hidden="true" />
-              Rejoindre la communauté Discord
-              <span aria-hidden="true">↗</span>
+            <Link href="/tarifs" className={`${btn} border border-foreground/20 bg-background/60 text-foreground backdrop-blur-sm hover:bg-background/90`}>
+              Voir les tarifs
             </Link>
           </div>
         </div>

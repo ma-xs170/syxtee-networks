@@ -1,15 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import PocketRouter from "../illustrations/PocketRouter";
 import RelayServer from "../illustrations/RelayServer";
-import StudioWire from "../illustrations/StudioWire";
 import { CREATE_RELAY_HREF, Container } from "../ui";
-import PhoneLiveMock from "../mockups/PhoneLiveMock";
 import RemoteObsMock from "../mockups/RemoteObsMock";
-import WatchMock from "../mockups/WatchMock";
-import ChatDemo from "./ChatDemo";
-import DashboardViews from "./DashboardViews";
 
-// Accueil : quatre rangées numérotées (01 à 04), séparées par un filet, le visuel change de côté d'une rangée à l'autre.
+// Accueil : trois rangées numérotées (01 à 03), séparées par un filet, le visuel change de côté d'une rangée à l'autre.
 // Chaque rangée : grand numéro, titre, deux phrases, la liste des fonctions, et un visuel.
 
 function Row({ n, title, text, tags, flip = false, actions, children }: { n: string; title: string; text: string; tags: string; flip?: boolean; actions?: ReactNode; children: ReactNode }) {
@@ -38,16 +34,16 @@ export default function NumberedFeatures() {
     <section aria-label="Fonctionnalités" className="border-b border-line">
       <Row
         n="01"
-        title="Un relais pour chaque appareil."
-        text="SRTLA pour le bonding en mouvement, RTMP pour une caméra DJI, GoPro ou OBS, et le RIST, le protocole des régies de télévision, chiffré en AES-256."
+        title="Des flux fiables, partout."
+        text="SRTLA pour le bonding en mobilité, RTMP pour une caméra ou OBS, et le RIST, le protocole des régies de télévision, chiffré en AES-256."
         tags="SRTLA · RTMP · RIST · 4G, 5G, Wi-Fi et Starlink"
         actions={
           <>
             <Link href={CREATE_RELAY_HREF} className="btn btn-primary">
-              Créer un relais
+              Créer un flux
             </Link>
-            <Link href="/docs/rist" className="btn btn-secondary">
-              Guide RIST
+            <Link href="/tarifs" className="btn btn-secondary">
+              Voir les tarifs
             </Link>
           </>
         }
@@ -59,73 +55,29 @@ export default function NumberedFeatures() {
 
       <Row
         n="02"
-        title="Tu vois ton direct d'un coup d'œil."
-        text="Le statut du direct, ton activité sur 7 et 30 jours, et la santé du flux mesurée chaque seconde, au même endroit."
-        tags="Vue d'ensemble · Mes relais · Santé du flux"
-        flip
-      >
-        <DashboardViews />
-      </Row>
-
-      <Row
-        n="03"
-        title="Toutes tes caméras, une seule régie."
-        text="Passe d'une caméra à l'autre en un clic, règle l'audio de chaque relais, et récupère le tout dans OBS avec un seul lien."
-        tags="Multiview · PROGRAM et PREVIEW · Mixeur audio · Lien OBS unique"
-        actions={
-          <>
-            <span className="inline-flex h-12 items-center rounded-xl border border-line px-5 font-mono text-xs uppercase tracking-[0.14em] text-muted">À venir</span>
-            <Link href="/syxtee-mix" className="btn btn-secondary">
-              Découvrir le commutateur
-            </Link>
-          </>
-        }
-      >
-        <div className="rounded-2xl border border-line bg-surface p-4 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] sm:p-6">
-          <StudioWire className="h-auto w-full" />
-        </div>
-      </Row>
-
-      <Row
-        n="04"
-        title="Tous tes chats, un seul fil."
-        text="Un clic sur un logo affiche une plateforme ou plusieurs. YouTube, Twitch et Kick se mélangent dans la même liste. Écris-leur depuis ton compte relié."
-        tags="YouTube · Twitch · Kick"
-        flip
-      >
-        <figure>
-          <ChatDemo />
-          <figcaption className="mt-3 text-xs text-muted">Exemple de messages.</figcaption>
-        </figure>
-      </Row>
-
-      <Row
-        n="05"
         title="Tu pilotes OBS depuis un onglet."
-        text="Change de scène depuis ton téléphone, au fond du jardin. Comme devant ton écran : aperçu du programme, sources, mixeur audio et contrôles du direct."
+        text="Change de scène depuis ton téléphone, au fond du jardin. Comme devant ton écran : aperçu du programme, sources, mixeur audio et contrôle du direct."
         tags="Scènes · Aperçu du programme · Sources · Mixeur audio"
+        flip
+        actions={
+          <Link href="/controle-a-distance" className="btn btn-secondary">
+            Découvrir le contrôle à distance
+          </Link>
+        }
       >
         <RemoteObsMock />
       </Row>
 
       <Row
-        n="06"
-        title="Ton téléphone devient une caméra."
-        text="Connecte ton téléphone sans fil en quelques secondes. Utilise une app de streaming IRL ou un simple lien de streaming direct."
-        tags="Sans fil · Avec ou sans application"
-        flip
+        n="03"
+        title="Un encodeur qui tient dans un sac."
+        text="Nous développons un encodeur portable pour caméra : plusieurs connexions réunies, un direct stable, et un prix accessible."
+        tags="Portable · Multi-connexions · Accessible"
+        actions={<span className="inline-flex h-9 items-center rounded-md border border-line px-3 text-xs uppercase tracking-[0.12em] text-muted">En développement</span>}
       >
-        <PhoneLiveMock />
-      </Row>
-
-      <Row
-        n="07"
-        title="Ton chat au poignet."
-        text="Lis le chat de ton direct sur ta montre, sans sortir le téléphone de ta poche. Et bien d'autres outils pour ton direct."
-        tags="Chat sur la montre · Et d'autres outils"
-        actions={<span className="inline-flex h-9 items-center rounded-md border border-line px-3 font-mono text-xs uppercase tracking-[0.14em] text-muted">Bientôt</span>}
-      >
-        <WatchMock />
+        <div className="relative flex h-72 items-center justify-center rounded-2xl border border-line bg-surface p-8 sm:h-80" aria-hidden="true">
+          <PocketRouter />
+        </div>
       </Row>
     </section>
   );

@@ -17,19 +17,15 @@ export const dashboardNav: DashItem[] = [
   {
     label: "Direct",
     children: [
-      { label: "Mes relais", href: "/dashboard/relais", desc: "SRTLA, RTMP, RIST, tes URLs et clés", icon: "relays", feature: "relais" },
+      { label: "Flux", href: "/dashboard/relais", desc: "SRTLA, RTMP, RIST, tes adresses et clés", icon: "relays", feature: "relais" },
       { label: "Contrôle à distance", href: "/dashboard/controle-a-distance", desc: "Pilote ton OBS depuis un onglet", icon: "control", feature: "relais" },
-      { label: "Aperçu", href: "/dashboard/apercu", desc: "Ton flux en direct", icon: "preview", feature: "apercu" },
-      { label: "Enregistrements", href: "/dashboard/enregistrements", desc: "Tes directs enregistrés, jusqu'à 10 Go", icon: "lives", feature: "relais" },
-      { label: "Caméras externes", href: "/dashboard/dji", desc: "DJI en Bluetooth, GoPro et drones en RTMP", icon: "cam", feature: "dji" },
     ],
   },
   {
     label: "Contenu",
-    children: [{ label: "Backups de scènes", href: "/dashboard/backups", desc: "Tes collections de scènes sauvegardées", icon: "plan", feature: "relais" }],
+    children: [{ label: "Sauvegardes de scènes", href: "/dashboard/backups", desc: "Tes collections de scènes sauvegardées", icon: "plan", feature: "relais" }],
   },
   { label: "Statistiques", href: "/dashboard/stats" },
-  { label: "Scanner", href: "/dashboard/scanner" },
 ];
 
 export type SectionTab = { label: string; href: string };
@@ -41,16 +37,9 @@ export const statsTabs: SectionTab[] = [
   { label: "Couverture", href: "/dashboard/contributions" },
 ];
 
-/** Onglets de la section Scanner. */
-export const scanTabs: SectionTab[] = [
-  { label: "Scan de zone", href: "/dashboard/scanner" },
-  { label: "Test ponctuel", href: "/dashboard/analyseur" },
-];
-
 /** Un lien de la barre reste actif sur toutes les pages de sa section. */
 export const activeAlso: Record<string, string[]> = {
   "/dashboard/stats": statsTabs.map((t) => t.href),
-  "/dashboard/scanner": scanTabs.map((t) => t.href),
 };
 
 /** Entrées verrouillées (cadenas) pour la formule donnée. */

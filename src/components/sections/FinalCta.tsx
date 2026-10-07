@@ -1,17 +1,16 @@
 import Link from "next/link";
-import { site } from "@/lib/site";
 import CloudBackdrop from "../home/CloudBackdrop";
 import { CREATE_RELAY_HREF, Container } from "../ui";
 import Highlight from "../ui/Highlight";
 
-// Appel final : section claire (blanc en haut, nuages rouges animés en bas), titre dans un cadre de viseur, bouton noir
+// Appel final : section sombre (volutes grises), titre dans un cadre de viseur, bouton gris
 // et lien souligné, comme la fin de page des sites de streaming.
 
 const corner = "pointer-events-none absolute h-9 w-9 border-accent sm:h-12 sm:w-12";
 
 export default function FinalCta() {
   return (
-    <section data-theme="light" className="relative overflow-hidden bg-background py-28 text-foreground sm:py-36">
+    <section data-theme="dark" className="relative overflow-hidden bg-background py-28 text-foreground sm:py-36">
       <CloudBackdrop flip />
       <Container className="relative">
         <div className="relative mx-auto max-w-4xl px-6 py-14 text-center sm:px-14 sm:py-20">
@@ -21,7 +20,7 @@ export default function FinalCta() {
           <span aria-hidden="true" className={`${corner} bottom-0 right-0 border-b-[5px] border-r-[5px]`} />
 
           <h2 className="h-hero mx-auto max-w-3xl">
-            Prêt à streamer ? <Highlight>Crée ton relais.</Highlight>
+            Prêt à streamer ? <Highlight>Crée ton flux.</Highlight>
           </h2>
           <div className="mt-10 flex flex-col items-center gap-4">
             <Link
@@ -35,13 +34,6 @@ export default function FinalCta() {
               En savoir plus sur les fonctionnalités
             </Link>
           </div>
-          <p className="mx-auto mt-8 max-w-lg text-sm text-foreground/70">
-            Une question ? Le support se passe sur le{" "}
-            <a href={site.discord} target="_blank" rel="noopener noreferrer" className="font-medium text-foreground underline underline-offset-4">
-              Discord
-            </a>
-            .
-          </p>
         </div>
       </Container>
     </section>

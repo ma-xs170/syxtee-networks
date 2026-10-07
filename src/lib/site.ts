@@ -18,8 +18,10 @@ export type NavItem = NavLink | NavMenu;
 
 // Menu du site : trois entrées. Produits, Outils et Ressources vivent dans la documentation (/docs).
 export const nav: NavItem[] = [
-  { label: "Relais", href: "/relais" },
-  { label: "Documentation", href: "/docs", arrow: true },
+  { label: "Flux", href: "/relais" },
+  { label: "Contrôle à distance", href: "/controle-a-distance" },
+  { label: "Encodeur", href: "/encodeur", badge: "En développement" },
+  { label: "Tarifs", href: "/tarifs" },
   { label: "Demander l'accès", href: "/acces" },
 ];
 

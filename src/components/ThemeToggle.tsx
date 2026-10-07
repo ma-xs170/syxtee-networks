@@ -58,3 +58,28 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
     </div>
   );
 }
+
+const NEXT: Record<ThemeMode, ThemeMode> = { auto: "dark", dark: "light", light: "auto" };
+const LABEL: Record<ThemeMode, string> = { auto: "Auto", dark: "Sombre", light: "Clair" };
+
+/** Une seule ligne « Thème : Sombre » : chaque appui passe au mode suivant (Auto, Sombre, Clair). */
+export function ThemeRow({ className = "", icon }: { className?: string; icon?: React.ReactNode }) {
+  const [mode, setMode] = useState<ThemeMode | null>(null);
+  useEffect(() => setMode(read()), []);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        const n = NEXT[mode ?? "auto"];
+        setMode(n);
+        apply(n);
+      }}
+      aria-label={`Thème : ${LABEL[mode ?? "auto"]}. Changer de thème`}
+      className={className}
+    >
+      {icon}
+      <span className="truncate">Thème</span>
+      <span className="ml-auto text-sm text-foreground/70">{mode ? LABEL[mode] : ""}</span>
+    </button>
+  );
+}

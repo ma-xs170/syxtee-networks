@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
-import StreamerWall from "@/components/home/StreamerWall";
 import NumberedFeatures from "@/components/sections/NumberedFeatures";
-import Faq from "@/components/sections/Faq";
 import FinalCta from "@/components/sections/FinalCta";
 import { getHomeStreamers } from "@/lib/streamers";
 
@@ -21,8 +19,6 @@ export default async function Home() {
     <>
       <Hero streamers={streamers} />
       <NumberedFeatures />
-      <StreamerWall streamers={streamers} />
-      <Faq />
       <FinalCta />
     </>
   );

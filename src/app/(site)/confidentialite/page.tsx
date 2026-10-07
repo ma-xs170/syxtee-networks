@@ -114,11 +114,7 @@ export default function ConfidentialitePage() {
           chaîne ») à tout moment depuis la page Mon compte. Le bouton « Supprimer mon compte » efface immédiatement toutes tes données.
         </p>
         <p>
-          Pour toute autre demande : [À COMPLÉTER : email de contact] ou le{" "}
-          <a href={site.discord} target="_blank" rel="noopener noreferrer" className="text-foreground underline">
-            serveur Discord
-          </a>
-          . Tu peux aussi saisir la CNIL (cnil.fr).
+          Pour toute autre demande : contact@syxtee-networks.fr. Tu peux aussi saisir la CNIL (cnil.fr).
         </p>
       </LegalBlock>
     </LegalPage>

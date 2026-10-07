@@ -58,11 +58,7 @@ export default function CguPage() {
       </LegalBlock>
       <LegalBlock title="10. Contact">
         <p>
-          Via le{" "}
-          <a href={site.discord} target="_blank" rel="noopener noreferrer" className="text-foreground underline">
-            serveur Discord
-          </a>
-          . [À COMPLÉTER : email de contact]
+          Par email : contact@syxtee-networks.fr, ou par la messagerie de l'espace client.
         </p>
       </LegalBlock>
     </LegalPage>

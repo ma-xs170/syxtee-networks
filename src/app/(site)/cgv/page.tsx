@@ -13,7 +13,7 @@ export default function CgvPage() {
     <LegalPage title="Conditions générales de vente" updated="[À COMPLÉTER]">
       <LegalBlock title="1. Vendeur">
         <p>
-          {site.name}, association [À COMPLÉTER : loi 1901, numéro RNA, adresse du siège]. Contact : Discord SYXTEE. Voir les{" "}
+          {site.name}, édité par LAWCY MUSIC (SIREN 131 041 725), 2476 chemin de Bel Air Desrozières, 97170 Petit-Bourg. Contact : contact@syxtee-networks.fr. Voir les{" "}
           <Link href="/mentions-legales" className="text-foreground underline">
             mentions légales
           </Link>
@@ -73,7 +73,7 @@ export default function CgvPage() {
         </p>
       </LegalBlock>
       <LegalBlock title="9. Droit applicable et litiges">
-        <p>Droit français. En cas de litige, écris-nous d&apos;abord sur Discord. [À COMPLÉTER : médiateur de la consommation]</p>
+        <p>Droit français. En cas de litige, écris-nous d&apos;abord à contact@syxtee-networks.fr. [À COMPLÉTER : médiateur de la consommation]</p>
       </LegalBlock>
     </LegalPage>
   );

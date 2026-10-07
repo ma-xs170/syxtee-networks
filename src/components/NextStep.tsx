@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Container, DiscordButton } from "./ui";
+import { Container } from "./ui";
 
 export default function NextStep({ label, href }: { label: string; href: string }) {
   return (
@@ -12,7 +12,7 @@ export default function NextStep({ label, href }: { label: string; href: string 
               {label} <span aria-hidden="true" className="inline-block transition-transform group-hover:translate-x-1">→</span>
             </p>
           </Link>
-          <DiscordButton variant="ghost">Une question ? Discord</DiscordButton>
+          <Link href="/dashboard/support" className="btn btn-secondary">Une question ? Écris-nous</Link>
         </div>
       </Container>
     </section>

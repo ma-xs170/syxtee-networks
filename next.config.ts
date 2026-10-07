@@ -23,6 +23,12 @@ const nextConfig: NextConfig = {
       { source: "/studio", destination: "/mix", permanent: true },
       { source: "/syxtee-studio", destination: "/syxtee-mix", permanent: true },
       { source: "/dashboard/urls", destination: "/dashboard/relais", permanent: true },
+      { source: "/dashboard/apercu", destination: "/dashboard", permanent: true },
+      { source: "/dashboard/enregistrements", destination: "/dashboard", permanent: true },
+      { source: "/dashboard/dji", destination: "/dashboard", permanent: true },
+      { source: "/dashboard/scanner", destination: "/dashboard", permanent: true },
+      { source: "/dashboard/analyseur", destination: "/dashboard", permanent: true },
+      { source: "/analyseur", destination: "/", permanent: true },
       { source: "/dashboard/commutateur", destination: "/commutateur", permanent: true },
     ];
   },

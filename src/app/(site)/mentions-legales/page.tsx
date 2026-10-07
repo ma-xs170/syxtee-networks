@@ -5,7 +5,6 @@ import { Container } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Mentions légales" };
 
-// ⚠️ Complète les champs [À COMPLÉTER] avant la mise en ligne publique.
 export default function MentionsLegales() {
   return (
     <section className="py-20">
@@ -16,18 +15,16 @@ export default function MentionsLegales() {
           <div>
             <h2 className="text-base font-semibold text-foreground">Éditeur du site</h2>
             <p className="mt-3">
-              {site.name}
+              {site.name}, édité par LAWCY MUSIC
               <br />
-              Responsable de la publication : [À COMPLÉTER]
+              SIREN : 131 041 725 · SIRET : 131 041 725 00014
               <br />
-              Statut / SIRET : [À COMPLÉTER]
+              Siège : 2476 chemin de Bel Air Desrozières, 97170 Petit-Bourg, Guadeloupe
               <br />
-              Adresse : [À COMPLÉTER], Guadeloupe
+              Directeur de la publication : Mathis CUSTOS
               <br />
-              Contact : via le{" "}
-              <a href={site.discord} className="text-foreground underline" target="_blank" rel="noopener noreferrer">
-                serveur Discord
-              </a>
+              Contact et réclamations (litiges compris) :{" "}
+              <a href="mailto:contact@syxtee-networks.fr" className="text-foreground underline">contact@syxtee-networks.fr</a>
             </p>
           </div>
 
@@ -51,7 +48,7 @@ export default function MentionsLegales() {
             <p className="mt-3">
               Le détail des données collectées par l&apos;espace client est dans la{" "}
               <Link href="/confidentialite" className="text-foreground underline">politique de confidentialité</Link>. Le site n&apos;utilise pas de
-              cookies publicitaires. Les échanges de support ont lieu sur Discord, soumis à la politique de confidentialité de Discord.
+              cookies publicitaires. Le support se fait par messagerie depuis l'espace client.
             </p>
           </div>
         </div>

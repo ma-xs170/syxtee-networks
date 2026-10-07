@@ -5,17 +5,14 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import {
-  ArrowLeft,
   Archive,
   CaretUpDown,
   ChatsCircle,
   ChartBar,
-  Eye,
-  FilmStrip,
   List,
   Lifebuoy,
   Lock,
-  MapTrifold,
+  Moon,
   Question,
   Radio,
   SignOut,
@@ -30,14 +27,10 @@ import type { Feature } from "@/lib/plans";
 import { activeAlso } from "@/lib/dashboard-nav";
 import { Avatar, useAccount } from "../AccountMenu";
 import CloudBackdrop from "../home/CloudBackdrop";
-import ThemeToggle from "../ThemeToggle";
+import { ThemeRow } from "../ThemeToggle";
 import Wordmark from "../Wordmark";
 import GlidePill from "../ui/GlidePill";
-import { LivePill } from "./LiveStatus";
 import NotificationsBell from "./NotificationsBell";
-import StreamModeToggle from "./StreamModeToggle";
-import LowDataToggle from "./LowDataToggle";
-import { restoreStreamMode } from "./streamMode";
 
 // Barre latérale du dashboard : groupes titrés, icônes, formule et compte en bas. Sur mobile, une barre en haut
 // ouvre la même navigation en tiroir. Les entrées liées à une fonction de la formule affichent un cadenas en Gratuit.
@@ -45,29 +38,26 @@ import { restoreStreamMode } from "./streamMode";
 type Item = { label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean; wordmark?: string; /** « À venir » : pas encore ouvert (l'admin y accède quand même). */ soon?: boolean };
 type Group = { title?: string; items: Item[] };
 
-// Barre épurée : une seule liste. Statistiques et Scanner regroupent leurs pages en onglets ; Discord et le retour au site sont dans le menu du compte.
+// Barre minimale (comme un espace client de service) : Accueil, trois groupes, puis aide, thème et compte en bas.
 const GROUPS: Group[] = [
+  { items: [{ label: "Accueil", href: "/dashboard", icon: SquaresFour }] },
   {
     title: "Direct",
     items: [
-      { label: "Vue d'ensemble", href: "/dashboard", icon: SquaresFour },
-      { label: "Mes relais", href: "/dashboard/relais", icon: Radio, feature: "relais" },
+      { label: "Flux", href: "/dashboard/relais", icon: Radio, feature: "relais" },
       { label: "Contrôle à distance", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais" },
-      { label: "Aperçu", href: "/dashboard/apercu", icon: Eye, feature: "apercu" },
-      { label: "Enregistrements", href: "/dashboard/enregistrements", icon: FilmStrip, feature: "relais" },
       { label: "Multichat", href: "/dashboard/multichat", icon: ChatsCircle },
-      { label: "Caméras externes", href: "/dashboard/dji", icon: VideoCamera, feature: "dji" },
     ],
   },
   {
     title: "Contenu",
-    items: [{ label: "Backups de scènes", href: "/dashboard/backups", icon: Archive, feature: "relais" }],
+    items: [{ label: "Sauvegardes de scènes", href: "/dashboard/backups", icon: Archive, feature: "relais" }],
   },
   {
-    title: "Outils",
+    title: "Mon espace",
     items: [
-      { label: "Scanner", href: "/dashboard/scanner", icon: MapTrifold },
       { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },
+      { label: "Paramètres", href: "/dashboard/parametres", icon: SlidersHorizontal },
     ],
   },
 ];
@@ -146,7 +136,6 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
   const links: { label: string; href: string }[] = [
     { label: "Mon compte", href: "/compte" },
     { label: "Abonnement", href: "/dashboard/abonnement" },
-    { label: "Paramètres", href: "/dashboard/parametres" },
     ...(admin ? [{ label: "Administration", href: "/admin" }] : []),
   ];
   const item = "block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-foreground/10";
@@ -210,35 +199,17 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between gap-2 px-4 pb-3 pt-4">
-        <Link href="/dashboard" onClick={onNavigate} className="flex items-center gap-3" aria-label="Dashboard SYXTEE">
+      <div className="flex items-center gap-3 border-b border-line px-4 py-4">
+        <Link href="/dashboard" onClick={onNavigate} className="flex items-center gap-3" aria-label="Espace client SYXTEE">
           <Image src="/logo-400.png" alt="" width={18} height={25} style={{ width: 18, height: "auto" }} className="ink-img" priority />
-          <span className="text-sm font-semibold tracking-[0.18em]">
-            SYXTEE<span className="font-normal text-muted"> DASHBOARD</span>
-          </span>
+          <span className="text-sm font-semibold">Espace client</span>
         </Link>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 px-4 pb-3">
-        <Link
-          href="/"
-          onClick={onNavigate}
-          className="inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-full border border-line px-3 text-sm text-muted transition-colors hover:bg-foreground/10 hover:text-foreground"
-        >
-          <ArrowLeft size={14} aria-hidden="true" />
-          Retour au site
-        </Link>
-      </div>
-
-      <nav aria-label="Navigation du dashboard" className="flex-1 space-y-6 overflow-y-auto px-3 pb-3" onMouseLeave={() => setHover(null)}>
+      <nav aria-label="Navigation de l'espace client" className="flex-1 space-y-5 overflow-y-auto px-3 py-4" onMouseLeave={() => setHover(null)}>
         {GROUPS.map((g, i) => (
           <div key={g.title ?? i}>
-            {g.title && <p className="px-3 pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-muted">{g.title}</p>}
-            {g.title === "Direct" && (
-              <div className="px-3 pb-2">
-                <LivePill />
-              </div>
-            )}
+            {g.title && <p className="px-3 pb-2 text-[11px] font-medium uppercase tracking-[0.12em] text-muted">{g.title}</p>}
             <ul className="space-y-0.5">
               {g.items.map((it) => (
                 <li key={it.href}>
@@ -248,34 +219,29 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
             </ul>
           </div>
         ))}
-
-        <div>
-          <p className="px-3 pb-2 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-muted">Aide</p>
-          <ul className="space-y-0.5">
-            {HELP.map((it) => (
-              <li key={it.href}>
-                <NavLink item={it} active={false} onNavigate={onNavigate} hovered={hover === it.href} onHover={() => setHover(it.href)} />
-              </li>
-            ))}
-          </ul>
-        </div>
       </nav>
 
-      <div className="space-y-3 border-t border-line p-4">
-        <div className="flex items-center justify-between gap-2">
-          <ThemeToggle />
-          <StreamModeToggle />
-        </div>
-        <LowDataToggle initial={false} variant="pill" />
-        {account && <AccountFooter account={account} admin={admin} onNavigate={onNavigate} />}
+      <div className="space-y-0.5 border-t border-line p-3">
+        {HELP.map((it) => (
+          <NavLink key={it.href} item={it} active={isActive(it.href)} onNavigate={onNavigate} hovered={hover === it.href} onHover={() => setHover(it.href)} />
+        ))}
+        <ThemeRow
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:text-foreground lg:py-1.5"
+          icon={<Moon size={20} className="shrink-0" aria-hidden="true" />}
+        />
       </div>
+      <div className="border-t border-line p-3">{account && <AccountFooter account={account} admin={admin} onNavigate={onNavigate} />}</div>
     </div>
   );
 }
 
-// Barre d'onglets du bas (mobile) : les 4 pages du quotidien à portée de pouce, le reste dans le tiroir.
-const TAB_HREFS = ["/dashboard", "/dashboard/relais", "/dashboard/apercu", "/dashboard/dji"];
-const TABS: Item[] = TAB_HREFS.map((h) => GROUPS[0].items.find((i) => i.href === h)!);
+// Barre d'onglets du bas (mobile), dans cet ordre : Accueil, Caméra, OBS, Menu (le tiroir). Chaque onglet reste actif sur les pages de sa famille :
+// Caméra = caméras externes et SYXTEE Cam ; OBS = liste des postes, plugin, et l'interface d'un OBS (/controle-a-distance/<poste>).
+const TABS: (Item & { also?: string[] })[] = [
+  { label: "Accueil", href: "/dashboard", icon: SquaresFour },
+  { label: "Caméra", href: "/dashboard/dji", icon: VideoCamera, feature: "dji", also: ["/dashboard/cam"] },
+  { label: "OBS", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais", also: ["/dashboard/obs", "/dashboard/plugin", "/controle-a-distance"] },
+];
 
 function MobileTabs({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolean }) {
   const pathname = usePathname();
@@ -283,17 +249,17 @@ function MobileTabs({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolea
   const cell = "relative flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-[11px] transition-colors active:scale-[0.97]";
   return (
     <nav aria-label="Navigation rapide" className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
-      <ul className="mx-auto grid max-w-lg grid-cols-5 gap-1 px-2 pt-1.5">
+      <ul className="mx-auto grid max-w-lg grid-cols-4 gap-1 px-2 pt-1.5">
         {TABS.map((t) => {
           const Icon = t.icon;
-          const on = t.href === "/dashboard" ? pathname === t.href : pathname === t.href || pathname.startsWith(`${t.href}/`);
+          const on = t.href === "/dashboard" ? pathname === t.href : [t.href, ...(t.also ?? [])].some((h) => pathname === h || pathname.startsWith(`${h}/`));
           const locked = !!t.feature && !!account && !account.features.includes(t.feature);
           return (
             <li key={t.href}>
               <Link href={t.href} prefetch aria-current={on ? "page" : undefined} className={`${cell} ${on ? "text-foreground" : "text-muted"}`}>
                 {on && <span aria-hidden="true" className="absolute inset-x-4 top-0 h-0.5 rounded-full bg-accent" />}
                 <Icon size={22} weight={on ? "fill" : "regular"} aria-hidden="true" />
-                <span className="max-w-full truncate">{t.label === "Vue d'ensemble" ? "Accueil" : t.label === "Mes relais" ? "Relais" : t.label === "Caméras externes" ? "Caméras" : t.label}</span>
+                <span className="max-w-full truncate">{t.label}</span>
                 {locked && <Lock size={10} className="absolute right-3 top-1.5 text-muted" aria-label="Verrouillé dans ta formule" />}
               </Link>
             </li>
@@ -317,8 +283,7 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
   const router = useRouter();
 
   useEffect(() => {
-    restoreStreamMode();
-  }, []);
+      }, []);
   // Pré-chargement : au repos, toutes les pages du menu sont préparées une à une (pas en rafale), donc le tiroir mobile
   // (dont les liens ne sont pas à l'écran) ouvre ses pages instantanément. Sauté en économie de données ou connexion lente.
   useEffect(() => {
@@ -350,16 +315,11 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
       </aside>
 
       <header className="sticky top-0 z-40 flex h-[calc(3.5rem+env(safe-area-inset-top))] items-center justify-between gap-2 border-b border-line bg-background/90 px-3 pt-[env(safe-area-inset-top)] backdrop-blur-md lg:hidden">
-        <Link href="/dashboard" className="flex items-center gap-3" aria-label="Dashboard SYXTEE">
+        <Link href="/dashboard" className="flex items-center gap-3" aria-label="Espace client SYXTEE">
           <Image src="/logo-400.png" alt="" width={20} height={28} style={{ width: 20, height: "auto" }} className="ink-img" priority />
-          <span className="text-sm font-semibold tracking-[0.18em]">SYXTEE</span>
+          <span className="text-sm font-semibold">Espace client</span>
         </Link>
         <div className="flex shrink-0 items-center gap-1">
-          <Link href="/" aria-label="Retour au site" className="grid h-11 w-11 place-items-center rounded-lg text-muted hover:bg-foreground/10 hover:text-foreground">
-            <ArrowLeft size={20} />
-          </Link>
-          <LivePill compact />
-          <LowDataToggle initial={false} variant="icon" />
           <button type="button" onClick={() => setOpen(true)} aria-label="Ouvrir le menu" aria-expanded={open} className="grid h-11 w-11 place-items-center rounded-lg hover:bg-foreground/10">
             <List size={22} />
           </button>
@@ -367,7 +327,7 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
       </header>
 
       {open && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu du dashboard">
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu de l'espace client">
           <button type="button" aria-label="Fermer le menu" className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
           <div className="relative h-dvh w-[300px] max-w-[88vw] border-r border-line bg-surface pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
             <button type="button" onClick={() => setOpen(false)} aria-label="Fermer le menu" className="absolute right-3 top-[calc(0.5rem+env(safe-area-inset-top))] grid h-11 w-11 place-items-center rounded-lg hover:bg-foreground/10">

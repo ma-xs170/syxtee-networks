@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
 import { requireUser } from "@/lib/auth/dal";
 import { getPlan } from "@/lib/auth/plan";
 import { FEATURES, type Plan } from "@/lib/plans";
-import { site } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Abonnement", robots: { index: false } };
 
@@ -53,11 +53,11 @@ export default async function AccesPage() {
         <Tile aria-labelledby="invitation">
           <TileLabel id="invitation">{plan.id === "free" ? "Demander l'accès" : "Besoin de plus ?"}</TileLabel>
           <p className="mt-4 text-sm leading-relaxed text-muted">
-            {plan.id === "free" ? "Écris-nous sur le Discord, avec ton identifiant de support (en bas du dashboard)." : "Plus de relais ou plus de flux simultanés : demande-le sur le Discord."}
+            {plan.id === "free" ? "Écris-nous depuis la messagerie du support, nous te répondons rapidement." : "Plus de flux ou plus de directs simultanés : demande-le depuis la messagerie du support."}
           </p>
-          <a href={site.discord} target="_blank" rel="noopener noreferrer" className="btn btn-primary mt-5 w-full">
-            Ouvrir le Discord
-          </a>
+          <Link href="/dashboard/support" className="btn btn-primary mt-5 w-full">
+            Écrire au support
+          </Link>
         </Tile>
       </div>
     </DashPage>

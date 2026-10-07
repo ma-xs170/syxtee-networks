@@ -70,7 +70,7 @@ export type Deps = {
   relay?: PrivateRelay;
   /** Reclasse les mesures d'un compte après sa déclaration d'opérateur. Renvoie le nombre passé en 4G/5G. */
   reclassUser?: (userId: string) => Promise<number>;
-  verifyUser: (authorization: string | undefined) => Promise<string | null>;
+  verifyUser: (authorization: string | undefined, workspace?: string) => Promise<string | null>;
   previewPath: (relayId: string) => string;
   /** Aperçu vidéo en direct (MPEG-TS) ; absent si les aperçus sont désactivés. */
   liveFeed?: (r: Relay) => LiveFeed;
@@ -130,13 +130,14 @@ export function buildServer(d: Deps) {
       done(e as Error, undefined);
     }
   });
-  app.register(cors, { origin: origins, methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], allowedHeaders: ["Authorization", "Content-Type"] });
+  app.register(cors, { origin: origins, methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], allowedHeaders: ["Authorization", "Content-Type", "X-Syxtee-Workspace"] });
 
   const service = async (req: FastifyRequest, reply: FastifyReply) => {
     if (!isServiceToken(req.headers.authorization, d.config.CORE_API_TOKEN)) return reply.code(401).send({ error: "unauthorized" });
   };
   const userId = async (req: FastifyRequest, reply: FastifyReply) => {
-    const id = await d.verifyUser(req.headers.authorization);
+    const ws = req.headers["x-syxtee-workspace"];
+    const id = await d.verifyUser(req.headers.authorization, typeof ws === "string" && ws ? ws : undefined);
     if (!id) {
       reply.code(401).send({ error: "unauthorized" });
       return null;

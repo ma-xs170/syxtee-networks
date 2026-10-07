@@ -99,7 +99,7 @@ export function createRemote(o: {
   db: DeviceDb;
   /** Compte autorisé à utiliser SYXTEE (accès sur invitation). */
   canUse: (userId: string) => boolean;
-  verifyUser: (authorization: string | undefined) => Promise<string | null>;
+  verifyUser: (authorization: string | undefined, workspace?: string) => Promise<string | null>;
   /** Nom, email, avatar du compte (affichés dans la fenêtre SYXTEE Studio d'OBS). */
   account?: (userId: string) => Promise<{ email: string; name: string; avatar_url: string | null; plan: string | null } | null>;
   log: (m: string) => void;
@@ -310,7 +310,7 @@ export function createRemote(o: {
     const timer = setTimeout(() => ws.close(4001, "hello_timeout"), HELLO_TIMEOUT_MS);
     ws.once("message", async (raw) => {
       clearTimeout(timer);
-      let m: { type?: string; token?: unknown; access?: unknown; invite?: unknown; name?: unknown; platform?: unknown; version?: unknown; os?: unknown; host?: unknown; device?: unknown };
+      let m: { type?: string; token?: unknown; access?: unknown; invite?: unknown; workspace?: unknown; name?: unknown; platform?: unknown; version?: unknown; os?: unknown; host?: unknown; device?: unknown };
       try {
         m = JSON.parse(String(raw));
       } catch {
@@ -360,7 +360,7 @@ export function createRemote(o: {
           guest = { id: inv.id, level: inv.level, label: inv.label, locked: !!inv.device_id };
           if (inv.device_id) device = inv.device_id;
           touchInvite(inv.id);
-        } else userId = typeof m.access === "string" ? await o.verifyUser(`Bearer ${m.access}`) : null;
+        } else userId = typeof m.access === "string" ? await o.verifyUser(`Bearer ${m.access}`, typeof m.workspace === "string" ? m.workspace : undefined) : null;
         if (!userId || !o.canUse(userId)) return ws.close(4003, "unauthorized");
         const conn: Conn = { ws, id, userId, device, guest };
         if (guest) {

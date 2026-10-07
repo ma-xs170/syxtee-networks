@@ -15,9 +15,16 @@ export async function coreToken() {
   return token;
 }
 
+/** Espace partagé actif (cookie posé par le dashboard), ou undefined pour l'espace personnel. Le Core vérifie l'appartenance à chaque appel. */
+export function activeWorkspace(): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  return document.cookie.match(/(?:^|;\s*)syxtee_ws=([0-9a-f-]{36})/i)?.[1];
+}
+
 export async function coreFetch(coreUrl: string, path: string, init: RequestInit = {}) {
   const token = await coreToken();
-  return fetch(`${coreUrl}${path}`, { ...init, headers: { ...(init.headers ?? {}), Authorization: `Bearer ${token}` }, cache: "no-store" });
+  const ws = activeWorkspace();
+  return fetch(`${coreUrl}${path}`, { ...init, headers: { ...(init.headers ?? {}), Authorization: `Bearer ${token}`, ...(ws ? { "X-Syxtee-Workspace": ws } : {}) }, cache: "no-store" });
 }
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type ComponentType } from "react";
+import { createContext, useContext, useEffect, useRef, useState, useTransition, type ComponentType } from "react";
 import {
   Archive,
   CaretUpDown,
@@ -23,6 +23,7 @@ import {
   type IconProps,
 } from "@/components/icons";
 import { signOut } from "@/app/(auth)/actions";
+import { createWorkspaceAction, switchWorkspaceAction } from "@/app/(dashboard)/dashboard/espaces/actions";
 import type { Feature } from "@/lib/plans";
 import { activeAlso } from "@/lib/dashboard-nav";
 import { Avatar, useAccount } from "../AccountMenu";
@@ -35,7 +36,11 @@ import NotificationsBell from "./NotificationsBell";
 // Barre latérale du dashboard : groupes titrés, icônes, formule et compte en bas. Sur mobile, une barre en haut
 // ouvre la même navigation en tiroir. Les entrées liées à une fonction de la formule affichent un cadenas en Gratuit.
 
-type Item = { label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean; wordmark?: string; /** « À venir » : pas encore ouvert (l'admin y accède quand même). */ soon?: boolean };
+/** Espaces partagés de l'utilisateur et espace actif (null : espace personnel). `left` : espaces qu'il peut encore créer (null : illimité). `features` : droits de l'espace actif. */
+export type WorkspaceInfo = { workspaces: { id: string; name: string; color: string; role: string }[]; activeId: string | null; left: number | null; features: Feature[] | null };
+const WsCtx = createContext<WorkspaceInfo>({ workspaces: [], activeId: null, left: 0, features: null });
+
+type Item = { sharedOnly?: boolean; label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean; wordmark?: string; /** « À venir » : pas encore ouvert (l'admin y accède quand même). */ soon?: boolean };
 type Group = { title?: string; items: Item[] };
 
 // Barre minimale (comme un espace client de service) : Accueil, trois groupes, puis aide, thème et compte en bas.
@@ -46,7 +51,7 @@ const GROUPS: Group[] = [
     items: [
       { label: "Flux", href: "/dashboard/relais", icon: Radio, feature: "relais" },
       { label: "Contrôle à distance", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais" },
-      { label: "Membres", href: "/dashboard/invitations", icon: UsersThree, feature: "relais" },
+      { label: "Membres", href: "/dashboard/invitations", icon: UsersThree, feature: "relais", sharedOnly: true },
       { label: "Multichat", href: "/dashboard/multichat", icon: ChatsCircle },
     ],
   },
@@ -118,7 +123,15 @@ function NavLink({ item, active, locked, soon, onNavigate, hovered, onHover }: {
 
 function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<ReturnType<typeof useAccount>>; admin: boolean; onNavigate: () => void }) {
   const [open, setOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+  const [pending, start] = useTransition();
   const box = useRef<HTMLDivElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
+  const router = useRouter();
+  const ws = useContext(WsCtx);
+  const active = ws.workspaces.find((w) => w.id === ws.activeId) ?? null;
 
   useEffect(() => {
     if (!open) return;
@@ -132,13 +145,39 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
       document.removeEventListener("keydown", close);
     };
   }, [open]);
+  useEffect(() => {
+    const d = dialog.current;
+    if (!d) return;
+    if (creating && !d.open) d.showModal();
+    if (!creating && d.open) d.close();
+  }, [creating]);
 
-  const links: { label: string; href: string }[] = [
-    { label: "Mon compte", href: "/compte" },
-    { label: "Abonnement", href: "/dashboard/abonnement" },
-    ...(admin ? [{ label: "Administration", href: "/admin" }] : []),
-  ];
   const item = "block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-foreground/10";
+  const row = "flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:bg-foreground/10";
+  function go(id: string | null) {
+    setOpen(false);
+    if (id === ws.activeId) return;
+    start(async () => {
+      await switchWorkspaceAction(id);
+      onNavigate();
+      router.push("/dashboard");
+      router.refresh();
+    });
+  }
+  function create(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    start(async () => {
+      const r = await createWorkspaceAction({ name });
+      if (r.error) return setError(r.error);
+      setName("");
+      setCreating(false);
+      onNavigate();
+      router.push("/dashboard");
+      router.refresh();
+    });
+  }
+  const none = ws.left !== null && ws.left <= 0;
 
   return (
     <div className="flex items-center gap-1">
@@ -153,26 +192,48 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
           <Avatar account={account} size={36} />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium">{account.name}</span>
-            <span className="mt-0.5 inline-block rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{account.planName}</span>
+            <span className="mt-0.5 flex items-center gap-1.5 truncate text-[12px] text-muted">
+              <span aria-hidden="true" className="size-2 shrink-0 rounded-full" style={{ background: active?.color ?? "#40c090" }} />
+              <span className="truncate">{active ? active.name : "Personnel"}</span>
+            </span>
           </span>
           <CaretUpDown size={16} className="shrink-0 text-muted" aria-hidden="true" />
         </button>
         {open && (
           <div role="menu" className="absolute bottom-full left-0 z-50 mb-2 w-[calc(100%+3rem)] overflow-hidden rounded-xl border border-line bg-background py-1 shadow-[0_18px_40px_rgba(0,0,0,0.6)]">
-                        {links.map((l) => (
-              <Link
-                key={l.href}
-                role="menuitem"
-                href={l.href}
-                onClick={() => {
-                  setOpen(false);
-                  onNavigate();
-                }}
-                className={item}
-              >
-                {l.label}
-              </Link>
+            <p className="px-4 pb-1 pt-2.5 text-[13px] text-muted">Espace de travail</p>
+            <button type="button" role="menuitemradio" aria-checked={!active} onClick={() => go(null)} className={row}>
+              <span aria-hidden="true" className="grid size-2 shrink-0 place-items-center"><span className={`size-1.5 rounded-full ${active ? "" : "bg-foreground"}`} /></span>
+              <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full bg-[#40c090]" />
+              <span className="min-w-0 flex-1 truncate">Mon espace</span>
+              {!active && <span className="shrink-0 rounded-full border border-emerald-700/70 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted">Personnel</span>}
+            </button>
+            {ws.workspaces.map((w) => (
+              <button key={w.id} type="button" role="menuitemradio" aria-checked={w.id === ws.activeId} onClick={() => go(w.id)} className={row}>
+                <span aria-hidden="true" className="grid size-2 shrink-0 place-items-center"><span className={`size-1.5 rounded-full ${w.id === ws.activeId ? "bg-foreground" : ""}`} /></span>
+                <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full" style={{ background: w.color }} />
+                <span className="min-w-0 flex-1 truncate">{w.name}</span>
+                {w.id === ws.activeId && <span className="shrink-0 rounded-full border border-blue-700/70 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-muted">Partagé</span>}
+              </button>
             ))}
+            <button type="button" role="menuitem" disabled={none && ws.left === 0 && false} onClick={() => { setOpen(false); setCreating(true); }} className={row}>
+              <span aria-hidden="true" className="grid size-2 shrink-0 place-items-center text-muted">+</span>
+              <span className="min-w-0 flex-1">Créer un espace partagé</span>
+              <span className="shrink-0 text-[13px] text-muted">{ws.left === null ? "illimité" : ws.left > 0 ? `${ws.left} restante${ws.left > 1 ? "s" : ""}` : "non inclus"}</span>
+            </button>
+            <div className="mt-1 border-t border-line">
+              <Link role="menuitem" href="/compte" onClick={() => { setOpen(false); onNavigate(); }} className={item}>
+                Mon compte
+              </Link>
+              <Link role="menuitem" href="/dashboard/abonnement" onClick={() => { setOpen(false); onNavigate(); }} className={item}>
+                Abonnement
+              </Link>
+              {admin && (
+                <Link role="menuitem" href="/admin" onClick={() => { setOpen(false); onNavigate(); }} className={item}>
+                  Administration
+                </Link>
+              )}
+            </div>
             <form action={signOut} className="border-t border-line">
               <button type="submit" role="menuitem" className={`${item} flex items-center gap-2 text-red-400`}>
                 <SignOut size={16} aria-hidden="true" />
@@ -183,6 +244,31 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
         )}
       </div>
       <NotificationsBell />
+
+      <dialog ref={dialog} onClose={() => setCreating(false)} onClick={(e) => e.target === dialog.current && setCreating(false)} aria-labelledby="ws-title" className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-2xl border border-line-strong bg-background p-0 text-foreground backdrop:bg-black/70">
+        <form onSubmit={create} className="p-6">
+          <h2 id="ws-title" className="text-xl font-semibold tracking-tight">Créer un espace partagé</h2>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted">Un espace regroupe des flux et des OBS pour toute une équipe, séparés de ton espace personnel.</p>
+          <label className="mt-5 grid gap-1.5 text-sm">
+            Nom de l&apos;espace
+            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} required placeholder="Ma chaîne, Mon équipe…" className="h-11 rounded-lg border border-line bg-background px-3 text-sm placeholder:text-muted focus:border-foreground/60 focus:outline-none" />
+          </label>
+          {none && <p className="mt-3 text-[13px] text-muted">Ta formule n&apos;inclut pas (ou plus) d&apos;espaces partagés.</p>}
+          {error && (
+            <p role="alert" className="mt-3 text-sm text-red-400">
+              {error}
+            </p>
+          )}
+          <div className="mt-5 flex gap-2">
+            <button type="submit" disabled={pending || none} className="btn btn-primary disabled:opacity-60">
+              {pending ? "Création…" : "Créer l'espace"}
+            </button>
+            <button type="button" onClick={() => setCreating(false)} className="btn btn-secondary">
+              Annuler
+            </button>
+          </div>
+        </form>
+      </dialog>
     </div>
   );
 }
@@ -194,7 +280,8 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
     href === "/dashboard" || href === "/"
       ? pathname === href
       : [href, ...(activeAlso[href] ?? [])].some((h) => pathname === h || pathname.startsWith(`${h}/`));
-  const locked = (i: Item) => !!i.feature && !!account && !account.features.includes(i.feature);
+  const ws = useContext(WsCtx);
+  const locked = (i: Item) => !!i.feature && !!account && !(ws.features ?? account.features).includes(i.feature);
   const [hover, setHover] = useState<string | null>(null);
 
   return (
@@ -211,7 +298,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
           <div key={g.title ?? i}>
             {g.title && <p className="px-3 pb-2 text-[11px] font-medium uppercase tracking-[0.12em] text-muted">{g.title}</p>}
             <ul className="space-y-0.5">
-              {g.items.map((it) => (
+              {g.items.filter((it) => !it.sharedOnly || ws.activeId).map((it) => (
                 <li key={it.href}>
                   <NavLink item={it} active={isActive(it.href)} locked={locked(it)} soon={it.soon && !admin} onNavigate={onNavigate} hovered={hover === it.href} onHover={() => setHover(it.href)} />
                 </li>
@@ -244,6 +331,7 @@ const TABS: (Item & { also?: string[] })[] = [
 ];
 
 function MobileTabs({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolean }) {
+  const ws = useContext(WsCtx);
   const pathname = usePathname();
   const account = useAccount();
   const cell = "relative flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-[11px] transition-colors active:scale-[0.97]";
@@ -253,7 +341,7 @@ function MobileTabs({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolea
         {TABS.map((t) => {
           const Icon = t.icon;
           const on = t.href === "/dashboard" ? pathname === t.href : [t.href, ...(t.also ?? [])].some((h) => pathname === h || pathname.startsWith(`${h}/`));
-          const locked = !!t.feature && !!account && !account.features.includes(t.feature);
+          const locked = !!t.feature && !!account && !(ws.features ?? account.features).includes(t.feature);
           return (
             <li key={t.href}>
               <Link href={t.href} prefetch aria-current={on ? "page" : undefined} className={`${cell} ${on ? "text-foreground" : "text-muted"}`}>
@@ -277,7 +365,11 @@ function MobileTabs({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolea
 }
 
 /** Mise en page : barre latérale fixe en desktop, barre du haut et tiroir en mobile. */
-export default function DashboardShell({ admin, children }: { admin: boolean; children: React.ReactNode }) {
+export default function DashboardShell({ admin, children, workspace }: { admin: boolean; children: React.ReactNode; workspace?: WorkspaceInfo }) {
+  // Cookie d'espace périmé (espace supprimé, membre retiré) : on l'efface, sinon le Core refuserait chaque appel.
+  useEffect(() => {
+    if (!workspace?.activeId && /(?:^|;\s*)syxtee_ws=/.test(document.cookie)) document.cookie = "syxtee_ws=; path=/; max-age=0";
+  }, [workspace?.activeId]);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -309,6 +401,7 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
   }, [open]);
 
   return (
+    <WsCtx.Provider value={workspace ?? { workspaces: [], activeId: null, left: 0, features: null }}>
     <div className="dash-surface min-h-dvh lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
       <aside className="sticky top-0 hidden h-dvh border-r border-line bg-surface lg:block">
         <Content admin={admin} onNavigate={() => {}} />
@@ -345,5 +438,6 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
         <div className="relative">{children}</div>
       </div>
     </div>
+    </WsCtx.Provider>
   );
 }

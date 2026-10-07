@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { coreToken } from "./coreClient";
+import { activeWorkspace, coreToken } from "./coreClient";
 
 // Aperçu : le flux du relais en vidéo, en direct (MPEG-TS remuxé par le Core, lu avec mpegts.js).
 // Réservé au propriétaire du flux. Muet par défaut (lecture automatique), reconnexion toutes les 3 s hors ligne.
@@ -53,7 +53,7 @@ export default function StreamPreview({ coreUrl, relayId }: { coreUrl: string; r
         const p = mpegts.createPlayer(
           { type: "mpegts", isLive: true, url: `${coreUrl}/v1/me/relays/${relayId}/live.ts` },
           {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${token}`, ...(activeWorkspace() ? { "X-Syxtee-Workspace": activeWorkspace()! } : {}) },
             enableWorker: true,
             enableStashBuffer: false,
             liveSync: true,

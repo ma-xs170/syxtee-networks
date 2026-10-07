@@ -1,6 +1,6 @@
 "use client";
 
-import { coreToken } from "../dashboard/coreClient";
+import { activeWorkspace, coreToken } from "../dashboard/coreClient";
 
 // Commande ponctuelle envoyée à un poste OBS (par le Core) : ouvre la liaison, envoie l'ordre, suit la progression du travail
 // (`link.job`) jusqu'à sa fin, puis referme. Sert à « Importer sur mon OBS » depuis le site.
@@ -22,7 +22,7 @@ export function callDevice(coreUrl: string, deviceId: string, method: string, pa
     coreToken()
       .then((access) => {
         ws = new WebSocket(`${coreUrl.replace(/^http/, "ws")}/v1/link/remote`);
-        ws.onopen = () => ws!.send(JSON.stringify({ type: "hello", access, device: deviceId }));
+        ws.onopen = () => ws!.send(JSON.stringify({ type: "hello", access, device: deviceId, workspace: activeWorkspace() }));
         ws.onmessage = (ev) => {
           const m = JSON.parse(String(ev.data));
           if (m.type === "ready") {

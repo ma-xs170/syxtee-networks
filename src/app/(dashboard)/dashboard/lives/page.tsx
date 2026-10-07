@@ -3,7 +3,8 @@ import { SessionList } from "@/components/dashboard/sessions";
 import { ArrowLink, DashHeader, DashPage, Tile, SectionTabs } from "@/components/dashboard/ui";
 import RelayPicker from "@/components/relais/RelayPicker";
 import { statsTabs } from "@/lib/dashboard-nav";
-import { getProfile, requireUser } from "@/lib/auth/dal";
+import { getProfile } from "@/lib/auth/dal";
+import { requireOwner } from "@/lib/workspace";
 import { accountTimezone } from "@/lib/regions";
 import { listSessions } from "@/lib/dashboard-overview";
 import { loadRelays } from "@/lib/relays";
@@ -12,7 +13,7 @@ import PlanGate from "@/components/plans/PlanGate";
 export const metadata: Metadata = { title: "Historique des lives", robots: { index: false } };
 
 export default async function LivesPage({ searchParams }: PageProps<"/dashboard/lives">) {
-  const [user, { relay: wanted }, profile] = await Promise.all([requireUser("/dashboard/lives"), searchParams, getProfile()]);
+  const [user, { relay: wanted }, profile] = await Promise.all([requireOwner("/dashboard/lives"), searchParams, getProfile()]);
   const { relays } = await loadRelays(user.id);
   const current = relays.find((r) => r.id === wanted)?.id ?? null;
   const sessions = await listSessions({ limit: 100, relayId: current ?? undefined });

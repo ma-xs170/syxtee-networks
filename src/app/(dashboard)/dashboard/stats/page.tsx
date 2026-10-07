@@ -3,7 +3,8 @@ import Link from "next/link";
 import { DailyBars } from "@/components/dashboard/charts";
 import { ArrowLink, DashHeader, DashPage, Tile, TileLabel, SectionTabs } from "@/components/dashboard/ui";
 import { statsTabs } from "@/lib/dashboard-nav";
-import { getProfile, requireUser } from "@/lib/auth/dal";
+import { getProfile } from "@/lib/auth/dal";
+import { requireOwner } from "@/lib/workspace";
 import { accountTimezone } from "@/lib/regions";
 import { delta, fmtDuration, fmtInt, isRange } from "@/lib/dashboard-data";
 import { getStats } from "@/lib/dashboard-overview";
@@ -22,7 +23,7 @@ function Figure({ label, value, sub }: { label: string; value: string; sub?: str
 }
 
 export default async function StatsPage({ searchParams }: PageProps<"/dashboard/stats">) {
-  const [, profile, { range: r }] = await Promise.all([requireUser("/dashboard/stats"), getProfile(), searchParams]);
+  const [, profile, { range: r }] = await Promise.all([requireOwner("/dashboard/stats"), getProfile(), searchParams]);
   const timezone = accountTimezone(profile);
   const range = isRange(r) ? r : "7d";
   const { days, any, kpis: k, previous: p, longest, reconnects, short, daily } = await getStats(range, timezone);

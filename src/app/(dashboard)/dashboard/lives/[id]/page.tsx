@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BitrateChart } from "@/components/dashboard/charts";
 import { ArrowLink, DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
-import { getProfile, requireUser } from "@/lib/auth/dal";
+import { getProfile } from "@/lib/auth/dal";
+import { requireOwner } from "@/lib/workspace";
 import { accountTimezone } from "@/lib/regions";
 import { deviceLabel, fmtDate, fmtDuration, fmtInt, fmtKbps } from "@/lib/dashboard-data";
 import { getSession } from "@/lib/dashboard-overview";
@@ -13,7 +14,7 @@ export const metadata: Metadata = { title: "Direct", robots: { index: false } };
 export default async function LivePage({ params }: PageProps<"/dashboard/lives/[id]">) {
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
-  const [, profile, s] = await Promise.all([requireUser(`/dashboard/lives/${id}`), getProfile(), getSession(id)]);
+  const [, profile, s] = await Promise.all([requireOwner(`/dashboard/lives/${id}`), getProfile(), getSession(id)]);
   const timezone = accountTimezone(profile);
   if (!s) notFound();
 

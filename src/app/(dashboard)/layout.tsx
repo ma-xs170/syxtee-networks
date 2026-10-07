@@ -9,6 +9,8 @@ import { LiveStatusProvider } from "@/components/dashboard/LiveStatus";
 import NamesModal from "@/components/auth/NamesModal";
 import DashboardShell from "@/components/dashboard/Sidebar";
 import { getProfile, requireUser } from "@/lib/auth/dal";
+import { getPersonalPlan, getPlan } from "@/lib/auth/plan";
+import { getActiveWorkspace, listWorkspaces } from "@/lib/workspace";
 import { isAdminEmail } from "@/lib/admin";
 import { publicCoreUrl } from "@/lib/core";
 import { hasNames } from "@/lib/names";
@@ -23,6 +25,15 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
   if (supabaseUrl) preconnect(supabaseUrl, { crossOrigin: "anonymous" });
   const [user, profile] = await Promise.all([requireUser("/dashboard"), getProfile()]);
   if (!profile?.onboarded_at) redirect("/bienvenue");
+  // Espaces partagés : liste, espace actif, espaces encore créables, droits de l'espace actif (affichage ; le serveur et le Core revérifient).
+  const [workspaces, activeWs, personal] = await Promise.all([listWorkspaces(), getActiveWorkspace(), getPersonalPlan()]);
+  const created = workspaces.filter((w) => w.created_by === user.id).length;
+  const workspace = {
+    workspaces: workspaces.map((w) => ({ id: w.id, name: w.name, color: w.color, role: w.role })),
+    activeId: activeWs?.id ?? null,
+    left: Number.isFinite(personal.maxWorkspaces) ? Math.max(0, personal.maxWorkspaces - created) : null,
+    features: activeWs ? (await getPlan()).features : null,
+  };
   // Connexion basse : coque minimale (pas de menu, de fonds animés ni de statut en direct), la page se charge seule.
   if ((await cookies()).get(LOW_DATA_COOKIE)?.value === "1") {
     return (
@@ -42,7 +53,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
   return (
     <LiveStatusProvider coreUrl={publicCoreUrl}>
       <TimezoneProvider timezone={accountTimezone(profile)}>
-      <DashboardShell admin={isAdminEmail(user.email)}>
+      <DashboardShell admin={isAdminEmail(user.email)} workspace={workspace}>
       {/* Prénom/nom manquants : modale hors live, bandeau pendant un live (en haut, sous la barre). */}
       {!hasNames(profile) && <NamesModal />}
       <Heartbeat />

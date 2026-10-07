@@ -146,7 +146,19 @@ const cam =
     : null;
 
 // SYXTEE Link : télécommande d'OBS. Comptes autorisés = ceux qui ont un relais autorisé (accès sur invitation), mis à jour avec les clés.
-const verifyUser = createUserVerifier(config.SUPABASE_URL);
+// Espaces partagés (migration 0046) : appartenance relue en base, gardée 30 s en mémoire (un membre retiré perd l'accès sans attendre longtemps).
+const memberCache = new Map<string, { ok: boolean; at: number }>();
+const isMember = async (userId: string, workspaceId: string) => {
+  const key = `${userId}:${workspaceId}`;
+  const hit = memberCache.get(key);
+  if (hit && Date.now() - hit.at < 30_000) return hit.ok;
+  const { data } = await supabase.from("workspace_members").select("user_id").eq("workspace_id", workspaceId).eq("user_id", userId).maybeSingle();
+  const ok = !!data;
+  memberCache.set(key, { ok, at: Date.now() });
+  if (memberCache.size > 5000) memberCache.clear();
+  return ok;
+};
+const verifyUser = createUserVerifier(config.SUPABASE_URL, undefined, isMember);
 const linkUsers = new Set<string>();
 const remote = config.LINK_ENABLED
   ? createRemote({

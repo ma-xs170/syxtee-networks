@@ -3,7 +3,7 @@ import "server-only";
 import type { Profile } from "@/lib/auth/dal";
 import { hasCore, listRelays, type RelayView } from "@/lib/core";
 import { relayLimit, type Plan } from "@/lib/plans";
-import { createClient } from "@/lib/supabase/server";
+import { dataClient } from "@/lib/workspace";
 import { RANGE_DAYS, SESSION_COLUMNS, type Alert, type Kpis, type LiveSession, type Overview, type Range } from "./dashboard-data";
 
 // Vue d'ensemble du dashboard : calculée à partir de live_sessions (lecture avec la session de l'utilisateur, RLS)
@@ -104,8 +104,9 @@ function mainKeys(relays: RelayView[]): Overview["keys"] {
 
 /** Directs de l'utilisateur connecté (RLS), du plus récent au plus ancien. */
 export async function listSessions(opts: { since?: number; limit?: number; relayId?: string } = {}) {
-  const supabase = await createClient();
+  const { db: supabase, ownerId } = await dataClient();
   let q = supabase.from("live_sessions").select(SESSION_COLUMNS).order("started_at", { ascending: false }).limit(opts.limit ?? 2000);
+  if (ownerId) q = q.eq("user_id", ownerId);
   if (opts.since) q = q.gte("started_at", new Date(opts.since).toISOString());
   if (opts.relayId) q = q.eq("relay_id", opts.relayId);
   const { data, error } = await q;
@@ -118,8 +119,10 @@ export async function listSessions(opts: { since?: number; limit?: number; relay
 }
 
 export async function getSession(id: string) {
-  const supabase = await createClient();
-  const { data } = await supabase.from("live_sessions").select(SESSION_COLUMNS).eq("id", id).maybeSingle();
+  const { db: supabase, ownerId } = await dataClient();
+  let q = supabase.from("live_sessions").select(SESSION_COLUMNS).eq("id", id);
+  if (ownerId) q = q.eq("user_id", ownerId);
+  const { data } = await q.maybeSingle();
   return (data as unknown as LiveSession | null) ?? null;
 }
 

@@ -1,17 +1,20 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import InvitesManager from "@/components/dashboard/InvitesManager";
 import { DashPage } from "@/components/dashboard/ui";
-import { getProfile, requireUser } from "@/lib/auth/dal";
+import { getProfile } from "@/lib/auth/dal";
 import { getPlan } from "@/lib/auth/plan";
 import { listInvites, publicCoreUrl } from "@/lib/core";
+import { loadMembers, requireOwner } from "@/lib/workspace";
 
-export const metadata: Metadata = { title: "Invitations", robots: { index: false } };
+export const metadata: Metadata = { title: "Membres", robots: { index: false } };
 
-// Membres : les personnes qui pilotent ton OBS avec un lien (sans compte). Nombre limité par la formule : Basique aucun, Premium 3, Extra 5, partenaire 3, admin illimité.
-export default async function InvitationsPage() {
-  const user = await requireUser("/dashboard/invitations");
-  const [invites, plan, profile] = await Promise.all([listInvites(user.id).catch(() => null), getPlan(), getProfile()]);
-  const name = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || profile?.twitch_display_name || user.email?.split("@")[0] || "Moi";
+// Membres d'un espace partagé : l'équipe (comptes) et les invités sans compte (liens). Pas de membres dans l'espace personnel.
+export default async function MembersPage() {
+  const owner = await requireOwner("/dashboard/invitations");
+  if (!owner.workspace) redirect("/dashboard");
+  const [invites, plan, profile, team] = await Promise.all([listInvites(owner.id).catch(() => null), getPlan(), getProfile(), loadMembers(owner.workspace.id)]);
+  const name = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || profile?.twitch_display_name || "Moi";
   return (
     <DashPage>
       <InvitesManager
@@ -19,7 +22,8 @@ export default async function InvitationsPage() {
         initial={invites}
         planName={plan.name}
         max={Number.isFinite(plan.maxInvites) ? plan.maxInvites : null}
-        owner={{ name, email: user.email ?? "", avatar: profile?.avatar_url ?? null, since: user.created_at ?? null }}
+        owner={{ name, email: owner.user.email ?? "", avatar: profile?.avatar_url ?? null, since: owner.user.created_at ?? null }}
+        team={{ name: owner.workspace.name, role: owner.workspace.role, meId: owner.user.id, members: team.members, pending: team.invites }}
       />
     </DashPage>
   );

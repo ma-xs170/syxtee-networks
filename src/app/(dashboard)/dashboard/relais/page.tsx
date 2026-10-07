@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { DashPage } from "@/components/dashboard/ui";
 import RelayList from "@/components/relais/RelayList";
 import SecurityAlerts from "@/components/relais/SecurityAlerts";
-import { requireUser } from "@/lib/auth/dal";
+import { requireOwner } from "@/lib/workspace";
 import { listAlerts, publicCoreUrl } from "@/lib/core";
 import { getPlan } from "@/lib/auth/plan";
 import { relayLimit } from "@/lib/plans";
@@ -21,7 +21,7 @@ async function visitorGeo() {
 }
 
 export default async function RelaisPage({ searchParams }: PageProps<"/dashboard/relais">) {
-  const user = await requireUser("/dashboard/relais");
+  const user = await requireOwner("/dashboard/relais");
   const { nouveau } = await searchParams;
   const [{ relays, status }, geo, alerts, plan] = await Promise.all([loadRelays(user.id), visitorGeo(), listAlerts(user.id).catch(() => []), getPlan()]);
   const active = relays.filter((r) => !r.archived).length;

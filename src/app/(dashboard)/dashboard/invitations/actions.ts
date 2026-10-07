@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireUser, getProfile } from "@/lib/auth/dal";
+import { getProfile } from "@/lib/auth/dal";
+import { canManage, requireOwner } from "@/lib/workspace";
 import { getPlan, LOCKED_MESSAGE } from "@/lib/auth/plan";
 import { allow } from "@/lib/auth/rateLimit";
 import { CoreRefusal, createInvite, revokeInvite } from "@/lib/core";
@@ -26,7 +27,8 @@ const input = z.object({
 });
 
 export async function createInviteAction(raw: z.input<typeof input>): Promise<InviteState> {
-  const user = await requireUser("/dashboard/invitations");
+  const user = await requireOwner("/dashboard/invitations");
+  if (!user.workspace || !canManage(user.workspace)) return { error: "Seuls les administrateurs d'un espace partagé peuvent inviter." };
   const parsed = input.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Champs invalides." };
   const { label, level, expiresHours } = parsed.data;
@@ -55,7 +57,8 @@ export async function createInviteAction(raw: z.input<typeof input>): Promise<In
 }
 
 export async function revokeInviteAction(inviteId: string): Promise<{ error?: string }> {
-  const user = await requireUser("/dashboard/invitations");
+  const user = await requireOwner("/dashboard/invitations");
+  if (!user.workspace || !canManage(user.workspace)) return { error: "Seuls les administrateurs d'un espace partagé peuvent retirer un invité." };
   if (!z.uuid().safeParse(inviteId).success) return { error: "Invitation introuvable." };
   try {
     await revokeInvite(user.id, inviteId);

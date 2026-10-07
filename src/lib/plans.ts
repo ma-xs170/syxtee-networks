@@ -35,17 +35,19 @@ export type Plan = {
   maxPerProtocol?: number;
   /** Invités actifs au contrôle à distance (liens d'invitation) au plus. 0 : pas d'invités. */
   maxInvites: number;
+  /** Espaces partagés que ce compte peut créer au plus. 0 : pas d'espaces partagés. */
+  maxWorkspaces: number;
   features: Feature[];
 };
 
 export const PLANS: Record<PlanId, Plan> = {
-  free: { id: "free", name: "Gratuit", maxRelays: 0, maxConcurrentStreams: 0, maxInvites: 0, features: [] },
-  beta: { id: "beta", name: "Bêta", maxRelays: 3, maxConcurrentStreams: 3, maxInvites: 3, features: ALL },
-  basic: { id: "basic", name: "Basique", maxRelays: 1, maxConcurrentStreams: 1, maxInvites: 0, features: ["relais", "sante", "mire", "cles"] },
-  paid: { id: "paid", name: "Premium", maxRelays: 10, maxConcurrentStreams: 3, maxPerProtocol: 5, maxInvites: 3, features: ALL },
-  extra: { id: "extra", name: "Extra", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: 10, maxInvites: 5, features: ALL },
-  partner: { id: "partner", name: "Partenaire", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: Number.POSITIVE_INFINITY, maxInvites: 3, features: ALL },
-  admin: { id: "admin", name: "Admin", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: Number.POSITIVE_INFINITY, maxInvites: Number.POSITIVE_INFINITY, features: ALL },
+  free: { id: "free", name: "Gratuit", maxRelays: 0, maxConcurrentStreams: 0, maxInvites: 0, maxWorkspaces: 0, features: [] },
+  beta: { id: "beta", name: "Bêta", maxRelays: 3, maxConcurrentStreams: 3, maxInvites: 3, maxWorkspaces: 3, features: ALL },
+  basic: { id: "basic", name: "Basique", maxRelays: 1, maxConcurrentStreams: 1, maxInvites: 0, maxWorkspaces: 0, features: ["relais", "sante", "mire", "cles"] },
+  paid: { id: "paid", name: "Premium", maxRelays: 10, maxConcurrentStreams: 3, maxPerProtocol: 5, maxInvites: 3, maxWorkspaces: 1, features: ALL },
+  extra: { id: "extra", name: "Extra", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: 10, maxInvites: 5, maxWorkspaces: 5, features: ALL },
+  partner: { id: "partner", name: "Partenaire", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: Number.POSITIVE_INFINITY, maxInvites: 3, maxWorkspaces: 3, features: ALL },
+  admin: { id: "admin", name: "Admin", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: Number.POSITIVE_INFINITY, maxInvites: Number.POSITIVE_INFINITY, maxWorkspaces: Number.POSITIVE_INFINITY, features: ALL },
 };
 
 /** Formules que l'admin peut attribuer (Admin vient d'ADMIN_EMAILS, Bêta des comptes d'avant les formules). */

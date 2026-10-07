@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireUser } from "@/lib/auth/dal";
+import { canManage, requireOwner } from "@/lib/workspace";
 import { allow } from "@/lib/auth/rateLimit";
 import { CoreOutdated, CoreRefusal, createRelay, deleteRelay, rotateRelay, updateRelay, type RelayView, type SwitchTrigger } from "@/lib/core";
 import { forgetOverview } from "@/lib/dashboard-overview";
@@ -49,7 +49,8 @@ const createInput = z.object({
 });
 
 export async function createRelayAction(input: z.input<typeof createInput>): Promise<RelayActionState> {
-  const user = await requireUser("/dashboard/relais");
+  const user = await requireOwner("/dashboard/relais");
+  if (!canManage(user.workspace)) return { error: "Seuls les administrateurs de l'espace peuvent créer des flux." };
   const parsed = createInput.safeParse(input);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Champs invalides." };
   const { name, protocol, server } = parsed.data;
@@ -70,7 +71,8 @@ export async function createRelayAction(input: z.input<typeof createInput>): Pro
 const id = z.uuid();
 
 async function run(relayId: string, key: string, max: number, job: (userId: string) => Promise<unknown>, feature: Feature | null = "relais"): Promise<RelayActionState> {
-  const user = await requireUser("/dashboard/relais");
+  const user = await requireOwner("/dashboard/relais");
+  if (!canManage(user.workspace)) return { error: "Seuls les administrateurs de l'espace peuvent modifier les flux." };
   if (!id.safeParse(relayId).success) return { error: "Relais introuvable." };
   if (feature && !can(await getPlan(), feature)) return { error: LOCKED_MESSAGE };
   if (!(await allow(`${key}:${user.id}`, max, 3600))) return { error: "Trop de changements. Réessaie dans une heure." };

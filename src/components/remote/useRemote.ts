@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { coreToken } from "../dashboard/coreClient";
+import { activeWorkspace, coreToken } from "../dashboard/coreClient";
 
 // Connexion du navigateur à l'OBS d'un poste, via le Core : le navigateur envoie des ordres, le plugin SYXTEE (dans OBS) les exécute
 // sur le PC et répond. La vidéo du direct ne passe jamais par le serveur : OBS diffuse depuis le PC, ce navigateur ne fait que commander.
@@ -52,7 +52,7 @@ export function useRemote(coreUrl: string, onEvent: LinkEvent, device?: string, 
       }
       const s = new WebSocket(`${coreUrl.replace(/^http/, "ws")}/v1/link/remote`);
       ws.current = s;
-      s.onopen = () => s.send(JSON.stringify(invite ? { type: "hello", invite, device } : { type: "hello", access, device }));
+      s.onopen = () => s.send(JSON.stringify(invite ? { type: "hello", invite, device } : { type: "hello", access, device, workspace: activeWorkspace() }));
       s.onmessage = (ev) => {
         const m = JSON.parse(String(ev.data));
         if (m.type === "ready") {

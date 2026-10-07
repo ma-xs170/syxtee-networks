@@ -266,3 +266,19 @@ export function remoteInvite(o: { ownerName: string; label: string; level: "view
     ),
   };
 }
+
+/** Invitation à rejoindre un espace partagé (compte requis). */
+export function workspaceInvite(o: { ownerName: string; workspace: string; role: "admin" | "member"; url: string; expires: Date }): Email {
+  return {
+    subject: `${o.ownerName} t'invite à rejoindre « ${o.workspace} »`,
+    element: (
+      <Layout preview={`${o.ownerName} t'invite dans l'espace ${o.workspace}.`} reason="Quelqu'un t'a invité avec cette adresse. Sans action de ta part, rien ne se passe.">
+        <Title lead="Rejoins l'espace" hl={o.workspace} />
+        <Text style={p}>{o.ownerName} t&apos;invite à travailler avec lui sur SYXTEE NETWORKS : flux, OBS et direct, en équipe.</Text>
+        <Cta href={o.url}>Rejoindre l&apos;espace</Cta>
+        <InfoPanel rows={[["Espace", o.workspace], ["Ton rôle", o.role === "admin" ? "Administrateur : gère les flux et les membres" : "Membre : pilote et regarde"], ["Valable jusqu'au", when(o.expires)]]} />
+        <Callout title="Un compte est nécessaire">Connecte-toi (ou crée un compte) avec cette adresse email : l&apos;invitation est liée à elle.</Callout>
+      </Layout>
+    ),
+  };
+}

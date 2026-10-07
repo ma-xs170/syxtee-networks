@@ -1,7 +1,7 @@
 import "server-only";
 import { CoreOutdated, hasCore, listRelays, type RelayView } from "@/lib/core";
 import type { RelayRow } from "./relay-groups";
-import { createClient } from "@/lib/supabase/server";
+import { dataClient } from "@/lib/workspace";
 
 // Relais du compte connecté, pour les pages du dashboard : lus au Core (URLs, statut en direct),
 // complétés par l'historique (débit moyen sur 30 jours, lu avec la session de l'utilisateur).
@@ -23,12 +23,14 @@ export async function loadRelays(userId: string): Promise<{ relays: RelayRow[]; 
   }
   const avg = new Map<string, { w: number; s: number }>();
   if (relays.length) {
-    const supabase = await createClient();
-    const { data } = await supabase
+    const { db: supabase, ownerId } = await dataClient();
+    let avgQ = supabase
       .from("live_sessions")
       .select("relay_id, avg_kbps, duration_s")
       .not("ended_at", "is", null)
       .gte("started_at", new Date(Date.now() - 30 * DAY).toISOString());
+    if (ownerId) avgQ = avgQ.eq("user_id", ownerId);
+    const { data } = await avgQ;
     for (const r of (data ?? []) as { relay_id: string | null; avg_kbps: number; duration_s: number }[]) {
       if (!r.relay_id) continue;
       const a = avg.get(r.relay_id) ?? { w: 0, s: 0 };

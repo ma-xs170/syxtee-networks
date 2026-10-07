@@ -8,7 +8,7 @@ export const site = {
   year: new Date().getFullYear(),
 };
 
-export type ToolIcon = "bag" | "rack" | "phone" | "dish" | "esim" | "route" | "services" | "docs" | "faq" | "tower" | "studio" | "map";
+export type ToolIcon = "rack" | "phone" | "dish" | "esim" | "route" | "services" | "docs" | "faq" | "tower" | "studio" | "map";
 export type NavLink = { label: string; href: string; badge?: string; /** Flèche ↗ à droite : page à part (documentation). */ arrow?: boolean };
 /** `soon` : produit pas encore sorti, affiché grisé dans les menus (le lien reste cliquable). */
 export type NavTool = NavLink & { desc: string; icon: ToolIcon; soon?: boolean; /** Produit SYXTEE : affiché « (S) SYXTEE <fonction> » avec le logo. */ wordmark?: string; /** Sous-section du menu (titre de colonne). */ group?: string };

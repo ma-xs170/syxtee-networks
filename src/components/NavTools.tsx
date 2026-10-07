@@ -13,7 +13,6 @@ import StarlinkMini from "./illustrations/StarlinkMini";
 import Streamer from "./illustrations/Streamer";
 import StudioWire from "./illustrations/StudioWire";
 import Wordmark from "./Wordmark";
-import { ProDrawing } from "./pro/ProExploded";
 import DashArt from "./dashboard/DashArt";
 import type { DashIcon, DashItem, DashMenu, DashTool } from "@/lib/dashboard-nav";
 import type { NavItem, NavMenu, NavTool, ToolIcon } from "@/lib/site";
@@ -34,12 +33,6 @@ function ItemArt({ icon }: { icon: ToolIcon | DashIcon }) {
 
 export function ToolArt({ icon, className = "h-full w-full" }: { icon: ToolIcon; className?: string }) {
   switch (icon) {
-    case "bag":
-      return (
-        <svg viewBox="150 70 300 390" className={`${className} text-foreground`} fill="none" aria-hidden="true">
-          <ProDrawing closed />
-        </svg>
-      );
     case "rack":
       return <RelayServer animated={false} className={className} />;
     case "phone":

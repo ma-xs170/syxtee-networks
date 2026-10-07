@@ -27,10 +27,3 @@ test("menu Produits : Relais en premier, SYXTEE PRO grisé « À venir »", asyn
   await expect(items.last()).toContainText("À venir");
 });
 
-test("/pro : page « À venir », sans prix", async ({ page }) => {
-  await page.goto("/pro");
-  await expect(page.getByRole("heading", { name: "SYXTEE PRO" })).toBeVisible();
-  await expect(page.getByText("Notre sac encodeur IRL est en préparation.")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Être prévenu sur Discord" })).toBeVisible();
-  await expect(page.getByText(/999|1 290/)).toHaveCount(0);
-});

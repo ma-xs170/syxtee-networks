@@ -20,8 +20,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/login", destination: "/connexion", permanent: true },
       { source: "/signup", destination: "/inscription", permanent: true },
-      { source: "/studio", destination: "/mix", permanent: true },
-      { source: "/syxtee-studio", destination: "/syxtee-mix", permanent: true },
+      { source: "/studio", destination: "/dashboard/controle-a-distance", permanent: true },
+      { source: "/syxtee-studio", destination: "/controle-a-distance", permanent: true },
       { source: "/dashboard/urls", destination: "/dashboard/relais", permanent: true },
       { source: "/docs/rist", destination: "/docs", permanent: true },
       { source: "/dashboard/apercu", destination: "/dashboard", permanent: true },
@@ -31,7 +31,21 @@ const nextConfig: NextConfig = {
       { source: "/dashboard/analyseur", destination: "/dashboard", permanent: true },
       { source: "/docs/dji", destination: "/docs", permanent: true },
       { source: "/analyseur", destination: "/", permanent: true },
-      { source: "/dashboard/commutateur", destination: "/commutateur", permanent: true },
+      { source: "/dashboard/commutateur", destination: "/dashboard/controle-a-distance", permanent: true },
+      // Pages retirées : les anciens liens (signets, moteurs de recherche, e-mails) arrivent sur la page qui les remplace.
+      { source: "/pro", destination: "/encodeur", permanent: true },
+      { source: "/syxtee-mix", destination: "/controle-a-distance", permanent: true },
+      { source: "/commutateur", destination: "/dashboard/controle-a-distance", permanent: true },
+      { source: "/mix", destination: "/dashboard/controle-a-distance", permanent: true },
+      { source: "/couverture", destination: "/", permanent: true },
+      { source: "/antennes", destination: "/", permanent: true },
+      { source: "/offres", destination: "/acces", permanent: true },
+      { source: "/dashboard/contributions", destination: "/dashboard/stats", permanent: true },
+      { source: "/dashboard/sante", destination: "/dashboard/relais", permanent: true },
+      { source: "/dashboard/mire", destination: "/dashboard/relais", permanent: true },
+      { source: "/dashboard/obs", destination: "/dashboard/controle-a-distance", permanent: true },
+      { source: "/dashboard/relais/:id/dji", destination: "/dashboard/relais", permanent: true },
+      { source: "/dashboard/relais/:id", destination: "/dashboard/relais", permanent: true },
     ];
   },
 };

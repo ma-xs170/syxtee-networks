@@ -5,7 +5,7 @@ import Highlight from "@/components/ui/Highlight";
 
 export const metadata: Metadata = {
   title: "Documentation",
-  description: "La documentation SYXTEE NETWORKS : démarrer en IRL, relais SRTLA et RTMP, Moblin, Starlink, eSIM Saily, SYXTEE COMMUTATEUR, caméras DJI, analyseur réseau et FAQ.",
+  description: "La documentation SYXTEE NETWORKS : démarrer en IRL, relais SRTLA et RTMP, Moblin, Starlink, eSIM Saily, contrôle à distance d'OBS et FAQ.",
   alternates: { canonical: "/docs" },
 };
 
@@ -25,14 +25,6 @@ const sections: Section[] = [
     guides: [
       { href: "/starlink", title: "Starlink", text: "Streamer là où la 4G ne passe plus, avec une antenne satellite.", icon: "dish", keywords: "satellite mini antenne forfait" },
       { href: "/saily", title: "Saily", text: "Ajouter une 4G de plus à ton bonding avec une eSIM.", icon: "esim", keywords: "esim 4g operateur", badge: "Partenaire" },
-      { href: "/analyseur", title: "Analyseur réseau", text: "Teste ta 4G et ta 5G là où tu es, en quelques secondes.", icon: "tower", keywords: "test debit 4g 5g mesure scanner" },
-      { href: "/couverture", title: "Où capter", text: "La carte du réseau 4G et 5G.", icon: "map", keywords: "carte couverture antennes" },
-    ],
-  },
-  {
-    title: "Produits et matériel",
-    guides: [
-      { href: "/syxtee-mix", title: "SYXTEE COMMUTATEUR", text: "Toutes tes caméras sur un écran, un seul lien pour OBS.", icon: "studio", keywords: "regie obs telecommande scenes", badge: "Nouveau" },
     ],
   },
   {

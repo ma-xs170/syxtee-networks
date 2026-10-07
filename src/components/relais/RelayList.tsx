@@ -84,7 +84,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
   const [wizard, setWizard] = useState(autoOpen && active < max);
   const [protocol, setProtocol] = useState<"all" | RelayRow["protocol"]>("all");
   const [server, setServer] = useState("all");
-  const [q, setQ] = useState("");
+  const [q] = useState("");
   const [showArchived, setShowArchived] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const { state } = useLiveStatus();
@@ -157,7 +157,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
         <>
           <div className="mb-6 flex flex-wrap items-center gap-3">
             <div role="radiogroup" aria-label="Protocole" className="flex rounded-full border border-line p-1">
-              {(["all", "srtla", "rtmp", "rist"] as const).map((p) => (
+              {(["all", "srtla", "rtmp"] as const).map((p) => (
                 <button
                   key={p}
                   type="button"
@@ -183,16 +183,6 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
                 </select>
               </label>
             )}
-            <label className="min-w-0 flex-1 sm:max-w-xs">
-              <span className="sr-only">Rechercher un relais</span>
-              <input
-                type="search"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Rechercher par nom"
-                className="h-10 w-full rounded-full border border-line bg-background px-4 text-sm text-foreground placeholder:text-muted focus:border-foreground/70 focus:outline-none"
-              />
-            </label>
           </div>
 
           <div className="space-y-8">

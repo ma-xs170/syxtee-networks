@@ -6,9 +6,9 @@ import FinalCta from "@/components/sections/FinalCta";
 import { getHomeStreamers } from "@/lib/streamers";
 
 export const metadata: Metadata = {
-  title: { absolute: "Relais SRTLA, RTMP et RIST pour streamer en IRL · SYXTEE NETWORKS" },
+  title: { absolute: "Streame en direct, où que tu sois · SYXTEE NETWORKS" },
   description:
-    "Relais SRTLA, RTMP et RIST (nouveau) pour streamer en IRL : bonding 4G/5G, Wi-Fi et Starlink, santé du flux. Des serveurs dans le monde entier.",
+    "Réunis 4G, 5G, Wi-Fi et Starlink en un seul flux stable, et pilote OBS depuis ton téléphone. Des serveurs dans le monde entier.",
   alternates: { canonical: "/" },
 };
 

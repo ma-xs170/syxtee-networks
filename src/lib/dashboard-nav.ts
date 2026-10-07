@@ -17,7 +17,7 @@ export const dashboardNav: DashItem[] = [
   {
     label: "Direct",
     children: [
-      { label: "Flux", href: "/dashboard/relais", desc: "SRTLA, RTMP, RIST, tes adresses et clés", icon: "relays", feature: "relais" },
+      { label: "Flux", href: "/dashboard/relais", desc: "SRTLA, RTMP, tes adresses et clés", icon: "relays", feature: "relais" },
       { label: "Contrôle à distance", href: "/dashboard/controle-a-distance", desc: "Pilote ton OBS depuis un onglet", icon: "control", feature: "relais" },
     ],
   },

@@ -29,14 +29,6 @@ const PROTOCOLS: { id: RelayProtocol; name: string; badge?: string; pros: string
     cons: ["Une seule connexion : plus sensible aux coupures"],
     foot: "Idéal pour : caméra d'action, plan fixe, Wi-Fi stable",
   },
-  {
-    id: "rist",
-    name: "RIST",
-    badge: "Nouveau",
-    pros: ["Protocole broadcast : récupère les paquets perdus (ARQ) sans casser l'image", "Chiffré AES-256, un port dédié par relais", "Pour Moblin et les encodeurs pros"],
-    cons: ["Une seule connexion : pas d'agrégation de réseaux comme SRTLA"],
-    foot: "Compatible : Moblin, encodeurs RIST, OBS, vMix, FFmpeg",
-  },
 ];
 
 const SUGGESTIONS: Record<RelayProtocol, string[]> = {

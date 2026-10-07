@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 const premium = [
-  "10 flux, jusqu'à 5 par protocole : SRTLA, RTMP et RIST",
+  "10 flux, jusqu'à 5 par protocole : SRTLA et RTMP",
   "Bonding 4G, 5G, Wi-Fi et Starlink",
   "Contrôle à distance d'OBS depuis un navigateur",
   "Suivi de la santé du flux et historique des directs",

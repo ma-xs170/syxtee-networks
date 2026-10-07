@@ -42,7 +42,7 @@ export default function DocsBrowser({ sections, backdrop, title }: { sections: S
                 type="search"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Rechercher un guide : Moblin, Starlink, DJI, RIST…"
+                placeholder="Rechercher un guide : Moblin, Starlink…"
                 autoComplete="off"
                 className="h-14 w-full rounded-2xl border border-foreground/15 bg-background/80 pl-14 pr-5 text-base text-foreground shadow-[0_18px_40px_-20px_rgba(0,0,0,0.45)] backdrop-blur placeholder:text-foreground/50 focus:border-foreground/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/25"
               />

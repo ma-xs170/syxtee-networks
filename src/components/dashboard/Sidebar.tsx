@@ -235,7 +235,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
 }
 
 // Barre d'onglets du bas (mobile), dans cet ordre : Accueil, Flux, OBS, Menu (le tiroir). Chaque onglet reste actif sur les pages de sa famille :
-// Flux = tes flux (SRTLA, RTMP, RIST) ; OBS = liste des postes, plugin, et l'interface d'un OBS (/controle-a-distance/<poste>).
+// Flux = tes flux (SRTLA, RTMP) ; OBS = liste des postes, plugin, et l'interface d'un OBS (/controle-a-distance/<poste>).
 const TABS: (Item & { also?: string[] })[] = [
   { label: "Accueil", href: "/dashboard", icon: SquaresFour },
   { label: "Flux", href: "/dashboard/relais", icon: Radio, feature: "relais" },
@@ -319,9 +319,6 @@ export default function DashboardShell({ admin, children }: { admin: boolean; ch
           <span className="text-sm font-semibold">Espace client</span>
         </Link>
         <div className="flex shrink-0 items-center gap-1">
-          <button type="button" onClick={() => setOpen(true)} aria-label="Ouvrir le menu" aria-expanded={open} className="grid h-11 w-11 place-items-center rounded-lg hover:bg-foreground/10">
-            <List size={22} />
-          </button>
         </div>
       </header>
 

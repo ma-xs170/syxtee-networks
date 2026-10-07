@@ -12,13 +12,13 @@ export const CATALOG: Record<Tier, { name: string; pitch: string; points: string
   basic: {
     name: "Basique",
     pitch: "Pour débuter en IRL avec un seul setup.",
-    points: ["1 relais SRTLA, RTMP ou RIST", "1 flux en direct", "Santé du flux"],
+    points: ["1 flux SRTLA ou RTMP", "1 flux en direct", "Santé du flux"],
     prices: { month: { amount: "5,99 €", cents: 599 }, year: { amount: "59 €", cents: 5900 } },
   },
   paid: {
     name: "Premium",
     pitch: "Tout SYXTEE, pour streamer souvent.",
-    points: ["5 relais par protocole : SRTLA, RTMP, RIST", "3 flux en même temps", "Aperçu, statistiques, historique des lives", "Caméras externes (DJI, GoPro)"],
+    points: ["5 flux par protocole : SRTLA, RTMP", "3 flux en même temps", "Aperçu, statistiques, historique des lives", "Caméras externes (DJI, GoPro)"],
     prices: { month: { amount: "14,99 €", cents: 1499 }, year: { amount: "149 €", cents: 14900 } },
     featured: true,
   },

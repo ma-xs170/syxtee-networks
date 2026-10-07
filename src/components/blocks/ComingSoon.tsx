@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { DiscordButton } from "../ui";
 
-const features = ["Relais SRTLA, SRT, RTMP et RIST", "Enregistrement des directs jusqu'à 10 Go", "SYXTEE COMMUTATEUR en direct", "Compatible Moblin, IRL Pro, BELABOX", "Support Discord"];
+const features = ["Flux SRTLA, SRT et RTMP", "SYXTEE COMMUTATEUR en direct", "Compatible Moblin, IRL Pro, BELABOX", "Support par messagerie"];
 
 // Bloc « Accès sur invitation » (accueil et /offres) : pas d'abonnement, pas de prix. Nom de fichier conservé pour ses imports.
 export default function ComingSoon({ children }: { children?: ReactNode }) {

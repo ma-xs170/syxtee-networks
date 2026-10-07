@@ -25,7 +25,6 @@ const features = [
   "RTMP",
   "SRT",
   "SRTLA",
-  "RIST",
   "H.264 / H.265",
   "Jusqu'à 4K60",
   "App Apple Watch : chat, contrôle du live, changement de scène",
@@ -105,25 +104,6 @@ export default function MoblinPage() {
               README officiel de Moblin
             </a>
           </p>
-        </Container>
-      </section>
-
-      <section id="rist" className="scroll-mt-16 border-b border-line py-10">
-        <Container>
-          <div className="flex flex-col gap-4 rounded-2xl border border-line p-6 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="flex items-center gap-3 text-base font-medium">
-                RIST avec Moblin
-                <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">Nouveau</span>
-              </p>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-                Moblin sait envoyer en RIST. SYXTEE est le premier à l&apos;offrir aux particuliers : crée un relais RIST, colle son URL (chiffrée en AES-256) dans ton stream Moblin.
-              </p>
-            </div>
-            <Link href="/docs/rist" className="inline-flex h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-foreground/10">
-              Guide RIST
-            </Link>
-          </div>
         </Container>
       </section>
 

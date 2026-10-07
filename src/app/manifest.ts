@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "SYXTEE NETWORKS",
     short_name: "SYXTEE",
-    description: "Relais IRL low-cost : SRTLA, RTMP, RIST, dashboard et outils pour streamer en direct.",
+    description: "Streame en direct, où que tu sois : flux stable et contrôle à distance d'OBS.",
     id: "/",
     start_url: "/dashboard",
     scope: "/",

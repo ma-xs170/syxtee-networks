@@ -8,7 +8,7 @@ import { Container, CreateRelayLink } from "../ui";
 // Une étape à la fois, au clic. Même vocabulaire que l'assistant : pastilles de latence vert / orange / gris.
 
 const STEPS: { id: string; title: string; text: string }[] = [
-  { id: "protocole", title: "Protocole", text: "SRTLA pour le bonding en mouvement, RIST pour un encodeur pro, RTMP pour une caméra." },
+  { id: "protocole", title: "Protocole", text: "SRTLA pour le bonding en mouvement, RTMP pour une caméra." },
   { id: "appareil", title: "Appareil", text: "Tu choisis ton téléphone ou ta caméra : le guide s'adapte." },
   { id: "serveur", title: "Serveur", text: "Tu prends le plus proche. La latence est affichée par pastille." },
 ];
@@ -26,7 +26,7 @@ function Choice({ name, note, selected }: { name: string; note?: string; selecte
 
 const PANES: Record<string, ReactNode> = {
   protocole: (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       <div className="rounded-xl border border-foreground/60 bg-foreground/[0.12] p-4">
         <p className="flex items-center justify-between gap-3 text-sm font-medium">
           SRTLA
@@ -35,16 +35,6 @@ const PANES: Record<string, ReactNode> = {
         <ul className="mt-3 space-y-1.5 text-xs leading-relaxed text-muted">
           <li>Combine 4G, 5G, Wi-Fi et Starlink</li>
           <li>Le live continue si un réseau lâche</li>
-        </ul>
-      </div>
-      <div className="rounded-xl border border-line p-4">
-        <p className="flex items-center justify-between gap-3 text-sm font-medium">
-          RIST
-          <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">Nouveau</span>
-        </p>
-        <ul className="mt-3 space-y-1.5 text-xs leading-relaxed text-muted">
-          <li>Paquets perdus récupérés</li>
-          <li>Chiffré AES-256</li>
         </ul>
       </div>
       <div className="rounded-xl border border-line p-4">

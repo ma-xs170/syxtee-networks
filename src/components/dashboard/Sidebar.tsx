@@ -18,7 +18,6 @@ import {
   SignOut,
   SlidersHorizontal,
   SquaresFour,
-  VideoCamera,
   X,
   type IconProps,
 } from "@/components/icons";
@@ -235,11 +234,11 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
   );
 }
 
-// Barre d'onglets du bas (mobile), dans cet ordre : Accueil, Caméra, OBS, Menu (le tiroir). Chaque onglet reste actif sur les pages de sa famille :
-// Caméra = caméras externes et SYXTEE Cam ; OBS = liste des postes, plugin, et l'interface d'un OBS (/controle-a-distance/<poste>).
+// Barre d'onglets du bas (mobile), dans cet ordre : Accueil, Flux, OBS, Menu (le tiroir). Chaque onglet reste actif sur les pages de sa famille :
+// Flux = tes flux (SRTLA, RTMP, RIST) ; OBS = liste des postes, plugin, et l'interface d'un OBS (/controle-a-distance/<poste>).
 const TABS: (Item & { also?: string[] })[] = [
   { label: "Accueil", href: "/dashboard", icon: SquaresFour },
-  { label: "Caméra", href: "/dashboard/cam", icon: VideoCamera, feature: "cam" },
+  { label: "Flux", href: "/dashboard/relais", icon: Radio, feature: "relais" },
   { label: "OBS", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais", also: ["/dashboard/obs", "/dashboard/plugin", "/controle-a-distance"] },
 ];
 

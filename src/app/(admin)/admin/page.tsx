@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
-import { requireAdmin } from "@/lib/admin";
+import { requireStaff } from "@/lib/admin";
+import { firstAllowedHref } from "@/lib/staff";
 import { overview } from "@/lib/admin-data";
 import { hasAdmin } from "@/lib/supabase/admin";
 
@@ -39,7 +41,9 @@ function Meter({ label, value, detail }: { label: string; value: number; detail:
 }
 
 export default async function AdminOverviewPage() {
-  await requireAdmin();
+  // Vue d'ensemble : propriétaire et administrateurs. Les autres rôles arrivent directement sur leur première page.
+  const { access } = await requireStaff("any");
+  if (access.role !== "owner" && access.role !== "admin") redirect(firstAllowedHref(access.permissions));
   if (!hasAdmin) return <DashPage>Clé secrète Supabase absente.</DashPage>;
   const d = await overview();
   const mem = d.stats ? Math.round((d.stats.memory.usedMb / d.stats.memory.totalMb) * 100) : 0;

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/dal";
-import { deleteTicket, getThread, savePhotos } from "@/lib/support";
+import { addMessage, deleteTicket, getThread, savePhotos, WAITING_AGENT_TEXT } from "@/lib/support";
 import { isCategory } from "@/lib/support-categories";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -36,7 +36,9 @@ export async function createTicketAction(_prev: SupportState, form: FormData): P
     await db.from("support_tickets").delete().eq("id", ticket.id);
     return { error: photos.error };
   }
-  await db.from("support_messages").insert({ ticket_id: ticket.id, author_id: user.id, from_staff: false, body: parsed.data.body, attachments: photos.attachments });
+  await addMessage({ ticket_id: ticket.id, author_id: user.id, from_staff: false, body: parsed.data.body, attachments: photos.attachments });
+  // Message automatique : le client sait qu'on cherche un agent (le suivant, signé, arrive à la prise en charge).
+  await addMessage({ ticket_id: ticket.id, author_id: null, from_staff: true, body: WAITING_AGENT_TEXT, kind: "system" });
   revalidatePath("/dashboard/support");
   redirect(`/dashboard/support/${ticket.id}`);
 }

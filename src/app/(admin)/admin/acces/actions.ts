@@ -14,7 +14,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // L'accès Partenaire est attribué au compte qui se crée avec la même adresse, une fois vérifiée (lib/access.ts).
 
 export async function decideAccessAction(form: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("access");
   const input = z.object({ id: z.uuid(), decision: z.enum(["approved", "refused"]) }).safeParse({ id: form.get("id"), decision: form.get("decision") });
   if (!input.success) return;
   const req = await getRequest(input.data.id);
@@ -33,7 +33,7 @@ export async function decideAccessAction(form: FormData) {
 
 /** Renvoie l'email d'approbation (demande approuvée dont le compte n'est pas encore créé). */
 export async function resendAccessEmailAction(form: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("access");
   const id = z.uuid().safeParse(form.get("id"));
   if (!id.success) return;
   const req = await getRequest(id.data);
@@ -47,7 +47,7 @@ const idOf = (form: FormData) => z.uuid().safeParse(form.get("id"));
 
 /** Met la demande à la corbeille (supprimée définitivement après 30 jours, restaurable d'ici là). */
 export async function trashAccessAction(form: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("access");
   const id = idOf(form);
   if (!id.success) return;
   const { error } = await createAdminClient().from("access_requests").update({ deleted_at: new Date().toISOString() }).eq("id", id.data);
@@ -57,7 +57,7 @@ export async function trashAccessAction(form: FormData) {
 }
 
 export async function restoreAccessAction(form: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("access");
   const id = idOf(form);
   if (!id.success) return;
   const { error } = await createAdminClient().from("access_requests").update({ deleted_at: null }).eq("id", id.data);
@@ -68,7 +68,7 @@ export async function restoreAccessAction(form: FormData) {
 
 /** Suppression définitive d'une demande de la corbeille, ou de toute la corbeille (champ id absent). */
 export async function purgeAccessAction(form: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("access");
   const one = form.get("id") ? idOf(form) : null;
   if (one && !one.success) return;
   let q = createAdminClient().from("access_requests").delete().not("deleted_at", "is", null);

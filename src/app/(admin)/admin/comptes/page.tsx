@@ -19,7 +19,7 @@ const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("fr-
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
 
 export default async function AdminComptesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  await requireAdmin();
+  await requireAdmin("accounts");
   const sp = await searchParams;
   const filter: AccountFilter = {
     q: one(sp.q).trim().slice(0, 100),

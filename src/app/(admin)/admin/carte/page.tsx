@@ -15,7 +15,7 @@ const nf = new Intl.NumberFormat("fr-FR");
 const day = (iso: string) => new Date(iso).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Paris" });
 
 export default async function AdminCartePage() {
-  await requireAdmin();
+  await requireAdmin("relays");
   const { data, error } = hasAdmin ? await createAdminClient().rpc("admin_top_contributors", { p_days: 30, p_limit: 100 }) : { data: [], error: null };
   if (error) console.error("admin_top_contributors", error.message);
   const rows = (data ?? []) as Row[];

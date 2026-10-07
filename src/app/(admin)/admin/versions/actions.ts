@@ -28,7 +28,7 @@ async function sendToDiscord(v: Version, title: string, notes: string) {
 }
 
 export async function publishReleaseAction(_prev: ReleaseState, form: FormData): Promise<ReleaseState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("versions");
   const parsed = input.safeParse({ bump: form.get("bump"), title: form.get("title"), notes: form.get("notes") });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide." };
   const { bump, title, notes } = parsed.data;
@@ -64,7 +64,7 @@ export async function publishReleaseAction(_prev: ReleaseState, form: FormData):
 }
 
 export async function resendReleaseAction(form: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("versions");
   const id = z.uuid().safeParse(form.get("id"));
   if (!id.success) return;
   const db = createAdminClient();
@@ -85,7 +85,7 @@ const edit = z.object({ id: z.uuid(), title: input.shape.title, notes: input.sha
 
 /** Modifie une version : texte enregistré, et message Discord mis à jour s'il existe. Le numéro ne change jamais. */
 export async function editReleaseAction(_prev: ReleaseState, form: FormData): Promise<ReleaseState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("versions");
   const parsed = edit.safeParse({ id: form.get("id"), title: form.get("title"), notes: form.get("notes") });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide." };
   const { id, title, notes } = parsed.data;

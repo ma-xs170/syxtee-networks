@@ -14,7 +14,7 @@ type Row = { id: string; user_id: string; name: string; protocol: string; server
 const day = (iso: string | null) => (iso ? new Date(iso).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Paris" }) : "jamais");
 
 export default async function AdminRelaisPage({ searchParams }: { searchParams: Promise<{ archives?: string }> }) {
-  await requireAdmin();
+  await requireAdmin("relays");
   const { archives } = await searchParams;
   if (!hasAdmin) return <DashPage>Clé secrète Supabase absente.</DashPage>;
   const db = createAdminClient();

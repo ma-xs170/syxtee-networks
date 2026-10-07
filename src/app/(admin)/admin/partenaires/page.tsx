@@ -16,7 +16,7 @@ const endsSoon = (iso: string | null) => !!iso && Date.parse(iso) - Date.now() <
 const day = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Paris" });
 
 export default async function AdminPartenairesPage() {
-  await requireAdmin();
+  await requireAdmin("partners");
   const { data } = hasAdmin
     ? await createAdminClient()
         .from("profiles")

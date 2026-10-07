@@ -32,7 +32,7 @@ function Row({ k, v }: { k: string; v: string }) {
 }
 
 export default async function AdminAccessPage({ searchParams }: { searchParams: Promise<{ etat?: string; mail?: string; to?: string; r?: string }> }) {
-  await requireAdmin();
+  await requireAdmin("access");
   const { etat, mail, to, r: why } = await searchParams;
   const tab = TABS.find((t) => t.id === etat) ?? TABS[0];
   const trash = tab.id === "corbeille";

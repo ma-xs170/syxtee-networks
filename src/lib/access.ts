@@ -84,7 +84,7 @@ export async function grantInvitedPlan(user: User) {
   }
 }
 
-/** L'adresse a-t-elle une demande d'accès approuvée (non supprimée) ? Seules ces adresses peuvent créer un compte par email. */
+/** L'adresse a-t-elle une demande d'accès approuvée (non supprimée) ou une invitation d'équipe en cours ? Seules ces adresses peuvent créer un compte par email. */
 export async function isApprovedEmail(email: string): Promise<boolean> {
   if (!hasAdmin) return false;
   const { count } = await createAdminClient()
@@ -93,7 +93,16 @@ export async function isApprovedEmail(email: string): Promise<boolean> {
     .ilike("email", email.replace(/[%_\\]/g, "\\$&"))
     .eq("status", "approved")
     .is("deleted_at", null);
-  return (count ?? 0) > 0;
+  if ((count ?? 0) > 0) return true;
+  // Invitation à rejoindre l'équipe (0047_staff.sql) : elle ouvre aussi l'inscription, pour l'adresse invitée seulement.
+  const { count: invited } = await createAdminClient()
+    .from("staff_invites")
+    .select("id", { count: "exact", head: true })
+    .ilike("email", email.replace(/[%_\\]/g, "\\$&"))
+    .is("accepted_at", null)
+    .is("revoked_at", null)
+    .gt("expires_at", new Date().toISOString());
+  return (invited ?? 0) > 0;
 }
 
 /** Supprime pour de bon les demandes à la corbeille depuis plus de TRASH_DAYS jours (tâche quotidienne). Renvoie leur nombre. */

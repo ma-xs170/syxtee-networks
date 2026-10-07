@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashPage } from "@/components/dashboard/ui";
-import { requireAdmin } from "@/lib/admin";
+import { requireStaff } from "@/lib/admin";
+import { staffCards } from "@/lib/staff-data";
 import { fmtAgo } from "@/lib/dashboard-data";
 import { listTickets, whoIs } from "@/lib/support";
 import { categoryLabel, isCategory } from "@/lib/support-categories";
@@ -17,7 +18,7 @@ const TABS = [
 ] as const;
 
 export default async function AdminSupportPage({ searchParams }: { searchParams: Promise<{ etat?: string; categorie?: string }> }) {
-  await requireAdmin();
+  const { user: me } = await requireStaff("support");
   const { etat, categorie } = await searchParams;
   const tab = TABS.find((t) => t.id === etat) ?? TABS[0];
   const cat = isCategory(categorie) ? categorie : null;
@@ -25,7 +26,7 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
   const all = (await listTickets({ state: "all", limit: 300 })).filter((t) => !cat || t.category === cat);
   const qs = (e: string) => `?${[cat ? `categorie=${cat}` : "", e ? `etat=${e}` : ""].filter(Boolean).join("&")}`;
   const rows = all.filter((t) => (tab.id === "resolus" ? t.status === "resolved" : tab.id === "ouverts" ? t.status === "open" : t.status === "open" && t.last_from === "user"));
-  const names = await whoIs(rows.map((t) => t.user_id));
+  const [names, agents] = await Promise.all([whoIs(rows.map((t) => t.user_id)), staffCards(rows.map((t) => t.assigned_to).filter((x): x is string => !!x))]);
   const count = (id: (typeof TABS)[number]["id"]) => all.filter((t) => (id === "resolus" ? t.status === "resolved" : id === "ouverts" ? t.status === "open" : t.status === "open" && t.last_from === "user")).length;
 
   return (
@@ -54,7 +55,7 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{t.subject}</span>
                   <span className="mt-1 block text-xs text-muted">
-                    {names.get(t.user_id) ?? "Compte"} · {categoryLabel(t.category)} · {t.status === "resolved" ? "Résolu" : t.last_from === "user" ? "Attend ta réponse" : "Réponse envoyée"} · {fmtAgo(t.updated_at)}
+                    {names.get(t.user_id) ?? "Compte"} · {categoryLabel(t.category)} · {t.status === "resolved" ? "Résolu" : t.last_from === "user" ? "Attend ta réponse" : "Réponse envoyée"} · {t.assigned_to ? (t.assigned_to === me.id ? "Pris par toi" : `Pris par ${agents.get(t.assigned_to)?.firstName ?? "un agent"}`) : "Sans agent"} · {fmtAgo(t.updated_at)}
                   </span>
                 </span>
                 {t.status === "open" && t.last_from === "user" && <span className="shrink-0 rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-on-accent">À répondre</span>}

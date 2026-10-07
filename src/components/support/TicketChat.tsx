@@ -2,14 +2,29 @@
 
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { PaperPlaneTilt } from "@/components/icons";
+import { ROLE_META, roleStyle, type AnyRole } from "@/lib/staff";
 import PhotoPicker from "./PhotoPicker";
 
 // Fil de discussion d'un ticket (espace client et admin). Les messages de celui qui regarde sont à droite, ceux de
 // l'autre à gauche. La page se rafraîchit toute seule toutes les 10 s tant qu'elle est visible ; Entrée envoie,
 // Maj + Entrée passe à la ligne.
 
-export type ChatMessage = { id: string; from_staff: boolean; body: string; created_at: string; name: string; photos?: { url: string; name: string }[] };
+export type ChatAuthor = { name: string; avatarUrl: string | null; role: AnyRole };
+export type ChatMessage = {
+  id: string;
+  from_staff: boolean;
+  body: string;
+  created_at: string;
+  name: string;
+  photos?: { url: string; name: string }[];
+  /** « system » : ligne d'information centrée (« Mathis a pris en charge votre demande »). */
+  kind?: "message" | "system";
+  /** Agent qui a écrit le message : photo, prénom et rôle encadré à côté du nom ; sa signature clôt le message. */
+  author?: ChatAuthor;
+  signature?: string | null;
+};
 type ReplyState = { error?: string };
 
 const time = (iso: string) =>
@@ -52,9 +67,33 @@ export default function TicketChat({
       <ul className="space-y-5" aria-live="polite">
         {messages.map((m) => {
           const mine = (viewer === "staff") === m.from_staff;
+          if (m.kind === "system")
+            return (
+              <li key={m.id} className="flex flex-col items-center gap-1 py-1">
+                <p className="max-w-[min(34rem,92%)] rounded-full border border-line px-4 py-1.5 text-center text-xs leading-relaxed text-muted">{m.body}</p>
+                <p className="font-mono text-[11px] text-muted/70">{time(m.created_at)}</p>
+              </li>
+            );
+          const a = m.author;
           return (
             <li key={m.id} className={`flex flex-col gap-1 ${mine ? "items-end" : "items-start"}`}>
-              <p className="px-1 text-xs text-muted">{mine ? "Toi" : m.name}</p>
+              {a ? (
+                <p className={`flex items-center gap-2 px-1 text-xs text-muted ${mine ? "flex-row-reverse" : ""}`}>
+                  {a.avatarUrl ? (
+                    <Image src={a.avatarUrl} alt="" width={24} height={24} className="size-6 rounded-full border border-foreground/25 object-cover" />
+                  ) : (
+                    <span aria-hidden="true" className="flex size-6 items-center justify-center rounded-full border border-foreground/25 bg-foreground/[0.12] font-mono text-[9px] uppercase">
+                      {a.name.slice(0, 2)}
+                    </span>
+                  )}
+                  <span className="font-medium text-foreground">{a.name}</span>
+                  <span style={roleStyle(a.role)} className="rounded-md border px-1.5 py-px font-mono text-[10px] font-semibold uppercase tracking-[0.08em]">
+                    {ROLE_META[a.role].short}
+                  </span>
+                </p>
+              ) : (
+                <p className="px-1 text-xs text-muted">{mine ? "Toi" : m.name}</p>
+              )}
               {m.body && (
                 <p
                   className={`max-w-[min(40rem,88%)] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
@@ -64,6 +103,7 @@ export default function TicketChat({
                   {m.body}
                 </p>
               )}
+              {m.signature && <p className="max-w-[min(40rem,88%)] px-1 text-xs italic text-muted">{m.signature}</p>}
               {!!m.photos?.length && (
                 <div className={`flex max-w-[min(40rem,88%)] flex-wrap gap-2 ${mine ? "justify-end" : ""}`}>
                   {m.photos.map((ph) => (

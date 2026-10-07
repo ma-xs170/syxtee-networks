@@ -14,7 +14,7 @@ const day = (iso: string) => new Date(iso).toLocaleString("fr-FR", { dateStyle: 
 const json = (v: unknown) => (v == null ? "" : JSON.stringify(v));
 
 export default async function AdminJournalPage({ searchParams }: { searchParams: Promise<{ action?: string; compte?: string; page?: string }> }) {
-  await requireAdmin();
+  await requireAdmin("journal");
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
   const action = (sp.action ?? "").trim().slice(0, 60);

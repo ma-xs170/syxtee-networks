@@ -10,7 +10,7 @@ export type EraseState = { ok?: string; error?: string };
 
 /** Modération de la carte : efface toutes les mesures d'un compte (Core : mesures + agrégats recalculés). */
 export async function eraseMeasuresAction(_prev: EraseState, form: FormData): Promise<EraseState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("relays");
   const userId = z.uuid().safeParse(form.get("userId"));
   if (!userId.success) return { error: "Requête invalide." };
   if (!hasCore) return { error: "Core non configuré." };

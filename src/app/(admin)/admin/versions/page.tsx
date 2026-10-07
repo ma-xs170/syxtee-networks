@@ -16,7 +16,7 @@ type Row = Version & { id: string; title: string; notes: string; created_by: str
 const when = (iso: string) => new Date(iso).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Guadeloupe" });
 
 export default async function AdminVersionsPage() {
-  await requireAdmin();
+  await requireAdmin("versions");
   const { data, error } = hasAdmin
     ? await createAdminClient()
         .from("releases")

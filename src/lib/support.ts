@@ -17,23 +17,34 @@ export type Ticket = {
   resolved_at: string | null;
   last_from: "user" | "staff";
   category: SupportCategory;
+  /** Agent qui a pris en charge la demande (0047_staff.sql). */
+  assigned_to: string | null;
+  assigned_at: string | null;
 };
 export type Attachment = { path: string; name: string };
-export type TicketMessage = { id: string; ticket_id: string; author_id: string | null; from_staff: boolean; body: string; created_at: string; attachments: Attachment[]; photos: { url: string; name: string }[] };
+export type TicketMessage = { id: string; ticket_id: string; author_id: string | null; from_staff: boolean; body: string; created_at: string; attachments: Attachment[]; photos: { url: string; name: string }[]; kind: "message" | "system"; signature: string | null };
 
-const COLS = "id, user_id, subject, status, created_at, updated_at, first_reply_at, resolved_at, last_from, category";
+const BASE_COLS = "id, user_id, subject, status, created_at, updated_at, first_reply_at, resolved_at, last_from, category";
+const COLS = `${BASE_COLS}, assigned_to, assigned_at`;
+const MSG_BASE = "id, ticket_id, author_id, from_staff, body, created_at, attachments";
+/** Colonne absente (migration 0047 pas encore appliquée) : la requête est refaite avec les colonnes d'avant, sans casser le support. */
+const missingColumn = (e: { code?: string } | null) => e?.code === "42703";
 
 export async function listTickets(opts: { userId?: string; state?: "open" | "resolved" | "all"; limit?: number } = {}): Promise<Ticket[]> {
   if (!hasAdmin) return [];
-  let q = createAdminClient().from("support_tickets").select(COLS).order("updated_at", { ascending: false }).limit(opts.limit ?? 100);
-  if (opts.userId) q = q.eq("user_id", opts.userId);
-  if (opts.state === "open" || opts.state === "resolved") q = q.eq("status", opts.state);
-  const { data, error } = await q;
+  const run = (cols: string) => {
+    let q = createAdminClient().from("support_tickets").select(cols).order("updated_at", { ascending: false }).limit(opts.limit ?? 100);
+    if (opts.userId) q = q.eq("user_id", opts.userId);
+    if (opts.state === "open" || opts.state === "resolved") q = q.eq("status", opts.state);
+    return q;
+  };
+  let { data, error } = await run(COLS);
+  if (missingColumn(error)) ({ data, error } = await run(BASE_COLS));
   if (error) {
     console.error("support_tickets", error.message);
     return [];
   }
-  return (data ?? []) as Ticket[];
+  return ((data ?? []) as unknown as Ticket[]).map((t) => ({ ...t, assigned_to: t.assigned_to ?? null, assigned_at: t.assigned_at ?? null }));
 }
 
 export async function ticketCounts(userId?: string): Promise<{ open: number; resolved: number }> {
@@ -45,12 +56,17 @@ export async function ticketCounts(userId?: string): Promise<{ open: number; res
 export async function getThread(id: string, userId?: string): Promise<{ ticket: Ticket; messages: TicketMessage[] } | null> {
   if (!hasAdmin || !/^[0-9a-f-]{36}$/i.test(id)) return null;
   const db = createAdminClient();
-  let q = db.from("support_tickets").select(COLS).eq("id", id);
-  if (userId) q = q.eq("user_id", userId);
-  const { data: ticket } = await q.maybeSingle();
+  const find = (cols: string) => {
+    let q = db.from("support_tickets").select(cols).eq("id", id);
+    if (userId) q = q.eq("user_id", userId);
+    return q.maybeSingle();
+  };
+  let { data: ticket, error: ticketError } = await find(COLS);
+  if (missingColumn(ticketError)) ({ data: ticket } = await find(BASE_COLS));
   if (!ticket) return null;
-  const { data: messages } = await db.from("support_messages").select("id, ticket_id, author_id, from_staff, body, created_at, attachments").eq("ticket_id", id).order("created_at");
-  const rows = (messages ?? []) as (Omit<TicketMessage, "photos"> & { attachments: Attachment[] | null })[];
+  const first = await db.from("support_messages").select(`${MSG_BASE}, kind, signature`).eq("ticket_id", id).order("created_at");
+  const messages: unknown[] | null = missingColumn(first.error) ? (await db.from("support_messages").select(MSG_BASE).eq("ticket_id", id).order("created_at")).data : first.data;
+  const rows = ((messages ?? []) as unknown as (Omit<TicketMessage, "photos" | "kind" | "signature"> & { attachments: Attachment[] | null; kind?: "message" | "system"; signature?: string | null })[]).map((m) => ({ ...m, kind: m.kind ?? "message", signature: m.signature ?? null }));
   // Photos : URLs signées d'une heure (bucket privé), seulement pour ce ticket (chemins préfixés par son identifiant).
   const paths = rows.flatMap((m) => (m.attachments ?? []).map((a) => a.path)).filter((x) => x.startsWith(`${id}/`));
   const signed = new Map<string, string>();
@@ -59,10 +75,24 @@ export async function getThread(id: string, userId?: string): Promise<{ ticket: 
     for (const u of urls ?? []) if (u.path && u.signedUrl) signed.set(u.path, u.signedUrl);
   }
   return {
-    ticket: ticket as Ticket,
+    ticket: { ...(ticket as unknown as Ticket), assigned_to: (ticket as unknown as Ticket).assigned_to ?? null, assigned_at: (ticket as unknown as Ticket).assigned_at ?? null },
     messages: rows.map((m) => ({ ...m, attachments: m.attachments ?? [], photos: (m.attachments ?? []).flatMap((a) => (signed.has(a.path) ? [{ url: signed.get(a.path)!, name: a.name }] : [])) })),
   };
 }
+
+/** Ajoute un message au fil. `kind` « system » : ligne d'information (prise en charge). Réessaie sans les colonnes de 0047 si elle n'est pas appliquée. */
+export async function addMessage(row: { ticket_id: string; author_id: string | null; from_staff: boolean; body: string; attachments?: Attachment[]; kind?: "message" | "system"; signature?: string | null }) {
+  const db = createAdminClient();
+  const full = await db.from("support_messages").insert({ attachments: [], kind: "message", signature: null, ...row });
+  if (!missingColumn(full.error)) return full.error;
+  const { kind, signature, ...old } = { attachments: [] as Attachment[], ...row };
+  void kind;
+  void signature;
+  return (await db.from("support_messages").insert(old)).error;
+}
+
+/** Texte du premier message automatique d'un nouveau ticket, tant qu'aucun agent ne l'a pris en charge. */
+export const WAITING_AGENT_TEXT = "Merci, nous vous recherchons un support pour prendre en charge votre demande.";
 
 /** « Prénom N. » de chaque compte, pour la boîte de réception admin. */
 export async function whoIs(ids: string[]): Promise<Map<string, string>> {

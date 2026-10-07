@@ -51,7 +51,7 @@ function recentRefusals(events: SecurityEvent[]) {
 }
 
 export default async function AdminSecuritePage({ searchParams }: { searchParams: Promise<{ ip?: string | string[] }> }) {
-  await requireAdmin();
+  await requireAdmin("security");
   const { ip } = await searchParams;
   let data: Awaited<ReturnType<typeof getSecurity>> = null;
   let down = !hasCore;

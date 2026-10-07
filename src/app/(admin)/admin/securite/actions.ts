@@ -16,7 +16,7 @@ const banInput = z.object({
 });
 
 export async function banAction(_prev: BanState, form: FormData): Promise<BanState> {
-  await requireAdmin();
+  await requireAdmin("security");
   const parsed = banInput.safeParse({ ip: form.get("ip"), minutes: form.get("minutes"), reason: form.get("reason") });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide." };
   try {
@@ -29,7 +29,7 @@ export async function banAction(_prev: BanState, form: FormData): Promise<BanSta
 }
 
 export async function unbanAction(form: FormData) {
-  await requireAdmin();
+  await requireAdmin("security");
   const ip = z.union([z.ipv4(), z.ipv6()]).safeParse(form.get("ip"));
   if (!ip.success) return;
   await unbanIp(ip.data).catch(() => {});

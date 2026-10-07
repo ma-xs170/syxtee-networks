@@ -19,7 +19,7 @@ const LABEL = { up: "En ligne", slow: "Lent", down: "Hors ligne" } as const;
 const btn = "h-10 whitespace-nowrap rounded-full border border-line px-4 text-sm text-foreground transition-colors hover:border-foreground/40";
 
 export default async function AdminDiscordPage() {
-  await requireAdmin();
+  await requireAdmin("discord");
   let status: BotStatus | null = null;
   let problem = hasBot ? "" : "CORE_URL ou CORE_API_TOKEN manque sur Vercel.";
   if (hasBot) {

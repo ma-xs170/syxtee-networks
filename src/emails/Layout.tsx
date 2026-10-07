@@ -87,22 +87,35 @@ export default function Layout({ preview, reason, children }: { preview: string;
         <Container style={{ maxWidth: "560px", margin: "0 auto" }}>
           <Section style={{ padding: "8px 0 28px", textAlign: "center" }}>
             <Img src={`${site.url}/logo-400.png`} width={34} height={47} alt="SYXTEE NETWORKS" style={{ display: "block", margin: "0 auto" }} />
+            <Text style={{ ...muted, ...mono, fontSize: "11px", letterSpacing: "5px", margin: "14px 0 0", color: C.fg }}>SYXTEE NETWORKS</Text>
           </Section>
           <Section style={{ backgroundColor: C.card, border: `1px solid ${C.line}`, borderTop: `3px solid ${C.accent}`, borderRadius: "16px", padding: "36px 28px 16px", backgroundImage: "radial-gradient(ellipse 80% 120px at 20% 0%, rgba(255,255,255,0.08), rgba(255,255,255,0))", backgroundRepeat: "no-repeat" }}>
             {children}
+            <Section style={{ borderTop: `1px solid ${C.line}`, margin: "8px 0 0", padding: "18px 0 8px" }}>
+              <Text style={{ ...muted, margin: 0, fontSize: "13px" }}>L&apos;équipe SYXTEE</Text>
+            </Section>
           </Section>
           <Section style={{ padding: "24px 4px 0", textAlign: "center" }}>
             <Text style={{ ...muted, fontSize: "12px", margin: "0 0 14px" }}>{reason}</Text>
-            <Text style={{ ...muted, fontSize: "12px", margin: "0 0 4px" }}>© {new Date().getFullYear()} SYXTEE NETWORKS</Text>
-            <Text style={{ ...muted, fontSize: "12px", margin: 0 }}>
+            <Text style={{ ...muted, fontSize: "12px", margin: "0 0 10px" }}>Le direct en mobilité, simple et fiable.</Text>
+            <Text style={{ ...muted, fontSize: "12px", margin: "0 0 10px" }}>
+              <Link href={site.url} style={{ color: C.muted, textDecoration: "none" }}>
+                Site
+              </Link>
+              <span style={{ color: C.line }}> &nbsp;|&nbsp; </span>
               <Link href={site.discord} style={{ color: C.muted, textDecoration: "none" }}>
-                Contact
+                Support
               </Link>
               <span style={{ color: C.line }}> &nbsp;|&nbsp; </span>
               <Link href={`${site.url}/confidentialite`} style={{ color: C.muted, textDecoration: "none" }}>
                 Confidentialité
               </Link>
+              <span style={{ color: C.line }}> &nbsp;|&nbsp; </span>
+              <Link href={`${site.url}/cgu`} style={{ color: C.muted, textDecoration: "none" }}>
+                Conditions
+              </Link>
             </Text>
+            <Text style={{ ...muted, fontSize: "12px", margin: 0 }}>© {new Date().getFullYear()} SYXTEE NETWORKS. Tous droits réservés.</Text>
           </Section>
         </Container>
       </Body>

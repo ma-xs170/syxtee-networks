@@ -23,7 +23,7 @@ function last12Months(now = new Date()) {
 }
 
 export default async function AdminRevenusPage() {
-  await requireAdmin();
+  await requireAdmin("revenue");
   const months = last12Months();
   const counts: Partial<Record<PlanId, number>> = {};
   let payments: Payment[] = [];

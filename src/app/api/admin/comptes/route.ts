@@ -15,7 +15,7 @@ const cell = (v: unknown) => {
 };
 
 export async function GET(request: NextRequest) {
-  const admin = await adminOrNull();
+  const admin = await adminOrNull("accounts");
   if (!admin || !hasAdmin) return new Response("Not found", { status: 404 });
   const sp = request.nextUrl.searchParams;
   const filter = { q: sp.get("q") ?? "", plan: sp.get("plan") ?? "", status: sp.get("status") ?? "", live: sp.get("live") === "1", sort: sp.get("sort") ?? "created" };

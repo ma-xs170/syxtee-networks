@@ -28,7 +28,7 @@ const TABS = [
 ] as const;
 
 export default async function AdminAccountPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ onglet?: string }> }) {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("accounts");
   const { id } = await params;
   const { onglet } = await searchParams;
   const tab = TABS.find((t) => t.id === onglet)?.id ?? "resume";

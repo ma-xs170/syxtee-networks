@@ -13,6 +13,7 @@ import PluginDownload from "@/components/dashboard/PluginDownload";
 import RemoteList from "@/components/dashboard/RemoteList";
 import BackupsList from "@/components/dashboard/BackupsList";
 import RemoteObs from "@/components/remote/RemoteObs";
+import TeamUI, { type MemberView } from "@/app/(admin)/admin/equipe/TeamUI";
 import type { DevicesDemo } from "@/components/dashboard/useLinkDevices";
 import RelayList from "@/components/relais/RelayList";
 import type { Overview as OverviewData, LiveSession } from "@/lib/dashboard-data";
@@ -22,6 +23,12 @@ import type { RelayRow } from "@/lib/relay-groups";
 // avec des données d'exemple : aucun compte, aucune clé réelle. Désactivées en production.
 
 const NOW = Date.UTC(2026, 9, 2, 20, 0, 0);
+const DEMO_TEAM: MemberView[] = [
+  { userId: "1", email: "mathxs.170@gmail.com", displayName: "Mathis Custos", avatarUrl: null, country: "GP", regionName: "Guadeloupe", lastSeen: new Date().toISOString(), role: "owner", permissions: [], active: true, source: "env" },
+  { userId: "2", email: "ines.marlot@exemple.com", displayName: "Inès Marlot", avatarUrl: null, country: "FR", regionName: "France", lastSeen: new Date(Date.now() - 12 * 60_000).toISOString(), role: "developer", permissions: ["support", "accounts", "versions", "relays", "security", "journal"], active: true, source: "db" },
+  { userId: "3", email: "kairo.duval@exemple.com", displayName: "Kairo Duval", avatarUrl: null, country: "MQ", regionName: "Martinique", lastSeen: new Date(Date.now() - 3 * 3600_000).toISOString(), role: "support", permissions: ["support"], active: true, source: "db" },
+  { userId: "4", email: "sam.roche@exemple.com", displayName: "Sam Roche", avatarUrl: null, country: "CA", regionName: "Canada", lastSeen: null, role: "security", permissions: ["security", "journal", "accounts"], active: false, source: "db" },
+];
 const iso = (msAgo: number) => new Date(NOW - msAgo).toISOString();
 const DAY = 86_400_000;
 const url = "srtla://relais.exemple.net:5000?streamid=";
@@ -116,7 +123,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
   if (process.env.NODE_ENV === "production") notFound();
   const { tool } = await params;
   return (
-    <div id="capture" data-theme="dark" className={`mx-auto bg-background p-8 text-foreground ${tool === "accueil" ? "w-[1500px]" : tool === "controle-obs" ? "w-full !p-0" : "w-[1100px]"}`}>
+    <div id="capture" data-theme="dark" className={`mx-auto bg-background p-8 text-foreground ${tool === "accueil" ? "w-[1500px]" : tool === "controle-obs" || tool === "equipe" ? "w-full !p-0" : "w-[1100px]"}`}>
       {tool === "relais" && <RelayList relays={RELAYS} active={6} max={10} coreUrl="" geo={null} />}
       {tool === "sante" && (
         <div className="space-y-4">
@@ -164,9 +171,23 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
       )}
       {tool === "controle" && <RemoteList coreUrl="" demo={DEMO_DEVICES} />}
       {tool === "plugin" && <PluginDownload coreUrl="" latest={DEMO_DEVICES.latest} demo={DEMO_DEVICES} />}
+      {tool === "equipe" && (
+        <div>
+          <AdminShell support={{ all: 2, byCategory: { relais: 1, compte: 1, facturation: 0, bug: 0, suggestion: 0, autre: 0 } }} pendingAccess={1} name="mathxs.170@gmail.com" role="owner" permissions={[]} full>
+            <div className="mx-auto max-w-5xl px-4 pb-20 pt-8 sm:px-6">
+              <h1 className="mb-6 text-2xl font-semibold tracking-tight sm:text-3xl">Équipe SYXTEE</h1>
+              <TeamUI
+                canManage
+                invites={[{ id: "i1", email: "lea.martin@exemple.com", role: "developer", daysLeft: 5 }]}
+                members={DEMO_TEAM}
+              />
+            </div>
+          </AdminShell>
+        </div>
+      )}
       {tool === "admin" && (
         <div className="-m-8">
-          <AdminShell support={{ all: 3, byCategory: { relais: 2, compte: 1, facturation: 0, bug: 0, suggestion: 0, autre: 0 } }} pendingAccess={2} name="admin@syxtee.fr">
+          <AdminShell support={{ all: 3, byCategory: { relais: 2, compte: 1, facturation: 0, bug: 0, suggestion: 0, autre: 0 } }} pendingAccess={2} name="admin@syxtee.fr" role="owner" permissions={[]} full>
             <div className="mx-auto max-w-7xl px-6 pb-20 pt-12">
               <h1 className="mb-8 text-2xl font-semibold tracking-tight sm:text-3xl">Demandes d&apos;accès</h1>
               <ul className="space-y-4">
@@ -212,7 +233,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           }))}
         />
       )}
-      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "controle-obs", "backups"].includes(tool) && notFound()}
+      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "equipe", "controle-obs", "backups"].includes(tool) && notFound()}
     </div>
   );
 }

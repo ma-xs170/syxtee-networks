@@ -14,7 +14,7 @@ type Row = { id: string; user_id: string | null; title: string; body: string; cr
 const when = (iso: string) => new Date(iso).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Paris" });
 
 export default async function AdminNotificationsPage() {
-  await requireAdmin();
+  await requireAdmin("notifications");
   const { data } = hasAdmin ? await createAdminClient().from("notifications").select("id, user_id, title, body, created_at").order("created_at", { ascending: false }).limit(30) : { data: [] };
   const rows = (data ?? []) as Row[];
 

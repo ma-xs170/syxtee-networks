@@ -31,7 +31,7 @@ const planInput = z.object({
 });
 
 export async function setPlanAction(_prev: PlanState, form: FormData): Promise<PlanState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("accounts");
   const parsed = planInput.safeParse({ userId: form.get("userId"), plan: form.get("plan"), until: form.get("until") ?? "", note: form.get("note") ?? "" });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide." };
   const { userId, plan, until, note } = parsed.data;
@@ -58,7 +58,7 @@ function done(userId: string) {
 
 /** Prénom, nom, email (l'email est changé directement, sans lien de confirmation : action admin tracée). */
 export async function updateIdentityAction(_prev: PlanState, form: FormData): Promise<PlanState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("accounts");
   const parsed = z
     .object({ userId: uid, first_name: nameField("Prénom"), last_name: nameField("Nom"), email: z.string().trim().toLowerCase().pipe(z.email("Email invalide.")) })
     .safeParse(Object.fromEntries(form));
@@ -83,7 +83,7 @@ export async function updateIdentityAction(_prev: PlanState, form: FormData): Pr
 
 /** Clés : « regenerate » = nouvelle clé pour chaque relais (coupe les flux) ; « revoke » = archive tous les relais. */
 export async function keysAction(_prev: PlanState, form: FormData): Promise<PlanState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("accounts");
   const userId = uid.safeParse(form.get("userId"));
   const mode = form.get("mode");
   if (!userId.success || (mode !== "regenerate" && mode !== "revoke")) return { error: "Requête invalide." };
@@ -105,7 +105,7 @@ export async function keysAction(_prev: PlanState, form: FormData): Promise<Plan
 
 /** « Couper le flux » d'un relais (abus) : nouvelle clé, le publieur est coupé dans la seconde. */
 export async function cutRelayAction(_prev: PlanState, form: FormData): Promise<PlanState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("accounts");
   const p = z.object({ userId: uid, relayId: uid }).safeParse({ userId: form.get("userId"), relayId: form.get("relayId") });
   if (!p.success) return { error: "Requête invalide." };
   try {
@@ -121,7 +121,7 @@ export async function cutRelayAction(_prev: PlanState, form: FormData): Promise<
 }
 
 export async function suspendAction(_prev: PlanState, form: FormData): Promise<PlanState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("accounts");
   const userId = uid.safeParse(form.get("userId"));
   if (!userId.success) return { error: "Requête invalide." };
   const suspend = form.get("suspend") === "1";
@@ -139,7 +139,7 @@ export async function suspendAction(_prev: PlanState, form: FormData): Promise<P
 
 /** Suppression définitive : il faut retaper l'ID support du compte. */
 export async function deleteAccountAction(_prev: PlanState, form: FormData): Promise<PlanState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("accounts");
   const userId = uid.safeParse(form.get("userId"));
   if (!userId.success) return { error: "Requête invalide." };
   const db = createAdminClient();
@@ -164,7 +164,7 @@ export async function deleteAccountAction(_prev: PlanState, form: FormData): Pro
 }
 
 export async function addNoteAction(_prev: PlanState, form: FormData): Promise<PlanState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("accounts");
   const p = z.object({ userId: uid, body: z.string().trim().min(1, "Note vide.").max(2000) }).safeParse({ userId: form.get("userId"), body: form.get("body") });
   if (!p.success) return { error: p.error.issues[0]?.message ?? "Note invalide." };
   const { error } = await createAdminClient().from("admin_notes").insert({ user_id: p.data.userId, author: admin.email!, body: p.data.body });
@@ -175,7 +175,7 @@ export async function addNoteAction(_prev: PlanState, form: FormData): Promise<P
 }
 
 export async function offerDaysAction(_prev: PlanState, form: FormData): Promise<PlanState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("accounts");
   const parsed = z.object({ userId: z.uuid(), days: z.coerce.number().int().min(1).max(365) }).safeParse({ userId: form.get("userId"), days: form.get("days") });
   if (!parsed.success) return { error: "Nombre de jours invalide (1 à 365)." };
   try {
@@ -212,7 +212,7 @@ async function limitOf(userId: string) {
 }
 
 export async function adminCreateRelayAction(_prev: PlanState, form: FormData): Promise<PlanState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("accounts");
   const p = z
     .object({ userId: uid, name: z.string().trim().min(1, "Donne un nom au relais.").max(40, "40 caractères au plus."), protocol: z.enum(["srtla", "rtmp", "rist"]), server: z.string() })
     .safeParse(Object.fromEntries(form));
@@ -234,7 +234,7 @@ export async function adminCreateRelayAction(_prev: PlanState, form: FormData): 
 const RELAY_OPS = ["rename", "archive", "restore", "record_on", "record_off", "rotate", "delete"] as const;
 
 export async function adminRelayAction(_prev: PlanState, form: FormData): Promise<PlanState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("accounts");
   const p = z.object({ userId: uid, relayId: uid, op: z.enum(RELAY_OPS), name: z.string().trim().max(40).optional() }).safeParse(Object.fromEntries(form));
   if (!p.success) return { error: "Requête invalide." };
   const { userId, relayId, op } = p.data;

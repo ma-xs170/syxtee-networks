@@ -17,7 +17,7 @@ const input = z.object({
 });
 
 export async function sendNotificationAction(_prev: NotifState, form: FormData): Promise<NotifState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("notifications");
   const parsed = input.safeParse({ title: form.get("title"), body: form.get("body") ?? "", supportId: form.get("supportId") ?? "" });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide." };
   const { title, body, supportId } = parsed.data;
@@ -39,7 +39,7 @@ export async function sendNotificationAction(_prev: NotifState, form: FormData):
 }
 
 export async function deleteNotificationAction(form: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("notifications");
   const id = z.uuid().safeParse(form.get("id"));
   if (!id.success) return;
   await createAdminClient().from("notifications").delete().eq("id", id.data);

@@ -5,6 +5,7 @@ import { DashPage } from "@/components/dashboard/ui";
 import TicketChat from "@/components/support/TicketChat";
 import { requireUser } from "@/lib/auth/dal";
 import { getThread } from "@/lib/support";
+import { staffCards } from "@/lib/staff-data";
 import { categoryLabel } from "@/lib/support-categories";
 import DeleteTicketButton from "@/components/support/DeleteTicketButton";
 import { closeTicketAction, deleteTicketAction, replyAction } from "../actions";
@@ -19,6 +20,8 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
   const thread = await getThread(id, user.id);
   if (!thread) notFound();
   const { ticket, messages } = thread;
+  const agents = await staffCards([...messages.filter((m) => m.from_staff).map((m) => m.author_id), ticket.assigned_to].filter((x): x is string => !!x));
+  const assignee = ticket.assigned_to ? agents.get(ticket.assigned_to) : undefined;
   const firstReply = ticket.first_reply_at ? Math.max(1, Math.round((Date.parse(ticket.first_reply_at) - Date.parse(ticket.created_at)) / 60_000)) : null;
 
   return (
@@ -46,11 +49,18 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_240px]">
         <TicketChat
           viewer="user"
-          messages={messages.map((m) => ({ id: m.id, from_staff: m.from_staff, body: m.body, created_at: m.created_at, name: "Équipe SYXTEE", photos: m.photos }))}
+          messages={messages.map((m) => {
+            const a = m.from_staff && m.author_id ? agents.get(m.author_id) : undefined;
+            return { id: m.id, from_staff: m.from_staff, body: m.body, created_at: m.created_at, name: "Équipe SYXTEE", photos: m.photos, kind: m.kind, signature: m.signature, author: a ? { name: a.firstName, avatarUrl: a.avatarUrl, role: a.role } : undefined };
+          })}
           action={replyAction.bind(null, ticket.id)}
           hint={ticket.status === "resolved" ? "Écrire ici rouvre la demande." : undefined}
         />
         <dl className="h-fit space-y-3 text-sm lg:border-l lg:border-line lg:pl-8">
+          <div className="flex justify-between gap-4">
+            <dt className="text-muted">Agent</dt>
+            <dd className="text-right">{assignee ? assignee.firstName : "En recherche"}</dd>
+          </div>
           <div className="flex justify-between gap-4">
             <dt className="text-muted">Ouvert le</dt>
             <dd>{day(ticket.created_at)}</dd>

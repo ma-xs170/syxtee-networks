@@ -19,7 +19,7 @@ const announce = z.object({
 });
 
 export async function sendAnnounceAction(_prev: BotState, form: FormData): Promise<BotState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("discord");
   const parsed = announce.safeParse({ title: form.get("title"), body: form.get("body"), url: form.get("url") ?? "" });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide." };
   const { title, body, url } = parsed.data;
@@ -41,7 +41,7 @@ const presence = z.object({
 });
 
 export async function setPresenceAction(_prev: BotState, form: FormData): Promise<BotState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("discord");
   const parsed = presence.safeParse({ mode: form.get("mode"), type: form.get("type") ?? "watching", text: form.get("text") ?? "" });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide." };
   if (parsed.data.mode === "custom" && !parsed.data.text) return { error: "Écris le texte du statut." };
@@ -56,7 +56,7 @@ export async function setPresenceAction(_prev: BotState, form: FormData): Promis
 }
 
 export async function toggleAlertsAction(form: FormData) {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("discord");
   const enabled = form.get("enabled") === "1";
   try {
     await botAlerts(enabled);
@@ -68,7 +68,7 @@ export async function toggleAlertsAction(form: FormData) {
 }
 
 export async function postServicesAction(): Promise<BotState> {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin("discord");
   try {
     await botPostServices();
   } catch (e) {

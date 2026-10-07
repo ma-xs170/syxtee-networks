@@ -1,5 +1,6 @@
 import { Text } from "@react-email/components";
 import type { ReactElement } from "react";
+import { ROLE_META, type StaffRole } from "@/lib/staff";
 import { site } from "@/lib/site";
 import Layout, { Callout, Cta, InfoPanel, mono, p, Title } from "./Layout";
 
@@ -21,6 +22,7 @@ export function verifyEmail(o: { url: string; firstName?: string | null }): Emai
       <Layout preview="Un clic pour activer ton compte." reason="Pas toi ? Ignore cet email.">
         <Title lead="Confirme ton" hl="email." />
         <Hi name={o.firstName} />
+        <Text style={p}>Un clic suffit pour activer ton compte SYXTEE. Ce lien est valable 24 h.</Text>
         <Cta href={o.url}>Vérifier mon compte</Cta>
       </Layout>
     ),
@@ -70,7 +72,7 @@ export function welcome(o: { firstName?: string | null; lastName?: string | null
     element: (
       <Layout preview="Ton compte est actif." reason="Tu viens d'activer ton compte.">
         <Title lead="Bienvenue" hl={full ? `${full}.` : "sur SYXTEE."} />
-        <Text style={p}>Ton compte est actif.</Text>
+        <Text style={p}>Ton compte est actif. Crée ton premier flux, puis pilote OBS depuis ton téléphone.</Text>
         <Cta href={`${site.url}/dashboard`}>Ouvrir mon dashboard</Cta>
       </Layout>
     ),
@@ -84,7 +86,7 @@ export function resetPassword(o: { url: string }): Email {
     element: (
       <Layout preview="Lien valable 1 h." reason="Pas toi ? Ignore cet email, ton mot de passe reste valable.">
         <Title lead="Nouveau" hl="mot de passe." />
-        <Text style={p}>Ce lien est valable 1 h.</Text>
+        <Text style={p}>Tu as demandé à changer ton mot de passe. Ce lien est valable 1 h et ne sert qu&apos;une fois.</Text>
         <Cta href={o.url}>Choisir un mot de passe</Cta>
       </Layout>
     ),
@@ -208,6 +210,25 @@ export function code(o: { token: string }): Email {
   };
 }
 
+/** Invitation à rejoindre l'équipe SYXTEE (lien personnel : il faut un compte avec cette adresse, puis la double authentification). */
+export function staffInvite(o: { inviter: string; role: StaffRole; url: string; expires: Date }): Email {
+  const meta = ROLE_META[o.role];
+  return {
+    subject: `${o.inviter} t'invite à rejoindre l'équipe SYXTEE`,
+    element: (
+      <Layout preview={`Rôle : ${meta.label}. Accepte l'invitation.`} reason="Cette invitation est personnelle. Sans action de ta part, rien ne se passe.">
+        <Title lead="Rejoins l'équipe" hl="SYXTEE." />
+        <Text style={p}>{o.inviter} t&apos;invite à rejoindre l&apos;équipe de SYXTEE NETWORKS.</Text>
+        <InfoPanel rows={[["Ton rôle", meta.label], ["Ce que tu fais", meta.text], ["Valable jusqu'au", when(o.expires)]]} />
+        <Cta href={o.url}>Accepter l&apos;invitation</Cta>
+        <Callout title="Compte et double authentification">
+          Connecte-toi (ou crée ton compte) avec cette adresse e-mail. L&apos;espace équipe demande ensuite un code de double authentification, à activer au premier passage.
+        </Callout>
+      </Layout>
+    ),
+  };
+}
+
 /** Exemples pour /dev/emails (aperçu de chaque modèle). */
 export function samples(): { key: string; label: string; email: Email }[] {
   const url = `${site.url}/auth/confirm?token_hash=exemple&type=signup`;
@@ -225,6 +246,7 @@ export function samples(): { key: string; label: string; email: Email }[] {
     { key: "g2", label: "g) Formule : J-7", email: planChanged({ plan: "partner", until: in30, expiring: true }) },
     { key: "h", label: "h) 1 mois gagné", email: freeMonth({ until: in30 }) },
     { key: "i", label: "i) Paiement refusé", email: paymentFailed({ amount: 999, currency: "eur" }) },
+    { key: "j", label: "j) Invitation à l'équipe", email: staffInvite({ inviter: "Mathis", role: "support", url: `${site.url}/equipe/invitation/exemple`, expires: in30 }) },
   ];
 }
 

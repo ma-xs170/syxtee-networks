@@ -4,6 +4,8 @@ import { rich } from "@/lib/rich";
 import { site } from "@/lib/site";
 import type { HomeStreamer } from "@/lib/streamers";
 import CloudBackdrop from "../home/CloudBackdrop";
+import DeviceFrame from "../device/DeviceFrame";
+import { SHOTS } from "../device/shots";
 import { Container } from "../ui";
 import RotatingHighlight from "../home/RotatingHighlight";
 
@@ -60,9 +62,14 @@ export default function Hero({ streamers = [] }: { streamers?: HomeStreamer[] })
           </div>
         </div>
 
+        {/* Hero → grand écran seul : la vue d'ensemble du contrôle d'OBS, au premier regard ; le téléphone vient en section 02. */}
+        <div className="rise mx-auto mt-14 max-w-4xl sm:mt-16" style={{ "--i": 4 } as React.CSSProperties}>
+          <DeviceFrame variant="desktop" shot={SHOTS.controleBureau} priority />
+        </div>
+
         {/* Quelques avatars de streamers inscrits (consentement + Twitch vérifié), rien sans au moins un. */}
         {faces.length > 0 && (
-          <div className="rise mt-10 flex items-center justify-center gap-4" style={{ "--i": 4 } as React.CSSProperties}>
+          <div className="rise mt-14 flex items-center justify-center gap-4" style={{ "--i": 5 } as React.CSSProperties}>
             <ul className="flex -space-x-3" aria-hidden="true">
               {faces.map((s) => (
                 <li key={s.handle}>

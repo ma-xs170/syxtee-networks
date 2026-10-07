@@ -1,40 +1,21 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
 import BackpackEncoder from "../illustrations/BackpackEncoder";
 import { Radio, SlidersHorizontal, Tag, UsersThree } from "../icons";
-import DeviceScene from "../mockups/Devices";
+import DeviceFrame from "../device/DeviceFrame";
+import FeatureSection from "../device/FeatureSection";
+import FloatingCard from "../device/FloatingCard";
+import { Parallax } from "../device/Motion";
+import { SHOTS } from "../device/shots";
 import { Container } from "../ui";
-import RemoteDevices from "../mockups/RemoteDevices";
 
 // Accueil : cinq sections numérotées, séparées par un filet : Relais (01), Contrôle à distance (02), Espaces partagés (03, bandeau pleine largeur),
 // Tarifs accessibles (04, liste) et l'encodeur sac à dos (05). Deux rangées image + texte au plus d'affilée, puis un autre gabarit.
 // Aucun paiement sur le site : tous les boutons mènent à « Demander l'accès ».
 
-function Row({ id, n, title, text, tags, flip = false, actions, children }: { id?: string; n: string; title: string; text: string; tags: string; flip?: boolean; actions?: ReactNode; children: ReactNode }) {
-  return (
-    <Container>
-      <article id={id} aria-labelledby={`f-${n}`} className="scroll-mt-20 grid grid-cols-1 items-center gap-12 border-t border-line py-20 lg:grid-cols-2 lg:gap-20 lg:py-28">
-        <div className={flip ? "lg:order-2" : ""}>
-          <p aria-hidden="true" className="font-mono text-6xl font-semibold text-foreground/15 sm:text-7xl">
-            {n}
-          </p>
-          <h2 id={`f-${n}`} className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">
-            {title}
-          </h2>
-          <p className="mt-5 max-w-[48ch] text-base leading-relaxed text-muted sm:text-lg">{text}</p>
-          <p className="mt-6 text-sm text-foreground/80">{tags}</p>
-          {actions && <div className="mt-8 flex flex-col gap-3 sm:flex-row">{actions}</div>}
-        </div>
-        <div className={flip ? "lg:order-1" : ""}>{children}</div>
-      </article>
-    </Container>
-  );
-}
-
 export default function NumberedFeatures() {
   return (
     <section aria-label="Fonctionnalités" className="border-b border-line">
-      <Row
+      <FeatureSection
         id="relais"
         n="01"
         title="Une connexion qui ne lâche pas."
@@ -51,13 +32,27 @@ export default function NumberedFeatures() {
           </>
         }
       >
-        <DeviceScene
-          main={{ src: "/images/screens/sante-bureau.png", alt: "Santé du flux : quatre liens SRTLA réunis, débit reçu, latence et pertes en temps réel" }}
-          phone={{ src: "/images/screens/relais-mobile.png", alt: "Liste des relais sur téléphone, avec le relais en direct" }}
-        />
-      </Row>
+        {/* Section 01 → portable + carte flottante, car la fiabilité se lit dans la santé du flux (écran de gestion) ; pas de téléphone. */}
+        <Parallax>
+          <div className="relative sm:pb-10">
+            <DeviceFrame variant="laptop" shot={SHOTS.sante} />
+            <FloatingCard label="Quatre connexions réunies, débit total 6 120 kbps (exemple)" className="mt-4 w-full sm:absolute sm:-bottom-2 sm:right-[-4%] sm:mt-0 sm:w-64">
+              <p className="flex items-center justify-between text-xs">
+                <span className="font-mono uppercase tracking-[0.12em] text-muted">Liens réunis</span>
+                <span className="flex items-center gap-1.5 font-mono text-[11px] text-foreground"><span aria-hidden="true" className="size-1.5 animate-pulse rounded-full bg-live motion-reduce:animate-none" />EN DIRECT</span>
+              </p>
+              <ul className="mt-3 space-y-1.5 font-mono text-xs tabular-nums">
+                {[["4G", "2 450"], ["5G", "1 980"], ["Wi-Fi", "1 210"], ["Starlink", "480"]].map(([k, v]) => (
+                  <li key={k} className="flex justify-between"><span className="text-muted">{k}</span><span>{v} kbps</span></li>
+                ))}
+              </ul>
+              <p className="mt-3 flex justify-between border-t border-line pt-2 font-mono text-xs tabular-nums"><span className="text-muted">Total</span><span className="font-semibold">6 120 kbps</span></p>
+            </FloatingCard>
+          </div>
+        </Parallax>
+      </FeatureSection>
 
-      <Row
+      <FeatureSection
         id="controle"
         n="02"
         title="Ton OBS dans ta poche."
@@ -75,8 +70,11 @@ export default function NumberedFeatures() {
           </>
         }
       >
-        <RemoteDevices />
-      </Row>
+        {/* Section 02 → téléphone seul : le contrôle d'OBS se fait en direct, en déplacement, une main sur le téléphone. */}
+        <Parallax>
+          <DeviceFrame variant="phone" shot={SHOTS.controleMobile} />
+        </Parallax>
+      </FeatureSection>
 
       {/* 03 Espaces partagés : bandeau pleine largeur, pour les régies */}
       <Container>
@@ -93,11 +91,10 @@ export default function NumberedFeatures() {
             </p>
           </div>
           <div className="mx-auto mt-14 max-w-3xl">
-            <DeviceScene
-              kind="display"
-              main={{ src: "/images/screens/membres-bureau.png", alt: "Page Membres d'un espace partagé : propriétaire, administrateur et membres avec leurs rôles, invitation en attente" }}
-              phone={{ src: "/images/remote/controle-mobile.png", alt: "Contrôle à distance d'un OBS de l'espace depuis un téléphone" }}
-            />
+            {/* Section 03 → grand écran seul : gérer les membres et les rôles est un travail de bureau, pas de téléphone. */}
+            <Parallax distance={20}>
+              <DeviceFrame variant="desktop" shot={SHOTS.membres} />
+            </Parallax>
           </div>
           <ul className="mx-auto mt-12 grid max-w-4xl grid-cols-1 gap-x-10 gap-y-6 sm:grid-cols-3">
             {[
@@ -169,7 +166,7 @@ export default function NumberedFeatures() {
       </Container>
 
       {/* 05 Encodeur : un sac à dos de stream */}
-      <Row
+      <FeatureSection
         id="encodeur"
         n="05"
         title="L'encodeur dans ton sac à dos."
@@ -180,7 +177,7 @@ export default function NumberedFeatures() {
         <div className="relative flex items-center justify-center rounded-2xl border border-line bg-surface p-6 sm:p-10" aria-hidden="true">
           <BackpackEncoder className="h-auto w-full max-w-md" />
         </div>
-      </Row>
+      </FeatureSection>
     </section>
   );
 }

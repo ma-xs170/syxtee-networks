@@ -24,7 +24,6 @@ const nextConfig: NextConfig = {
       { source: "/syxtee-studio", destination: "/syxtee-mix", permanent: true },
       { source: "/dashboard/urls", destination: "/dashboard/relais", permanent: true },
       { source: "/docs/rist", destination: "/docs", permanent: true },
-      { source: "/dashboard/cam", destination: "/dashboard/relais", permanent: true },
       { source: "/dashboard/apercu", destination: "/dashboard", permanent: true },
       { source: "/dashboard/enregistrements", destination: "/dashboard", permanent: true },
       { source: "/dashboard/dji", destination: "/dashboard", permanent: true },

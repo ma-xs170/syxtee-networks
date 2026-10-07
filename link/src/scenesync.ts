@@ -26,7 +26,7 @@ function* strings(v: unknown): Generator<string> {
   else if (v && typeof v === "object") for (const x of Object.values(v)) yield* strings(x);
 }
 
-function replaceStrings(v: unknown, map: (s: string) => string): unknown {
+export function replaceStrings(v: unknown, map: (s: string) => string): unknown {
   if (typeof v === "string") return map(v);
   if (Array.isArray(v)) return v.map((x) => replaceStrings(x, map));
   if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, replaceStrings(x, map)]));

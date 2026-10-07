@@ -969,7 +969,8 @@ export function buildServer(d: Deps) {
         const id = await userId(req, reply);
         if (!id) return;
         const rows = await backups.list(id);
-        return { backups: rows.map(({ user_id: _u, ...r }) => r), used: rows.reduce((n, r) => n + r.size, 0), quota: backups.quota };
+        const u = await backups.usage(id);
+        return { backups: rows.map(({ user_id: _u, ...r }) => r), used: u.used, quota: backups.quota };
       });
       app.delete("/v1/me/link/backups/:id", async (req, reply) => {
         const id = await userId(req, reply);
@@ -994,7 +995,68 @@ export function buildServer(d: Deps) {
         const id = await remote.deviceUser(req.headers.authorization);
         if (!id) return reply.code(401).send({ error: "unauthorized" });
         const rows = await backups.list(id);
-        return { backups: rows.map(({ user_id: _u, ...r }) => r), used: rows.reduce((n, r) => n + r.size, 0), quota: backups.quota };
+        const u = await backups.usage(id);
+        return { backups: rows.map(({ user_id: _u, ...r }) => r), used: u.used, quota: backups.quota };
+      });
+      // ── Format léger : fichiers partagés (SHA-256), versions = manifestes ──
+      const beginBody = z.object({
+        collection: z.string().max(80),
+        collection_sha256: z.string().length(64),
+        collection_size: z.number().int().min(0),
+        files: z.array(z.object({ sha256: z.string().length(64), size: z.number().int().min(0) })).max(20_000),
+      });
+      app.post("/v1/link/backups/begin", { bodyLimit: 8 * 1024 * 1024 }, async (req, reply) => {
+        const id = await remote.deviceUser(req.headers.authorization);
+        if (!id) return reply.code(401).send({ error: "unauthorized" });
+        const b = beginBody.safeParse(req.body);
+        if (!b.success) return reply.code(400).send({ error: "invalid" });
+        const r = await backups.begin(id, b.data);
+        return "error" in r ? reply.code(r.error === "quota" ? 413 : 400).send(r) : r;
+      });
+      // Un fichier (flux brut) : taille d'origine et encodage (raw ou gzip) dans les en-têtes ; vérifié par son SHA-256.
+      app.addContentTypeParser("application/octet-stream", (_req, payload, done) => done(null, payload));
+      app.put("/v1/link/blobs/:sha", { bodyLimit: backups.quota + 1024 * 1024 }, async (req, reply) => {
+        const id = await remote.deviceUser(req.headers.authorization);
+        if (!id) return reply.code(401).send({ error: "unauthorized" });
+        const p = z.object({ sha: z.string().length(64) }).safeParse(req.params);
+        const enc = String(req.headers["x-syxtee-encoding"] ?? "raw");
+        const size = Number(req.headers["x-syxtee-size"]);
+        if (!p.success || (enc !== "raw" && enc !== "gzip") || !Number.isInteger(size)) return reply.code(400).send({ error: "invalid" });
+        const r = await backups.putBlob(id, p.data.sha, { size, encoding: enc }, req.body as import("node:stream").Readable, Number(req.headers["content-length"]));
+        if ("error" in r) return reply.code(r.error === "quota" ? 413 : r.error === "length_required" ? 411 : r.error === "server" ? 500 : 400).send({ error: r.error });
+        return r;
+      });
+      app.post("/v1/link/backups/commit", { bodyLimit: 8 * 1024 * 1024 }, async (req, reply) => {
+        const id = await remote.deviceUser(req.headers.authorization);
+        if (!id) return reply.code(401).send({ error: "unauthorized" });
+        const b = beginBody
+          .extend({ name: z.string().max(60), obs: z.string().max(20), host: z.string().max(60), files: z.array(z.object({ sha256: z.string().length(64), size: z.number().int().min(0), name: z.string().min(1).max(120) })).max(20_000) })
+          .safeParse(req.body);
+        if (!b.success) return reply.code(400).send({ error: "invalid" });
+        const r = await backups.commit(id, b.data);
+        return "error" in r ? reply.code(r.error === "missing" ? 409 : r.error === "server" ? 500 : 400).send(r) : r;
+      });
+      app.get("/v1/link/backups/:id/manifest", async (req, reply) => {
+        const id = await remote.deviceUser(req.headers.authorization);
+        if (!id) return reply.code(401).send({ error: "unauthorized" });
+        const p = uuid.safeParse(req.params);
+        if (!p.success) return reply.code(400).send({ error: "invalid" });
+        const m = await backups.manifestOf(id, p.data.id);
+        return m ?? reply.code(404).send({ error: "not_found" });
+      });
+      app.get("/v1/link/blobs/:sha", async (req, reply) => {
+        const id = await remote.deviceUser(req.headers.authorization);
+        if (!id) return reply.code(401).send({ error: "unauthorized" });
+        const p = z.object({ sha: z.string().length(64) }).safeParse(req.params);
+        if (!p.success) return reply.code(400).send({ error: "invalid" });
+        const f = await backups.blobStream(id, p.data.sha);
+        if (!f) return reply.code(404).send({ error: "not_found" });
+        return reply.header("content-type", "application/octet-stream").header("content-length", String(f.size)).send(f.stream);
+      });
+      // Conversion des anciennes sauvegardes (.tgz) d'un compte : jeton de service (le Core la lance aussi seul au démarrage).
+      app.post("/v1/users/:id/link/backups/migrate", { preHandler: service }, async (req) => {
+        const { id } = uuid.parse(req.params);
+        return backups.migrate(id);
       });
       app.get("/v1/link/backups/:id", async (req, reply) => {
         const id = await remote.deviceUser(req.headers.authorization);

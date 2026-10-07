@@ -168,6 +168,14 @@ const remote = config.LINK_ENABLED
     })
   : null;
 const backups = remote ? createBackups({ db: supabase as never, dir: join(config.DATA_DIR, "link-backups"), log }) : null;
+// Anciennes sauvegardes (.tgz entières) : converties une fois en fichiers partagés (SHA-256), en arrière-plan, sans effet sur une base déjà convertie.
+if (backups && process.env.LINK_MIGRATE_BACKUPS !== "0")
+  setTimeout(() => {
+    backups
+      .migrate()
+      .then((r) => r.converted + r.failed > 0 && log(`sauvegardes : ${r.converted} convertie(s), ${r.failed} en échec, ${(r.freed / 1e6).toFixed(0)} Mo d'archives remplacées`))
+      .catch((e) => log(`sauvegardes : migration impossible (${(e as Error).message})`));
+  }, 30_000).unref();
 
 // Aperçu vidéo du programme d'OBS (WHIP du plugin → MediaMTX → WHEP du navigateur) : même MediaMTX et même WHIP que la Cam, aucun transcodage.
 /** WEBRTC_ICE_SERVERS : tableau JSON, ignoré s'il est invalide. */

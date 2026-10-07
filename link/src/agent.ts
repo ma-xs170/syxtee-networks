@@ -9,6 +9,7 @@ import { ipcPath, ObsIpc } from "./obsipc.ts";
 import { listCollections, readObsWebsocket } from "./obsconfig.ts";
 import { statSync } from "node:fs";
 import { scenesDir } from "./obsconfig.ts";
+import { backupV2, LegacyCore, restoreV2 } from "./backup2.ts";
 import { createArchive, plan, restoreArchive } from "./scenesync.ts";
 import { osLabel } from "./system.ts";
 import { coreCall } from "./corehttp.ts";
@@ -150,13 +151,26 @@ export class Agent {
     if (this.status.job?.state === "running") return false;
     const file = join(tmpdir(), `syxtee-link-${Date.now()}.tgz`);
     try {
-      this.setJob({ kind: "backup", state: "running", progress: 0, message: "Préparation de l'archive…" });
+      this.setJob({ kind: "backup", state: "running", progress: 0, message: "Préparation…" });
       let last = 0;
       const tick = (p: number, message: string) => {
         if (Date.now() - last < 500) return;
         last = Date.now();
         this.setJob({ kind: "backup", state: "running", progress: p, message });
       };
+      // Format léger : seuls les fichiers que le serveur n'a pas déjà sont envoyés.
+      try {
+        const r = await backupV2({ core: this.cfg.core, token: () => freshToken(this.cfg), collection, obs: this.status.obsVersion, host: hostName(), onProgress: tick });
+        this.cfg.lastBackup[collection] = new Date().toISOString();
+        save(this.cfg);
+        const added = r.new_bytes < 1024 ? "rien de nouveau" : r.new_bytes < 1e6 ? `${Math.round(r.new_bytes / 1024)} Ko ajoutés` : `${(r.new_bytes / 1e6).toFixed(0)} Mo ajoutés`;
+        this.setJob({ kind: "backup", state: "done", progress: 1, message: `« ${collection} » sauvegardée (version ${r.version}, ${added}).` });
+        this.log(`sauvegarde « ${collection} » v${r.version} : ${r.uploaded} octets envoyés`);
+        return true;
+      } catch (e) {
+        if (!(e instanceof LegacyCore)) throw e;
+        // Serveur pas encore à jour : ancienne archive .tgz.
+      }
       const a = await createArchive(collection, file, { obs: this.status.obsVersion, host: hostName(), onProgress: (d, t) => tick(t ? (d / t) * 0.5 : 0, "Compression des scènes et médias…") });
       await uploadArchive(this.cfg.core, await freshToken(this.cfg), file, a.size, { name: collection, collection, media: a.media, obs: this.status.obsVersion, host: hostName() }, (s, t) => tick(0.5 + (s / t) * 0.5, "Envoi vers ton espace…"));
       this.cfg.lastBackup[collection] = new Date().toISOString();
@@ -201,6 +215,20 @@ export class Agent {
     if (this.status.job?.state === "running") return false;
     try {
       this.setJob({ kind: "restore", state: "running", progress: 0, message: "Téléchargement…" });
+      let lastTick = 0;
+      const v2 = await restoreV2({
+        core: this.cfg.core, token: () => freshToken(this.cfg), id,
+        onProgress: (p, message) => {
+          if (Date.now() - lastTick < 500) return;
+          lastTick = Date.now();
+          this.setJob({ kind: "restore", state: "running", progress: p, message });
+        },
+      });
+      if (v2) {
+        this.setJob({ kind: "restore", state: "done", progress: 1, message: `Collection « ${v2.collection} » ajoutée. Dans OBS : menu Collection de scènes.` });
+        this.log(`restauration → ${v2.collection}`);
+        return true;
+      }
       const stream = await downloadArchive(this.cfg.core, await freshToken(this.cfg), id);
       let last = 0;
       const r = await restoreArchive(stream, id, (b) => {

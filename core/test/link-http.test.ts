@@ -245,3 +245,59 @@ test("déclenchement de la bascule : lu et changé par le plugin sur ses propres
   assert.deepEqual((await app.inject({ method: "GET", url: `/v1/link/streams/${RELAYS[1].id}/status`, headers: dev })).json(), { live: false, kbps: 0 });
   assert.equal((await app.inject({ method: "GET", url: `/v1/link/streams/${rid}/status` })).statusCode, 401);
 });
+
+test("sauvegardes légères par HTTP : begin, envoi des seuls fichiers manquants (vérifiés), validation, manifeste, lecture, quota unique", async () => {
+  const { createHash } = await import("node:crypto");
+  const { gzipSync } = await import("node:zlib");
+  const sha = (b: Buffer) => createHash("sha256").update(b).digest("hex");
+  const { app } = make(5_000_000);
+  const dev = await connectDevice(app);
+  const json = { ...dev, "content-type": "application/json" };
+  const col = Buffer.from('{"name":"SYXTEE"}');
+  const logo = Buffer.alloc(2000, 7);
+  const meta = { collection: "SYXTEE", collection_sha256: sha(col), collection_size: col.length, files: [{ sha256: sha(logo), size: logo.length }] };
+
+  assert.equal((await app.inject({ method: "POST", url: "/v1/link/backups/begin", headers: { "content-type": "application/json" }, payload: meta })).statusCode, 401);
+  assert.equal((await app.inject({ method: "POST", url: "/v1/link/backups/begin", headers: json, payload: { ...meta, collection_sha256: "zz" } })).statusCode, 400);
+  const begin = (await app.inject({ method: "POST", url: "/v1/link/backups/begin", headers: json, payload: meta })).json();
+  assert.deepEqual(begin.missing.sort(), [sha(col), sha(logo)].sort());
+
+  const put = (b: Buffer, size: number, enc: string, body = b) =>
+    app.inject({ method: "PUT", url: `/v1/link/blobs/${sha(b)}`, headers: { ...dev, "content-type": "application/octet-stream", "x-syxtee-size": String(size), "x-syxtee-encoding": enc, "content-length": String(body.length) }, payload: Readable.from([body]) });
+  // Mauvais contenu refusé, bon contenu accepté (JSON compressé, média tel quel), renvoi ignoré
+  assert.equal((await put(logo, 2000, "raw", Buffer.alloc(2000, 8))).statusCode, 400);
+  assert.equal((await put(col, col.length, "gzip", gzipSync(col))).statusCode, 200);
+  assert.equal((await put(logo, 2000, "raw")).statusCode, 200);
+  assert.equal((await put(logo, 2000, "raw")).json().existed, true);
+  assert.equal((await app.inject({ method: "PUT", url: `/v1/link/blobs/${sha(logo)}`, headers: { ...dev, "content-type": "application/octet-stream", "x-syxtee-size": "2000", "x-syxtee-encoding": "zip" }, payload: Readable.from([logo]) })).statusCode, 400);
+
+  const commit = await app.inject({ method: "POST", url: "/v1/link/backups/commit", headers: json, payload: { ...meta, name: "SYXTEE", obs: "32.2.2", host: "Mac", files: [{ sha256: sha(logo), size: 2000, name: "logo.png" }] } });
+  assert.equal(commit.statusCode, 200, commit.body);
+  const v1 = commit.json();
+  assert.equal(v1.version, 1);
+  // Même sauvegarde une 2e fois : plus rien à envoyer, 0 octet ajouté
+  const again = (await app.inject({ method: "POST", url: "/v1/link/backups/begin", headers: json, payload: meta })).json();
+  assert.deepEqual(again.missing, []);
+  const v2 = (await app.inject({ method: "POST", url: "/v1/link/backups/commit", headers: json, payload: { ...meta, name: "SYXTEE", obs: "32.2.2", host: "Mac", files: [{ sha256: sha(logo), size: 2000, name: "logo.png" }] } })).json();
+  assert.deepEqual([v2.version, v2.new_bytes], [2, 0]);
+  // Validation refusée si un fichier n'a pas été envoyé
+  const miss = await app.inject({ method: "POST", url: "/v1/link/backups/commit", headers: json, payload: { ...meta, collection_sha256: sha(Buffer.from("autre")), name: "X", obs: "", host: "" , files: [] } });
+  assert.equal(miss.statusCode, 409);
+  assert.equal(miss.json().missing.length, 1);
+
+  // Liste (quota = octets uniques), manifeste, lecture d'un fichier ; un autre compte ne lit rien
+  const list = (await app.inject({ method: "GET", url: "/v1/me/link/backups", headers: user })).json();
+  assert.equal(list.backups.length, 2);
+  assert.ok(list.backups.every((b: { format: number }) => b.format === 2));
+  assert.ok(list.used < col.length + logo.length + 100); // une seule copie des fichiers
+  const man = (await app.inject({ method: "GET", url: `/v1/link/backups/${v1.id}/manifest`, headers: dev })).json();
+  assert.equal(man.files[0].name, "logo.png");
+  const blob = await app.inject({ method: "GET", url: `/v1/link/blobs/${sha(col)}`, headers: dev });
+  assert.equal(blob.statusCode, 200);
+  assert.equal(blob.body, col.toString()); // décompressé à la lecture
+  assert.equal((await app.inject({ method: "GET", url: `/v1/link/blobs/${sha(col)}` })).statusCode, 401);
+  assert.equal((await app.inject({ method: "GET", url: `/v1/link/blobs/${sha(Buffer.from("inconnu"))}`, headers: dev })).statusCode, 404);
+  // Suppression d'une version depuis le site : l'autre garde ses fichiers
+  assert.equal((await app.inject({ method: "DELETE", url: `/v1/me/link/backups/${v1.id}`, headers: user })).statusCode, 200);
+  assert.equal((await app.inject({ method: "GET", url: `/v1/link/blobs/${sha(logo)}`, headers: dev })).statusCode, 200);
+});

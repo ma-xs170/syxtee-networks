@@ -11,6 +11,7 @@ import AdminShell from "@/app/(admin)/admin/AdminShell";
 import StudioDemo from "@/components/studio/StudioDemo";
 import PluginDownload from "@/components/dashboard/PluginDownload";
 import RemoteList from "@/components/dashboard/RemoteList";
+import BackupsList from "@/components/dashboard/BackupsList";
 import RemoteObs from "@/components/remote/RemoteObs";
 import type { DevicesDemo } from "@/components/dashboard/useLinkDevices";
 import RelayList from "@/components/relais/RelayList";
@@ -145,6 +146,22 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
       {tool === "controle-obs" && (
         <RemoteObs coreUrl="http://localhost:9" deviceId="d1" demoToken="demo" />
       )}
+      {tool === "backups" && (
+        <BackupsList
+          coreUrl=""
+          demo={{
+            devices: DEMO_DEVICES,
+            used: 39_000_000,
+            quota: 5 * 1024 ** 3,
+            rows: [
+              { id: "b4", name: "SYXTEE", collection: "SYXTEE", version: 4, size: 1_310_000_000, media_count: 12, obs_version: "32.2.2", host: "OBS-DJ-SYXTEE.local", created_at: iso(3_600_000), format: 2, new_bytes: 12_000 },
+              { id: "b3", name: "SYXTEE", collection: "SYXTEE", version: 3, size: 1_310_000_000, media_count: 12, obs_version: "32.2.2", host: "OBS-DJ-SYXTEE.local", created_at: iso(DAY), format: 2, new_bytes: 0 },
+              { id: "b2", name: "SYXTEE", collection: "SYXTEE", version: 2, size: 1_290_000_000, media_count: 11, obs_version: "32.2.2", host: "OBS SYXTEE", created_at: iso(3 * DAY), format: 2, new_bytes: 28_000_000 },
+              { id: "l1", name: "LAWCY_TV", collection: "LAWCY_TV", version: 1, size: 4200, media_count: 0, obs_version: "32.2.2", host: "OBS-DJ-SYXTEE.local", created_at: iso(9 * DAY), format: 2, new_bytes: 4200 },
+            ],
+          }}
+        />
+      )}
       {tool === "controle" && <RemoteList coreUrl="" demo={DEMO_DEVICES} />}
       {tool === "plugin" && <PluginDownload coreUrl="" latest={DEMO_DEVICES.latest} demo={DEMO_DEVICES} />}
       {tool === "admin" && (
@@ -195,7 +212,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           }))}
         />
       )}
-      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "controle-obs"].includes(tool) && notFound()}
+      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "controle-obs", "backups"].includes(tool) && notFound()}
     </div>
   );
 }

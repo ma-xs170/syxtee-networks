@@ -117,12 +117,14 @@ export default function ControlePage() {
               const Icon = t.icon;
               return (
                 <article key={t.title} className={`relative flex flex-col overflow-hidden rounded-2xl border border-line bg-surface p-6 sm:p-7 ${t.className}`}>
-                  {t.image && (
-                    <ProgramPeek className="pointer-events-none absolute inset-x-6 bottom-0 sm:inset-x-10" />
-                  )}
                   {Icon && <Icon size={26} weight="regular" className="text-foreground" aria-hidden="true" />}
                   <h3 className={`font-semibold tracking-tight ${t.image ? "text-2xl sm:text-3xl" : "mt-5 text-lg"}`}>{t.title}</h3>
                   <p className={`mt-2 text-sm leading-relaxed text-muted ${t.image ? "max-w-[40ch] sm:text-base" : ""}`}>{t.text}</p>
+                  {t.image && (
+                    <div className="mt-auto -mb-6 pt-8 sm:-mb-7 sm:px-6">
+                      <ProgramPeek className="pointer-events-none" />
+                    </div>
+                  )}
                   {t.href && (
                     <Link href={t.href} className="btn btn-secondary mt-6 self-start">
                       {t.cta}

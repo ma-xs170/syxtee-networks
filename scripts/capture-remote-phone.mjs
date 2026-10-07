@@ -77,6 +77,12 @@ await page.waitForTimeout(2500);
 await page.addStyleTag({ content: "nextjs-portal{display:none!important} section[aria-label=Programme] p[role=status]{display:none}" });
 await page.waitForTimeout(300);
 await page.screenshot({ path: out });
+// Les autres panneaux (même nom de fichier, suffixe de l'onglet) : sources, mixer, contrôles.
+for (const [tab, name] of [["Sources", "sources"], ["Mixer", "mixer"], ["Contrôles", "controles"]]) {
+  await page.getByRole("tab", { name: tab }).click();
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: out.replace(/\.png$/, `-${name}.png`) });
+}
 console.log("capture :", out);
 await browser.close();
 process.exit(0);

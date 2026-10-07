@@ -25,7 +25,6 @@ function dashboardGroups(admin: boolean): MenuGroup[] {
       links: [
         { label: "Profil & réseaux", href: "/dashboard/profil" },
         { label: "Abonnement", href: "/dashboard/abonnement" },
-        { label: "Paramètres", href: "/dashboard/parametres" },
       ],
     },
     ...(admin

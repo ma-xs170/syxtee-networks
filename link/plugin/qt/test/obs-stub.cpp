@@ -9,6 +9,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <algorithm>
+#include <cstring>
 #include <chrono>
 #include <cstdarg>
 #include <cstring>
@@ -601,8 +602,16 @@ void obs_frontend_set_current_transition(obs_source_t *t) { curTrans = t; }
 int obs_frontend_get_transition_duration(void) { return 300; }
 static char **strList(const std::vector<std::string> &v)
 {
-	char **out = static_cast<char **>(malloc(sizeof(char *) * (v.size() + 1)));
-	for (size_t i = 0; i < v.size(); i++) out[i] = strdup(v[i].c_str());
+	// Comme le vrai OBS : un seul bloc mémoire (tableau puis chaînes), libéré par un seul bfree.
+	size_t total = sizeof(char *) * (v.size() + 1);
+	for (const auto &x : v) total += x.size() + 1;
+	char **out = static_cast<char **>(malloc(total));
+	char *str = reinterpret_cast<char *>(out + v.size() + 1);
+	for (size_t i = 0; i < v.size(); i++) {
+		out[i] = str;
+		memcpy(str, v[i].c_str(), v[i].size() + 1);
+		str += v[i].size() + 1;
+	}
 	out[v.size()] = nullptr;
 	return out;
 }

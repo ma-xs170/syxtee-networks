@@ -94,7 +94,7 @@ QStringList freeList(char **list)
 	QStringList out;
 	if (!list) return out;
 	for (char **p = list; *p; p++) out << q(*p);
-	for (char **p = list; *p; p++) bfree(*p);
+	// OBS renvoie UN seul bloc (le tableau et les chaînes à la suite) : un seul bfree. Libérer chaque chaîne fait planter OBS.
 	bfree(list);
 	return out;
 }

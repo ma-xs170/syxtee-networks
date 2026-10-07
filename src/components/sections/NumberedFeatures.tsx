@@ -1,9 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import BackpackEncoder from "../illustrations/BackpackEncoder";
-import SharedSpaceWire from "../illustrations/SharedSpaceWire";
 import { Radio, SlidersHorizontal, Tag, UsersThree } from "../icons";
-import BondingDiagram from "../mockups/BondingDiagram";
+import DeviceScene from "../mockups/Devices";
 import { Container } from "../ui";
 import RemoteDevices from "../mockups/RemoteDevices";
 
@@ -52,9 +51,10 @@ export default function NumberedFeatures() {
           </>
         }
       >
-        <div className="rounded-2xl border border-line bg-surface p-5 sm:p-8" aria-hidden="true">
-          <BondingDiagram />
-        </div>
+        <DeviceScene
+          main={{ src: "/images/screens/sante-bureau.png", alt: "Santé du flux : quatre liens SRTLA réunis, débit reçu, latence et pertes en temps réel" }}
+          phone={{ src: "/images/screens/relais-mobile.png", alt: "Liste des relais sur téléphone, avec le relais en direct" }}
+        />
       </Row>
 
       <Row
@@ -92,8 +92,12 @@ export default function NumberedFeatures() {
               Une équipe qui veut tout contrôler : connecte plusieurs OBS, invite chaque personne avec son compte et son rôle, et pilote le tout depuis un seul endroit.
             </p>
           </div>
-          <div className="mx-auto mt-12 max-w-3xl rounded-2xl border border-line bg-surface p-4 sm:p-8" aria-hidden="true">
-            <SharedSpaceWire />
+          <div className="mx-auto mt-14 max-w-3xl">
+            <DeviceScene
+              kind="display"
+              main={{ src: "/images/screens/membres-bureau.png", alt: "Page Membres d'un espace partagé : propriétaire, administrateur et membres avec leurs rôles, invitation en attente" }}
+              phone={{ src: "/images/remote/controle-mobile.png", alt: "Contrôle à distance d'un OBS de l'espace depuis un téléphone" }}
+            />
           </div>
           <ul className="mx-auto mt-12 grid max-w-4xl grid-cols-1 gap-x-10 gap-y-6 sm:grid-cols-3">
             {[

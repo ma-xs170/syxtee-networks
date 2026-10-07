@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import { Check } from "@/components/icons";
-import SharedSpaceWire from "@/components/illustrations/SharedSpaceWire";
+import DeviceScene from "@/components/mockups/Devices";
 import { Container } from "@/components/ui";
 import Highlight from "@/components/ui/Highlight";
 
@@ -57,9 +57,11 @@ export default function EspacesPartagesPage() {
 
       <section className="border-b border-line py-20 sm:py-24">
         <Container className="max-w-4xl">
-          <div className="rounded-2xl border border-line bg-surface p-4 sm:p-8" aria-hidden="true">
-            <SharedSpaceWire />
-          </div>
+          <DeviceScene
+            kind="display"
+            main={{ src: "/images/screens/membres-bureau.png", alt: "Page Membres d'un espace partagé : propriétaire, administrateur et membres avec leurs rôles, invitation en attente" }}
+            phone={{ src: "/images/remote/controle-mobile.png", alt: "Contrôle à distance d'un OBS de l'espace depuis un téléphone" }}
+          />
           <ul className="mt-14 grid grid-cols-1 gap-x-12 gap-y-8 sm:grid-cols-2">
             {POINTS.map(([t, d]) => (
               <li key={t} className="border-t border-line-strong pt-5">

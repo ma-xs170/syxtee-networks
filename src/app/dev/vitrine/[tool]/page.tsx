@@ -4,7 +4,7 @@ import DemoLive from "../DemoLive";
 import StreamHealth, { type Sample } from "@/components/dashboard/StreamHealth";
 import { DailyBars } from "@/components/dashboard/charts";
 import { SessionList } from "@/components/dashboard/sessions";
-import { Tile, TileLabel } from "@/components/dashboard/ui";
+import { DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
 import StreamerWall from "@/components/home/StreamerWall";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import AdminShell from "@/app/(admin)/admin/AdminShell";
@@ -13,6 +13,7 @@ import PluginDownload from "@/components/dashboard/PluginDownload";
 import RemoteList from "@/components/dashboard/RemoteList";
 import BackupsList from "@/components/dashboard/BackupsList";
 import RemoteObs from "@/components/remote/RemoteObs";
+import InvitesManager from "@/components/dashboard/InvitesManager";
 import TeamUI, { type MemberView } from "@/app/(admin)/admin/equipe/TeamUI";
 import type { DevicesDemo } from "@/components/dashboard/useLinkDevices";
 import RelayList from "@/components/relais/RelayList";
@@ -171,6 +172,29 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
       )}
       {tool === "controle" && <RemoteList coreUrl="" demo={DEMO_DEVICES} />}
       {tool === "plugin" && <PluginDownload coreUrl="" latest={DEMO_DEVICES.latest} demo={DEMO_DEVICES} />}
+      {tool === "membres" && (
+        <DashPage>
+          <InvitesManager
+            coreUrl=""
+            initial={[]}
+            planName="Extra"
+            max={5}
+            owner={{ name: "Mathis Custos", email: "mathis@exemple.com", avatar: null, since: iso(90 * 86400_000) }}
+            team={{
+              name: "LAWCY TV",
+              role: "owner",
+              meId: "u1",
+              members: [
+                { user_id: "u1", role: "owner", created_at: iso(90 * 86400_000), name: "Mathis Custos", email: "mathis@exemple.com", avatar: null },
+                { user_id: "u2", role: "admin", created_at: iso(40 * 86400_000), name: "Inès Marlot", email: "ines@exemple.com", avatar: null },
+                { user_id: "u3", role: "member", created_at: iso(12 * 86400_000), name: "Kairo Duval", email: "kairo@exemple.com", avatar: null },
+                { user_id: "u4", role: "member", created_at: iso(3 * 86400_000), name: "Sam Roche", email: "sam@exemple.com", avatar: null },
+              ],
+              pending: [{ id: "p1", email: "lea@exemple.com", role: "member", created_at: iso(86400_000), expires_at: iso(-6 * 86400_000) }],
+            }}
+          />
+        </DashPage>
+      )}
       {tool === "equipe" && (
         <div>
           <AdminShell support={{ all: 2, byCategory: { relais: 1, compte: 1, facturation: 0, bug: 0, suggestion: 0, autre: 0 } }} pendingAccess={1} name="mathxs.170@gmail.com" role="owner" permissions={[]} full>
@@ -233,7 +257,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           }))}
         />
       )}
-      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "equipe", "controle-obs", "backups"].includes(tool) && notFound()}
+      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "membres", "equipe", "controle-obs", "backups"].includes(tool) && notFound()}
     </div>
   );
 }

@@ -80,7 +80,7 @@ const buzz = (ms = 12) => {
 };
 
 /** `demoToken` : pages de démo des captures (le jeton de session n'est pas demandé). */
-export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: string; deviceId: string; demoToken?: string }) {
+export default function RemoteObs({ coreUrl, deviceId, demoToken, invite }: { coreUrl: string; deviceId: string; demoToken?: string; /** Secret d'un lien d'invitation : l'invité pilote sans compte, avec les droits de son invitation. */ invite?: string }) {
   const [scenes, setScenes] = useState<string[]>([]);
   const [program, setProgram] = useState("");
   const [preview, setPreview] = useState("");
@@ -180,7 +180,8 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
     },
     [later],
   );
-  const { link, agent, call, latency } = useRemote(coreUrl, onEvent, deviceId, demoToken);
+  const { link, agent, call, latency, guest } = useRemote(coreUrl, onEvent, deviceId, demoToken, invite);
+  const canLive = !guest || guest.level === "full";
 
   const run = useCallback(
     async <T = Record<string, unknown>,>(method: string, params?: Record<string, unknown>) => {
@@ -286,12 +287,14 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
 
   /** Adresse de lecture de l'aperçu vidéo : demandée au Core avec la session du compte (jamais en clair dans la page). */
   const watch = useCallback(async (): Promise<Watch> => {
-    const r = demoToken
+    const r = invite
+      ? await fetch(`${coreUrl}/v1/invite/preview/watch`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ invite }) })
+      : demoToken
       ? await fetch(`${coreUrl}/v1/me/link/preview/watch`, { method: "POST", headers: { authorization: `Bearer ${demoToken}` } })
       : await coreFetch(coreUrl, "/v1/me/link/preview/watch", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
     if (!r.ok) throw new Error(String(r.status));
     return (await r.json()) as Watch;
-  }, [coreUrl, demoToken]);
+  }, [coreUrl, demoToken, invite]);
 
   const ready = link === "on" && agent.online && !obsDown;
   // Comme dans OBS : en Mode Studio on édite la scène d'aperçu, sinon celle du programme.
@@ -575,10 +578,10 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
       <section aria-label="Contrôles" className={panel}>
         <h2 className={panelTitle}>Contrôles</h2>
         <div className="grid gap-1.5 p-2">
-          <button type="button" disabled={!ready} onClick={() => setConfirm(streaming ? "stop" : "start")} className={`${flat} h-10 ${streaming ? "!border-red-700 !bg-red-700 !text-white" : ""}`}>
+          <button type="button" disabled={!ready || !canLive} onClick={() => setConfirm(streaming ? "stop" : "start")} className={`${flat} h-10 ${streaming ? "!border-red-700 !bg-red-700 !text-white" : ""}`}>
             {streaming ? `Arrêter le direct · ${clock(stats?.streamMs ?? 0)}` : "Partir en direct"}
           </button>
-          <button type="button" disabled={!ready} onClick={() => void run(recording ? "StopRecord" : "StartRecord")} className={`${flat} h-10 ${recording ? "!border-red-700 !bg-red-700 !text-white" : ""}`}>
+          <button type="button" disabled={!ready || !canLive} onClick={() => void run(recording ? "StopRecord" : "StartRecord")} className={`${flat} h-10 ${recording ? "!border-red-700 !bg-red-700 !text-white" : ""}`}>
             {recording ? `Arrêter l'enregistrement · ${clock(stats?.recMs ?? 0)}` : "Démarrer l'enregistrement"}
           </button>
           {recording && (
@@ -616,9 +619,15 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
     <div className="flex h-dvh w-full min-w-0 max-w-[100vw] flex-col overflow-hidden overscroll-none bg-black pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] text-[13px] text-neutral-100 [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [touch-action:manipulation]">
       <header className="flex h-11 shrink-0 items-center justify-between border-b border-[#262626] px-3.5">
         <h1 className="text-[14px] font-medium">Contrôle à distance</h1>
-        <Link href="/dashboard/controle-a-distance" className="inline-flex h-8 items-center gap-1.5 rounded border border-[#2e2e2e] px-3 text-[13px] text-neutral-300 hover:bg-[#161616] max-lg:h-9">
-          <span aria-hidden="true">←</span> Retour
-        </Link>
+        {guest ? (
+          <p className="truncate text-[12px] text-neutral-400" title="Tu pilotes cet OBS avec un lien d'invitation">
+            Invité · {guest.label} · {guest.level === "view" ? "lecture seule" : guest.level === "scenes" ? "scènes et son" : "tous les droits"}
+          </p>
+        ) : (
+          <Link href="/dashboard/controle-a-distance" className="inline-flex h-8 items-center gap-1.5 rounded border border-[#2e2e2e] px-3 text-[13px] text-neutral-300 hover:bg-[#161616] max-lg:h-9">
+            <span aria-hidden="true">←</span> Retour
+          </Link>
+        )}
       </header>
 
       <div className="relative mx-2 mt-2 flex h-11 shrink-0 items-center gap-3 overflow-x-auto rounded-md border border-[#262626] bg-[#0b0b0b] px-3 [scrollbar-width:none]">
@@ -628,7 +637,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
         </span>
         <label className="flex shrink-0 items-center gap-1.5 text-neutral-400 max-lg:hidden">
           Profil
-          <select aria-label="Profil OBS" className={`${field} max-w-[13rem]`} disabled={!ready || profiles.list.length === 0} value={profiles.current} onChange={(e) => void run("SetCurrentProfile", { profileName: e.target.value }).then((r) => r && later())}>
+          <select aria-label="Profil OBS" className={`${field} max-w-[13rem]`} disabled={!ready || !canLive || profiles.list.length === 0} value={profiles.current} onChange={(e) => void run("SetCurrentProfile", { profileName: e.target.value }).then((r) => r && later())}>
             {profiles.list.map((p) => (
               <option key={p}>{p}</option>
             ))}
@@ -636,7 +645,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
         </label>
         <label className="flex shrink-0 items-center gap-1.5 text-neutral-400 max-lg:hidden">
           Collection
-          <select aria-label="Collection de scènes" className={`${field} max-w-[13rem]`} disabled={!ready || collections.list.length === 0} value={collections.current} onChange={(e) => void run("SetCurrentSceneCollection", { sceneCollectionName: e.target.value }).then((r) => r && later())}>
+          <select aria-label="Collection de scènes" className={`${field} max-w-[13rem]`} disabled={!ready || !canLive || collections.list.length === 0} value={collections.current} onChange={(e) => void run("SetCurrentSceneCollection", { sceneCollectionName: e.target.value }).then((r) => r && later())}>
             {collections.list.map((c) => (
               <option key={c}>{c}</option>
             ))}
@@ -646,7 +655,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
           <span aria-hidden="true" className={`size-2 rounded-full ${received ? "bg-emerald-400" : "bg-amber-300"}`} />
           {received ? fluxName : "Aucun flux reçu"}
         </span>
-        <div className="relative shrink-0" ref={devicePanel}>
+        <div className={`relative shrink-0 ${guest ? "hidden" : ""}`} ref={devicePanel}>
           <button type="button" aria-expanded={deviceOpen} disabled={!roles} onClick={() => setDeviceOpen((o) => !o)} className={`${flat} h-7 gap-1.5 px-2.5`}>
             <span aria-hidden="true">⚙</span> <span className="max-lg:hidden">Appareil</span><span className="lg:hidden">Réglages</span>
           </button>
@@ -701,7 +710,9 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
       {(lost || (obsDown && !lost) || error || loadErrors.length > 0) && (
         <div role="alert" className="mx-2 mt-2 shrink-0 rounded-md border border-[#3a2a1a] bg-[#1a1208] px-3 py-1.5 text-[13px] text-amber-200">
           {link === "denied"
-            ? "Le contrôle à distance est réservé aux comptes invités."
+            ? guest || invite
+              ? "Ce lien d'invitation n'est plus valable : il a été retiré ou il a expiré."
+              : "Le contrôle à distance est réservé aux comptes invités."
             : link === "connecting"
               ? "Connexion au serveur…"
               : link === "off"

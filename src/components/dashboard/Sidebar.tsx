@@ -15,6 +15,7 @@ import {
   Moon,
   Question,
   Radio,
+  UsersThree,
   SignOut,
   SlidersHorizontal,
   SquaresFour,
@@ -45,6 +46,7 @@ const GROUPS: Group[] = [
     items: [
       { label: "Flux", href: "/dashboard/relais", icon: Radio, feature: "relais" },
       { label: "Contrôle à distance", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais" },
+      { label: "Invités", href: "/dashboard/invitations", icon: UsersThree, feature: "relais" },
       { label: "Multichat", href: "/dashboard/multichat", icon: ChatsCircle },
     ],
   },

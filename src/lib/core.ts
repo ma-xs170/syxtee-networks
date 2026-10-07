@@ -139,3 +139,15 @@ export const refreshCore = () => core<null>("/v1/admin/refresh", "POST");
 export const getAdminLive = async () => (await core<{ live: AdminLive[] }>("/v1/admin/live"))?.live ?? [];
 
 export const unbanIp = (ip: string) => core<null>(`/v1/admin/bans/${encodeURIComponent(ip)}`, "DELETE");
+
+// ───── Invitations au contrôle à distance (invités sans compte) ─────
+export type InviteLevel = "view" | "scenes" | "full";
+export type Invite = { id: string; device_id: string | null; label: string; email: string | null; level: InviteLevel; expires_at: string | null; last_used_at: string | null; created_at: string; connected: number; expired: boolean };
+
+export async function listInvites(userId: string) {
+  return (await core<{ invites: Invite[] }>(`/v1/users/${userId}/link/invites`))?.invites ?? [];
+}
+/** Crée l'invitation ; le secret du lien n'est renvoyé qu'ici (le Core n'en garde que l'empreinte). */
+export const createInvite = (userId: string, body: { label: string; email?: string; level: InviteLevel; deviceId?: string; expiresHours?: number }) =>
+  core<{ id: string; token: string; expires_at: string | null }>(`/v1/users/${userId}/link/invites`, "POST", body);
+export const revokeInvite = (userId: string, inviteId: string) => core<{ ok: true }>(`/v1/users/${userId}/link/invites/${inviteId}`, "DELETE");

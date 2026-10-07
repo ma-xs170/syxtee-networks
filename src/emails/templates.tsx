@@ -227,3 +227,20 @@ export function samples(): { key: string; label: string; email: Email }[] {
     { key: "i", label: "i) Paiement refusé", email: paymentFailed({ amount: 999, currency: "eur" }) },
   ];
 }
+
+/** Invitation à piloter l'OBS de quelqu'un (lien secret, sans compte). */
+export function remoteInvite(o: { ownerName: string; label: string; level: "view" | "scenes" | "full"; url: string; expires: Date | null }): Email {
+  const rights = o.level === "view" ? "voir l'aperçu, les scènes et le son" : o.level === "scenes" ? "changer de scène, afficher ou masquer des sources et régler le son" : "tout piloter, y compris le direct et l'enregistrement";
+  return {
+    subject: `${o.ownerName} t'invite à piloter son OBS`,
+    element: (
+      <Layout preview={`${o.ownerName} t'invite à piloter son OBS à distance.`} reason="Quelqu'un t'a envoyé ce lien. Sans action de ta part, rien ne se passe.">
+        <Title lead="Tu es invité à" hl="piloter OBS." />
+        <Text style={p}>{o.ownerName} te donne accès à son OBS à distance. Pas besoin de compte : ouvre le lien, depuis ton téléphone ou ton ordinateur.</Text>
+        <Cta href={o.url}>Ouvrir le contrôle</Cta>
+        <InfoPanel rows={[["Invitation", o.label], ["Tu peux", rights], ["Valable", o.expires ? `jusqu'au ${when(o.expires)}` : "jusqu'à ce que la personne la retire"]]} />
+        <Callout title="Ce lien est personnel">Ne le partage pas. La personne qui t&apos;invite peut le désactiver à tout moment.</Callout>
+      </Layout>
+    ),
+  };
+}

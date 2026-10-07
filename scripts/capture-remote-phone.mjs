@@ -5,6 +5,8 @@ import { chromium } from "playwright";
 // Faux Core : mêmes messages que le vrai. L'image du programme est un exemple dessiné ici (aperçu en images).
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
 const out = process.argv[2] ?? "/tmp/controle-mobile.png";
+// VIEW=desktop : capture 1440x900 de l'interface sur ordinateur (pour la maquette ordinateur + téléphone de l'accueil).
+const desktop = process.env.VIEW === "desktop";
 
 const scenes = ["⏳ › ON COMMENCE BIENTÔT", "🔴 › EN DIRECT", "🎥 › DRONE", "📶 › CONNEXION PERDUE", "🔚 › FIN DE STREAM"];
 const state = { program: scenes[1] };
@@ -34,7 +36,7 @@ function handle(ws, m) {
 }
 
 const browser = await chromium.launch();
-const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: "dark", reducedMotion: "reduce", hasTouch: true, isMobile: true });
+const ctx = await browser.newContext(desktop ? { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1.5, colorScheme: "dark", reducedMotion: "reduce" } : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: "dark", reducedMotion: "reduce", hasTouch: true, isMobile: true });
 const page = await ctx.newPage();
 // Image d'exemple du programme (dessinée dans la page : ciel, route, silhouette).
 const frame = await page.evaluate(() => {
@@ -78,7 +80,7 @@ await page.addStyleTag({ content: "nextjs-portal{display:none!important} section
 await page.waitForTimeout(300);
 await page.screenshot({ path: out });
 // Les autres panneaux (même nom de fichier, suffixe de l'onglet) : sources, mixer, contrôles.
-for (const [tab, name] of [["Sources", "sources"], ["Mixer", "mixer"], ["Contrôles", "controles"]]) {
+for (const [tab, name] of desktop ? [] : [["Sources", "sources"], ["Mixer", "mixer"], ["Contrôles", "controles"]]) {
   await page.getByRole("tab", { name: tab }).click();
   await page.waitForTimeout(500);
   await page.screenshot({ path: out.replace(/\.png$/, `-${name}.png`) });

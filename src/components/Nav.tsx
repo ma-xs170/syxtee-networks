@@ -79,9 +79,20 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
           </div>
         ) : (
           <div className="hidden shrink-0 items-center gap-6 justify-self-end lg:flex">
-            <Link href="/dashboard" className="inline-flex h-9 items-center rounded-lg bg-foreground px-4 text-sm font-semibold text-background transition-colors hover:bg-foreground/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
-              Espace client
-            </Link>
+            {account ? (
+              <Link href="/dashboard" className="inline-flex h-9 items-center rounded-lg bg-foreground px-4 text-sm font-semibold text-background transition-colors hover:bg-foreground/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
+                Espace client
+              </Link>
+            ) : (
+              <>
+                <Link href="/connexion" className="whitespace-nowrap text-sm text-muted transition-colors hover:text-foreground">
+                  Se connecter
+                </Link>
+                <Link href="/acces" className="inline-flex h-9 items-center whitespace-nowrap rounded-lg bg-foreground px-4 text-sm font-semibold text-background transition-colors hover:bg-foreground/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
+                  Demander l&apos;accès
+                </Link>
+              </>
+            )}
           </div>
         )}
 
@@ -167,8 +178,8 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
           </div>
           {!dash && (
             <div className="mt-6">
-              <Link href="/dashboard" onClick={() => setOpen(false)} className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-foreground px-4 text-sm font-semibold text-background">
-                Espace client
+              <Link href={account ? "/dashboard" : "/acces"} onClick={() => setOpen(false)} className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-foreground px-4 text-sm font-semibold text-background">
+                {account ? "Espace client" : "Demander l'accès"}
               </Link>
             </div>
           )}

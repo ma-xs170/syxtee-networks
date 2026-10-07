@@ -4,7 +4,7 @@ import { rich } from "@/lib/rich";
 import { site } from "@/lib/site";
 import type { HomeStreamer } from "@/lib/streamers";
 import CloudBackdrop from "../home/CloudBackdrop";
-import { CREATE_RELAY_HREF, Container } from "../ui";
+import { Container } from "../ui";
 import RotatingHighlight from "../home/RotatingHighlight";
 
 // Accueil : hero clair (rouge, blanc, noir) quel que soit le thème du site, comme les sites de streaming : fond rouge
@@ -50,8 +50,8 @@ export default function Hero({ streamers = [] }: { streamers?: HomeStreamer[] })
           </p>
 
           <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={{ "--i": 3 } as React.CSSProperties}>
-            <Link href={CREATE_RELAY_HREF} className={`${btn} bg-accent text-on-accent border border-line-strong hover:bg-accent-hover`}>
-              Commencer
+            <Link href="/acces" className={`${btn} bg-accent text-on-accent border border-line-strong hover:bg-accent-hover`}>
+              Demander l&apos;accès
               <span aria-hidden="true">↗</span>
             </Link>
             <Link href="/tarifs" className={`${btn} border border-foreground/20 bg-background/60 text-foreground backdrop-blur-sm hover:bg-background/90`}>

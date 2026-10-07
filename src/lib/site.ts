@@ -16,11 +16,13 @@ export type NavTool = NavLink & { desc: string; icon: ToolIcon; soon?: boolean; 
 export type NavMenu = { label: string; children: NavTool[]; dot?: boolean; note?: string };
 export type NavItem = NavLink | NavMenu;
 
-// Menu du site : trois entrées. Produits, Outils et Ressources vivent dans la documentation (/docs).
+// Menu du site : les quatre arguments de l'accueil. « Demander l'accès » est le bouton d'action à droite (Nav.tsx), pas une entrée du menu.
+// L'encodeur et la documentation vivent dans le pied de page.
 export const nav: NavItem[] = [
+  { label: "Relais", href: "/relais" },
   { label: "Contrôle à distance", href: "/controle-a-distance" },
+  { label: "Espaces partagés", href: "/espaces-partages" },
   { label: "Tarifs", href: "/tarifs" },
-  { label: "Demander l'accès", href: "/acces" },
 ];
 
 export const isMenu = (item: NavItem): item is NavMenu => "children" in item;

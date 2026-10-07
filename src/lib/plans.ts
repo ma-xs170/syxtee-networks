@@ -5,7 +5,7 @@
 export type PlanId = "free" | "basic" | "beta" | "paid" | "extra" | "partner" | "admin";
 
 /** Fonctions verrouillées en Gratuit. Scanner et Analyseur restent actifs pour tous (hors liste). */
-export type Feature = "relais" | "sante" | "apercu" | "controle" | "stats" | "lives" | "carte" | "mire" | "cam" | "dji" | "cles" | "commutateur";
+export type Feature = "relais" | "sante" | "apercu" | "controle" | "stats" | "lives" | "carte" | "mire" | "cam" | "dji" | "cles";
 
 export const FEATURES: Record<Feature, string> = {
   relais: "Relais et URLs",
@@ -19,7 +19,6 @@ export const FEATURES: Record<Feature, string> = {
   cam: "SYXTEE Cam",
   dji: "Caméras externes",
   cles: "Clés de stream",
-  commutateur: "Commutateur multi-relais",
 };
 
 const ALL = Object.keys(FEATURES) as Feature[];

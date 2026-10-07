@@ -1,6 +1,6 @@
 import Link from "next/link";
 import CloudBackdrop from "../home/CloudBackdrop";
-import { CREATE_RELAY_HREF, Container } from "../ui";
+import { Container } from "../ui";
 import Highlight from "../ui/Highlight";
 
 // Appel final : section sombre (volutes grises), titre dans un cadre de viseur, bouton gris
@@ -20,18 +20,18 @@ export default function FinalCta() {
           <span aria-hidden="true" className={`${corner} bottom-0 right-0 border-b-[5px] border-r-[5px]`} />
 
           <h2 className="h-hero mx-auto max-w-3xl">
-            Prêt à streamer ? <Highlight>Crée ton flux.</Highlight>
+            Prêt à streamer ? <Highlight>Demande ton accès.</Highlight>
           </h2>
           <div className="mt-10 flex flex-col items-center gap-4">
             <Link
-              href={CREATE_RELAY_HREF}
+              href="/acces"
               className="inline-flex h-12 items-center justify-center gap-3 whitespace-nowrap rounded-xl border border-line-strong bg-accent px-8 text-base font-medium text-on-accent transition-[background-color,transform] hover:bg-accent-hover active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
             >
-              Commencer
+              Demander l&apos;accès
               <span aria-hidden="true">↗</span>
             </Link>
-            <Link href="/fonctionnement" className="text-base underline underline-offset-4 hover:text-foreground/70">
-              En savoir plus sur les fonctionnalités
+            <Link href="/tarifs" className="text-base underline underline-offset-4 hover:text-foreground/70">
+              Voir les tarifs
             </Link>
           </div>
         </div>

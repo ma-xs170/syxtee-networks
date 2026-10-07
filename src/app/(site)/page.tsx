@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
 import HowItWorks3 from "@/components/sections/HowItWorks3";
-import NumberedFeatures from "@/components/sections/NumberedFeatures";
+import NumberedFeatures, { FeatureStrip } from "@/components/sections/NumberedFeatures";
 import FinalCta from "@/components/sections/FinalCta";
 import { getHomeStreamers } from "@/lib/streamers";
 
@@ -13,12 +13,13 @@ export const metadata: Metadata = {
 };
 
 // Accueil statique, régénéré toutes les 60 s (streamers et statut live Twitch).
-// Centré sur le relais. SYXTEE PRO est « À venir » (FEATURE_PRO) : plus de teaser ici.
+// Quatre arguments (relais, contrôle à distance, espaces partagés, tarifs accessibles), puis l'encodeur sac à dos. Aucun paiement : « Demander l'accès ».
 export default async function Home() {
   const streamers = await getHomeStreamers();
   return (
     <>
       <Hero streamers={streamers} />
+      <FeatureStrip />
       <HowItWorks3 />
       <NumberedFeatures />
       <FinalCta />

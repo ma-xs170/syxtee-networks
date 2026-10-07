@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { ThemeRow } from "@/components/ThemeToggle";
 import { LockKey, PlugsConnected, ShareNetwork, SquaresFour, Trash, UserCircle } from "@/components/icons";
 
-// Menu de Mon compte : une page par section. Pastilles défilantes sur mobile, colonne collée à gauche sur ordinateur.
+// Menu de Mon compte : une page par section. Colonne collée à gauche sur ordinateur ; sur téléphone, la liste est la page Mon compte elle-même (MobileBack ramène à elle).
 export const COMPTE_SECTIONS = [
   { href: "/compte", label: "Général", Icon: SquaresFour, group: "Mon espace" },
   { href: "/compte/profil", label: "Profil", Icon: UserCircle, group: "Ton compte" },
@@ -19,7 +19,7 @@ export default function CompteNav() {
   const pathname = usePathname();
   const groups = [...new Set(COMPTE_SECTIONS.map((s) => s.group))];
   return (
-    <nav aria-label="Mon compte" className="lg:sticky lg:top-24 lg:self-start">
+    <nav aria-label="Mon compte" className="hidden lg:sticky lg:top-24 lg:block lg:self-start">
       <Link href="/dashboard" className="mb-6 flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground">
         <span aria-hidden="true">←</span> Retour à l&apos;espace client
       </Link>

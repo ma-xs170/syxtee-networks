@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Key, LockKey, PlugsConnected, ShareNetwork, Trash, UserCircle } from "@/components/icons";
+import { Key, LockKey, PlugsConnected, ShareNetwork, SignOut, Trash, UserCircle } from "@/components/icons";
+import { signOut } from "@/app/(auth)/actions";
+import InstallCard from "@/components/pwa/InstallApp";
+import { ThemeRow } from "@/components/ThemeToggle";
 import { listConnections } from "@/lib/chat/providers";
 import { authErrorMessage } from "@/lib/auth/errors";
 import { getProfile, requireUser } from "@/lib/auth/dal";
@@ -35,7 +38,53 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
           {error}
         </p>
       )}
-      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {/* Téléphone : une liste groupée, grandes lignes tactiles (la grille de cartes est pour tablette et ordinateur). */}
+      <div className="grid gap-6 sm:hidden">
+        <InstallCard />
+        <ul className="overflow-hidden rounded-2xl border border-line bg-surface">
+          {cards
+            .filter((c) => !c.danger)
+            .map((c) => (
+              <li key={c.href} className="border-b border-line last:border-b-0">
+                <Link href={c.href} className="flex min-h-[4.25rem] items-center gap-4 px-4 py-3 transition-colors active:bg-foreground/10">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-line">
+                    <c.Icon size={20} aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[15px] font-medium">{c.title}</span>
+                    <span data-sensitive={c.title === "Sécurité" ? "" : undefined} className="mt-0.5 block truncate font-mono text-xs text-muted">
+                      {c.state}
+                    </span>
+                  </span>
+                  <span aria-hidden="true" className="text-muted">
+                    ›
+                  </span>
+                </Link>
+              </li>
+            ))}
+          <li>
+            <ThemeRow className="flex min-h-14 w-full items-center gap-4 border-t border-line px-4 py-3 text-left text-[15px] font-medium transition-colors active:bg-foreground/10" />
+          </li>
+        </ul>
+        <ul className="overflow-hidden rounded-2xl border border-line bg-surface">
+          <li className="border-b border-line">
+            <form action={signOut}>
+              <button type="submit" className="flex min-h-14 w-full items-center gap-4 px-4 py-3 text-left text-[15px] font-medium transition-colors active:bg-foreground/10">
+                <SignOut size={20} aria-hidden="true" className="shrink-0 text-muted" />
+                Se déconnecter
+              </button>
+            </form>
+          </li>
+          <li>
+            <Link href="/compte/supprimer" className="flex min-h-14 items-center gap-4 px-4 py-3 text-[15px] font-medium text-red-300 transition-colors active:bg-foreground/10">
+              <Trash size={20} aria-hidden="true" className="shrink-0" />
+              Supprimer mon compte
+            </Link>
+          </li>
+        </ul>
+      </div>
+
+      <ul className="hidden grid-cols-1 gap-4 sm:grid sm:grid-cols-2">
         {cards.map((c) => (
           <li key={c.href}>
             <Link

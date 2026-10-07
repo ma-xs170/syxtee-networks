@@ -56,7 +56,6 @@ const GROUPS: Group[] = [
     title: "Mon espace",
     items: [
       { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },
-      { label: "Paramètres", href: "/dashboard/parametres", icon: SlidersHorizontal },
     ],
   },
 ];
@@ -135,6 +134,7 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
   const links: { label: string; href: string }[] = [
     { label: "Mon compte", href: "/compte" },
     { label: "Abonnement", href: "/dashboard/abonnement" },
+    { label: "Paramètres", href: "/dashboard/parametres" },
     ...(admin ? [{ label: "Administration", href: "/admin" }] : []),
   ];
   const item = "block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-foreground/10";

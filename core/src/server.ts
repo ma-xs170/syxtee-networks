@@ -942,6 +942,14 @@ export function buildServer(d: Deps) {
         preview.stop(dev.userId);
         return { ok: true };
       });
+      // Aperçu vidéo pour un invité (lien d'invitation) : même lecture que pour le compte, avec le secret du lien.
+      app.post("/v1/invite/preview/watch", async (req, reply) => {
+        const b = z.object({ invite: z.string().max(80) }).safeParse(req.body ?? {});
+        const ip = String(req.headers["x-forwarded-for"] ?? req.ip ?? "").split(",")[0].trim();
+        const g = b.success ? await remote.inviteAuth(b.data.invite, ip) : null;
+        if (!g) return reply.code(401).send({ error: "unauthorized" });
+        return preview.watch(g.userId);
+      });
       app.post("/v1/me/link/preview/watch", async (req, reply) => {
         const id = await userId(req, reply);
         if (!id) return;
@@ -949,6 +957,26 @@ export function buildServer(d: Deps) {
         return preview.watch(id);
       });
     }
+    // ── Invitations : un lien donne le contrôle à distance à quelqu'un sans compte (créées par le serveur Vercel, jeton de service) ──
+    app.get("/v1/users/:id/link/invites", { preHandler: service }, async (req) => {
+      const { id } = uuid.parse(req.params);
+      return { invites: await remote.invites(id) };
+    });
+    app.post("/v1/users/:id/link/invites", { preHandler: service }, async (req, reply) => {
+      const { id } = uuid.parse(req.params);
+      const b = z
+        .object({ label: z.string().trim().min(1).max(40), email: z.string().max(254).optional(), level: z.enum(["view", "scenes", "full"]), deviceId: z.uuid().optional(), expiresHours: z.number().positive().max(24 * 365).optional() })
+        .safeParse(req.body ?? {});
+      if (!b.success) return reply.code(400).send({ error: "invalid" });
+      const r = await remote.createInvite(id, b.data);
+      if ("error" in r) return reply.code(r.error === "quota" ? 403 : r.error === "server" ? 500 : r.error === "no_device" ? 404 : 400).send(r);
+      return r;
+    });
+    app.delete("/v1/users/:id/link/invites/:iid", { preHandler: service }, async (req, reply) => {
+      const p = z.object({ id: z.uuid(), iid: z.uuid() }).safeParse(req.params);
+      if (!p.success) return reply.code(400).send({ error: "invalid" });
+      return (await remote.revokeInvite(p.data.id, p.data.iid)) ? { ok: true } : reply.code(404).send({ error: "no_invite" });
+    });
     app.get("/v1/me/link/audit", async (req, reply) => {
       const id = await userId(req, reply);
       if (!id) return;

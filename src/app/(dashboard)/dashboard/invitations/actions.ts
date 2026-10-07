@@ -8,7 +8,7 @@ import { allow } from "@/lib/auth/rateLimit";
 import { CoreRefusal, createInvite, revokeInvite } from "@/lib/core";
 import { remoteInvite } from "@/emails/templates";
 import { sendEmailResult } from "@/lib/email/send";
-import { can } from "@/lib/plans";
+import { can, inviteLimit } from "@/lib/plans";
 import { site } from "@/lib/site";
 
 // Invitations au contrôle à distance : un lien secret donne accès à OBS à quelqu'un qui n'a pas de compte.
@@ -34,12 +34,13 @@ export async function createInviteAction(raw: z.input<typeof input>): Promise<In
   if (email && !z.email().safeParse(email).success) return { error: "Cette adresse email n'est pas valide." };
   const plan = await getPlan();
   if (!can(plan, "relais")) return { error: LOCKED_MESSAGE };
+  if (plan.maxInvites <= 0) return { error: `Les invités ne sont pas inclus dans la formule ${plan.name}.` };
   if (!(await allow(`invite-create:${user.id}`, 20, 3600))) return { error: "Trop d'invitations d'un coup. Réessaie dans une heure." };
   let r;
   try {
-    r = await createInvite(user.id, { label, email, level, deviceId: parsed.data.deviceId || undefined, expiresHours: expiresHours || undefined });
+    r = await createInvite(user.id, { label, email, level, deviceId: parsed.data.deviceId || undefined, expiresHours: expiresHours || undefined, limit: inviteLimit(plan) });
   } catch (e) {
-    if (e instanceof CoreRefusal) return { error: e.code === "quota" ? "Tu as déjà 20 invitations actives. Retires-en une avant d'en créer." : "Invitation refusée." };
+    if (e instanceof CoreRefusal) return { error: e.code === "quota" ? `Limite atteinte : ${plan.maxInvites} invité${plan.maxInvites > 1 ? "s" : ""} au plus avec la formule ${plan.name}. Retires-en un avant d'en ajouter.` : e.code === "forbidden" ? `Les invités ne sont pas inclus dans la formule ${plan.name}.` : "Invitation refusée." };
     console.error("createInvite", e);
     return { error: "Le serveur ne répond pas. Réessaie dans un instant." };
   }

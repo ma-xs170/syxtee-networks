@@ -18,14 +18,14 @@ export const CATALOG: Record<Tier, { name: string; pitch: string; points: string
   paid: {
     name: "Premium",
     pitch: "Tout SYXTEE, pour streamer souvent.",
-    points: ["10 flux, 5 par protocole", "3 directs en même temps", "Statistiques et historique des directs", "Sauvegardes de scènes et Multichat"],
+    points: ["10 flux, 5 par protocole", "3 directs en même temps", "3 invités au contrôle à distance", "Statistiques et historique des directs", "Sauvegardes de scènes et Multichat"],
     prices: { month: { amount: "9,99 €", cents: 999 }, year: { amount: "99 €", cents: 9900 } },
     featured: true,
   },
   extra: {
     name: "Extra",
     pitch: "Pour les équipes et les gros événements.",
-    points: ["Flux illimités", "10 directs en même temps", "Toutes les fonctions Premium"],
+    points: ["Flux illimités", "10 directs en même temps", "5 invités au contrôle à distance", "Toutes les fonctions Premium"],
     prices: { month: { amount: "19,99 €", cents: 1999 }, year: { amount: "199 €", cents: 19900 } },
   },
 };

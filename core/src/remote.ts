@@ -40,7 +40,8 @@ const ACTION_LIMIT = 60;
 /** Volume (fader glissé) : 400 par 10 s et par appareil. */
 const VOLUME_LIMIT = 400;
 const KEEP_BACKUP_VERSIONS = 4;
-const MAX_ACTIVE_INVITES = 20;
+/** Plafond par défaut d'invitations actives si le serveur Vercel n'envoie pas la limite de la formule. */
+const DEFAULT_ACTIVE_INVITES = 3;
 
 /** Droits d'une invitation (migration 0045). Le serveur applique ces règles : l'interface n'est qu'un confort. */
 export type InviteLevel = "view" | "scenes" | "full";
@@ -622,11 +623,14 @@ export function createRemote(o: {
 
     // ── Invitations (invités sans compte) ──
     /** Crée une invitation. Le secret n'est renvoyé qu'ici : seule son empreinte est gardée. */
-    async createInvite(userId: string, i: { label: unknown; email?: unknown; level: unknown; deviceId?: unknown; expiresHours?: unknown }): Promise<{ error: string } | { id: string; token: string; expires_at: string | null }> {
+    async createInvite(userId: string, i: { label: unknown; email?: unknown; level: unknown; deviceId?: unknown; expiresHours?: unknown; limit?: unknown }): Promise<{ error: string } | { id: string; token: string; expires_at: string | null }> {
       const label = text(i.label, 40);
       const level = INVITE_LEVELS.find((l) => l === i.level);
       const email = i.email ? text(i.email, 254).toLowerCase() : null;
       if (!label || !level) return { error: "invalid" };
+      // Limite de la formule (envoyée par le serveur Vercel, qui connaît le compte) : 0 = pas d'invités.
+      const limit = typeof i.limit === "number" && Number.isFinite(i.limit) && i.limit >= 0 ? Math.floor(i.limit) : DEFAULT_ACTIVE_INVITES;
+      if (limit === 0) return { error: "forbidden" };
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "invalid" };
       const hours = typeof i.expiresHours === "number" && i.expiresHours > 0 ? Math.min(i.expiresHours, 24 * 365) : null;
       const deviceId = typeof i.deviceId === "string" && i.deviceId ? i.deviceId : null;
@@ -635,7 +639,7 @@ export function createRemote(o: {
         if (!dev) return { error: "no_device" };
       }
       const { data: active } = await o.db.from("link_invites").select("id").eq("owner_id", userId).is("revoked_at", null);
-      if (Array.isArray(active) && active.length >= MAX_ACTIVE_INVITES) return { error: "quota" };
+      if (Array.isArray(active) && active.length >= limit) return { error: "quota" };
       const token = newInviteToken();
       const expires_at = hours ? new Date(now() + hours * 3_600_000).toISOString() : null;
       const { data, error } = await o.db.from("link_invites").insert({ owner_id: userId, device_id: deviceId, label, email, level, token_hash: hashToken(token), expires_at }).select("id").single();

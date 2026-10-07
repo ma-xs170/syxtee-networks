@@ -965,11 +965,11 @@ export function buildServer(d: Deps) {
     app.post("/v1/users/:id/link/invites", { preHandler: service }, async (req, reply) => {
       const { id } = uuid.parse(req.params);
       const b = z
-        .object({ label: z.string().trim().min(1).max(40), email: z.string().max(254).optional(), level: z.enum(["view", "scenes", "full"]), deviceId: z.uuid().optional(), expiresHours: z.number().positive().max(24 * 365).optional() })
+        .object({ label: z.string().trim().min(1).max(40), email: z.string().max(254).optional(), level: z.enum(["view", "scenes", "full"]), deviceId: z.uuid().optional(), expiresHours: z.number().positive().max(24 * 365).optional(), limit: z.number().int().min(0).optional() })
         .safeParse(req.body ?? {});
       if (!b.success) return reply.code(400).send({ error: "invalid" });
       const r = await remote.createInvite(id, b.data);
-      if ("error" in r) return reply.code(r.error === "quota" ? 403 : r.error === "server" ? 500 : r.error === "no_device" ? 404 : 400).send(r);
+      if ("error" in r) return reply.code(r.error === "quota" || r.error === "forbidden" ? 403 : r.error === "server" ? 500 : r.error === "no_device" ? 404 : 400).send(r);
       return r;
     });
     app.delete("/v1/users/:id/link/invites/:iid", { preHandler: service }, async (req, reply) => {

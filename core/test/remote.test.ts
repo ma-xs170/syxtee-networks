@@ -478,6 +478,8 @@ test("invitation : lien secret sans compte, droits appliqués par le serveur, r�
   assert.deepEqual(await remote.createInvite(U, { label: "", level: "view" }), { error: "invalid" });
   assert.deepEqual(await remote.createInvite(U, { label: "Modo", level: "root" }), { error: "invalid" });
   assert.deepEqual(await remote.createInvite(U, { label: "Modo", level: "view", email: "pas-un-email" }), { error: "invalid" });
+  // Formule sans invités : refusé ; plafond atteint : refusé (la limite vient de la formule, connue du serveur Vercel).
+  assert.deepEqual(await remote.createInvite(U, { label: "Modo", level: "view", limit: 0 }), { error: "forbidden" });
   const inv = await remote.createInvite(U, { label: "Modo Léa", email: "Lea@Example.com", level: "scenes", expiresHours: 24 });
   assert.ok("token" in inv && isInviteToken(inv.token));
   const secret = "token" in inv ? inv.token : "";
@@ -524,6 +526,8 @@ test("invitation : lien secret sans compte, droits appliqués par le serveur, r�
   assert.ok(!JSON.stringify(list).includes(secret) && !JSON.stringify(list).includes("token_hash"));
 
   // Un autre compte ne peut pas révoquer ; le propriétaire oui : l'invité est coupé sur le champ.
+  assert.deepEqual(await remote.createInvite(U, { label: "Autre", level: "view", limit: 1 }), { error: "quota" });
+  assert.ok("token" in (await remote.createInvite(U, { label: "Autre", level: "view", limit: 2 })));
   assert.equal(await remote.revokeInvite(OTHER, list[0].id), false);
   assert.equal(await remote.revokeInvite(U, list[0].id), true);
   assert.equal(await g.closed, 4005);

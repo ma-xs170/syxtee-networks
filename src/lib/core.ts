@@ -148,6 +148,6 @@ export async function listInvites(userId: string) {
   return (await core<{ invites: Invite[] }>(`/v1/users/${userId}/link/invites`))?.invites ?? [];
 }
 /** Crée l'invitation ; le secret du lien n'est renvoyé qu'ici (le Core n'en garde que l'empreinte). */
-export const createInvite = (userId: string, body: { label: string; email?: string; level: InviteLevel; deviceId?: string; expiresHours?: number }) =>
+export const createInvite = (userId: string, body: { label: string; email?: string; level: InviteLevel; deviceId?: string; expiresHours?: number; limit: number }) =>
   core<{ id: string; token: string; expires_at: string | null }>(`/v1/users/${userId}/link/invites`, "POST", body);
 export const revokeInvite = (userId: string, inviteId: string) => core<{ ok: true }>(`/v1/users/${userId}/link/invites/${inviteId}`, "DELETE");

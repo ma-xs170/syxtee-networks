@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import PhoneMockup from "../PhoneMockup";
 import PocketRouter from "../illustrations/PocketRouter";
 import RelayServer from "../illustrations/RelayServer";
 import { CREATE_RELAY_HREF, Container } from "../ui";
@@ -55,17 +56,27 @@ export default function NumberedFeatures() {
 
       <Row
         n="02"
-        title="Tu pilotes OBS depuis un onglet."
-        text="Change de scène depuis ton téléphone, au fond du jardin. Comme devant ton écran : aperçu du programme, sources, mixeur audio et contrôle du direct."
-        tags="Scènes · Aperçu du programme · Sources · Mixeur audio"
+        title="Ton OBS dans ta poche."
+        text="Mets SYXTEE sur l'écran d'accueil de ton téléphone. Un toucher, et tu changes de scène, règles le son et lances le direct, en plein écran. L'écran reste allumé."
+        tags="Scènes · Aperçu du programme · Mixeur audio · Écran d'accueil"
         flip
         actions={
-          <Link href="/controle-a-distance" className="btn btn-secondary">
-            Découvrir le contrôle à distance
-          </Link>
+          <>
+            <Link href="/application" className="btn btn-primary">
+              Mettre sur l&apos;écran d&apos;accueil
+            </Link>
+            <Link href="/controle-a-distance" className="btn btn-secondary">
+              Voir le contrôle
+            </Link>
+          </>
         }
       >
-        <RemoteObsMock />
+        <div className="relative pb-12 pr-[24%]">
+          <RemoteObsMock />
+          <div className="absolute -bottom-2 right-0 w-[36%] max-w-[15rem]">
+            <PhoneMockup src="/images/remote/controle-mobile.png" alt="Contrôle à distance sur téléphone : scènes, aperçu du programme et direct" sizes="240px" />
+          </div>
+        </div>
       </Row>
 
       <Row

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Overview from "@/components/dashboard/Overview";
 import { DashPage } from "@/components/dashboard/ui";
+import InstallCard from "@/components/pwa/InstallApp";
 import { getPlan } from "@/lib/auth/plan";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { publicCoreUrl } from "@/lib/core";
@@ -15,6 +16,7 @@ export default async function DashboardPage() {
   const initial = await getOverview(user.id, profileRow!, "7d", plan);
   return (
     <DashPage>
+      <InstallCard className="mb-4" />
       <Overview initial={initial} coreUrl={publicCoreUrl} />
     </DashPage>
   );

@@ -3,6 +3,7 @@ import { Figtree, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/site";
 import { THEME_SCRIPT } from "@/components/ThemeToggle";
+import PwaRegister from "@/components/pwa/PwaRegister";
 
 
 // Charte noir et blanc : Figtree (textes et titres) et JetBrains Mono (libellés techniques).
@@ -56,7 +57,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <PwaRegister />
+      </body>
     </html>
   );
 }

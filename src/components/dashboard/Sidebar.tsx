@@ -239,7 +239,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
 // Caméra = caméras externes et SYXTEE Cam ; OBS = liste des postes, plugin, et l'interface d'un OBS (/controle-a-distance/<poste>).
 const TABS: (Item & { also?: string[] })[] = [
   { label: "Accueil", href: "/dashboard", icon: SquaresFour },
-  { label: "Caméra", href: "/dashboard/dji", icon: VideoCamera, feature: "dji", also: ["/dashboard/cam"] },
+  { label: "Caméra", href: "/dashboard/cam", icon: VideoCamera, feature: "cam" },
   { label: "OBS", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais", also: ["/dashboard/obs", "/dashboard/plugin", "/controle-a-distance"] },
 ];
 

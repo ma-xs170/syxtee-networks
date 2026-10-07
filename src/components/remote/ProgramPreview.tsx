@@ -67,7 +67,7 @@ export default function ProgramPreview({ sinkRef, program, live, title = "Progra
 
   return (
     <div className="relative h-full w-full" data-live={live} data-tag={tag}>
-      <canvas ref={canvas} role="img" aria-label={`${title} : ${program}`} className={`h-full w-full object-contain ${hasFrame ? "opacity-100" : "opacity-0"}`} />
+      <canvas ref={canvas} role="img" aria-label={`${title} : ${program}`} className={`absolute inset-0 h-full w-full object-contain ${hasFrame ? "opacity-100" : "opacity-0"}`} />
       {!hasFrame && <div className="absolute inset-0 grid place-items-center text-[13px] text-neutral-400">En attente de l&apos;image…</div>}
     </div>
   );

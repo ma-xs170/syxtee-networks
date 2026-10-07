@@ -70,6 +70,15 @@ const panelTitle = "flex items-baseline gap-2 border-b border-[#262626] px-3 py-
 const flat = "inline-flex items-center justify-center whitespace-nowrap rounded border border-[#2e2e2e] bg-[#141414] text-[13px] text-neutral-100 hover:bg-[#1d1d1d] disabled:opacity-40";
 const field = "h-7 rounded border border-[#2e2e2e] bg-[#111] px-2 text-[13px] text-neutral-100 disabled:opacity-40";
 
+/** Petit retour tactile (Android) sur les actions du direct. Silencieux ailleurs. */
+const buzz = (ms = 12) => {
+  try {
+    navigator.vibrate?.(ms);
+  } catch {
+    // non pris en charge
+  }
+};
+
 /** `demoToken` : pages de démo des captures (le jeton de session n'est pas demandé). */
 export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: string; deviceId: string; demoToken?: string }) {
   const [scenes, setScenes] = useState<string[]>([]);
@@ -322,6 +331,25 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
     };
   }, [ready, inputNames, call]);
 
+  // Écran allumé tant que le contrôle est ouvert (téléphone posé ou en main pendant le direct) ; redemandé au retour sur la page.
+  useEffect(() => {
+    let lock: WakeLockSentinel | null = null;
+    const get = async () => {
+      try {
+        lock = (await navigator.wakeLock?.request("screen")) ?? null;
+      } catch {
+        // refusé (économie de batterie) : l'écran s'éteindra normalement
+      }
+    };
+    const onVisible = () => document.visibilityState === "visible" && void get();
+    void get();
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      void lock?.release().catch(() => {});
+    };
+  }, []);
+
   // Fenêtre de confirmation du direct.
   useEffect(() => {
     const d = dialog.current;
@@ -346,6 +374,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
   }, [deviceOpen]);
 
   function pick(scene: string) {
+    buzz();
     if (studioMode) {
       setPreview(scene);
       void run("SetCurrentPreviewScene", { sceneName: scene });
@@ -385,7 +414,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
                     disabled={!ready}
                     aria-pressed={studioMode ? isPreview : isProgram}
                     onClick={() => pick(sc)}
-                    className={`flex min-h-9 w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[13px] disabled:opacity-50 ${isProgram ? "bg-[#2f4fc4] text-white" : isPreview ? "outline outline-1 -outline-offset-1 outline-[#2f4fc4]" : "text-neutral-300 hover:bg-[#161616]"}`}
+                    className={`flex min-h-9 w-full items-center gap-2 rounded px-2 py-1.5 text-left max-lg:min-h-12 text-[13px] disabled:opacity-50 ${isProgram ? "bg-[#2f4fc4] text-white" : isPreview ? "outline outline-1 -outline-offset-1 outline-[#2f4fc4]" : "text-neutral-300 hover:bg-[#161616]"}`}
                   >
                     <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${isProgram ? "bg-white" : "bg-neutral-600"}`} />
                     <span className="min-w-0 flex-1 break-words leading-tight">{sc}</span>
@@ -475,7 +504,8 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
                       void run("SetInputVolume", { inputName: i.name, inputVolumeDb: db });
                     }}
                     style={{ writingMode: "vertical-lr", direction: "rtl", width: "1.5rem" }}
-                    className="cursor-pointer accent-white"
+                    data-fader
+                    className="cursor-pointer accent-white max-lg:!w-9"
                   />
                   <div className="relative w-1.5 overflow-hidden rounded-sm bg-[#1a1a1a]" role="meter" aria-label={`Niveau ${i.name}`} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={Math.round(levels[i.name] ?? -60)}>
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-emerald-600 via-emerald-500 to-red-500" style={{ height: `${i.muted ? 0 : dbToPct(levels[i.name] ?? -100)}%`, transition: "height 50ms linear" }} />
@@ -483,7 +513,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
                 </div>
                 <span className="mt-1 text-[12px] tabular-nums text-neutral-300">{Number.isFinite(i.db) && i.db > -100 ? i.db.toFixed(1) : "-inf"}</span>
                 <div className="mt-1 flex gap-1">
-                  <button type="button" aria-pressed={i.muted} aria-label={`${i.muted ? "Réactiver" : "Couper"} ${i.name}`} title={i.muted ? "Réactiver le micro" : "Couper le micro"} onClick={() => run("SetInputMute", { inputName: i.name, inputMuted: !i.muted })} className={`${flat} size-7 ${i.muted ? "!border-red-700 !text-red-400" : ""}`}>
+                  <button type="button" aria-pressed={i.muted} aria-label={`${i.muted ? "Réactiver" : "Couper"} ${i.name}`} title={i.muted ? "Réactiver le micro" : "Couper le micro"} onClick={() => (buzz(), run("SetInputMute", { inputName: i.name, inputMuted: !i.muted }))} className={`${flat} size-7 ${i.muted ? "!border-red-700 !text-red-400" : ""}`}>
                     <MicIcon off={i.muted} />
                   </button>
                   <button
@@ -559,10 +589,10 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
   );
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-black text-[13px] text-neutral-100">
-      <header className="flex h-10 shrink-0 items-center justify-between border-b border-[#262626] px-3.5">
+    <div className="flex h-dvh flex-col overflow-hidden overscroll-none bg-black pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] text-[13px] text-neutral-100 [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [touch-action:manipulation]">
+      <header className="flex h-11 shrink-0 items-center justify-between border-b border-[#262626] px-3.5">
         <h1 className="text-[14px] font-medium">Contrôle à distance</h1>
-        <Link href="/dashboard/controle-a-distance" className="inline-flex h-7 items-center gap-1.5 rounded border border-[#2e2e2e] px-2.5 text-[13px] text-neutral-300 hover:bg-[#161616]">
+        <Link href="/dashboard/controle-a-distance" className="inline-flex h-8 items-center gap-1.5 rounded border border-[#2e2e2e] px-3 text-[13px] text-neutral-300 hover:bg-[#161616] max-lg:h-9">
           <span aria-hidden="true">←</span> Retour
         </Link>
       </header>
@@ -653,8 +683,8 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
       )}
 
       {/* Programme (et, en Mode Studio, aperçu à gauche) */}
-      <main className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-        <section aria-label="Programme" className="relative grid min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-md border border-[#262626] bg-black max-lg:aspect-video max-lg:h-auto lg:h-[55%]">
+      <main className="flex min-h-0 flex-1 flex-col gap-2 p-2 max-lg:landscape:flex-row">
+        <section aria-label="Programme" className="relative grid min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-md border border-[#262626] bg-black max-lg:aspect-[16/10.5] max-lg:h-auto max-lg:landscape:aspect-auto max-lg:landscape:h-full max-lg:landscape:w-[56%] max-lg:landscape:shrink-0 lg:h-[55%]">
           <div className="flex items-center justify-between gap-2 px-3 py-2">
             {programLabel}
             <div className="flex shrink-0 gap-1.5">
@@ -678,19 +708,17 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
           </div>
           <div className={`min-h-0 ${studioMode ? "grid grid-cols-2 gap-2 px-2 pb-2" : "px-2 pb-2"}`}>
             {studioMode && (
-              <div className="relative min-h-0">
+              <div className="relative h-full min-h-0">
                 <span className="absolute left-2 top-1 z-10 text-[12px] text-neutral-400">Aperçu : {preview || "—"}</span>
                 <ProgramPreview sinkRef={previewSink} program={preview} live={false} title="Aperçu" tag="APERÇU" />
               </div>
             )}
-            <div className="min-h-0">
+            <div className="h-full min-h-0">
               {previewOn && pmode.mode === "jpeg" ? (
-                <div className="flex h-full flex-col">
-                  <div className="min-h-0 flex-1">
-                    <ProgramPreview sinkRef={frameSink} program={program} live={streaming} title="Programme" tag={streaming ? "" : "HORS DIRECT"} />
-                  </div>
-                  <p role="status" className="text-[12px] text-neutral-500">
-                    Aperçu en images, sans son{pmode.reason ? ` : ${pmode.reason}` : "."} La vidéo avec le son revient dès que possible.
+                <div className="relative h-full">
+                  <ProgramPreview sinkRef={frameSink} program={program} live={streaming} title="Programme" tag={streaming ? "" : "HORS DIRECT"} />
+                  <p role="status" className="absolute bottom-1 left-1 right-1 truncate rounded bg-black/70 px-2 py-0.5 text-center text-[12px] text-neutral-400">
+                    Aperçu en images, sans son{pmode.reason ? ` : ${pmode.reason}` : ""}
                   </p>
                 </div>
               ) : previewOn ? (
@@ -707,7 +735,8 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
           </div>
         </section>
 
-        {/* Mobile : panneaux en onglets */}
+        {/* Mobile : panneaux en onglets (en paysage : à droite de l'aperçu) */}
+        <div className="flex min-h-0 flex-1 flex-col gap-2 lg:contents">
         <nav role="tablist" aria-label="Panneaux" className="grid shrink-0 grid-cols-4 gap-1 lg:hidden">
           {(
             [
@@ -717,7 +746,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
               ["controls", "Contrôles"],
             ] as const
           ).map(([id, text]) => (
-            <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={`h-10 rounded border text-[13px] ${tab === id ? "border-[#2f4fc4] bg-[#2f4fc4] text-white" : "border-[#2e2e2e] bg-[#141414] text-neutral-300"}`}>
+            <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={`h-11 rounded border text-[13px] ${tab === id ? "border-[#2f4fc4] bg-[#2f4fc4] text-white" : "border-[#2e2e2e] bg-[#141414] text-neutral-300"}`}>
               {text}
             </button>
           ))}
@@ -728,6 +757,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
           {sourcesPanel}
           {mixerPanel}
           {controlsPanel}
+        </div>
         </div>
       </main>
 

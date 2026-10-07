@@ -172,7 +172,7 @@ export default function ProgramVideo({
 
   return (
     <div className="relative h-full w-full">
-      <video ref={video} autoPlay playsInline muted aria-label={`Programme : ${program}`} className={`h-full w-full object-contain ${phase === "playing" ? "opacity-100" : "opacity-0"}`} />
+      <video ref={video} autoPlay playsInline muted aria-label={`Programme : ${program}`} className={`absolute inset-0 h-full w-full object-contain ${phase === "playing" ? "opacity-100" : "opacity-0"}`} />
       {phase === "connecting" && <div className="absolute inset-0 grid place-items-center text-[13px] text-neutral-400">Connexion à l&apos;aperçu…</div>}
       {phase === "failed" && (
         <div role="alert" className="absolute inset-0 grid place-items-center text-center text-[13px] text-neutral-300">

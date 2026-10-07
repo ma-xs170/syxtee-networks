@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import InvitesManager from "@/components/dashboard/InvitesManager";
+import WorkspaceSettings from "@/components/dashboard/WorkspaceSettings";
 import { DashPage } from "@/components/dashboard/ui";
 import { getProfile } from "@/lib/auth/dal";
 import { getPlan } from "@/lib/auth/plan";
@@ -25,6 +26,7 @@ export default async function MembersPage() {
         owner={{ name, email: owner.user.email ?? "", avatar: profile?.avatar_url ?? null, since: owner.user.created_at ?? null }}
         team={{ name: owner.workspace.name, role: owner.workspace.role, meId: owner.user.id, members: team.members, pending: team.invites }}
       />
+      <WorkspaceSettings id={owner.workspace.id} name={owner.workspace.name} role={owner.workspace.role} />
     </DashPage>
   );
 }

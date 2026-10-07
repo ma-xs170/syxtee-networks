@@ -169,6 +169,48 @@ export async function leaveWorkspaceAction(): Promise<WorkspaceState> {
   return {};
 }
 
+/** Renomme un espace (propriétaire ou administrateur de cet espace). */
+export async function renameWorkspaceAction(raw: { id: string; name: string }): Promise<WorkspaceState> {
+  await requireUser("/dashboard/invitations");
+  const ws = (await listWorkspaces()).find((w) => w.id === raw.id);
+  if (!ws) return { error: "Cet espace n'existe plus ou tu n'en fais plus partie." };
+  if (ws.role === "member") return { error: "Seuls le propriétaire et les administrateurs renomment l'espace." };
+  const parsed = nameSchema.safeParse(raw.name);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Nom invalide." };
+  if (!hasAdmin) return { error: "Indisponible pour le moment." };
+  const db = createAdminClient();
+  const { error } = await db.from("workspaces").update({ name: parsed.data }).eq("id", ws.id);
+  if (error) {
+    console.error("renameWorkspace", error.message);
+    return { error: "Impossible de renommer l'espace pour le moment." };
+  }
+  await db.auth.admin.updateUserById(ws.id, { user_metadata: { workspace: true, name: parsed.data } }).catch(() => {});
+  revalidatePath("/dashboard", "layout");
+  return {};
+}
+
+/**
+ * Supprime un espace pour de bon (propriétaire seulement, nom retapé). Le compte technique est supprimé : l'espace, ses membres,
+ * ses invitations, ses flux, ses OBS reliés et ses sauvegardes partent avec lui (cascade). Les membres retrouvent leur espace personnel.
+ */
+export async function deleteWorkspaceAction(raw: { id: string; confirm: string }): Promise<WorkspaceState> {
+  const user = await requireUser("/dashboard/invitations");
+  const ws = (await listWorkspaces()).find((w) => w.id === raw.id);
+  if (!ws) return { error: "Cet espace n'existe plus ou tu n'en fais plus partie." };
+  if (ws.role !== "owner") return { error: "Seul le propriétaire supprime l'espace." };
+  if (raw.confirm.trim().toLowerCase() !== ws.name.trim().toLowerCase()) return { error: "Retape le nom exact de l'espace pour confirmer." };
+  if (!hasAdmin) return { error: "Indisponible pour le moment." };
+  if (!(await allow(`ws-delete:${user.id}`, 5, 3600))) return { error: "Trop de suppressions. Réessaie dans une heure." };
+  const { error } = await createAdminClient().auth.admin.deleteUser(ws.id);
+  if (error) {
+    console.error("deleteWorkspace", error.message);
+    return { error: "Impossible de supprimer l'espace pour le moment. Réessaie dans un instant." };
+  }
+  if ((await getActiveWorkspace())?.id === ws.id) await setCookie(null);
+  revalidatePath("/dashboard", "layout");
+  return {};
+}
+
 /** Accepte une invitation reçue par email. Le compte connecté doit avoir l'adresse invitée. */
 export async function acceptWorkspaceInviteAction(token: string): Promise<WorkspaceState> {
   const user = await requireUser(`/rejoindre/${token}`);

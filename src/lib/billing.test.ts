@@ -6,9 +6,9 @@ const end = 1_800_000_000; // fin de période (s)
 
 test("MRR : par formule, annuels ramenés au mois", () => {
   assert.equal(mrrCents({}), 0);
-  assert.equal(mrrCents({ basic: { month: 2 } }), 1198);
-  assert.equal(mrrCents({ paid: { year: 12 } }), 14900);
-  assert.equal(mrrCents({ basic: { month: 1 }, paid: { month: 1, year: 1 }, extra: { month: 1 } }), Math.round(599 + 1499 + 14900 / 12 + 3499));
+  assert.equal(mrrCents({ basic: { month: 2 } }), 998);
+  assert.equal(mrrCents({ paid: { year: 12 } }), 9900);
+  assert.equal(mrrCents({ basic: { month: 1 }, paid: { month: 1, year: 1 }, extra: { month: 1 } }), Math.round(499 + 999 + 9900 / 12 + 1999));
 });
 
 test("abonnement actif ou en relance : formule du prix, jusqu'à la fin de période + marge", () => {

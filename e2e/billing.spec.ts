@@ -129,7 +129,7 @@ test("page Abonnement : offres en Gratuit, gestion une fois abonné", async ({ p
   await expect(page).toHaveURL(/\/dashboard$/);
   await page.goto("/dashboard/abonnement");
   for (const name of ["Basique", "Premium", "Extra"]) await expect(page.getByRole("button", { name: `Choisir ${name}` })).toBeVisible();
-  await expect(page.getByText("14,99 €")).toBeVisible();
+  await expect(page.getByText("9,99 €")).toBeVisible();
   await page.getByRole("radio", { name: /Annuel/ }).click();
   await expect(page.getByText("149 €", { exact: true })).toBeVisible();
 
@@ -138,7 +138,7 @@ test("page Abonnement : offres en Gratuit, gestion une fois abonné", async ({ p
   await expect(page.getByRole("button", { name: "Gérer mon abonnement" })).toBeVisible();
   await expect(page.getByText(/Prochain prélèvement le/)).toBeVisible();
   await expect(page.getByRole("button", { name: /^Choisir / })).toHaveCount(0);
-  await expect(page.getByText(/Premium · Mensuel · 14,99 €/)).toBeVisible();
+  await expect(page.getByText(/Premium · Mensuel · 9,99 €/)).toBeVisible();
 });
 
 test("déjà connecté : « Choisir » sur /offres suit `next` au lieu de renvoyer sur le dashboard", async ({ page }) => {

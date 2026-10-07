@@ -11,22 +11,22 @@ type Price = { amount: string; cents: number };
 export const CATALOG: Record<Tier, { name: string; pitch: string; points: string[]; prices: Record<Interval, Price>; featured?: boolean }> = {
   basic: {
     name: "Basique",
-    pitch: "Pour débuter en IRL avec un seul setup.",
-    points: ["1 flux SRTLA ou RTMP", "1 flux en direct", "Santé du flux"],
-    prices: { month: { amount: "5,99 €", cents: 599 }, year: { amount: "59 €", cents: 5900 } },
+    pitch: "Pour démarrer : un flux fiable et le contrôle à distance.",
+    points: ["1 flux SRTLA ou RTMP", "1 direct à la fois", "Contrôle à distance d'OBS", "Santé du flux"],
+    prices: { month: { amount: "4,99 €", cents: 499 }, year: { amount: "49 €", cents: 4900 } },
   },
   paid: {
     name: "Premium",
     pitch: "Tout SYXTEE, pour streamer souvent.",
-    points: ["5 flux par protocole : SRTLA, RTMP", "3 flux en même temps", "Aperçu, statistiques, historique des lives", "Caméras externes (DJI, GoPro)"],
-    prices: { month: { amount: "14,99 €", cents: 1499 }, year: { amount: "149 €", cents: 14900 } },
+    points: ["10 flux, 5 par protocole", "3 directs en même temps", "Statistiques et historique des directs", "Sauvegardes de scènes et Multichat"],
+    prices: { month: { amount: "9,99 €", cents: 999 }, year: { amount: "99 €", cents: 9900 } },
     featured: true,
   },
   extra: {
     name: "Extra",
     pitch: "Pour les équipes et les gros événements.",
-    points: ["Relais illimités", "10 flux en même temps", "Toutes les fonctions Premium"],
-    prices: { month: { amount: "34,99 €", cents: 3499 }, year: { amount: "349 €", cents: 34900 } },
+    points: ["Flux illimités", "10 directs en même temps", "Toutes les fonctions Premium"],
+    prices: { month: { amount: "19,99 €", cents: 1999 }, year: { amount: "199 €", cents: 19900 } },
   },
 };
 

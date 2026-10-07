@@ -42,7 +42,7 @@ export default function SharedSpaceWire({ className = "h-full w-full", animated 
         {/* L'espace */}
         <rect x={200} y={112} width={120} height={76} rx={12} strokeWidth={1.75} fill="currentColor" fillOpacity={0.05} />
         {/* Logo SYXTEE au centre de l'espace (teinté par le thème, comme dans la barre du site) */}
-        <image href="/logo-400.png" x={244} y={129} width={32} height={45} preserveAspectRatio="xMidYMid meet" className="ink-img" />
+        <image href="/logo-400.png" x={248} y={133} width={24} height={34} preserveAspectRatio="xMidYMid meet" className="ink-img" />
 
         {/* Équipe */}
         {PEOPLE.map((p) => (

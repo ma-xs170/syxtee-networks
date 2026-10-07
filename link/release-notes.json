@@ -1,7 +1,10 @@
 {
   "0.4.0": [
-    "OBS est piloté par le plugin lui-même : plus rien à activer dans OBS",
-    "Fenêtre SYXTEE Studio : réglages complets, sauvegarde automatique, scène de direct avec correction en un clic",
+    "OBS est piloté par le plugin lui-même : plus rien à activer ni à configurer dans OBS",
+    "Contrôle à distance : scènes, sources, mixeur, direct, enregistrement, profils et collections réels, aperçu vidéo avec le son",
+    "Source « Flux SYXTEE » : tous tes flux en cases à cocher, noms synchronisés avec ton compte",
+    "Sauvegardes légères : un fichier n'est stocké qu'une fois, importable depuis le site",
+    "Bascule automatique : déclenchement par flux (coupure, débit très bas, sensible)",
     "Renouvellement automatique de la connexion"
   ]
 }

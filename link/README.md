@@ -59,3 +59,16 @@ QT_QPA_PLATFORM=offscreen ui-shot 47833 <jeton> <dossier>
 ## Installer le .pkg (macOS, signature ad hoc)
 
 Sans compte Apple Developer, le `.pkg` n'est pas notarisé : clic droit sur le fichier, Ouvrir, Ouvrir quand même (ou Réglages Système > Confidentialité et sécurité > « Ouvrir quand même » juste après un premier refus). Il s'installe sans mot de passe dans `~/Library/Application Support/obs-studio/plugins`. Quitter puis rouvrir OBS : le menu **SYXTEE** apparaît dans la barre.
+
+## Publier une version (macOS)
+
+`npm run plugin` écrit dans `~/syxtee-link-plugin` : `SYXTEE-Link-mac.pkg` et `manifest.json` (version, date, nouveautés, SHA-256). Les poser dans `DATA_DIR/downloads` du serveur (`/opt/syxtee/data/downloads`) : le Core les sert (`/dl/SYXTEE-Link-mac.pkg`, `GET /v1/plugin/latest`), la page « Plugin OBS » et la carte « Mes OBS » affichent « à jour » ou « mise à jour disponible ».
+
+## Windows (bêta, non essayé)
+
+`plugin/CMakeLists.txt` et `github-workflow-windows.yml` (à copier dans `.github/workflows/`) décrivent la construction du module, de l'agent (.exe autonome) et de l'installeur. Rien n'a pu être essayé sans machine Windows : à lancer à la main et à corriger. Une fois `SYXTEE-Link-windows.exe` obtenu, le poser à côté du `.pkg` et ajouter `"windows": {"file": "SYXTEE-Link-windows.exe", "sha256": "…", "beta": true}` au manifeste.
+
+## Essais sans OBS
+
+- `scripts/build-obsctl-host.sh` construit le vrai `plugin/qt/obsctl.cpp` sur un faux OBS en mémoire ; `OBSCTL_HOST=<exécutable> npm test` lance alors les essais du pilotage, de l'aperçu WHIP, des sources de flux (le comportement réel d'OBS, rendu GPU compris, n'est PAS vérifié par ce faux).
+- Du côté du site : `scripts/remote-ui-check.mjs` (interface de contrôle contre un faux Core) et `scripts/preview-chain-check.mjs` (chaîne WHIP → MediaMTX → WHEP avec un vrai MediaMTX).

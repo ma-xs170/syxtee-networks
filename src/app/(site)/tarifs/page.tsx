@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Check } from "@/components/icons";
+import ComingSoon from "@/components/plans/ComingSoon";
 import { Container } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Tarifs",
-  description: "Trois formules, à partir de 4,99 € par mois. Compare les fonctions de chaque formule.",
+  description: "Les tarifs de SYXTEE arrivent bientôt : trois formules, sans engagement. En attendant, l'accès se fait sur demande.",
   alternates: { canonical: "/tarifs" },
 };
 
@@ -81,15 +82,15 @@ export default function TarifsPage() {
         <Container>
           <h1 className="h-hero mx-auto max-w-3xl">Des tarifs simples.</h1>
           <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
-            Trois formules, à partir de <strong>4,99 € par mois</strong>. Sans engagement : tu changes ou tu arrêtes quand tu veux.
+            Trois formules arrivent, <strong>sans engagement</strong> : tu changeras ou tu arrêteras quand tu veux. Les prix seront dévoilés à l&apos;ouverture au public.
           </p>
-          <p className="mx-auto mt-2 text-sm text-muted">TVA non applicable, article 293 B du CGI.</p>
         </Container>
       </section>
 
       <section className="py-16 sm:py-20">
         <Container>
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <ComingSoon full>
+          <div className="grid grid-cols-1 gap-5 p-1 lg:grid-cols-3">
             {tiers.map((t) => (
               <article key={t.id} className={`flex flex-col rounded-2xl border p-7 ${t.highlight ? "border-foreground/40 bg-surface" : "border-line"}`}>
                 <div className="flex items-center justify-between">
@@ -118,13 +119,16 @@ export default function TarifsPage() {
               </article>
             ))}
           </div>
+          </ComingSoon>
         </Container>
       </section>
 
       <section className="border-t border-line py-16 sm:py-20">
         <Container className="max-w-4xl">
           <h2 className="h-section">Comparer les formules</h2>
-          <div className="mt-10 overflow-x-auto">
+          <div className="mt-10">
+          <ComingSoon>
+          <div className="overflow-x-auto">
             <table className="w-full min-w-[34rem] text-left text-sm">
               <thead>
                 <tr className="border-b border-line">
@@ -150,6 +154,8 @@ export default function TarifsPage() {
                 </tbody>
               ))}
             </table>
+          </div>
+          </ComingSoon>
           </div>
           <p className="mt-8 text-sm text-muted">
             L&apos;ouverture au public arrive bientôt : en attendant, l&apos;accès se fait sur demande. <Link href="/acces" className="text-foreground underline underline-offset-4">Demander l&apos;accès</Link>.

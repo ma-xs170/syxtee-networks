@@ -117,6 +117,8 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
   const refreshTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const levelsRef = useRef<Record<string, number>>({});
   const hold = useRef(false);
+  const levelFrame = useRef(0);
+  const volumeSend = useRef<Record<string, { at: number; timer?: ReturnType<typeof setTimeout> }>>({});
   const dialog = useRef<HTMLDialogElement>(null);
   const devicePanel = useRef<HTMLDivElement>(null);
 
@@ -142,8 +144,14 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
       else if (name === "InputVolumeChanged") setMixer((m) => m.map((i) => (i.name === d.inputName ? { ...i, db: Number(d.inputVolumeDb) } : i)));
       else if (name === "SceneItemEnableStateChanged") setItems((l) => l.map((i) => (i.id === d.sceneItemId ? { ...i, on: !!d.sceneItemEnabled } : i)));
       else if (name === "link.levels") {
+        // Regroupé sur l'image d'écran : au plus un rendu par image, au lieu d'un par message (qui saccadait toute l'interface).
         levelsRef.current = d as Record<string, number>;
-        if (!hold.current) setLevels(levelsRef.current);
+        if (!hold.current && !levelFrame.current) {
+          levelFrame.current = requestAnimationFrame(() => {
+            levelFrame.current = 0;
+            if (!hold.current) setLevels(levelsRef.current);
+          });
+        }
       } else if (name === "link.preview") frameSink.current?.(String(d.image));
       else if (name === "link.studioPreview") previewSink.current?.(String(d.image));
       else if (name === "link.previewState") setPreviewOn(!!d.enabled);
@@ -185,6 +193,22 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
       }
     },
     [call],
+  );
+
+  /** Volume d'un fader : au plus un ordre toutes les 200 ms pendant le glissement, le dernier est toujours envoyé (sinon « Trop de commandes d'un coup »). */
+  const sendVolume = useCallback(
+    (name: string, db: number) => {
+      const st = (volumeSend.current[name] ??= { at: 0 });
+      clearTimeout(st.timer);
+      const fire = () => {
+        st.at = Date.now();
+        void run("SetInputVolume", { inputName: name, inputVolumeDb: db });
+      };
+      const wait = 200 - (Date.now() - st.at);
+      if (wait <= 0) fire();
+      else st.timer = setTimeout(fire, wait);
+    },
+    [run],
   );
 
   /** Lecture d'état : un nouvel essai si OBS n'a pas répondu, et l'échec est signalé (jamais une liste vide muette). */
@@ -501,7 +525,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
                     onChange={(e) => {
                       const db = Number(e.target.value);
                       setMixer((m) => m.map((x) => (x.name === i.name ? { ...x, db } : x)));
-                      void run("SetInputVolume", { inputName: i.name, inputVolumeDb: db });
+                      sendVolume(i.name, db);
                     }}
                     style={{ writingMode: "vertical-lr", direction: "rtl", width: "1.5rem" }}
                     data-fader

@@ -78,6 +78,7 @@ export class Agent {
     return this.status.viewers > 0 && this.cfg.previewEnabled ? "jpeg" : "idle";
   }
   private lastMeters = 0;
+  private meterPeak = new Map<string, number>();
   /** Dernières mesures du poste (CPU, images, débit du direct), poussées par le plugin chaque seconde. */
   lastStats: Record<string, unknown> = {};
   private obsBusy = false;
@@ -486,17 +487,19 @@ export class Agent {
     }
   }
 
-  /** Niveaux audio : 5 fois par seconde au plus, en dB, par entrée. */
+  /** Niveaux audio : environ 20 fois par seconde, en dB, par entrée. Le plus haut pic entre deux envois est gardé (aucun pic perdu). */
   private meters(data: Record<string, unknown>) {
+    const inputs = (data.inputs as { inputName: string; inputLevelsMul: number[][] }[]) ?? [];
+    for (const i of inputs) {
+      const peak = Math.max(0, ...i.inputLevelsMul.map((ch) => ch[1] ?? 0));
+      this.meterPeak.set(i.inputName, Math.max(this.meterPeak.get(i.inputName) ?? 0, peak));
+    }
     const t = Date.now();
     if (t - this.lastMeters < 45) return;
     this.lastMeters = t;
-    const inputs = (data.inputs as { inputName: string; inputLevelsMul: number[][] }[]) ?? [];
     const levels: Record<string, number> = {};
-    for (const i of inputs) {
-      const peak = Math.max(0, ...i.inputLevelsMul.map((ch) => ch[1] ?? 0));
-      levels[i.inputName] = peak > 0 ? Math.round(20 * Math.log10(peak)) : -100;
-    }
+    for (const [name, peak] of this.meterPeak) levels[name] = peak > 0 ? Math.round(20 * Math.log10(peak)) : -100;
+    this.meterPeak.clear();
     this.send({ type: "event", name: "link.levels", data: levels });
   }
 

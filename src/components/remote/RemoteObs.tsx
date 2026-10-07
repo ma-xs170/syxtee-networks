@@ -717,7 +717,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
       {/* Programme (et, en Mode Studio, aperçu à gauche) */}
       <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 p-2 max-lg:landscape:flex-row">
         <section aria-label="Programme" className="relative grid min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-md border border-[#262626] bg-black max-lg:aspect-[16/10.5] max-lg:h-auto max-lg:landscape:aspect-auto max-lg:landscape:h-full max-lg:landscape:w-[56%] max-lg:landscape:shrink-0 lg:h-[55%]">
-          <div className="flex items-center justify-between gap-2 px-3 py-2">
+          <div className="flex min-w-0 items-center justify-between gap-2 px-3 py-2">
             {programLabel}
             <div className="flex shrink-0 gap-1.5">
               {!muted && pmode.mode === "video" && <input type="range" min={0} max={1} step={0.05} value={volume} onChange={(e) => setVolume(Number(e.target.value))} aria-label="Volume de l'aperçu" className="w-20 accent-white max-sm:hidden" />}
@@ -734,7 +734,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken }: { coreUrl: s
                 }}
                 className={`${flat} h-7 px-2.5`}
               >
-                {previewOn ? "Couper l'aperçu" : "Activer l'aperçu"}
+                {previewOn ? (<><span className="max-sm:hidden">Couper l&apos;aperçu</span><span className="sm:hidden">Aperçu</span></>) : (<><span className="max-sm:hidden">Activer l&apos;aperçu</span><span className="sm:hidden">Aperçu</span></>)}
               </button>
             </div>
           </div>

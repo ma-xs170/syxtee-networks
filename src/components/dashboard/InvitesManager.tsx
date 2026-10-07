@@ -279,7 +279,7 @@ export default function InvitesManager({ coreUrl, initial, planName, max, owner,
               </ul>
               <p className="border-t border-line px-5 py-3.5 text-sm text-muted">
                 {count} personne{count > 1 ? "s" : ""}
-                {!team ? " · crée un espace partagé (menu en bas à gauche) pour travailler à plusieurs avec des comptes" : ""}
+                {!team ? " · crée un espace partagé (menu en bas à gauche) pour une régie ou une équipe : plusieurs OBS, des membres avec leur compte et leur rôle" : ""}
               </p>
             </section>
           ) : (

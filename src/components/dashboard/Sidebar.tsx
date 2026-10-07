@@ -254,7 +254,7 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
       <dialog ref={dialog} onClose={() => setCreating(false)} onClick={(e) => e.target === dialog.current && setCreating(false)} aria-labelledby="ws-title" className="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-2xl border border-line-strong bg-background p-0 text-foreground backdrop:bg-black/70">
         <form onSubmit={create} className="p-6">
           <h2 id="ws-title" className="text-xl font-semibold tracking-tight">Créer un espace partagé</h2>
-          <p className="mt-1.5 text-sm leading-relaxed text-muted">Un espace regroupe des flux et des OBS pour toute une équipe, séparés de ton espace personnel.</p>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted">Pour les régies et les équipes : plusieurs OBS connectés, des membres avec leur propre compte et leur rôle, tout contrôlé au même endroit. Séparé de ton espace personnel.</p>
           <label className="mt-5 grid gap-1.5 text-sm">
             Nom de l&apos;espace
             <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} required placeholder="Ma chaîne, Mon équipe…" className="h-11 rounded-lg border border-line bg-background px-3 text-sm placeholder:text-muted focus:border-foreground/60 focus:outline-none" />

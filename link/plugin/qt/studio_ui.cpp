@@ -213,6 +213,10 @@ private:
 	QLabel *liveAlertText_ = nullptr, *fixOut_ = nullptr, *hostOut_ = nullptr;
 	QPushButton *fixBtn_ = nullptr;
 	Switch *auto_ = nullptr;
+	// auto-gérance (drone)
+	QComboBox *droneScene_ = nullptr, *droneSource_ = nullptr;
+	Switch *pilot_ = nullptr;
+	QLabel *directorOut_ = nullptr;
 	QLineEdit *hostEdit_ = nullptr;
 	QLabel *pingOut_ = nullptr, *accName_ = nullptr, *accMail_ = nullptr, *avatar_ = nullptr;
 	QString avatarUrl_, hostSaved_;
@@ -464,15 +468,26 @@ private:
 			post("/api/destination", b, [this](const QJsonObject &) { refreshLive(); });
 		});
 
-		// SCÈNES
+		// RÉGIE AUTOMATIQUE : trois étapes, expliquées simplement.
 		v->addSpacing(6);
-		v->addWidget(label("SCÈNES", "section"));
-		auto *s = card();
+		directorOut_ = label("", "muted");
+		directorOut_->setWordWrap(true);
+		v->addWidget(label("RÉGIE AUTOMATIQUE", "section"));
+		v->addWidget(label("SYXTEE peut surveiller ton direct et changer de scène pour toi. Tout part de ta scène de direct : rien ne bouge tant que tu n'as pas cliqué dessus dans OBS.", "muted"));
+		v->addWidget(directorOut_);
+
 		secScene_ = new QComboBox;
 		secSource_ = new QComboBox;
 		liveScene_ = new QComboBox;
 		auto_ = new Switch;
-		addRow(s, row("Scène de direct", "La scène qui contient la source de ton flux", liveScene_), true);
+		droneScene_ = new QComboBox;
+		droneSource_ = new QComboBox;
+		pilot_ = new Switch;
+
+		// 1 · Scène de direct
+		v->addWidget(label("1 · TA SCÈNE DE DIRECT", "section"));
+		auto *s = card();
+		addRow(s, row("Scène de direct", "La scène que tu mets à l'antenne pour streamer. La régie ne démarre que lorsque tu cliques dessus.", liveScene_), true);
 		liveAlert_ = new QWidget;
 		auto *la = new QVBoxLayout(liveAlert_);
 		la->setContentsMargins(0, 4, 0, 10);
@@ -492,10 +507,24 @@ private:
 		fixOut_ = label("", "ok");
 		fixOut_->hide();
 		static_cast<QVBoxLayout *>(s->layout())->addWidget(fixOut_);
-		addRow(s, row("Source surveillée", "L'entrée OBS qui lit ton relais", secSource_));
-		addRow(s, row("Scène de secours", "Affichée quand l'image se fige ou coupe", secScene_));
-		addRow(s, row("Bascule automatique", "Passe sur la scène de secours, puis revient quand l'image repart", auto_));
 		v->addWidget(s);
+
+		// 2 · Si la connexion coupe
+		v->addWidget(label("2 · SI TA CONNEXION COUPE", "section"));
+		auto *sc = card();
+		addRow(sc, row("Passer sur la scène de secours", "Quand l'image de ton flux se fige ou coupe, SYXTEE affiche la scène de secours, puis revient sur ta scène de direct dès que l'image repart.", auto_), true);
+		addRow(sc, row("Ce que SYXTEE surveille", "La source de ton flux (« Flux › NOM »). Elle est choisie toute seule quand tu cliques sur Corriger.", secSource_));
+		addRow(sc, row("Scène de secours", "Par exemple « Connexion perdue ».", secScene_));
+		v->addWidget(sc);
+
+		// 3 · Auto-gérance
+		v->addWidget(label("3 · AUTO-GÉRANCE (DRONE)", "section"));
+		auto *dc = card();
+		addRow(dc, row("Activer l'auto-gérance", "Quand ta caméra drone envoie une belle image (qui bouge, pas noire), SYXTEE passe dessus tout seul, puis revient sur ta scène de direct quand la prise s'arrête. Si tu changes de scène à la main, elle se met en pause 30 secondes.", pilot_), true);
+		addRow(dc, row("Source du drone", "L'entrée OBS qui reçoit l'image du drone.", droneSource_));
+		addRow(dc, row("Scène du drone", "N'importe quelle scène : pas besoin qu'elle s'appelle « Drone ».", droneScene_));
+		v->addWidget(dc);
+
 		QObject::connect(liveScene_, &QComboBox::activated, this, [this] {
 			QJsonObject b;
 			b["scene"] = liveScene_->currentData().toString();
@@ -522,6 +551,17 @@ private:
 		QObject::connect(auto_, &QAbstractButton::toggled, this, saveSwitch);
 		QObject::connect(secScene_, &QComboBox::activated, this, saveSwitch);
 		QObject::connect(secSource_, &QComboBox::activated, this, saveSwitch);
+		auto saveDirector = [this] {
+			if (loadingSettings_) return;
+			QJsonObject b;
+			b["enabled"] = pilot_->isChecked();
+			b["droneScene"] = droneScene_->currentData().toString();
+			b["droneSource"] = droneSource_->currentData().toString();
+			post("/api/director", b);
+		};
+		QObject::connect(pilot_, &QAbstractButton::toggled, this, saveDirector);
+		QObject::connect(droneScene_, &QComboBox::activated, this, saveDirector);
+		QObject::connect(droneSource_, &QComboBox::activated, this, saveDirector);
 
 		// CETTE MACHINE
 		v->addSpacing(6);
@@ -894,6 +934,17 @@ private:
 		fill(secScene_, o.value("scenes").toArray(), b.value("scene").toString());
 		fill(secSource_, o.value("inputs").toArray(), b.value("source").toString());
 		auto_->setChecked(b.value("enabled").toBool());
+		const QJsonObject au = state_.value("auto").toObject();
+		fill(droneScene_, o.value("scenes").toArray(), au.value("droneScene").toString());
+		fill(droneSource_, o.value("inputs").toArray(), au.value("droneSource").toString());
+		pilot_->setChecked(au.value("enabled").toBool());
+		const QString ds = state_.value("status").toObject().value("backup").toString();
+		const bool armed = !state_.value("liveScene").toString().isEmpty();
+		directorOut_->setText(!armed ? "Choisis d'abord ta scène de direct (étape 1)."
+			: ds == "drone" ? "En ce moment : belle prise du drone à l'antenne."
+			: ds == "backup" ? "En ce moment : scène de secours à l'antenne (connexion coupée)."
+			: (auto_->isChecked() || pilot_->isChecked()) ? "Régie prête : elle s'active dès que tu mets ta scène de direct à l'antenne."
+			: "Régie éteinte : active le secours (2) ou l'auto-gérance (3).");
 		loadingSettings_ = false;
 	}
 };

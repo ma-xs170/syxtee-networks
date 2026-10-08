@@ -1,7 +1,7 @@
 import { rm } from "node:fs/promises";
 import { hostname, tmpdir } from "node:os";
 import { join } from "node:path";
-import { BackupWatcher, cleanBackup, TRIGGERS, type Trigger } from "./backup.ts";
+import { BackupWatcher, cleanAuto, cleanBackup, TRIGGERS, type Trigger } from "./backup.ts";
 import { downloadArchive, uploadArchive } from "./cloud.ts";
 import { save, type LinkConfig } from "./config.ts";
 import { ObsClient, type ObsEvent } from "./obs.ts";
@@ -16,7 +16,7 @@ import { coreCall } from "./corehttp.ts";
 import { fixLiveScene } from "./livescene.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
 
-export const VERSION = "0.5.6";
+export const VERSION = "0.6.0";
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
 export const OBS_METHODS = new Set([
@@ -100,6 +100,8 @@ export class Agent {
     this.log = log;
     this.watcher = new BackupWatcher((t, d) => this.obs.request(t, d), log);
     this.watcher.set(cfg.backup);
+    this.watcher.setAuto(cfg.auto);
+    this.watcher.setLive(cfg.liveScene);
     this.watcher.onChange = (s) => {
       this.status.backup = s;
       this.emit();
@@ -133,10 +135,25 @@ export class Agent {
     this.obs.close();
   }
 
+  /** Scène de direct et auto-gérance (appelés par l'application). */
+  setLive(scene: string) {
+    this.cfg.liveScene = scene;
+    this.watcher.setLive(scene);
+  }
+  setAuto(a: LinkConfig["auto"]) {
+    this.cfg.auto = a;
+    this.watcher.setAuto(a);
+  }
+
   /** Nouveau réglage du backup (appelé par l'application). */
   setBackup(b: LinkConfig["backup"]) {
     this.cfg.backup = b;
     this.watcher.set(b);
+  }
+
+  /** Auto-gérance telle que l'interface la lit (champs à plat). */
+  private autoView() {
+    return { autoEnabled: this.cfg.auto.enabled, droneScene: this.cfg.auto.droneScene, droneSource: this.cfg.auto.droneSource };
   }
 
   /** Requête directe à OBS (listes de scènes et de sources pour l'interface). */
@@ -596,16 +613,20 @@ export class Agent {
     try {
       if (method === "link.getInfo") return reply(true, { version: VERSION, platform: process.platform, ...this.status });
       // Rôles des scènes (scène de direct, scène de secours), bascule automatique et déclenchement.
-      if (method === "link.getBackup") return reply(true, { ...this.watcher.cfg, liveScene: this.cfg.liveScene, state: this.watcher.state });
+      if (method === "link.getBackup") return reply(true, { ...this.watcher.cfg, ...this.autoView(), liveScene: this.cfg.liveScene, state: this.watcher.state });
       if (method === "link.setBackup") {
         const before = this.cfg.backup.trigger;
         this.cfg.backup = cleanBackup(params, this.cfg.backup);
         // Déclenchement : se règle sur le flux de destination (même réglage que « Mes relais » sur le site).
         if (this.cfg.backup.trigger !== before) await this.setTrigger(this.cfg.backup.trigger);
         if (typeof params.liveScene === "string") this.cfg.liveScene = params.liveScene.slice(0, 200);
+        // Auto-gérance (drone) : champs à plat dans la même requête que les rôles de scènes.
+        this.cfg.auto = cleanAuto({ enabled: params.autoEnabled, droneScene: params.droneScene, droneSource: params.droneSource }, this.cfg.auto);
         this.watcher.set(this.cfg.backup);
+        this.watcher.setAuto(this.cfg.auto);
+        this.watcher.setLive(this.cfg.liveScene);
         save(this.cfg);
-        return reply(true, { ...this.cfg.backup, liveScene: this.cfg.liveScene, state: this.watcher.state });
+        return reply(true, { ...this.cfg.backup, ...this.autoView(), liveScene: this.cfg.liveScene, state: this.watcher.state });
       }
       // Aperçu programme : « Couper l'aperçu » l'arrête sur le PC (aucun encodage, aucun envoi).
       if (method === "link.getPreview") return reply(true, { enabled: this.cfg.previewEnabled, mode: this.previewMode, reason: this.whip.reason });

@@ -17,7 +17,7 @@ import { useRemote, type LinkEvent } from "./useRemote";
 type Item = { id: number; name: string; kind: string; on: boolean; flux?: boolean };
 type Mix = { name: string; muted: boolean; db: number; mon: string; global: boolean };
 type Trigger = "cut" | "cut_lowbitrate" | "sensitive";
-type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string };
+type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string };
 type Stats = { cpu: number; fps: number; kbps: number | null; dropped: number; total: number; encoder: string; congestion: number; streamMs: number; recMs: number };
 type Named = { current: string; list: string[] };
 type Tab = "scenes" | "sources" | "mixer" | "controls" | "multi" | "chat";
@@ -749,7 +749,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
         )}
         <div className={`relative shrink-0 ${guest ? "hidden" : ""}`} ref={devicePanel}>
           <button type="button" aria-expanded={deviceOpen} disabled={!roles} onClick={() => setDeviceOpen((o) => !o)} className={`${flat} h-7 gap-1.5 px-2.5`}>
-            <span aria-hidden="true">⚙</span> <span className="max-lg:hidden">Appareil</span><span className="lg:hidden">Réglages</span>
+            <span aria-hidden="true">⚙</span> <span className="max-lg:hidden">Régie auto</span><span className="lg:hidden">Régie</span>
           </button>
           {deviceOpen && roles && (
             <div role="dialog" aria-label="Appareil" className="fixed inset-x-2 top-24 z-40 max-h-[calc(100dvh-7rem)] overflow-y-auto rounded-md border border-[#333] bg-[#0b0b0b] p-4 shadow-xl sm:absolute sm:inset-x-auto sm:left-0 sm:top-9 sm:w-[26rem]">
@@ -761,21 +761,46 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                   <Switch label="Mode studio" on={studioMode} disabled={!ready} onClick={() => void run("SetStudioModeEnabled", { studioModeEnabled: !studioMode })} />
                 </div>
               </div>
-              <h2 className="text-[13px] font-semibold">Rôles des scènes</h2>
-              <div className="mt-3 grid gap-3">
-                <PopSelect label="Scène Live" value={roles.liveScene} options={scenes} onChange={(v) => saveRoles({ liveScene: v })} />
-                <PopSelect label="Scène Bug (secours)" value={roles.scene} options={scenes} onChange={(v) => saveRoles({ scene: v })} />
+              <h2 className="text-[13px] font-semibold">Régie automatique</h2>
+              <p className="mt-1 text-[12px] leading-relaxed text-neutral-500">
+                SYXTEE change de scène pour toi, mais seulement quand ta <strong className="font-medium text-neutral-300">scène Live</strong> est à l&apos;antenne : rien ne bouge tant que tu ne l&apos;as pas mise en direct.
+              </p>
+              {roles.state === "drone" && <p className="mt-2 rounded border border-[#2a2a2a] bg-[#111] px-2.5 py-1.5 text-[12px] text-emerald-300">En ce moment : belle prise du drone à l&apos;antenne.</p>}
+              {roles.state === "backup" && <p className="mt-2 rounded border border-[#3a2a1a] bg-[#1a1208] px-2.5 py-1.5 text-[12px] text-amber-200">En ce moment : scène de secours à l&apos;antenne (connexion coupée).</p>}
+
+              <h3 className="mt-4 text-[12px] font-semibold uppercase tracking-wide text-neutral-400">1 · Ta scène Live</h3>
+              <div className="mt-2 grid gap-3">
+                <PopSelect label="La scène que tu mets en direct" value={roles.liveScene} options={scenes} onChange={(v) => saveRoles({ liveScene: v })} />
               </div>
-              <div className="mt-4 flex items-center justify-between gap-3">
+
+              <h3 className="mt-5 text-[12px] font-semibold uppercase tracking-wide text-neutral-400">2 · Si ta connexion coupe</h3>
+              <div className="mt-2 grid gap-3">
+                <PopSelect label="Scène de secours" value={roles.scene} options={scenes} onChange={(v) => saveRoles({ scene: v })} />
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-3">
                 <div>
-                  <p className="font-medium">Bascule automatique</p>
-                  <p className="text-[12px] text-neutral-500">{roles.state === "backup" ? "Secours actif en ce moment" : "Passe seule sur la scène Bug, puis revient."}</p>
+                  <p className="font-medium">Passer sur le secours</p>
+                  <p className="text-[12px] text-neutral-500">Affiche le secours quand l&apos;image se fige, puis revient seul quand elle repart.</p>
                 </div>
-                <Switch label="Bascule automatique" on={roles.enabled} disabled={!roles.source || !roles.scene} onClick={() => saveRoles({ enabled: !roles.enabled })} />
+                <Switch label="Passer sur le secours" on={roles.enabled} disabled={!roles.source || !roles.scene || !roles.liveScene} onClick={() => saveRoles({ enabled: !roles.enabled })} />
               </div>
-              {(!roles.source || !roles.scene) && <p className="mt-2 text-[12px] text-neutral-500">Choisis la scène Bug, et ajoute la source de ton flux à ta scène Live (fenêtre SYXTEE d&apos;OBS, Réglages, Corriger).</p>}
+              {(!roles.source || !roles.scene || !roles.liveScene) && <p className="mt-2 text-[12px] text-neutral-500">Choisis la scène Live et la scène de secours. Si le flux n&apos;est pas dans OBS, clique sur « Corriger » en haut de la page.</p>}
+
+              <h3 className="mt-5 text-[12px] font-semibold uppercase tracking-wide text-neutral-400">3 · Auto-gérance (drone)</h3>
+              <p className="mt-1 text-[12px] leading-relaxed text-neutral-500">Quand la caméra drone envoie une belle image (qui bouge, pas noire), SYXTEE passe dessus tout seul, puis revient sur ta scène Live quand la prise s&apos;arrête. Si tu changes de scène à la main, elle se met en pause 30 secondes.</p>
+              <div className="mt-2 grid gap-3">
+                <PopSelect label="Source du drone" value={roles.droneSource ?? ""} options={inputNames} onChange={(v) => saveRoles({ droneSource: v })} />
+                <PopSelect label="Scène du drone (n'importe laquelle)" value={roles.droneScene ?? ""} options={scenes} onChange={(v) => saveRoles({ droneScene: v })} />
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-medium">Auto-gérance</p>
+                  <p className="text-[12px] text-neutral-500">{roles.autoEnabled ? "Active : elle surveille le drone." : "Éteinte."}</p>
+                </div>
+                <Switch label="Auto-gérance" on={!!roles.autoEnabled} disabled={!roles.droneSource || !roles.droneScene || !roles.liveScene} onClick={() => saveRoles({ autoEnabled: !roles.autoEnabled })} />
+              </div>
               <fieldset className="mt-4">
-                <legend className="text-[13px] font-semibold">Déclenchement</legend>
+                <legend className="text-[13px] font-semibold">Sensibilité du secours</legend>
                 <div className="mt-2 grid gap-2">
                   {TRIGGERS.map((t) => (
                     <label key={t.id} className={`cursor-pointer rounded border p-2.5 ${roles.trigger === t.id ? "border-[#2f4fc4]" : "border-[#2e2e2e] hover:border-[#444]"}`}>

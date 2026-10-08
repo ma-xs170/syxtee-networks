@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { hostname } from "node:os";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { Agent, VERSION } from "./agent.ts";
-import { cleanBackup } from "./backup.ts";
+import { cleanAuto, cleanBackup } from "./backup.ts";
 import { cloudError } from "./cloud.ts";
 import { load, save, type LinkConfig } from "./config.ts";
 import { coreCall } from "./corehttp.ts";
@@ -76,6 +76,7 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
     login: login.state,
     status: agent?.status ?? { core: "off", obs: "off", obsVersion: "", backup: "idle", lastError: "", viewers: 0, job: null },
     backup: cfg.backup,
+    auto: cfg.auto,
     obsCustom: cfg.obs.password !== "",
     logs,
   });
@@ -193,6 +194,7 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
       case "POST /api/live-scene":
         cfg.liveScene = typeof body.scene === "string" ? body.scene.slice(0, 200) : "";
         save(cfg);
+        agent?.setLive(cfg.liveScene);
         return json({ ok: true });
       case "POST /api/fix": {
         if (!agent) return json({ ok: false, message: "Agent arrêté." });
@@ -245,6 +247,11 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
         return json({ ok: true });
       case "POST /api/restore":
         void agent?.runRestore(String(body.id ?? ""));
+        return json({ ok: true });
+      case "POST /api/director":
+        cfg.auto = cleanAuto(body, cfg.auto);
+        save(cfg);
+        agent?.setAuto(cfg.auto);
         return json({ ok: true });
       case "POST /api/switch":
         cfg.backup = cleanBackup(body, cfg.backup);

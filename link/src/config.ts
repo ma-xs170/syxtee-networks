@@ -1,7 +1,7 @@
 import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { cleanBackup, DEFAULT_BACKUP, type BackupConfig } from "./backup.ts";
+import { cleanAuto, cleanBackup, DEFAULT_AUTO, DEFAULT_BACKUP, type AutoConfig, type BackupConfig } from "./backup.ts";
 
 export type LinkConfig = {
   core: string;
@@ -24,12 +24,14 @@ export type LinkConfig = {
   onboarded: boolean;
   obs: { host: string; port: number; password: string };
   backup: BackupConfig;
+  /** Auto-gérance : prises de drone qui s'enchaînent toutes seules avec la scène Live. */
+  auto: AutoConfig;
 };
 
 export const DEFAULT_CORE = "https://15-235-25-77.sslip.io";
 export const DEFAULT_SITE = "https://syxtee-networks.vercel.app";
 
-export const defaults = (): LinkConfig => ({ core: DEFAULT_CORE, site: DEFAULT_SITE, token: "", refresh: "", expires: 0, destination: "", liveScene: "", autoBackup: {}, lastBackup: {}, previewEnabled: true, onboarded: false, obs: { host: "127.0.0.1", port: 4455, password: "" }, backup: DEFAULT_BACKUP });
+export const defaults = (): LinkConfig => ({ core: DEFAULT_CORE, site: DEFAULT_SITE, token: "", refresh: "", expires: 0, destination: "", liveScene: "", autoBackup: {}, lastBackup: {}, previewEnabled: true, onboarded: false, obs: { host: "127.0.0.1", port: 4455, password: "" }, backup: DEFAULT_BACKUP, auto: DEFAULT_AUTO });
 
 /** Dictionnaire nettoyé : clés courtes, valeurs acceptées par `ok` seulement. */
 function recordOf<T>(v: unknown, ok: (x: unknown) => boolean): Record<string, T> {
@@ -61,6 +63,7 @@ export function load(): LinkConfig {
       onboarded: j.onboarded === true,
       obs: { host: j.obs?.host || d.obs.host, port: Number(j.obs?.port) || d.obs.port, password: j.obs?.password ?? "" },
       backup: cleanBackup(j.backup),
+      auto: cleanAuto(j.auto),
     };
   } catch {
     return d;

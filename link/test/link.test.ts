@@ -3,7 +3,7 @@ import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { test } from "node:test";
 import { WebSocketServer } from "ws";
-import { BackupWatcher, cleanBackup, DEFAULT_BACKUP } from "../src/backup.ts";
+import { BackupWatcher, cleanAuto, cleanBackup, DEFAULT_AUTO, DEFAULT_BACKUP } from "../src/backup.ts";
 import { authString, ObsClient } from "../src/obs.ts";
 
 test("authentification obs-websocket : vecteur connu", async () => {
@@ -42,6 +42,7 @@ function fakeObs(initial = "Live") {
 test("backup : image figée → scène de secours → retour quand l'image repart", async () => {
   const { o, req } = fakeObs();
   const w = new BackupWatcher(req);
+  w.setLive("Live");
   w.set({ enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 3, recoverSeconds: 2, trigger: "cut" });
   let n = 0;
   const moving = async () => ((o.image = `f${++n}`), await w.tick());
@@ -66,18 +67,23 @@ test("backup : image figée → scène de secours → retour quand l'image repar
 test("backup : capture en échec (flux coupé) = figée ; désactivé = aucune action", async () => {
   const { o, req } = fakeObs();
   const w = new BackupWatcher(req);
+  w.setLive("Live");
   w.set({ enabled: false, source: "SRT", scene: "BRB", freezeSeconds: 1, recoverSeconds: 1, trigger: "cut" });
   o.fail = true;
   await w.tick(); await w.tick();
   assert.equal(o.scene, "Live");
   w.set({ enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 2, recoverSeconds: 1, trigger: "cut" });
-  await w.tick(); await w.tick();
+  // Flux jamais arrivé : on laisse d'abord 8 secondes au flux pour se connecter, puis le secours prend la main.
+  for (let i = 0; i < 8; i++) await w.tick();
+  assert.equal(o.scene, "Live");
+  await w.tick();
   assert.equal(o.scene, "BRB");
 });
 
 test("backup : si l'utilisateur change de scène à la main pendant le secours, on ne la remplace pas", async () => {
   const { o, req } = fakeObs();
   const w = new BackupWatcher(req);
+  w.setLive("Live");
   w.set({ enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 1, recoverSeconds: 1, trigger: "cut" });
   o.image = "x";
   await w.tick();
@@ -87,12 +93,13 @@ test("backup : si l'utilisateur change de scène à la main pendant le secours, 
   o.image = "y";
   await w.tick();
   assert.equal(o.scene, "Autre");
-  assert.equal(w.state, "ok");
+  assert.equal(w.state, "idle"); // scène hors Live : la régie se désarme et ne touche plus à rien
 });
 
 test("backup : déjà sur la scène de secours, ne bascule pas et ne mémorise rien", async () => {
   const { o, req } = fakeObs("BRB");
   const w = new BackupWatcher(req);
+  w.setLive("Live");
   w.set({ enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 1, recoverSeconds: 1, trigger: "cut" });
   await w.tick(); await w.tick();
   assert.deepEqual(o.switches, []);
@@ -132,6 +139,7 @@ test("déclenchements : coupure seulement ignore le débit ; débit très bas ba
   const run = async (trigger: "cut" | "cut_lowbitrate" | "sensitive", kbps: number | null, ticks: number) => {
     const { o, req } = fakeObs();
     const w = new BackupWatcher(req);
+    w.setLive("Live");
     w.set({ ...base, trigger });
     w.setBitrate(kbps);
     let n = 0;
@@ -151,6 +159,7 @@ test("déclenchements : coupure seulement ignore le débit ; débit très bas ba
   // « Sensible » bascule dès 2 s d'image figée (alors que le réglage de base attend 4 s)
   const { o, req } = fakeObs();
   const w = new BackupWatcher(req);
+  w.setLive("Live");
   w.set({ ...base, trigger: "sensitive" });
   o.image = "x";
   await w.tick(); // 1re capture
@@ -167,4 +176,92 @@ test("déclenchements : coupure seulement ignore le débit ; débit très bas ba
   }
   assert.equal(w.state, "ok");
   assert.equal(o.scene, "Live");
+});
+
+/** Faux OBS à deux sources : le flux (SRT) et le drone. Une image de drone « belle » est longue (plus de 3000 caractères) et change. */
+function fakeObs2(initial: string) {
+  const o = { scene: initial, srt: "a", drone: "", switches: [] as string[] };
+  const beau = (n: number) => `${n}`.padEnd(3200, "x");
+  const req = async (t: string, d?: Record<string, unknown>) => {
+    if (t === "GetSourceScreenshot") {
+      const img = d?.sourceName === "DRONE" ? o.drone : o.srt;
+      if (img === "") throw new Error("source absente");
+      return { imageData: img };
+    }
+    if (t === "GetCurrentProgramScene") return { currentProgramSceneName: o.scene };
+    if (t === "SetCurrentProgramScene") {
+      o.scene = String(d?.sceneName);
+      o.switches.push(o.scene);
+      return {};
+    }
+    return {};
+  };
+  return { o, req, beau };
+}
+
+test("régie : rien ne bascule tant que la scène Live n'est pas à l'antenne", async () => {
+  const { o, req } = fakeObs2("On commence bientôt");
+  const w = new BackupWatcher(req);
+  w.setLive("Live");
+  w.set({ enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 1, recoverSeconds: 1, trigger: "cut" });
+  w.setAuto({ enabled: true, droneScene: "Drone", droneSource: "DRONE" });
+  o.srt = "";
+  let n = 0;
+  for (let i = 0; i < 20; i++) {
+    o.drone = `${++n}`.padEnd(3200, "x");
+    await w.tick();
+  }
+  assert.deepEqual(o.switches, []);
+  assert.equal(w.state, "idle");
+});
+
+test("auto-gérance : belle prise de drone → scène drone, prise perdue → retour sur Live", async () => {
+  const { o, req, beau } = fakeObs2("Live");
+  const w = new BackupWatcher(req);
+  w.setLive("Live");
+  w.setAuto({ enabled: true, droneScene: "Scène quelconque", droneSource: "DRONE" });
+  o.srt = "a";
+  let n = 0;
+  for (let i = 0; i < 4; i++) {
+    o.drone = beau(++n);
+    await w.tick();
+  }
+  assert.equal(o.scene, "Scène quelconque");
+  assert.equal(w.state, "drone");
+  // Le drone se fige (image identique) pendant 4 secondes : retour sur Live.
+  for (let i = 0; i < 5; i++) await w.tick();
+  assert.equal(o.scene, "Live");
+  assert.equal(w.state, "ok");
+  assert.deepEqual(o.switches, ["Scène quelconque", "Live"]);
+});
+
+test("auto-gérance : image noire ou trop pauvre = pas une belle prise ; retour manuel sur Live = pause", async () => {
+  const { o, req, beau } = fakeObs2("Live");
+  const w = new BackupWatcher(req);
+  w.setLive("Live");
+  w.setAuto({ enabled: true, droneScene: "Drone", droneSource: "DRONE" });
+  let n = 0;
+  for (let i = 0; i < 8; i++) {
+    o.drone = `${++n}`; // image noire : quelques octets seulement
+    await w.tick();
+  }
+  assert.deepEqual(o.switches, []);
+  for (let i = 0; i < 4; i++) {
+    o.drone = beau(++n);
+    await w.tick();
+  }
+  assert.equal(o.scene, "Drone");
+  // L'utilisateur reprend la main et revient sur Live : l'auto-gérance attend avant de rebasculer.
+  o.scene = "Live";
+  for (let i = 0; i < 10; i++) {
+    o.drone = beau(++n);
+    await w.tick();
+  }
+  assert.equal(o.scene, "Live");
+  assert.deepEqual(o.switches, ["Drone"]);
+});
+
+test("cleanAuto : valeurs par défaut et bornes", () => {
+  assert.deepEqual(cleanAuto(undefined), DEFAULT_AUTO);
+  assert.deepEqual(cleanAuto({ enabled: true, droneScene: "D", droneSource: 4 }, { ...DEFAULT_AUTO, droneSource: "S" }), { enabled: true, droneScene: "D", droneSource: "S" });
 });

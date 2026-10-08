@@ -1,4 +1,9 @@
 {
+  "0.6.0": [
+    "Régie automatique : la bascule ne démarre que lorsque ta scène Live est à l'antenne (plus de changement de scène tout seul sur « On commence bientôt » ou une autre scène)",
+    "Auto-gérance : une belle prise de drone (n'importe quelle caméra, n'importe quelle scène) passe à l'antenne toute seule, puis retour sur la scène Live à la fin de la prise",
+    "Fenêtre SYXTEE : réglages en trois étapes expliquées simplement (scène de direct, secours, auto-gérance)"
+  ],
   "0.5.6": [
     "Fenêtre SYXTEE d'OBS : thème noir et blanc comme le site (plus de rouge ni de bleu)",
     "Corriger : l'ajout de la source du flux ne dit plus « Source introuvable »"

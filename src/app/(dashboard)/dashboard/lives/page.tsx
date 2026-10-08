@@ -10,7 +10,7 @@ import { listSessions } from "@/lib/dashboard-overview";
 import { loadRelays } from "@/lib/relays";
 import PlanGate from "@/components/plans/PlanGate";
 
-export const metadata: Metadata = { title: "Historique des lives", robots: { index: false } };
+export const metadata: Metadata = { title: "Historique des directs", robots: { index: false } };
 
 export default async function LivesPage({ searchParams }: PageProps<"/dashboard/lives">) {
   const [user, { relay: wanted }, profile] = await Promise.all([requireOwner("/dashboard/lives"), searchParams, getProfile()]);
@@ -19,9 +19,9 @@ export default async function LivesPage({ searchParams }: PageProps<"/dashboard/
   const sessions = await listSessions({ limit: 100, relayId: current ?? undefined });
   return (
     <DashPage>
-      <SectionTabs tabs={statsTabs} current="/dashboard/lives" label="Statistiques" />
+      <SectionTabs tabs={statsTabs} current="/dashboard/lives" label="Analytique" />
       <PlanGate feature="lives">
-      <DashHeader lead="Historique des" hl="lives" sub="Tes 100 derniers directs. Ouvre un direct pour voir sa courbe de débit." />
+      <DashHeader lead="Historique des" hl="directs" sub="Tes 100 derniers directs. Ouvre un direct pour voir sa courbe de débit." />
       <RelayPicker relays={relays} current={current} base="/dashboard/lives" all={relays.length > 1} />
       <Tile>
         {sessions.length ? (
@@ -38,7 +38,7 @@ export default async function LivesPage({ searchParams }: PageProps<"/dashboard/
           <>
             <p className="text-sm text-muted">Aucun direct enregistré pour l&apos;instant.</p>
             <div className="mt-4">
-              <ArrowLink href="/dashboard/relais">Mes relais</ArrowLink>
+              <ArrowLink href="/dashboard/relais">Mes serveurs</ArrowLink>
             </div>
           </>
         )}

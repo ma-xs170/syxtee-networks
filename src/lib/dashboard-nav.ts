@@ -15,17 +15,17 @@ export type DashItem = DashLink | DashMenu;
 export const dashboardNav: DashItem[] = [
   { label: "Vue d'ensemble", href: "/dashboard" },
   {
-    label: "Direct",
+    label: "Diffusion",
     children: [
-      { label: "Flux", href: "/dashboard/relais", desc: "SRTLA, RTMP, tes adresses et clés", icon: "relays", feature: "relais" },
+      { label: "Serveurs", href: "/dashboard/relais", desc: "SRTLA, RTMP, tes adresses et clés", icon: "relays", feature: "relais" },
       { label: "Contrôle à distance", href: "/dashboard/controle-a-distance", desc: "Pilote ton OBS depuis un onglet", icon: "control", feature: "relais" },
     ],
   },
   {
-    label: "Contenu",
-    children: [{ label: "Sauvegardes de scènes", href: "/dashboard/backups", desc: "Tes collections de scènes sauvegardées", icon: "plan", feature: "relais" }],
+    label: "Bibliothèque",
+    children: [{ label: "Sauvegardes", href: "/dashboard/backups", desc: "Tes collections de scènes sauvegardées", icon: "plan", feature: "relais" }],
   },
-  { label: "Statistiques", href: "/dashboard/stats" },
+  { label: "Analytique", href: "/dashboard/stats" },
 ];
 
 export type SectionTab = { label: string; href: string };

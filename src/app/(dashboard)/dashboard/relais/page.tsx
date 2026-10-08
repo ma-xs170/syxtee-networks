@@ -10,7 +10,7 @@ import { relayLimit } from "@/lib/plans";
 import { coreStatusText, loadRelays } from "@/lib/relays";
 import PlanGate from "@/components/plans/PlanGate";
 
-export const metadata: Metadata = { title: "Mes relais", robots: { index: false } };
+export const metadata: Metadata = { title: "Serveurs", robots: { index: false } };
 
 /** Position approximative du visiteur (géolocalisation IP de Vercel), pour estimer la latence des serveurs à venir. */
 async function visitorGeo() {
@@ -36,7 +36,7 @@ export default async function RelaisPage({ searchParams }: PageProps<"/dashboard
         </>
       ) : (
         <>
-          <h1 className="h-page mb-8">Mes <em>relais</em></h1>
+          <h1 className="h-page mb-8">Mes <em>serveurs</em></h1>
           <p className="text-sm text-muted">
             {coreStatusText[status]}
           </p>

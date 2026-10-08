@@ -45,31 +45,31 @@ type Group = { title?: string; items: Item[] };
 
 // Barre minimale (comme un espace client de service) : Accueil, trois groupes, puis aide, thème et compte en bas.
 const GROUPS: Group[] = [
-  { items: [{ label: "Accueil", href: "/dashboard", icon: SquaresFour }] },
+  { items: [{ label: "Vue d'ensemble", href: "/dashboard", icon: SquaresFour }] },
   {
-    title: "Direct",
+    title: "Diffusion",
     items: [
-      { label: "Flux", href: "/dashboard/relais", icon: Radio, feature: "relais" },
+      { label: "Serveurs", href: "/dashboard/relais", icon: Radio, feature: "relais" },
       { label: "Contrôle à distance", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais" },
-      { label: "Membres", href: "/dashboard/invitations", icon: UsersThree, feature: "relais" },
+      { label: "Équipe", href: "/dashboard/invitations", icon: UsersThree, feature: "relais" },
       { label: "Multichat", href: "/dashboard/multichat", icon: ChatsCircle },
       { label: "Encodeurs", href: "/dashboard/encodeurs", icon: HardDrives },
     ],
   },
   {
-    title: "Contenu",
-    items: [{ label: "Sauvegardes de scènes", href: "/dashboard/backups", icon: Archive, feature: "relais" }],
+    title: "Bibliothèque",
+    items: [{ label: "Sauvegardes", href: "/dashboard/backups", icon: Archive, feature: "relais" }],
   },
   {
-    title: "Mon espace",
+    title: "Analyse",
     items: [
-      { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },
+      { label: "Analytique", href: "/dashboard/stats", icon: ChartBar },
     ],
   },
 ];
 
 const HELP: Item[] = [
-  { label: "Support", href: "/dashboard/support", icon: Lifebuoy },
+  { label: "Assistance", href: "/dashboard/support", icon: Lifebuoy },
   { label: "Documentation", href: "/docs", icon: Question },
 ];
 
@@ -329,8 +329,8 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
 // Barre d'onglets du bas (mobile), dans cet ordre : Accueil, Flux, OBS, Menu (le tiroir). Chaque onglet reste actif sur les pages de sa famille :
 // Flux = tes flux (SRTLA, RTMP) ; OBS = liste des postes, plugin, et l'interface d'un OBS (/controle-a-distance/<poste>).
 const TABS: (Item & { also?: string[] })[] = [
-  { label: "Accueil", href: "/dashboard", icon: SquaresFour },
-  { label: "Flux", href: "/dashboard/relais", icon: Radio, feature: "relais" },
+  { label: "Vue d'ensemble", href: "/dashboard", icon: SquaresFour },
+  { label: "Serveurs", href: "/dashboard/relais", icon: Radio, feature: "relais" },
   { label: "OBS", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais", also: ["/dashboard/obs", "/dashboard/plugin", "/controle-a-distance"] },
 ];
 

@@ -22,7 +22,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
 
   return (
     <DashPage>
-      <h1 className="h-page">Sup<em>port</em></h1>
+      <h1 className="h-page">Assis<em>tance</em></h1>
       <p className="mt-2 max-w-[65ch] text-sm text-muted">Choisis comment nous écrire. Pour une question de la documentation, lis d&apos;abord la <Link href="/docs" className="text-foreground underline underline-offset-4">documentation</Link>.</p>
 
       <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">

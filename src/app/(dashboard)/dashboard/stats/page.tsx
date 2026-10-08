@@ -10,7 +10,7 @@ import { delta, fmtDuration, fmtInt, isRange } from "@/lib/dashboard-data";
 import { getStats } from "@/lib/dashboard-overview";
 import PlanGate from "@/components/plans/PlanGate";
 
-export const metadata: Metadata = { title: "Statistiques", robots: { index: false } };
+export const metadata: Metadata = { title: "Analytique", robots: { index: false } };
 
 function Figure({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
@@ -31,9 +31,9 @@ export default async function StatsPage({ searchParams }: PageProps<"/dashboard/
 
   return (
     <DashPage>
-      <SectionTabs tabs={statsTabs} current="/dashboard/stats" label="Statistiques" />
+      <SectionTabs tabs={statsTabs} current="/dashboard/stats" label="Analytique" />
       <PlanGate feature="stats">
-      <DashHeader lead="Tes" hl="statistiques" sub={`Tes directs sur les ${days} derniers jours, comparés aux ${days} jours d'avant. Jours et heures en fuseau ${timezone.replace(/_/g, " ")}.`}>
+      <DashHeader lead="Ton" hl="analytique" sub={`Tes directs sur les ${days} derniers jours, comparés aux ${days} jours d'avant. Jours et heures en fuseau ${timezone.replace(/_/g, " ")}.`}>
         <div role="radiogroup" aria-label="Période" className="inline-flex rounded-full border border-line p-0.5">
           {(["7d", "30d"] as const).map((x) => (
             <Link
@@ -53,7 +53,7 @@ export default async function StatsPage({ searchParams }: PageProps<"/dashboard/
         <Tile>
           <p className="text-sm text-muted">Pas encore de direct enregistré. Tes chiffres apparaissent ici après ton premier live.</p>
           <div className="mt-4">
-            <ArrowLink href="/dashboard/relais">Mes relais</ArrowLink>
+            <ArrowLink href="/dashboard/relais">Mes serveurs</ArrowLink>
           </div>
         </Tile>
       ) : (
@@ -75,7 +75,7 @@ export default async function StatsPage({ searchParams }: PageProps<"/dashboard/
             </div>
           </Tile>
           <div className="flex justify-end">
-            <ArrowLink href="/dashboard/lives">Historique des lives</ArrowLink>
+            <ArrowLink href="/dashboard/lives">Historique des directs</ArrowLink>
           </div>
         </div>
       )}

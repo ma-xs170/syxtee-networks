@@ -8,7 +8,7 @@ import { getPlan } from "@/lib/auth/plan";
 import { listInvites, publicCoreUrl } from "@/lib/core";
 import { loadMembers, requireOwner } from "@/lib/workspace";
 
-export const metadata: Metadata = { title: "Membres", robots: { index: false } };
+export const metadata: Metadata = { title: "Équipe", robots: { index: false } };
 
 // Membres, pour tous les comptes. Espace personnel : les invités sans compte (liens qui donnent le pilotage d'OBS). Espace partagé (fait pour les équipes) :
 // en plus, les comptes de l'équipe avec leurs rôles.

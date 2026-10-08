@@ -111,7 +111,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="h-page">
-            Mes <em>relais</em>
+            Mes <em>serveurs</em>
           </h1>
           <p className="mt-2 font-mono text-sm tabular-nums text-muted">
             {active} / {unlimited ? "∞" : max} relais

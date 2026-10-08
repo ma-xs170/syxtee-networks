@@ -31,7 +31,7 @@ export default async function LivePage({ params }: PageProps<"/dashboard/lives/[
     <DashPage>
       <PlanGate feature="lives">
       <div className="mb-6">
-        <ArrowLink href="/dashboard/lives">Historique des lives</ArrowLink>
+        <ArrowLink href="/dashboard/lives">Historique des directs</ArrowLink>
       </div>
       <DashHeader lead="Direct du" hl={fmtDate(s.started_at, timezone)} />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">

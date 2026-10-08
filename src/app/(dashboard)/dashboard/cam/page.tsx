@@ -60,7 +60,7 @@ export default async function CamPage() {
                   <>
                     SYXTEE Cam diffuse vers un de tes relais. Crée d&apos;abord un relais dans{" "}
                     <Link href="/dashboard/relais" className="text-foreground underline underline-offset-4">
-                      Mes relais
+                      Mes serveurs
                     </Link>
                     .
                   </>
@@ -81,7 +81,7 @@ export default async function CamPage() {
               Rien à changer : la caméra arrive sur la source SRT {cam ? <>du relais « {cam.relay.name} »</> : "de ton relais"}. Ne diffuse pas en même temps depuis Moblin avec la même clé.
             </p>
             <div className="mt-4">
-              <ArrowLink href="/dashboard/relais">Mes relais</ArrowLink>
+              <ArrowLink href="/dashboard/relais">Mes serveurs</ArrowLink>
             </div>
           </Tile>
           <Tile>

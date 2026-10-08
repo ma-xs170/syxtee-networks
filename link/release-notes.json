@@ -1,4 +1,8 @@
 {
+  "0.5.2": [
+    "Multistream : correction d'un blocage d'OBS quand une sortie échoue ou s'arrête (OBS ne se fige plus)",
+    "Multistream : refus clair si la clé de stream est celle du direct d'OBS (la plateforme refuse deux envois sur la même clé)"
+  ],
   "0.5.1": [
     "Multistream : lancer une sortie démarre aussi le direct d'OBS (chrono, débit, « Arrêter le streaming »), et l'arrête avec la dernière sortie"
   ],

@@ -34,6 +34,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <thread>
 #include <string>
 #include <vector>
 
@@ -841,19 +842,38 @@ Json msListJson()
 	return Json{{"outputs", arr}, {"mainActive", obs_frontend_streaming_active()}};
 }
 
+void msStartedCb(void *param, calldata_t *);
+void msStoppedCb(void *param, calldata_t *cd);
+
+/**
+ * Libère la sortie SANS bloquer OBS : détruire une sortie RTMP attend la fin de ses fils réseau (pthread_join), et ce fil peut rester
+ * pris dans une connexion qui échoue. Fait sur le fil principal, il gelait toute l'interface d'OBS (rapport de blocage du 2026-10-08).
+ * Les rappels sont détachés d'abord (plus aucun accès à `o` après), puis l'arrêt forcé et la destruction se font sur un fil à part.
+ */
 void msRelease(MsOut *o)
 {
-	if (o->out) {
-		obs_output_stop(o->out);
-		obs_output_release(o->out);
-	}
-	if (o->video) obs_encoder_release(o->video);
-	if (o->audio) obs_encoder_release(o->audio);
-	if (o->svc) obs_service_release(o->svc);
+	obs_output_t *out = o->out;
+	obs_encoder_t *video = o->video, *audio = o->audio;
+	obs_service_t *svc = o->svc;
 	o->out = nullptr;
 	o->video = o->audio = nullptr;
 	o->svc = nullptr;
 	o->active = o->starting = false;
+	if (out) {
+		signal_handler_t *sh = obs_output_get_signal_handler(out);
+		signal_handler_disconnect(sh, "start", msStartedCb, o);
+		signal_handler_disconnect(sh, "stop", msStoppedCb, o);
+	}
+	if (!out && !video && !audio && !svc) return;
+	std::thread([out, video, audio, svc] {
+		if (out) {
+			obs_output_force_stop(out);
+			obs_output_release(out);
+		}
+		if (video) obs_encoder_release(video);
+		if (audio) obs_encoder_release(audio);
+		if (svc) obs_service_release(svc);
+	}).detach();
 }
 
 void msStartedCb(void *param, calldata_t *)
@@ -949,7 +969,7 @@ void msStartNow(MsOut *o)
 		obs_output_set_audio_encoder(o->out, o->audio, 0);
 	}
 	obs_output_set_service(o->out, o->svc);
-	obs_output_set_reconnect_settings(o->out, 20, 10);
+	obs_output_set_reconnect_settings(o->out, 5, 8);
 	signal_handler_t *sh = obs_output_get_signal_handler(o->out);
 	signal_handler_connect(sh, "start", msStartedCb, o);
 	signal_handler_connect(sh, "stop", msStoppedCb, o);
@@ -971,6 +991,13 @@ Json msStart(const QString &id)
 	if (o->active || o->starting) throw Fail{"Cette sortie est déjà en cours."};
 	if (o->server.isEmpty() || o->key.isEmpty()) throw Fail{"Renseigne l'adresse du serveur et la clé de stream."};
 	o->error.clear();
+	// Même clé que le direct d'OBS : la plateforme refuse deux envois sur la même clé (Twitch ferme la connexion).
+	if (obs_service_t *main = obs_frontend_get_streaming_service()) {
+		obs_data_t *ms = obs_service_get_settings(main);
+		const QString mainKey = ms ? q(obs_data_get_string(ms, "key")) : QString();
+		if (ms) obs_data_release(ms);
+		if (!mainKey.isEmpty() && mainKey == o->key) throw Fail{"Cette clé est déjà celle du direct d'OBS : la plateforme refuse deux envois sur la même clé. Le direct principal t'envoie déjà là."};
+	}
 	if (mainReady()) {
 		try {
 			msStartNow(o);

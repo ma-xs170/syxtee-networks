@@ -35,8 +35,7 @@ function groups(support: SupportBadges, pending: number): Group[] {
           href: "/admin/support",
           need: "support",
           badge: support.all,
-          // Tous, puis chaque catégorie séparément : une pastille par catégorie (demandes qui attendent une réponse).
-          children: [{ key: "tous", label: "Tous", href: "/admin/support", badge: support.all }, ...SUPPORT_CATEGORIES.map((c) => ({ key: c.id, label: c.label, href: `/admin/support?categorie=${c.id}`, badge: support.byCategory[c.id] }))],
+          // Pas de sous-menu : les catégories se choisissent sur la page Support (pastilles de filtre).
         },
         { icon: Key, label: "Demandes d'accès", href: "/admin/acces", need: "access", badge: pending },
         { icon: Users, label: "Comptes", href: "/admin/comptes", need: "accounts" },

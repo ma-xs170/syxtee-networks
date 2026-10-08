@@ -468,6 +468,22 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
     void run<Roles>("link.setBackup", next).then((r) => r && setRoles(r));
   }
 
+  /** Active la régie automatique en un clic : choisit les scènes et sources évidentes (nom « direct », « perdue », « drone », source « Flux »). */
+  function enableAuto() {
+    if (!roles) return;
+    const find = (re: RegExp) => scenes.find((n) => re.test(n)) ?? "";
+    const liveScene = roles.liveScene || find(/direct|live/i) || program;
+    const scene = roles.scene || find(/perdue|secours|brb|pause|coupure/i);
+    const source = roles.source || fluxName || inputNames.find((n) => n.startsWith("Flux")) || "";
+    const droneScene = roles.droneScene || find(/drone/i);
+    const droneSource = roles.droneSource || inputNames.find((n) => /drone/i.test(n)) || "";
+    const backupOk = !!(source && scene && liveScene);
+    const droneOk = !!(droneSource && droneScene && liveScene);
+    saveRoles({ liveScene, scene, source, droneScene, droneSource, enabled: backupOk, autoEnabled: droneOk });
+  }
+  const autoOn = !!roles && (roles.enabled || !!roles.autoEnabled);
+  const autoIncomplete = !!roles && !roles.enabled && !roles.autoEnabled && !(roles.liveScene && roles.scene && roles.source) && !(roles.droneSource && roles.droneScene && roles.liveScene);
+
   // Mixer de la scène éditée : ses sources visibles qui ont du son, plus les périphériques globaux (comme dans OBS).
   const visibleMixer = mixer.filter((i) => i.global || sceneAudio.has(i.name));
   const lost = link !== "on" || !agent.online;
@@ -749,7 +765,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
         )}
         <div className={`relative shrink-0 ${guest ? "hidden" : ""}`} ref={devicePanel}>
           <button type="button" aria-expanded={deviceOpen} disabled={!roles} onClick={() => setDeviceOpen((o) => !o)} className={`${flat} h-7 gap-1.5 px-3.5`}>
-            <span aria-hidden="true">⚙</span> <span className="max-lg:hidden">Régie auto</span><span className="lg:hidden">Régie</span>
+            <span aria-hidden="true" className={`size-1.5 rounded-full ${autoOn ? "bg-emerald-400" : "bg-neutral-600"}`} /> <span className="max-lg:hidden">Régie auto</span><span className="lg:hidden">Régie</span>
           </button>
           {deviceOpen && roles && (
             <div role="dialog" aria-label="Appareil" className="fixed inset-x-2 top-24 z-40 max-h-[calc(100dvh-7rem)] overflow-y-auto rounded-md border border-[#333] bg-[#0b0b0b] p-4 shadow-xl sm:absolute sm:inset-x-auto sm:left-0 sm:top-9 sm:w-[26rem]">
@@ -761,6 +777,20 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                   <Switch label="Mode studio" on={studioMode} disabled={!ready} onClick={() => void run("SetStudioModeEnabled", { studioModeEnabled: !studioMode })} />
                 </div>
               </div>
+              <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                <div>
+                  <p className="font-medium">{autoOn ? "Régie auto activée" : "Régie auto éteinte"}</p>
+                  <p className="text-[12px] text-neutral-500">{autoOn ? "Secours et drone gérés tout seuls." : "Un clic : on choisit les scènes évidentes pour toi."}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => (autoOn ? saveRoles({ enabled: false, autoEnabled: false }) : enableAuto())}
+                  className={`${flat} h-8 px-4 ${autoOn ? "" : "!border-white/30 !bg-white !text-black hover:!bg-white/90"}`}
+                >
+                  {autoOn ? "Désactiver" : "Activer"}
+                </button>
+              </div>
+              {autoIncomplete && <p className="-mt-2 mb-3 text-[12px] text-amber-300">On n&apos;a pas tout trouvé : choisis les scènes ci-dessous, puis réactive.</p>}
               <h2 className="text-[13px] font-semibold">Régie automatique</h2>
               <p className="mt-1 text-[12px] leading-relaxed text-neutral-500">
                 SYXTEE change de scène pour toi, mais seulement quand ta <strong className="font-medium text-neutral-300">scène Live</strong> est à l&apos;antenne : rien ne bouge tant que tu ne l&apos;as pas mise en direct.

@@ -5,7 +5,7 @@ import { requireStaff } from "@/lib/admin";
 import { staffCards } from "@/lib/staff-data";
 import { fmtAgo } from "@/lib/dashboard-data";
 import { listTickets, whoIs } from "@/lib/support";
-import { categoryLabel, isCategory } from "@/lib/support-categories";
+import { categoryLabel, isCategory, SUPPORT_CATEGORIES } from "@/lib/support-categories";
 
 export const metadata: Metadata = { title: "Admin · Support", robots: { index: false } };
 
@@ -23,7 +23,10 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
   const tab = TABS.find((t) => t.id === etat) ?? TABS[0];
   const cat = isCategory(categorie) ? categorie : null;
   // Une catégorie à la fois (menu de gauche) : « Tous » les regroupe, chaque catégorie reste séparée.
-  const all = (await listTickets({ state: "all", limit: 300 })).filter((t) => !cat || t.category === cat);
+  const every = await listTickets({ state: "all", limit: 300 });
+  const all = every.filter((t) => !cat || t.category === cat);
+  const waiting = (c: string | null) => every.filter((t) => (!c || t.category === c) && t.status === "open" && t.last_from === "user").length;
+  const catHref = (c: string | null) => `/admin/support${[c ? `categorie=${c}` : "", tab.id !== "attente" ? `etat=${tab.id}` : ""].filter(Boolean).length ? `?${[c ? `categorie=${c}` : "", tab.id !== "attente" ? `etat=${tab.id}` : ""].filter(Boolean).join("&")}` : ""}`;
   const qs = (e: string) => `?${[cat ? `categorie=${cat}` : "", e ? `etat=${e}` : ""].filter(Boolean).join("&")}`;
   const rows = all.filter((t) => (tab.id === "resolus" ? t.status === "resolved" : tab.id === "ouverts" ? t.status === "open" : t.status === "open" && t.last_from === "user"));
   const [names, agents] = await Promise.all([whoIs(rows.map((t) => t.user_id)), staffCards(rows.map((t) => t.assigned_to).filter((x): x is string => !!x))]);
@@ -31,7 +34,19 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
 
   return (
     <DashPage>
-      <h1 className="h-page mb-6">Support{cat ? ` : ${categoryLabel(cat)}` : ""}</h1>
+      <h1 className="h-page mb-6">Support</h1>
+      <nav aria-label="Catégories" className="mb-6 flex flex-wrap gap-2">
+        {[{ id: null as string | null, label: "Toutes" }, ...SUPPORT_CATEGORIES].map((c) => {
+          const on = (cat ?? null) === c.id;
+          const n = waiting(c.id);
+          return (
+            <Link key={c.id ?? "all"} href={catHref(c.id)} aria-current={on ? "page" : undefined} className={`inline-flex h-9 items-center gap-2 rounded-full border px-4 text-sm transition-colors ${on ? "border-foreground/40 bg-foreground/[0.1] text-foreground" : "border-line text-muted hover:text-foreground"}`}>
+              {c.label}
+              {n > 0 && <span className="rounded-full bg-accent px-1.5 text-[11px] font-medium tabular-nums text-on-accent">{n}</span>}
+            </Link>
+          );
+        })}
+      </nav>
       <nav aria-label="Filtrer" className="mb-6 flex gap-6 border-b border-line">
         {TABS.map((t) => (
           <Link

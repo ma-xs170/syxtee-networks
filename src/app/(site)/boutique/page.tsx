@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import BuyButton from "@/components/BuyButton";
 import Glow from "@/components/landing/Glow";
-import MeshBag from "@/components/landing/MeshBag";
 import RelayBox from "@/components/landing/RelayBox";
 import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button";
@@ -15,13 +14,12 @@ import { CATALOG, TIERS } from "@/lib/billing";
 
 export const metadata: Metadata = {
   title: "Boutique",
-  description: "Achète le SYXTEE Encodeur et ses accessoires, ou prends un abonnement. Avec l'Encodeur, 4 mois de l'abonnement le plus élevé sont offerts.",
+  description: "Achète le SYXTEE Encodeur, ou prends un abonnement. Avec l'Encodeur, 4 mois de l'abonnement le plus élevé sont offerts.",
   alternates: { canonical: "/boutique" },
 };
 
 export default async function BoutiquePage({ searchParams }: { searchParams: Promise<{ commande?: string }> }) {
   const { commande } = await searchParams;
-  const sac = product.accessories[0];
   // Sans prix Stripe configuré, pas de paiement : on propose d'être prévenu à la place.
   const canBuyEncoder = !!process.env.STRIPE_SECRET_KEY && !!process.env.STRIPE_PRICE_ENCODER;
   return (
@@ -34,7 +32,7 @@ export default async function BoutiquePage({ searchParams }: { searchParams: Pro
           <h1 className="h-serif mx-auto mt-8 max-w-[14ch] text-[clamp(3rem,8vw,5.5rem)]">
             <WordsReveal text="Achète ou abonne-toi." em={["abonne-toi."]} />
           </h1>
-          <p className="mx-auto mt-6 max-w-[560px] text-base leading-relaxed text-muted sm:text-lg">Le boîtier et ses accessoires en paiement unique, ou un abonnement pour l&apos;interface et le contrôle à distance.</p>
+          <p className="mx-auto mt-6 max-w-[560px] text-base leading-relaxed text-muted sm:text-lg">Le boîtier en paiement unique, ou un abonnement pour l&apos;interface et le contrôle à distance.</p>
           {commande === "ok" && <p role="status" className="mx-auto mt-6 max-w-md rounded-xl border border-ok/30 bg-ok/10 px-4 py-3 text-sm text-ok">Merci pour ta commande. Ton code d&apos;activation apparaît dans Appareils dès que le paiement est confirmé.</p>}
         </Container>
       </section>
@@ -58,24 +56,6 @@ export default async function BoutiquePage({ searchParams }: { searchParams: Pro
               <ButtonLink href="/encodeur#interface" variant="secondary" className="w-full">Voir l&apos;interface</ButtonLink>
             </div>
           </div>
-        </Container>
-      </section>
-
-      <section id="sac-mesh" className="scroll-mt-20 border-b border-line py-20 sm:py-28">
-        <Container className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="order-2 lg:order-1">
-            <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Accessoire</p>
-            <h2 className="h-serif mt-3 text-[clamp(2.25rem,4.5vw,3.5rem)]">Sac <em>Mesh.</em></h2>
-            <p className="mt-4 text-sm leading-relaxed text-muted">{sac.pitch}</p>
-            <ul className="mt-5 space-y-2 text-sm text-muted">
-              {sac.points.map((x) => <li key={x} className="flex gap-2.5"><span aria-hidden="true" className="text-foreground">+</span>{x}</li>)}
-            </ul>
-            <p className="mt-6 text-2xl font-medium tracking-tight text-foreground/80">{product.priceLabel(sac.price) ?? "Prix bientôt disponible"}</p>
-            <div className="mt-6 sm:max-w-sm">
-              {sac.price === null ? <ButtonLink href="/acces" variant="secondary" className="w-full">Être prévenu</ButtonLink> : <BuyButton productId="sac-mesh">Acheter</BuyButton>}
-            </div>
-          </div>
-          <div className="bento-cell order-1 p-6 sm:p-10 lg:order-2"><MeshBag /></div>
         </Container>
       </section>
 

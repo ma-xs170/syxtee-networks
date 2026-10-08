@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import EncoderDashboardDemo from "@/components/encoder/EncoderDashboardDemo";
 import Glow from "@/components/landing/Glow";
-import MeshBag from "@/components/landing/MeshBag";
 import RelayBox from "@/components/landing/RelayBox";
 import VisualSlot from "@/components/landing/VisualSlot";
 import { Container } from "@/components/ui";
@@ -79,25 +78,6 @@ export default function EncodeurPage() {
             </div>
           </div>
           <p className="mx-auto mt-4 max-w-4xl text-xs text-muted">Caractéristiques indicatives, susceptibles d&apos;évoluer avant la sortie.</p>
-        </Container>
-      </section>
-
-      {/* Accessoire : Sac Mesh */}
-      <section id="sac-mesh" className="scroll-mt-20 border-b border-line py-24 sm:py-32">
-        <Container className="grid items-center gap-12 lg:grid-cols-[1fr_1fr]">
-          <div className="bento-cell p-6 sm:p-10"><MeshBag /></div>
-          <div>
-            <StatusPill variant="dev" label="ACCESSOIRE" />
-            <h2 className="h-serif mt-6 text-[clamp(2.5rem,5vw,4rem)]">Le <em>Sac Mesh.</em></h2>
-            <p className="mt-5 max-w-[52ch] text-base leading-relaxed text-muted">{product.accessories[0].pitch}</p>
-            <ul className="mt-6 space-y-2.5 text-sm text-muted">
-              {product.accessories[0].points.map((x) => (
-                <li key={x} className="flex gap-2.5"><span aria-hidden="true" className="text-foreground">+</span>{x}</li>
-              ))}
-            </ul>
-            <p className="mt-6 text-2xl font-medium tracking-tight text-foreground/80">{product.priceLabel(product.accessories[0].price) ?? "Prix bientôt disponible"}</p>
-            <div className="mt-6"><ButtonLink href="/boutique#sac-mesh" variant="secondary">Voir dans la boutique</ButtonLink></div>
-          </div>
         </Container>
       </section>
 

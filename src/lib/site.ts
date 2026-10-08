@@ -22,8 +22,8 @@ export type NavItem = NavLink | NavMenu;
 // L'encodeur vit aussi dans le pied de page.
 export const nav: NavItem[] = [
   { label: "Contrôle à distance", href: "/controle-a-distance" },
-  { label: "Tarifs", href: "/tarifs" },
   { label: "Documentation", href: "/docs", arrow: true },
+  { label: "Tarifs", href: "/tarifs" },
 ];
 
 export const isMenu = (item: NavItem): item is NavMenu => "children" in item;

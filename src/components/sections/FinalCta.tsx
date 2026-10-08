@@ -11,8 +11,6 @@ export default function FinalCta() {
       <CloudBackdrop flip />
       <Container className="relative">
         <div className="tile relative mx-auto max-w-4xl rounded-[2rem] px-6 py-14 text-center sm:px-14 sm:py-20">
-          <span aria-hidden="true" className={`${corner} right-0 top-0 border-r-[5px] border-t-[5px]`} />
-          <span aria-hidden="true" className={`${corner} bottom-0 right-0 border-b-[5px] border-r-[5px]`} />
 
           <h2 className="h-hero mx-auto max-w-3xl">
             Prêt à streamer ? <Highlight>Demande ton accès.</Highlight>

@@ -992,3 +992,14 @@ select,
   .btn { min-height: 3rem; }
   button, [role="button"], select { min-height: 2.5rem; }
 }
+
+/* Tiroir mobile : les entrées arrivent l'une après l'autre (fondu, léger flou, montée). */
+@media (prefers-reduced-motion: no-preference) {
+  .stagger > * { animation: stagger-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .stagger > :nth-child(2) { animation-delay: 50ms; }
+  .stagger > :nth-child(3) { animation-delay: 100ms; }
+  .stagger > :nth-child(4) { animation-delay: 150ms; }
+  .stagger > :nth-child(5) { animation-delay: 200ms; }
+  .stagger > :nth-child(n+6) { animation-delay: 250ms; }
+}
+@keyframes stagger-in { from { opacity: 0; transform: translateY(8px); filter: blur(5px); } to { opacity: 1; transform: none; filter: none; } }

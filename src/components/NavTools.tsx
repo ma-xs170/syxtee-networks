@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import GlidePill from "./ui/GlidePill";
 import DataCenter from "./illustrations/DataCenter";
 import DiscordChat from "./illustrations/DiscordChat";
@@ -96,67 +97,192 @@ function NewDot() {
   );
 }
 
-type Open = { label: string; pinned: boolean } | null;
+const EASE = [0.22, 1, 0.36, 1] as const;
 
-/** Desktop : les menus déroulants et les liens simples, centrés dans la barre. */
+/** Une entrée du panneau : miniature, titre, description, flèche à droite. `soon` : grisée. Le fond de survol est la pastille partagée du panneau. */
+function PanelItem({ t, hovered, onHover, onClose, i, reduce }: { t: NavTool | DashTool; hovered: boolean; onHover: () => void; onClose: () => void; i: number; reduce: boolean | null }) {
+  const soon = "soon" in t && t.soon;
+  const external = t.href.startsWith("http");
+  return (
+    <motion.li initial={reduce ? false : { opacity: 0, y: 6, filter: "blur(6px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} transition={{ duration: 0.28, delay: reduce ? 0 : 0.03 * i, ease: EASE }}>
+      <Link
+        href={t.href}
+        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+        onClick={onClose}
+        onMouseEnter={onHover}
+        onFocus={onHover}
+        className={`group relative flex items-center gap-4 rounded-xl p-3 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-foreground ${soon ? "opacity-60 hover:opacity-100" : ""}`}
+      >
+        <GlidePill show={hovered} id="mega-pill" className="rounded-xl" />
+        <span className="relative z-10 h-14 w-14 shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.06]">
+          <ItemArt icon={t.icon} />
+        </span>
+        <span className="relative z-10 min-w-0 flex-1">
+          <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+            <ToolLabel t={t} />
+            {t.badge && <Badge>{t.badge}</Badge>}
+            {"locked" in t && t.locked && <LockIcon className="h-3.5 w-3.5 shrink-0 text-muted" />}
+          </span>
+          <span className="mt-0.5 block text-sm leading-snug text-muted">{t.desc}</span>
+        </span>
+        <span aria-hidden="true" className="relative z-10 text-muted transition-[transform,color] duration-200 group-hover:translate-x-0.5 group-hover:text-foreground">
+          →
+        </span>
+      </Link>
+    </motion.li>
+  );
+}
+
+function PanelContent({ menu, onClose, reduce }: { menu: AnyMenu; onClose: () => void; reduce: boolean | null }) {
+  const [hover, setHover] = useState<string | null>(null);
+  const groups = groupTools(menu.children);
+  const cols = menu.children.length > 3 && !groups ? "grid-cols-2" : "grid-cols-1";
+  const list = (tools: (NavTool | DashTool)[]) => (
+    <ul className={`grid gap-1 ${groups ? "grid-cols-1" : cols} ${groups ? "w-[300px]" : cols === "grid-cols-2" ? "w-[660px]" : "w-[340px]"}`} onMouseLeave={() => setHover(null)}>
+      {tools.map((t, i) => (
+        <PanelItem key={t.href} t={t} i={i} hovered={hover === t.href} onHover={() => setHover(t.href)} onClose={onClose} reduce={reduce} />
+      ))}
+    </ul>
+  );
+  return (
+    <div className="p-3">
+      {groups ? (
+        <div className="flex gap-6 p-1">
+          {groups.map(([title, tools]) => (
+            <div key={title}>
+              <p className="label-mono px-3 pb-2 pt-1">{title}</p>
+              {list(tools)}
+            </div>
+          ))}
+        </div>
+      ) : (
+        list(menu.children)
+      )}
+      {menu.note && <p className="mt-2 border-t border-line px-4 pb-1 pt-3 text-xs text-muted">{menu.note}</p>}
+    </div>
+  );
+}
+
+/** Desktop : barre de liens et de menus. Une seule pastille glisse entre les entrées ; un seul panneau change de taille et de contenu
+ *  en douceur (flou + fondu) quand on passe d'un menu à l'autre. Ouverture au survol (fermeture après 100 ms) ou au clic, Échap, flèches. */
 export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: (href: string) => boolean }) {
-  const [open, setOpen] = useState<Open>(null);
+  const reduce = useReducedMotion();
+  const [open, setOpen] = useState<string | null>(null);
+  const [pinned, setPinned] = useState(false);
+  const [hover, setHover] = useState<string | null>(null);
+  const [size, setSize] = useState({ w: 0, h: 0 });
+  const [center, setCenter] = useState(0);
   const wrap = useRef<HTMLElement>(null);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const triggers = useRef<Record<string, HTMLElement | null>>({});
+  const panelId = useId();
+  const menus = items.filter(isAnyMenu);
+  const current = menus.find((m) => m.label === open) ?? null;
 
-  // Clic à l'extérieur
+  const cancel = () => clearTimeout(leaveTimer.current);
+  const show = (label: string, pin = false) => {
+    cancel();
+    const el = triggers.current[label];
+    const box = wrap.current?.getBoundingClientRect();
+    if (el && box) {
+      const r = el.getBoundingClientRect();
+      setCenter(r.left - box.left + r.width / 2);
+    }
+    setOpen(label);
+    if (pin) setPinned(true);
+  };
+  const close = () => {
+    cancel();
+    setOpen(null);
+    setPinned(false);
+  };
+  useEffect(() => cancel, []);
   useEffect(() => {
     if (!open) return;
     const onDown = (e: PointerEvent) => {
-      if (!wrap.current?.contains(e.target as Node)) setOpen(null);
+      if (!wrap.current?.contains(e.target as Node)) close();
     };
     document.addEventListener("pointerdown", onDown);
     return () => document.removeEventListener("pointerdown", onDown);
   }, [open]);
 
-  useEffect(() => () => clearTimeout(leaveTimer.current), []);
-  const [hover, setHover] = useState<string | null>(null);
+  // Mesure du contenu courant : le panneau s'adapte (largeur et hauteur) à chaque menu.
+  const measure = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
+    const ro = new ResizeObserver(() => setSize({ w: node.offsetWidth, h: node.offsetHeight }));
+    ro.observe(node);
+    setSize({ w: node.offsetWidth, h: node.offsetHeight });
+  }, []);
+
+  const pill = "relative whitespace-nowrap rounded-full px-4 py-2 text-sm transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-foreground";
+  const dur = reduce ? 0 : 0.28;
 
   return (
     <nav
       ref={wrap}
       aria-label="Navigation principale"
-      className="hidden items-center gap-1 lg:flex"
-      onMouseLeave={() => setHover(null)}
+      className="relative hidden items-center gap-1 lg:flex"
+      onMouseEnter={cancel}
+      onMouseLeave={() => {
+        setHover(null);
+        leaveTimer.current = setTimeout(() => !pinned && setOpen(null), 100);
+      }}
       onBlur={(e) => {
-        if (!wrap.current?.contains(e.relatedTarget as Node)) setOpen(null);
+        if (!wrap.current?.contains(e.relatedTarget as Node)) close();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape" && open) {
+          e.preventDefault();
+          triggers.current[open]?.focus();
+          close();
+        }
+        if (e.key === "ArrowDown" && open) {
+          e.preventDefault();
+          wrap.current?.querySelector<HTMLAnchorElement>(`#${CSS.escape(panelId)} a`)?.focus();
+        }
       }}
     >
-      {items.map((item) =>
-        isAnyMenu(item) ? (
-          <Dropdown
-            key={item.label}
-            menu={item}
-            active={item.children.some((t) => isActive(t.href))}
-            open={open?.label === item.label}
-            onEnter={() => {
-              clearTimeout(leaveTimer.current);
-              setOpen((o) => (o?.label === item.label ? o : { label: item.label, pinned: false }));
+      {items.map((item) => {
+        const label = isAnyMenu(item) ? item.label : item.href;
+        const active = isAnyMenu(item) ? item.children.some((t) => isActive(t.href)) : isActive(item.href);
+        const common = {
+          onMouseEnter: () => {
+            setHover(label);
+            if (isAnyMenu(item)) show(item.label);
+            else if (!pinned) setOpen(null);
+          },
+          onFocus: () => setHover(label),
+        };
+        return isAnyMenu(item) ? (
+          <button
+            key={label}
+            ref={(el) => {
+              triggers.current[label] = el;
             }}
-            onLeave={() => {
-              leaveTimer.current = setTimeout(() => setOpen((o) => (o?.pinned ? o : null)), 120);
-            }}
-            onToggle={() => setOpen((o) => (o?.label === item.label && o.pinned ? null : { label: item.label, pinned: true }))}
-            onPin={() => setOpen({ label: item.label, pinned: true })}
-            onClose={() => setOpen(null)}
-          />
+            type="button"
+            aria-expanded={open === label}
+            aria-controls={panelId}
+            onClick={() => (open === label && pinned ? close() : show(item.label, true))}
+            className={`${pill} flex items-center gap-1.5 ${active || open === label ? "text-foreground" : "text-foreground/75"}`}
+            {...common}
+          >
+            <GlidePill show={hover === label || open === label} id="site-nav-pill" className="rounded-full" />
+            <span className="relative z-10 flex items-center gap-1.5">
+              {item.label}
+              {item.dot && <NewDot />}
+              <Chevron open={open === label} />
+            </span>
+          </button>
         ) : (
           <Link
-            key={item.href}
+            key={label}
             href={item.href}
             {...(item.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-            aria-current={isActive(item.href) ? "page" : undefined}
-            onMouseEnter={() => setHover(item.href)}
-            onFocus={() => setHover(item.href)}
-            onBlur={() => setHover(null)}
-            className={`relative whitespace-nowrap rounded-full px-4 py-2 text-sm transition-colors hover:text-foreground ${isActive(item.href) ? "font-medium text-foreground" : "text-foreground/75"}`}
+            aria-current={active ? "page" : undefined}
+            className={`${pill} ${active ? "font-medium text-foreground" : "text-foreground/75"}`}
+            {...common}
           >
-            <GlidePill show={hover === item.href} id="site-nav-pill" className="rounded-full" />
+            <GlidePill show={hover === label} id="site-nav-pill" className="rounded-full" />
             <span className="relative z-10">
               {item.label}
               {"arrow" in item && item.arrow && (
@@ -166,158 +292,44 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
               )}
             </span>
           </Link>
-        ),
-      )}
+        );
+      })}
+
+      <AnimatePresence>
+        {current && (
+          <motion.div
+            key="mega"
+            id={panelId}
+            className="absolute left-0 top-full z-50 pt-3"
+            initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.97, filter: "blur(6px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)", x: Math.max(center - size.w / 2, -24) }}
+            exit={{ opacity: 0, scale: reduce ? 1 : 0.98, filter: reduce ? "none" : "blur(4px)", transition: { duration: 0.12 } }}
+            transition={{ duration: dur, ease: EASE, x: { type: "spring", stiffness: 420, damping: 38 } }}
+            style={{ transformOrigin: "top center" }}
+          >
+            <motion.div
+              className="relative overflow-hidden rounded-2xl border border-foreground/15 bg-background/95 shadow-[0_24px_60px_-12px_var(--shadow-pop)] backdrop-blur-xl"
+              animate={{ width: size.w || "auto", height: size.h || "auto" }}
+              transition={{ duration: dur, ease: EASE }}
+            >
+              <AnimatePresence initial={false} mode="popLayout">
+                <motion.div
+                  key={current.label}
+                  ref={measure}
+                  className="w-max"
+                  initial={reduce ? { opacity: 0 } : { opacity: 0, filter: "blur(6px)", y: 6 }}
+                  animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+                  exit={{ opacity: 0, filter: reduce ? "none" : "blur(6px)", y: reduce ? 0 : -6, transition: { duration: 0.16 } }}
+                  transition={{ duration: dur, ease: EASE }}
+                >
+                  <PanelContent menu={current} onClose={close} reduce={reduce} />
+                </motion.div>
+              </AnimatePresence>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
-  );
-}
-
-function Dropdown({
-  menu,
-  active,
-  open,
-  onEnter,
-  onLeave,
-  onToggle,
-  onPin,
-  onClose,
-}: {
-  menu: AnyMenu;
-  active: boolean;
-  open: boolean;
-  onEnter: () => void;
-  onLeave: () => void;
-  onToggle: () => void;
-  onPin: () => void;
-  onClose: () => void;
-}) {
-  const trigger = useRef<HTMLButtonElement>(null);
-  const panel = useRef<HTMLDivElement>(null);
-  const panelId = useId();
-  const grid = menu.children.length > 3; // 4 entrées : grille 2 × 2 compacte
-  const groups = groupTools(menu.children);
-
-  const links = () => Array.from(panel.current?.querySelectorAll<HTMLAnchorElement>("a") ?? []);
-
-  return (
-    <div
-      className="relative"
-      onMouseEnter={onEnter}
-      onMouseLeave={onLeave}
-      onKeyDown={(e) => {
-        if (e.key === "Escape" && open) {
-          e.preventDefault();
-          onClose();
-          trigger.current?.focus();
-          return;
-        }
-        // Flèches : parcourir les entrées du panneau
-        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-          e.preventDefault();
-          if (!open) onPin();
-          // Après le rendu : le panneau doit être visible pour recevoir le focus
-          setTimeout(() => {
-            const all = links();
-            const i = all.indexOf(document.activeElement as HTMLAnchorElement);
-            const next = e.key === "ArrowDown" ? (i + 1) % all.length : i <= 0 ? all.length - 1 : i - 1;
-            all[next]?.focus();
-          }, 30);
-        }
-      }}
-    >
-      <button
-        ref={trigger}
-        type="button"
-        aria-expanded={open}
-        aria-controls={panelId}
-        onClick={onToggle}
-        className={`flex items-center gap-1.5 whitespace-nowrap text-sm transition-colors hover:text-foreground ${active || open ? "text-foreground" : "text-foreground/75"}`}
-      >
-        {menu.label}
-        {menu.dot && <NewDot />}
-        <Chevron open={open} />
-      </button>
-
-      <div
-        ref={panel}
-        id={panelId}
-        className={`absolute left-1/2 top-full z-50 -translate-x-1/2 pt-4 transition duration-150 ease-out ${
-          open ? "visible translate-y-0 opacity-100" : "pointer-events-none invisible -translate-y-2 opacity-0"
-        }`}
-      >
-        <div className="rounded-2xl border border-foreground/20 bg-background p-3 shadow-[0_24px_60px_-12px_var(--shadow-pop)] backdrop-blur-md">
-          {groups ? (
-            <div className="flex gap-6 p-1">
-              {groups.map(([title, tools]) => (
-                <div key={title} className="w-[270px]">
-                  <p className="label-mono px-3 pb-2 pt-1">{title}</p>
-                  <ul className="space-y-1">
-                    {tools.map((t) => (
-                      <li key={t.href}>
-                        <Link href={t.href} onClick={onClose} className="group flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-foreground/10 focus-visible:bg-foreground/10">
-                          <span className="h-14 w-14 shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.06]">
-                            <ItemArt icon={t.icon} />
-                          </span>
-                          <span className="min-w-0">
-                            <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-                              <ToolLabel t={t} />
-                              {t.badge && <Badge>{t.badge}</Badge>}
-                            </span>
-                            <span className="mt-0.5 block text-sm leading-snug text-muted">{t.desc}</span>
-                          </span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          ) : (
-          <ul className={grid ? "grid w-[660px] grid-cols-2 gap-1" : "flex gap-2"}>
-            {menu.children.map((t) => (
-              <li key={t.href}>
-                {grid ? (
-                  <Link href={t.href} onClick={onClose} className={`group flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-foreground/10 focus-visible:bg-foreground/10${"soon" in t && t.soon ? " opacity-60 hover:opacity-100" : ""}`}>
-                    <span className="h-16 w-16 shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.06]">
-                      <ItemArt icon={t.icon} />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-                        <ToolLabel t={t} />
-                        {t.badge && <Badge>{t.badge}</Badge>}
-                        {"locked" in t && t.locked && <LockIcon className="h-3.5 w-3.5 shrink-0 text-muted" />}
-                      </span>
-                      <span className="mt-0.5 block text-sm leading-snug text-muted">{t.desc}</span>
-                    </span>
-                  </Link>
-                ) : (
-                  <Link
-                    href={t.href}
-                    onClick={onClose}
-                    className={`group flex w-[220px] flex-col rounded-xl p-4 transition-colors hover:bg-foreground/10 focus-visible:bg-foreground/10${"soon" in t && t.soon ? " opacity-60 hover:opacity-100" : ""}`}
-                  >
-                    <div className="h-24 w-full transition-transform duration-300 ease-out group-hover:-translate-y-1 group-hover:scale-[1.04]">
-                      <ItemArt icon={t.icon} />
-                    </div>
-                    <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <span className="whitespace-nowrap text-sm font-medium text-foreground"><ToolLabel t={t} /></span>
-                      {t.badge && <Badge>{t.badge}</Badge>}
-                        {"locked" in t && t.locked && <LockIcon className="h-3.5 w-3.5 shrink-0 text-muted" />}
-                      <span aria-hidden="true" className="ml-auto text-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-                        →
-                      </span>
-                    </div>
-                    <span className="mt-1 text-sm leading-snug text-muted">{t.desc}</span>
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ul>
-          )}
-          {menu.note && <p className="mt-2 border-t border-line px-4 pb-1 pt-3 text-xs text-muted">{menu.note}</p>}
-        </div>
-      </div>
-    </div>
   );
 }
 

@@ -19,11 +19,25 @@ export type NavItem = NavLink | NavMenu;
 // Menu du site : les quatre arguments de l'accueil. « Demander l'accès » est le bouton d'action à droite (Nav.tsx), pas une entrée du menu.
 // L'encodeur et la documentation vivent dans le pied de page.
 export const nav: NavItem[] = [
-  { label: "Relais", href: "/relais" },
-  { label: "Relais à distance", href: "/controle-a-distance" },
+  {
+    label: "Produits",
+    children: [
+      { label: "Relais", href: "/relais", desc: "Réunis tes connexions en un flux stable.", icon: "rack" },
+      { label: "Relais à distance", href: "/controle-a-distance", desc: "Pilote ton OBS depuis ton téléphone.", icon: "docs" },
+      { label: "Espaces partagés", href: "/espaces-partages", desc: "Une équipe, plusieurs OBS, un seul endroit.", icon: "services" },
+      { label: "Encodeur", href: "/encodeur", desc: "Le sac encodeur IRL de SYXTEE.", icon: "studio", soon: true, badge: "BIENTÔT" },
+    ],
+  },
+  {
+    label: "Ressources",
+    children: [
+      { label: "Documentation", href: "/docs", desc: "Démarrer et configurer.", icon: "docs" },
+      { label: "Fonctionnement", href: "/fonctionnement", desc: "Comment le bonding réunit tes connexions.", icon: "route" },
+      { label: "FAQ", href: "/faq", desc: "Les questions fréquentes.", icon: "services" },
+      { label: "Discord", href: "https://discord.gg/CD68F8yZuZ", desc: "Support et communauté.", icon: "faq" },
+    ],
+  },
   { label: "Tarifs", href: "/tarifs" },
-  { label: "Docs", href: "/docs" },
-  { label: "Discord", href: "https://discord.gg/CD68F8yZuZ", arrow: true },
 ];
 
 export const isMenu = (item: NavItem): item is NavMenu => "children" in item;

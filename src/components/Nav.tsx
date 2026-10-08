@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { signOut } from "@/app/(auth)/actions";
 import { activeAlso, dashboardNav, withLocks } from "@/lib/dashboard-nav";
 import { nav, site } from "@/lib/site";
@@ -45,6 +45,8 @@ function dashboardGroups(admin: boolean): MenuGroup[] {
 
 export default function Nav({ variant = "site", admin = false }: { variant?: "site" | "dashboard"; admin?: boolean }) {
   const [open, setOpen] = useState(false);
+  const [compact, setCompact] = useState(false);
+  const sentinel = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const account = useAccount();
   const dash = variant === "dashboard";
@@ -57,11 +59,21 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
   useEffect(() => {
     if (dash) restoreStreamMode();
   }, [dash]);
+  // Barre qui se compacte après le haut de page : IntersectionObserver sur une sentinelle (pas d'écouteur de scroll).
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setCompact(!e.isIntersecting));
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-background/70 backdrop-blur-xl">
+    <>
+    <div ref={sentinel} aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-16" />
+    <header className={`sticky top-0 z-50 border-b border-line backdrop-blur-xl transition-[background-color] duration-200 ${compact ? "bg-background/90" : "bg-background/60"}`}>
       {/* 3 zones : logo à gauche, menus centrés, compte + Discord à droite */}
-      <div className={`mx-auto flex h-16 items-center justify-between gap-6 px-4 sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] ${dash ? "max-w-[1400px]" : "max-w-6xl"}`}>
+      <div className={`mx-auto flex h-16 origin-top items-center justify-between gap-6 px-4 transition-transform duration-200 motion-reduce:transition-none sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] ${dash ? "max-w-[1400px]" : "max-w-6xl"} ${compact ? "scale-[0.97]" : ""}`}>
         <Link href={dash ? "/dashboard" : "/"} onClick={() => setOpen(false)} className="flex shrink-0 items-center gap-3 justify-self-start" aria-label={dash ? "Dashboard SYXTEE" : "SYXTEE NETWORKS, accueil"}>
           <Image src="/logo-400.png" alt="" width={20} height={28} priority style={{ width: 20, height: "auto" }} className="ink-img" />
           <span className="whitespace-nowrap text-[15px] font-semibold tracking-[0.04em]">
@@ -113,8 +125,8 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
       </div>
 
       {open && (
-        <div className={`max-h-[calc(100dvh-5.5rem)] overflow-y-auto bg-background px-4 pb-6 pt-2 lg:hidden border-t border-line`}>
-          <nav aria-label="Navigation principale" className="flex flex-col">
+        <div className={`stagger max-h-[calc(100dvh-5.5rem)] overflow-y-auto bg-background px-4 pb-6 pt-2 lg:hidden border-t border-line`}>
+          <nav aria-label="Navigation principale" className="stagger flex flex-col">
             {items.map((item) =>
               "children" in item ? (
                 <NavAccordion
@@ -186,5 +198,6 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
         </div>
       )}
     </header>
+    </>
   );
 }

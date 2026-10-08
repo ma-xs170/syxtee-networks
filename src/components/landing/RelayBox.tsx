@@ -52,7 +52,7 @@ export default function RelayBox({ leds, live = true, className = "" }: { leds?:
       </g>
       {/* LED par port */}
       {ports.map((p, i) => {
-        const x = 236 + i * 68;
+        const x = 304 + i * 62;
         const st = leds?.[p.id] ?? "ok";
         return (
           <g key={p.id} transform={`translate(${x} 172)`}>

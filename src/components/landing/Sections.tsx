@@ -66,7 +66,7 @@ export function ObsBento() {
           <Cell className="md:col-span-2" title="Mixer audio à distance" text="Coupe un micro ou règle un niveau pendant que tu es sur le terrain.">
             <div className="flex h-24 items-end gap-1.5 pt-1" aria-hidden="true">
               {[40, 62, 50, 78, 66, 88, 58, 72, 46, 64].map((h, i) => (
-                <span key={i} className={`flex-1 rounded-t-md ${i > 7 ? "bg-warn" : "bg-ok"}`} style={{ height: `${h}%`, opacity: 0.8 }} />
+                <span key={i} className={`level-bar h-full flex-1 origin-bottom rounded-t-md ${i > 7 ? "bg-warn" : "bg-ok"}`} style={{ "--p": h / 100, transform: `scaleY(${h / 100})`, opacity: 0.8, animationDuration: `${650 + ((i * 137) % 500)}ms`, animationDelay: `${-((i * 211) % 700)}ms` } as React.CSSProperties} />
               ))}
             </div>
           </Cell>

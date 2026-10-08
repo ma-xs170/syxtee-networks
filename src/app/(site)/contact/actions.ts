@@ -5,10 +5,12 @@ import { z } from "zod";
 import { quoteRequested } from "@/emails/templates";
 import { allow, clientIp } from "@/lib/auth/rateLimit";
 import { sendEmail } from "@/lib/email/send";
+import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 
 // Formulaire public « Contacter » : demande de devis gratuit pour un live IRL en mobilité. Pas de compte requis.
 // Antispam comme « Demander l'accès » : champ piège, délai minimal, limites par IP et par adresse, adresses jetables et liens refusés.
-// La demande est envoyée par e-mail aux administrateurs (ADMIN_EMAILS). Un robot reçoit toujours « ok ».
+// La demande est enregistrée (table quote_requests, migration 0050) et envoyée par e-mail aux administrateurs (ADMIN_EMAILS).
+// Il suffit que l'un des deux marche. Un robot reçoit toujours « ok ».
 
 export type ContactState = { ok?: boolean; error?: string };
 
@@ -53,10 +55,16 @@ export async function contactAction(_prev: ContactState, form: FormData): Promis
   if (!(await allow("contact-global", 60, 3600))) return { error: "Beaucoup de demandes en ce moment. Réessaie dans un moment." };
 
   const admins = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim()).filter(Boolean);
-  if (admins.length === 0) {
-    console.error("contact : ADMIN_EMAILS vide, demande de devis non transmise");
-    return { error: "Envoi impossible pour le moment. Réessaie plus tard." };
+  let saved = false;
+  if (hasAdmin) {
+    const { error } = await createAdminClient().from("quote_requests").insert({
+      name: d.name, email: d.email, phone: d.phone, channel: d.channel, event_type: d.event_type, location: d.location,
+      event_date: d.date, duration: d.duration, audience: d.audience, needs, message: d.message,
+    });
+    if (error) console.error("quote_requests", error.message);
+    else saved = true;
   }
+  if (!saved && admins.length === 0) return { error: "Envoi impossible pour le moment. Réessaie plus tard." };
   after(async () => {
     const mail = quoteRequested({ ...d, needs });
     for (const a of admins) await sendEmail(a, mail);

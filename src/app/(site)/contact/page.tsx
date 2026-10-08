@@ -10,8 +10,6 @@ export const metadata: Metadata = {
   alternates: { canonical: "/contact" },
 };
 
-const EXAMPLES = ["Marathon et courses à pied", "Course cycliste", "Manifestation publique", "Festival et concert", "Événement sportif", "Reportage en mobilité"];
-
 export default function ContactPage() {
   return (
     <>
@@ -30,24 +28,11 @@ export default function ContactPage() {
           <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
             <div className="rounded-2xl border border-line bg-surface p-6">
               <p className="font-semibold">Devis gratuit</p>
-              <p className="mt-2 text-sm leading-relaxed text-muted">Décris ton projet et reçois une estimation personnalisée, sans engagement.</p>
+              <p className="mt-2 text-sm leading-relaxed text-muted">Marathon, manifestation publique, festival, reportage… Décris ton projet et reçois une estimation personnalisée, sans engagement.</p>
             </div>
-            <div className="rounded-2xl border border-line p-6">
-              <p className="font-semibold">Pour quels événements ?</p>
-              <ul className="mt-4 space-y-2.5">
-                {EXAMPLES.map((x) => (
-                  <li key={x} className="flex gap-2.5 text-sm text-muted"><span aria-hidden="true" className="text-foreground">+</span>{x}</li>
-                ))}
-              </ul>
-              <p className="mt-4 text-sm text-muted">Et tout autre direct en déplacement : dis-nous lequel.</p>
-            </div>
-            <div className="rounded-2xl border border-line p-6">
-              <p className="font-semibold">Une autre question ?</p>
-              <p className="mt-2 text-sm leading-relaxed text-muted">
-                Consulte la <Link href="/faq" className="text-foreground underline underline-offset-4">FAQ</Link>, ou rejoins la communauté sur{" "}
-                <a href={site.discord} target="_blank" rel="noopener noreferrer" className="text-foreground underline underline-offset-4">Discord</a>.
-              </p>
-            </div>
+            <p className="px-1 text-sm text-muted">
+              Une question ? <Link href="/faq" className="text-foreground underline underline-offset-4">FAQ</Link> ou <a href={site.discord} target="_blank" rel="noopener noreferrer" className="text-foreground underline underline-offset-4">Discord</a>.
+            </p>
           </aside>
         </Container>
       </section>

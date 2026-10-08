@@ -25,7 +25,22 @@ const branch = (i: number) => {
 
 export default function CircuitArt({ className = "" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 760 200" role="img" aria-label="Le plugin SYXTEE envoie ton direct vers YouTube, Twitch, Kick, Instagram, TikTok, Facebook et X" className={`h-auto w-full text-foreground ${className}`} fill="none" strokeLinecap="round">
+    <>
+    {/* Mobile : le dessin serait trop petit, on garde le logo et les plateformes en grille. */}
+    <div className={`flex flex-col items-center gap-6 sm:hidden ${className}`} role="img" aria-label="Le plugin SYXTEE envoie ton direct vers YouTube, Twitch, Kick, Instagram, TikTok, Facebook et X">
+      <span className="grid size-14 place-items-center rounded-full border border-line-strong bg-surface">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-400.png" alt="" width={22} height={31} className="ink-img" />
+      </span>
+      <ul className="flex flex-wrap items-center justify-center gap-3">
+        {PLATFORMS.map((p) => (
+          <li key={p.label} className="grid size-12 place-items-center rounded-xl border border-line bg-surface">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d={p.icon.path} /></svg>
+          </li>
+        ))}
+      </ul>
+    </div>
+    <svg viewBox="0 0 760 200" role="img" aria-label="Le plugin SYXTEE envoie ton direct vers YouTube, Twitch, Kick, Instagram, TikTok, Facebook et X" className={`hidden h-auto w-full text-foreground sm:block ${className}`} fill="none" strokeLinecap="round">
       {PLATFORMS.map((p, i) => {
         const b = branch(i);
         return (
@@ -43,5 +58,6 @@ export default function CircuitArt({ className = "" }: { className?: string }) {
       <circle cx={CX} cy={HUB_Y} r="28" fill="currentColor" fillOpacity="0.04" stroke="currentColor" strokeOpacity="0.22" strokeWidth="1.2" />
       <image href="/logo-400.png" x={CX - 9} y={HUB_Y - 13} width="18" height="26" className="ink-img" />
     </svg>
+    </>
   );
 }

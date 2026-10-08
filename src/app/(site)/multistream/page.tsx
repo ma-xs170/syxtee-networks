@@ -59,7 +59,7 @@ export default function MultistreamPage() {
             {REASONS.map(([t, x], i) => {
               const Art = ART[i];
               return (
-              <article key={t} className="group relative overflow-hidden bento-cell p-6 pb-24 sm:p-7 sm:pb-28">
+              <article key={t} className="group relative overflow-hidden bento-cell p-6 sm:p-7 sm:pb-28">
                 <Art />
                 <h3 className="text-lg font-semibold tracking-tight">{t}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{x}</p>

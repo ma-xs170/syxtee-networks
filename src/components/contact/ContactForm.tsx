@@ -50,56 +50,61 @@ export default function ContactForm() {
           <input id="c-email" name="email" type="email" required maxLength={160} autoComplete="email" placeholder="jean@exemple.fr" className={field} />
         </div>
         <div className="grid gap-2">
-          <label htmlFor="c-phone" className={label}>Téléphone</label>
-          <input id="c-phone" name="phone" type="tel" maxLength={30} autoComplete="tel" placeholder="06 12 34 56 78" className={field} />
-        </div>
-        <div className="grid gap-2">
-          <label htmlFor="c-channel" className={label}>Ta chaîne</label>
-          <input id="c-channel" name="channel" maxLength={200} placeholder="twitch.tv/ton-pseudo" className={field} />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <div className="grid gap-2">
           <label htmlFor="c-type" className={label}>Type d&apos;événement *</label>
           <Select id="c-type" name="event_type" required placeholder="Sélectionne un type" options={EVENT_TYPES} />
         </div>
         <div className="grid gap-2">
           <label htmlFor="c-location" className={label}>Lieu ou ville *</label>
-          <input id="c-location" name="location" required maxLength={120} placeholder="Ex. : Paris, parcours du marathon" className={field} />
-        </div>
-        <div className="grid gap-2">
-          <label htmlFor="c-date" className={label}>Date prévue</label>
-          <input id="c-date" name="date" maxLength={60} placeholder="Ex. : 12 avril 2027" className={field} />
-        </div>
-        <div className="grid gap-2">
-          <label htmlFor="c-duration" className={label}>Durée du direct</label>
-          <Select id="c-duration" name="duration" placeholder="Sélectionne une durée" options={DURATIONS} />
+          <input id="c-location" name="location" required maxLength={120} placeholder="Ex. : Paris" className={field} />
         </div>
       </div>
-
-      <div className="grid gap-2">
-        <label htmlFor="c-audience" className={label}>Audience ou foule attendue</label>
-        <input id="c-audience" name="audience" maxLength={60} placeholder="Ex. : 5 000 spectateurs sur place, 800 viewers en ligne" className={field} />
-      </div>
-
-      <fieldset className="grid gap-3">
-        <legend className={`${label} mb-1`}>Ce dont tu as besoin</legend>
-        <div className="flex flex-wrap gap-2">
-          {NEEDS.map((n) => (
-            <label key={n} className="cursor-pointer">
-              <input type="checkbox" name="needs" value={n} className="peer sr-only" />
-              <span className="flex h-10 items-center rounded-xl border border-line bg-input px-4 text-sm text-muted transition-colors hover:border-line-strong hover:text-foreground peer-checked:border-foreground/50 peer-checked:bg-surface-2 peer-checked:text-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-foreground/30">{n}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
 
       <div className="grid gap-2">
         <label htmlFor="c-message" className={label}>Décris ton projet *</label>
-        <textarea id="c-message" name="message" required minLength={10} rows={6} maxLength={2000} placeholder="Ton projet, le parcours ou le lieu, les contraintes (réseau, foule, accès), ton budget approximatif…" className={`${field} h-auto py-3`} />
-        <p className={hint}>Plus tu donnes de détails, plus le devis sera précis.</p>
+        <textarea id="c-message" name="message" required minLength={10} rows={5} maxLength={2000} placeholder="Ton projet, le parcours, les contraintes, ton budget approximatif…" className={`${field} h-auto py-3`} />
       </div>
+
+      <details className="group rounded-xl border border-line bg-surface">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-sm font-medium [&::-webkit-details-marker]:hidden">
+          <span>Ajouter des détails <span className="font-normal text-muted">(facultatif)</span></span>
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="shrink-0 text-muted transition-transform group-open:rotate-180"><path d="m6 9 6 6 6-6" /></svg>
+        </summary>
+        <div className="space-y-5 border-t border-line p-4">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="grid gap-2">
+              <label htmlFor="c-date" className={label}>Date prévue</label>
+              <input id="c-date" name="date" maxLength={60} placeholder="Ex. : 12 avril 2027" className={field} />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="c-duration" className={label}>Durée du direct</label>
+              <Select id="c-duration" name="duration" placeholder="Sélectionne" options={DURATIONS} />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="c-phone" className={label}>Téléphone</label>
+              <input id="c-phone" name="phone" type="tel" maxLength={30} autoComplete="tel" placeholder="06 12 34 56 78" className={field} />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="c-channel" className={label}>Ta chaîne</label>
+              <input id="c-channel" name="channel" maxLength={200} placeholder="twitch.tv/ton-pseudo" className={field} />
+            </div>
+          </div>
+          <div className="grid gap-2">
+            <label htmlFor="c-audience" className={label}>Audience attendue</label>
+            <input id="c-audience" name="audience" maxLength={60} placeholder="Ex. : 5 000 spectateurs sur place" className={field} />
+          </div>
+          <fieldset className="grid gap-3">
+            <legend className={`${label} mb-1`}>Besoins</legend>
+            <div className="flex flex-wrap gap-2">
+              {NEEDS.map((n) => (
+                <label key={n} className="cursor-pointer">
+                  <input type="checkbox" name="needs" value={n} className="peer sr-only" />
+                  <span className="flex h-10 items-center rounded-xl border border-line bg-input px-4 text-sm text-muted transition-colors hover:border-line-strong hover:text-foreground peer-checked:border-foreground/50 peer-checked:bg-surface-2 peer-checked:text-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-foreground/30">{n}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        </div>
+      </details>
 
       <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
         <label>
@@ -123,7 +128,6 @@ export default function ContactForm() {
         {pending ? <span aria-hidden="true" className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none" /> : <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" /></svg>}
         {pending ? "Envoi…" : "Envoyer ma demande de devis"}
       </button>
-      <p className="text-center text-xs text-muted">Ces informations ne servent qu&apos;à préparer ton devis.</p>
     </form>
   );
 }

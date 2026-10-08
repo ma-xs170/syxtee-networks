@@ -133,7 +133,7 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
                   aria-current={isActive(item.href) ? "page" : undefined}
                   className={`border-b border-line py-4 text-base hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-muted"}`}
                 >
-                  {item.label}
+                  <span className={"underline" in item && item.underline ? "underline underline-offset-4 decoration-foreground/50" : ""}>{item.label}</span>
                   {"arrow" in item && item.arrow && <span aria-hidden="true"> ↗</span>}
                 </Link>
               ),

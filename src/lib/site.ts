@@ -11,7 +11,7 @@ export const site = {
 import type { GlassName } from "@/components/ui/GlassIconView";
 
 export type ToolIcon = "rack" | "phone" | "dish" | "esim" | "route" | "services" | "docs" | "faq" | "tower" | "studio" | "map";
-export type NavLink = { label: string; href: string; badge?: string; /** Flèche ↗ à droite : page à part (documentation). */ arrow?: boolean };
+export type NavLink = { label: string; href: string; badge?: string; /** Flèche ↗ à droite : page à part (documentation). */ arrow?: boolean; /** Libellé souligné : entrée mise en avant (Contacter). */ underline?: boolean };
 /** `soon` : produit pas encore sorti, affiché grisé dans les menus (le lien reste cliquable). */
 export type NavTool = NavLink & { desc: string; icon: ToolIcon; /** Miniature verre 3D (menus de la navigation). */ glass?: GlassName; soon?: boolean; /** Produit SYXTEE : affiché « (S) SYXTEE <fonction> » avec le logo. */ wordmark?: string; /** Sous-section du menu (titre de colonne). */ group?: string };
 /** Menu déroulant : `dot` = point rouge de nouveauté à côté du libellé, `note` = ligne en pied de panneau. */
@@ -24,7 +24,7 @@ export const nav: NavItem[] = [
   { label: "Contrôle à distance", href: "/controle-a-distance" },
   { label: "Multistream", href: "/multistream" },
   { label: "Tarifs", href: "/tarifs" },
-  { label: "Contacter", href: "/contact" },
+  { label: "Contacter", href: "/contact", underline: true },
 ];
 
 export const isMenu = (item: NavItem): item is NavMenu => "children" in item;

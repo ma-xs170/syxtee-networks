@@ -290,7 +290,7 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
             {...common}
           >
             <GlidePill show={hover === label} id="site-nav-pill" className="rounded-full" />
-            <span className="relative z-10">
+            <span className={`relative z-10 ${"underline" in item && item.underline ? "underline underline-offset-[6px] decoration-foreground/50" : ""}`}>
               {item.label}
               {"arrow" in item && item.arrow && (
                 <span aria-hidden="true" className="ml-1 inline-block text-foreground/60">

@@ -1,3 +1,4 @@
+import MacAndPc from "@/components/landing/MacAndPc";
 import Link from "next/link";
 import { Container } from "../ui";
 import { ButtonLink } from "../ui/Button";
@@ -72,18 +73,14 @@ export function ObsBento() {
           </Cell>
           <Cell className="md:col-span-2" title="Espaces partagés" text="Invite un modérateur ou un monteur à piloter avec toi, chacun avec son compte et son rôle.">
             <div className="flex -space-x-2 pt-2" aria-hidden="true">
-              {["M", "L", "S", "+"].map((l, i) => (
-                <span key={l} className="grid h-11 w-11 place-items-center rounded-xl border border-background bg-gradient-to-br from-violet-500 to-pink-500 text-sm font-semibold text-white" style={{ opacity: 1 - i * 0.12 }}>{l}</span>
+              {[["M", "from-violet-500 to-pink-500"], ["L", "from-sky-500 to-blue-600"], ["S", "from-emerald-500 to-teal-600"], ["+", "from-amber-400 to-orange-500"]].map(([l, c]) => (
+                <span key={l} className={`grid h-11 w-11 place-items-center rounded-xl border border-background bg-gradient-to-br ${c} text-sm font-semibold text-white`}>{l}</span>
               ))}
             </div>
           </Cell>
           <Cell className="md:col-span-2" title="Tourne sur ton propre PC ou Mac" text="Zéro serveur à louer. Tu relies ton ordinateur avec un code.">
-            <p className="inline-flex items-center gap-3 rounded-xl border border-line-strong bg-background/60 px-5 py-3 font-mono text-lg tracking-[0.3em]">SYX-4F7K</p>
-            <p className={`${cap} mt-2`}>Exemple de code de pairing</p>
+            <MacAndPc className="max-w-[420px]" />
           </Cell>
-        </div>
-        <div className="bento-cell mt-4 p-6">
-          <Diagram />
         </div>
       </Container>
     </section>

@@ -2,9 +2,10 @@ import Link from "next/link";
 import CloudBackdrop from "../home/CloudBackdrop";
 import { Container } from "../ui";
 import Highlight from "../ui/Highlight";
-import { MultistreamDock, PlatformLogos } from "./Multistream";
+import DeviceFrame from "../device/DeviceFrame";
+import { SHOTS } from "../device/shots";
 
-// Accueil : hero sombre et épuré. Un titre, une phrase, un bouton, puis le multistream (le dock et les logos des plateformes).
+// Accueil : hero sombre et épuré. Le site est le contrôle à distance d'OBS Studio, avec multistream et relais : un titre, une phrase, un bouton, la capture du contrôle.
 // Le reste de la page suit le thème choisi.
 
 const btn =
@@ -17,10 +18,10 @@ export default function Hero() {
       <Container className="relative pb-20 pt-[9rem] sm:pb-28 sm:pt-[11rem]">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="rise h-hero" style={{ "--i": 0 } as React.CSSProperties}>
-            Un direct. <Highlight>Toutes tes plateformes.</Highlight>
+            Contrôle à distance d&apos;OBS Studio. <Highlight>Avec multistream et relais.</Highlight>
           </h1>
           <p className="rise mx-auto mt-6 max-w-lg text-base leading-relaxed text-foreground/75 sm:text-lg" style={{ "--i": 1 } as React.CSSProperties}>
-            Lance ou arrête chaque diffusion d&apos;un toucher, depuis ton téléphone.
+            Pilote ton OBS depuis ton téléphone, diffuse vers toutes tes plateformes et garde un flux stable.
           </p>
           <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={{ "--i": 2 } as React.CSSProperties}>
             <Link href="/acces" className={`${btn} border border-line-strong bg-accent text-on-accent hover:bg-accent-hover`}>
@@ -33,11 +34,8 @@ export default function Hero() {
           </div>
         </div>
 
-        <div className="rise mx-auto mt-16 max-w-md sm:mt-20" style={{ "--i": 3 } as React.CSSProperties}>
-          <MultistreamDock />
-        </div>
-        <div className="rise mt-14" style={{ "--i": 4 } as React.CSSProperties}>
-          <PlatformLogos />
+        <div className="rise mx-auto mt-14 max-w-4xl sm:mt-16" style={{ "--i": 3 } as React.CSSProperties}>
+          <DeviceFrame variant="desktop" shot={SHOTS.controleBureau} priority />
         </div>
       </Container>
     </section>

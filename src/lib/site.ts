@@ -21,6 +21,7 @@ export type NavItem = NavLink | NavMenu;
 export const nav: NavItem[] = [
   { label: "Relais", href: "/relais" },
   { label: "Contrôle à distance", href: "/controle-a-distance" },
+  { label: "Multistream", href: "/#multistream" },
   { label: "Espaces partagés", href: "/espaces-partages" },
   { label: "Tarifs", href: "/tarifs" },
 ];

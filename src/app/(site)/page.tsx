@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import { IntegrationSection, LandingFinalCta, LandingHero, LiveDemoSection } from "@/components/landing/Landing";
-import { BentoSection, FaqSection, AppSection, PricingCards, SchemaSection, StepsSection } from "@/components/landing/Landing2";
-import Glow from "@/components/landing/Glow";
+import { EncoderSection, FaqSection, FinalCta, ObsBento, ObsHeroSection, PricingSection, RelaySection } from "@/components/landing/Sections";
 
 export const metadata: Metadata = {
-  title: { absolute: "Contrôle à distance d'OBS Studio, multistream et relais · SYXTEE NETWORKS" },
+  title: { absolute: "OBS CLOUD : pilote ton OBS à distance · SYXTEE NETWORKS" },
   description:
-    "Pilote OBS Studio depuis ton téléphone, multistream vers Twitch, YouTube, Kick, TikTok, Facebook et X, et relais pour un flux stable en 4G, 5G, Wi-Fi et Starlink.",
+    "Pilote ton OBS à distance depuis ton téléphone ou ton navigateur, diffuse vers YouTube, Twitch et Kick, et garde un flux stable en 4G, 5G et satellite.",
   alternates: { canonical: "/" },
 };
 
@@ -14,17 +12,13 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
-      <Glow />
-      <LandingHero />
-      <LiveDemoSection />
-      <BentoSection />
-      <SchemaSection />
-      <StepsSection />
-      <AppSection />
-      <IntegrationSection />
-      <PricingCards />
+      <ObsHeroSection />
+      <ObsBento />
+      <RelaySection />
+      <EncoderSection />
+      <PricingSection />
       <FaqSection />
-      <LandingFinalCta />
+      <FinalCta />
     </>
   );
 }

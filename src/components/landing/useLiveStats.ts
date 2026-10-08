@@ -12,7 +12,7 @@ export const CONNS: { id: ConnId; label: string; base: number }[] = [
   { id: "4g", label: "4G", base: 2.4 },
   { id: "5g", label: "5G", base: 3.6 },
   { id: "esim", label: "eSIM", base: 1.4 },
-  { id: "sat", label: "Starlink", base: 1.9 },
+  { id: "sat", label: "Satellite", base: 1.9 },
 ];
 export type Status = "stable" | "unstable" | "offline";
 export type LiveSnapshot = {

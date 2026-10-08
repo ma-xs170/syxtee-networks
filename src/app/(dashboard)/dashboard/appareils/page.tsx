@@ -9,7 +9,7 @@ import BoxEmpty from "./BoxEmpty";
 
 export const metadata: Metadata = { title: "Appareils", robots: { index: false } };
 
-// Appareils : les boîtiers SYXTEE RELAIS liés (pas encore de pairing côté serveur : état vide) et les postes OBS reliés au compte.
+// Appareils : l'Encodeur (boîtier, en développement) (pas encore de pairing côté serveur : état vide) et les postes OBS reliés au compte.
 export default async function AppareilsPage() {
   await requireUser("/dashboard/appareils");
   return (
@@ -17,7 +17,7 @@ export default async function AppareilsPage() {
       <DashPage>
         <h1 className="mb-8 text-3xl font-medium tracking-[-0.03em] sm:text-[32px]">Appareils</h1>
         <div className="grid gap-6">
-          <Card title="Boîtiers SYXTEE RELAIS">
+          <Card title="Encodeur">
             <BoxEmpty />
           </Card>
           <Card title="Postes OBS" id="postes">

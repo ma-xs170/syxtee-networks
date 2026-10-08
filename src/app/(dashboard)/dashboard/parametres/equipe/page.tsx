@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import EmptyState from "@/components/ui/EmptyState";
 import { ButtonLink } from "@/components/ui/Button";
 import { Users } from "@/components/icons";

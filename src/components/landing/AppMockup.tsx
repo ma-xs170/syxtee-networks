@@ -40,7 +40,7 @@ export default function AppMockup() {
               {[
                 ["4G", bars(3)],
                 ["5G", bars(4)],
-                ["Starlink", bars(4)],
+                ["Satellite", bars(4)],
                 ["Température", <span key="t" className="font-mono">41 °C</span>],
               ].map(([k, v]) => (
                 <div key={String(k)}>

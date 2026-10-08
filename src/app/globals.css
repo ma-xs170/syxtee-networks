@@ -606,14 +606,6 @@ html[data-stream-mode="on"] [data-sensitive] {
   background: linear-gradient(to bottom, color-mix(in srgb, var(--foreground) 3%, var(--surface)), var(--surface));
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--foreground) 5%, transparent);
 }
-/* Grand mot-marque fantôme du pied de page. */
-@utility ghost-word {
-  font-weight: 700;
-  letter-spacing: -0.06em;
-  line-height: 0.8;
-  color: color-mix(in srgb, var(--foreground) 5%, transparent);
-  user-select: none;
-}
 
 /* Images blanches (logos) : inversées en thème clair */
 .ink-img { filter: var(--img-filter); }
@@ -1009,3 +1001,9 @@ select,
   .live-led { animation: live-led 1.8s ease-in-out infinite; }
 }
 @keyframes live-led { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+/* Niveaux audio de la démo : chaque barre monte et descend (transform seulement). */
+@media (prefers-reduced-motion: no-preference) {
+  .level-bar { animation: level 900ms ease-in-out infinite alternate; }
+}
+@keyframes level { from { transform: scaleY(0.15); } to { transform: scaleY(var(--p, 0.8)); } }

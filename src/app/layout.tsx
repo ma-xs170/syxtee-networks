@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     template: `%s · ${site.name}`,
   },
   description: site.description,
-  keywords: ["IRL", "SRTLA", "relais SRT", "Moblin", "IRL Pro", "BELABOX", "streaming", "Twitch", "Kick", "bonding 4G"],
+  keywords: ["IRL", "SRTLA", "relais SRT", "streaming", "Twitch", "Kick", "YouTube", "bonding 4G"],
   openGraph: {
     title: `${site.name} - Relais IRL low-cost`,
     description: site.description,

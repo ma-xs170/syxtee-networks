@@ -9,12 +9,10 @@ const columns: { title: string; links: NavLink[] }[] = [
   {
     title: "Produit",
     links: [
-      { label: "Relais", href: "/relais" },
-      { label: "Contrôle à distance", href: "/controle-a-distance" },
+      { label: "Contrôle à distance (OBS CLOUD)", href: "/controle-a-distance" },
       { label: "Espaces partagés", href: "/espaces-partages" },
+      { label: "Relais", href: "/relais" },
       { label: "Encodeur", href: "/encodeur", badge: "En développement" },
-      { label: "Tarifs", href: "/tarifs" },
-      { label: "Demander l'accès", href: "/acces" },
     ],
   },
   {
@@ -28,7 +26,7 @@ const columns: { title: string; links: NavLink[] }[] = [
   {
     title: "Communauté",
     links: [
-      { label: "Discord", href: site.discord },
+      { label: "Communauté", href: site.discord },
       { label: "Demander l'accès", href: "/acces" },
     ],
   },
@@ -36,10 +34,8 @@ const columns: { title: string; links: NavLink[] }[] = [
     title: "Légal",
     links: [
       { label: "Mentions légales", href: "/mentions-legales" },
-      { label: "Conditions d'utilisation", href: "/cgu" },
-      { label: "Conditions de vente", href: "/cgv" },
       { label: "Confidentialité", href: "/confidentialite" },
-      { label: "Crédits", href: "/credits" },
+      { label: "CGU", href: "/cgu" },
     ],
   },
 ];
@@ -47,9 +43,6 @@ const columns: { title: string; links: NavLink[] }[] = [
 export default function Footer() {
   return (
     <footer className="overflow-hidden border-t border-line">
-      <div aria-hidden="true" className="mx-auto max-w-6xl px-4 pt-10 sm:px-6">
-        <p className="ghost-word h-[0.62em] overflow-hidden text-[clamp(3rem,14.5vw,10.5rem)]">SYXTEE</p>
-      </div>
       <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-4 py-14 sm:px-6 md:grid-cols-5">
         <div className="col-span-2 md:col-span-1">
           <div className="flex items-center gap-3">

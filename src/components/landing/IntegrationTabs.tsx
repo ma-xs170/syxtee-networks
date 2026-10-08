@@ -5,9 +5,8 @@ import CodeBlock from "../ui/CodeBlock";
 
 // Onglets d'intégration : l'URL à coller dans chaque logiciel. Adresses d'exemple : la vraie URL est dans le dashboard, page Relais.
 const TABS = [
-  { id: "srtla", label: "SRTLA", title: "Encodeur · SRTLA", code: "Type : SRTLA\nURL : srtla://relais.syxtee-networks.fr:PORT\nIdentifiant : TON_ID_DE_FLUX" },
-  { id: "obs", label: "OBS", title: "OBS · Source média", code: "Entrée : srt://relais.syxtee-networks.fr:PORT?streamid=TON_ID\nMise en tampon réseau : 2 s\nReconnexion : activée" },
-  { id: "rtmp", label: "RTMP", title: "Encodeur · RTMP", code: "Serveur : rtmp://relais.syxtee-networks.fr/live\nClé de stream : TA_CLE" },
+  { id: "srtla", label: "Relais SRTLA", title: "Relais SRTLA", code: "URL : srtla://relais.syxtee-networks.fr:PORT\nIdentifiant de flux : TON_ID_DE_FLUX\nConnexions : 4G, 5G, satellite" },
+  { id: "rtmp", label: "RTMP", title: "RTMP", code: "Serveur : rtmp://relais.syxtee-networks.fr/live\nClé de stream : TA_CLE" },
 ] as const;
 
 export default function IntegrationTabs() {

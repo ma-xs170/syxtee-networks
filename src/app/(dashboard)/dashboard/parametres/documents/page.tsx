@@ -8,8 +8,8 @@ export const metadata: Metadata = { title: "Paramètres : documents", robots: { 
 const DOCS = [
   { label: "Documentation", text: "Démarrer, relais, contrôle à distance.", href: "/docs" },
   { label: "Fonctionnement", text: "Comment le bonding réunit tes connexions.", href: "/fonctionnement" },
-  { label: "OBS Studio", text: "Brancher ton OBS au relais et au plugin.", href: "/controle-a-distance" },
-  { label: "SRTLA", text: "Envoyer plusieurs connexions vers un seul relais.", href: "/relais" },
+  { label: "OBS CLOUD", text: "Relier ton ordinateur et piloter ton OBS.", href: "/controle-a-distance" },
+  { label: "Relais SRTLA", text: "Envoyer plusieurs connexions vers un seul relais.", href: "/relais" },
   { label: "FAQ", text: "Les questions fréquentes.", href: "/faq" },
 ];
 

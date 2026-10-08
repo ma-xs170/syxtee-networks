@@ -8,7 +8,7 @@ export default function RelayBox({ leds, live = true, className = "" }: { leds?:
     { id: "4g", label: "4G" },
     { id: "5g", label: "5G" },
     { id: "esim", label: "eSIM" },
-    { id: "sat", label: "STAR" },
+    { id: "sat", label: "SAT" },
   ];
   return (
     <svg viewBox="0 0 640 260" role="img" aria-label="Boîtier SYXTEE RELAIS" className={`h-auto w-full ${className}`}>

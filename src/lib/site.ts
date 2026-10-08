@@ -1,10 +1,9 @@
-import { product } from "@/config/product";
 // Configuration centrale du site — modifie ici les liens, textes clés et relais.
 export const site = {
   name: "SYXTEE NETWORKS",
   url: "https://syxtee-networks.vercel.app", // ← remplace par ton domaine final
   description:
-    "Streaming en direct : bonding 4G, 5G et Wi-Fi, santé du flux. Des serveurs dans le monde entier.",
+    "Streaming en direct : bonding 4G, 5G et satellite, santé du flux. Des serveurs dans le monde entier.",
   discord: "https://discord.gg/CD68F8yZuZ",
   year: new Date().getFullYear(),
 };
@@ -20,25 +19,12 @@ export type NavItem = NavLink | NavMenu;
 // Menu du site : les quatre arguments de l'accueil. « Demander l'accès » est le bouton d'action à droite (Nav.tsx), pas une entrée du menu.
 // L'encodeur et la documentation vivent dans le pied de page.
 export const nav: NavItem[] = [
-  {
-    label: "Produits",
-    children: [
-      { label: product.name, href: "/relais", desc: "Le boîtier qui réunit tes connexions.", icon: "rack" },
-      { label: product.remoteName, href: "/controle-a-distance", desc: "Pilote ton OBS depuis ton téléphone.", icon: "docs" },
-      { label: "Espaces partagés", href: "/espaces-partages", desc: "Une équipe, plusieurs OBS, un seul endroit.", icon: "services" },
-      { label: "Encodeur", href: "/encodeur", desc: "Le sac encodeur IRL de SYXTEE.", icon: "studio", soon: true, badge: "BIENTÔT" },
-    ],
-  },
-  {
-    label: "Ressources",
-    children: [
-      { label: "Documentation", href: "/docs", desc: "Démarrer et configurer.", icon: "docs" },
-      { label: "Fonctionnement", href: "/fonctionnement", desc: "Comment le bonding réunit tes connexions.", icon: "route" },
-      { label: "FAQ", href: "/faq", desc: "Les questions fréquentes.", icon: "services" },
-      { label: "Discord", href: "https://discord.gg/CD68F8yZuZ", desc: "Support et communauté.", icon: "faq" },
-    ],
-  },
+  { label: "Contrôle à distance", href: "/controle-a-distance" },
+  { label: "Relais", href: "/relais" },
+  { label: "Encodeur", href: "/encodeur" },
   { label: "Tarifs", href: "/tarifs" },
+  { label: "Docs", href: "/docs" },
+  { label: "Communauté", href: "https://discord.gg/CD68F8yZuZ", arrow: true },
 ];
 
 export const isMenu = (item: NavItem): item is NavMenu => "children" in item;
@@ -64,7 +50,7 @@ export const relays: Relay[] = [
   { city: "New York", region: "USA · Côte Est", status: "maintenance", protocols: ["SRTLA", "SRT"] },
 ];
 
-export const compat = ["OBS Studio", "Twitch", "Kick", "YouTube", "TikTok Live"];
+export const compat = ["Twitch", "Kick", "YouTube"];
 
 // Partenaires. Tous les liens partenaires passent par ici (rel="sponsored noopener", nouvel onglet).
 // `code` est optionnel : il ne s'affiche que s'il est rempli (et plus un placeholder <…>).

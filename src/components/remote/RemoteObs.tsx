@@ -113,6 +113,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
   const [confirm, setConfirm] = useState<"start" | "stop" | null>(null);
   const [deviceOpen, setDeviceOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("scenes");
+  const pendingScene = useRef<{ scene: string; until: number } | null>(null);
   const [ms, setMs] = useState<MsState | null>(null);
   const [chatOn, setChatOn] = useState(true);
   const [sync, setSync] = useState(0);
@@ -137,7 +138,13 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
 
   const onEvent = useCallback<LinkEvent>(
     (name, d) => {
-      if (name === "CurrentProgramSceneChanged") setProgram(String(d.sceneName));
+      if (name === "CurrentProgramSceneChanged") {
+        // Scène tapée en attente : OBS n'annonce la fin d'une transition qu'à son terme, et une transition précédente ne doit pas faire clignoter la sélection.
+        const want = pendingScene.current;
+        if (want && Date.now() < want.until && d.sceneName !== want.scene) return;
+        pendingScene.current = null;
+        setProgram(String(d.sceneName));
+      }
       else if (name === "CurrentPreviewSceneChanged") setPreview(String(d.sceneName));
       else if (name === "link.multistream") setMs(d as unknown as MsState);
       else if (name === "StudioModeStateChanged") setStudioMode(!!d.studioModeEnabled);
@@ -438,7 +445,18 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
     if (studioMode) {
       setPreview(scene);
       void run("SetCurrentPreviewScene", { sceneName: scene });
-    } else void run("SetCurrentProgramScene", { sceneName: scene });
+    } else {
+      // La sélection bleue suit le toucher tout de suite (sans attendre la fin de la transition) ; elle revient en arrière si OBS refuse.
+      const before = program;
+      pendingScene.current = { scene, until: Date.now() + 5000 };
+      setProgram(scene);
+      void run("SetCurrentProgramScene", { sceneName: scene }).then((r) => {
+        if (r === null) {
+          pendingScene.current = null;
+          setProgram(before);
+        }
+      });
+    }
   }
 
   function saveRoles(patch: Partial<Roles>) {

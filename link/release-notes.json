@@ -1,4 +1,7 @@
 {
+  "0.5.4": [
+    "Contrôle à distance : le changement de scène est annoncé tout de suite, sans attendre la fin de la transition"
+  ],
   "0.5.3": [
     "Multistream : la plateforme déjà réglée dans OBS apparaît en première ligne (« Direct d'OBS »), avec son bouton lancer ou arrêter",
     "Multistream : une sortie qui a la même clé que le service d'OBS lance simplement le direct d'OBS, sans seconde connexion ni conflit"

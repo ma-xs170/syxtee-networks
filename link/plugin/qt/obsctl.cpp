@@ -1223,6 +1223,8 @@ std::map<QString, Handler> &handlers()
 			Src s(req(d, "sceneName"));
 			sceneNamed(s);
 			obs_frontend_set_current_scene(s.s);
+			// OBS n'annonce le changement qu'à la fin de la transition : on le dit tout de suite, pour que les écrans suivent le toucher.
+			emitEvent("CurrentProgramSceneChanged", Json{{"sceneName", req(d, "sceneName")}});
 			return okEmpty();
 		};
 		m["SetCurrentPreviewScene"] = [](const Json &d) {

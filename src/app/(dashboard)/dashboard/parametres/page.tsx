@@ -8,7 +8,7 @@ import { cookies } from "next/headers";
 import { LOW_DATA_COOKIE } from "@/lib/low-data";
 import LinkDevices from "@/components/dashboard/LinkDevices";
 import StreamModeToggle from "@/components/dashboard/StreamModeToggle";
-import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
+import { Tile, TileLabel } from "@/components/dashboard/ui";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { publicCoreUrl } from "@/lib/core";
 import { createClient } from "@/lib/supabase/server";
@@ -26,8 +26,7 @@ export default async function ParametresPage({ searchParams }: PageProps<"/dashb
   ]);
   const low = jar.get(LOW_DATA_COOKIE)?.value === "1";
   return (
-    <DashPage>
-      <DashHeader lead="Tes" hl="paramètres" />
+    <>
       {emailDone === "ok" && (
         <p role="status" className="mb-4 rounded-xl border border-line px-4 py-3 text-sm text-muted">
           Adresse confirmée. Si tu as aussi cliqué le lien reçu sur l&apos;autre adresse, ton email est changé.
@@ -117,6 +116,6 @@ export default async function ParametresPage({ searchParams }: PageProps<"/dashb
           </div>
         </Tile>
       </div>
-    </DashPage>
+    </>
   );
 }

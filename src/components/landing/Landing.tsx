@@ -23,7 +23,7 @@ export function LandingHero() {
             Le relais IRL pour les streamers.
           </h1>
           <p className="rise mt-6 max-w-[46ch] text-lg leading-relaxed text-muted" style={{ "--i": 1 } as React.CSSProperties}>
-            Réunis 4G, 5G, Wi-Fi et Starlink en un flux stable, et pilote ton OBS depuis ton téléphone.
+            Réunis 4G, 5G et Wi-Fi en un flux stable, et pilote ton OBS depuis ton téléphone.
           </p>
           <div className="rise mt-9 flex flex-col gap-3 sm:flex-row" style={{ "--i": 2 } as React.CSSProperties}>
             <ButtonLink href="/acces">Commencer</ButtonLink>
@@ -41,7 +41,7 @@ export function LandingHero() {
 }
 
 export function CompatStrip() {
-  const names = ["Moblin", "OBS", "BELABOX", "Twitch", "YouTube", "Kick", "Starlink"];
+  const names = ["OBS", "Twitch", "YouTube", "Kick", "TikTok"];
   return (
     <section aria-label="Compatibilité" className="border-b border-line">
       <Container className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 py-8">
@@ -108,8 +108,8 @@ export function ProductsSection() {
             <GlassIcon>
               <Faders weight="light" />
             </GlassIcon>
-            <h3 className="mt-6 text-xl font-semibold tracking-tight">OBS CLOUD</h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted">Scènes, mixeur audio, direct et multistream : le contrôle à distance de ton OBS depuis un téléphone.</p>
+            <h3 className="mt-6 text-xl font-semibold tracking-tight">Relais à distance</h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted">Scènes, mixeur audio, direct et multistream : pilote ton OBS à distance depuis un téléphone.</p>
             <div className="mt-6 rounded-xl border border-line bg-background p-4">
               <div className="flex gap-2">
                 {["Live", "BRB", "Drone"].map((s, i) => (
@@ -171,7 +171,7 @@ export function GoFurtherSection() {
 export function FeatureGrid() {
   const items = [
     { icon: Globe, title: "Relais au Canada", text: "Un serveur à Beauharnois, joignable par un nom de domaine stable." },
-    { icon: WifiHigh, title: "Bonding multi-connexions", text: "4G, 5G, Wi-Fi et Starlink réunis en un seul flux." },
+    { icon: WifiHigh, title: "Bonding multi-connexions", text: "4G, 5G et Wi-Fi réunis en un seul flux." },
     { icon: PlugsConnected, title: "Mire de coupure", text: "Si ta source tombe, une mire prend le relais pour tes viewers." },
     { icon: ChartLineUp, title: "Monitoring temps réel", text: "Débit, latence et perte de paquets par connexion." },
     { icon: Cpu, title: "Contrôle OBS à distance", text: "Scènes, audio et direct depuis ton téléphone." },

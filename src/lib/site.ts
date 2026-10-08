@@ -3,7 +3,7 @@ export const site = {
   name: "SYXTEE NETWORKS",
   url: "https://syxtee-networks.vercel.app", // ← remplace par ton domaine final
   description:
-    "Streaming en direct : bonding 4G, 5G, Wi-Fi et Starlink, santé du flux. Des serveurs dans le monde entier.",
+    "Streaming en direct : bonding 4G, 5G et Wi-Fi, santé du flux. Des serveurs dans le monde entier.",
   discord: "https://discord.gg/CD68F8yZuZ",
   year: new Date().getFullYear(),
 };
@@ -20,7 +20,7 @@ export type NavItem = NavLink | NavMenu;
 // L'encodeur et la documentation vivent dans le pied de page.
 export const nav: NavItem[] = [
   { label: "Relais", href: "/relais" },
-  { label: "OBS CLOUD", href: "/controle-a-distance" },
+  { label: "Relais à distance", href: "/controle-a-distance" },
   { label: "Tarifs", href: "/tarifs" },
   { label: "Docs", href: "/docs" },
   { label: "Discord", href: "https://discord.gg/CD68F8yZuZ", arrow: true },
@@ -49,7 +49,7 @@ export const relays: Relay[] = [
   { city: "New York", region: "USA · Côte Est", status: "maintenance", protocols: ["SRTLA", "SRT"] },
 ];
 
-export const compat = ["Moblin", "IRL Pro", "BELABOX", "OBS Studio", "Twitch", "Kick", "YouTube", "TikTok Live"];
+export const compat = ["OBS Studio", "Twitch", "Kick", "YouTube", "TikTok Live"];
 
 // Partenaires. Tous les liens partenaires passent par ici (rel="sponsored noopener", nouvel onglet).
 // `code` est optionnel : il ne s'affiche que s'il est rempli (et plus un placeholder <…>).

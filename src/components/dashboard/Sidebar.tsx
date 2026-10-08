@@ -230,6 +230,9 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
               <Link role="menuitem" href="/compte" onClick={() => { setOpen(false); onNavigate(); }} className={item}>
                 Mon compte
               </Link>
+              <Link role="menuitem" href="/dashboard/parametres" onClick={() => { setOpen(false); onNavigate(); }} className={item}>
+                Paramètres
+              </Link>
               <Link role="menuitem" href="/dashboard/abonnement" onClick={() => { setOpen(false); onNavigate(); }} className={item}>
                 Abonnement
               </Link>

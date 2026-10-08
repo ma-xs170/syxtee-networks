@@ -5,14 +5,13 @@ import CodeBlock from "../ui/CodeBlock";
 
 // Onglets d'intégration : l'URL à coller dans chaque logiciel. Adresses d'exemple : la vraie URL est dans le dashboard, page Relais.
 const TABS = [
-  { id: "moblin", label: "Moblin", title: "Moblin · Destination", code: "Type : SRTLA\nURL : srtla://relais.syxtee-networks.fr:PORT\nIdentifiant : TON_ID_DE_FLUX" },
+  { id: "srtla", label: "SRTLA", title: "Encodeur · SRTLA", code: "Type : SRTLA\nURL : srtla://relais.syxtee-networks.fr:PORT\nIdentifiant : TON_ID_DE_FLUX" },
   { id: "obs", label: "OBS", title: "OBS · Source média", code: "Entrée : srt://relais.syxtee-networks.fr:PORT?streamid=TON_ID\nMise en tampon réseau : 2 s\nReconnexion : activée" },
-  { id: "belabox", label: "BELABOX", title: "BELABOX · belaUI", code: "Relais SRTLA : relais.syxtee-networks.fr\nPort : PORT\nIdentifiant de flux : TON_ID" },
-  { id: "srtla", label: "SRTLA", title: "srtla_send", code: "srtla_send 9000 relais.syxtee-networks.fr PORT ips.txt\n# ips.txt : une adresse locale par ligne (4G, 5G, Wi-Fi, Starlink)" },
+  { id: "rtmp", label: "RTMP", title: "Encodeur · RTMP", code: "Serveur : rtmp://relais.syxtee-networks.fr/live\nClé de stream : TA_CLE" },
 ] as const;
 
 export default function IntegrationTabs() {
-  const [id, setId] = useState<(typeof TABS)[number]["id"]>("moblin");
+  const [id, setId] = useState<(typeof TABS)[number]["id"]>("srtla");
   const tab = TABS.find((t) => t.id === id)!;
   return (
     <div>

@@ -1,17 +1,17 @@
-// Boîtier SYXTEE RELAIS en SVG : noir mat, bords chanfreinés, liseré lumineux, logo gravé, LED d'état et LED par port.
+// Boîtier SYXTEE Encodeur en SVG : noir mat, bords chanfreinés, liseré lumineux, logo gravé, LED d'état et LED par port.
 // `leds` : état de chaque port (ok vert, warn orange, bad rouge, off éteint). `live` : la LED d'état pulse en vert.
 export type LedState = "ok" | "warn" | "bad" | "off";
 const COLOR: Record<LedState, string> = { ok: "var(--ok)", warn: "var(--warn)", bad: "var(--bad)", off: "color-mix(in srgb, var(--foreground) 18%, transparent)" };
 
-export default function RelayBox({ leds, live = true, className = "" }: { leds?: Partial<Record<"4g" | "5g" | "esim" | "sat", LedState>>; live?: boolean; className?: string }) {
-  const ports: { id: "4g" | "5g" | "esim" | "sat"; label: string }[] = [
-    { id: "4g", label: "4G" },
-    { id: "5g", label: "5G" },
-    { id: "esim", label: "eSIM" },
-    { id: "sat", label: "SAT" },
+export default function RelayBox({ leds, live = true, className = "" }: { leds?: Partial<Record<"wifi" | "eth" | "cell" | "usb", LedState>>; live?: boolean; className?: string }) {
+  const ports: { id: "wifi" | "eth" | "cell" | "usb"; label: string }[] = [
+    { id: "wifi", label: "WIFI" },
+    { id: "eth", label: "ETH" },
+    { id: "cell", label: "4G/5G" },
+    { id: "usb", label: "USB" },
   ];
   return (
-    <svg viewBox="0 0 640 260" role="img" aria-label="Boîtier SYXTEE RELAIS" className={`h-auto w-full ${className}`}>
+    <svg viewBox="0 0 640 260" role="img" aria-label="Boîtier SYXTEE Encodeur" className={`h-auto w-full ${className}`}>
       <defs>
         <linearGradient id="rb-top" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#2b2b2f" />

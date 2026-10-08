@@ -7,12 +7,10 @@ export type { ConnId, ModeId, ResolutionId, SceneId };
 export type ConnDef = { id: ConnId; label: string; operator: string; base: number; latency: number; signal: number };
 
 export const CONNECTIONS: ConnDef[] = [
-  { id: "5g", label: "5G", operator: "Opérateur A", base: 3.6, latency: 38, signal: 4 },
-  { id: "4g", label: "4G", operator: "Opérateur B", base: 2.4, latency: 52, signal: 3 },
-  { id: "esim", label: "eSIM", operator: "Données voyage", base: 1.4, latency: 66, signal: 3 },
-  { id: "wifi", label: "Wi-Fi", operator: "Point d'accès", base: 2.0, latency: 28, signal: 4 },
-  { id: "eth", label: "Ethernet", operator: "Câble réseau", base: 3.0, latency: 12, signal: 4 },
-  { id: "sat", label: "Satellite", operator: "Terminal compact", base: 1.9, latency: 120, signal: 4 },
+  { id: "cell", label: "4G / 5G", operator: "Opérateur mobile", base: 3.6, latency: 40, signal: 4 },
+  { id: "wifi", label: "Wi-Fi", operator: "Point d'accès", base: 2.6, latency: 28, signal: 4 },
+  { id: "eth", label: "Ethernet", operator: "Terminal satellite", base: 2.2, latency: 62, signal: 4 },
+  { id: "usb", label: "Clé 4G USB", operator: "Opérateur B", base: 1.8, latency: 58, signal: 3 },
 ];
 
 export const SCENES: { id: SceneId; name: string; key: string }[] = [
@@ -34,7 +32,7 @@ export const MODES = [
   { id: "latency", label: "Latence", latency: 38 },
 ] as const;
 /** Entrée caméra de la démo. */
-export const CAMERA = { type: "HDMI" as const, detected: "1080p60" };
+export const CAMERA = { type: "USB" as const, detected: "1080p60" };
 
 export const CODECS = ["H.264", "H.265"] as const;
 
@@ -55,12 +53,12 @@ export const ALERT_THRESHOLDS = [
 export type DemoEvent = { time: string; text: string; status: "ok" | "warn" | "bad" };
 export const INITIAL_EVENTS: DemoEvent[] = [
   { time: "10:12", text: "Direct démarré", status: "ok" },
-  { time: "10:31", text: "4G : signal faible, le bonding compense", status: "warn" },
-  { time: "10:32", text: "4G : reconnectée", status: "ok" },
+  { time: "10:31", text: "4G / 5G : signal faible, les autres connexions compensent", status: "warn" },
+  { time: "10:32", text: "4G / 5G : reconnectée", status: "ok" },
   { time: "10:47", text: "Slate affiché pendant 4 s", status: "warn" },
 ];
 
-export const SYSTEM = { temp: 48, battery: 86, storage: 41, cpu: 34, firmware: "0.1.0", nextFirmware: "0.2.0" };
+export const SYSTEM = { temp: 48, battery: 86, storage: 41, cpu: 34, gpu: 22, ram: 46, firmware: "0.1.0", nextFirmware: "0.2.0" };
 
 /** Durée du scénario automatique, en secondes. */
 export const LOOP_SECONDS = 20;

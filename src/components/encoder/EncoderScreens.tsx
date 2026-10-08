@@ -3,6 +3,7 @@
 import { memo, type ReactNode } from "react";
 import { siKick, siTwitch, siYoutube } from "simple-icons";
 import AnimatedNumber from "../landing/AnimatedNumber";
+import RelayBox from "../landing/RelayBox";
 import {
   ALERT_THRESHOLDS,
   CODECS,
@@ -171,7 +172,7 @@ function Camera({ d }: { d: EncoderDemo }) {
       <div className={`${card} p-[20px]`}>
         <div className="flex items-center justify-between"><p className="text-[15px] font-semibold">Caméra</p><Pill c={ok ? "var(--ok)" : "var(--bad)"}>{ok ? "Branchée" : "Aucun signal"}</Pill></div>
         <dl className="mt-[16px] grid grid-cols-2 gap-[14px] text-[13px]">
-          <div><dt className="text-white/50">Entrée</dt><dd className="mt-[3px] font-mono text-[16px]">{ok ? cam.type : "—"}</dd></div>
+          <div><dt className="text-white/50">Entrée</dt><dd className="mt-[3px] font-mono text-[16px]">{ok ? "USB-C" : "—"}</dd></div>
           <div><dt className="text-white/50">Signal détecté</dt><dd className="mt-[3px] font-mono text-[16px] tabular-nums">{ok ? cam.detected : "—"}</dd></div>
         </dl>
         <div className="mt-[18px]">
@@ -203,7 +204,7 @@ function Camera({ d }: { d: EncoderDemo }) {
 function Connections({ d }: { d: EncoderDemo }) {
   const { c, snap, actions: a } = d;
   return (
-    <div className="grid grid-cols-3 gap-[14px]">
+    <div className="grid grid-cols-2 gap-[14px]">
       {c.order.map((id, rank) => {
         const def = CONNECTIONS.find((x) => x.id === id)!;
         const on = c.on[id];
@@ -248,7 +249,14 @@ function Encoding({ d }: { d: EncoderDemo }) {
           <p className="mt-[6px] font-mono text-[22px] tabular-nums">{res.need} Mb/s <span className="text-[13px] text-white/45">· disponible {snap.total.toFixed(1).replace(".", ",")}</span></p>
           <div className="mt-[10px]"><Pill c={ok ? "var(--ok)" : "var(--warn)"}>{ok ? "Débit suffisant" : "Débit juste : l'image peut saccader"}</Pill></div>
         </div>
-        <div className={`${card} p-[12px]`}><div className="aspect-video w-full"><EncPreview scene={c.scene} live={c.live === "on"} slate={snap.slate} muted={c.muted} seconds={snap.seconds} noSignal={c.camera.state === "nosignal"} /></div></div>
+        <div className={`${card} grid gap-[14px] p-[20px]`}>
+          <div className="flex items-center justify-between"><p className="text-[13px] font-semibold">Audio</p><button type="button" onClick={a.toggleMute} aria-pressed={c.muted} className={btn}>{c.muted ? "Réactiver le micro" : "Couper le micro"}</button></div>
+          <div>
+            <div className="mb-[6px] flex items-baseline justify-between text-[12px] text-white/50"><span>Gain d&apos;entrée</span><span className="font-mono text-[14px] tabular-nums text-white">{c.gain > 0 ? "+" : ""}{c.gain} dB</span></div>
+            <input type="range" min={-12} max={12} step={1} value={c.gain} onChange={(e) => a.setAudio({ gain: Number(e.target.value) })} aria-label="Gain d'entrée" className="w-full accent-white" />
+          </div>
+          <div className="flex items-center justify-between text-[13px]"><span>Réduction du bruit de fond<span className="block text-[12px] text-white/50">Noise gate sur l&apos;entrée caméra</span></span><Toggle on={c.gate} onChange={() => a.setAudio({ gate: !c.gate })} label="Réduction du bruit de fond" /></div>
+        </div>
       </div>
     </div>
   );
@@ -332,13 +340,25 @@ function Alerts({ d }: { d: EncoderDemo }) {
 }
 
 function System({ d }: { d: EncoderDemo }) {
-  const { snap, actions: a } = d;
+  const { c, snap, actions: a } = d;
+  const led = (id: ConnId) => (!c.on[id] ? "off" : snap.signal[id] <= 1 ? "warn" : "ok") as "ok" | "warn" | "off";
   return (
-    <div className="grid gap-[16px]">
-      <div className="grid grid-cols-4 gap-[14px]"><Meter label="Température" value={snap.system.temp} unit="°C" warn={70} /><Meter label="Batterie" value={snap.system.battery} unit="%" warn={101} /><Meter label="Stockage" value={snap.system.storage} unit="%" /><Meter label="Processeur" value={snap.system.cpu} unit="%" /></div>
-      <div className={`${card} flex items-center justify-between p-[20px]`}>
-        <div><p className="text-[12px] text-white/50">Version du firmware</p><p className="mt-[4px] font-mono text-[22px] tabular-nums">{SYSTEM.firmware}</p></div>
-        <button type="button" onClick={a.askRestart} className={btn}>Redémarrer</button>
+    <div className="grid grid-cols-[1.25fr_1fr] gap-[16px]">
+      <div className="grid grid-cols-3 gap-[12px]">
+        <Meter label="Température" value={snap.system.temp} unit="°C" warn={70} />
+        <Meter label="Processeur" value={snap.system.cpu} unit="%" />
+        <Meter label="Carte graphique" value={snap.system.gpu} unit="%" />
+        <Meter label="Mémoire" value={snap.system.ram} unit="%" />
+        <Meter label="Stockage" value={snap.system.storage} unit="%" />
+        <Meter label="Batterie" value={snap.system.battery} unit="%" warn={101} />
+        <div className={`${card} col-span-3 flex items-center justify-between p-[18px]`}>
+          <div><p className="text-[12px] text-white/50">Version du firmware</p><p className="mt-[4px] font-mono text-[22px] tabular-nums">{c.update.state === "done" ? SYSTEM.nextFirmware : SYSTEM.firmware}</p></div>
+          <button type="button" onClick={a.askRestart} className={btn}>Redémarrer</button>
+        </div>
+      </div>
+      <div className={`${card} flex flex-col justify-center p-[16px]`}>
+        <RelayBox live={c.live === "on" && !snap.slate} leds={{ wifi: led("wifi"), eth: led("eth"), cell: led("cell"), usb: led("usb") }} />
+        <p className="mt-[8px] text-center text-[12px] text-white/50">Les voyants reflètent l&apos;état réel des connexions.</p>
       </div>
     </div>
   );

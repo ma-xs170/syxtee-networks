@@ -22,7 +22,6 @@ export type NavItem = NavLink | NavMenu;
 // L'encodeur et la documentation vivent dans le pied de page.
 export const nav: NavItem[] = [
   { label: "Contrôle à distance", href: "/controle-a-distance" },
-  { label: "Relais", href: "/relais" },
   {
     label: "Encodeur",
     children: [

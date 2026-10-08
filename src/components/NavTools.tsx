@@ -118,7 +118,7 @@ function PanelItem({ t, hovered, onHover, onClose, i, reduce }: { t: NavTool | D
         onClick={onClose}
         onMouseEnter={onHover}
         onFocus={onHover}
-        className={`group relative flex items-center gap-4 rounded-xl p-3 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-foreground ${soon ? "opacity-60 hover:opacity-100" : ""}`}
+        className={`group relative flex items-center gap-4 rounded-xl p-3 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-foreground/50 ${soon ? "opacity-60 hover:opacity-100" : ""}`}
       >
         <GlidePill show={hovered} id="mega-pill" className="rounded-xl" />
         <span className="relative z-10 h-14 w-14 shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.06]">
@@ -221,7 +221,7 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
     setSize({ w: node.offsetWidth, h: node.offsetHeight });
   }, []);
 
-  const pill = "relative whitespace-nowrap rounded-full px-4 py-2 text-sm transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-foreground";
+  const pill = "relative whitespace-nowrap rounded-full px-4 py-2 text-sm transition-colors hover:text-foreground focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-foreground/50";
   const dur = reduce ? 0 : 0.28;
 
   return (

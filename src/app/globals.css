@@ -1071,3 +1071,9 @@ select,
   .page-in { animation: page-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 }
 @keyframes page-in { from { opacity: 0; transform: translateY(8px); filter: blur(6px); } }
+
+/* Sac Mesh : le panneau rigide respire doucement (rotation de quelques degrés). */
+@media (prefers-reduced-motion: no-preference) {
+  .bag-panel { animation: bag-panel 6s ease-in-out infinite alternate; }
+}
+@keyframes bag-panel { from { transform: rotate(-1.2deg); } to { transform: rotate(1.2deg); } }

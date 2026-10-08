@@ -1,11 +1,8 @@
 import Link from "next/link";
 import { Container } from "../ui";
 import { ButtonLink } from "../ui/Button";
-import { Badge } from "../ui/Badge";
 import Diagram from "./Diagram";
 import Faq from "./Faq";
-import IntegrationTabs from "./IntegrationTabs";
-import LiveDemo from "./LiveDemo";
 import ObsHero from "./ObsHero";
 import PlatformStrip from "./PlatformStrip";
 import RelayBox from "./RelayBox";
@@ -93,55 +90,14 @@ export function ObsBento() {
   );
 }
 
-/* 2. Relais */
-export function RelaySection() {
-  return (
-    <section id="relais" className="scroll-mt-20 border-b border-line py-20 lg:py-28">
-      <Container>
-        <h2 className={h2}>Un relais qui ne lâche pas ton direct.</h2>
-        <p className={`${lead} max-w-[68ch]`}>
-          Ton téléphone envoie la vidéo en SRT ou SRTLA par plusieurs connexions à la fois (4G, 5G, eSIM, satellite). Le relais les réunit en un seul flux : si une connexion tombe, les autres compensent, et une mire de coupure s&apos;affiche si tout lâche. Serveur à {product.relayServer.city} ({product.relayServer.code}).
-        </p>
-        <div className="mt-12 grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-          <IntegrationTabs />
-          <div className="bento-cell flex flex-col justify-between p-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold tracking-tight">Où capter</h3>
-              <Badge>Bientôt</Badge>
-            </div>
-            <VisualSlot name="coverage-map" className="mt-5" fallback={<CoverageMap />} />
-            <p className="mt-4 text-sm text-muted">La carte de couverture 4G et 5G de la communauté, pour choisir ton spot.</p>
-          </div>
-        </div>
-        <div className="mt-10">
-          <LiveDemo />
-        </div>
-      </Container>
-    </section>
-  );
-}
-
-function CoverageMap() {
-  const hexes: [number, number, number][] = [[40, 40, 0.5], [88, 40, 0.8], [136, 40, 0.3], [64, 82, 0.9], [112, 82, 0.6], [160, 82, 0.2], [40, 124, 0.4], [88, 124, 1], [136, 124, 0.7]];
-  return (
-    <svg viewBox="0 0 200 160" className="h-44 w-full" aria-hidden="true">
-      {hexes.map(([x, y, o], i) => (
-        <path key={i} d={`M${x} ${y - 24} l21 12 v24 l-21 12 l-21 -12 v-24z`} fill="var(--ok)" fillOpacity={o * 0.35} stroke="var(--foreground)" strokeOpacity="0.2" />
-      ))}
-      <circle cx="88" cy="124" r="4" fill="var(--foreground)" />
-    </svg>
-  );
-}
-
 /* 3. Encodeur : en développement, teaser sobre */
 export function EncoderSection() {
   const { specs } = product;
   const rows: [string, string][] = [
-    ["Connexions bondées", `Jusqu'à ${specs.bondedConnections}`],
-    ["Latence moyenne", `${specs.latencyMs} ms`],
-    ["Protocoles", specs.protocols.join(", ")],
-    ["Ports", specs.ports.join(", ")],
-    ["Alimentation", specs.power],
+    ["Connexions simultanées", `${specs.simultaneous} : Wi-Fi, Ethernet, 4G ou 5G`],
+    ["Clé 4G USB", "Une connexion de plus par clé"],
+    ["Caméra", "USB-C 2 m, 1080p60"],
+    ["Prix", product.priceLabel(product.price) ?? "Bientôt disponible"],
   ];
   return (
     <section id="encodeur" className="scroll-mt-20 border-b border-line py-20 lg:py-28">
@@ -178,7 +134,7 @@ export function PricingSection() {
     <section className="border-b border-line py-20 lg:py-28">
       <Container>
         <h2 className={h2}>Choisis ta formule.</h2>
-        <p className={lead}>{product.remoteName} et le relais, trois formules. Les prix seront annoncés bientôt. L&apos;accès se fait sur invitation.</p>
+        <p className={lead}>{product.remoteName} et l&apos;interface de l&apos;Encodeur, trois formules. Les prix seront annoncés bientôt. L&apos;accès se fait sur invitation.</p>
         <div className="mt-12 grid items-stretch gap-4 md:grid-cols-3">
           {product.plans.map((p) => (
             <article key={p.id} className={`bento-cell flex flex-col p-6 ${"featured" in p && p.featured ? "!border-line-strong bg-surface-2 md:-my-3 md:py-9" : ""}`}>
@@ -207,9 +163,9 @@ export function PricingSection() {
 export function FaqSection() {
   const items = [
     { q: "Faut-il un abonnement ?", a: "L'accès se fait sur invitation. Les formules Gratuit, Payant et Partenaire existent ; les prix seront annoncés bientôt." },
-    { q: "Quelles connexions puis-je utiliser ?", a: "Ton téléphone envoie en SRT, SRTLA ou RTMP. Les connexions 4G, 5G, eSIM et satellite se réunissent en un seul flux." },
+    { q: "Quelles connexions utilise l'Encodeur ?", a: "Jusqu'à trois connexions en même temps : Wi-Fi, Ethernet et 4G ou 5G. Une clé 4G USB ajoute une connexion de plus." },
     { q: "Dois-je louer un serveur pour OBS CLOUD ?", a: "Non. Le plugin tourne sur ton propre PC ou Mac et se relie à ton compte avec un code." },
-    { q: "Quand est-ce disponible ?", a: "OBS CLOUD et le relais sont disponibles pour les comptes invités. Demande ton accès. L'Encodeur est en développement." },
+    { q: "Quand est-ce disponible ?", a: "OBS CLOUD est disponible pour les comptes invités. Demande ton accès. L'Encodeur est en développement." },
     { q: "Comment obtenir de l'aide ?", a: "Le support se fait sur Discord. Donne ton ID de support dans ton ticket, on retrouve ton compte sans ton e-mail." },
   ];
   return (

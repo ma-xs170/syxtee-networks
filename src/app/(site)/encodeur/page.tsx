@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import EncoderDashboardDemo from "@/components/encoder/EncoderDashboardDemo";
 import Glow from "@/components/landing/Glow";
+import MeshBag from "@/components/landing/MeshBag";
 import RelayBox from "@/components/landing/RelayBox";
 import VisualSlot from "@/components/landing/VisualSlot";
 import { Container } from "@/components/ui";
@@ -10,7 +11,7 @@ import GridBackground from "@/components/ui/GridBackground";
 import SectionHeader from "@/components/ui/SectionHeader";
 import StatusPill from "@/components/ui/StatusPill";
 import WordsReveal from "@/components/ui/WordsReveal";
-import { product } from "@/config/product";
+import { ctaLabel, product } from "@/config/product";
 import { deviceImage } from "@/lib/device-images";
 
 export const metadata: Metadata = {
@@ -28,11 +29,12 @@ const bento = [
 export default function EncodeurPage() {
   const { specs } = product;
   const rows: [string, string][] = [
-    ["Connexions bondées", `Jusqu'à ${specs.bondedConnections}`],
-    ["Latence moyenne", `${specs.latencyMs} ms`],
-    ["Protocoles", specs.protocols.join(", ")],
-    ["Ports", specs.ports.join(", ")],
-    ["Alimentation", specs.power],
+    ["Connexions simultanées", `${specs.simultaneous} : Wi-Fi, Ethernet, 4G ou 5G`],
+    ["Clé 4G USB", "Une connexion de plus par clé"],
+    ["Ethernet", "Pour brancher un terminal satellite"],
+    ["Caméra", "Câble USB-C de 2 m, 1080p60"],
+    ["Interface", "Température, processeur, carte graphique, mémoire, audio, débit"],
+    ["Gravure", "SYXTEE NETWORKS"],
   ];
   return (
     <>
@@ -42,7 +44,7 @@ export default function EncodeurPage() {
         <GridBackground />
         <Container className="relative">
           <div className="mx-auto max-w-3xl text-center">
-            <StatusPill variant="dev" />
+            <StatusPill variant="dev" label="PRÉCOMMANDE" />
             <h1 className="h-serif mx-auto mt-8 text-[clamp(3rem,8vw,5.5rem)]">
               <WordsReveal text="SYXTEE Encodeur." em={["Encodeur."]} />
             </h1>
@@ -64,13 +66,38 @@ export default function EncodeurPage() {
             <div className="bento-cell flex flex-col justify-between p-6">
               <div>
                 <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Prix</p>
-                <p className="mt-2 text-3xl font-medium tracking-tight text-foreground/80">Bientôt disponible</p>
-                <p className="mt-3 text-sm leading-relaxed text-muted">Le plus accessible du marché : pas de matériel pro hors de prix, pas d&apos;abonnement compliqué.</p>
+                <p className="mt-2 font-mono text-4xl font-medium tabular-nums tracking-tight">{product.priceLabel(product.price)}</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted">Pensé pour les streamers, pas pour la télévision : le même niveau de fiabilité, à un prix accessible.</p>
+                <p className="mt-4 rounded-xl border border-line bg-background/60 px-4 py-3 text-sm leading-relaxed">
+                  <span className="font-medium">{product.bonusMonths} mois offerts</span> de l&apos;abonnement le plus élevé à l&apos;activation de ton Encodeur sur ton compte.
+                </p>
               </div>
-              <div className="mt-6"><ButtonLink href="/acces" className="w-full">Être prévenu</ButtonLink></div>
+              <div className="mt-6 grid gap-2">
+                <ButtonLink href="/boutique#encodeur" className="w-full">{ctaLabel(product.availability)}</ButtonLink>
+                <ButtonLink href="/demo-encodeur" variant="secondary" className="w-full">Essayer la démo</ButtonLink>
+              </div>
             </div>
           </div>
           <p className="mx-auto mt-4 max-w-4xl text-xs text-muted">Caractéristiques indicatives, susceptibles d&apos;évoluer avant la sortie.</p>
+        </Container>
+      </section>
+
+      {/* Accessoire : Sac Mesh */}
+      <section id="sac-mesh" className="scroll-mt-20 border-b border-line py-24 sm:py-32">
+        <Container className="grid items-center gap-12 lg:grid-cols-[1fr_1fr]">
+          <div className="bento-cell p-6 sm:p-10"><MeshBag /></div>
+          <div>
+            <StatusPill variant="dev" label="ACCESSOIRE" />
+            <h2 className="h-serif mt-6 text-[clamp(2.5rem,5vw,4rem)]">Le <em>Sac Mesh.</em></h2>
+            <p className="mt-5 max-w-[52ch] text-base leading-relaxed text-muted">{product.accessories[0].pitch}</p>
+            <ul className="mt-6 space-y-2.5 text-sm text-muted">
+              {product.accessories[0].points.map((x) => (
+                <li key={x} className="flex gap-2.5"><span aria-hidden="true" className="text-foreground">+</span>{x}</li>
+              ))}
+            </ul>
+            <p className="mt-6 text-2xl font-medium tracking-tight text-foreground/80">{product.priceLabel(product.accessories[0].price) ?? "Prix bientôt disponible"}</p>
+            <div className="mt-6"><ButtonLink href="/boutique#sac-mesh" variant="secondary">Voir dans la boutique</ButtonLink></div>
+          </div>
         </Container>
       </section>
 

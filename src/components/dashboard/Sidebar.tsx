@@ -28,6 +28,7 @@ import { signOut } from "@/app/(auth)/actions";
 import { createWorkspaceAction, switchWorkspaceAction } from "@/app/(dashboard)/dashboard/espaces/actions";
 import type { Feature } from "@/lib/plans";
 import { activeAlso } from "@/lib/dashboard-nav";
+import { DEMO_URL } from "@/lib/demo-url";
 import { Avatar, useAccount } from "../AccountMenu";
 import { ThemeRow } from "../ThemeToggle";
 import Wordmark from "../Wordmark";
@@ -54,8 +55,8 @@ const GROUPS: Group[] = [
       { label: "Contrôle à distance", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais" },
       { label: "Membres", href: "/dashboard/invitations", icon: UsersThree, feature: "relais" },
       { label: "Multichat", href: "/dashboard/multichat", icon: ChatsCircle },
-      { label: "Encodeur", href: "/dashboard/encodeur", icon: FilmSlate },
       { label: "Appareils", href: "/dashboard/appareils", icon: Cpu },
+      { label: "Démo Encodeur", href: DEMO_URL, icon: FilmSlate, external: true },
     ],
   },
   {

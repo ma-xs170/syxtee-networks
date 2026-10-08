@@ -1,7 +1,8 @@
 // Types du produit SYXTEE Encodeur : le boîtier où l'on branche sa caméra (entrée vidéo) et qui diffuse en bondant plusieurs connexions.
 // Partagés par la démo publique et le dashboard client. Aucune marque tierce hors YouTube, Twitch et Kick.
 
-export type ConnId = "4g" | "5g" | "esim" | "wifi" | "eth" | "sat";
+/** Connexions de l'Encodeur : trois intégrées (Wi-Fi, Ethernet, 4G ou 5G) plus une clé 4G USB qui ajoute une connexion. */
+export type ConnId = "wifi" | "eth" | "cell" | "usb";
 export type SceneId = "live" | "brb" | "slate" | "chat";
 export type ResolutionId = "720p30" | "1080p30" | "1080p60";
 export type ModeId = "quality" | "balanced" | "latency";
@@ -64,4 +65,4 @@ export type CameraInput = {
   framing: "frame" | "full";
 };
 
-export type SystemInfo = { temp: number; battery: number; storage: number; cpu: number };
+export type SystemInfo = { temp: number; battery: number; storage: number; cpu: number; gpu: number; ram: number };

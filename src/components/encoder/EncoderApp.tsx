@@ -55,7 +55,7 @@ function PairingCard({ locked, onPaired }: { locked: boolean; onPaired: (e: Enco
   return (
     <Card>
       <div className="flex flex-col items-center px-4 py-10 text-center">
-        <div className="w-full max-w-xs opacity-90"><RelayBox live={false} leds={{ "4g": "off", "5g": "off", esim: "off", sat: "off" }} /></div>
+        <div className="w-full max-w-xs opacity-90"><RelayBox live={false} leds={{ wifi: "off", eth: "off", cell: "off", usb: "off" }} /></div>
         <h2 className="mt-6 text-xl font-semibold tracking-tight">Aucun Encodeur lié</h2>
         <p className="mt-2 max-w-[46ch] text-sm leading-relaxed text-muted">Allume ton Encodeur : il affiche un code à 6 caractères. Tape-le ici pour le lier à ton compte.</p>
         <form onSubmit={submit} className="mt-6 grid w-full max-w-sm gap-4">

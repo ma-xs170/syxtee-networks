@@ -10,7 +10,6 @@ const columns: { title: string; links: NavLink[] }[] = [
     title: "Produit",
     links: [
       { label: "Contrôle à distance", href: "/controle-a-distance" },
-      { label: "Relais", href: "/relais" },
       { label: "Encodeur", href: "/encodeur", badge: "En développement" },
     ],
   },

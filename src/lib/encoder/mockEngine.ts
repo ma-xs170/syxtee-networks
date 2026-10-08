@@ -40,6 +40,9 @@ export type Controls = {
   slateUntil: number;
   interacted: boolean;
   camera: CameraInput;
+  /** Gain d'entrée audio en dB (-12 à +12) et noise gate. */
+  gain: number;
+  gate: boolean;
 };
 
 export type Snapshot = {
@@ -96,6 +99,8 @@ function initialControls(): Controls {
     slateUntil: 0,
     interacted: false,
     camera: { state: "connected", type: CAMERA.type, detected: CAMERA.detected, audioLevel: 62, test: "idle", framing: "frame" },
+    gain: 0,
+    gate: true,
   };
 }
 
@@ -117,7 +122,7 @@ function staticSnapshot(): Snapshot {
     status: "stable",
     dataPerHour: 3.6,
     events: INITIAL_EVENTS,
-    system: { temp: SYSTEM.temp, battery: SYSTEM.battery, storage: SYSTEM.storage, cpu: SYSTEM.cpu },
+    system: { temp: SYSTEM.temp, battery: SYSTEM.battery, storage: SYSTEM.storage, cpu: SYSTEM.cpu, gpu: SYSTEM.gpu, ram: SYSTEM.ram },
     note: "Flux stable : toutes les connexions sont bondées.",
   };
 }
@@ -181,14 +186,14 @@ export class MockEncoderEngine {
     if (auto) {
       if (phase >= 6 && phase < 11) {
         deg4g = phase < 7 ? phase - 6 : phase > 10 ? 11 - phase : 1;
-        note = "La 4G chute : le bonding compense avec les autres connexions.";
+        note = "La 4G / 5G chute : les autres connexions compensent.";
       }
       if (phase >= 12 && phase < 15.5) {
         degAll = 0.04;
         note = "Coupure : le slate s'affiche, le temps de reconnecter.";
       }
       if (phase >= 15.5 && phase < 17) note = "Retour à la normale, le flux se rééquilibre.";
-      const marks: [number, string, EventLog["status"]][] = [[6, "4G : signal faible, le bonding compense", "warn"], [12, "Coupure générale : slate affiché", "bad"], [15.5, "Connexions rétablies", "ok"]];
+      const marks: [number, string, EventLog["status"]][] = [[6, "4G / 5G : signal faible, les autres connexions compensent", "warn"], [12, "Coupure générale : slate affiché", "bad"], [15.5, "Connexions rétablies", "ok"]];
       marks.forEach(([m, text, st], i) => {
         const key = Math.floor(this.t / LOOP_SECONDS) * 10 + i;
         if (phase >= m && !this.fired.has(key)) {
@@ -206,12 +211,12 @@ export class MockEncoderEngine {
     for (const d of CONNECTIONS) {
       const comp = alive > 0 && alive < ids.length ? 1 + 0.08 * (ids.length - alive) : 1;
       let target = k.on[d.id] && live ? d.base * comp * degAll : 0;
-      if (d.id === "4g") target *= 1 - 0.9 * deg4g;
+      if (d.id === "cell") target *= 1 - 0.9 * deg4g;
       else if (deg4g > 0 && target > 0) target *= 1 + 0.08 * deg4g;
       if (target > 0) target = Math.max(0.05, target + noise(0.15));
       rates[d.id] = clamp(rates[d.id] + (target - rates[d.id]) * 0.55, 0, 6);
-      signal[d.id] = !k.on[d.id] ? 0 : d.id === "4g" && deg4g > 0.5 ? 1 : d.signal;
-      latencies[d.id] = k.on[d.id] ? Math.round(d.latency + noise(3) + (d.id === "4g" ? deg4g * 70 : 0)) : 0;
+      signal[d.id] = !k.on[d.id] ? 0 : d.id === "cell" && deg4g > 0.5 ? 1 : d.signal;
+      latencies[d.id] = k.on[d.id] ? Math.round(d.latency + noise(3) + (d.id === "cell" ? deg4g * 70 : 0)) : 0;
     }
     const res = RESOLUTIONS.find((r) => r.id === k.res)!;
     const mode = MODES.find((m) => m.id === k.mode)!;
@@ -231,7 +236,9 @@ export class MockEncoderEngine {
     else if (!auto && slate && k.slateUntil <= this.t && cap < 1.2) note = "Débit trop bas : le slate s'affiche.";
     this.battery = Math.max(20, this.battery - dt * 0.002);
     const cpu = clamp(24 + (res.fps === 60 ? 22 : 8) + (k.codec === "H.265" ? 12 : 0) + (live ? 6 : -10) + noise(2), 5, 95);
-    const system: SystemInfo = { temp: Math.round(40 + cpu * 0.22 + noise(0.4)), battery: Math.round(this.battery), storage: SYSTEM.storage, cpu: Math.round(cpu) };
+    const gpu = clamp(14 + (res.fps === 60 ? 20 : 8) + (k.codec === "H.265" ? 10 : 0) + (live ? 8 : -6) + noise(2), 3, 95);
+    const ram = clamp(40 + (live ? 8 : 0) + (k.codec === "H.265" ? 6 : 0) + noise(1.5), 20, 90);
+    const system: SystemInfo = { temp: Math.round(40 + cpu * 0.2 + gpu * 0.1 + noise(0.4)), battery: Math.round(this.battery), storage: SYSTEM.storage, cpu: Math.round(cpu), gpu: Math.round(gpu), ram: Math.round(ram) };
     const history = Object.fromEntries(ids.map((i) => [i, [...this.snap.history[i].slice(1), rates[i]]])) as Record<ConnId, number[]>;
     // niveau audio de la caméra
     const cam = k.camera;
@@ -334,6 +341,7 @@ export class MockEncoderEngine {
     this.push(on ? "Caméra branchée" : "Caméra débranchée", on ? "ok" : "bad");
     this.set((p) => ({ ...p, camera: { ...p.camera, state: on ? "connected" : "nosignal", test: "idle" }, toast: this.toast(on ? "Caméra détectée." : "Aucun signal de la caméra.", on ? "ok" : "error") }));
   };
+  setAudio = (s: { gain?: number; gate?: boolean }) => this.set((p) => ({ ...p, ...s }));
   setFraming = (framing: CameraInput["framing"]) => this.set((p) => ({ ...p, camera: { ...p.camera, framing } }));
   reset = () => {
     this.t = 0;

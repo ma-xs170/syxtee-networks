@@ -10,7 +10,7 @@ import { clock, LivePreview, SCENES, type Ctl, type SceneId } from "./ObsScreens
 
 const panel = "flex min-h-0 min-w-0 flex-col rounded-xl border border-white/[0.08] bg-[#0b0b0d] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]";
 const panelTitle = "flex items-baseline gap-2 border-b border-white/[0.08] px-3.5 py-2.5 text-[13px] font-semibold tracking-tight";
-const flat = "inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-white/10 bg-white/[0.04] text-[13px] text-neutral-100";
+const flat = "inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/[0.14] bg-[#16161a] text-[13px] text-neutral-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]";
 const field = "inline-flex h-7 items-center rounded-lg border border-white/10 bg-white/[0.03] px-2 text-[13px] text-neutral-100";
 
 const sceneLabel = (id: SceneId) => (SCENES.find((s) => s.id === id)?.name ?? "").toUpperCase();
@@ -175,7 +175,7 @@ function MultiPanel({ c }: { c: Ctl }) {
     <section aria-label="Multistream" className={panel}>
       <div className="flex items-center justify-between gap-2 border-b border-[#262626] px-3 py-2">
         <h2 className="text-[13px] font-semibold">Multistream</h2>
-        <span className={`${flat} h-7 gap-1 px-2.5`}>+ Ajouter</span>
+        <span className={`${flat} h-7 gap-1 px-3.5`}>+ Ajouter</span>
       </div>
       <div className="min-h-0 flex-1 overflow-hidden p-2">
         <div className="rounded-md border border-[#262626] bg-[#0b0b0b] p-2">
@@ -199,16 +199,16 @@ export function MacUI({ c }: { c: Ctl }) {
     <div className="flex h-full w-full flex-col overflow-hidden bg-[#070708] text-[13px] text-neutral-100">
       <header className="flex h-11 shrink-0 items-center justify-between border-b border-[#262626] px-3.5">
         <h1 className="flex items-center gap-2.5 text-[14px] font-medium">Contrôle à distance <LiveBadge c={c} /></h1>
-        <span className="inline-flex h-8 items-center gap-1.5 rounded border border-[#2e2e2e] px-3 text-[13px] text-neutral-300"><span aria-hidden="true">←</span> Retour</span>
+        <span className="inline-flex h-8 items-center gap-1.5 rounded-full border border-white/[0.14] bg-[#16161a] px-3.5 text-[13px] text-neutral-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"><span aria-hidden="true">←</span> Retour</span>
       </header>
       <div className="mx-2 mt-2 flex h-11 shrink-0 items-center gap-3 rounded-xl border border-white/[0.08] bg-[#0b0b0d] px-3">
         <span className="shrink-0 whitespace-nowrap font-medium">OBS-DJ-SYXTEE<span className="ml-2 text-[12px] font-normal text-neutral-500">38 ms</span></span>
         <span className="flex shrink-0 items-center gap-1.5 text-neutral-400">Profil <span className={`${field} w-40`}>Direct IRL</span></span>
         <span className="flex shrink-0 items-center gap-1.5 text-neutral-400">Collection <span className={`${field} w-40`}>Stream</span></span>
         <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-emerald-400"><span aria-hidden="true" className="size-2 rounded-full bg-emerald-400" />Flux › IPHONE 16</span>
-        <span className={`${flat} h-7 gap-1.5 px-2.5`}><span aria-hidden="true">⚙</span> Régie auto</span>
-        <span className={`${flat} ml-auto h-7 px-2.5`}>Chat</span>
-        <span className={`${flat} h-7 px-2.5`}>Mode studio</span>
+        <span className={`${flat} h-7 gap-1.5 px-3.5`}><span aria-hidden="true">⚙</span> Régie auto</span>
+        <span className={`${flat} ml-auto h-7 px-3.5`}>Chat</span>
+        <span className={`${flat} h-7 px-3.5`}>Mode studio</span>
       </div>
       <main className="flex min-h-0 flex-1 flex-col gap-2 p-2">
         <section aria-label="Programme" className="relative grid h-[64%] min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-xl border border-white/[0.08] bg-[#0b0b0d]">
@@ -219,8 +219,8 @@ export function MacUI({ c }: { c: Ctl }) {
               <span className={c.live ? "text-red-500" : "text-neutral-500"}>{c.live ? "en direct" : "hors direct"}</span>
             </p>
             <div className="flex shrink-0 gap-1.5">
-              <span className={`${flat} h-7 gap-1.5 px-2.5`}>Son</span>
-              <span className={`${flat} h-7 px-2.5`}>Couper l&apos;aperçu</span>
+              <span className={`${flat} h-7 gap-1.5 px-3.5`}>Son</span>
+              <span className={`${flat} h-7 px-3.5`}>Couper l&apos;aperçu</span>
             </div>
           </div>
           <div className="min-h-0 px-2 pb-2">
@@ -254,7 +254,7 @@ export function PhoneUI({ c }: { c: Ctl }) {
     <div className="flex h-full w-full flex-col overflow-hidden bg-black pt-[54px] text-[13px] text-neutral-100">
       <header className="flex h-11 shrink-0 items-center justify-between border-b border-[#262626] px-3.5">
         <h1 className="flex items-center gap-2 text-[14px] font-medium">Contrôle à distance</h1>
-        <span className="inline-flex h-9 items-center gap-1.5 rounded border border-[#2e2e2e] px-3 text-[13px] text-neutral-300"><span aria-hidden="true">←</span> Retour</span>
+        <span className="inline-flex h-9 items-center gap-1.5 rounded-full border border-white/[0.14] bg-[#16161a] px-3.5 text-[13px] text-neutral-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"><span aria-hidden="true">←</span> Retour</span>
       </header>
       <div className="mx-2 mt-2 flex h-11 shrink-0 items-center gap-3 rounded-xl border border-white/[0.08] bg-[#0b0b0d] px-3">
         <span className="shrink-0 whitespace-nowrap font-medium">OBS-DJ-SYXTEE<span className="ml-2 text-[12px] font-normal text-neutral-500">38 ms</span></span>
@@ -267,7 +267,7 @@ export function PhoneUI({ c }: { c: Ctl }) {
               <span className="truncate text-neutral-100">{sceneLabel(c.scene)}</span>
               <span className={c.live ? "text-red-500" : "text-neutral-500"}>{c.live ? "en direct" : "hors direct"}</span>
             </p>
-            <span className={`${flat} h-7 px-2.5`}>Aperçu</span>
+            <span className={`${flat} h-7 px-3.5`}>Aperçu</span>
           </div>
           <div className="min-h-0 px-2 pb-2"><div className="mx-auto aspect-video h-full max-w-full overflow-hidden rounded-sm"><LivePreview scene={c.scene} live={c.live} seconds={c.seconds} size={11} /></div></div>
         </section>

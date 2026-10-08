@@ -69,7 +69,7 @@ const clock = (ms: number) => {
 // Palette de la page : noir pur, filets gris, bleu pour la scène du programme (comme OBS).
 const panel = "flex min-h-0 min-w-0 flex-col rounded-xl border border-white/[0.08] bg-[#0b0b0d] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]";
 const panelTitle = "flex items-baseline gap-2 border-b border-white/[0.08] px-3.5 py-2.5 text-[13px] font-semibold tracking-tight";
-const flat = "inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-white/10 bg-white/[0.04] text-[13px] text-neutral-100 transition-colors hover:bg-white/[0.09] disabled:opacity-40";
+const flat = "inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/[0.14] bg-[#16161a] text-[13px] text-neutral-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-colors hover:bg-[#1e1e23] disabled:opacity-40";
 const field = "h-7 rounded-lg border border-white/10 bg-white/[0.03] px-2 text-[13px] text-neutral-100 disabled:opacity-40";
 
 /** Petit retour tactile (Android) sur les actions du direct. Silencieux ailleurs. */
@@ -706,7 +706,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
             Invité · {guest.label} · {guest.level === "view" ? "lecture seule" : guest.level === "scenes" ? "scènes et son" : "tous les droits"}
           </p>
         ) : (
-          <Link href="/dashboard/controle-a-distance" className="inline-flex h-8 items-center gap-1.5 rounded border border-[#2e2e2e] px-3 text-[13px] text-neutral-300 hover:bg-[#161616] max-lg:h-9">
+          <Link href="/dashboard/controle-a-distance" className="inline-flex h-8 items-center gap-1.5 rounded-full border border-white/[0.14] bg-[#16161a] px-3.5 text-[13px] text-neutral-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-colors hover:bg-[#1e1e23] max-lg:h-9">
             <span aria-hidden="true">←</span> Retour
           </Link>
         )}
@@ -738,7 +738,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
           {received ? fluxName : noFluxSource ? "Aucun flux dans OBS" : "Aucun flux reçu"}
         </span>
         {noFluxSource && !guest && (
-          <button type="button" disabled={fixing} onClick={() => void fixFlux()} className={`${flat} h-7 shrink-0 gap-1.5 !border-amber-600 px-2.5 !text-amber-200`}>
+          <button type="button" disabled={fixing} onClick={() => void fixFlux()} className={`${flat} h-7 shrink-0 gap-1.5 !border-amber-600 px-3.5 !text-amber-200`}>
             {fixing ? "Correction…" : "Corriger"}
           </button>
         )}
@@ -748,7 +748,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
           </span>
         )}
         <div className={`relative shrink-0 ${guest ? "hidden" : ""}`} ref={devicePanel}>
-          <button type="button" aria-expanded={deviceOpen} disabled={!roles} onClick={() => setDeviceOpen((o) => !o)} className={`${flat} h-7 gap-1.5 px-2.5`}>
+          <button type="button" aria-expanded={deviceOpen} disabled={!roles} onClick={() => setDeviceOpen((o) => !o)} className={`${flat} h-7 gap-1.5 px-3.5`}>
             <span aria-hidden="true">⚙</span> <span className="max-lg:hidden">Régie auto</span><span className="lg:hidden">Régie</span>
           </button>
           {deviceOpen && roles && (
@@ -817,13 +817,13 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
           )}
         </div>
         {chatDefaults && (
-          <button type="button" aria-pressed={chatOn} onClick={toggleChat} className={`${flat} ml-auto h-7 shrink-0 px-2.5 max-lg:hidden ${chatOn ? "!border-white/30 !bg-white/[0.14] !text-white" : ""}`}>
+          <button type="button" aria-pressed={chatOn} onClick={toggleChat} className={`${flat} ml-auto h-7 shrink-0 px-3.5 max-lg:hidden ${chatOn ? "!border-white/30 !bg-white/[0.14] !text-white" : ""}`}>
             Chat
           </button>
         )}
         <label className={`${chatDefaults ? "" : "ml-auto "}flex shrink-0 items-center gap-2 max-lg:hidden`}>
           <span className="sr-only">Mode studio</span>
-          <button type="button" role="switch" aria-label="Mode studio" aria-checked={studioMode} disabled={!ready} onClick={() => void run("SetStudioModeEnabled", { studioModeEnabled: !studioMode })} className={`${flat} h-7 px-2.5 ${studioMode ? "!border-white/30 !bg-white/[0.14] !text-white" : ""}`}>
+          <button type="button" role="switch" aria-label="Mode studio" aria-checked={studioMode} disabled={!ready} onClick={() => void run("SetStudioModeEnabled", { studioModeEnabled: !studioMode })} className={`${flat} h-7 px-3.5 ${studioMode ? "!border-white/30 !bg-white/[0.14] !text-white" : ""}`}>
             Mode studio
           </button>
         </label>
@@ -855,7 +855,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
             {programLabel}
             <div className="flex shrink-0 gap-1.5">
               {!muted && pmode.mode === "video" && <input type="range" min={0} max={1} step={0.05} value={volume} onChange={(e) => setVolume(Number(e.target.value))} aria-label="Volume de l'aperçu" className="w-20 accent-white max-sm:hidden" />}
-              <button type="button" disabled={!previewOn || pmode.mode !== "video"} title={pmode.mode === "video" ? undefined : "Le son n'est disponible qu'avec l'aperçu vidéo"} aria-pressed={!muted} onClick={() => setMuted((m) => !m)} className={`${flat} h-7 gap-1.5 px-2.5`}>
+              <button type="button" disabled={!previewOn || pmode.mode !== "video"} title={pmode.mode === "video" ? undefined : "Le son n'est disponible qu'avec l'aperçu vidéo"} aria-pressed={!muted} onClick={() => setMuted((m) => !m)} className={`${flat} h-7 gap-1.5 px-3.5`}>
                 <SpeakerIcon off={muted} /> {muted ? "Muet" : "Son"}
               </button>
               <button
@@ -866,7 +866,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                   setPreviewOn(next);
                   void run("link.setPreview", { enabled: next });
                 }}
-                className={`${flat} h-7 px-2.5`}
+                className={`${flat} h-7 px-3.5`}
               >
                 {previewOn ? (<><span className="max-sm:hidden">Couper l&apos;aperçu</span><span className="sm:hidden">Aperçu</span></>) : (<><span className="max-sm:hidden">Activer l&apos;aperçu</span><span className="sm:hidden">Aperçu</span></>)}
               </button>

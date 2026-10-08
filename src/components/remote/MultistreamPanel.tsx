@@ -53,7 +53,7 @@ export function PlatformLogo({ id, size = 28 }: { id: string; size?: number }) {
   );
 }
 
-const flat = "inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-white/10 bg-white/[0.04] text-[13px] text-neutral-100 transition-colors hover:bg-white/[0.09] disabled:opacity-40";
+const flat = "inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/[0.14] bg-[#16161a] text-[13px] text-neutral-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-colors hover:bg-[#1e1e23] disabled:opacity-40";
 const input = "h-9 w-full rounded border border-[#2e2e2e] bg-[#111] px-2.5 text-[13px] text-neutral-100 placeholder:text-neutral-600";
 
 function Broadcast({ on }: { on: boolean }) {
@@ -92,7 +92,7 @@ export default function MultistreamPanel({ state, call, ready, canControl, canEd
       <div className="flex items-center justify-between gap-2 border-b border-[#262626] px-3 py-2">
         <h2 className="text-[13px] font-semibold">Multistream</h2>
         {canEdit && (
-          <button type="button" disabled={!ready} onClick={() => setDialog({ step: "pick", service: "" })} className={`${flat} h-7 gap-1 px-2.5`}>
+          <button type="button" disabled={!ready} onClick={() => setDialog({ step: "pick", service: "" })} className={`${flat} h-7 gap-1 px-3.5`}>
             <span aria-hidden="true">+</span> Ajouter
           </button>
         )}

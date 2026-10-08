@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { siFacebook, siInstagram, siKick, siTiktok, siTwitch, siX, siYoutube } from "simple-icons";
 import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button";
 import GridBackground from "@/components/ui/GridBackground";
+import CircuitArt from "@/components/multistream/CircuitArt";
 import { ClickArt, EyesArt, SendArt } from "@/components/multistream/HoverArt";
 import SectionHeader from "@/components/ui/SectionHeader";
 import StatusPill from "@/components/ui/StatusPill";
@@ -12,16 +12,6 @@ export const metadata: Metadata = {
   description: "Diffuse le même direct sur YouTube, Twitch, Kick, Instagram et d'autres plateformes, directement depuis le plugin SYXTEE.",
   alternates: { canonical: "/multistream" },
 };
-
-const PLATFORMS = [
-  { label: "YouTube", icon: siYoutube },
-  { label: "Twitch", icon: siTwitch },
-  { label: "Kick", icon: siKick },
-  { label: "Instagram", icon: siInstagram },
-  { label: "TikTok", icon: siTiktok },
-  { label: "Facebook", icon: siFacebook },
-  { label: "X", icon: siX },
-];
 
 const ART = [EyesArt, SendArt, ClickArt];
 const REASONS: [string, string][] = [
@@ -58,16 +48,7 @@ export default function MultistreamPage() {
       <section className="border-b border-line py-20 sm:py-24">
         <Container>
           <SectionHeader title={<>Diffuse <em>partout.</em></>} subtitle="Une adresse et une clé par plateforme, et c'est prêt. Toute autre plateforme qui accepte une adresse RTMP fonctionne aussi." />
-          <ul className="mx-auto mt-12 flex max-w-3xl flex-wrap items-center justify-center gap-4" aria-label="Plateformes">
-            {PLATFORMS.map((p) => (
-              <li key={p.label} className="flex flex-col items-center gap-2">
-                <span className="grid size-16 place-items-center rounded-2xl border border-line bg-surface text-foreground">
-                  <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" role="img" aria-label={p.label}><path d={p.icon.path} /></svg>
-                </span>
-                <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{p.label}</span>
-              </li>
-            ))}
-          </ul>
+          <CircuitArt className="mx-auto mt-12 max-w-4xl" />
         </Container>
       </section>
 

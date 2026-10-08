@@ -388,7 +388,7 @@ export function SignInCard({ next = "", error, email: prefill = "" }: { next?: s
 
 // ─────────────────────────── Inscription ───────────────────────────
 
-/** Inscription par email + mot de passe pour les adresses dont la demande d'accès est approuvée (vérifié côté serveur). Google : bientôt. */
+/** Inscription par email + mot de passe, ouverte à tous (compte Gratuit). */
 export function SignUpCard({ next = "", error, email: prefill = "" }: { next?: string; error?: string | null; email?: string }) {
   const [state, action] = useActionState<AuthState, FormData>(signUp, IDLE);
   const [dismissed, setDismissed] = useState<AuthState | null>(null);
@@ -424,10 +424,7 @@ export function SignUpCard({ next = "", error, email: prefill = "" }: { next?: s
       }
     >
       <motion.p variants={item} className="mt-8 rounded-xl border border-line-strong bg-surface-2 p-4 text-center text-xs leading-relaxed text-foreground/60">
-        Accès réservé aux demandes approuvées : utilise l&apos;adresse de ta demande.{" "}
-        <Link href="/acces" className="font-medium text-foreground hover:underline">
-          Demander l&apos;accès
-        </Link>
+        Le compte est gratuit. Les services ne sont pas encore ouverts : tu as accès à la documentation et au support pour demander un accès.
       </motion.p>
       <motion.form variants={item} action={action} className="mt-6 space-y-5">
         <input type="hidden" name="next" value={next} />

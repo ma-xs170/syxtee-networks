@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Abonnement", robots: { index: false 
 const count = (n: number, one: string, many: string) => (Number.isFinite(n) ? `${n} ${n > 1 ? many : one}` : `${many} illimités`);
 
 const TEXT: Record<Plan["id"], string> = {
-  free: "Ton compte n'a pas encore d'accès aux relais. L'accès est ouvert sur invitation : demande la tienne sur le Discord. En attendant, le Scanner réseau reste ouvert à tous.",
+  free: "Ton compte est gratuit : il donne accès à la documentation et au support. Les services ne sont pas encore ouverts à tous : consulte les forfaits, ou demande un accès au support.",
   basic: "Un relais et l'essentiel pour streamer en IRL.",
   beta: "Merci d'être là depuis la bêta : ton accès complet est conservé.",
   paid: "Tout SYXTEE : 5 relais SRTLA + 5 RTMP, 3 flux en même temps.",
@@ -26,12 +26,12 @@ export default async function AccesPage() {
   const [, plan] = await Promise.all([requireUser("/dashboard/abonnement"), getPlan()]);
   const included =
     plan.id === "free"
-      ? ["Scanner réseau", "Analyseur réseau", "Carte de couverture"]
+      ? ["Documentation", "Support", "Scanner réseau", "Analyseur réseau", "Carte de couverture"]
       : [count(plan.maxRelays, "relais", "relais"), count(plan.maxConcurrentStreams, "flux simultané", "flux simultanés"), ...plan.features.map((f) => FEATURES[f])];
 
   return (
     <DashPage>
-      <DashHeader lead="Ton" hl="abonnement" sub="Pas d'abonnement : l'accès est ouvert sur invitation." />
+      <DashHeader lead="Ton" hl="abonnement" sub="Les services ne sont pas encore ouverts à tous. Demande un accès au support." />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
         <Tile aria-labelledby="actuel">
@@ -57,6 +57,9 @@ export default async function AccesPage() {
           </p>
           <Link href="/dashboard/support" className="btn btn-primary mt-5 w-full">
             Écrire au support
+          </Link>
+          <Link href="/tarifs" className="btn btn-secondary mt-2 w-full">
+            Voir les forfaits
           </Link>
         </Tile>
       </div>

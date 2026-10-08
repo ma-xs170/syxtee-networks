@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import BackupsList from "@/components/dashboard/BackupsList";
 import { DashHeader, DashPage } from "@/components/dashboard/ui";
+import PlanGate from "@/components/plans/PlanGate";
 import { requireUser } from "@/lib/auth/dal";
 import { publicCoreUrl } from "@/lib/core";
 
@@ -12,7 +13,9 @@ export default async function BackupsPage() {
   return (
     <DashPage>
       <DashHeader lead="Backups" hl="de scènes" sub="Tes collections de scènes OBS, avec leurs médias. Les scripts Lua et Python ne sont pas sauvegardés." />
-      <BackupsList coreUrl={publicCoreUrl} />
+      <PlanGate feature="relais">
+        <BackupsList coreUrl={publicCoreUrl} />
+      </PlanGate>
     </DashPage>
   );
 }

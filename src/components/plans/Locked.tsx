@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { site } from "@/lib/site";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
-// Formule Gratuit : le bloc reste visible mais grisé et inutilisable ; un clic ouvre la modale d'upgrade.
+// Formule Gratuit : le bloc reste visible mais flouté et inutilisable, avec une carte « Voir les forfaits ».
 // La vraie barrière est côté serveur (actions, API, Core) : ceci n'est que l'interface.
 
 /** Cadenas filaire (charte SYXTEE : traits blancs fins). */
@@ -17,66 +16,41 @@ export function LockIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-export function UpgradeModal({ open, feature, onClose }: { open: boolean; feature?: string; onClose: () => void }) {
-  const ref = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    const d = ref.current;
-    if (!d) return;
-    if (open && !d.open) d.showModal();
-    if (!open && d.open) d.close();
-  }, [open]);
+/** Carte posée sur un bloc verrouillé. */
+export function UpgradeCard({ feature }: { feature?: string }) {
   return (
-    <dialog
-      ref={ref}
-      onClose={onClose}
-      onClick={(e) => e.target === ref.current && onClose()}
-      aria-labelledby="upgrade-title"
-      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-foreground/20 bg-[#0a0a0a] p-6 text-foreground backdrop:bg-background/80 sm:p-8"
-    >
-      <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-foreground/25 text-foreground/80">
-        <LockIcon />
+    <div role="region" aria-label={`${feature ?? "Fonction"} : disponible avec un forfait`} className="w-full max-w-md rounded-2xl border border-line-strong bg-surface p-6 text-center shadow-[0_24px_60px_-20px_rgba(0,0,0,0.6)] sm:p-8">
+      <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl border border-line-strong text-muted">
+        <LockIcon className="h-5 w-5" />
       </span>
-      <h2 id="upgrade-title" className="mt-5 text-xl font-semibold tracking-tight">
-        Fonction réservée aux abonnés
-      </h2>
-      <p className="mt-2 text-sm leading-relaxed text-foreground/60">
-        {feature ? <span className="text-foreground">{feature}</span> : "Cette fonction"} est réservé aux comptes invités. Le Scanner réseau reste ouvert à tous.
+      <h2 className="mt-5 text-xl font-semibold tracking-tight">Disponible avec un forfait</h2>
+      <p className="mt-2 text-sm leading-relaxed text-muted">
+        {feature ? <span className="text-foreground">{feature}</span> : "Cette fonction"} s&apos;ouvre avec un abonnement. Les services ne sont pas encore ouverts à tous : ton compte gratuit donne accès à la documentation et au support, où tu peux demander un accès.
       </p>
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <a href="/acces" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
-          Demander l\'accès
-        </a>
-        <Link href="/acces" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-foreground/25 px-5 text-sm font-medium transition-colors hover:bg-foreground/10">
-          Comment ça marche
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+        <Link href="/tarifs" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
+          Voir les forfaits
+        </Link>
+        <Link href="/dashboard/support" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-line-strong px-5 text-sm font-medium transition-colors hover:bg-fill-hover">
+          Demander un accès
         </Link>
       </div>
-      <button type="button" onClick={onClose} className="mt-4 text-sm text-foreground/50 hover:text-foreground">
-        Fermer
-      </button>
-    </dialog>
+      <Link href="/docs" className="mt-4 inline-block text-sm text-muted hover:text-foreground">Lire la documentation</Link>
+    </div>
   );
 }
 
 /** Enveloppe un bloc verrouillé. `locked=false` : rend les enfants tels quels. */
 export default function Locked({ locked, feature, children, className = "" }: { locked: boolean; feature?: string; children: ReactNode; className?: string }) {
-  const [open, setOpen] = useState(false);
   if (!locked) return <>{children}</>;
   return (
     <div className={`relative ${className}`}>
-      <div inert aria-hidden="true" className="pointer-events-none select-none opacity-40 grayscale">
+      <div inert aria-hidden="true" className="pointer-events-none max-h-[calc(100dvh-8rem)] select-none overflow-hidden opacity-60 blur-[6px]">
         {children}
       </div>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label={`${feature ?? "Fonction"} : réservé aux abonnés`}
-        className="absolute inset-0 cursor-not-allowed rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40"
-      >
-        <span className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-foreground/25 bg-background text-foreground/80">
-          <LockIcon />
-        </span>
-      </button>
-      <UpgradeModal open={open} feature={feature} onClose={() => setOpen(false)} />
+      <div className="absolute inset-0 flex items-start justify-center px-2 pt-10 sm:pt-16">
+        <UpgradeCard feature={feature} />
+      </div>
     </div>
   );
 }

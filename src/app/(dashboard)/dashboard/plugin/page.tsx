@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PluginDownload from "@/components/dashboard/PluginDownload";
 import { DashHeader, DashPage } from "@/components/dashboard/ui";
+import PlanGate from "@/components/plans/PlanGate";
 import { requireUser } from "@/lib/auth/dal";
 import { publicCoreUrl } from "@/lib/core";
 import type { PluginLatest } from "@/lib/plugin";
@@ -18,7 +19,9 @@ export default async function PluginPage() {
   return (
     <DashPage>
       <DashHeader lead="Plugin OBS" hl="SYXTEE" sub="Pilote OBS depuis un onglet. Tout tourne sur ton ordinateur : ta carte graphique fait déjà le travail." />
-      <PluginDownload coreUrl={publicCoreUrl} latest={latest} />
+      <PlanGate feature="relais">
+        <PluginDownload coreUrl={publicCoreUrl} latest={latest} />
+      </PlanGate>
     </DashPage>
   );
 }

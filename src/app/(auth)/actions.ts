@@ -57,8 +57,8 @@ export async function signUp(_prev: AuthState, f: FormData): Promise<AuthState> 
   if (password !== str(f, "password_confirm")) return fail("Les deux mots de passe ne correspondent pas.", fields);
   if (f.get("cgu") !== "on") return fail("Accepte les Conditions d'utilisation et la Politique de confidentialité.", fields);
   if (!hasSupabase) return fail(AUTH_ERRORS.indisponible, fields);
-  // Inscription par email réservée aux demandes d'accès approuvées. ALLOW_EMAIL_SIGNUP=1 la rouvre à tous (tests).
-  if (process.env.ALLOW_EMAIL_SIGNUP !== "1" && !(await isApprovedEmail(email.data))) {
+  // Inscription ouverte à tous : le compte démarre en Gratuit, sans accès aux services. SIGNUP_RESTRICTED=1 la réserve aux demandes d'accès approuvées.
+  if (process.env.SIGNUP_RESTRICTED === "1" && !(await isApprovedEmail(email.data))) {
     return fail("Cette adresse n'a pas de demande d'accès approuvée. Fais une demande, ou utilise l'adresse de ta demande.", fields);
   }
 

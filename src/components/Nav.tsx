@@ -76,8 +76,8 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
       <div className={`mx-auto flex h-16 origin-top items-center justify-between gap-6 px-4 transition-transform duration-200 motion-reduce:transition-none sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] ${dash ? "max-w-[1400px]" : "max-w-6xl"} ${compact ? "scale-[0.97]" : ""}`}>
         <Link href={dash ? "/dashboard" : "/"} onClick={() => setOpen(false)} className="flex shrink-0 items-center gap-3 justify-self-start" aria-label={dash ? "Dashboard SYXTEE" : "SYXTEE NETWORKS, accueil"}>
           <Image src="/logo-400.png" alt="" width={20} height={28} priority style={{ width: 20, height: "auto" }} className="ink-img" />
-          <span className="whitespace-nowrap text-[15px] font-semibold tracking-[0.04em]">
-            SYXTEE<span className="hidden font-normal text-muted xl:inline"> {dash ? "DASHBOARD" : "NETWORKS"}</span>
+          <span className="whitespace-nowrap font-[family-name:var(--font-serif)] text-[23px] font-normal leading-none tracking-[0.07em]">
+            SYXTEE<span className="hidden text-foreground/85 xl:inline"> {dash ? "DASHBOARD" : "NETWORKS"}</span>
           </span>
         </Link>
 
@@ -131,7 +131,7 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
                   {...("arrow" in item && item.arrow ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                   onClick={() => setOpen(false)}
                   aria-current={isActive(item.href) ? "page" : undefined}
-                  className={`border-b border-line py-4 text-base hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-muted"}`}
+                  className={`border-b border-line py-4 text-base hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-foreground/90"}`}
                 >
                   <span className={"underline" in item && item.underline ? "underline underline-offset-4 decoration-foreground/50" : ""}>{item.label}</span>
                   {"arrow" in item && item.arrow && <span aria-hidden="true"> ↗</span>}
@@ -160,19 +160,19 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
                   <div key={g.label ?? i} className="flex flex-col">
                     {g.label && <p className="pb-1 pt-5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">{g.label}</p>}
                     {g.links.map((l) => (
-                      <MenuLinkItem key={l.href} link={l} onNavigate={() => setOpen(false)} className="border-b border-line py-4 text-base text-muted hover:text-foreground" />
+                      <MenuLinkItem key={l.href} link={l} onNavigate={() => setOpen(false)} className="border-b border-line py-4 text-base text-foreground/90 hover:text-foreground" />
                     ))}
                   </div>
                 ))}
                 <form action={signOut}>
-                  <button type="submit" className="w-full border-b border-line py-4 text-left text-base text-muted hover:text-foreground">
+                  <button type="submit" className="w-full border-b border-line py-4 text-left text-base text-foreground/90 hover:text-foreground">
                     Déconnexion
                   </button>
                 </form>
               </>
             ) : (
               account === null && (
-                <Link href="/connexion" onClick={() => setOpen(false)} className="border-b border-line py-4 text-base text-muted hover:text-foreground">
+                <Link href="/connexion" onClick={() => setOpen(false)} className="border-b border-line py-4 text-base text-foreground/90 hover:text-foreground">
                   Connexion
                 </Link>
               )

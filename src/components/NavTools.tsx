@@ -270,7 +270,7 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
             aria-expanded={open === label}
             aria-controls={panelId}
             onClick={() => (open === label && pinned ? close() : show(item.label, true))}
-            className={`${pill} flex items-center gap-1.5 ${active || open === label ? "text-foreground" : "text-foreground/75"}`}
+            className={`${pill} flex items-center gap-1.5 ${active || open === label ? "text-foreground" : "text-foreground"}`}
             {...common}
           >
             <GlidePill show={hover === label || open === label} id="site-nav-pill" className="rounded-full" />
@@ -286,7 +286,7 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
             href={item.href}
             {...(item.href.startsWith("http") || ("arrow" in item && item.arrow) ? { target: "_blank", rel: "noopener noreferrer" } : {})}
             aria-current={active ? "page" : undefined}
-            className={`${pill} ${active ? "font-medium text-foreground" : "text-foreground/75"}`}
+            className={`${pill} ${active ? "font-medium text-foreground" : "text-foreground"}`}
             {...common}
           >
             <GlidePill show={hover === label} id="site-nav-pill" className="rounded-full" />

@@ -20,10 +20,10 @@ export type NavItem = NavLink | NavMenu;
 // L'encodeur et la documentation vivent dans le pied de page.
 export const nav: NavItem[] = [
   { label: "Relais", href: "/relais" },
-  { label: "Contrôle à distance", href: "/controle-a-distance" },
-  { label: "Multistream", href: "/#multistream" },
-  { label: "Espaces partagés", href: "/espaces-partages" },
+  { label: "OBS CLOUD", href: "/controle-a-distance" },
   { label: "Tarifs", href: "/tarifs" },
+  { label: "Docs", href: "/docs" },
+  { label: "Discord", href: "https://discord.gg/CD68F8yZuZ", arrow: true },
 ];
 
 export const isMenu = (item: NavItem): item is NavMenu => "children" in item;

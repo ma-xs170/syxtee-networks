@@ -89,7 +89,7 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
                   Se connecter
                 </Link>
                 <Link href="/acces" className="inline-flex h-9 items-center whitespace-nowrap rounded-full border border-line-strong bg-surface-2 px-4 text-sm font-medium text-foreground shadow-[inset_0_1px_0_color-mix(in_srgb,var(--foreground)_8%,transparent)] transition-colors hover:bg-fill-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
-                  Demander l&apos;accès
+                  Commencer
                 </Link>
               </>
             )}

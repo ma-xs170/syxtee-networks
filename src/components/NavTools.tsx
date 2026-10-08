@@ -149,6 +149,7 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
           <Link
             key={item.href}
             href={item.href}
+            {...(item.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
             aria-current={isActive(item.href) ? "page" : undefined}
             onMouseEnter={() => setHover(item.href)}
             onFocus={() => setHover(item.href)}

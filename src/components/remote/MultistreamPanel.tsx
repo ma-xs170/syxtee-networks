@@ -123,7 +123,7 @@ export default function MultistreamPanel({ state, call, ready, canControl, canEd
             ))}
           </ul>
         )}
-        {state && !state.mainActive && outputs.length > 0 && <p className="mt-2 px-1 text-[12px] text-neutral-500">Le direct principal n&apos;est pas lancé : chaque sortie démarre avec son propre encodage.</p>}
+        {outputs.length > 0 && <p className="mt-2 px-1 text-[12px] text-neutral-500">Lancer une sortie démarre aussi le direct d&apos;OBS (son service principal) ; il s&apos;arrête avec la dernière sortie.</p>}
         {error && (
           <p role="alert" className="mt-2 px-1 text-[12px] text-amber-300">
             {error}

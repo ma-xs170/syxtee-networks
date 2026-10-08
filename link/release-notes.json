@@ -1,4 +1,7 @@
 {
+  "0.5.1": [
+    "Multistream : lancer une sortie démarre aussi le direct d'OBS (chrono, débit, « Arrêter le streaming »), et l'arrête avec la dernière sortie"
+  ],
   "0.5.0": [
     "Multistream : envoie ton direct vers Twitch, YouTube, Facebook, Kick, TikTok, X, Trovo ou un autre service, un clic par logo, depuis le contrôle à distance",
     "Les clés de stream restent sur ton ordinateur"

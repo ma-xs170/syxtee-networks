@@ -757,10 +757,35 @@ struct MsOut {
 	obs_service_t *svc = nullptr;
 	obs_encoder_t *video = nullptr, *audio = nullptr; // encodeurs à nous (null : ceux du direct principal)
 	bool active = false, starting = false;
+	// Attend que le direct principal d'OBS soit en route (ses encodeurs servent à la sortie).
+	bool waiting = false;
 	QString error;
 };
 std::vector<std::unique_ptr<MsOut>> msOuts;
 bool msLoaded = false;
+// Le direct principal a été lancé par une sortie multistream : il s'arrête avec la dernière.
+bool mainByMs = false;
+
+/** Le direct principal d'OBS est connecté (ses encodeurs tournent). */
+bool mainReady()
+{
+	bool ok = false;
+	if (obs_output_t *m = obs_frontend_get_streaming_output()) {
+		ok = obs_output_active(m);
+		obs_output_release(m);
+	}
+	return ok;
+}
+
+/** Plus aucune sortie en cours ni en attente : le direct lancé pour elles s'arrête aussi. */
+void msMaybeStopMain()
+{
+	if (!mainByMs) return;
+	for (auto &o : msOuts)
+		if (o->active || o->starting || o->waiting) return;
+	mainByMs = false;
+	if (obs_frontend_streaming_active()) obs_frontend_streaming_stop();
+}
 
 QString msPath()
 {
@@ -861,18 +886,16 @@ void msStoppedCb(void *param, calldata_t *cd)
 		QTimer::singleShot(0, [id] {
 			MsOut *x = msFind(id);
 			if (x && !x->active && !x->starting) msRelease(x);
+			msMaybeStopMain();
 			emitEvent("link.multistream", msListJson());
 		});
 	});
 }
 
-Json msStart(const QString &id)
+/** Démarre la sortie (le direct principal tourne). Lève Fail en cas d'échec. */
+void msStartNow(MsOut *o)
 {
-	msLoad();
-	MsOut *o = msFind(id);
-	if (!o) throw Fail{"Sortie introuvable."};
-	if (o->active || o->starting) throw Fail{"Cette sortie est déjà en cours."};
-	if (o->server.isEmpty() || o->key.isEmpty()) throw Fail{"Renseigne l'adresse du serveur et la clé de stream."};
+	o->waiting = false;
 	msRelease(o);
 	o->error.clear();
 
@@ -937,14 +960,76 @@ Json msStart(const QString &id)
 		o->error = err.isEmpty() ? QString::fromUtf8("L'envoi n'a pas démarré.") : err;
 		throw Fail{o->error};
 	}
+}
+
+/** Lancer une sortie lance aussi le direct d'OBS (barre d'état, chrono, « Arrêter le streaming ») : les encodeurs sont partagés. */
+Json msStart(const QString &id)
+{
+	msLoad();
+	MsOut *o = msFind(id);
+	if (!o) throw Fail{"Sortie introuvable."};
+	if (o->active || o->starting) throw Fail{"Cette sortie est déjà en cours."};
+	if (o->server.isEmpty() || o->key.isEmpty()) throw Fail{"Renseigne l'adresse du serveur et la clé de stream."};
+	o->error.clear();
+	if (mainReady()) {
+		try {
+			msStartNow(o);
+		} catch (const Fail &) {
+			msMaybeStopMain();
+			throw;
+		}
+		return msListJson();
+	}
+	o->waiting = true;
+	o->starting = true;
+	if (!obs_frontend_streaming_active()) {
+		mainByMs = true;
+		obs_frontend_streaming_start();
+	}
 	return msListJson();
+}
+
+/** Le direct principal est parti : les sorties en attente démarrent. */
+void msMainStarted()
+{
+	for (auto &o : msOuts) {
+		if (!o->waiting) continue;
+		try {
+			msStartNow(o.get());
+		} catch (const Fail &f) {
+			o->error = f.message;
+			o->starting = false;
+		}
+	}
+	emitEvent("link.multistream", msListJson());
+}
+
+/** Le direct principal s'est arrêté (ou n'a pas démarré). */
+void msMainStopped()
+{
+	bool changed = false;
+	for (auto &o : msOuts) {
+		if (!o->waiting) continue;
+		o->waiting = false;
+		o->starting = false;
+		o->error = QString::fromUtf8("Le direct principal d'OBS n'a pas démarré (vérifie le service dans OBS).");
+		changed = true;
+	}
+	mainByMs = false;
+	if (changed) emitEvent("link.multistream", msListJson());
 }
 
 Json msStop(const QString &id)
 {
 	MsOut *o = msFind(id);
 	if (!o) throw Fail{"Sortie introuvable."};
-	if (o->out) obs_output_stop(o->out);
+	if (o->waiting) {
+		o->waiting = false;
+		o->starting = false;
+	} else if (o->out) {
+		obs_output_stop(o->out);
+	}
+	msMaybeStopMain();
 	return msListJson();
 }
 
@@ -991,6 +1076,7 @@ Json msRemove(const QString &id)
 	msRelease(o);
 	msOuts.erase(std::remove_if(msOuts.begin(), msOuts.end(), [&](const std::unique_ptr<MsOut> &x) { return x->id == id; }), msOuts.end());
 	msSave();
+	msMaybeStopMain();
 	return msListJson();
 }
 
@@ -1575,7 +1661,11 @@ void frontendEvent(enum obs_frontend_event e, void *)
 	case OBS_FRONTEND_EVENT_STREAMING_STARTED:
 	case OBS_FRONTEND_EVENT_STREAMING_STOPPING:
 	case OBS_FRONTEND_EVENT_STREAMING_STOPPED: {
-		if (e == OBS_FRONTEND_EVENT_STREAMING_STARTED) streamStartNs = os_gettime_ns();
+		if (e == OBS_FRONTEND_EVENT_STREAMING_STARTED) {
+			streamStartNs = os_gettime_ns();
+			onMain([] { msMainStarted(); });
+		}
+		if (e == OBS_FRONTEND_EVENT_STREAMING_STOPPED) onMain([] { msMainStopped(); });
 		// Comme obs-websocket : actif dès « démarrage » ; inactif dès « arrêt en cours ».
 		const bool active = e == OBS_FRONTEND_EVENT_STREAMING_STARTING || e == OBS_FRONTEND_EVENT_STREAMING_STARTED;
 		emitEvent("StreamStateChanged", Json{{"outputActive", active}, {"outputState", e == OBS_FRONTEND_EVENT_STREAMING_STARTING ? "OBS_WEBSOCKET_OUTPUT_STARTING" : e == OBS_FRONTEND_EVENT_STREAMING_STARTED ? "OBS_WEBSOCKET_OUTPUT_STARTED" : e == OBS_FRONTEND_EVENT_STREAMING_STOPPING ? "OBS_WEBSOCKET_OUTPUT_STOPPING" : "OBS_WEBSOCKET_OUTPUT_STOPPED"}});

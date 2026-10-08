@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { site, type NavLink } from "@/lib/site";
+import StatusPill from "./ui/StatusPill";
 import ThemeToggle from "./ThemeToggle";
-import { DiscordIcon } from "./ui";
 
 // Pied de page minimal : quatre colonnes, le reste du plan du site vit dans la documentation.
 const columns: { title: string; links: NavLink[] }[] = [
@@ -45,13 +45,7 @@ export default function Footer() {
             <span className="text-sm font-semibold">SYXTEE NETWORKS</span>
           </div>
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-muted">Le direct en mobilité, simple et fiable.</p>
-          <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-surface-2 px-3.5 py-2 text-xs text-foreground">
-            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-ok" />
-            Tous les systèmes opérationnels
-          </p>
-          <a href={site.discord} target="_blank" rel="noopener noreferrer" aria-label="Discord" className="mt-5 flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition-colors hover:text-foreground">
-            <DiscordIcon />
-          </a>
+          <div className="mt-5"><StatusPill variant="ok" label="Tous les systèmes opérationnels" /></div>
         </div>
 
         {columns.map((col) => (
@@ -77,9 +71,6 @@ export default function Footer() {
           <ThemeToggle />
           <div className="flex items-center gap-6">
             <a href="mailto:contact@syxtee-networks.fr" className="inline-flex min-h-11 items-center hover:text-foreground">contact@syxtee-networks.fr</a>
-            <a href={site.discord} target="_blank" rel="noopener noreferrer" className="flex min-h-11 items-center gap-2 hover:text-foreground">
-              <DiscordIcon /> Communauté
-            </a>
           </div>
         </div>
       </div>

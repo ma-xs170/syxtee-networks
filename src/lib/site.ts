@@ -22,14 +22,6 @@ export type NavItem = NavLink | NavMenu;
 // L'encodeur vit aussi dans le pied de page.
 export const nav: NavItem[] = [
   { label: "Contrôle à distance", href: "/controle-a-distance" },
-  {
-    label: "Encodeur",
-    children: [
-      { label: "Présentation", href: "/encodeur#presentation", desc: "Le boîtier, ses caractéristiques.", icon: "studio", glass: "encoder", badge: "EN DÉVELOPPEMENT" },
-      { label: "Interface", href: "/encodeur#interface", desc: "La démo interactive de son tableau de bord.", icon: "docs", glass: "health" },
-    ],
-  },
-  { label: "Boutique", href: "/boutique" },
   { label: "Tarifs", href: "/tarifs" },
   { label: "Documentation", href: "/docs" },
 ];

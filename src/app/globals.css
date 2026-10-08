@@ -1087,3 +1087,24 @@ select,
   .cb-pulse { animation: cb-run 4.6s ease-in-out infinite; }
 }
 @keyframes cb-run { from { stroke-dashoffset: 120; } to { stroke-dashoffset: -1000; } }
+
+/* Symboles animés au survol de la carte (.group) : anneau + geste propre à chaque symbole. */
+.ic-fx { position: relative; display: inline-grid; place-items: center; flex-shrink: 0; }
+.ic-fx::after { content: ""; position: absolute; inset: -5px; border-radius: 9999px; border: 1.5px solid currentColor; opacity: 0; transform: scale(0.6); pointer-events: none; }
+.ic-fx svg { transform-box: fill-box; transform-origin: center; }
+@media (prefers-reduced-motion: no-preference) {
+  .group:hover .ic-fx::after, .group:focus-within .ic-fx::after { animation: ic-ring 0.8s ease-out; }
+  .group:hover .ic-eye, .group:focus-within .ic-eye { animation: ic-blink 0.7s ease-in-out; }
+  .group:hover .ic-send, .group:focus-within .ic-send { animation: ic-fly 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+  .group:hover .ic-click, .group:focus-within .ic-click { animation: ic-tap 0.7s ease-in-out; }
+  .group:hover .ic-user, .group:focus-within .ic-user { animation: ic-hop 0.6s ease-out; }
+  .group:hover .ic-bolt, .group:focus-within .ic-bolt { animation: ic-zap 0.6s ease-out; }
+  .group:hover .ic-star, .group:focus-within .ic-star { animation: ic-spin 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+}
+@keyframes ic-ring { 0% { opacity: 0.55; transform: scale(0.6); } 100% { opacity: 0; transform: scale(1.9); } }
+@keyframes ic-blink { 0%, 100% { transform: scaleY(1); } 45% { transform: scaleY(0.08); } }
+@keyframes ic-fly { 0% { transform: translate(0, 0); opacity: 1; } 45% { transform: translate(9px, -9px); opacity: 0; } 55% { transform: translate(-9px, 9px); opacity: 0; } 100% { transform: translate(0, 0); opacity: 1; } }
+@keyframes ic-tap { 0%, 100% { transform: translate(0, 0) scale(1); } 40% { transform: translate(2px, 3px) scale(0.82); } 60% { transform: translate(2px, 3px) scale(0.82); } }
+@keyframes ic-hop { 0% { transform: translateY(0); } 40% { transform: translateY(-4px); } 100% { transform: translateY(0); } }
+@keyframes ic-zap { 0% { transform: scale(1) rotate(0); } 30% { transform: scale(1.35) rotate(-10deg); } 60% { transform: scale(0.9) rotate(6deg); } 100% { transform: scale(1) rotate(0); } }
+@keyframes ic-spin { 0% { transform: rotate(0) scale(1); } 50% { transform: rotate(180deg) scale(1.25); } 100% { transform: rotate(360deg) scale(1); } }

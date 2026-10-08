@@ -2,6 +2,8 @@ import MacAndPc from "@/components/landing/MacAndPc";
 import Link from "next/link";
 import { Container } from "../ui";
 import { ButtonLink } from "../ui/Button";
+import FxIcon from "../ui/FxIcon";
+import Reveal from "../ui/Reveal";
 import Faq from "./Faq";
 import ObsHero from "./ObsHero";
 import PlatformStrip from "./PlatformStrip";
@@ -15,13 +17,13 @@ const lead = "mt-4 max-w-[60ch] text-base leading-relaxed text-muted";
 const cap = "text-xs text-muted";
 const rise = (i: number) => ({ "--i": i }) as React.CSSProperties;
 
-function Cell({ className = "", title, text, children }: { className?: string; title: string; text: string; children?: React.ReactNode }) {
+function Cell({ className = "", title, text, children, delay = 0 }: { className?: string; title: string; text: string; children?: React.ReactNode; delay?: number }) {
   return (
-    <article className={`bento-cell flex flex-col p-6 sm:p-7 ${className}`}>
+    <Reveal as="article" delay={delay} className={`bento-cell flex flex-col p-6 sm:p-7 ${className}`}>
       <div className="flex h-44 items-center justify-center">{children}</div>
       <h3 className="mt-6 text-lg font-semibold tracking-tight">{title}</h3>
       <p className="mt-1.5 max-w-[48ch] text-sm leading-relaxed text-muted">{text}</p>
-    </article>
+    </Reveal>
   );
 }
 
@@ -34,7 +36,7 @@ export function ObsHeroSection() {
           Pilote ton OBS à distance, <em>depuis n&apos;importe où.</em>
         </h1>
         <p className="rise mx-auto mt-5 max-w-[56ch] text-lg leading-relaxed text-muted" style={rise(1)}>
-          Scènes, audio, démarrage du live : depuis ton navigateur ou ton téléphone, sur ton propre PC ou Mac. Aucun serveur en plus.
+          Scènes, audio, direct : pilote ton OBS depuis ton téléphone ou ton navigateur, sur ton propre ordinateur. Aucun serveur à louer.
         </p>
         <div className="rise mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row" style={rise(2)}>
           <ButtonLink href="/acces">Demander l&apos;accès</ButtonLink>
@@ -51,33 +53,35 @@ export function ObsHeroSection() {
 
 export function ObsBento() {
   return (
-    <section id="comment" className="scroll-mt-20 border-b border-line py-20 lg:py-28">
+    <section id="comment" className="scroll-mt-20 border-b border-line py-24 lg:py-36">
       <Container>
-        <h2 className={h2}>{product.remoteName}, ton OBS <em>dans la poche.</em></h2>
-        <p className={lead}>Chaque bouton agit sur ton vrai OBS, en direct.</p>
+        <Reveal>
+          <h2 className={h2}>{product.remoteName}, ton OBS <em>dans la poche.</em></h2>
+          <p className={lead}>Chaque bouton agit sur ton vrai OBS, en direct.</p>
+        </Reveal>
         <div className="mt-12 grid gap-4 md:grid-cols-4">
-          <Cell className="md:col-span-2" title="Change de scène en un tap" text="Début, direct, connexion perdue, fin : la scène change sur ton OBS, sans attendre.">
+          <Cell delay={0.0} className="md:col-span-2" title="Change de scène en un tap" text="Début, direct, connexion perdue, fin : la scène change sur ton OBS, sans attendre.">
             <div className="grid w-full grid-cols-2 gap-3">
               {["Début du stream", "En direct", "Connexion perdue", "Fin du stream"].map((s, i) => (
                 <span key={s} className={`rounded-xl border px-4 py-4 text-center text-sm ${i === 1 ? "border-foreground/40 bg-surface-2" : "border-line text-muted"}`}>{s}</span>
               ))}
             </div>
           </Cell>
-          <Cell className="md:col-span-2" title="Mixer audio à distance" text="Coupe un micro ou règle un niveau pendant que tu es sur le terrain.">
+          <Cell delay={0.08} className="md:col-span-2" title="Mixer audio à distance" text="Coupe un micro ou règle un niveau pendant que tu es sur le terrain.">
             <div className="flex h-32 w-full items-end gap-1.5" aria-hidden="true">
               {[40, 62, 50, 78, 66, 88, 58, 72, 46, 64].map((h, i) => (
                 <span key={i} className={`level-bar h-full flex-1 origin-bottom rounded-t-md ${i > 7 ? "bg-warn" : "bg-ok"}`} style={{ "--p": h / 100, transform: `scaleY(${h / 100})`, opacity: 0.8, animationDuration: `${650 + ((i * 137) % 500)}ms`, animationDelay: `${-((i * 211) % 700)}ms` } as React.CSSProperties} />
               ))}
             </div>
           </Cell>
-          <Cell className="md:col-span-2" title="Espaces partagés" text="Invite un modérateur ou un monteur à piloter avec toi, chacun avec son compte et son rôle.">
+          <Cell delay={0.16} className="md:col-span-2" title="Espaces partagés" text="Invite un modérateur ou un monteur à piloter avec toi, chacun avec son compte et son rôle.">
             <div className="flex items-center justify-center gap-4" aria-hidden="true">
               {[["M", "from-violet-500 to-pink-500"], ["L", "from-sky-500 to-blue-600"], ["S", "from-emerald-500 to-teal-600"], ["+", "from-amber-400 to-orange-500"]].map(([l, c]) => (
                 <span key={l} className={`grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br ${c} text-xl font-semibold text-white shadow-lg`}>{l}</span>
               ))}
             </div>
           </Cell>
-          <Cell className="md:col-span-2" title="Tourne sur ton propre PC ou Mac" text="Zéro serveur à louer. Tu relies ton ordinateur avec un code.">
+          <Cell delay={0.24} className="md:col-span-2" title="Tourne sur ton propre PC ou Mac" text="Zéro serveur à louer. Tu relies ton ordinateur avec un code.">
             <MacAndPc className="mx-auto max-w-[440px]" />
           </Cell>
         </div>
@@ -96,7 +100,7 @@ export function EncoderSection() {
     ["Prix", product.priceLabel(product.price) ?? "Bientôt disponible"],
   ];
   return (
-    <section id="encodeur" className="scroll-mt-20 border-b border-line py-20 lg:py-28">
+    <section id="encodeur" className="scroll-mt-20 border-b border-line py-24 lg:py-36">
       <Container>
         <div className="bento-cell grid gap-10 p-6 sm:p-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div className="opacity-90 [filter:saturate(0.7)]">
@@ -125,6 +129,44 @@ export function EncoderSection() {
   );
 }
 
+const FIELD: { title: string; text: string; span: string; tint: string }[] = [
+  { title: "Marathon et courses à pied", text: "Un direct qui suit les coureurs sur 42 km, sans coupure quand la foule sature le réseau.", span: "md:col-span-2", tint: "from-foreground/[0.09] via-transparent to-transparent" },
+  { title: "Course cycliste", text: "Mobilité rapide, liaison stable.", span: "", tint: "from-transparent via-foreground/[0.04] to-foreground/[0.1]" },
+  { title: "Manifestation publique", text: "Dans la foule, ton flux tient.", span: "", tint: "from-foreground/[0.07] to-transparent" },
+  { title: "Festival et concert", text: "Plusieurs caméras, un seul pilotage.", span: "", tint: "from-transparent to-foreground/[0.08]" },
+  { title: "Reportage en mobilité", text: "Légèreté et fiabilité, partout.", span: "", tint: "from-foreground/[0.1] via-transparent to-transparent" },
+];
+
+export function FieldSection() {
+  return (
+    <section className="border-b border-line py-24 lg:py-36">
+      <Container>
+        <Reveal>
+          <h2 className={h2}>Pensé pour le <em>terrain.</em></h2>
+          <p className={lead}>Là où le réseau est le plus dur, ton direct doit rester stable. On t&apos;aide à le préparer.</p>
+        </Reveal>
+        <div className="mt-12 grid gap-4 md:grid-cols-4">
+          {FIELD.map((f, i) => (
+            <Reveal as="article" key={f.title} delay={i * 0.07} className={`bento-cell flex min-h-52 flex-col justify-end p-6 sm:p-7 ${f.span}`}>
+              <span aria-hidden="true" className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${f.tint}`} />
+              <svg aria-hidden="true" viewBox="0 0 200 80" className="pointer-events-none absolute right-4 top-4 h-16 w-40 text-foreground/15" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"><path d={`M2 ${60 - i * 4} C50 ${10 + i * 6} 90 ${70 - i * 3} 140 ${34 + i * 3} S190 20 198 ${14 + i * 5}`} /><circle cx="198" cy={14 + i * 5} r="3" fill="currentColor" /></svg>
+              <h3 className="relative text-lg font-semibold tracking-tight">{f.title}</h3>
+              <p className="relative mt-1.5 max-w-[40ch] text-sm leading-relaxed text-muted">{f.text}</p>
+            </Reveal>
+          ))}
+          <Reveal as="article" delay={0.35} className="bento-cell flex min-h-52 flex-col justify-between bg-surface-2 p-6 sm:p-7 md:col-span-2">
+            <p className="h-serif max-w-[22ch] text-[clamp(1.75rem,3vw,2.5rem)]">Ton projet est <em>unique.</em></p>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <ButtonLink href="/contact">Demander un devis</ButtonLink>
+              <span className="text-sm text-muted">Gratuit et sans engagement.</span>
+            </div>
+          </Reveal>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 const PLAN_ICON: Record<string, React.ReactNode> = {
   free: <><circle cx="12" cy="8" r="3.5" /><path d="M5 20a7 7 0 0 1 14 0" /></>,
   paid: <path d="M13 3 5 13h6l-1 8 8-10h-6l1-8Z" />,
@@ -133,15 +175,17 @@ const PLAN_ICON: Record<string, React.ReactNode> = {
 
 export function PricingSection() {
   return (
-    <section className="border-b border-line py-20 lg:py-28">
+    <section className="border-b border-line py-24 lg:py-36">
       <Container>
-        <h2 className={h2}>Choisis ta <em>formule.</em></h2>
-        <p className={lead}>Le compte gratuit est ouvert à tous, l&apos;accès partenaire se demande, et les formules payantes arrivent bientôt.</p>
+        <Reveal>
+          <h2 className={h2}>Choisis ta <em>formule.</em></h2>
+          <p className={lead}>Le compte gratuit est ouvert à tous, l&apos;accès partenaire se demande, et les formules payantes arrivent bientôt.</p>
+        </Reveal>
         <div className="mt-12 grid items-stretch gap-4 md:grid-cols-3">
-          {product.plans.map((p) => (
-            <article key={p.id} className={`bento-cell flex flex-col p-6 ${"featured" in p && p.featured ? "!border-line-strong bg-surface-2" : ""}`}>
+          {product.plans.map((p, k) => (
+            <Reveal as="article" delay={k * 0.08} key={p.id} className={`group bento-cell flex flex-col p-6 ${"featured" in p && p.featured ? "!border-line-strong bg-surface-2" : ""}`}>
               <h3 className="flex items-center gap-2.5 text-xl font-semibold tracking-tight">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 text-foreground/80">{PLAN_ICON[p.id]}</svg>
+                <FxIcon kind={p.id === "free" ? "user" : p.id === "paid" ? "bolt" : "star"}>{PLAN_ICON[p.id]}</FxIcon>
                 {p.name}
               </h3>
               <p className="mt-1 min-h-10 text-sm text-muted">{p.text}</p>
@@ -157,7 +201,7 @@ export function PricingSection() {
               <div className="mt-6">
                 <ButtonLink href={p.id === "free" ? "/inscription" : p.id === "partner" ? "/acces" : "/tarifs"} variant={p.id === "paid" ? "secondary" : "primary"} className="w-full">{p.id === "free" ? "Créer un compte" : p.id === "partner" ? "Demander l'accès" : "Voir les tarifs"}</ButtonLink>
               </div>
-            </article>
+            </Reveal>
           ))}
         </div>
         <p className="mt-6 text-sm text-muted">
@@ -176,7 +220,7 @@ export function FaqSection() {
     { q: "Comment obtenir de l'aide ?", a: "Le support se fait sur Discord. Donne ton ID de support dans ton ticket, on retrouve ton compte sans ton e-mail." },
   ];
   return (
-    <section className="border-b border-line py-20 lg:py-28">
+    <section className="border-b border-line py-24 lg:py-36">
       <Container>
         <h2 className={`${h2} mb-10 text-center`}>Questions <em>fréquentes</em></h2>
         <Faq items={items} />

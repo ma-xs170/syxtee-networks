@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { CompatStrip, FeatureGrid, LiveDemoSection, GoFurtherSection, IntegrationSection, LandingFinalCta, LandingHero, PricingSection, ProductsSection } from "@/components/landing/Landing";
+import { CompatStrip, IntegrationSection, LandingFinalCta, LandingHero, LiveDemoSection } from "@/components/landing/Landing";
+import { BentoSection, FaqSection, PricingCards, SchemaSection, StepsSection } from "@/components/landing/Landing2";
+import Glow from "@/components/landing/Glow";
 
 export const metadata: Metadata = {
   title: { absolute: "Contrôle à distance d'OBS Studio, multistream et relais · SYXTEE NETWORKS" },
@@ -12,14 +14,16 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
+      <Glow />
       <LandingHero />
       <LiveDemoSection />
       <CompatStrip />
+      <BentoSection />
+      <SchemaSection />
       <IntegrationSection />
-      <ProductsSection />
-      <GoFurtherSection />
-      <FeatureGrid />
-      <PricingSection />
+      <StepsSection />
+      <PricingCards />
+      <FaqSection />
       <LandingFinalCta />
     </>
   );

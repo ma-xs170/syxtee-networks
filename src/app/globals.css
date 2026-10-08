@@ -554,8 +554,42 @@ html[data-stream-mode="on"] [data-sensitive] {
   background:
     radial-gradient(ellipse 80% 60% at 50% -20%, color-mix(in srgb, var(--foreground) 5%, transparent), transparent 70%),
     var(--surface);
+  position: relative;
   transition: border-color 0.2s;
   &:hover { border-color: var(--line-strong); }
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s;
+    background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--foreground) 8%, transparent), transparent 70%);
+  }
+  &:hover::before { opacity: 1; }
+}
+/* Cellule de bento : rayon 24 px, fond dégradé sombre, même halo que .card. */
+@utility bento-cell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(ellipse 90% 70% at 20% -10%, color-mix(in srgb, var(--foreground) 7%, transparent), transparent 70%),
+    var(--surface);
+  transition: border-color 0.2s;
+  &:hover { border-color: var(--line-strong); }
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s;
+    background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--foreground) 9%, transparent), transparent 70%);
+  }
+  &:hover::before { opacity: 1; }
 }
 /* Icône verre : dégradé sombre, reflet en haut, filet clair. */
 @utility glass-icon {

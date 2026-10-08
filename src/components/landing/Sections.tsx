@@ -2,7 +2,6 @@ import MacAndPc from "@/components/landing/MacAndPc";
 import Link from "next/link";
 import { Container } from "../ui";
 import { ButtonLink } from "../ui/Button";
-import Diagram from "./Diagram";
 import Faq from "./Faq";
 import ObsHero from "./ObsHero";
 import PlatformStrip from "./PlatformStrip";

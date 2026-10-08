@@ -7,8 +7,10 @@ import { siFacebook, siKick, siTiktok, siTwitch, siX, siYoutube } from "simple-i
 // Les sorties vivent dans le plugin SYXTEE Link, sur le PC d'OBS ; la clé de stream y reste, elle n'est jamais renvoyée ici.
 // Chaque plateforme a son adresse de serveur toute prête ; on ne renseigne que la clé (et l'adresse pour celles qui en varient).
 
-export type MsOutput = { id: string; name: string; service: string; server: string; hasKey: boolean; active: boolean; starting: boolean; error: string };
-export type MsState = { outputs: MsOutput[]; mainActive: boolean };
+export type MsOutput = { id: string; name: string; service: string; server: string; hasKey: boolean; active: boolean; starting: boolean; error: string; /** Même clé que le service d'OBS : lancer cette sortie lance le direct d'OBS. */ viaMain?: boolean };
+/** Le service réglé dans OBS (Réglages, Stream) : sa clé ne quitte jamais le PC. */
+export type MsMain = { configured: boolean; service: string; server: string; active: boolean };
+export type MsState = { outputs: MsOutput[]; mainActive: boolean; main?: MsMain };
 type Call = <T = Record<string, unknown>>(method: string, params?: Record<string, unknown>) => Promise<T | null>;
 
 type Preset = { id: string; label: string; server: string; /** L'adresse change selon le compte ou la région : à renseigner. */ custom?: boolean; hint: string; icon?: { hex: string; path: string }; letter?: string; color?: string };
@@ -23,6 +25,11 @@ export const PRESETS: Preset[] = [
   { id: "trovo", label: "Trovo", server: "rtmp://livepush.trovo.live/live/", hint: "Clé : Trovo, Tableau de bord du stream.", letter: "T", color: "#19d65c" },
   { id: "other", label: "Autre service", server: "", custom: true, hint: "L'adresse du serveur (rtmp:// ou rtmps://) et la clé de ta plateforme.", letter: "+", color: "#6b7280" },
 ];
+/** Plateforme du service d'OBS, d'après son nom (« Twitch », « YouTube - RTMPS »…) ou son adresse. */
+export function detectPlatform(service: string, server: string) {
+  const t = `${service} ${server}`.toLowerCase();
+  return ["twitch", "youtube", "facebook", "kick", "tiktok", "trovo"].find((id) => t.includes(id)) ?? (/(^|[^a-z])x([^a-z]|$)|twitter|pscp/.test(t) ? "x" : "other");
+}
 const preset = (id: string) => PRESETS.find((p) => p.id === id) ?? PRESETS[PRESETS.length - 1];
 
 export function PlatformLogo({ id, size = 28 }: { id: string; size?: number }) {
@@ -76,6 +83,9 @@ export default function MultistreamPanel({ state, call, ready, canControl, canEd
   }
 
   const outputs = state?.outputs ?? [];
+  const main = state?.main?.configured ? state.main : null;
+  const mainId = main ? detectPlatform(main.service, main.server) : "other";
+  const mainName = main ? (main.service && !/^(custom|personnalis)/i.test(main.service) ? main.service : preset(mainId).label) : "";
   return (
     <section aria-label="Multistream" className="flex min-h-0 min-w-0 flex-col rounded-md border border-[#262626] bg-black">
       <div className="flex items-center justify-between gap-2 border-b border-[#262626] px-3 py-2">
@@ -87,10 +97,42 @@ export default function MultistreamPanel({ state, call, ready, canControl, canEd
         )}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
+        {main && (
+          <div className="mb-1.5 rounded-md border border-[#262626] bg-[#0b0b0b] p-2">
+            <div className="flex items-center gap-2.5">
+              <PlatformLogo id={mainId} size={32} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13px] font-medium">{mainName}</p>
+                <p className={`text-[12px] ${main.active ? "text-emerald-400" : "text-neutral-500"}`}>Direct d&apos;OBS · {main.active ? "En direct" : "Arrêté"}</p>
+              </div>
+              <button
+                type="button"
+                disabled={!ready || !canControl || busy === "main"}
+                aria-pressed={main.active}
+                aria-label={main.active ? "Arrêter le direct d'OBS" : "Lancer le direct d'OBS"}
+                title={main.active ? "Arrêter le direct d'OBS" : "Lancer le direct d'OBS"}
+                onClick={async () => {
+                  setBusy("main");
+                  setError("");
+                  try {
+                    await call(main.active ? "StopStream" : "StartStream");
+                  } catch (e) {
+                    setError((e as Error).message);
+                  } finally {
+                    setBusy(null);
+                  }
+                }}
+                className={`grid h-9 w-12 place-items-center rounded border transition-colors disabled:opacity-40 ${main.active ? "border-red-700 bg-red-700 text-white" : "border-[#2e2e2e] bg-[#141414] text-neutral-200 hover:bg-[#1d1d1d]"}`}
+              >
+                <Broadcast on={main.active} />
+              </button>
+            </div>
+          </div>
+        )}
         {outputs.length === 0 ? (
           <div className="grid place-items-center px-3 py-6 text-center text-[13px] text-neutral-500">
-            <p>Aucune sortie.</p>
-            <p className="mt-1 text-[12px]">{canEdit ? "Ajoute une plateforme : choisis son logo, colle ta clé de stream, c'est prêt." : "Le propriétaire n'a pas encore ajouté de plateforme."}</p>
+            <p>{main ? "Aucune autre sortie." : "Aucune sortie."}</p>
+            <p className="mt-1 text-[12px]">{canEdit ? "Ajoute une autre plateforme : choisis son logo, colle ta clé de stream, c'est prêt." : "Le propriétaire n'a pas encore ajouté de plateforme."}</p>
           </div>
         ) : (
           <ul className="grid gap-1.5">
@@ -100,7 +142,7 @@ export default function MultistreamPanel({ state, call, ready, canControl, canEd
                   <PlatformLogo id={o.service} size={32} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[13px] font-medium">{o.name}</p>
-                    <p className={`text-[12px] ${o.error ? "text-amber-300" : o.active ? "text-emerald-400" : "text-neutral-500"}`}>{o.error ? o.error : o.starting ? "Connexion…" : o.active ? "En direct" : "Arrêté"}</p>
+                    <p className={`text-[12px] ${o.error ? "text-amber-300" : o.active ? "text-emerald-400" : "text-neutral-500"}`}>{o.error ? o.error : o.starting ? "Connexion…" : o.active ? "En direct" : "Arrêté"}{o.viaMain && !o.error ? " · direct d'OBS" : ""}</p>
                   </div>
                   {canEdit && !o.active && !o.starting && (
                     <button type="button" aria-label={`Modifier ${o.name}`} title="Modifier" onClick={() => setDialog({ step: "form", editing: o, service: o.service })} className="grid size-9 place-items-center rounded text-neutral-400 hover:bg-[#1d1d1d]">
@@ -123,7 +165,7 @@ export default function MultistreamPanel({ state, call, ready, canControl, canEd
             ))}
           </ul>
         )}
-        {outputs.length > 0 && <p className="mt-2 px-1 text-[12px] text-neutral-500">Lancer une sortie démarre aussi le direct d&apos;OBS (son service principal) ; il s&apos;arrête avec la dernière sortie.</p>}
+        {(outputs.length > 0 || main) && <p className="mt-2 px-1 text-[12px] text-neutral-500">{main ? "La plateforme réglée dans OBS est déjà ci-dessus : inutile de l'ajouter. " : ""}Lancer une autre sortie démarre aussi le direct d&apos;OBS ; il s&apos;arrête avec la dernière sortie.</p>}
         {error && (
           <p role="alert" className="mt-2 px-1 text-[12px] text-amber-300">
             {error}

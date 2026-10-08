@@ -760,6 +760,8 @@ struct MsOut {
 	bool active = false, starting = false;
 	// Attend que le direct principal d'OBS soit en route (ses encodeurs servent à la sortie).
 	bool waiting = false;
+	// Même clé que le service d'OBS : pas de seconde connexion (la plateforme la refuserait), c'est le direct d'OBS lui-même.
+	bool viaMain = false;
 	QString error;
 };
 std::vector<std::unique_ptr<MsOut>> msOuts;
@@ -833,13 +835,41 @@ void msLoad()
 	}
 }
 
+/** Service réglé dans OBS (Réglages, Stream) : nom, serveur et clé. La clé ne quitte jamais le PC. */
+struct MainService {
+	bool configured = false;
+	QString service, server, key;
+};
+
+MainService mainService()
+{
+	MainService m;
+	if (obs_service_t *svc = obs_frontend_get_streaming_service()) {
+		if (obs_data_t *d = obs_service_get_settings(svc)) {
+			m.service = q(obs_data_get_string(d, "service"));
+			m.server = q(obs_data_get_string(d, "server"));
+			m.key = q(obs_data_get_string(d, "key"));
+			obs_data_release(d);
+		}
+		m.configured = !m.key.isEmpty();
+	}
+	return m;
+}
+
+bool mainReady();
+
 Json msListJson()
 {
 	msLoad();
+	const MainService ms = mainService();
+	const bool mainOn = mainReady() || obs_frontend_streaming_active();
 	QJsonArray arr;
-	for (auto &o : msOuts)
-		arr.append(Json{{"id", o->id}, {"name", o->name}, {"service", o->service}, {"server", o->server}, {"hasKey", !o->key.isEmpty()}, {"active", o->active}, {"starting", o->starting}, {"error", o->error}});
-	return Json{{"outputs", arr}, {"mainActive", obs_frontend_streaming_active()}};
+	for (auto &o : msOuts) {
+		const bool same = !ms.key.isEmpty() && ms.key == o->key;
+		const bool active = o->viaMain ? (o->active && mainOn) : o->active;
+		arr.append(Json{{"id", o->id}, {"name", o->name}, {"service", o->service}, {"server", o->server}, {"hasKey", !o->key.isEmpty()}, {"active", active}, {"starting", o->starting}, {"error", o->error}, {"viaMain", same}});
+	}
+	return Json{{"outputs", arr}, {"mainActive", obs_frontend_streaming_active()}, {"main", Json{{"configured", ms.configured}, {"service", ms.service}, {"server", ms.server}, {"active", mainOn}}}};
 }
 
 void msStartedCb(void *param, calldata_t *);
@@ -991,12 +1021,22 @@ Json msStart(const QString &id)
 	if (o->active || o->starting) throw Fail{"Cette sortie est déjà en cours."};
 	if (o->server.isEmpty() || o->key.isEmpty()) throw Fail{"Renseigne l'adresse du serveur et la clé de stream."};
 	o->error.clear();
-	// Même clé que le direct d'OBS : la plateforme refuse deux envois sur la même clé (Twitch ferme la connexion).
-	if (obs_service_t *main = obs_frontend_get_streaming_service()) {
-		obs_data_t *ms = obs_service_get_settings(main);
-		const QString mainKey = ms ? q(obs_data_get_string(ms, "key")) : QString();
-		if (ms) obs_data_release(ms);
-		if (!mainKey.isEmpty() && mainKey == o->key) throw Fail{"Cette clé est déjà celle du direct d'OBS : la plateforme refuse deux envois sur la même clé. Le direct principal t'envoie déjà là."};
+	// Même clé que le direct d'OBS : on ne rouvre pas une seconde connexion (Twitch la refuse), on lance simplement le direct d'OBS.
+	{
+		const MainService ms = mainService();
+		if (!ms.key.isEmpty() && ms.key == o->key) {
+			o->viaMain = true;
+			if (mainReady()) {
+				o->active = true;
+				o->starting = false;
+			} else {
+				o->waiting = true;
+				o->starting = true;
+				if (!obs_frontend_streaming_active()) obs_frontend_streaming_start();
+			}
+			return msListJson();
+		}
+		o->viaMain = false;
 	}
 	if (mainReady()) {
 		try {
@@ -1021,6 +1061,12 @@ void msMainStarted()
 {
 	for (auto &o : msOuts) {
 		if (!o->waiting) continue;
+		if (o->viaMain) {
+			o->waiting = false;
+			o->starting = false;
+			o->active = true;
+			continue;
+		}
 		try {
 			msStartNow(o.get());
 		} catch (const Fail &f) {
@@ -1034,8 +1080,15 @@ void msMainStarted()
 /** Le direct principal s'est arrêté (ou n'a pas démarré). */
 void msMainStopped()
 {
-	bool changed = false;
+	bool changed = true;
 	for (auto &o : msOuts) {
+		if (o->viaMain) {
+			o->active = false;
+			if (o->waiting) o->error = QString::fromUtf8("Le direct d'OBS n'a pas démarré (vérifie le service dans OBS).");
+			o->waiting = false;
+			o->starting = false;
+			continue;
+		}
 		if (!o->waiting) continue;
 		o->waiting = false;
 		o->starting = false;
@@ -1050,7 +1103,12 @@ Json msStop(const QString &id)
 {
 	MsOut *o = msFind(id);
 	if (!o) throw Fail{"Sortie introuvable."};
-	if (o->waiting) {
+	if (o->viaMain) {
+		o->waiting = false;
+		o->starting = false;
+		o->active = false;
+		if (obs_frontend_streaming_active()) obs_frontend_streaming_stop();
+	} else if (o->waiting) {
 		o->waiting = false;
 		o->starting = false;
 	} else if (o->out) {

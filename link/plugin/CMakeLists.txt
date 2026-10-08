@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.28)
 #   cmake -S link/plugin -B build -DCMAKE_PREFIX_PATH="<obs-deps>;<obs-deps>/qt6" -Dlibobs_DIR=<obs-studio>/build/libobs
 #   cmake --build build --config RelWithDebInfo
 
-project(syxtee-link VERSION 0.5.2 LANGUAGES C CXX)
+project(syxtee-link VERSION 0.5.3 LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)

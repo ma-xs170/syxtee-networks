@@ -1100,8 +1100,8 @@ select,
 @keyframes hv-cursor { 0% { transform: translate(120px, 20px); } 40%, 50% { transform: translate(84px, 78px); } 56% { transform: translate(84px, 82px) scale(0.9); } 100% { transform: translate(120px, 20px); } }
 
 /* Carte mère de /multistream : une lumière court sur chaque piste (pathLength 1000). */
-.cb-pulse { stroke-dasharray: 70 930; stroke-dashoffset: -300; }
+.cb-pulse { stroke-dasharray: 120 880; stroke-dashoffset: -300; opacity: 0.55; }
 @media (prefers-reduced-motion: no-preference) {
-  .cb-pulse { animation: cb-run 3.2s linear infinite; }
+  .cb-pulse { animation: cb-run 4.6s ease-in-out infinite; }
 }
-@keyframes cb-run { from { stroke-dashoffset: 70; } to { stroke-dashoffset: -930; } }
+@keyframes cb-run { from { stroke-dashoffset: 120; } to { stroke-dashoffset: -1000; } }

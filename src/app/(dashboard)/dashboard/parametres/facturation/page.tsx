@@ -14,7 +14,7 @@ export default async function FacturationPage() {
   return (
     <>
       <Card title="Formule actuelle" right={<Badge tone="ok">{plan.name}</Badge>}>
-        <p className="text-sm text-muted">Les prix seront affichés ici. Bientôt disponible.</p>
+        <p className="text-sm text-muted">Les prix seront affichés ici. Bientôt disponible. Le tableau de bord de l'Encodeur est inclus dans la formule Payant (illimité pour les partenaires).</p>
         <div className="mt-5">
           <ManageButton />
         </div>

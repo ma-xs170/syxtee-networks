@@ -36,7 +36,7 @@ export default function RelayGrid() {
       >
         <p className="text-lg font-semibold text-muted">Ta région ?</p>
         <p className="mt-6 text-sm text-muted">
-          Vote pour le prochain relais sur le Discord <span aria-hidden="true">→</span>
+          Vote pour le prochain relais dans la communauté <span aria-hidden="true">→</span>
         </p>
       </a>
     </div>

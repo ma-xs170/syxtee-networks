@@ -1,4 +1,7 @@
 {
+  "0.6.1": [
+    "Multistream : le bouton « Direct d'OBS » repasse tout de suite sur Arrêté quand le direct s'arrête (il pouvait rester sur « En direct »)"
+  ],
   "0.6.0": [
     "Régie automatique : la bascule ne démarre que lorsque ta scène Live est à l'antenne (plus de changement de scène tout seul sur « On commence bientôt » ou une autre scène)",
     "Auto-gérance : une belle prise de drone (n'importe quelle caméra, n'importe quelle scène) passe à l'antenne toute seule, puis retour sur la scène Live à la fin de la prise",

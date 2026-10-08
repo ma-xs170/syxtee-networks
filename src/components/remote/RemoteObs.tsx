@@ -639,7 +639,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
 
   const multiPanel = (
     <div className={`min-h-0 min-w-0 ${tab === "multi" ? "grid" : "max-lg:hidden lg:grid"} grid-rows-1`}>
-      <MultistreamPanel state={ms} call={call} ready={ready} canControl={canLive} canEdit={!guest} onChange={setMs} />
+      <MultistreamPanel state={ms} mainLive={streaming} call={call} ready={ready} canControl={canLive} canEdit={!guest} onChange={setMs} />
     </div>
   );
 

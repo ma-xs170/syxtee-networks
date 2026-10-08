@@ -860,12 +860,14 @@ MainService mainService()
 }
 
 bool mainReady();
+/** État du direct d'OBS imposé pendant les événements de démarrage et d'arrêt (OBS le lit encore à l'ancienne valeur à cet instant) : -1 = lire OBS. */
+int mainOverride = -1;
 
 Json msListJson()
 {
 	msLoad();
 	const MainService ms = mainService();
-	const bool mainOn = mainReady() || obs_frontend_streaming_active();
+	const bool mainOn = mainOverride >= 0 ? mainOverride == 1 : (mainReady() || obs_frontend_streaming_active());
 	QJsonArray arr;
 	for (auto &o : msOuts) {
 		const bool same = !ms.key.isEmpty() && ms.key == o->key;
@@ -1077,7 +1079,9 @@ void msMainStarted()
 			o->starting = false;
 		}
 	}
+	mainOverride = 1;
 	emitEvent("link.multistream", msListJson());
+	mainOverride = -1;
 }
 
 /** Le direct principal s'est arrêté (ou n'a pas démarré). */
@@ -1099,7 +1103,9 @@ void msMainStopped()
 		changed = true;
 	}
 	mainByMs = false;
+	mainOverride = 0;
 	if (changed) emitEvent("link.multistream", msListJson());
+	mainOverride = -1;
 }
 
 Json msStop(const QString &id)

@@ -64,7 +64,7 @@ function Broadcast({ on }: { on: boolean }) {
   );
 }
 
-export default function MultistreamPanel({ state, call, ready, canControl, canEdit, onChange }: { state: MsState | null; call: Call; ready: boolean; canControl: boolean; canEdit: boolean; onChange: (s: MsState) => void }) {
+export default function MultistreamPanel({ state, call, ready, canControl, canEdit, onChange, mainLive }: { /** État réel du direct d'OBS (événements d'OBS) : prime sur celui de la liste, qui peut arriver avec un instant de retard. */ mainLive?: boolean; state: MsState | null; call: Call; ready: boolean; canControl: boolean; canEdit: boolean; onChange: (s: MsState) => void }) {
   const [dialog, setDialog] = useState<null | { step: "pick" | "form"; editing?: MsOutput; service: string }>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -83,7 +83,7 @@ export default function MultistreamPanel({ state, call, ready, canControl, canEd
   }
 
   const outputs = state?.outputs ?? [];
-  const main = state?.main?.configured ? state.main : null;
+  const main = state?.main?.configured ? { ...state.main, active: mainLive ?? state.main.active } : null;
   const mainId = main ? detectPlatform(main.service, main.server) : "other";
   const mainName = main ? (main.service && !/^(custom|personnalis)/i.test(main.service) ? main.service : preset(mainId).label) : "";
   return (

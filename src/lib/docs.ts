@@ -202,6 +202,38 @@ export const docs: DocGuide[] = [
     ],
   },
   {
+    slug: "multistream",
+    group: "OBS",
+    title: "Multistream",
+    summary: "Diffuser le même direct sur plusieurs plateformes, depuis le plugin.",
+    keywords: "youtube twitch kick instagram tiktok facebook plateformes cle rtmp sortie",
+    blocks: [
+      { type: "p", text: "Le multistream envoie ton direct vers plusieurs plateformes en même temps : YouTube, Twitch, Kick, Instagram, TikTok, Facebook, X, Trovo, ou tout autre service qui accepte une adresse RTMP. Il est intégré au plugin SYXTEE et se pilote depuis le panneau Multistream du Contrôle à distance." },
+      { type: "h", text: "Ajouter une plateforme" },
+      {
+        type: "steps",
+        items: [
+          "Ouvre le Contrôle à distance sur l'OBS voulu, puis le panneau Multistream.",
+          "Clique sur « Ajouter » et choisis le logo de la plateforme. Un texte t'indique où trouver ta clé.",
+          "Vérifie le nom. L'adresse du serveur est déjà remplie pour YouTube, Twitch, Facebook et Trovo. Pour Kick, Instagram, TikTok, X et « Autre service », colle aussi l'adresse donnée par la plateforme.",
+          "Colle ta clé de stream, puis « Enregistrer ». « Voir » affiche la clé pour la vérifier.",
+        ],
+      },
+      { type: "h", text: "Pendant le direct" },
+      {
+        type: "list",
+        items: [
+          "Chaque plateforme a son propre bouton : active-la ou coupe-la sans arrêter les autres.",
+          "L'état de chaque sortie est affiché : « En direct », « Arrêté » ou « Connexion… », avec le message d'erreur si elle échoue.",
+          "La plateforme réglée dans OBS apparaît déjà en haut, sous « Direct d'OBS » : inutile de l'ajouter.",
+          "Lancer une autre sortie démarre aussi le direct d'OBS. Il s'arrête avec la dernière sortie.",
+          "Tu peux modifier ou supprimer une sortie à tout moment.",
+        ],
+      },
+      { type: "note", text: "Les clés de stream restent sur ton ordinateur, dans OBS. Elles ne sont jamais renvoyées vers le site." },
+    ],
+  },
+  {
     slug: "sauvegardes-de-scenes",
     group: "OBS",
     title: "Sauvegardes de scènes",

@@ -1,14 +1,11 @@
 import Link from "next/link";
-import BackpackEncoder from "../illustrations/BackpackEncoder";
-import { Radio, SlidersHorizontal, Tag, UsersThree } from "../icons";
 import DeviceFrame from "../device/DeviceFrame";
 import FeatureSection from "../device/FeatureSection";
-import FloatingCard from "../device/FloatingCard";
 import { Parallax } from "../device/Motion";
 import { SHOTS } from "../device/shots";
 import { Container } from "../ui";
 
-// Accueil : cinq sections numérotées, séparées par un filet : Relais (01), Contrôle à distance (02), Espaces partagés (03, bandeau pleine largeur),
+// Accueil : quatre sections numérotées, séparées par un filet : Relais (01), Contrôle à distance (02), Espaces partagés (03, bandeau pleine largeur),
 // Tarifs accessibles (04, liste) et l'encodeur sac à dos (05). Deux rangées image + texte au plus d'affilée, puis un autre gabarit.
 // Aucun paiement sur le site : tous les boutons mènent à « Demander l'accès ».
 
@@ -20,7 +17,6 @@ export default function NumberedFeatures() {
         n="01"
         title="Une connexion qui ne lâche pas."
         text="Ton téléphone envoie la vidéo par plusieurs connexions à la fois. SYXTEE les réunit en un seul flux stable : si une connexion faiblit, les autres continuent."
-        tags="4G · 5G · Wi-Fi · Starlink · Twitch, YouTube, Kick"
         actions={
           <>
             <Link href="/acces" className="btn btn-primary">
@@ -36,18 +32,6 @@ export default function NumberedFeatures() {
         <Parallax>
           <div className="relative sm:pb-10">
             <DeviceFrame variant="laptop" shot={SHOTS.sante} />
-            <FloatingCard label="Quatre connexions réunies, débit total 6 120 kbps (exemple)" className="mt-4 w-full sm:absolute sm:-bottom-2 sm:right-[-4%] sm:mt-0 sm:w-64">
-              <p className="flex items-center justify-between text-xs">
-                <span className="font-mono uppercase tracking-[0.12em] text-muted">Liens réunis</span>
-                <span className="flex items-center gap-1.5 font-mono text-[11px] text-foreground"><span aria-hidden="true" className="size-1.5 animate-pulse rounded-full bg-live motion-reduce:animate-none" />EN DIRECT</span>
-              </p>
-              <ul className="mt-3 space-y-1.5 font-mono text-xs tabular-nums">
-                {[["4G", "2 450"], ["5G", "1 980"], ["Wi-Fi", "1 210"], ["Starlink", "480"]].map(([k, v]) => (
-                  <li key={k} className="flex justify-between"><span className="text-muted">{k}</span><span>{v} kbps</span></li>
-                ))}
-              </ul>
-              <p className="mt-3 flex justify-between border-t border-line pt-2 font-mono text-xs tabular-nums"><span className="text-muted">Total</span><span className="font-semibold">6 120 kbps</span></p>
-            </FloatingCard>
           </div>
         </Parallax>
       </FeatureSection>
@@ -57,7 +41,6 @@ export default function NumberedFeatures() {
         n="02"
         title="Ton OBS dans ta poche."
         text="Mets SYXTEE sur l'écran d'accueil de ton téléphone. Un toucher, et tu changes de scène, règles le son et lances le direct, en plein écran. L'écran reste allumé."
-        tags="Scènes · Aperçu du programme · Mixeur audio · Écran d'accueil"
         flip
         actions={
           <>
@@ -96,18 +79,6 @@ export default function NumberedFeatures() {
               <DeviceFrame variant="desktop" shot={SHOTS.membres} />
             </Parallax>
           </div>
-          <ul className="mx-auto mt-12 grid max-w-4xl grid-cols-1 gap-x-10 gap-y-6 sm:grid-cols-3">
-            {[
-              ["Plusieurs OBS", "Chaque ordinateur avec le plugin apparaît dans l'espace."],
-              ["Des rôles clairs", "Propriétaire, administrateur ou membre : chacun son niveau."],
-              ["Tout au même endroit", "Flux, OBS et sauvegardes de scènes sont ceux de l'espace."],
-            ].map(([t, d]) => (
-              <li key={t} className="border-t border-line-strong pt-5">
-                <h3 className="text-base font-semibold tracking-tight">{t}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted">{d}</p>
-              </li>
-            ))}
-          </ul>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/espaces-partages" className="btn btn-primary">
               Découvrir les espaces partagés
@@ -165,54 +136,6 @@ export default function NumberedFeatures() {
         </article>
       </Container>
 
-      {/* 05 Encodeur : un sac à dos de stream */}
-      <FeatureSection
-        id="encodeur"
-        n="05"
-        title="L'encodeur dans ton sac à dos."
-        text="Nous développons un sac à dos de stream : plusieurs connexions réunies, un direct stable, des antennes qui font le travail, et un prix accessible. Tu mets ta caméra, tu pars."
-        tags="Sac à dos · Multi-connexions · Starlink · Accessible"
-        actions={<span className="inline-flex h-9 items-center rounded-md border border-line px-3 text-xs uppercase tracking-[0.12em] text-muted">En développement</span>}
-      >
-        <div className="relative flex items-center justify-center rounded-2xl border border-line bg-surface p-6 sm:p-10" aria-hidden="true">
-          <BackpackEncoder className="h-auto w-full max-w-md" />
-        </div>
-      </FeatureSection>
-    </section>
-  );
-}
-
-/** Quatre arguments, sous le hero : chacun renvoie à sa section. Pas de cartes : une rangée séparée par des filets. */
-const STRIP = [
-  { href: "#relais", Icon: Radio, title: "Relais", text: "Plusieurs connexions réunies en un flux stable." },
-  { href: "#controle", Icon: SlidersHorizontal, title: "Contrôle à distance", text: "Pilote OBS depuis ton téléphone." },
-  { href: "#espaces", Icon: UsersThree, title: "Espaces partagés", text: "Pour les régies et les équipes." },
-  { href: "#tarifs", Icon: Tag, title: "Tarifs accessibles", text: "Dès 4,99 € par mois, sans engagement." },
-];
-
-export function FeatureStrip() {
-  return (
-    <section aria-label="Ce que SYXTEE apporte" className="border-b border-line">
-      <Container>
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {STRIP.map((f) => (
-            <li key={f.title} className="border-t border-line first:border-t-0 sm:max-lg:[&:nth-child(-n+2)]:border-t-0 sm:max-lg:even:border-l lg:border-t-0 lg:border-l lg:first:border-l-0">
-              <a href={f.href} className="group flex h-full gap-4 px-2 py-7 transition-colors hover:bg-foreground/[0.03] sm:px-6">
-                <f.Icon size={26} className="mt-0.5 shrink-0 text-foreground" aria-hidden="true" />
-                <span>
-                  <span className="flex items-center gap-2 text-base font-semibold tracking-tight">
-                    {f.title}
-                    <span aria-hidden="true" className="text-muted transition-transform group-hover:translate-x-0.5">
-                      →
-                    </span>
-                  </span>
-                  <span className="mt-1 block text-sm leading-relaxed text-muted">{f.text}</span>
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </Container>
     </section>
   );
 }

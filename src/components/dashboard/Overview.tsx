@@ -299,18 +299,18 @@ function Plan({ data }: { data: OverviewData }) {
   return (
     <Tile aria-labelledby="formule">
       <TileLabel id="formule" right={<ArrowLink href="/dashboard/abonnement">Gérer</ArrowLink>}>
-        Ton abonnement
+        Ta formule
       </TileLabel>
       <p className="mt-3 text-2xl font-semibold tracking-tight">{data.plan.name}</p>
       <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
         <div>
-          <dt className="text-xs text-muted">Relais actifs</dt>
+          <dt className="text-xs text-muted">Serveurs actifs</dt>
           <dd className="mt-0.5 font-mono tabular-nums">
             {data.relays.active} / {unlimited ? "∞" : data.relays.max}
           </dd>
         </div>
         <div>
-          <dt className="text-xs text-muted">Flux simultanés</dt>
+          <dt className="text-xs text-muted">Directs simultanés</dt>
           <dd className="mt-0.5 font-mono tabular-nums">{data.plan.streams >= 1_000_000 ? "∞" : data.plan.streams}</dd>
         </div>
       </dl>
@@ -347,48 +347,112 @@ export default function Overview({ initial, coreUrl = "", demo }: { initial: Ove
     }
   }
 
-  return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
-      <div className="min-w-0 space-y-6">
-        <StatusLine data={data} onLaunch={() => setGuide(true)} />
-        <LaunchGuide open={guide} onClose={() => setGuide(false)} keys={data.keys} />
-        <Alerts alerts={data.alerts} />
+  const { kpis, previous } = data;
+  const stats: { label: string; value: string; unit?: string; sub: ReactNode }[] = [
+    { label: "Temps de direct", value: fmtDuration(kpis.seconds), sub: <Delta current={kpis.seconds} previous={previous.seconds} /> },
+    { label: "Directs", value: fmtInt(kpis.count), sub: <Delta current={kpis.count} previous={previous.count} /> },
+    { label: "Durée moyenne", value: kpis.count ? fmtDuration(kpis.avgSeconds) : "-", sub: <Delta current={kpis.avgSeconds} previous={previous.avgSeconds} /> },
+    { label: "Débit moyen", value: kpis.avgKbps ? fmtInt(kpis.avgKbps) : "-", unit: kpis.avgKbps ? "kbit/s" : undefined, sub: <p className="mt-1 font-mono text-xs text-muted">{kpis.peakKbps ? `Crête ${fmtInt(kpis.peakKbps)}` : "Pas de mesure"}</p> },
+  ];
+  const days = range === "7d" ? data.daily.slice(-7) : data.daily;
 
-        <section aria-labelledby="periode" className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 id="periode" className="text-sm font-semibold">
-              Ton activité en direct
-            </h2>
-            <RangeToggle range={range} onChange={changeRange} pending={pending} />
-          </div>
+  return (
+    <div className="space-y-8">
+      {/* En-tête : titre, période, action principale */}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="h-page">Vue d&apos;<em>ensemble</em></h1>
+          <p className="mt-2 text-sm text-muted">L&apos;état de ton direct et l&apos;activité de tes serveurs.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <RangeToggle range={range} onChange={changeRange} pending={pending} />
+        </div>
+      </div>
+
+      <StatusLine data={data} onLaunch={() => setGuide(true)} />
+      <LaunchGuide open={guide} onClose={() => setGuide(false)} keys={data.keys} />
+      {data.alerts.length > 0 && <Alerts alerts={data.alerts} />}
+
+      {/* Activité : chiffres séparés par des filets, puis le graphique, dans un seul bloc */}
+      <section aria-labelledby="activite" className="overflow-hidden rounded-2xl border border-line bg-surface">
+        <h2 id="activite" className="sr-only">Activité en direct</h2>
+        <dl className={`grid grid-cols-2 divide-line transition-opacity max-lg:divide-y lg:grid-cols-4 lg:divide-x ${pending ? "opacity-50" : ""}`}>
+          {stats.map((k, i) => (
+            <div key={k.label} className={`p-5 sm:p-6 ${i % 2 === 1 ? "max-lg:border-l max-lg:border-line" : ""} ${i > 1 ? "max-lg:border-t max-lg:border-line" : ""}`}>
+              <dt className="text-xs text-muted">{k.label}</dt>
+              <dd className="mt-3 font-mono text-3xl tabular-nums tracking-tight">
+                {k.value}
+                {k.unit && <span className="ml-1.5 text-sm text-muted">{k.unit}</span>}
+              </dd>
+              {k.sub}
+            </div>
+          ))}
+        </dl>
+        <div className="border-t border-line p-5 sm:p-6">
           {error && (
-            <p role="alert" className="text-sm text-red-400/90">
+            <p role="alert" className="mb-3 text-sm text-red-400/90">
               Impossible de charger cette période. Réessaie dans un instant.
             </p>
           )}
-          <Kpis data={data} pending={pending} />
-          {!data.hasEverStreamed && <p className="text-sm text-muted">Tes chiffres apparaissent ici après ton premier direct.</p>}
+          {data.hasEverStreamed ? (
+            <>
+              <p className="mb-4 text-xs text-muted">Temps de direct par jour</p>
+              <DailyBars days={days} />
+            </>
+          ) : (
+            <div className="grid place-items-center py-10 text-center">
+              <p className="text-sm font-medium">Aucun direct pour le moment</p>
+              <p className="mt-1 max-w-[44ch] text-sm text-muted">Tes chiffres apparaissent ici après ton premier direct.</p>
+              <button type="button" onClick={() => setGuide(true)} className={`${btnPrimary} mt-5`}>
+                Lancer un direct <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+        {/* Derniers directs : tableau */}
+        <section aria-labelledby="derniers" className="min-w-0">
+          <div className="mb-3 flex items-center justify-between gap-4">
+            <h2 id="derniers" className="text-sm font-semibold">Derniers directs</h2>
+            <ArrowLink href="/dashboard/lives">Tout l&apos;historique</ArrowLink>
+          </div>
+          {data.recent.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-line p-8 text-center text-sm text-muted">Aucun direct enregistré.</p>
+          ) : (
+            <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+              <div className="hidden grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_100px_130px] gap-4 border-b border-line px-5 py-2.5 text-xs text-muted sm:grid">
+                <span>Serveur</span>
+                <span>Date</span>
+                <span className="text-right">Durée</span>
+                <span className="text-right">Débit moyen</span>
+              </div>
+              <ul className="divide-y divide-line">
+                {data.recent.slice(0, 6).map((s) => (
+                  <li key={s.id}>
+                    <Link href={`/dashboard/lives/${s.id}`} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-0.5 px-5 py-3.5 text-sm transition-colors hover:bg-foreground/[0.04] sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_100px_130px]">
+                      <span className="flex min-w-0 items-center gap-2.5">
+                        <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${s.ended_at ? "bg-muted" : "bg-ok"}`} />
+                        <span className="truncate font-medium">{deviceLabel(s)}</span>
+                        {s.reconnects > 0 && <span className="shrink-0 font-mono text-xs text-muted">{s.reconnects} coupure{s.reconnects > 1 ? "s" : ""}</span>}
+                      </span>
+                      <span className="col-start-1 truncate text-xs text-muted sm:col-start-auto sm:text-sm">{fmtDate(s.started_at, data.timezone)}</span>
+                      <span className="row-start-1 text-right font-mono tabular-nums sm:row-start-auto">{s.ended_at ? fmtDuration(s.duration_s) : "En cours"}</span>
+                      <span className="hidden text-right font-mono text-muted tabular-nums sm:block">{fmtKbps(s.avg_kbps)}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
 
-        {data.last && <LastLive s={data.last} timezone={data.timezone} />}
-        {data.hasEverStreamed && <DailyTile data={data} range={range} />}
-        {data.recent.length > 0 && (
-          <Tile aria-labelledby="derniers">
-            <TileLabel id="derniers" right={<ArrowLink href="/dashboard/lives">Tout l&apos;historique</ArrowLink>}>
-              3 derniers directs
-            </TileLabel>
-            <div className="mt-3">
-              <SessionList sessions={data.recent.slice(0, 3)} timezone={data.timezone} />
-            </div>
-          </Tile>
-        )}
+        <aside className="min-w-0 space-y-8">
+          <Plan data={data} />
+          <MesObs coreUrl={coreUrl} demo={demo} />
+        </aside>
       </div>
-
-      <aside className="min-w-0 space-y-6">
-        <Plan data={data} />
-        <MesObs coreUrl={coreUrl} demo={demo} />
-        <GoTo />
-      </aside>
     </div>
   );
 }

@@ -48,9 +48,10 @@ export function DeviceMac({ children, image, className = "" }: { children: React
   return (
     <div className={`device-wrap relative w-full ${className}`}>
       {image ? (
-        <div className="relative aspect-[16/10]">
+        <div className="relative aspect-[958/580]">
           <Photo src={image} />
-          <div className="absolute left-[13%] top-[8%] h-[62%] w-[74%]"><Screen w={1280} h={800}>{children}</Screen></div>
+          {/* écran du MacBook Pro 14 : sous l'encoche, 16:10 */}
+          <div className="absolute left-[10.33%] top-[5.69%] h-[81.9%] w-[79.33%] overflow-hidden rounded-b-[0.7%]"><Screen w={1280} h={800}>{children}</Screen></div>
         </div>
       ) : (
         <div>
@@ -124,10 +125,7 @@ export function DeviceWatch({ children, image, className = "" }: { children: Rea
   return (
     <div className={`device-wrap relative w-full ${className}`}>
       {image ? (
-        <div className="relative aspect-[4/5]">
-          <Photo src={image} />
-          <div className="absolute left-[22%] top-[27%] h-[46%] w-[56%] overflow-hidden rounded-[22%]"><Screen w={184} h={224}>{children}</Screen></div>
-        </div>
+        <WatchPhoto image={image}>{children}</WatchPhoto>
       ) : (
         <div className="relative mx-auto w-full">
           {/* bracelet sport, entier (perforations suggérées) */}
@@ -172,6 +170,72 @@ export function DeviceIpad({ children, image, className = "" }: { children: Reac
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+
+/** Homographie : transforme le rectangle (0,0)-(w,h) en quadrilatère `dst` (TL, TR, BR, BL). Renvoie une matrice CSS matrix3d. */
+function quadMatrix(w: number, h: number, dst: [number, number][]) {
+  const src: [number, number][] = [[0, 0], [w, 0], [w, h], [0, h]];
+  const A: number[][] = [];
+  const B: number[] = [];
+  for (let i = 0; i < 4; i++) {
+    const [x, y] = src[i];
+    const [u, v] = dst[i];
+    A.push([x, y, 1, 0, 0, 0, -u * x, -u * y]);
+    B.push(u);
+    A.push([0, 0, 0, x, y, 1, -v * x, -v * y]);
+    B.push(v);
+  }
+  // Élimination de Gauss
+  const n = 8;
+  for (let i = 0; i < n; i++) {
+    let m = i;
+    for (let r = i + 1; r < n; r++) if (Math.abs(A[r][i]) > Math.abs(A[m][i])) m = r;
+    [A[i], A[m]] = [A[m], A[i]];
+    [B[i], B[m]] = [B[m], B[i]];
+    for (let r = i + 1; r < n; r++) {
+      const f = A[r][i] / A[i][i];
+      for (let c = i; c < n; c++) A[r][c] -= f * A[i][c];
+      B[r] -= f * B[i];
+    }
+  }
+  const X = new Array(n).fill(0);
+  for (let i = n - 1; i >= 0; i--) {
+    let sum = B[i];
+    for (let c = i + 1; c < n; c++) sum -= A[i][c] * X[c];
+    X[i] = sum / A[i][i];
+  }
+  const [a, b, c, d, e, f, g, hh] = X;
+  return `matrix3d(${a},${d},0,${g},${b},${e},0,${hh},0,0,1,0,${c},${f},0,1)`;
+}
+
+// Vitre de la montre dans la photo (1000 x 1000) : coins haut-gauche, haut-droite, bas-droite, bas-gauche.
+const WATCH_GLASS: [number, number][] = [[164, 253], [443, 285], [447, 723], [153, 746]];
+const WATCH_MATRIX = quadMatrix(184, 224, WATCH_GLASS);
+
+/** Apple Watch Ultra (coque et bracelet noirs) en photo : l'écran du Contrôle à distance est plaqué sur la vitre, en perspective. */
+function WatchPhoto({ image, children }: { image: string; children: ReactNode }) {
+  const box = useRef<HTMLDivElement>(null);
+  const [k, setK] = useState(0);
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setK(el.clientWidth / 1000));
+    ro.observe(el);
+    setK(el.clientWidth / 1000);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <div ref={box} className="relative aspect-square w-full overflow-hidden">
+      <div style={{ width: 1000, height: 1000, transform: `scale(${k || 0.0001})`, transformOrigin: "top left" }} className={k ? "" : "invisible"}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={image} alt="" width={1000} height={1000} className="absolute inset-0 block h-full w-full" />
+        <div style={{ position: "absolute", left: 0, top: 0, width: 184, height: 224, transformOrigin: "0 0", transform: WATCH_MATRIX }} className="overflow-hidden rounded-[34px] bg-black">
+          <Screen w={184} h={224}>{children}</Screen>
+        </div>
+      </div>
     </div>
   );
 }

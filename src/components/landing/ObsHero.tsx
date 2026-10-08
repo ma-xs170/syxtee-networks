@@ -106,7 +106,7 @@ export default function ObsHero({ images }: { images?: HeroImages }) {
         </DeviceIphone>
       </motion.div>
       {/* montre : devant, à gauche, la plus rapide */}
-      <motion.div style={{ x: reduce ? 0 : watchX, y: reduce ? 0 : watchY }} className="absolute bottom-[8%] left-[3%] w-[27%] max-w-[150px] md:bottom-[3%] md:left-[3%] md:w-[14%] md:max-w-none">
+      <motion.div style={{ x: reduce ? 0 : watchX, y: reduce ? 0 : watchY }} className="absolute bottom-[8%] left-[3%] w-[34%] max-w-[190px] md:bottom-[-3%] md:left-[-1%] md:w-[25%] md:max-w-none">
         <DeviceWatch image={images?.watch} className="device-float [animation-delay:-3s]">
           <WatchUI c={c} />
         </DeviceWatch>

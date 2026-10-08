@@ -3,6 +3,7 @@ import { siFacebook, siInstagram, siKick, siTiktok, siTwitch, siX, siYoutube } f
 import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button";
 import GridBackground from "@/components/ui/GridBackground";
+import { ClickArt, EyesArt, SendArt } from "@/components/multistream/HoverArt";
 import SectionHeader from "@/components/ui/SectionHeader";
 import StatusPill from "@/components/ui/StatusPill";
 
@@ -22,6 +23,7 @@ const PLATFORMS = [
   { label: "X", icon: siX },
 ];
 
+const ART = [EyesArt, SendArt, ClickArt];
 const REASONS: [string, string][] = [
   ["Plus de vues", "Ton public est réparti sur plusieurs plateformes. Un seul direct les atteint toutes en même temps, sans refaire ton installation."],
   ["Un seul envoi", "Ton ordinateur n'envoie qu'un flux à OBS. La diffusion vers chaque plateforme se fait depuis le plugin : pas besoin de plusieurs encodeurs."],
@@ -46,6 +48,16 @@ export default function MultistreamPage() {
           <p className="mx-auto mt-6 max-w-[56ch] text-base leading-relaxed text-muted sm:text-lg">
             On a pensé aux streamers qui veulent plus de vues. Le multistream est intégré au plugin SYXTEE : tu diffuses partout en même temps, sans rien installer de plus.
           </p>
+          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <ButtonLink href="/acces">Demander l&apos;accès</ButtonLink>
+            <ButtonLink href="/controle-a-distance" variant="secondary">Voir le contrôle à distance</ButtonLink>
+          </div>
+        </Container>
+      </section>
+
+      <section className="border-b border-line py-20 sm:py-24">
+        <Container>
+          <SectionHeader title={<>Diffuse <em>partout.</em></>} subtitle="Une adresse et une clé par plateforme, et c'est prêt. Toute autre plateforme qui accepte une adresse RTMP fonctionne aussi." />
           <ul className="mx-auto mt-12 flex max-w-3xl flex-wrap items-center justify-center gap-4" aria-label="Plateformes">
             {PLATFORMS.map((p) => (
               <li key={p.label} className="flex flex-col items-center gap-2">
@@ -56,11 +68,6 @@ export default function MultistreamPage() {
               </li>
             ))}
           </ul>
-          <p className="mx-auto mt-6 max-w-md text-sm text-muted">Et toute autre plateforme qui accepte une adresse RTMP.</p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <ButtonLink href="/acces">Demander l&apos;accès</ButtonLink>
-            <ButtonLink href="/controle-a-distance" variant="secondary">Voir le contrôle à distance</ButtonLink>
-          </div>
         </Container>
       </section>
 
@@ -68,12 +75,16 @@ export default function MultistreamPage() {
         <Container>
           <SectionHeader title={<>Pensé pour <em>grandir.</em></>} subtitle="Plus de plateformes, c'est plus de spectateurs. Sans compliquer ton direct." />
           <div className="mt-14 grid gap-4 md:grid-cols-3">
-            {REASONS.map(([t, x]) => (
-              <article key={t} className="bento-cell p-6 sm:p-7">
+            {REASONS.map(([t, x], i) => {
+              const Art = ART[i];
+              return (
+              <article key={t} className="group relative overflow-hidden bento-cell p-6 pb-24 sm:p-7 sm:pb-28">
+                <Art />
                 <h3 className="text-lg font-semibold tracking-tight">{t}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{x}</p>
               </article>
-            ))}
+              );
+            })}
           </div>
         </Container>
       </section>

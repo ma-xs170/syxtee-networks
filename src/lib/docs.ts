@@ -21,20 +21,20 @@ export const docs: DocGuide[] = [
     summary: "De la création du compte au premier direct dans OBS.",
     keywords: "commencer debut compte url obs source media",
     blocks: [
-      { type: "p", text: "SYXTEE NETWORKS te donne un relais : ton flux vidéo arrive sur nos serveurs, puis ton OBS le récupère. Le tableau de bord sert à créer ce relais, à le surveiller et à piloter ton OBS à distance." },
+      { type: "p", text: "SYXTEE NETWORKS te donne un serveur : ton flux vidéo arrive sur nos serveurs, puis ton OBS le récupère. Le tableau de bord sert à créer ce relais, à le surveiller et à piloter ton OBS à distance." },
       { type: "h", text: "En cinq étapes" },
       {
         type: "steps",
         items: [
           "Demande ton accès depuis la page d'accueil, puis connecte-toi à ton compte.",
-          "Ouvre Direct, puis Flux, et crée un relais (voir « Créer un relais »).",
-          "Copie l'adresse du relais affichée dans la page.",
+          "Ouvre Diffusion, puis Serveurs, et crée un serveur (voir « Créer un serveur »).",
+          "Copie l'adresse du serveur affichée dans la page.",
           "Dans OBS Studio, ajoute une source Média, décoche « Fichier local » et colle l'adresse.",
           "Lance ton direct depuis ton appareil de capture : la vue d'ensemble passe sur « En direct ».",
         ],
       },
-      { type: "note", text: "Sans formule, le compte reste en lecture : crée-toi un relais dès que ton accès inclut une formule Basique ou supérieure." },
-      { type: "img", src: "/images/screens/relais-mobile.png", alt: "Page des relais sur mobile", w: 780, h: 1688 },
+      { type: "note", text: "Sans formule, le compte reste en lecture : crée-toi un serveur dès que ton accès inclut une formule Essentiel ou supérieure." },
+      { type: "img", src: "/images/screens/relais-mobile.png", alt: "Page des serveurs sur mobile", w: 780, h: 1688 },
     ],
   },
   {
@@ -45,47 +45,47 @@ export const docs: DocGuide[] = [
     keywords: "serveurs monde localisation latence relais",
     blocks: [
       { type: "p", text: "SYXTEE NETWORKS a des serveurs partout sur la planète et y met ses services en place. Tu choisis le serveur le plus proche de ton lieu de tournage, on s'occupe du reste." },
-      { type: "p", text: "La liste des serveurs et leur état (opérationnel, en maintenance, bientôt disponible) s'affiche quand tu crées un relais." },
+      { type: "p", text: "La liste des serveurs et leur état (opérationnel, en maintenance, bientôt disponible) s'affiche quand tu crées un serveur." },
     ],
   },
   {
-    slug: "creer-un-relais",
+    slug: "creer-un-serveur",
     group: "Démarrer",
-    title: "Créer un relais",
+    title: "Créer un serveur",
     summary: "L'assistant en quatre étapes : protocole, appareil, serveur, récapitulatif.",
     keywords: "srtla rtmp serveur protocole nouveau",
     blocks: [
-      { type: "p", text: "Dans Flux, le bouton de création ouvre un assistant en quatre étapes. Un compteur indique combien de relais tu utilises sur le maximum de ta formule." },
+      { type: "p", text: "Dans Serveurs, le bouton de création ouvre un assistant en quatre étapes. Un compteur indique combien de serveurs tu utilises sur le maximum de ta formule." },
       { type: "h", text: "Les étapes" },
       {
         type: "steps",
         items: [
           "Protocole : SRTLA (recommandé) répartit le flux sur plusieurs connexions pour un direct plus stable ; RTMP n'utilise qu'une seule connexion.",
-          "Appareil : donne un nom à ce relais (1 à 40 caractères), par exemple le nom de ta caméra.",
+          "Appareil : donne un nom à ce serveur (1 à 40 caractères), par exemple le nom de ta caméra.",
           "Serveur : la latence est mesurée depuis chez toi, le plus proche est indiqué. Un serveur peut être marqué « En maintenance » ou « Bientôt disponible ».",
-          "Récapitulatif : vérifie puis clique sur « Créer le relais ».",
+          "Récapitulatif : vérifie puis clique sur « Créer le serveur ».",
         ],
       },
-      { type: "p", text: "Quand la limite de ta formule est atteinte, le bouton devient « Limite atteinte » avec un lien pour demander plus de relais." },
+      { type: "p", text: "Quand la limite de ta formule est atteinte, le bouton devient « Limite atteinte » avec un lien pour demander plus de serveurs." },
     ],
   },
   {
-    slug: "mes-relais",
+    slug: "mes-serveurs",
     group: "Direct",
-    title: "Gérer mes relais",
+    title: "Gérer mes serveurs",
     summary: "Adresses, clé, bascule automatique, changement de serveur, archivage.",
     keywords: "cle regenerer archiver supprimer bascule serveur tentatives connexion",
     blocks: [
-      { type: "p", text: "La liste de Flux se filtre par état (en live, actifs, inactifs), par protocole, par serveur ou par recherche. Chaque relais affiche ses adresses de connexion et un menu d'actions." },
+      { type: "p", text: "La liste des serveurs se filtre par état (en live, actifs, inactifs), par protocole, par serveur ou par recherche. Chaque serveur affiche ses adresses de connexion et un menu d'actions." },
       { type: "h", text: "Actions disponibles" },
       {
         type: "list",
         items: [
           "Renommer : change le nom affiché, sans toucher à l'adresse.",
           "Déclenchement de la bascule : choisis quand l'écran de secours s'affiche. « Coupure seulement », « Coupure et débit très bas » (sous 300 kbit/s) ou « Sensible » (2 s ou 800 kbit/s).",
-          "Changer de serveur : déplace le relais vers un autre serveur en gardant la même clé.",
+          "Changer de serveur : déplace le serveur vers un autre emplacement en gardant la même clé.",
           "Régénérer la clé : les anciennes adresses cessent de fonctionner immédiatement. À utiliser si une adresse a fuité.",
-          "Archiver / Réactiver : un relais archivé ne compte plus dans ta limite.",
+          "Archiver / Réactiver : un serveur archivé ne compte plus dans ta limite.",
           "Supprimer : définitif. L'historique des directs est conservé.",
         ],
       },
@@ -106,7 +106,7 @@ export const docs: DocGuide[] = [
         items: [
           "Attention requise : un bloc « Rien à signaler » ou la liste de ce qui demande ton attention.",
           "Activité sur 7 jours : le temps de direct par jour, comparé à la période précédente.",
-          "Formule : son nom, les relais actifs sur le maximum, et les flux simultanés.",
+          "Formule : son nom, les serveurs actifs sur le maximum, et les directs simultanés.",
           "Mes OBS : les ordinateurs reliés, que tu peux renommer.",
         ],
       },
@@ -117,10 +117,10 @@ export const docs: DocGuide[] = [
     slug: "connexion-basse",
     group: "Direct",
     title: "Connexion basse",
-    summary: "Une version en texte seul pour suivre ton relais quand le réseau est faible.",
+    summary: "Une version en texte seul pour suivre ton serveur quand le réseau est faible.",
     keywords: "data faible 4g economie debit latence",
     blocks: [
-      { type: "p", text: "Connexion basse affiche ton relais en texte seul, sans graphiques : débit, latence, RTT, tampon, nombre de liaisons et pertes sur une minute. Idéal pour consulter l'état de ton direct avec très peu de données." },
+      { type: "p", text: "Connexion basse affiche ton serveur en texte seul, sans graphiques : débit, latence, RTT, tampon, nombre de liaisons et pertes sur une minute. Idéal pour consulter l'état de ton direct avec très peu de données." },
       {
         type: "list",
         items: [
@@ -136,11 +136,11 @@ export const docs: DocGuide[] = [
   {
     slug: "statistiques",
     group: "Direct",
-    title: "Statistiques et historique des lives",
+    title: "Analytique et historique des directs",
     summary: "Temps de direct, débit, coupures, et le détail de chaque direct.",
     keywords: "stats historique lives debit coupures courbe",
     blocks: [
-      { type: "p", text: "Ces deux pages demandent une formule Premium ou supérieure." },
+      { type: "p", text: "Ces deux pages demandent une formule Signature ou supérieure." },
       { type: "h", text: "Statistiques" },
       { type: "p", text: "Choisis 7 ou 30 jours. Tu vois le temps de direct, le nombre de directs, la durée moyenne, le débit moyen et la crête, le plus long direct, les coupures et les directs de moins d'une minute, avec la comparaison à la période précédente et un graphique par jour." },
       { type: "h", text: "Historique des lives" },
@@ -277,11 +277,11 @@ export const docs: DocGuide[] = [
   {
     slug: "membres-et-invites",
     group: "Équipe",
-    title: "Membres et invités",
+    title: "Équipe et invités",
     summary: "Donner accès à ton tableau de bord, avec des droits précis.",
     keywords: "inviter lien modérateur permissions role",
     blocks: [
-      { type: "p", text: "Dans Membres, le bouton « Inviter » propose deux types d'accès. Les invités ne voient jamais tes sauvegardes ni tes réglages." },
+      { type: "p", text: "Dans Équipe, le bouton « Inviter » propose deux types d'accès. Les invités ne voient jamais tes sauvegardes ni tes réglages." },
       { type: "h", text: "Invité (lien)" },
       {
         type: "list",
@@ -296,7 +296,7 @@ export const docs: DocGuide[] = [
       { type: "h", text: "Membre (compte)" },
       { type: "p", text: "Une invitation par e-mail, valable 7 jours, avec le rôle Membre ou Administrateur. Elle n'existe que dans un espace partagé." },
       { type: "p", text: "Le nombre d'invités dépend de ta formule. Le bouton est désactivé quand la limite est atteinte. L'onglet Permissions détaille les droits de chaque niveau." },
-      { type: "img", src: "/images/screens/membres-bureau.png", alt: "Page Membres sur ordinateur", w: 1650, h: 1032 },
+      { type: "img", src: "/images/screens/membres-bureau.png", alt: "Page Équipe sur ordinateur", w: 1650, h: 1032 },
     ],
   },
   {
@@ -306,7 +306,7 @@ export const docs: DocGuide[] = [
     summary: "Plusieurs OBS et une équipe dans un même espace.",
     keywords: "equipe regie roles proprietaire administrateur",
     blocks: [
-      { type: "p", text: "Un espace partagé réunit plusieurs OBS et plusieurs personnes. Les relais, les OBS et les sauvegardes appartiennent à l'espace, pas à une personne." },
+      { type: "p", text: "Un espace partagé réunit plusieurs OBS et plusieurs personnes. Les serveurs, les OBS et les sauvegardes appartiennent à l'espace, pas à une personne." },
       { type: "h", text: "Les rôles" },
       {
         type: "list",
@@ -330,10 +330,10 @@ export const docs: DocGuide[] = [
       {
         type: "list",
         items: [
-          "Gratuit : le compte et le tableau de bord, sans relais.",
-          "Basique : 1 relais, 1 direct à la fois, clés de stream, santé du flux et écran de secours.",
-          "Premium : 10 relais, 3 directs en même temps, 3 invités, 1 espace partagé, statistiques, historique et toutes les fonctions.",
-          "Extra : relais illimités, 10 directs en même temps, 5 invités, 5 espaces partagés.",
+          "Compte gratuit : le tableau de bord, la documentation et l'assistance, sans serveur.",
+          "Essentiel : 1 serveur, 1 direct à la fois, clés de stream, santé du flux et écran de secours.",
+          "Signature : 10 serveurs, 3 directs en même temps, 3 invités, 1 espace partagé, statistiques, historique et toutes les fonctions.",
+          "Prestige : serveurs illimités, 10 directs en même temps, 5 invités, 5 espaces partagés.",
         ],
       },
       { type: "p", text: "L'abonnement annuel offre deux mois. Les prix sont indiqués sans TVA. La page Tarifs donne le détail et le tableau de comparaison." },
@@ -363,11 +363,11 @@ export const docs: DocGuide[] = [
   {
     slug: "support",
     group: "Compte",
-    title: "Support",
+    title: "Assistance",
     summary: "Obtenir de l'aide : communauté ou demande directe.",
     keywords: "aide ticket discord id support",
     blocks: [
-      { type: "p", text: "La page Support propose deux canaux." },
+      { type: "p", text: "La page Assistance propose deux canaux." },
       {
         type: "list",
         items: [

@@ -125,6 +125,12 @@ export function EncoderSection() {
   );
 }
 
+const PLAN_ICON: Record<string, React.ReactNode> = {
+  free: <><circle cx="12" cy="8" r="3.5" /><path d="M5 20a7 7 0 0 1 14 0" /></>,
+  paid: <path d="M13 3 5 13h6l-1 8 8-10h-6l1-8Z" />,
+  partner: <path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9L12 3Z" />,
+};
+
 export function PricingSection() {
   return (
     <section className="border-b border-line py-20 lg:py-28">
@@ -134,9 +140,15 @@ export function PricingSection() {
         <div className="mt-12 grid items-stretch gap-4 md:grid-cols-3">
           {product.plans.map((p) => (
             <article key={p.id} className={`bento-cell flex flex-col p-6 ${"featured" in p && p.featured ? "!border-line-strong bg-surface-2" : ""}`}>
-              <h3 className="text-xl font-semibold tracking-tight">{p.name}</h3>
+              <h3 className="flex items-center gap-2.5 text-xl font-semibold tracking-tight">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 text-foreground/80">{PLAN_ICON[p.id]}</svg>
+                {p.name}
+              </h3>
               <p className="mt-1 min-h-10 text-sm text-muted">{p.text}</p>
-              <p className={`mt-5 text-2xl font-medium tracking-tight ${p.id === "paid" ? "text-foreground/70" : "text-foreground"}`}>{p.id === "paid" ? (product.priceLabel(p.price) ?? "Bientôt disponible") : "Disponible"}</p>
+              <p className={`mt-5 flex items-center gap-3 text-2xl font-medium tracking-tight ${p.id === "paid" ? "text-foreground/70" : "text-foreground"}`}>
+                <span aria-hidden="true" className={`size-2.5 shrink-0 rounded-full ${p.id === "paid" ? "bg-warn" : "bg-ok"}`} />
+                {p.id === "paid" ? (product.priceLabel(p.price) ?? "Bientôt disponible") : "Disponible"}
+              </p>
               <ul className="mt-5 flex-1 space-y-2 text-sm text-muted">
                 {p.points.map((x) => (
                   <li key={x} className="flex gap-2.5"><span aria-hidden="true" className="text-foreground">+</span>{x}</li>

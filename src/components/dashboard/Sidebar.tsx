@@ -6,8 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useRef, useState, useTransition, type ComponentType } from "react";
 import {
   Archive,
-  Broadcast,
   CaretUpDown,
+  HardDrives,
   ChatsCircle,
   ChartBar,
   List,
@@ -53,7 +53,7 @@ const GROUPS: Group[] = [
       { label: "Contrôle à distance", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais" },
       { label: "Membres", href: "/dashboard/invitations", icon: UsersThree, feature: "relais" },
       { label: "Multichat", href: "/dashboard/multichat", icon: ChatsCircle },
-      { label: "Encodeurs", href: "/dashboard/encodeurs", icon: Broadcast },
+      { label: "Encodeurs", href: "/dashboard/encodeurs", icon: HardDrives },
     ],
   },
   {

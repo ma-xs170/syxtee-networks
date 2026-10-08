@@ -3,18 +3,22 @@
 :root,
 [data-theme="dark"] {
   color-scheme: dark;
-  --background: #050505;
-  --foreground: #ffffff;
-  --muted: #a1a1a6;
+  --background: #000000;
+  --foreground: #fafafa;
+  --muted: #8a8f98;
   --line: rgba(255, 255, 255, 0.08);
   --line-strong: rgba(255, 255, 255, 0.16);
-  --surface: #0e0e0f;
-  --surface-2: #171718;
-  --accent: #ffffff;
-  --accent-hover: #e2e2e4;
-  --on-accent: #ffffff;
-  --fill: #26262a;
-  --fill-hover: #333338;
+  --surface: #0a0a0b;
+  --surface-2: #111113;
+  --accent: #fafafa;
+  --accent-hover: #e4e4e7;
+  --on-accent: #0a0a0a;
+  --fill: #fafafa;
+  --fill-hover: #e4e4e7;
+  --input: #131316;
+  --ok: #3ecf8e;
+  --warn: #f5a524;
+  --bad: #ef4444;
   --live: #ff3b30;
   --img-filter: none;
   --img-filter-rev: invert(1);
@@ -37,6 +41,10 @@
   --on-accent: #ffffff;
   --fill: #0a0a0a;
   --fill-hover: #2b2b2e;
+  --input: #f4f4f5;
+  --ok: #16a34a;
+  --warn: #d97706;
+  --bad: #dc2626;
   --live: #d92b20;
   --img-filter: invert(1);
   --img-filter-rev: none;
@@ -58,6 +66,10 @@
     --on-accent: #ffffff;
   --fill: #0a0a0a;
   --fill-hover: #2b2b2e;
+    --input: #f4f4f5;
+    --ok: #16a34a;
+    --warn: #d97706;
+    --bad: #dc2626;
     --live: #d92b20;
     --img-filter: invert(1);
     --img-filter-rev: none;
@@ -70,20 +82,20 @@
    Le thème clair garde ses tokens. S'applique à la coque du dashboard (classe dash-surface). */
 .dash-surface { background: var(--background); }
 [data-theme="dark"] .dash-surface {
-  --background: #050505;
-  --surface: #0e0e0f;
-  --surface-2: #171718;
-  --line: rgba(255, 255, 255, 0.11);
+  --background: #000000;
+  --surface: #0a0a0b;
+  --surface-2: #111113;
+  --line: rgba(255, 255, 255, 0.1);
   --line-strong: rgba(255, 255, 255, 0.2);
   --foreground: #ffffff;
   --muted: #c4c4c8;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) .dash-surface {
-    --background: #050505;
-    --surface: #0e0e0f;
-    --surface-2: #171718;
-    --line: rgba(255, 255, 255, 0.11);
+    --background: #000000;
+    --surface: #0a0a0b;
+    --surface-2: #111113;
+    --line: rgba(255, 255, 255, 0.1);
     --line-strong: rgba(255, 255, 255, 0.2);
     --foreground: #ffffff;
     --muted: #c4c4c8;
@@ -120,6 +132,10 @@
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-live: var(--live);
+  --color-input: var(--input);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-on-accent: var(--on-accent);
@@ -529,6 +545,25 @@ html[data-stream-mode="on"] [data-sensitive] {
   border-radius: 1.75rem;
   background: linear-gradient(to bottom, color-mix(in srgb, var(--foreground) 5%, transparent), transparent);
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+/* Carte du design system (Card) : rayon 16 px, halo radial discret, survol qui éclaire le filet. */
+@utility card {
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -20%, color-mix(in srgb, var(--foreground) 5%, transparent), transparent 70%),
+    var(--surface);
+  transition: border-color 0.2s;
+  &:hover { border-color: var(--line-strong); }
+}
+/* Icône verre : dégradé sombre, reflet en haut, filet clair. */
+@utility glass-icon {
+  background:
+    radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--foreground) 22%, transparent), transparent 55%),
+    linear-gradient(145deg, color-mix(in srgb, var(--foreground) 10%, var(--surface-2)), var(--surface));
+  border: 1px solid var(--line-strong);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--foreground) 25%, transparent), inset 0 -8px 16px rgba(0, 0, 0, 0.35);
 }
 /* Tuile de dashboard façon Resend : grand rayon, filet fin, léger reflet en haut. */
 @utility tile {

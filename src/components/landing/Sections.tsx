@@ -43,7 +43,7 @@ export function ObsHeroSection() {
           <ButtonLink href="#comment" variant="secondary">Voir comment ça marche</ButtonLink>
         </div>
         <div className="rise mt-12" style={rise(3)}>
-          <ObsHero images={{ laptop: deviceImage("laptop"), phone: deviceImage("phone"), watch: deviceImage("watch") }} />
+          <ObsHero images={{ laptop: deviceImage("laptop"), phone: deviceImage("phone") }} />
         </div>
         <div className="mt-6"><PlatformStrip /></div>
       </Container>

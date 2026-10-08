@@ -2,14 +2,14 @@
 
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { DeviceIphone, DeviceMac, DeviceWatch } from "../devices/Devices";
+import { DeviceIphone, DeviceMac } from "../devices/Devices";
 import { SCENES, type Ctl, type SceneId } from "./ObsScreens";
-import { MacUI, PhoneUI, WatchUI } from "./RemoteScreens";
+import { MacUI, PhoneUI } from "./RemoteScreens";
 import { useLiveStats } from "./useLiveStats";
 
-// Hero OBS CLOUD : ordinateur, téléphone et montre (génériques, coloris noir) affichent la MÊME session, synchronisée.
+// Hero OBS CLOUD : ordinateur et téléphone (génériques, coloris noir) affichent la MÊME session, synchronisée.
 // Changer de scène, couper le micro ou lancer le live sur l'un agit sur les deux autres. Tout est simulé côté client.
-export type HeroImages = { laptop?: string | null; phone?: string | null; watch?: string | null };
+export type HeroImages = { laptop?: string | null; phone?: string | null };
 
 export default function ObsHero({ images }: { images?: HeroImages }) {
   const reduce = useReducedMotion();
@@ -62,15 +62,13 @@ export default function ObsHero({ images }: { images?: HeroImages }) {
     fps: snap.fps,
   };
 
-  // Parallaxe : chaque appareil bouge à sa vitesse (ordinateur lent, téléphone moyen, montre rapide).
+  // Parallaxe : chaque appareil bouge à sa vitesse (ordinateur lent, téléphone plus rapide).
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
   const spring = { stiffness: 90, damping: 18 };
   const macX = useSpring(useTransform(mx, [-1, 1], [-8, 8]), spring);
   const phoneX = useSpring(useTransform(mx, [-1, 1], [18, -18]), spring);
   const phoneY = useSpring(useTransform(my, [-1, 1], [10, -10]), spring);
-  const watchX = useSpring(useTransform(mx, [-1, 1], [28, -28]), spring);
-  const watchY = useSpring(useTransform(my, [-1, 1], [14, -14]), spring);
 
   return (
     <motion.div
@@ -104,12 +102,6 @@ export default function ObsHero({ images }: { images?: HeroImages }) {
         <DeviceIphone image={images?.phone} className="device-float">
           <PhoneUI c={c} />
         </DeviceIphone>
-      </motion.div>
-      {/* montre : devant, à gauche, la plus rapide */}
-      <motion.div style={{ x: reduce ? 0 : watchX, y: reduce ? 0 : watchY }} className="absolute bottom-[8%] left-[3%] w-[34%] max-w-[190px] md:bottom-[-3%] md:left-[-1%] md:w-[25%] md:max-w-none">
-        <DeviceWatch image={images?.watch} className="device-float [animation-delay:-3s]">
-          <WatchUI c={c} />
-        </DeviceWatch>
       </motion.div>
     </motion.div>
   );

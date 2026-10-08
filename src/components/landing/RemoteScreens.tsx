@@ -76,7 +76,7 @@ function ScenesPanel({ c, touch = 0 }: { c: Ctl; touch?: number }) {
             const on = c.scene === s.id;
             return (
               <li key={s.id}>
-                <button type="button" aria-pressed={on} onClick={() => c.setScene(s.id)} className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[13px] ${touch ? "min-h-12" : "min-h-9"} ${on ? "bg-white/[0.13] text-white shadow-[inset_2px_0_0_rgba(255,255,255,0.85)]" : "text-neutral-300 hover:bg-[#161616]"}`}>
+                <button type="button" aria-pressed={on} onClick={() => c.setScene(s.id)} className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[13px] ${touch ? "min-h-12" : "min-h-9"} ${on ? "bg-white/[0.13] text-white" : "text-neutral-300 hover:bg-[#161616]"}`}>
                   <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${on ? "bg-white" : "bg-neutral-600"}`} />
                   <span className="min-w-0 flex-1 leading-tight">{sceneLabel(s.id)}</span>
                   {on && c.live && <span className="shrink-0 text-[12px] opacity-80">direct</span>}
@@ -196,7 +196,7 @@ function MultiPanel({ c }: { c: Ctl }) {
 /** Ordinateur : la page Contrôle à distance en plein écran (Programme au-dessus, puis cinq panneaux). */
 export function MacUI({ c }: { c: Ctl }) {
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden bg-[#070708] text-[13px] text-neutral-100">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-[#070708] text-left text-[13px] text-neutral-100">
       <header className="flex h-11 shrink-0 items-center justify-between border-b border-[#262626] px-3.5">
         <h1 className="flex items-center gap-2.5 text-[14px] font-medium">Contrôle à distance <LiveBadge c={c} /></h1>
         <span className="inline-flex h-8 items-center gap-1.5 rounded-full border border-white/[0.14] bg-[#16161a] px-3.5 text-[13px] text-neutral-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"><span aria-hidden="true">←</span> Retour</span>
@@ -211,7 +211,7 @@ export function MacUI({ c }: { c: Ctl }) {
         <span className={`${flat} h-7 px-3.5`}>Mode studio</span>
       </div>
       <main className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-        <section aria-label="Programme" className="relative grid h-[64%] min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-xl border border-white/[0.08] bg-[#0b0b0d]">
+        <section aria-label="Programme" className="relative grid h-[64%] min-h-0 shrink-0 grid-cols-[minmax(0,1fr)] grid-rows-[auto_1fr] overflow-hidden rounded-xl border border-white/[0.08] bg-[#0b0b0d]">
           <div className="flex min-w-0 items-center justify-between gap-2 px-3 py-2">
             <p className="flex min-w-0 flex-1 items-baseline gap-2 overflow-hidden whitespace-nowrap text-[13px]">
               <span className="text-neutral-500">Programme</span>
@@ -251,7 +251,7 @@ const TABS: [Tab, string, React.ReactNode][] = [
 export function PhoneUI({ c }: { c: Ctl }) {
   const [tab, setTab] = useState<Tab>("scenes");
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden bg-black pt-[54px] text-[13px] text-neutral-100">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-black pt-[54px] text-left text-[13px] text-neutral-100">
       <header className="flex h-11 shrink-0 items-center justify-between border-b border-[#262626] px-3.5">
         <h1 className="flex items-center gap-2 text-[14px] font-medium">Contrôle à distance</h1>
         <span className="inline-flex h-9 items-center gap-1.5 rounded-full border border-white/[0.14] bg-[#16161a] px-3.5 text-[13px] text-neutral-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"><span aria-hidden="true">←</span> Retour</span>
@@ -261,7 +261,7 @@ export function PhoneUI({ c }: { c: Ctl }) {
         <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-emerald-400"><span aria-hidden="true" className="size-2 rounded-full bg-emerald-400" />Flux reçu</span>
       </div>
       <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-        <section aria-label="Programme" className="grid aspect-[16/12] shrink-0 grid-rows-[auto_1fr] rounded-xl border border-white/[0.08] bg-[#0b0b0d]">
+        <section aria-label="Programme" className="grid aspect-[16/12] shrink-0 grid-cols-[minmax(0,1fr)] grid-rows-[auto_1fr] overflow-hidden rounded-xl border border-white/[0.08] bg-[#0b0b0d]">
           <div className="flex min-w-0 items-center justify-between gap-2 px-3 py-2">
             <p className="flex min-w-0 flex-1 items-baseline gap-2 overflow-hidden whitespace-nowrap text-[13px]">
               <span className="truncate text-neutral-100">{sceneLabel(c.scene)}</span>
@@ -287,37 +287,6 @@ export function PhoneUI({ c }: { c: Ctl }) {
           ))}
         </nav>
       </div>
-    </div>
-  );
-}
-
-/** Montre : la télécommande en réduit : état du direct, scène du programme avec précédente / suivante, micro, direct. */
-export function WatchUI({ c }: { c: Ctl }) {
-  const i = SCENES.findIndex((s) => s.id === c.scene);
-  const go = (d: number) => c.setScene(SCENES[(i + d + SCENES.length) % SCENES.length].id);
-  const btn = `${flat} h-8 text-[14px] active:scale-95`;
-  return (
-    <div className="flex h-full w-full flex-col gap-[6px] bg-black p-[10px] pt-[14px] text-white">
-      <div className="flex items-center justify-between">
-        {c.live ? (
-          <span className="inline-flex items-center gap-1 rounded border border-red-700 bg-red-700/20 px-[5px] py-[1px] text-[9px] font-semibold tracking-wide text-red-300"><span aria-hidden="true" className="size-[5px] animate-pulse rounded-full bg-red-500" />EN DIRECT</span>
-        ) : (
-          <span className="text-[9px] text-neutral-500">HORS DIRECT</span>
-        )}
-        <span className="font-mono text-[10px] tabular-nums text-neutral-400">{c.live ? clock(c.seconds) : "00:00:00"}</span>
-      </div>
-      <div className="rounded border border-[#262626] bg-[#0b0b0b] px-[8px] py-[6px]">
-        <p className="text-[9px] text-neutral-500">Programme</p>
-        <p className="mt-[2px] truncate rounded bg-white/[0.13] px-[6px] py-[3px] text-[11px] font-medium leading-tight">{sceneLabel(c.scene)}</p>
-      </div>
-      <div className="grid grid-cols-3 gap-[5px]">
-        <button type="button" aria-label="Scène précédente" onClick={() => go(-1)} className={btn}>‹</button>
-        <button type="button" aria-label={c.muted ? "Réactiver le micro" : "Couper le micro"} aria-pressed={c.muted} onClick={c.toggleMute} className={`${btn} ${c.muted ? "!border-red-700 !text-red-400" : ""}`}><MicIcon off={c.muted} /></button>
-        <button type="button" aria-label="Scène suivante" onClick={() => go(1)} className={btn}>›</button>
-      </div>
-      <button type="button" onClick={c.toggleLive} className={`${flat} mt-auto h-9 text-[11px] ${c.live ? "!border-red-700 !bg-red-700 !text-white" : ""}`}>
-        {c.live ? "Arrêter le direct" : "Partir en direct"}
-      </button>
     </div>
   );
 }

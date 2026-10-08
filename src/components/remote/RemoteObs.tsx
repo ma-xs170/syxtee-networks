@@ -505,7 +505,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                     disabled={!ready}
                     aria-pressed={studioMode ? isPreview : isProgram}
                     onClick={() => pick(sc)}
-                    className={`flex min-h-9 w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left max-lg:min-h-12 text-[13px] disabled:opacity-50 ${isProgram ? "bg-white/[0.13] text-white shadow-[inset_2px_0_0_rgba(255,255,255,0.85)]" : isPreview ? "outline outline-1 -outline-offset-1 outline-white/40" : "text-neutral-300 hover:bg-[#161616]"}`}
+                    className={`flex min-h-9 w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left max-lg:min-h-12 text-[13px] disabled:opacity-50 ${isProgram ? "bg-white/[0.13] text-white" : isPreview ? "outline outline-1 -outline-offset-1 outline-white/40" : "text-neutral-300 hover:bg-[#161616]"}`}
                   >
                     <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${isProgram ? "bg-white" : "bg-neutral-600"}`} />
                     <span className="min-w-0 flex-1 break-words leading-tight">{sc}</span>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DeviceIpad, DeviceIphone, DeviceMac, DeviceWatch } from "@/components/devices/Devices";
+import { DeviceIpad, DeviceIphone, DeviceMac } from "@/components/devices/Devices";
 import Glow from "@/components/landing/Glow";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -166,7 +166,6 @@ export default function DesignSystemPage() {
           <div className="relative mx-auto max-w-4xl pb-16">
             <div className="mx-auto w-[78%]"><DeviceMac><DemoScreen w={1280} title="Contrôle à distance" /></DeviceMac></div>
             <div className="absolute bottom-0 right-[3%] w-[20%]"><DeviceIphone className="device-float"><DemoScreen w={390} title="Contrôle à distance" /></DeviceIphone></div>
-            <div className="absolute bottom-[2%] left-[4%] w-[13%]"><DeviceWatch className="device-float"><DemoScreen w={184} title="Live" /></DeviceWatch></div>
           </div>
           <div className="mx-auto mt-16 max-w-2xl"><DeviceIpad><DemoScreen w={1180} title="Espaces partagés" /></DeviceIpad></div>
         </Block>

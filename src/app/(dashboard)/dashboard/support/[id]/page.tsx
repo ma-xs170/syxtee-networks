@@ -31,7 +31,7 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
       </Link>
       <div className="mb-8 mt-4 flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="break-words text-2xl font-semibold tracking-tight sm:text-3xl">{ticket.subject}</h1>
+          <h1 className="h-page break-words">{ticket.subject}</h1>
           <p className="mt-2 text-sm text-muted">{categoryLabel(ticket.category)} · {ticket.status === "resolved" ? "Résolu" : "En cours"}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

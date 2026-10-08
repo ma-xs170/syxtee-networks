@@ -42,7 +42,7 @@ export default async function AdminAccessPage({ searchParams }: { searchParams: 
 
   return (
     <DashPage>
-      <h1 className="mb-6 text-2xl font-semibold tracking-tight sm:text-3xl">Demandes d&apos;accès</h1>
+      <h1 className="h-page mb-6">Demandes d&apos;<em>accès</em></h1>
       {mail === "ok" && to && (
         <p role="status" className="mb-6 rounded-xl border border-line bg-surface p-4 text-sm">
           Email envoyé à {to}.

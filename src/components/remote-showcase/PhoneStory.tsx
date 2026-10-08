@@ -31,7 +31,7 @@ function Copy({ step, i, p }: { step: Step; i: number; p: MotionValue<number> })
   const y = useTransform(p, (v) => Math.max(-24, Math.min(24, ((c - v) / 0.2) * 24)));
   return (
     <motion.div style={{ opacity, y }} className="absolute inset-x-0 top-0 lg:top-1/2 lg:-translate-y-1/2">
-      <h3 className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">{step.title}</h3>
+      <h3 className="h-section">{step.title}</h3>
       <p className="mt-4 max-w-[42ch] text-base leading-relaxed text-muted sm:text-lg">{step.text}</p>
     </motion.div>
   );

@@ -130,7 +130,7 @@ export default function InvitesManager({ coreUrl, initial, planName, max, owner,
     <div>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Membres</h1>
+          <h1 className="h-page">Mem<em>bres</em></h1>
           <p className="mt-1.5 text-sm text-muted">{team ? `Les personnes qui ont accès à ${team.name}.` : "Les personnes qui peuvent piloter ton OBS, sans avoir besoin de compte."}</p>
         </div>
         {!locked && (

@@ -12,7 +12,7 @@ export default function FeatureSection({ id, n, title, text, tags, flip = false,
           <p aria-hidden="true" className="bg-gradient-to-b from-foreground/30 to-transparent bg-clip-text font-mono text-7xl font-semibold leading-none text-transparent sm:text-8xl">
             {n}
           </p>
-          <h2 id={`f-${n}`} className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h2 id={`f-${n}`} className="mt-6 h-section">
             {title}
           </h2>
           <p className="mt-5 max-w-[48ch] text-base leading-relaxed text-muted sm:text-lg">{text}</p>

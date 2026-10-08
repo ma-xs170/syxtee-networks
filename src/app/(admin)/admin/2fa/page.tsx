@@ -16,7 +16,7 @@ export default async function AdminTwoFactorPage() {
 
   return (
     <div className="mx-auto w-full max-w-[420px] px-4 py-16">
-      <h1 className="text-center text-3xl font-semibold tracking-tight">Double authentification</h1>
+      <h1 className="h-page text-center">Double <em>authentification</em></h1>
       <p className="mt-3 text-center text-sm text-foreground/60">L&apos;espace admin demande un code à chaque nouvelle session.</p>
       <div className="mt-10">
         <TwoFactor factorId={verified?.id ?? null} />

@@ -7,7 +7,7 @@ export default function ParametresLayout({ children }: { children: React.ReactNo
   return (
     <ToastProvider>
       <DashPage>
-        <h1 className="mb-6 text-3xl font-medium tracking-[-0.03em] sm:text-[32px]">Paramètres</h1>
+        <h1 className="h-page mb-6">Para<em>mètres</em></h1>
         <SettingsTabs />
         <div className="grid gap-6">{children}</div>
       </DashPage>

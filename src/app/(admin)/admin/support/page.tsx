@@ -31,7 +31,7 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
 
   return (
     <DashPage>
-      <h1 className="mb-6 text-2xl font-semibold tracking-tight sm:text-3xl">Support{cat ? ` : ${categoryLabel(cat)}` : ""}</h1>
+      <h1 className="h-page mb-6">Support{cat ? ` : ${categoryLabel(cat)}` : ""}</h1>
       <nav aria-label="Filtrer" className="mb-6 flex gap-6 border-b border-line">
         {TABS.map((t) => (
           <Link

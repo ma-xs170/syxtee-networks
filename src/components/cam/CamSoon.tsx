@@ -8,7 +8,7 @@ export default function CamSoon({ scanner = true }: { scanner?: boolean }) {
     <div className="mx-auto grid grid-cols-1 min-h-[70dvh] w-full max-w-5xl items-center gap-10 px-4 py-12 sm:px-6 md:grid-cols-[minmax(0,1fr)_300px]">
       <div>
         <p className="font-mono text-xs uppercase tracking-[0.16em] text-muted">Bientôt disponible</p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
+        <h1 className="mt-3 h-section">
           SYXTEE Cam
         </h1>
         <p className="mt-4 max-w-[48ch] text-base leading-relaxed text-muted">Ton téléphone en caméra du direct, sans app à installer. On la peaufine avant de la rouvrir.</p>

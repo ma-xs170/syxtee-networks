@@ -12,7 +12,7 @@ export default async function EncodeursPage() {
   const [, plan] = await Promise.all([requireUser("/dashboard/encodeurs"), getPlan()]);
   return (
     <DashPage>
-      <h1 className="mb-8 text-3xl font-medium tracking-[-0.03em] sm:text-[32px]">Encodeurs</h1>
+      <h1 className="h-page mb-8">Enco<em>deurs</em></h1>
       <div className="grid gap-6">
         <EncoderApp locked={plan.id === "free"} />
       </div>

@@ -535,10 +535,23 @@ html[data-stream-mode="on"] [data-sensitive] {
   & em { font-style: italic; }
 }
 @utility h-section {
-  font-size: clamp(1.875rem, 4.5vw, 3rem);
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(2rem, 4.6vw, 3.25rem);
   line-height: 1.08;
-  font-weight: 500;
-  letter-spacing: -0.03em;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  & em { font-style: italic; }
+}
+/* Titre de page du dashboard et de l'admin : serif, mot clé en italique (même famille). */
+@utility h-page {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.1;
+  padding-bottom: 0.15em;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  & em { font-style: italic; }
 }
 @utility panel {
   border: 1px solid var(--line);

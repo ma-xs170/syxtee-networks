@@ -58,7 +58,7 @@ function SceneBlock({ p, s }: { p: MotionValue<number>; s: StoryTextScene }) {
     <motion.div style={style} className="[grid-area:1/1] self-center">
       {s.header}
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">{s.kicker}</p>
-      <Title as={s.titleAs} className="mt-3 text-2xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+      <Title as={s.titleAs} className="mt-3 h-section">
         {s.title}
       </Title>
       {s.subtitle}

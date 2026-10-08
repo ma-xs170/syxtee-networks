@@ -13,7 +13,7 @@ export default async function NewTicketPage() {
       <Link href="/dashboard/support" className="text-sm text-muted transition-colors hover:text-foreground">
         ← Support
       </Link>
-      <h1 className="mb-2 mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">Nouvelle demande</h1>
+      <h1 className="h-page mb-2 mt-4">Nouvelle <em>demande</em></h1>
       <p className="mb-8 max-w-[60ch] text-sm text-muted">
         Décris ton problème : on te répond ici, dans ce fil. Tu seras prévenu dans ta cloche de notifications.
       </p>

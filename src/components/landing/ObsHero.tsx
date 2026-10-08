@@ -98,7 +98,7 @@ export default function ObsHero({ images }: { images?: HeroImages }) {
         </DeviceMac>
       </motion.div>
       {/* téléphone : devant, à droite */}
-      <motion.div style={{ x: reduce ? 0 : phoneX, y: reduce ? 0 : phoneY }} className="relative mx-auto w-[50%] max-w-[230px] md:absolute md:bottom-0 md:right-[2%] md:mx-0 md:w-[21%] md:max-w-none">
+      <motion.div style={{ x: reduce ? 0 : phoneX, y: reduce ? 0 : phoneY }} className="relative mx-auto w-[50%] max-w-[230px] md:absolute md:bottom-0 md:right-[-9%] md:mx-0 md:w-[21%] md:max-w-none">
         <DeviceIphone image={images?.phone} className="device-float">
           <PhoneUI c={c} />
         </DeviceIphone>

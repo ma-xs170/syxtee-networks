@@ -155,15 +155,15 @@ function ControlsPanels({ c }: { c: Ctl }) {
         <h2 className={panelTitle}>Contrôles</h2>
         <div className="grid gap-1.5 p-2">
           <button type="button" onClick={c.toggleLive} className={`${flat} h-10 ${c.live ? "!border-red-700 !bg-red-700 !text-white" : ""}`}>
-            {c.live ? `Arrêter le direct · ${clock(c.seconds)}` : "Partir en direct"}
+            {c.live ? `Arrêter · ${clock(c.seconds)}` : "Partir en direct"}
           </button>
-          <span className={`${flat} h-10`}>Démarrer l&apos;enregistrement</span>
+          <span className={`${flat} h-10`}>Enregistrer</span>
         </div>
       </section>
       <section aria-label="Flux" className={`${panel} shrink-0`}>
         <div className="flex items-center justify-between gap-2 px-3 py-2 text-[13px]">
           <span className="font-semibold">Flux</span>
-          <span className="min-w-0 truncate text-neutral-300">{c.live ? `${Math.round(c.bitrate * 1000)} kbit/s · x264` : "—"}</span>
+          <span className="min-w-0 truncate text-neutral-300">{c.live ? `${(c.bitrate).toFixed(1)} Mb/s` : "—"}</span>
         </div>
       </section>
     </div>
@@ -227,7 +227,7 @@ export function MacUI({ c }: { c: Ctl }) {
             <div className="mx-auto aspect-video h-full max-w-full overflow-hidden rounded-lg"><LivePreview scene={c.scene} live={c.live} seconds={c.seconds} size={16} /></div>
           </div>
         </section>
-        <div className="grid min-h-0 min-w-0 flex-1 grid-cols-[minmax(9rem,1.1fr)_minmax(10rem,1.8fr)_minmax(12rem,2.2fr)_minmax(10rem,1fr)_minmax(13rem,1.5fr)] gap-2">
+        <div className="grid min-h-0 min-w-0 flex-1 grid-cols-[minmax(9rem,1fr)_minmax(10rem,1.6fr)_minmax(12rem,2.1fr)_minmax(13rem,1.5fr)_minmax(12rem,1.3fr)] gap-2">
           <ScenesPanel c={c} />
           <SourcesPanel c={c} />
           <MixerPanel c={c} />

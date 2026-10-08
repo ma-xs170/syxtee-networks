@@ -3,7 +3,8 @@
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { DeviceIphone, DeviceMac, DeviceWatch } from "../devices/Devices";
-import { MacUI, PhoneUI, SCENES, WatchUI, type Ctl, type SceneId } from "./ObsScreens";
+import { SCENES, type Ctl, type SceneId } from "./ObsScreens";
+import { MacUI, PhoneUI, WatchUI } from "./RemoteScreens";
 import { useLiveStats } from "./useLiveStats";
 
 // Hero OBS CLOUD : ordinateur, téléphone et montre (génériques, coloris noir) affichent la MÊME session, synchronisée.

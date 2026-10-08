@@ -3,7 +3,7 @@ export const site = {
   name: "SYXTEE NETWORKS",
   url: "https://syxtee-networks.vercel.app", // ← remplace par ton domaine final
   description:
-    "Streaming en direct : bonding 4G, 5G et satellite, santé du flux. Des serveurs dans le monde entier.",
+    "Pilote ton OBS à distance depuis ton téléphone et diffuse sur YouTube, Twitch, Kick, Instagram et plus, avec un flux stable en direct IRL.",
   discord: "https://discord.gg/CD68F8yZuZ",
   year: new Date().getFullYear(),
 };

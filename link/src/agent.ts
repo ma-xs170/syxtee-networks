@@ -13,9 +13,10 @@ import { backupV2, LegacyCore, restoreV2 } from "./backup2.ts";
 import { createArchive, plan, restoreArchive } from "./scenesync.ts";
 import { osLabel } from "./system.ts";
 import { coreCall } from "./corehttp.ts";
+import { fixLiveScene } from "./livescene.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
 
-export const VERSION = "0.5.4";
+export const VERSION = "0.5.5";
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
 export const OBS_METHODS = new Set([
@@ -625,6 +626,24 @@ export class Agent {
       if (method === "link.restore") {
         void this.runRestore(String(params.id ?? ""));
         return reply(true, { started: true });
+      }
+      // « Corriger » : aucune source de flux dans OBS ? Ajoute celle du flux de destination (ou du seul flux du compte) à la scène en cours.
+      if (method === "link.fixFlux") {
+        await this.syncRelays(true);
+        let dest = this.relays.find((s) => s.id === this.cfg.destination);
+        if (!dest) {
+          dest = this.relays.find((s) => s.live) ?? this.relays[0];
+          if (dest) {
+            this.cfg.destination = dest.id;
+            save(this.cfg);
+          }
+        }
+        if (!dest) return reply(true, { ok: false, message: "Tu n'as pas encore de flux. Crée un relais sur le site, puis reviens corriger." });
+        const current = String(((await this.obs.request("GetCurrentProgramScene")) as { currentProgramSceneName?: string }).currentProgramSceneName ?? "");
+        const scene = this.cfg.liveScene || current;
+        const r = await fixLiveScene((t, d) => this.obs.request(t, d), scene, { id: dest.id, name: dest.name, url: dest.obs_srt_url });
+        if (r.ok && current && current !== scene) await fixLiveScene((t, d) => this.obs.request(t, d), current, { id: dest.id, name: dest.name, url: dest.obs_srt_url }).catch(() => {});
+        return reply(true, r);
       }
       if (method === "link.preview") return reply(true, {});
       // Multistream : les sorties (adresse + clé) vivent dans le plugin, sur le PC.

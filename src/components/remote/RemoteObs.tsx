@@ -103,6 +103,8 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
   const [roles, setRoles] = useState<Roles | null>(null);
   const [inputNames, setInputNames] = useState<string[]>([]);
   const [fluxName, setFluxName] = useState("");
+  const [fixing, setFixing] = useState(false);
+  const [fixMsg, setFixMsg] = useState("");
   const [previewOn, setPreviewOn] = useState(true);
   const [muted, setMuted] = useState(true);
   const [volume, setVolume] = useState(0.8);
@@ -471,6 +473,17 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
   const lost = link !== "on" || !agent.online;
   const statusText = link === "denied" ? "Accès sur invitation" : link === "connecting" ? "Connexion…" : !agent.online ? "OBS hors ligne" : obsDown ? "OBS fermé" : null;
   const received = fluxName !== "";
+  // Aucune source « Flux … » dans OBS (et pas seulement pas de signal) : on propose de la créer.
+  const noFluxSource = ready && scenes.length > 0 && !inputNames.some((n) => n.startsWith("Flux"));
+  async function fixFlux() {
+    setFixing(true);
+    setFixMsg("");
+    const r = await run<{ ok: boolean; message: string }>("link.fixFlux");
+    setFixing(false);
+    if (r) setFixMsg(r.message);
+    later();
+    setTimeout(() => setFixMsg(""), 8000);
+  }
 
   const scenesPanel = (
     <section aria-label="Scènes" className={`${panel} ${tab === "scenes" ? "" : "max-lg:hidden"}`}>
@@ -722,8 +735,18 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
         </label>
         <span role="status" className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap ${received ? "text-emerald-400" : "text-amber-300"}`}>
           <span aria-hidden="true" className={`size-2 rounded-full ${received ? "bg-emerald-400" : "bg-amber-300"}`} />
-          {received ? fluxName : "Aucun flux reçu"}
+          {received ? fluxName : noFluxSource ? "Aucun flux dans OBS" : "Aucun flux reçu"}
         </span>
+        {noFluxSource && !guest && (
+          <button type="button" disabled={fixing} onClick={() => void fixFlux()} className={`${flat} h-7 shrink-0 gap-1.5 !border-amber-600 px-2.5 !text-amber-200`}>
+            {fixing ? "Correction…" : "Corriger"}
+          </button>
+        )}
+        {fixMsg && (
+          <span role="status" className="shrink-0 whitespace-nowrap text-[12px] text-neutral-300">
+            {fixMsg}
+          </span>
+        )}
         <div className={`relative shrink-0 ${guest ? "hidden" : ""}`} ref={devicePanel}>
           <button type="button" aria-expanded={deviceOpen} disabled={!roles} onClick={() => setDeviceOpen((o) => !o)} className={`${flat} h-7 gap-1.5 px-2.5`}>
             <span aria-hidden="true">⚙</span> <span className="max-lg:hidden">Appareil</span><span className="lg:hidden">Réglages</span>

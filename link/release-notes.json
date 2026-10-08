@@ -1,4 +1,7 @@
 {
+  "0.5.5": [
+    "Contrôle à distance : « Aucun flux dans OBS » avec un bouton Corriger qui ajoute tout seul la source de ton flux SYXTEE à la scène en cours"
+  ],
   "0.5.4": [
     "Contrôle à distance : le changement de scène est annoncé tout de suite, sans attendre la fin de la transition"
   ],

@@ -23,7 +23,7 @@ export const ALLOWED = new Set([
   "SetCurrentProgramScene", "SetCurrentPreviewScene", "SetStudioModeEnabled", "TriggerStudioModeTransition", "SetSceneItemEnabled",
   "SetInputMute", "SetInputVolume", "SetInputAudioMonitorType", "SetCurrentProfile", "SetCurrentSceneCollection", "SetCurrentSceneTransition", "StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord",
   // SYXTEE Link : bascule automatique sur une scène de secours, état de l'agent
-  "link.multistreamList", "link.multistreamSave", "link.multistreamRemove", "link.multistreamStart", "link.multistreamStop", "link.getBackup", "link.setBackup", "link.getPreview", "link.setPreview", "link.getInfo", "link.preview", "link.collections", "link.backupNow", "link.restore",
+  "link.multistreamList", "link.multistreamSave", "link.multistreamRemove", "link.multistreamStart", "link.multistreamStop", "link.fixFlux", "link.getBackup", "link.setBackup", "link.getPreview", "link.setPreview", "link.getInfo", "link.preview", "link.collections", "link.backupNow", "link.restore",
 ]);
 
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";

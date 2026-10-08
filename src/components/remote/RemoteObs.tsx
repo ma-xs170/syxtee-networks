@@ -607,14 +607,14 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
   );
 
   const multiPanel = (
-    <div className={`min-h-[13rem] min-w-0 flex-1 ${tab === "multi" ? "grid" : "max-lg:hidden lg:grid"} grid-rows-1`}>
+    <div className={`min-h-0 min-w-0 ${tab === "multi" ? "grid" : "max-lg:hidden lg:grid"} grid-rows-1`}>
       <MultistreamPanel state={ms} call={call} ready={ready} canControl={canLive} canEdit={!guest} onChange={setMs} />
     </div>
   );
 
   const controlsPanel = (
-    <div className={`flex min-h-0 min-w-0 flex-col gap-2 overflow-y-auto overscroll-contain ${tab === "controls" || tab === "multi" ? "" : "max-lg:hidden"}`}>
-     <div className={`flex shrink-0 flex-col gap-2 ${tab === "controls" ? "" : "max-lg:hidden"}`}>
+    <div className={`flex min-h-0 min-w-0 flex-col gap-2 overflow-y-auto overscroll-contain ${tab === "controls" ? "" : "max-lg:hidden"}`}>
+     <div className="flex shrink-0 flex-col gap-2">
       <section aria-label="Contrôles" className={panel}>
         <h2 className={panelTitle}>Contrôles</h2>
         <div className="grid gap-1.5 p-2">
@@ -641,7 +641,6 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
         {streaming && stats && stats.congestion > 0.3 && <p className="px-3 pb-2 text-[12px] text-amber-400">Réseau du PC saturé.</p>}
       </section>
      </div>
-     {multiPanel}
     </div>
   );
 
@@ -857,11 +856,12 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
           ))}
         </nav>
 
-        <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 gap-2 max-lg:grid-cols-[minmax(0,1fr)] max-lg:grid-rows-1 lg:grid-cols-[minmax(14rem,1.3fr)_3fr_3fr_minmax(13rem,1.15fr)]">
+        <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 gap-2 max-lg:grid-cols-[minmax(0,1fr)] max-lg:grid-rows-1 lg:grid-cols-[minmax(9rem,1.1fr)_minmax(10rem,1.8fr)_minmax(12rem,2.2fr)_minmax(10rem,1fr)_minmax(13rem,1.5fr)]">
           {scenesPanel}
           {sourcesPanel}
           {mixerPanel}
           {controlsPanel}
+          {multiPanel}
           {chatBox && tab === "chat" && <div className="min-h-0 min-w-0 lg:hidden">{chatBox}</div>}
         </div>
         </div>

@@ -33,7 +33,7 @@ export type SectionTab = { label: string; href: string };
 /** Onglets de la section Statistiques. */
 export const statsTabs: SectionTab[] = [
   { label: "Vue globale", href: "/dashboard/stats" },
-  { label: "Lives", href: "/dashboard/lives" },
+  { label: "Historique", href: "/dashboard/lives" },
 ];
 
 /** Un lien de la barre reste actif sur toutes les pages de sa section. */

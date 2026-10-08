@@ -7,7 +7,7 @@ import { fmtAgo } from "@/lib/dashboard-data";
 import { listTickets, ticketCounts } from "@/lib/support";
 import { categoryLabel } from "@/lib/support-categories";
 
-export const metadata: Metadata = { title: "Support", robots: { index: false } };
+export const metadata: Metadata = { title: "Assistance", robots: { index: false } };
 
 const TABS = [
   { id: "en-cours", label: "En cours", state: "open" as const },

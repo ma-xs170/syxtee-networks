@@ -159,8 +159,8 @@ export function PricingSection() {
 export function FaqSection() {
   const items = [
     { q: "Faut-il un abonnement ?", a: "L'accès se fait sur invitation. Les formules Gratuit, Payant et Partenaire existent ; les prix seront annoncés bientôt." },
-    { q: "Dois-je louer un serveur pour OBS CLOUD ?", a: "Non. Le plugin tourne sur ton propre PC ou Mac et se relie à ton compte avec un code." },
-    { q: "Quand est-ce disponible ?", a: "OBS CLOUD est disponible pour les comptes invités. Demande ton accès." },
+    { q: "Dois-je louer un serveur pour le contrôle à distance ?", a: "Non. Le plugin tourne sur ton propre PC ou Mac et se relie à ton compte avec un code." },
+    { q: "Quand est-ce disponible ?", a: "Le contrôle à distance est disponible pour les comptes invités. Demande ton accès." },
     { q: "Comment obtenir de l'aide ?", a: "Le support se fait sur Discord. Donne ton ID de support dans ton ticket, on retrouve ton compte sans ton e-mail." },
   ];
   return (

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { FaqSection, FinalCta, ObsBento, ObsHeroSection, PricingSection } from "@/components/landing/Sections";
 
 export const metadata: Metadata = {
-  title: { absolute: "OBS CLOUD : pilote ton OBS à distance · SYXTEE NETWORKS" },
+  title: { absolute: "Contrôle à distance : pilote ton OBS · SYXTEE NETWORKS" },
   description:
     "Pilote ton OBS à distance depuis ton téléphone ou ton navigateur, diffuse vers YouTube, Twitch et Kick, et garde un flux stable en 4G, 5G et satellite.",
   alternates: { canonical: "/" },

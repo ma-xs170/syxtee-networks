@@ -6,7 +6,7 @@ export type Availability = "soon" | "preorder" | "available";
 export const product = {
   brand: "SYXTEE NETWORKS",
   name: "SYXTEE Encodeur", // le boîtier
-  remoteName: "OBS CLOUD", // le contrôle OBS à distance (produit n°1)
+  remoteName: "Contrôle à distance", // le contrôle OBS à distance (produit n°1)
   tagline: "Branche ta caméra. Diffuse de n'importe où. Sans te ruiner.",
   /** Positionnement : le boîtier le plus accessible du marché, pensé pour les streamers (pas pour la télévision). */
   pitch: "Le boîtier où tu branches ta caméra : il réunit jusqu'à trois connexions (Wi-Fi, Ethernet, 4G ou 5G) et diffuse ton direct vers YouTube, Twitch ou Kick.",
@@ -46,10 +46,10 @@ export const product = {
       points: ["Compartiment ventilé pour un terminal satellite compact", "Poche dédiée à l'Encodeur, câbles protégés", "Panneau rigide qui s'ouvre vers le ciel", "SYXTEE NETWORKS brodé"], // TODO À CONFIRMER
     },
   ],
-  /** Abonnement du service OBS CLOUD et de l'interface de l'Encodeur. Prix « bientôt disponible » tant que null. */
+  /** Abonnement du contrôle à distance et de l'interface de l'Encodeur. Prix « bientôt disponible » tant que null. */
   plans: [
     { id: "free", name: "Gratuit", text: "Découvre le dashboard.", points: ["Compte et dashboard", "Documentation", "Support"], price: null as number | null },
-    { id: "paid", name: "Payant", text: "Direct stable, santé du flux et contrôle OBS à distance.", points: ["Direct stable en 4G et 5G", "Mire de coupure automatique", "OBS CLOUD et contrôle à distance"], price: null as number | null, featured: true },
+    { id: "paid", name: "Payant", text: "Direct stable, santé du flux et contrôle OBS à distance.", points: ["Direct stable en 4G et 5G", "Mire de coupure automatique", "Pilotage d'OBS depuis ton téléphone"], price: null as number | null, featured: true },
     { id: "partner", name: "Partenaire", text: "Pour les créateurs et les régies accompagnés.", points: ["Accès illimité", "Espaces partagés", "Contact direct"], price: null as number | null },
   ],
 } as const;

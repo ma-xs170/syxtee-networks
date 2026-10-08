@@ -155,7 +155,7 @@ export default function DesignSystemPage() {
         </Block>
 
         <Block title="Marquee (gris, fondu aux bords)">
-          <Marquee items={["Relais SRTLA", "OBS CLOUD", "Bonding", "Mire de coupure", "Espaces partagés", "Santé du flux"].map((t) => <span key={t} className="text-xl font-medium">{t}</span>)} />
+          <Marquee items={["Relais SRTLA", "Contrôle à distance", "Bonding", "Mire de coupure", "Espaces partagés", "Santé du flux"].map((t) => <span key={t} className="text-xl font-medium">{t}</span>)} />
         </Block>
 
         <Block title="État vide">
@@ -164,8 +164,8 @@ export default function DesignSystemPage() {
 
         <Block title="Appareils (coloris noir, écran interactif en HTML)">
           <div className="relative mx-auto max-w-4xl pb-16">
-            <div className="mx-auto w-[78%]"><DeviceMac><DemoScreen w={1280} title="OBS CLOUD" /></DeviceMac></div>
-            <div className="absolute bottom-0 right-[3%] w-[20%]"><DeviceIphone className="device-float"><DemoScreen w={390} title="OBS CLOUD" /></DeviceIphone></div>
+            <div className="mx-auto w-[78%]"><DeviceMac><DemoScreen w={1280} title="Contrôle à distance" /></DeviceMac></div>
+            <div className="absolute bottom-0 right-[3%] w-[20%]"><DeviceIphone className="device-float"><DemoScreen w={390} title="Contrôle à distance" /></DeviceIphone></div>
             <div className="absolute bottom-[2%] left-[4%] w-[13%]"><DeviceWatch className="device-float"><DemoScreen w={184} title="Live" /></DeviceWatch></div>
           </div>
           <div className="mx-auto mt-16 max-w-2xl"><DeviceIpad><DemoScreen w={1180} title="Espaces partagés" /></DeviceIpad></div>

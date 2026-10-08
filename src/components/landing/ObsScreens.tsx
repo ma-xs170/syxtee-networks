@@ -136,7 +136,7 @@ export function MacUI({ c }: { c: Ctl }) {
       <div className="flex h-[28px] shrink-0 items-center justify-between border-b border-white/10 bg-white/[0.06] px-[16px] text-[12px]">
         <div className="flex items-center gap-[18px]">
           <span aria-hidden="true" className="h-[10px] w-[10px] rounded-[3px] bg-white/80" />
-          <span className="font-semibold">OBS CLOUD</span>
+          <span className="font-semibold">Contrôle à distance</span>
           {MENUS.map((m) => <span key={m} className="text-white/70">{m}</span>)}
         </div>
         <div className="flex items-center gap-[14px] text-white/80">
@@ -152,7 +152,7 @@ export function MacUI({ c }: { c: Ctl }) {
           <div className="flex gap-[7px]" aria-hidden="true">
             <span className="h-[11px] w-[11px] rounded-full bg-[#ff5f57]/60" /><span className="h-[11px] w-[11px] rounded-full bg-[#febc2e]/60" /><span className="h-[11px] w-[11px] rounded-full bg-[#28c840]/60" />
           </div>
-          <p className="absolute inset-x-0 text-center text-[13px] text-white/70">OBS CLOUD · {SCENES.find((s) => s.id === c.scene)?.name}</p>
+          <p className="absolute inset-x-0 text-center text-[13px] text-white/70">Contrôle à distance · {SCENES.find((s) => s.id === c.scene)?.name}</p>
         </div>
         <div className="flex h-[48px] shrink-0 items-center gap-[10px] border-b border-white/10 px-[14px]">
           <button type="button" onClick={c.toggleLive} className={`${chip} ${c.live ? "" : "bg-white text-black"}`}>{c.live ? "Direct en cours" : "Démarrer le direct"}</button>
@@ -260,7 +260,7 @@ export function PhoneUI({ c }: { c: Ctl }) {
   return (
     <div className="flex h-full w-full flex-col bg-[#050506] px-[20px] pb-[26px] pt-[60px] text-[15px] leading-tight text-white">
       <div className="mb-[14px] flex items-center justify-between">
-        <span className="text-[18px] font-semibold tracking-tight">OBS CLOUD</span>
+        <span className="text-[18px] font-semibold tracking-tight">Contrôle à distance</span>
         <span className="inline-flex items-center gap-[6px] rounded-full bg-white/[0.08] px-[10px] py-[4px] text-[12px]"><span className="h-[7px] w-[7px] rounded-full bg-[var(--ok)]" />Connecté</span>
       </div>
       <div className="aspect-video w-full"><LivePreview scene={c.scene} live={c.live} seconds={c.seconds} size={14} /></div>

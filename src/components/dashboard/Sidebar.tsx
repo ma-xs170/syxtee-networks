@@ -27,7 +27,6 @@ import { createWorkspaceAction, switchWorkspaceAction } from "@/app/(dashboard)/
 import type { Feature } from "@/lib/plans";
 import { activeAlso } from "@/lib/dashboard-nav";
 import { Avatar, useAccount } from "../AccountMenu";
-import CloudBackdrop from "../home/CloudBackdrop";
 import { ThemeRow } from "../ThemeToggle";
 import Wordmark from "../Wordmark";
 import GlidePill from "../ui/GlidePill";
@@ -187,7 +186,7 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-haspopup="menu"
-          className="flex w-full items-center gap-3 rounded-lg p-1.5 text-left transition-colors hover:bg-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60"
+          className="flex w-full items-center gap-3 rounded-xl border border-line bg-surface-2 p-2 text-left transition-colors hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60"
         >
           <Avatar account={account} size={36} />
           <span className="min-w-0 flex-1">
@@ -200,7 +199,7 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
           <CaretUpDown size={16} className="shrink-0 text-muted" aria-hidden="true" />
         </button>
         {open && (
-          <div role="menu" className="absolute bottom-full left-0 z-50 mb-2 w-[calc(100%+3rem)] overflow-hidden rounded-xl border border-line bg-background py-1 shadow-[0_18px_40px_rgba(0,0,0,0.6)]">
+          <div role="menu" className="absolute left-0 top-full z-50 mt-2 w-[calc(100%+3rem)] overflow-hidden rounded-2xl border border-line bg-background py-1 shadow-[0_18px_40px_rgba(0,0,0,0.6)]">
             <p className="px-4 pb-1 pt-2.5 text-[13px] text-muted">Espace de travail</p>
             <button type="button" role="menuitemradio" aria-checked={!active} onClick={() => go(null)} className={row}>
               <span aria-hidden="true" className="grid size-2 shrink-0 place-items-center"><span className={`size-1.5 rounded-full ${active ? "" : "bg-foreground"}`} /></span>
@@ -292,12 +291,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-3 border-b border-line px-4 py-4">
-        <Link href="/dashboard" onClick={onNavigate} className="flex items-center gap-3" aria-label="Espace client SYXTEE">
-          <Image src="/logo-400.png" alt="" width={18} height={25} style={{ width: 18, height: "auto" }} className="ink-img" priority />
-          <span className="text-sm font-semibold">Espace client</span>
-        </Link>
-      </div>
+      <div className="border-b border-line p-3">{account && <AccountFooter account={account} admin={admin} onNavigate={onNavigate} />}</div>
 
       <nav aria-label="Navigation de l'espace client" className="flex-1 space-y-5 overflow-y-auto px-3 py-4" onMouseLeave={() => setHover(null)}>
         {GROUPS.map((g, i) => (
@@ -323,7 +317,6 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
           icon={<Moon size={20} className="shrink-0" aria-hidden="true" />}
         />
       </div>
-      <div className="border-t border-line p-3">{account && <AccountFooter account={account} admin={admin} onNavigate={onNavigate} />}</div>
     </div>
   );
 }
@@ -434,13 +427,18 @@ export default function DashboardShell({ admin, children, workspace }: { admin: 
         </div>
       )}
 
+      <div className="fixed bottom-0 left-[264px] right-0 z-30 hidden h-10 items-center justify-between border-t border-line bg-surface px-4 text-xs text-muted lg:flex">
+        <Link href="/docs" className="inline-flex items-center gap-2 font-mono transition-colors hover:text-foreground">
+          /docs
+        </Link>
+        <a href="https://discord.gg/CD68F8yZuZ" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+          <span aria-hidden="true">+</span> Demander de l&apos;aide
+        </a>
+      </div>
+
       <MobileTabs onMenu={() => setOpen(true)} menuOpen={open} />
 
-      <div className="relative min-w-0 pb-[calc(4.25rem+env(safe-area-inset-bottom))] lg:pb-0">
-        {/* Fond de la page : même principe que l'accueil (dégradé rouge et nuages animés), qui se fond dans le thème vers le bas. */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[40rem] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_35%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_35%,transparent_100%)]">
-          <CloudBackdrop tone="theme" />
-        </div>
+      <div className="relative min-w-0 pb-[calc(4.25rem+env(safe-area-inset-bottom))] lg:pb-12">
         <div className="relative">{children}</div>
       </div>
     </div>

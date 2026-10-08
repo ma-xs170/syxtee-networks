@@ -49,9 +49,9 @@ export function useAccount() {
 
 export function Avatar({ account, size = 32 }: { account: NonNullable<Account>; size?: number }) {
   return account.avatar ? (
-    <Image src={account.avatar} alt="" width={size} height={size} className="rounded-full border border-foreground/25 object-cover" style={{ width: size, height: size }} />
+    <Image src={account.avatar} alt="" width={size} height={size} className="rounded-lg border border-foreground/25 object-cover" style={{ width: size, height: size }} />
   ) : (
-    <span className="flex items-center justify-center rounded-full border border-foreground/25 bg-foreground/[0.12] font-mono text-[11px] uppercase" style={{ width: size, height: size }}>
+    <span className="flex items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-pink-500 font-mono text-[11px] font-semibold uppercase text-white" style={{ width: size, height: size }}>
       {account.initials}
     </span>
   );

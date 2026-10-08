@@ -87,8 +87,8 @@ const EncPreview = memo(function EncPreview({ scene, live, slate, muted, seconds
         )}
         {scene === "chat" && [0, 1, 2, 3].map((i) => <rect key={i} x="14" y={14 + i * 14} width={60 + ((i * 23) % 50)} height="5" rx="2.5" fill="#fff" fillOpacity="0.25" />)}
       </svg>
-      {scene === "brb" && <div className="absolute inset-0 grid place-items-center text-[1.5em] font-semibold">Je reviens tout de suite</div>}
-      {scene === "slate" && <div className="absolute inset-0 grid place-items-center bg-black/60 text-[1.3em] font-semibold">Pause technique</div>}
+      {scene === "brb" && <div className="absolute inset-0 grid place-items-center text-[1.5em] font-semibold">Connexion perdue, on revient</div>}
+      {scene === "slate" && <div className="absolute inset-0 grid place-items-center bg-black/60 text-[1.3em] font-semibold">Le stream commence bientôt</div>}
       {live && <span className="absolute left-[0.8em] top-[0.8em] inline-flex items-center gap-[0.5em] rounded-full bg-black/60 px-[0.8em] py-[0.35em] text-[0.8em] font-semibold"><span className="live-dot" aria-hidden="true" />LIVE <span className="font-mono tabular-nums text-white/70">{clock(seconds)}</span></span>}
       <div className="absolute bottom-[0.8em] right-[0.8em] flex h-[2.4em] items-end gap-[2px]" aria-hidden="true">
         {Array.from({ length: 10 }).map((_, i) => <span key={i} className={`level-bar w-[4px] origin-bottom rounded-sm ${muted || !live ? "scale-y-[0.1] bg-white/25" : "bg-[var(--ok)]"}`} style={muted || !live ? { height: "100%" } : ({ height: "100%", "--p": 0.4 + ((i * 37) % 55) / 100, animationDelay: `${(i * 91) % 600}ms`, animationDuration: `${650 + ((i * 53) % 450)}ms` } as React.CSSProperties)} />)}

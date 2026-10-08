@@ -6,10 +6,10 @@ import AnimatedNumber from "./AnimatedNumber";
 // Interfaces affichées sur les écrans de la démo OBS CLOUD (ordinateur 1280 x 800, téléphone 390 x 844, montre 184 x 224).
 // Tailles en pixels : chaque écran est dessiné à taille fixe puis réduit par le composant Device. Aucun placeholder gris : tout est animé ou rempli.
 export const SCENES = [
-  { id: "live", name: "Live IRL", key: "⌘1" },
-  { id: "drone", name: "Drone", key: "⌘2" },
-  { id: "brb", name: "BRB", key: "⌘3" },
-  { id: "chat", name: "Chat", key: "⌘4" },
+  { id: "drone", name: "Début du stream", key: "⌘1" },
+  { id: "live", name: "En direct", key: "⌘2" },
+  { id: "brb", name: "Connexion perdue", key: "⌘3" },
+  { id: "chat", name: "Fin du stream", key: "⌘4" },
 ] as const;
 export type SceneId = (typeof SCENES)[number]["id"];
 export type Ctl = {
@@ -35,6 +35,8 @@ function SceneArt({ id, thumb = false }: { id: SceneId; thumb?: boolean }) {
   // Miniatures : pas de texte (illisible à cette taille), des formes seulement.
   if (thumb && id === "brb")
     return <div className="absolute inset-0 grid place-items-center"><span className="h-[3px] w-[60%] rounded-full bg-white/40" /></div>;
+  if (thumb && id === "drone")
+    return <div className="absolute inset-0 grid place-items-center"><span className="h-[3px] w-[40%] rounded-full bg-white/40" /></div>;
   if (thumb && id === "chat")
     return (
       <div className="absolute inset-0 flex flex-col justify-center gap-[3px] px-[6px]">
@@ -59,35 +61,20 @@ function SceneArt({ id, thumb = false }: { id: SceneId; thumb?: boolean }) {
       );
     case "drone":
       return (
-        <svg viewBox="0 0 160 90" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 h-full w-full" aria-hidden="true">
-          <path d="M0 70 C40 40 80 80 160 30 V90 H0Z" fill="var(--ok)" fillOpacity="0.16" />
-          <path d="M0 78 C50 56 90 86 160 52 V90 H0Z" fill="#fff" fillOpacity="0.07" />
-          <path d="M20 20h120M20 45h120M60 8v74M100 8v74" stroke="#fff" strokeOpacity="0.07" strokeWidth="0.6" />
-          <g className="sun-drift" fill="#fff" fillOpacity="0.6">
-            <circle cx="90" cy="30" r="2.5" />
-            <path d="M84 26l-5-3M96 26l5-3M84 34l-5 3M96 34l5 3" stroke="#fff" strokeOpacity="0.6" strokeWidth="1" />
-          </g>
-        </svg>
+        <div className="absolute inset-0 grid place-items-center bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.1),transparent_70%)]">
+          <span className="text-[1.6em] font-semibold tracking-tight text-white">Le stream commence bientôt</span>
+        </div>
       );
     case "brb":
       return (
         <div className="absolute inset-0 grid place-items-center bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.1),transparent_70%)]">
-          <span className="text-[1.6em] font-semibold tracking-tight text-white">Je reviens tout de suite</span>
+          <span className="text-[1.6em] font-semibold tracking-tight text-white">Connexion perdue, on revient</span>
         </div>
       );
     case "chat":
       return (
-        <div className="absolute inset-0 space-y-[0.6em] p-[1.4em]">
-          {[
-            ["Léa", "Super vue !"],
-            ["Tom", "Le débit est stable"],
-            ["Nina", "On te voit bien"],
-            ["Karim", "GG pour la marche"],
-          ].map(([n, m]) => (
-            <p key={n} className="text-[0.9em] text-white/80">
-              <span className="font-semibold text-white">{n}</span> {m}
-            </p>
-          ))}
+        <div className="absolute inset-0 grid place-items-center bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.1),transparent_70%)]">
+          <span className="text-[1.6em] font-semibold tracking-tight text-white">Merci d&apos;avoir regardé</span>
         </div>
       );
   }

@@ -56,10 +56,10 @@ export function ObsBento() {
         <h2 className={h2}>{product.remoteName}, ton OBS <em>dans la poche.</em></h2>
         <p className={lead}>Chaque bouton agit sur ton vrai OBS, en direct.</p>
         <div className="mt-12 grid gap-4 md:grid-cols-4">
-          <Cell className="md:col-span-2" title="Change de scène en un tap" text="Live, drone, BRB : la scène change sur ton OBS, sans attendre.">
+          <Cell className="md:col-span-2" title="Change de scène en un tap" text="Début, direct, connexion perdue, fin : la scène change sur ton OBS, sans attendre.">
             <div className="grid grid-cols-2 gap-2 pt-1">
-              {["Live IRL", "Drone", "BRB", "Chat"].map((s, i) => (
-                <span key={s} className={`rounded-xl border px-4 py-3 text-sm ${i === 0 ? "border-foreground/40 bg-surface-2" : "border-line text-muted"}`}>{s}</span>
+              {["Début du stream", "En direct", "Connexion perdue", "Fin du stream"].map((s, i) => (
+                <span key={s} className={`rounded-xl border px-4 py-3 text-sm ${i === 1 ? "border-foreground/40 bg-surface-2" : "border-line text-muted"}`}>{s}</span>
               ))}
             </div>
           </Cell>

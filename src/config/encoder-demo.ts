@@ -14,10 +14,10 @@ export const CONNECTIONS: ConnDef[] = [
 ];
 
 export const SCENES: { id: SceneId; name: string; key: string }[] = [
-  { id: "live", name: "Live IRL", key: "1" },
-  { id: "brb", name: "BRB", key: "2" },
-  { id: "slate", name: "Slate", key: "3" },
-  { id: "chat", name: "Chat", key: "4" },
+  { id: "slate", name: "Début du stream", key: "1" },
+  { id: "live", name: "En direct", key: "2" },
+  { id: "brb", name: "Connexion perdue", key: "3" },
+  { id: "chat", name: "Fin du stream", key: "4" },
 ];
 
 export const RESOLUTIONS = [

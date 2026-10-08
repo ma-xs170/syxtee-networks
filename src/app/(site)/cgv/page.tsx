@@ -22,7 +22,7 @@ export default function CgvPage() {
       </LegalBlock>
       <LegalBlock title="2. Objet">
         <p>
-          Ces conditions encadrent la souscription aux formules Basique, Premium et Extra : accès aux relais SYXTEE (SRTLA et RTMP) et aux
+          Ces conditions encadrent la souscription aux formules Essentiel, Signature et Prestige : accès aux serveurs SYXTEE (SRTLA et RTMP) et aux
           fonctions du dashboard, dans les limites de la formule choisie, décrites sur la page{" "}
           <Link href="/acces" className="text-foreground underline">
             Offres

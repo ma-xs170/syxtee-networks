@@ -136,9 +136,9 @@ export default function NumberedFeatures() {
           </div>
           <ul className="divide-y divide-line overflow-hidden rounded-3xl border border-line">
             {[
-              { name: "Basique", price: "4,99", text: "1 flux, le contrôle à distance d'OBS", highlight: false },
-              { name: "Premium", price: "9,99", text: "10 flux, 3 directs, 1 espace partagé", highlight: true },
-              { name: "Extra", price: "19,99", text: "Flux illimités, 5 espaces partagés pour les régies", highlight: false },
+              { name: "Essentiel", price: "4,99", text: "1 serveur, le contrôle à distance d'OBS", highlight: false },
+              { name: "Signature", price: "9,99", text: "10 serveurs, 3 directs, 1 espace partagé", highlight: true },
+              { name: "Prestige", price: "19,99", text: "Serveurs illimités, 5 espaces partagés pour les régies", highlight: false },
             ].map((t) => (
               <li key={t.name} className={`flex items-center justify-between gap-6 px-6 py-6 ${t.highlight ? "bg-surface" : ""}`}>
                 <div className="min-w-0">

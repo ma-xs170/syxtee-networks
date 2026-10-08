@@ -155,7 +155,7 @@ export default function InvitesManager({ coreUrl, initial, planName, max, owner,
         <section className="mt-10 rounded-2xl border border-line p-8 text-center">
           <h2 className="text-lg font-semibold tracking-tight">Les invités ne sont pas inclus dans ta formule</h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
-            Avec la formule {planName}, tu ne peux pas inviter quelqu&apos;un à piloter ton OBS. Les formules Premium et Extra le permettent.
+            Avec la formule {planName}, tu ne peux pas inviter quelqu&apos;un à piloter ton OBS. Les formules Signature et Prestige le permettent.
           </p>
           <Link href="/tarifs" className="btn btn-primary mt-6">
             Voir les formules

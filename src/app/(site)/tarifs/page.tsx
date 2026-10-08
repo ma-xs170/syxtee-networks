@@ -5,49 +5,49 @@ import { Container } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Tarifs",
-  description: "Trois formules, à partir de 4,99 € par mois : flux SRTLA, RTMP et RIST, contrôle à distance d'OBS, espaces partagés pour les régies. L'accès se fait sur demande.",
+  description: "Trois formules, à partir de 4,99 € par mois : serveurs SRTLA et RTMP, contrôle à distance d'OBS, multistream, équipes et régies. Sans engagement.",
   alternates: { canonical: "/tarifs" },
 };
 
-// Les limites reprennent plans.ts (Basique, Premium, Extra) : ne rien annoncer ici qui ne soit pas appliqué par le serveur.
+// Les limites reprennent plans.ts : ne rien annoncer ici qui ne soit pas appliqué par le serveur.
 // Pas de paiement sur le site pour l'instant : le bouton de chaque formule est « Demander l'accès ».
 type Tier = { id: string; name: string; price: string; pitch: string; highlight?: boolean; includes?: string; items: string[] };
 const tiers: Tier[] = [
   {
-    id: "basique",
-    name: "Basique",
+    id: "essentiel",
+    name: "Essentiel",
     price: "4,99",
-    pitch: "Pour démarrer : un flux fiable et le contrôle à distance.",
-    items: ["1 flux (SRTLA, RTMP ou RIST)", "1 direct à la fois", "Contrôle à distance d'OBS", "Santé du flux en temps réel", "Écran de secours en cas de coupure", "Clés de diffusion"],
+    pitch: "Le point de départ d'un direct maîtrisé, de n'importe où.",
+    items: ["1 serveur dédié, en SRTLA ou RTMP", "1 direct à la fois", "Contrôle à distance d'OBS", "Santé du flux en temps réel", "Écran de secours automatique", "Clés de diffusion privées"],
   },
   {
-    id: "premium",
-    name: "Premium",
+    id: "signature",
+    name: "Signature",
     price: "9,99",
-    pitch: "Pour streamer régulièrement, avec tout l'espace client.",
+    pitch: "Pour les créateurs qui diffusent régulièrement et veulent tout.",
     highlight: true,
-    includes: "Tout Basique, plus :",
-    items: ["10 flux, 5 par protocole", "3 directs en même temps", "3 invités sans compte pour piloter ton OBS", "1 espace partagé pour ton équipe", "Statistiques détaillées et historique des directs", "Sauvegardes de scènes et Multichat"],
+    includes: "Tout Essentiel, plus :",
+    items: ["10 serveurs, 5 par protocole", "3 directs en même temps", "3 invités sans compte pour piloter ton OBS", "1 espace partagé pour ton équipe", "Statistiques détaillées et historique des directs", "Sauvegardes de scènes et Multichat"],
   },
   {
-    id: "extra",
-    name: "Extra",
+    id: "prestige",
+    name: "Prestige",
     price: "19,99",
-    pitch: "Pour les régies et les équipes qui diffusent beaucoup.",
-    includes: "Tout Premium, plus :",
-    items: ["Flux illimités", "10 directs en même temps", "5 espaces partagés pour tes régies", "5 invités sans compte", "Accès anticipé aux nouveautés"],
+    pitch: "Pour les régies et les équipes qui exigent le meilleur.",
+    includes: "Tout Signature, plus :",
+    items: ["Serveurs illimités", "10 directs en même temps", "5 espaces partagés pour tes régies", "5 invités sans compte", "Accès anticipé aux nouveautés"],
   },
 ];
 
 type Row = { label: string; v: [string | boolean, string | boolean, string | boolean] };
 const compare: { group: string; rows: Row[] }[] = [
   {
-    group: "Flux",
+    group: "Serveurs",
     rows: [
-      { label: "Flux actifs", v: ["1", "10", "Illimités"] },
+      { label: "Serveurs actifs", v: ["1", "10", "Illimités"] },
       { label: "Directs en même temps", v: ["1", "3", "10"] },
-      { label: "Protocoles SRTLA, RTMP et RIST", v: [true, true, true] },
-      { label: "Clés de diffusion", v: [true, true, true] },
+      { label: "Protocoles SRTLA et RTMP", v: [true, true, true] },
+      { label: "Clés de diffusion privées", v: [true, true, true] },
     ],
   },
   {
@@ -73,6 +73,7 @@ const compare: { group: string; rows: Row[] }[] = [
       { label: "Statistiques détaillées", v: [false, true, true] },
       { label: "Historique des directs", v: [false, true, true] },
       { label: "Multichat", v: [false, true, true] },
+      { label: "Accès anticipé aux nouveautés", v: [false, false, true] },
     ],
   },
 ];
@@ -98,27 +99,7 @@ export default function TarifsPage() {
 
       <section className="py-16 sm:py-20">
         <Container>
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-            <article className="flex flex-col rounded-2xl border border-line p-7">
-              <h2 className="text-lg font-semibold">Gratuit</h2>
-              <p className="mt-3 min-h-[3rem] text-sm leading-relaxed text-muted">Crée un compte pour découvrir le tableau de bord. Aucun service inclus.</p>
-              <p className="mt-6 flex items-baseline gap-1.5">
-                <span className="whitespace-nowrap text-4xl font-semibold tracking-tight">0 €</span>
-              </p>
-              <Link href="/inscription" className="btn btn-secondary mt-6 w-full">
-                Créer un compte
-              </Link>
-              <div className="mt-7 border-t border-line pt-6">
-                <ul className="space-y-3">
-                  {["Compte et tableau de bord", "Documentation", "Support, pour demander un accès", "Scanner et analyseur réseau"].map((i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm">
-                      <Check size={16} weight="bold" className="mt-0.5 shrink-0 text-foreground" aria-hidden="true" />
-                      {i}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </article>
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
             {tiers.map((t) => (
               <article key={t.id} className={`flex flex-col rounded-2xl border p-7 ${t.highlight ? "border-foreground/40 bg-surface" : "border-line"}`}>
                 <div className="flex items-center justify-between">
@@ -152,31 +133,23 @@ export default function TarifsPage() {
 
       <section className="border-t border-line py-16 sm:py-20">
         <Container className="max-w-4xl">
-          <h2 className="h-section">Les espaces partagés, pour les régies.</h2>
-          <p className="mt-5 max-w-[60ch] text-base leading-relaxed text-muted">
-            Une régie, une équipe ou une chaîne à plusieurs : tout se contrôle depuis un seul endroit. Tu crées un espace, tu y connectes tous tes OBS, et chaque
-            personne y entre avec son propre compte et son rôle. Les flux, les OBS reliés et les sauvegardes de scènes sont ceux de l&apos;espace, séparés de ton espace
-            personnel.
-          </p>
-          <ul className="mt-8 grid gap-x-10 gap-y-5 sm:grid-cols-2">
-            {[
-              ["Plusieurs OBS connectés", "Chaque ordinateur reçoit le plugin et apparaît dans l'espace, pilotable depuis un téléphone ou un navigateur."],
-              ["Des rôles clairs", "Propriétaire, administrateur ou membre : qui peut créer des flux, inviter, ou seulement piloter."],
-              ["Invitations par e-mail", "Chaque membre rejoint avec son compte. Tu retires un accès en un clic."],
-              ["Un espace, plusieurs équipes", "Jusqu'à 5 espaces partagés avec Extra : un par chaîne ou par client."],
-            ].map(([t, d]) => (
-              <li key={t}>
-                <h3 className="text-base font-semibold tracking-tight">{t}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted">{d}</p>
-              </li>
-            ))}
-          </ul>
+          <div className="bento-cell flex flex-col items-start justify-between gap-6 p-7 sm:flex-row sm:items-center sm:p-9">
+            <div>
+              <h2 className="h-section">Une régie, une <em>équipe ?</em></h2>
+              <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-muted">Les espaces partagés réunissent plusieurs OBS et plusieurs personnes, chacune avec son compte et son rôle.</p>
+            </div>
+            <Link href="/espaces-partages" className="btn btn-primary shrink-0">Découvrir les espaces partagés</Link>
+          </div>
         </Container>
       </section>
 
       <section className="border-t border-line py-16 sm:py-20">
         <Container className="max-w-4xl">
-          <h2 className="h-section">Comparer les formules</h2>
+          <details className="group">
+          <summary className="cursor-pointer list-none text-center text-base text-foreground underline underline-offset-[6px] decoration-foreground/40 transition-colors hover:decoration-foreground [&::-webkit-details-marker]:hidden">
+            <span className="group-open:hidden">Comparer les formules en détail</span>
+            <span className="hidden group-open:inline">Masquer la comparaison</span>
+          </summary>
           <div className="mt-10 overflow-x-auto">
             <table className="w-full min-w-[34rem] text-left text-sm">
               <thead>
@@ -204,7 +177,8 @@ export default function TarifsPage() {
               ))}
             </table>
           </div>
-          <p className="mt-8 text-sm text-muted">
+          </details>
+          <p className="mt-8 text-center text-sm text-muted">
             L&apos;ouverture au public arrive bientôt : en attendant, l&apos;accès se fait sur demande. <Link href="/acces" className="text-foreground underline underline-offset-4">Demander l&apos;accès</Link>.
           </p>
         </Container>

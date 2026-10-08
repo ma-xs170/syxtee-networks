@@ -189,7 +189,7 @@ export async function offerDaysAction(_prev: PlanState, form: FormData): Promise
     return { error: "Enregistrement impossible." };
   }
   revalidatePath("/admin/comptes");
-  return { ok: `${parsed.data.days} jours de Premium offerts.` };
+  return { ok: `${parsed.data.days} jours de Signature offerts.` };
 }
 
 // ───────────── Relais d'un compte (créer, renommer, archiver, supprimer, clés, enregistrement) ─────────────

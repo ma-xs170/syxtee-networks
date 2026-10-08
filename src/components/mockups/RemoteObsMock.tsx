@@ -2,11 +2,10 @@
 // scènes, sources, mixeur audio avec vumètres, contrôles et débit). Statique, décoratif : aria-hidden.
 
 const SCENES: [string, string][] = [
-  ["⏳", "ON COMMENCE BIENTÔT"],
-  ["🔴", "EN DIRECT"],
-  ["🎥", "DRONE"],
-  ["📶", "CONNEXION PERDUE"],
-  ["🔚", "FIN DE STREAM"],
+  ["", "DÉBUT DU STREAM"],
+  ["", "EN DIRECT"],
+  ["", "CONNEXION PERDUE"],
+  ["", "FIN DU STREAM"],
 ];
 const SOURCES: [string, string, boolean][] = [
   ["Flux › IPHONE 16", "Média", true],
@@ -58,17 +57,17 @@ export default function RemoteObsMock({ className = "" }: { className?: string }
             <span className="absolute inset-0 shadow-[inset_0_0_70px_rgba(0,0,0,0.55)]" />
             <span className="absolute left-3 top-2.5 rounded bg-black/50 px-2 py-0.5 font-mono text-[11px] text-white/75 backdrop-blur-sm">PROGRAMME · EN DIRECT</span>
             <div className="absolute bottom-3 right-3 flex gap-1.5 text-[11px]">
-              <span className="rounded bg-black/55 px-2 py-1 text-white/80 backdrop-blur-sm">Muet</span>
-              <span className="rounded bg-black/55 px-2 py-1 text-white/80 backdrop-blur-sm">Couper l&apos;aperçu</span>
+              <span className="rounded-full bg-black/55 px-2.5 py-1 text-white/80 backdrop-blur-sm">Muet</span>
+              <span className="rounded-full bg-black/55 px-2.5 py-1 text-white/80 backdrop-blur-sm">Couper l&apos;aperçu</span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3 @lg:grid-cols-1 @lg:grid-rows-2">
-            <Panel title="Scènes" count={5}>
+            <Panel title="Scènes" count={4}>
               <ul className="space-y-0.5 p-1.5 text-xs @lg:text-[13px]">
                 {SCENES.map(([e, n], i) => (
-                  <li key={n} className={`flex items-center gap-2 rounded px-2 py-1.5 ${i === 1 ? "bg-[#2f4fc4] font-medium text-white" : "text-white/70"}`}>
-                    <span>{e}</span><span className="truncate">› {n}</span>
+                  <li key={n} className={`flex items-center gap-2 rounded px-2 py-1.5 ${i === 1 ? "bg-white/[0.13] font-medium text-white" : "text-white/70"}`}>
+                    <span className="truncate">› {n}</span>
                     {i === 1 && <span className="ml-auto text-[11px] text-white/80">direct</span>}
                   </li>
                 ))}

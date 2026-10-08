@@ -11,11 +11,10 @@ const W = 390;
 const H = 844;
 
 const SCENES: [string, string][] = [
-  ["⏳", "ON COMMENCE BIENTÔT"],
-  ["🔴", "EN DIRECT"],
-  ["🎥", "DRONE"],
-  ["📶", "CONNEXION PERDUE"],
-  ["🔚", "FIN DE STREAM"],
+  ["", "DÉBUT DU STREAM"],
+  ["", "EN DIRECT"],
+  ["", "CONNEXION PERDUE"],
+  ["", "FIN DU STREAM"],
 ];
 const SOURCES: [string, string, boolean][] = [
   ["Flux › IPHONE 16", "Média", true],
@@ -103,23 +102,23 @@ export default function RemotePhoneScreen({ tab = "scenes", className = "" }: { 
 
         <header className="flex h-12 items-center justify-between border-b border-[#262626] px-4">
           <h1 className="text-[16px] font-medium">Contrôle à distance</h1>
-          <span className="rounded border border-[#2e2e2e] px-3 py-1.5 text-[13px] text-neutral-300">← Retour</span>
+          <span className="rounded-full border border-white/[0.14] px-3 py-1.5 text-[13px] text-neutral-300">← Retour</span>
         </header>
 
         <div className="mx-3 mt-3 flex h-12 items-center gap-3 rounded-md border border-[#262626] bg-[#0b0b0b] px-3 text-[14px]">
           <span className="font-medium">OBS-DJ-SYXTEE</span>
           <span className="text-[12px] text-neutral-500">38 ms</span>
           <span className="ml-auto flex items-center gap-1.5 text-emerald-400"><span className="size-2 rounded-full bg-emerald-400" />Flux reçu</span>
-          <span className="rounded border border-[#2e2e2e] bg-[#141414] px-2.5 py-1 text-[12px] text-neutral-300">⚙ Réglages</span>
+          <span className="rounded-full border border-white/[0.14] bg-[#16161a] px-2.5 py-1 text-[12px] text-neutral-300">⚙ Réglages</span>
         </div>
 
         {/* Programme */}
         <section className="mx-3 mt-3 overflow-hidden rounded-md border border-[#262626] bg-black">
           <div className="flex items-center justify-between px-3 py-2.5">
-            <p className="flex items-baseline gap-2 text-[14px]"><span className="text-neutral-100">🔴 EN DIRECT</span><span className="text-[13px] text-red-500">en direct</span></p>
+            <p className="flex items-baseline gap-2 text-[14px]"><span className="text-neutral-100">EN DIRECT</span><span className="text-[13px] text-red-500">en direct</span></p>
             <div className="flex gap-1.5 text-[12px] text-neutral-300">
-              <span className="rounded border border-[#2e2e2e] bg-[#141414] px-2.5 py-1.5">Muet</span>
-              <span className="rounded border border-[#2e2e2e] bg-[#141414] px-2.5 py-1.5">Couper l&apos;aperçu</span>
+              <span className="rounded-full border border-white/[0.14] bg-[#16161a] px-2.5 py-1.5">Muet</span>
+              <span className="rounded-full border border-white/[0.14] bg-[#16161a] px-2.5 py-1.5">Couper l&apos;aperçu</span>
             </div>
           </div>
           <div className="relative mx-2 mb-2 aspect-video overflow-hidden rounded-sm bg-[linear-gradient(to_bottom,#3a3f52_0%,#8a6f66_46%,#c08a5e_58%,#2a2420_59%,#14110f_100%)]">
@@ -132,12 +131,12 @@ export default function RemotePhoneScreen({ tab = "scenes", className = "" }: { 
         {/* Panneau de l'onglet */}
         <div className="h-[316px] overflow-hidden">
           {tab === "scenes" && (
-            <Panel title="Scènes" count={5}>
+            <Panel title="Scènes" count={4}>
               <ul>
                 {SCENES.map(([e, n], i) => (
-                  <li key={n} className={`flex h-[50px] items-center gap-3 px-4 text-[15px] ${i === 1 ? "bg-[#2f4fc4] text-white" : ""}`}>
+                  <li key={n} className={`flex h-[50px] items-center gap-3 px-4 text-[15px] ${i === 1 ? "bg-white/[0.13] text-white" : ""}`}>
                     <span className={`size-1.5 rounded-full ${i === 1 ? "bg-white" : "bg-neutral-500"}`} />
-                    <span>{e}</span>
+                    
                     <span>› {n}</span>
                     {i === 1 && <span className="ml-auto text-[12px] text-white/80">direct</span>}
                   </li>
@@ -173,7 +172,7 @@ export default function RemotePhoneScreen({ tab = "scenes", className = "" }: { 
                       </div>
                     </div>
                     <span className="text-[12px] text-neutral-400">{n}</span>
-                    <span className="rounded border border-[#2e2e2e] px-2 py-0.5 text-[11px] text-neutral-400">Muet</span>
+                    <span className="rounded-full border border-white/[0.14] px-2 py-0.5 text-[11px] text-neutral-400">Muet</span>
                   </div>
                 ))}
               </div>
@@ -183,7 +182,7 @@ export default function RemotePhoneScreen({ tab = "scenes", className = "" }: { 
             <Panel title="Contrôles">
               <div className="space-y-2.5 p-3">
                 <span className="block rounded bg-red-700 py-3 text-center text-[15px] font-medium">Arrêter le direct <span className="font-normal text-white/80">1:24:13</span></span>
-                <span className="block rounded border border-[#2e2e2e] bg-[#141414] py-3 text-center text-[15px] text-neutral-200">Démarrer l&apos;enregistrement</span>
+                <span className="block rounded-full border border-white/[0.14] bg-[#16161a] py-3 text-center text-[15px] text-neutral-200">Démarrer l&apos;enregistrement</span>
                 <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 pt-1 font-mono text-[13px]">
                   {[["Débit", "6 010 kbit/s"], ["Encodeur", "6 000 kbps"], ["Congestion", "4 %"], ["Images perdues", "0"], ["Sortie", "1920×1080"]].map(([a, b]) => (
                     <div key={a} className="contents">

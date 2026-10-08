@@ -11,7 +11,7 @@ export default function CodesForm() {
     <form action={action} className="grid gap-4">
       <div className="flex flex-wrap items-end gap-4">
         <Input label="Nombre de codes" name="count" type="number" min={1} max={50} defaultValue={1} required className="!w-32" />
-        <Input label="Mois offerts (Extra)" name="months" type="number" min={1} max={24} defaultValue={4} required className="!w-40" />
+        <Input label="Mois offerts (Prestige)" name="months" type="number" min={1} max={24} defaultValue={4} required className="!w-40" />
         <Input label="Note (commande, client)" name="note" maxLength={120} className="!w-72" />
         <Button type="submit" loading={pending}>Générer</Button>
       </div>

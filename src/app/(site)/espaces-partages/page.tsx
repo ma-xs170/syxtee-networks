@@ -112,14 +112,14 @@ export default function EspacesPartagesPage() {
 
       <section className="py-20 text-center sm:py-24">
         <Container className="max-w-2xl">
-          <h2 className="h-section">Inclus dans Premium et Extra.</h2>
-          <p className="mt-4 text-base leading-relaxed text-muted">1 espace partagé avec Premium (9,99 € par mois), jusqu&apos;à 5 avec Extra (19,99 € par mois). Sans engagement.</p>
+          <h2 className="h-section">Inclus dans Signature et Prestige.</h2>
+          <p className="mt-4 text-base leading-relaxed text-muted">1 espace partagé avec Signature (9,99 € par mois), jusqu&apos;à 5 avec Prestige (19,99 € par mois). Sans engagement.</p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/acces" className="btn btn-primary">
               Demander l&apos;accès
             </Link>
             <Link href="/tarifs" className="btn btn-secondary">
-              Comparer les formules
+              Voir les tarifs
             </Link>
           </div>
         </Container>

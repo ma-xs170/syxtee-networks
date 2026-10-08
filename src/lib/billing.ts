@@ -1,7 +1,7 @@
 // Abonnement Stripe → formule : règles pures (sans Stripe ni base), partagées par le webhook, les pages et les tests.
 
 export type Interval = "month" | "year";
-/** Formules vendues. `paid` = Premium (identifiant historique gardé). */
+/** Formules vendues. `paid` = Signature (identifiant historique gardé). */
 export type Tier = "basic" | "paid" | "extra";
 export const TIERS: Tier[] = ["basic", "paid", "extra"];
 
@@ -10,22 +10,22 @@ type Price = { amount: string; cents: number };
 /** Catalogue affiché (prix nets, pas de TVA : association). Les montants facturés viennent des Prices Stripe. */
 export const CATALOG: Record<Tier, { name: string; pitch: string; points: string[]; prices: Record<Interval, Price>; featured?: boolean }> = {
   basic: {
-    name: "Basique",
-    pitch: "Pour démarrer : un flux fiable et le contrôle à distance.",
-    points: ["1 flux SRTLA ou RTMP", "1 direct à la fois", "Contrôle à distance d'OBS", "Santé du flux"],
+    name: "Essentiel",
+    pitch: "Le point de départ d'un direct maîtrisé.",
+    points: ["1 serveur SRTLA ou RTMP", "1 direct à la fois", "Contrôle à distance d'OBS", "Santé du flux"],
     prices: { month: { amount: "4,99 €", cents: 499 }, year: { amount: "49 €", cents: 4900 } },
   },
   paid: {
-    name: "Premium",
-    pitch: "Tout SYXTEE, pour streamer souvent.",
-    points: ["10 flux, 5 par protocole", "3 directs en même temps", "3 invités au contrôle à distance", "Statistiques et historique des directs", "Sauvegardes de scènes et Multichat"],
+    name: "Signature",
+    pitch: "Pour les créateurs qui diffusent régulièrement.",
+    points: ["10 serveurs, 5 par protocole", "3 directs en même temps", "3 invités au contrôle à distance", "Statistiques et historique des directs", "Sauvegardes de scènes et Multichat"],
     prices: { month: { amount: "9,99 €", cents: 999 }, year: { amount: "99 €", cents: 9900 } },
     featured: true,
   },
   extra: {
-    name: "Extra",
-    pitch: "Pour les équipes et les gros événements.",
-    points: ["Flux illimités", "10 directs en même temps", "5 invités au contrôle à distance", "Toutes les fonctions Premium"],
+    name: "Prestige",
+    pitch: "Pour les régies et les équipes exigeantes.",
+    points: ["Serveurs illimités", "10 directs en même temps", "5 invités au contrôle à distance", "Toutes les fonctions Signature"],
     prices: { month: { amount: "19,99 €", cents: 1999 }, year: { amount: "199 €", cents: 19900 } },
   },
 };

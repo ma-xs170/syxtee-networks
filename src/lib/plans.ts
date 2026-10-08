@@ -8,7 +8,7 @@ export type PlanId = "free" | "basic" | "beta" | "paid" | "extra" | "partner" | 
 export type Feature = "relais" | "sante" | "apercu" | "controle" | "stats" | "lives" | "carte" | "mire" | "cam" | "dji" | "cles";
 
 export const FEATURES: Record<Feature, string> = {
-  relais: "Relais et URLs",
+  relais: "Serveurs et URLs",
   sante: "Santé du flux",
   apercu: "Aperçu",
   controle: "Contrôle caméra",
@@ -42,9 +42,9 @@ export type Plan = {
 export const PLANS: Record<PlanId, Plan> = {
   free: { id: "free", name: "Gratuit", maxRelays: 0, maxConcurrentStreams: 0, maxInvites: 0, maxWorkspaces: 0, features: [] },
   beta: { id: "beta", name: "Bêta", maxRelays: 3, maxConcurrentStreams: 3, maxInvites: 3, maxWorkspaces: 3, features: ALL },
-  basic: { id: "basic", name: "Basique", maxRelays: 1, maxConcurrentStreams: 1, maxInvites: 0, maxWorkspaces: 0, features: ["relais", "sante", "mire", "cles"] },
-  paid: { id: "paid", name: "Premium", maxRelays: 10, maxConcurrentStreams: 3, maxPerProtocol: 5, maxInvites: 3, maxWorkspaces: 1, features: ALL },
-  extra: { id: "extra", name: "Extra", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: 10, maxInvites: 5, maxWorkspaces: 5, features: ALL },
+  basic: { id: "basic", name: "Essentiel", maxRelays: 1, maxConcurrentStreams: 1, maxInvites: 0, maxWorkspaces: 0, features: ["relais", "sante", "mire", "cles"] },
+  paid: { id: "paid", name: "Signature", maxRelays: 10, maxConcurrentStreams: 3, maxPerProtocol: 5, maxInvites: 3, maxWorkspaces: 1, features: ALL },
+  extra: { id: "extra", name: "Prestige", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: 10, maxInvites: 5, maxWorkspaces: 5, features: ALL },
   partner: { id: "partner", name: "Partenaire", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: Number.POSITIVE_INFINITY, maxInvites: 3, maxWorkspaces: 3, features: ALL },
   admin: { id: "admin", name: "Admin", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: Number.POSITIVE_INFINITY, maxInvites: Number.POSITIVE_INFINITY, maxWorkspaces: Number.POSITIVE_INFINITY, features: ALL },
 };

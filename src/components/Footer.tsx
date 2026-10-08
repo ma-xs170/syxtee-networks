@@ -10,6 +10,9 @@ const columns: { title: string; links: NavLink[] }[] = [
     title: "Produit",
     links: [
       { label: "Contrôle à distance", href: "/controle-a-distance" },
+      { label: "Multistream", href: "/multistream" },
+      { label: "Espaces partagés", href: "/espaces-partages" },
+      { label: "Tarifs", href: "/tarifs" },
     ],
   },
   {
@@ -17,6 +20,7 @@ const columns: { title: string; links: NavLink[] }[] = [
     links: [
       { label: "Documentation", href: "/docs" },
       { label: "FAQ", href: "/faq" },
+      { label: "Devenir Partenaire", href: "/acces" },
     ],
   },
   {

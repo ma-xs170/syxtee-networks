@@ -1,9 +1,9 @@
 // Configuration centrale du site — modifie ici les liens, textes clés et relais.
 export const site = {
   name: "SYXTEE NETWORKS",
-  url: "https://syxtee-networks.vercel.app", // ← remplace par ton domaine final
+  url: "https://www.syxtee-networks.fr",
   description:
-    "Pilote ton OBS à distance depuis ton téléphone et diffuse sur YouTube, Twitch, Kick, Instagram et plus, avec un flux stable en direct IRL.",
+    "Pilote ton OBS à distance, diffuse partout en un clic et garde un flux stable, où que tu sois. Pensé pour les créateurs exigeants.",
   discord: "https://discord.gg/CD68F8yZuZ",
   year: new Date().getFullYear(),
 };

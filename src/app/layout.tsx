@@ -29,13 +29,13 @@ export const metadata: Metadata = {
   applicationName: "SYXTEE",
   formatDetection: { telephone: false },
   title: {
-    default: `${site.name} - Contrôle à distance et multistream`,
+    default: `${site.name} · Le direct en mobilité, sans compromis`,
     template: `%s · ${site.name}`,
   },
   description: site.description,
   keywords: ["contrôle à distance OBS", "multistream", "IRL", "streaming", "Twitch", "Kick", "YouTube", "Instagram", "bonding 4G"],
   openGraph: {
-    title: `${site.name} - Contrôle à distance et multistream`,
+    title: `${site.name} · Le direct en mobilité, sans compromis`,
     description: site.description,
     url: site.url,
     siteName: site.name,

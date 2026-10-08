@@ -23,8 +23,8 @@ export type NavItem = NavLink | NavMenu;
 export const nav: NavItem[] = [
   { label: "Contrôle à distance", href: "/controle-a-distance" },
   { label: "Multistream", href: "/multistream" },
-  { label: "Documentation", href: "/docs", arrow: true },
   { label: "Tarifs", href: "/tarifs" },
+  { label: "Contacter", href: "/contact" },
 ];
 
 export const isMenu = (item: NavItem): item is NavMenu => "children" in item;

@@ -130,20 +130,20 @@ export function PricingSection() {
     <section className="border-b border-line py-20 lg:py-28">
       <Container>
         <h2 className={h2}>Choisis ta <em>formule.</em></h2>
-        <p className={lead}>{product.remoteName}, trois formules. Les prix seront annoncés bientôt. L&apos;accès se fait sur invitation.</p>
+        <p className={lead}>Le compte gratuit est ouvert à tous, l&apos;accès partenaire se demande, et les formules payantes arrivent bientôt.</p>
         <div className="mt-12 grid items-stretch gap-4 md:grid-cols-3">
           {product.plans.map((p) => (
             <article key={p.id} className={`bento-cell flex flex-col p-6 ${"featured" in p && p.featured ? "!border-line-strong bg-surface-2" : ""}`}>
               <h3 className="text-xl font-semibold tracking-tight">{p.name}</h3>
               <p className="mt-1 min-h-10 text-sm text-muted">{p.text}</p>
-              <p className="mt-5 text-2xl font-medium tracking-tight text-foreground/70">{product.priceLabel(p.price) ?? "Bientôt disponible"}</p>
+              <p className={`mt-5 text-2xl font-medium tracking-tight ${p.id === "paid" ? "text-foreground/70" : "text-foreground"}`}>{p.id === "paid" ? (product.priceLabel(p.price) ?? "Bientôt disponible") : "Disponible"}</p>
               <ul className="mt-5 flex-1 space-y-2 text-sm text-muted">
                 {p.points.map((x) => (
                   <li key={x} className="flex gap-2.5"><span aria-hidden="true" className="text-foreground">+</span>{x}</li>
                 ))}
               </ul>
               <div className="mt-6">
-                <ButtonLink href={product.discord} external variant={"featured" in p && p.featured ? "primary" : "secondary"} className="w-full">Rejoindre la communauté</ButtonLink>
+                <ButtonLink href={p.id === "free" ? "/inscription" : p.id === "partner" ? "/acces" : "/tarifs"} variant={p.id === "paid" ? "secondary" : "primary"} className="w-full">{p.id === "free" ? "Créer un compte" : p.id === "partner" ? "Demander l'accès" : "Voir les tarifs"}</ButtonLink>
               </div>
             </article>
           ))}

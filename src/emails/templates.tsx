@@ -64,6 +64,33 @@ export function accessRequested(o: { name: string; email: string; channel: strin
   };
 }
 
+/** Prévient l'équipe d'une demande de devis (formulaire Contacter). Pas de base : tout est dans ce message. */
+export function quoteRequested(o: { name: string; email: string; phone: string; channel: string; event_type: string; location: string; date: string; duration: string; audience: string; needs: string[]; message: string }): Email {
+  const rows: [string, string][] = [
+    ["Nom", o.name],
+    ["Email", o.email],
+    ...(o.phone ? ([["Téléphone", o.phone]] as [string, string][]) : []),
+    ...(o.channel ? ([["Chaîne", o.channel]] as [string, string][]) : []),
+    ["Événement", o.event_type],
+    ["Lieu", o.location],
+    ...(o.date ? ([["Date", o.date]] as [string, string][]) : []),
+    ...(o.duration ? ([["Durée", o.duration]] as [string, string][]) : []),
+    ...(o.audience ? ([["Audience attendue", o.audience]] as [string, string][]) : []),
+    ...(o.needs.length ? ([["Besoins", o.needs.join(", ")]] as [string, string][]) : []),
+    ["Projet", o.message],
+  ];
+  return {
+    subject: `Demande de devis : ${o.event_type} (${o.name})`,
+    element: (
+      <Layout preview={`${o.name} demande un devis.`} reason="Email réservé aux administrateurs.">
+        <Title lead="Demande" hl="de devis." />
+        <InfoPanel rows={rows} />
+        <Cta href={`mailto:${o.email}`}>Répondre</Cta>
+      </Layout>
+    ),
+  };
+}
+
 /** b) Bienvenue, après la vérification. */
 export function welcome(o: { firstName?: string | null; lastName?: string | null }): Email {
   const full = [o.firstName, o.lastName].filter(Boolean).join(" ");

@@ -1,7 +1,10 @@
 {
+  "0.5.6": [
+    "Fenêtre SYXTEE d'OBS : thème noir et blanc comme le site (plus de rouge ni de bleu)",
+    "Corriger : l'ajout de la source du flux ne dit plus « Source introuvable »"
+  ],
   "0.5.5": [
-    "Contrôle à distance : « Aucun flux dans OBS » avec un bouton Corriger qui ajoute tout seul la source de ton flux SYXTEE à la scène en cours",
-    "Fenêtre SYXTEE d'OBS : thème bleu et gris à la place du rouge"
+    "Contrôle à distance : « Aucun flux dans OBS » avec un bouton Corriger qui ajoute tout seul la source de ton flux SYXTEE à la scène en cours"
   ],
   "0.5.4": [
     "Contrôle à distance : le changement de scène est annoncé tout de suite, sans attendre la fin de la transition"

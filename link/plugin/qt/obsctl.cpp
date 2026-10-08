@@ -554,6 +554,8 @@ Json addRelaySources(const QStringList &relayIds, const QStringList &scenes)
 		if (!r) throw Fail{"Flux inconnu : il a peut-être été supprimé."};
 		if (r->url.isEmpty()) throw Fail{"Ce flux n'a pas d'adresse de lecture."};
 		QString name;
+		// Source créée ici : on garde notre référence jusqu'à son placement dans les scènes (relâchée seule, OBS la détruit : « Source introuvable »).
+		obs_source_t *holder = nullptr;
 		for (const auto &e : existing)
 			if (e.second == rid) name = e.first;
 		if (name.isEmpty()) {
@@ -562,7 +564,7 @@ Json addRelaySources(const QStringList &relayIds, const QStringList &scenes)
 			obs_source_t *src = obs_source_create("ffmpeg_source", name.toUtf8().constData(), st, nullptr);
 			obs_data_release(st);
 			if (!src) throw Fail{"Création de la source impossible."};
-			obs_source_release(src);
+			holder = src;
 			created.append(name);
 		} else {
 			// Déjà dans OBS : on la réutilise (même image partout), adresse remise à jour.
@@ -585,6 +587,7 @@ Json addRelaySources(const QStringList &relayIds, const QStringList &scenes)
 			if (item) obs_sceneitem_set_visible(item, true);
 			placed.append(Json{{"scene", sceneName}, {"source", name}});
 		}
+		if (holder) obs_source_release(holder);
 	}
 	Json r;
 	r["created"] = created;

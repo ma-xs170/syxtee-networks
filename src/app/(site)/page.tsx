@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { EncoderSection, FaqSection, FinalCta, ObsBento, ObsHeroSection, PricingSection } from "@/components/landing/Sections";
+import { FaqSection, FinalCta, ObsBento, ObsHeroSection, PricingSection } from "@/components/landing/Sections";
 
 export const metadata: Metadata = {
   title: { absolute: "OBS CLOUD : pilote ton OBS à distance · SYXTEE NETWORKS" },
@@ -14,7 +14,6 @@ export default function Home() {
     <>
       <ObsHeroSection />
       <ObsBento />
-      <EncoderSection />
       <PricingSection />
       <FaqSection />
       <FinalCta />

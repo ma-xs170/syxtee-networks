@@ -49,7 +49,7 @@ export const product = {
   /** Abonnement du service OBS CLOUD et de l'interface de l'Encodeur. Prix « bientôt disponible » tant que null. */
   plans: [
     { id: "free", name: "Gratuit", text: "Découvre le dashboard.", points: ["Compte et dashboard", "Documentation", "Support"], price: null as number | null },
-    { id: "paid", name: "Payant", text: "Direct stable, santé du flux et contrôle OBS à distance.", points: ["Direct stable en 4G et 5G", "Mire de coupure automatique", "OBS CLOUD et interface de l'Encodeur"], price: null as number | null, featured: true },
+    { id: "paid", name: "Payant", text: "Direct stable, santé du flux et contrôle OBS à distance.", points: ["Direct stable en 4G et 5G", "Mire de coupure automatique", "OBS CLOUD et contrôle à distance"], price: null as number | null, featured: true },
     { id: "partner", name: "Partenaire", text: "Pour les créateurs et les régies accompagnés.", points: ["Accès illimité", "Espaces partagés", "Contact direct"], price: null as number | null },
   ],
 } as const;

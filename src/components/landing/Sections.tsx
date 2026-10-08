@@ -130,7 +130,7 @@ export function PricingSection() {
     <section className="border-b border-line py-20 lg:py-28">
       <Container>
         <h2 className={h2}>Choisis ta <em>formule.</em></h2>
-        <p className={lead}>{product.remoteName} et l&apos;interface de l&apos;Encodeur, trois formules. Les prix seront annoncés bientôt. L&apos;accès se fait sur invitation.</p>
+        <p className={lead}>{product.remoteName}, trois formules. Les prix seront annoncés bientôt. L&apos;accès se fait sur invitation.</p>
         <div className="mt-12 grid items-stretch gap-4 md:grid-cols-3">
           {product.plans.map((p) => (
             <article key={p.id} className={`bento-cell flex flex-col p-6 ${"featured" in p && p.featured ? "!border-line-strong bg-surface-2 md:-my-3 md:py-9" : ""}`}>
@@ -149,7 +149,7 @@ export function PricingSection() {
           ))}
         </div>
         <p className="mt-6 text-sm text-muted">
-          Tarifs en vigueur : page <Link href="/tarifs" className="text-foreground underline-offset-4 hover:underline">Tarifs</Link>. Le SYXTEE Encodeur est en développement, prix bientôt disponible.
+          Tarifs en vigueur : page <Link href="/tarifs" className="text-foreground underline-offset-4 hover:underline">Tarifs</Link>.
         </p>
       </Container>
     </section>
@@ -159,9 +159,8 @@ export function PricingSection() {
 export function FaqSection() {
   const items = [
     { q: "Faut-il un abonnement ?", a: "L'accès se fait sur invitation. Les formules Gratuit, Payant et Partenaire existent ; les prix seront annoncés bientôt." },
-    { q: "Quelles connexions utilise l'Encodeur ?", a: "Jusqu'à trois connexions en même temps : Wi-Fi, Ethernet et 4G ou 5G. Une clé 4G USB ajoute une connexion de plus." },
     { q: "Dois-je louer un serveur pour OBS CLOUD ?", a: "Non. Le plugin tourne sur ton propre PC ou Mac et se relie à ton compte avec un code." },
-    { q: "Quand est-ce disponible ?", a: "OBS CLOUD est disponible pour les comptes invités. Demande ton accès. L'Encodeur est en développement." },
+    { q: "Quand est-ce disponible ?", a: "OBS CLOUD est disponible pour les comptes invités. Demande ton accès." },
     { q: "Comment obtenir de l'aide ?", a: "Le support se fait sur Discord. Donne ton ID de support dans ton ticket, on retrouve ton compte sans ton e-mail." },
   ];
   return (

@@ -7,6 +7,7 @@ import { createContext, useContext, useEffect, useRef, useState, useTransition, 
 import {
   Archive,
   CaretUpDown,
+  Cpu,
   ChatsCircle,
   ChartBar,
   List,
@@ -52,6 +53,7 @@ const GROUPS: Group[] = [
       { label: "Contrôle à distance", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais" },
       { label: "Membres", href: "/dashboard/invitations", icon: UsersThree, feature: "relais" },
       { label: "Multichat", href: "/dashboard/multichat", icon: ChatsCircle },
+      { label: "Appareils", href: "/dashboard/appareils", icon: Cpu },
     ],
   },
   {

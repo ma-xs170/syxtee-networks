@@ -4,7 +4,7 @@ import { Container } from "@/components/ui";
 import { getUser } from "@/lib/auth/dal";
 import { PERMISSIONS, ROLE_META, roleStyle } from "@/lib/staff";
 import { inviteByToken } from "@/lib/staff-data";
-import { acceptInvitationAction } from "./actions";
+import { acceptInvitationAction, switchAccountAction } from "./actions";
 
 export const metadata: Metadata = { title: "Invitation à l'équipe", robots: { index: false } };
 
@@ -56,8 +56,20 @@ export default async function InvitationPage({ params, searchParams }: { params:
               </p>
             )}
 
+            {user && user.email?.toLowerCase() !== inv.email.toLowerCase() && (
+              <p role="status" className="mt-6 rounded-xl border border-line-strong bg-surface px-4 py-3 text-sm leading-relaxed text-muted">
+                Tu es connecté avec <strong data-sensitive className="text-foreground">{user.email}</strong>. Cette invitation est pour <strong data-sensitive className="text-foreground">{inv.email}</strong> : change de compte pour l&apos;accepter.
+              </p>
+            )}
+
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              {user && user.email?.toLowerCase() === inv.email.toLowerCase() ? (
+              {user && user.email?.toLowerCase() !== inv.email.toLowerCase() ? (
+                <form action={switchAccountAction.bind(null, token, inv.email)}>
+                  <button type="submit" className={`${btn} border border-line-strong bg-accent text-on-accent hover:bg-accent-hover`}>
+                    Changer de compte
+                  </button>
+                </form>
+              ) : user && user.email?.toLowerCase() === inv.email.toLowerCase() ? (
                 <form action={acceptInvitationAction.bind(null, token)}>
                   <button type="submit" className={`${btn} border border-line-strong bg-accent text-on-accent hover:bg-accent-hover`}>
                     Accepter l&apos;invitation

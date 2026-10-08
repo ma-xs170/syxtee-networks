@@ -11,7 +11,7 @@ import { renews } from "@/lib/billing";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 import { hasCore, listRelays, type RelayView } from "@/lib/core";
-import { CreateRelayForm, DeleteForm, IdentityForm, KeysForms, NoteForm, RelayRow, SuspendForm } from "../AdminForms";
+import { CreateRelayForm, DeleteForm, IdentityForm, KeysForms, NoteForm, RelayRow, ResetLinkForm, SetPasswordForm, SuspendForm } from "../AdminForms";
 import PlanForms from "../PlanForms";
 
 export const metadata: Metadata = { title: "Admin · Compte", robots: { index: false } };
@@ -237,6 +237,24 @@ export default async function AdminAccountPage({ params, searchParams }: { param
           </Tile>
 
         </div>
+      )}
+
+      {tab === "securite" && (
+        <section aria-labelledby="mdp" className="mb-6 max-w-3xl rounded-2xl border border-line p-5 sm:p-6">
+          <h2 id="mdp" className="text-sm font-semibold">
+            Mot de passe
+          </h2>
+          <div className="mt-5 grid grid-cols-1 gap-8 md:grid-cols-2">
+            <div>
+              <p className="mb-3 text-sm text-muted">Le client reçoit un e-mail avec un lien pour choisir lui-même son mot de passe.</p>
+              <ResetLinkForm userId={id} />
+            </div>
+            <div>
+              <p className="mb-3 text-sm text-muted">Tu choisis le mot de passe. Le client est prévenu par e-mail.</p>
+              <SetPasswordForm userId={id} />
+            </div>
+          </div>
+        </section>
       )}
 
       {tab === "securite" && (

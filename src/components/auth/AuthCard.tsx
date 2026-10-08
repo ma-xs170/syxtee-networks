@@ -159,9 +159,11 @@ export function PasswordInput({ id, name, label, autoComplete, value, onChange, 
   return (
     <Field id={id} label={label} aside={aside}>
       <div className="relative">
+        {/* Valeur envoyée : copie cachée liée à l'état. Les champs visibles n'ont pas de nom, donc la remise à zéro du formulaire
+            après une action (erreur d'inscription, par exemple) ne les vide plus et ne désaccorde plus les deux mots de passe. */}
+        <input type="hidden" name={name} value={value} />
         <input
           id={id}
-          name={name}
           type={shown ? "text" : "password"}
           autoComplete={autoComplete}
           required

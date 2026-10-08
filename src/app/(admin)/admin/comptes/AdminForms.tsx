@@ -5,7 +5,7 @@ import { useFormStatus } from "react-dom";
 import { ingestUrl } from "@/components/relais/RelayActions";
 import type { RelayView } from "@/lib/core";
 import { RELAY_SERVERS } from "@/lib/relay-servers";
-import { addNoteAction, adminCreateRelayAction, adminRelayAction, cutRelayAction, deleteAccountAction, keysAction, suspendAction, updateIdentityAction, type PlanState } from "./actions";
+import { addNoteAction, adminCreateRelayAction, adminRelayAction, cutRelayAction, deleteAccountAction, keysAction, sendResetLinkAction, setPasswordAction, suspendAction, updateIdentityAction, type PlanState } from "./actions";
 
 type Action = (prev: PlanState, form: FormData) => Promise<PlanState>;
 
@@ -241,5 +241,33 @@ export function RelayRow({ userId, relay, lastLive }: { userId: string; relay: A
         <Notice state={state} />
       </form>
     </li>
+  );
+}
+
+export function ResetLinkForm({ userId }: { userId: string }) {
+  return (
+    <ActionForm action={sendResetLinkAction} userId={userId} confirm="Envoyer un lien de réinitialisation à ce client ?">
+      <Button>Envoyer un lien de réinitialisation</Button>
+    </ActionForm>
+  );
+}
+
+export function SetPasswordForm({ userId }: { userId: string }) {
+  const [pw, setPw] = useState("");
+  const [conf, setConf] = useState("");
+  const mismatch = conf.length > 0 && conf !== pw;
+  return (
+    <ActionForm action={setPasswordAction} userId={userId} confirm="Définir ce mot de passe ? Le client est prévenu par e-mail." className="grid gap-3">
+      <label htmlFor="adm-pw" className={label}>Nouveau mot de passe</label>
+      <input id="adm-pw" type="password" autoComplete="new-password" required minLength={12} value={pw} onChange={(e) => setPw(e.target.value)} className={`${field} max-w-xs`} />
+      <input type="hidden" name="password" value={pw} />
+      <label htmlFor="adm-pw2" className={label}>Confirmer</label>
+      <input id="adm-pw2" type="password" autoComplete="new-password" required value={conf} onChange={(e) => setConf(e.target.value)} className={`${field} max-w-xs`} />
+      <input type="hidden" name="password_confirm" value={conf} />
+      {mismatch && <p className="text-xs text-bad">Les deux mots de passe ne correspondent pas.</p>}
+      <div>
+        <Button disabled={mismatch || !pw}>Définir le mot de passe</Button>
+      </div>
+    </ActionForm>
   );
 }

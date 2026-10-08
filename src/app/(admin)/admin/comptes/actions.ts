@@ -4,6 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin";
+import { passwordChanged, resetPassword } from "@/emails/templates";
+import { passwordProblem } from "@/lib/auth/password";
+import { sendEmailResult } from "@/lib/email/send";
+import { site } from "@/lib/site";
 import { CoreOutdated, CoreRefusal, createRelay, deleteAllRelays, deleteCoverage, deleteRelay, hasCore, listRelays, refreshCore, rotateRelay, updateRelay } from "@/lib/core";
 import { audit, offerPaidDays, setPlan } from "@/lib/plan-admin";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -269,4 +273,48 @@ export async function adminRelayAction(_prev: PlanState, form: FormData): Promis
   revalidatePath("/admin/relais");
   done(userId);
   return { ok };
+}
+
+/** Envoie au client un lien pour choisir un nouveau mot de passe (valable 1 h). Le lien part par e-mail, l'admin ne voit jamais le mot de passe. */
+export async function sendResetLinkAction(_prev: PlanState, form: FormData): Promise<PlanState> {
+  const admin = await requireAdmin("accounts");
+  const userId = uid.safeParse(form.get("userId"));
+  if (!userId.success) return { error: "Requête invalide." };
+  const db = createAdminClient();
+  const { data: u } = await db.auth.admin.getUserById(userId.data);
+  const email = u.user?.email;
+  if (!email) return { error: "Compte introuvable." };
+  const { data, error } = await db.auth.admin.generateLink({ type: "recovery", email });
+  const hashed = data?.properties?.hashed_token;
+  if (error || !hashed) {
+    console.error("sendResetLinkAction", error?.message);
+    return { error: "Impossible de créer le lien." };
+  }
+  const url = `${site.url}/auth/confirm?token_hash=${encodeURIComponent(hashed)}&type=recovery&next=${encodeURIComponent("/reinitialiser")}`;
+  const sent = await sendEmailResult(email, resetPassword({ url }));
+  await audit(admin.email!, "account.reset_link", userId.data, null, null);
+  return sent.ok ? { ok: `Lien envoyé à ${email}. Il est valable 1 h.` } : { error: `E-mail non envoyé : ${sent.reason}` };
+}
+
+/** Définit un nouveau mot de passe pour le client, puis le prévient par e-mail (sans lui envoyer le mot de passe). */
+export async function setPasswordAction(_prev: PlanState, form: FormData): Promise<PlanState> {
+  const admin = await requireAdmin("accounts");
+  const userId = uid.safeParse(form.get("userId"));
+  if (!userId.success) return { error: "Requête invalide." };
+  const pw = String(form.get("password") ?? "");
+  if (pw !== String(form.get("password_confirm") ?? "")) return { error: "Les deux mots de passe ne correspondent pas." };
+  const problem = passwordProblem(pw);
+  if (problem) return { error: problem };
+  const db = createAdminClient();
+  const { data: u } = await db.auth.admin.getUserById(userId.data);
+  const email = u.user?.email;
+  if (!email) return { error: "Compte introuvable." };
+  const { error } = await db.auth.admin.updateUserById(userId.data, { password: pw });
+  if (error) {
+    console.error("setPasswordAction", error.message);
+    return { error: "Impossible de changer le mot de passe." };
+  }
+  await audit(admin.email!, "account.set_password", userId.data, null, null);
+  const sent = await sendEmailResult(email, passwordChanged({ at: new Date() }));
+  return { ok: sent.ok ? `Mot de passe changé. ${email} est prévenu par e-mail. Communique-lui le nouveau mot de passe par un canal sûr.` : "Mot de passe changé, mais l'e-mail de prévenance n'est pas parti." };
 }

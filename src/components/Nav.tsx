@@ -13,6 +13,7 @@ import StreamModeToggle from "./dashboard/StreamModeToggle";
 import { restoreStreamMode } from "./dashboard/streamMode";
 import { DesktopMenus, NavAccordion } from "./NavTools";
 import { SupportId } from "./SupportId";
+import StatusPill from "./ui/StatusPill";
 
 // Barre du site. Sur /dashboard/* (variant « dashboard ») : mêmes logo, hauteur, flou et méga-menus, mais les menus
 // du dashboard au centre et, à droite, seulement le statut du direct, le mode stream et l'avatar. Tout le reste
@@ -90,7 +91,8 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
             <AccountMenu account={account} groups={groups} />
           </div>
         ) : (
-          <div className="hidden shrink-0 items-center gap-6 justify-self-end lg:flex">
+          <div className="hidden shrink-0 items-center gap-5 justify-self-end lg:flex">
+            <StatusPill variant="ok" label="Relais opérationnel" className="hidden 2xl:inline-flex" />
             {account ? (
               <Link href="/dashboard" className="inline-flex h-9 items-center rounded-full border border-line-strong bg-surface-2 px-4 text-sm font-medium text-foreground shadow-[inset_0_1px_0_color-mix(in_srgb,var(--foreground)_8%,transparent)] transition-colors hover:bg-fill-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
                 Espace client

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import GlidePill from "./ui/GlidePill";
+import GlassIconView from "./ui/GlassIconView";
 import DataCenter from "./illustrations/DataCenter";
 import DiscordChat from "./illustrations/DiscordChat";
 import ObsScreen from "./illustrations/ObsScreen";
@@ -24,6 +25,12 @@ type AnyMenu = NavMenu | DashMenu;
 type AnyItem = NavItem | DashItem;
 const isAnyMenu = (item: AnyItem): item is AnyMenu => "children" in item;
 const DASH_ICONS = new Set<string>(["relays", "urls", "health", "preview", "control", "stats", "lives", "map", "mire", "scan", "cam", "security", "profile", "plan", "settings"]);
+
+/** Miniature d'une entrée de menu : icône verre 3D quand l'entrée en a une, sinon l'illustration filaire. */
+function Thumb({ t, size }: { t: NavTool | DashTool; size: number }) {
+  if ("glass" in t && t.glass) return <GlassIconView name={t.glass} size={size} float={false} src={`/glass-icons/${t.glass}.webp`} />;
+  return <ItemArt icon={t.icon} />;
+}
 
 function ItemArt({ icon }: { icon: ToolIcon | DashIcon }) {
   return DASH_ICONS.has(icon) ? <DashArt icon={icon as DashIcon} /> : <ToolArt icon={icon as ToolIcon} />;
@@ -115,7 +122,7 @@ function PanelItem({ t, hovered, onHover, onClose, i, reduce }: { t: NavTool | D
       >
         <GlidePill show={hovered} id="mega-pill" className="rounded-xl" />
         <span className="relative z-10 h-14 w-14 shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.06]">
-          <ItemArt icon={t.icon} />
+          <Thumb t={t} size={56} />
         </span>
         <span className="relative z-10 min-w-0 flex-1">
           <span className="flex items-center gap-2 text-sm font-medium text-foreground">
@@ -126,7 +133,7 @@ function PanelItem({ t, hovered, onHover, onClose, i, reduce }: { t: NavTool | D
           <span className="mt-0.5 block text-sm leading-snug text-muted">{t.desc}</span>
         </span>
         <span aria-hidden="true" className="relative z-10 text-muted transition-[transform,color] duration-200 group-hover:translate-x-0.5 group-hover:text-foreground">
-          →
+          {external ? "↗" : "→"}
         </span>
       </Link>
     </motion.li>
@@ -308,7 +315,7 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
             style={{ transformOrigin: "top center" }}
           >
             <motion.div
-              className="relative overflow-hidden rounded-2xl border border-foreground/15 bg-background/95 shadow-[0_24px_60px_-12px_var(--shadow-pop)] backdrop-blur-xl"
+              className="relative overflow-hidden rounded-2xl border border-foreground/15 bg-[#09090b] shadow-[0_24px_60px_-12px_var(--shadow-pop)] backdrop-blur-xl"
               animate={{ width: size.w || "auto", height: size.h || "auto" }}
               transition={{ duration: dur, ease: EASE }}
             >
@@ -360,7 +367,7 @@ export function NavAccordion({ menu, active, onNavigate }: { menu: AnyMenu; acti
             )}
             <Link href={t.href} onClick={onNavigate} className={`flex items-center gap-4 rounded-xl px-2 py-3 hover:bg-foreground/10${"soon" in t && t.soon ? " opacity-60 hover:opacity-100" : ""}`}>
               <span className="h-12 w-12 shrink-0">
-                <ItemArt icon={t.icon} />
+                <Thumb t={t} size={48} />
               </span>
               <span className="min-w-0">
                 <span className="flex items-center gap-2">

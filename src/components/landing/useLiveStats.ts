@@ -7,12 +7,12 @@ import { useReducedMotion } from "motion/react";
 // stable, la 4G chute, le bonding compense, une mire apparaît si le débit s'effondre, retour à la normale.
 // Pause quand l'onglet est caché ou que la démo est hors écran ; en « réduire les animations », aucun défilement automatique.
 
-export type ConnId = "4g" | "5g" | "esim" | "wifi";
+export type ConnId = "4g" | "5g" | "esim" | "sat";
 export const CONNS: { id: ConnId; label: string; base: number }[] = [
   { id: "4g", label: "4G", base: 2.4 },
   { id: "5g", label: "5G", base: 3.6 },
   { id: "esim", label: "eSIM", base: 1.4 },
-  { id: "wifi", label: "Wi-Fi", base: 1.9 },
+  { id: "sat", label: "Starlink", base: 1.9 },
 ];
 export type Status = "stable" | "unstable" | "offline";
 export type LiveSnapshot = {
@@ -37,9 +37,9 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v
 type Sim = { t: number; seconds: number; on: Record<ConnId, boolean>; rates: Record<ConnId, number>; history: number[]; cutUntil: number; latency: number; loss: number };
 
 function init(): Sim {
-  const rates = { "4g": 2.4, "5g": 3.6, esim: 1.4, wifi: 1.9 };
+  const rates = { "4g": 2.4, "5g": 3.6, esim: 1.4, sat: 1.9 };
   const total = Object.values(rates).reduce((a, b) => a + b, 0);
-  return { t: 0, seconds: 842, on: { "4g": true, "5g": true, esim: true, wifi: true }, rates, history: Array(HISTORY).fill(total), cutUntil: -1, latency: 46, loss: 0.2 };
+  return { t: 0, seconds: 842, on: { "4g": true, "5g": true, esim: true, sat: true }, rates, history: Array(HISTORY).fill(total), cutUntil: -1, latency: 46, loss: 0.2 };
 }
 
 function step(s: Sim, dt: number): LiveSnapshot {

@@ -1,3 +1,4 @@
+import { product } from "@/config/product";
 // Configuration centrale du site — modifie ici les liens, textes clés et relais.
 export const site = {
   name: "SYXTEE NETWORKS",
@@ -22,8 +23,8 @@ export const nav: NavItem[] = [
   {
     label: "Produits",
     children: [
-      { label: "Relais", href: "/relais", desc: "Réunis tes connexions en un flux stable.", icon: "rack" },
-      { label: "Relais à distance", href: "/controle-a-distance", desc: "Pilote ton OBS depuis ton téléphone.", icon: "docs" },
+      { label: product.name, href: "/relais", desc: "Le boîtier qui réunit tes connexions.", icon: "rack" },
+      { label: product.remoteName, href: "/controle-a-distance", desc: "Pilote ton OBS depuis ton téléphone.", icon: "docs" },
       { label: "Espaces partagés", href: "/espaces-partages", desc: "Une équipe, plusieurs OBS, un seul endroit.", icon: "services" },
       { label: "Encodeur", href: "/encodeur", desc: "Le sac encodeur IRL de SYXTEE.", icon: "studio", soon: true, badge: "BIENTÔT" },
     ],

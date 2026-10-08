@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { CompatStrip, IntegrationSection, LandingFinalCta, LandingHero, LiveDemoSection } from "@/components/landing/Landing";
-import { BentoSection, FaqSection, PricingCards, SchemaSection, StepsSection } from "@/components/landing/Landing2";
+import { IntegrationSection, LandingFinalCta, LandingHero, LiveDemoSection } from "@/components/landing/Landing";
+import { BentoSection, FaqSection, AppSection, PricingCards, SchemaSection, StepsSection } from "@/components/landing/Landing2";
 import Glow from "@/components/landing/Glow";
 
 export const metadata: Metadata = {
@@ -17,11 +17,11 @@ export default function Home() {
       <Glow />
       <LandingHero />
       <LiveDemoSection />
-      <CompatStrip />
       <BentoSection />
       <SchemaSection />
-      <IntegrationSection />
       <StepsSection />
+      <AppSection />
+      <IntegrationSection />
       <PricingCards />
       <FaqSection />
       <LandingFinalCta />

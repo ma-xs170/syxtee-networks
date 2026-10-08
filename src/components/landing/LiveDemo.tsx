@@ -4,6 +4,8 @@ import { memo, useEffect, useRef, useState } from "react";
 import { Button } from "../ui/Button";
 import StatusDot from "../ui/StatusDot";
 import AnimatedNumber from "./AnimatedNumber";
+import RelayBox from "./RelayBox";
+import { publishBox, type BoxLeds } from "./liveStore";
 import { CONNS, useLiveStats, type LiveSnapshot, type Status } from "./useLiveStats";
 
 // Démo live de la landing : un faux direct IRL qui tourne en boucle, sans backend. Les connexions se coupent d'un clic.
@@ -89,6 +91,10 @@ export default function LiveDemo() {
   }, []);
   const { snap, toggle, cut, paused } = useLiveStats(visible);
   const color = COLOR[snap.status];
+  // LED par connexion : rouge si coupée ou tombée, orange si dégradée, verte sinon. Publiée pour le hero et le schéma.
+  const leds = Object.fromEntries(CONNS.map((c) => [c.id, !snap.on[c.id] || snap.rates[c.id] < 0.15 ? "bad" : snap.rates[c.id] < c.base * 0.6 ? "warn" : "ok"])) as BoxLeds;
+  const ledKey = JSON.stringify(leds);
+  useEffect(() => publishBox({ leds, status: snap.status }), [ledKey, snap.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div ref={ref} className="card !p-0 overflow-hidden">
@@ -130,6 +136,7 @@ export default function LiveDemo() {
         </div>
 
         <div className="grid content-start gap-4">
+          <RelayBox leds={leds} live={snap.status !== "offline"} />
           <div className="grid grid-cols-2 gap-3">
             <Stat label="Débit total" value={snap.total} unit="Mb/s" decimals={1} />
             <Stat label="Latence" value={snap.latency} unit="ms" decimals={0} />

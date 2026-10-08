@@ -1003,3 +1003,9 @@ select,
   .stagger > :nth-child(n+6) { animation-delay: 250ms; }
 }
 @keyframes stagger-in { from { opacity: 0; transform: translateY(8px); filter: blur(5px); } to { opacity: 1; transform: none; filter: none; } }
+
+/* LED d'état du boîtier : respiration verte. */
+@media (prefers-reduced-motion: no-preference) {
+  .live-led { animation: live-led 1.8s ease-in-out infinite; }
+}
+@keyframes live-led { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }

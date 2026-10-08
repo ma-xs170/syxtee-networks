@@ -9,9 +9,10 @@ import { visual } from "@/lib/visuals";
 const EXT = ["avif", "webp", "png", "jpg"];
 const BLUR = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjUiPjxyZWN0IHdpZHRoPSI4IiBoZWlnaHQ9IjUiIGZpbGw9IiMxMTExMTMiLz48L3N2Zz4=";
 
-export default function VisualSlot({ name, className = "" }: { name: string; className?: string }) {
+export default function VisualSlot({ name, className = "", fallback }: { name: string; className?: string; fallback?: React.ReactNode }) {
   const spec = visual(name);
   const ext = EXT.find((e) => fs.existsSync(path.join(process.cwd(), "public", "visuals", `${name}.${e}`)));
+  if (!ext && fallback) return <div className={className}>{fallback}</div>;
   const [w, h] = spec.size.split(" x ").map(Number);
   return (
     <div className={`relative w-full overflow-hidden rounded-xl ${className}`} style={{ aspectRatio: spec.ratio }}>

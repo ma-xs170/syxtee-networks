@@ -2,10 +2,8 @@
 export type VisualSpec = { name: string; label: string; ratio: string; size: string; where: string };
 
 export const VISUALS: VisualSpec[] = [
-  { name: "relay-3d", label: "Rendu 3D du relais", ratio: "4 / 3", size: "1600 x 1200", where: "Bento, grande carte « Un relais, plusieurs connexions »" },
-  { name: "app-mockup", label: "Capture du dashboard", ratio: "16 / 10", size: "2400 x 1500", where: "Bento, carte « Contrôle à distance »" },
-  { name: "pricing-free", label: "Visuel formule Gratuit", ratio: "16 / 9", size: "1200 x 675", where: "Tarifs, carte Gratuit" },
-  { name: "pricing-paid", label: "Visuel formule Payant", ratio: "16 / 9", size: "1200 x 675", where: "Tarifs, carte Payant (mise en avant)" },
-  { name: "pricing-partner", label: "Visuel formule Partenaire", ratio: "16 / 9", size: "1200 x 675", where: "Tarifs, carte Partenaire" },
+  { name: "box-photo", label: "Photo ou rendu du boîtier", ratio: "4 / 3", size: "1600 x 1200", where: "Bento, grande carte (remplace le rendu SVG)" },
+  { name: "app-mockup", label: "Capture du dashboard, page Appareils", ratio: "16 / 10", size: "2400 x 1500", where: "Section « Une app pour tout configurer » (remplace le mockup généré)" },
+  { name: "box-hero", label: "Rendu 3D du boîtier (pleine largeur)", ratio: "5 / 2", size: "2400 x 960", where: "Carte produit des tarifs (remplace le rendu SVG)" },
 ];
 export const visual = (name: string) => VISUALS.find((v) => v.name === name)!;

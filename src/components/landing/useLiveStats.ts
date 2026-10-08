@@ -78,10 +78,25 @@ function step(s: Sim, dt: number): LiveSnapshot {
   return { seconds: s.seconds, total, latency: Math.max(20, s.latency), loss: s.loss, fps, status, slate, rates: { ...s.rates }, on: { ...s.on }, history: s.history, note };
 }
 
+/** État initial fixe (aucun hasard) : identique côté serveur et côté client, pas de décalage d'hydratation. */
+const STATIC_SNAP: LiveSnapshot = {
+  seconds: 842,
+  total: 9.3,
+  latency: 46,
+  loss: 0.2,
+  fps: 60,
+  status: "stable",
+  slate: false,
+  rates: { "4g": 2.4, "5g": 3.6, esim: 1.4, sat: 1.9 },
+  on: { "4g": true, "5g": true, esim: true, sat: true },
+  history: Array(HISTORY).fill(9.3),
+  note: "Flux stable : toutes les connexions sont bondées.",
+};
+
 export function useLiveStats(visible: boolean) {
   const reduce = useReducedMotion();
   const sim = useRef<Sim>(init());
-  const [snap, setSnap] = useState<LiveSnapshot>(() => step(init(), 0));
+  const [snap, setSnap] = useState<LiveSnapshot>(STATIC_SNAP);
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {

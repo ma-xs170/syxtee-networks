@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { flag } from "@/lib/regions";
 import { PERMISSIONS, PERMISSION_KEYS, ROLE_META, ROLES, roleStyle, staffPresence, type AnyRole, type Permission, type StaffRole } from "@/lib/staff";
-import { inviteStaffAction, removeMemberAction, resendInviteAction, resetMemberPasswordAction, revokeInviteAction, updateMemberAction, type TeamState } from "./actions";
+import { inviteStaffAction, removeMemberAction, resendInviteAction, resetMemberPasswordAction, revokeInviteAction, testEmailAction, updateMemberAction, type TeamState } from "./actions";
 
 // Équipe : liste des membres (photo, nom, rôle coloré, présence, région), invitation par e-mail, modification des rôles et
 // des permissions, mot de passe. Les actions de gestion ne sont proposées qu'au propriétaire (le serveur les refuse aux autres).
@@ -375,6 +375,21 @@ function InviteLine({ inv }: { inv: InviteRow }) {
   );
 }
 
+/** Test d'envoi : un e-mail à soi-même, avec l'expéditeur utilisé et la raison exacte d'un échec. */
+function EmailTest() {
+  const [state, run, pending] = useActionState(testEmailAction, {});
+  return (
+    <form action={run} className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
+      <h2 className="text-sm font-semibold">E-mails d&apos;invitation</h2>
+      <p className="mt-1 text-xs text-muted">Un ami ne reçoit rien ? Envoie-toi un e-mail de test : tu vois l&apos;expéditeur utilisé et la raison exacte si l&apos;envoi échoue.</p>
+      <button type="submit" disabled={pending} className={`${btn} mt-3`}>
+        {pending ? "Envoi…" : "Tester l'envoi"}
+      </button>
+      <Feedback state={state} />
+    </form>
+  );
+}
+
 export default function TeamUI({ members, invites, canManage }: { members: MemberView[]; invites: InviteRow[]; canManage: boolean }) {
   useAutoRefresh();
   const [invite, setInvite] = useState(false);
@@ -426,6 +441,8 @@ export default function TeamUI({ members, invites, canManage }: { members: Membe
           ))}
         </ul>
       </section>
+
+      {canManage && <EmailTest />}
 
       {canManage && <InviteDialog open={invite} onClose={() => setInvite(false)} />}
     </div>

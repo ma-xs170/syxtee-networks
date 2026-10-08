@@ -15,6 +15,8 @@ function envDiagnostic() {
   return `environnement ${process.env.VERCEL_ENV ?? "local"}, variables vues : ${names.length ? names.map((k) => `${k} (${(process.env[k] ?? "").length} car.)`).join(", ") : "aucune"}`;
 }
 const FROM = process.env.EMAIL_FROM || "SYXTEE <onboarding@resend.dev>";
+/** Expéditeur réellement utilisé (pour le diagnostic de l'admin). */
+export const senderAddress = FROM;
 
 let client: Resend | null = null;
 

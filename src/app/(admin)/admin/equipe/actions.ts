@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { staffInvite } from "@/emails/templates";
 import { requireAdmin } from "@/lib/admin";
-import { sendEmailResult } from "@/lib/email/send";
+import { loginLink } from "@/emails/templates";
+import { sendEmailResult, senderAddress } from "@/lib/email/send";
 import { audit } from "@/lib/plan-admin";
 import { site } from "@/lib/site";
 import { cleanPermissions, isRole, ROLE_META } from "@/lib/staff";
@@ -43,6 +44,15 @@ export async function inviteStaffAction(_prev: TeamState, form: FormData): Promi
   await audit(owner.email!, "team.invite", null, null, { email: parsedEmail.data, role, permissions });
   revalidatePath("/admin/equipe");
   return mailInvite(parsedEmail.data, await inviterName(owner.id, "L'équipe SYXTEE"), role, inv.token, inv.expiresAt);
+}
+
+/** Envoie un e-mail de test à l'adresse du propriétaire et dit exactement ce que le serveur voit (expéditeur, raison d'un échec). */
+export async function testEmailAction(_prev: TeamState): Promise<TeamState> {
+  const owner = await requireAdmin("team");
+  const sent = await sendEmailResult(owner.email!, loginLink({ url: site.url }));
+  return sent.ok
+    ? { ok: `E-mail de test parti de « ${senderAddress} » vers ${owner.email}. Regarde aussi les indésirables.` }
+    : { error: `Échec depuis « ${senderAddress} » : ${sent.reason}` };
 }
 
 export async function resendInviteAction(inviteId: string, _prev: TeamState): Promise<TeamState> {

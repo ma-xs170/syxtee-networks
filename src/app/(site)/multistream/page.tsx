@@ -48,7 +48,7 @@ export default function MultistreamPage() {
       <section className="border-b border-line py-20 sm:py-24">
         <Container>
           <SectionHeader title={<>Diffuse <em>partout.</em></>} subtitle="Une adresse et une clé par plateforme, et c'est prêt. Toute autre plateforme qui accepte une adresse RTMP fonctionne aussi." />
-          <CircuitArt className="mx-auto mt-12 max-w-4xl" />
+          <CircuitArt className="mx-auto mt-12 max-w-2xl" />
         </Container>
       </section>
 

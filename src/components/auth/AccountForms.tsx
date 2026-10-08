@@ -15,7 +15,7 @@ function Pending({ idle, busy, danger = false, disabled = false }: { idle: strin
       type="submit"
       disabled={pending || disabled}
       className={`h-11 rounded-xl px-5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-        danger ? "border border-red-400/40 text-red-300 hover:bg-red-400/10" : "border border-foreground/20 bg-foreground/[0.08] text-foreground hover:bg-foreground/[0.12]"
+        danger ? "border border-bad/40 text-bad hover:bg-bad/10" : "border border-foreground/20 bg-foreground/[0.08] text-foreground hover:bg-foreground/[0.12]"
       }`}
     >
       {pending ? busy : idle}
@@ -89,7 +89,7 @@ export function PasswordForm({ email }: { email: string }) {
       <PasswordInput id="new-password" name="password" label="Nouveau mot de passe" autoComplete="new-password" value={password} onChange={setPassword} gauge />
       <div className="space-y-2">
         <PasswordInput id="new-password-confirm" name="password_confirm" label="Confirmer" autoComplete="new-password" value={confirm} onChange={setConfirm} />
-        {mismatch && <p className="text-xs text-red-400/90">Les deux mots de passe ne correspondent pas.</p>}
+        {mismatch && <p className="text-xs text-bad">Les deux mots de passe ne correspondent pas.</p>}
       </div>
       <div className="flex flex-wrap items-center gap-4">
         <Pending idle="Changer le mot de passe" busy="Enregistrement…" disabled={mismatch || !current || passwordStrength(password) === 0} />

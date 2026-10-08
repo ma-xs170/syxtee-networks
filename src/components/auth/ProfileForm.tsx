@@ -65,7 +65,7 @@ function Submit({ children }: { children: ReactNode }) {
 export function Notice({ state }: { state: FormState }) {
   if (state.error)
     return (
-      <p role="alert" className="text-sm text-red-400/90">
+      <p role="alert" className="text-sm text-bad">
         {state.error}
       </p>
     );

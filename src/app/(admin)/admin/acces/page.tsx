@@ -49,8 +49,8 @@ export default async function AdminAccessPage({ searchParams }: { searchParams: 
         </p>
       )}
       {mail === "ko" && to && (
-        <div role="alert" className="mb-6 rounded-xl border border-red-400/40 p-4 text-sm">
-          <p className="font-medium text-red-300">L&apos;email n&apos;est pas parti ({why ?? "raison inconnue"}).</p>
+        <div role="alert" className="mb-6 rounded-xl border border-bad/40 p-4 text-sm">
+          <p className="font-medium text-bad">L&apos;email n&apos;est pas parti ({why ?? "raison inconnue"}).</p>
           <p className="mt-2 text-muted">
             La demande est bien approuvée. Envoie ce lien à la personne, ou clique sur « Renvoyer l&apos;email » après avoir corrigé :{" "}
             <span className="break-all text-foreground">{`${site.url}/inscription?email=${encodeURIComponent(to)}`}</span>
@@ -74,7 +74,7 @@ export default async function AdminAccessPage({ searchParams }: { searchParams: 
       {trash && rows.length > 0 && (
         <form action={purgeAccessAction} className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted">Les demandes de la corbeille sont supprimées définitivement après {TRASH_DAYS} jours.</p>
-          <button type="submit" className="h-9 whitespace-nowrap rounded-lg border border-red-400/40 px-4 text-sm text-red-300 transition-colors hover:bg-red-400/10">
+          <button type="submit" className="h-9 whitespace-nowrap rounded-lg border border-bad/40 px-4 text-sm text-bad transition-colors hover:bg-bad/10">
             Vider la corbeille
           </button>
         </form>
@@ -105,7 +105,7 @@ export default async function AdminAccessPage({ searchParams }: { searchParams: 
                     </form>
                     <form action={purgeAccessAction}>
                       <input type="hidden" name="id" value={r.id} />
-                      <button type="submit" className="h-9 whitespace-nowrap rounded-lg border border-red-400/40 px-4 text-sm text-red-300 transition-colors hover:bg-red-400/10">
+                      <button type="submit" className="h-9 whitespace-nowrap rounded-lg border border-bad/40 px-4 text-sm text-bad transition-colors hover:bg-bad/10">
                         Supprimer pour de bon
                       </button>
                     </form>

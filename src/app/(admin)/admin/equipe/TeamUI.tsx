@@ -41,7 +41,7 @@ function Avatar({ name, url, size = 44 }: { name: string; url: string | null; si
   return url ? (
     <Image src={url} alt="" width={size} height={size} className="shrink-0 rounded-full border border-foreground/25 object-cover" style={{ width: size, height: size }} />
   ) : (
-    <span className="flex shrink-0 items-center justify-center rounded-full border border-foreground/25 bg-foreground/[0.12] font-mono text-xs uppercase" style={{ width: size, height: size }}>
+    <span className="flex shrink-0 items-center justify-center rounded-full border bg-gradient-to-br from-violet-500 to-pink-500 text-white font-mono text-xs uppercase" style={{ width: size, height: size }}>
       {name.slice(0, 2)}
     </span>
   );
@@ -159,7 +159,7 @@ function Feedback({ state }: { state: TeamState }) {
         </p>
       )}
       {state.error && (
-        <p role="alert" className="mt-3 text-sm text-red-400">
+        <p role="alert" className="mt-3 text-sm text-bad">
           {state.error}
         </p>
       )}
@@ -268,7 +268,7 @@ function PasswordButton({ userId }: { userId: string }) {
         {pending ? "Envoi…" : state.ok ? "Lien envoyé" : "Mot de passe"}
       </button>
       {state.error && (
-        <span role="alert" className="basis-full text-xs text-red-400">
+        <span role="alert" className="basis-full text-xs text-bad">
           {state.error}
         </span>
       )}
@@ -317,7 +317,7 @@ function MemberRow({ m, canManage }: { m: MemberView; canManage: boolean }) {
                 <PasswordButton userId={m.userId} />
                 {confirmRemove ? (
                   <form action={removeMemberAction.bind(null, m.userId)} className="contents">
-                    <button type="submit" className={`${btn} border-red-400/50 text-red-300`}>
+                    <button type="submit" className={`${btn} border-bad/50 text-bad`}>
                       Confirmer le retrait
                     </button>
                     <button type="button" className={btn} onClick={() => setConfirmRemove(false)}>
@@ -325,7 +325,7 @@ function MemberRow({ m, canManage }: { m: MemberView; canManage: boolean }) {
                     </button>
                   </form>
                 ) : (
-                  <button type="button" className={`${btn} text-red-300`} onClick={() => setConfirmRemove(true)}>
+                  <button type="button" className={`${btn} text-bad`} onClick={() => setConfirmRemove(true)}>
                     Retirer
                   </button>
                 )}
@@ -362,7 +362,7 @@ function InviteLine({ inv }: { inv: InviteRow }) {
         </button>
       </form>
       <form action={revokeInviteAction.bind(null, inv.id)} className="contents">
-        <button type="submit" className={`${btn} text-red-300`}>
+        <button type="submit" className={`${btn} text-bad`}>
           Annuler
         </button>
       </form>

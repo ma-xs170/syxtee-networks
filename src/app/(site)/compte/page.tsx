@@ -34,7 +34,7 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
   return (
     <>
       {error && (
-        <p role="alert" className="rounded-xl border border-red-400/30 px-4 py-3 text-sm text-red-300">
+        <p role="alert" className="rounded-xl border border-bad/30 px-4 py-3 text-sm text-bad">
           {error}
         </p>
       )}
@@ -76,7 +76,7 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
             </form>
           </li>
           <li>
-            <Link href="/compte/supprimer" className="flex min-h-14 items-center gap-4 px-4 py-3 text-[15px] font-medium text-red-300 transition-colors active:bg-foreground/10">
+            <Link href="/compte/supprimer" className="flex min-h-14 items-center gap-4 px-4 py-3 text-[15px] font-medium text-bad transition-colors active:bg-foreground/10">
               <Trash size={20} aria-hidden="true" className="shrink-0" />
               Supprimer mon compte
             </Link>
@@ -89,13 +89,13 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
           <li key={c.href}>
             <Link
               href={c.href}
-              className={`group flex h-full flex-col rounded-2xl border bg-surface p-5 transition-colors hover:bg-foreground/[0.05] sm:p-6 ${c.danger ? "border-red-400/30 hover:border-red-400/50" : "border-line hover:border-line-strong"}`}
+              className={`bento-cell group flex h-full flex-col p-5 sm:p-6 ${c.danger ? "!border-bad/30 hover:!border-bad/50" : ""}`}
             >
-              <span className={`mb-4 grid h-11 w-11 place-items-center rounded-xl border ${c.danger ? "border-red-400/30 text-red-300" : "border-line text-foreground"}`}>
+              <span className={`glass-icon mb-4 grid h-12 w-12 place-items-center rounded-[22%] ${c.danger ? "text-bad" : "text-foreground"}`}>
                 <c.Icon size={22} aria-hidden="true" />
               </span>
               <span className="flex items-center justify-between gap-3">
-                <span className={`text-base font-semibold ${c.danger ? "text-red-300" : ""}`}>{c.title}</span>
+                <span className={`text-base font-semibold ${c.danger ? "text-bad" : ""}`}>{c.title}</span>
                 <span aria-hidden="true" className="text-muted transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none">
                   →
                 </span>

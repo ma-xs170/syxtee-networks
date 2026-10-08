@@ -18,7 +18,7 @@ function Submit({ idle }: { idle: string }) {
 }
 
 function Notice({ state }: { state: PlanState }) {
-  if (state.error) return <p role="alert" className="text-sm text-red-400/90">{state.error}</p>;
+  if (state.error) return <p role="alert" className="text-sm text-bad">{state.error}</p>;
   if (state.ok) return <p role="status" className="text-sm text-muted">{state.ok}</p>;
   return null;
 }

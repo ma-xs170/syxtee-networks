@@ -128,7 +128,7 @@ function CreateForm({ loginUrl }: { loginUrl: string }) {
         </button>
       </div>
       {state.error && (
-        <p role="alert" className="mt-3 text-sm text-red-400">
+        <p role="alert" className="mt-3 text-sm text-bad">
           {state.error}
         </p>
       )}
@@ -160,7 +160,7 @@ function Row({ m, now, loginUrl }: { m: ManagedRow; now: number | null; loginUrl
             {PLANS[(m.plan as PlanId) in PLANS ? (m.plan as PlanId) : "free"].name} · {status}
             {m.email ? ` · ${m.email}` : ""}
           </p>
-          <p className={`mt-1 text-xs ${left != null && left <= 3 ? "text-amber-300" : "text-muted"}`}>
+          <p className={`mt-1 text-xs ${left != null && left <= 3 ? "text-warn" : "text-muted"}`}>
             {m.expiresAt ? `Se supprime le ${new Date(m.expiresAt).toLocaleDateString("fr-FR", { dateStyle: "long", timeZone: "Europe/Paris" })}${left != null ? ` (dans ${Math.max(0, left)} j)` : ""}` : "Sans date de fin"}
             {m.note ? ` · ${m.note}` : ""}
           </p>
@@ -177,7 +177,7 @@ function Row({ m, now, loginUrl }: { m: ManagedRow; now: number | null; loginUrl
           {confirm ? (
             <>
               <form action={runDel}>
-                <button type="submit" disabled={delPending} className={`${btn} border-red-400/50 text-red-300`}>
+                <button type="submit" disabled={delPending} className={`${btn} border-bad/50 text-bad`}>
                   Confirmer la suppression
                 </button>
               </form>
@@ -186,7 +186,7 @@ function Row({ m, now, loginUrl }: { m: ManagedRow; now: number | null; loginUrl
               </button>
             </>
           ) : (
-            <button type="button" className={`${btn} text-red-300`} onClick={() => setConfirm(true)}>
+            <button type="button" className={`${btn} text-bad`} onClick={() => setConfirm(true)}>
               Supprimer
             </button>
           )}
@@ -212,7 +212,7 @@ function Row({ m, now, loginUrl }: { m: ManagedRow; now: number | null; loginUrl
       </form>
       {[regen, life, del].map((s, i) =>
         s.error ? (
-          <p key={i} role="alert" className="mt-2 text-sm text-red-400">
+          <p key={i} role="alert" className="mt-2 text-sm text-bad">
             {s.error}
           </p>
         ) : s.ok && !s.creds ? (

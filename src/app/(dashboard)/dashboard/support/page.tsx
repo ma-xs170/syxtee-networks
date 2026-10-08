@@ -22,16 +22,16 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
 
   return (
     <DashPage>
-      <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Support</h1>
+      <h1 className="text-3xl font-medium tracking-[-0.03em] sm:text-[32px]">Support</h1>
       <p className="mt-2 max-w-[65ch] text-sm text-muted">Choisis comment nous écrire. Pour une question de la documentation, lis d&apos;abord la <Link href="/docs" className="text-foreground underline underline-offset-4">documentation</Link>.</p>
 
       <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-        <section aria-labelledby="canal-discord" className="flex flex-col rounded-2xl border border-line-strong bg-surface p-5 sm:p-6">
+        <section aria-labelledby="canal-discord" className="bento-cell flex flex-col p-5 sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <h2 id="canal-discord" className="text-lg font-semibold tracking-tight">
-              Discord
+              Communauté
             </h2>
-            <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-on-accent">Recommandé</span>
+            <span className="rounded-full bg-foreground/[0.08] px-2.5 py-0.5 text-xs font-medium text-foreground">Recommandé</span>
           </div>
           <p className="mt-3 text-sm leading-relaxed text-muted">Le plus rapide : l&apos;équipe et la communauté répondent sur le serveur. Donne ton ID support dans le ticket pour qu&apos;on retrouve ton compte.</p>
           {profile?.support_id && (
@@ -42,13 +42,13 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
           <div className="mt-auto pt-5">{profile?.support_id ? <DiscordTicketButton id={profile.support_id} /> : null}</div>
         </section>
 
-        <section aria-labelledby="canal-chat" className="flex flex-col tile p-5 sm:p-6">
+        <section aria-labelledby="canal-chat" className="bento-cell flex flex-col p-5 sm:p-6">
           <h2 id="canal-chat" className="text-lg font-semibold tracking-tight">
             Support (chat)
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-muted">Une demande écrite, suivie ici même : tu retrouves la réponse de l&apos;équipe dans la liste ci-dessous, sans passer par Discord.</p>
           <div className="mt-auto pt-5">
-            <Link href="/dashboard/support/nouveau" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full border border-line-strong px-5 text-sm font-medium transition-colors hover:bg-foreground/10">
+            <Link href="/dashboard/support/nouveau" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full border border-line-strong bg-surface-2 px-5 text-sm font-medium transition-colors hover:border-foreground/30">
               <span aria-hidden="true">+</span> Nouvelle demande
             </Link>
           </div>
@@ -57,13 +57,13 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
 
       <h2 className="mb-4 mt-12 text-sm font-semibold">Mes demandes</h2>
 
-      <nav aria-label="Filtrer les demandes" className="mb-6 flex gap-6 border-b border-line">
+      <nav aria-label="Filtrer les demandes" className="mb-6 flex w-max gap-1 rounded-full border border-line bg-surface p-1">
         {TABS.map((t) => (
           <Link
             key={t.id}
             href={t.id === "en-cours" ? "/dashboard/support" : `/dashboard/support?etat=${t.id}`}
             aria-current={t.id === tab.id ? "page" : undefined}
-            className={`-mb-px border-b-2 pb-3 text-sm transition-colors ${t.id === tab.id ? "border-accent text-foreground" : "border-transparent text-muted hover:text-foreground"}`}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${t.id === tab.id ? "bg-surface-2 text-foreground" : "text-muted hover:text-foreground"}`}
           >
             {t.label}
             {t.state === "resolved" && counts.resolved > 0 && <span className="ml-2 text-muted">{counts.resolved}</span>}
@@ -73,7 +73,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
       </nav>
 
       {tickets.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line p-10 text-center">
+        <div className="rounded-3xl border border-dashed border-line-strong p-10 text-center">
           <p className="text-sm text-muted">{tab.state === "resolved" ? "Aucune demande résolue." : "Aucune demande en cours."}</p>
           <p className="mt-2 text-sm text-muted">
             Une question ? Lis d&apos;abord la{" "}
@@ -84,7 +84,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
           </p>
         </div>
       ) : (
-        <ul className="divide-y divide-line overflow-hidden tile">
+        <ul className="divide-y divide-line overflow-hidden tile !p-0">
           {tickets.map((t) => (
             <li key={t.id}>
               <Link href={`/dashboard/support/${t.id}`} className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-foreground/[0.04]">
@@ -94,7 +94,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
                     {categoryLabel(t.category)} · {t.status === "resolved" ? "Résolu" : t.last_from === "staff" ? "Réponse de l'équipe" : "En attente de réponse"} · {fmtAgo(t.updated_at)}
                   </span>
                 </span>
-                {t.status === "open" && t.last_from === "staff" && <span className="shrink-0 rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-on-accent">Nouveau</span>}
+                {t.status === "open" && t.last_from === "staff" && <span className="shrink-0 rounded-full bg-ok/15 px-2.5 py-0.5 text-xs font-medium text-ok">Nouveau</span>}
               </Link>
             </li>
           ))}

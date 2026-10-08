@@ -17,7 +17,7 @@ export default function DeleteTicketButton({ action }: { action: () => Promise<v
     );
   }
   return (
-    <div role="alertdialog" aria-label="Confirmer la suppression" className="flex flex-wrap items-center gap-2 rounded-lg border border-red-400/50 px-3 py-1.5 text-sm">
+    <div role="alertdialog" aria-label="Confirmer la suppression" className="flex flex-wrap items-center gap-2 rounded-lg border border-bad/50 px-3 py-1.5 text-sm">
       <span>Supprimer pour toujours ?</span>
       <button type="button" disabled={pending} onClick={() => start(() => action())} className="h-8 whitespace-nowrap rounded-md bg-red-600 px-3 text-sm font-medium text-white disabled:opacity-60">
         {pending ? "Suppression…" : "Oui, supprimer"}

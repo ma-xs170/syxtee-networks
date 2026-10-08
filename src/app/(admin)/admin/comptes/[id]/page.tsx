@@ -126,7 +126,7 @@ export default async function AdminAccountPage({ params, searchParams }: { param
                   <p className="text-muted">{`${renews(p) ? "Prochain prélèvement le" : "Fin le"} ${day(p.billing_period_end)}`}</p>
                 )}
                 {renews(p) && ["partner", "beta", "admin"].includes(p.plan) && (
-                  <p role="alert" className="mt-2 text-red-300">
+                  <p role="alert" className="mt-2 text-bad">
                     Formule {plan} attribuée à la main, mais l&apos;abonnement Stripe continue : résilie-le dans Stripe pour qu&apos;il ne paie pas pour rien.
                   </p>
                 )}
@@ -240,8 +240,8 @@ export default async function AdminAccountPage({ params, searchParams }: { param
       )}
 
       {tab === "securite" && (
-        <section aria-labelledby="sensible" className="max-w-3xl rounded-2xl border border-red-400/30 p-5 sm:p-6">
-          <h2 id="sensible" className="text-sm font-semibold text-red-300">
+        <section aria-labelledby="sensible" className="max-w-3xl rounded-2xl border border-bad/30 p-5 sm:p-6">
+          <h2 id="sensible" className="text-sm font-semibold text-bad">
             Zone sensible
           </h2>
           <div className="mt-5 grid grid-cols-1 gap-8 md:grid-cols-2">

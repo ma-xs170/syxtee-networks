@@ -19,7 +19,7 @@ function Button({ children, danger = false, disabled = false }: { children: Reac
       type="submit"
       disabled={pending || disabled}
       className={`h-11 whitespace-nowrap rounded-full px-5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-        danger ? "border border-red-400/40 text-red-300 hover:bg-red-400/10" : "border border-line hover:bg-foreground/10"
+        danger ? "border border-bad/40 text-bad hover:bg-bad/10" : "border border-line hover:bg-foreground/10"
       }`}
     >
       {pending ? "…" : children}
@@ -28,7 +28,7 @@ function Button({ children, danger = false, disabled = false }: { children: Reac
 }
 
 function Notice({ state }: { state: PlanState }) {
-  if (state.error) return <p role="alert" className="text-sm text-red-400/90">{state.error}</p>;
+  if (state.error) return <p role="alert" className="text-sm text-bad">{state.error}</p>;
   if (state.ok) return <p role="status" className="text-sm text-muted">{state.ok}</p>;
   return null;
 }
@@ -136,7 +136,7 @@ const small = "h-9 whitespace-nowrap rounded-full border border-line px-4 text-s
 function OpButton({ op, children, danger = false }: { op: string; children: ReactNode; danger?: boolean }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" name="op" value={op} disabled={pending} className={`${small} ${danger ? "border-red-400/40 text-red-300 hover:bg-red-400/10" : ""}`}>
+    <button type="submit" name="op" value={op} disabled={pending} className={`${small} ${danger ? "border-bad/40 text-bad hover:bg-bad/10" : ""}`}>
       {pending ? "…" : children}
     </button>
   );

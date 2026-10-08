@@ -82,7 +82,7 @@ export default function TicketChat({
                   {a.avatarUrl ? (
                     <Image src={a.avatarUrl} alt="" width={24} height={24} className="size-6 rounded-full border border-foreground/25 object-cover" />
                   ) : (
-                    <span aria-hidden="true" className="flex size-6 items-center justify-center rounded-full border border-foreground/25 bg-foreground/[0.12] font-mono text-[9px] uppercase">
+                    <span aria-hidden="true" className="flex size-6 items-center justify-center rounded-full border bg-gradient-to-br from-violet-500 to-pink-500 text-white font-mono text-[9px] uppercase">
                       {a.name.slice(0, 2)}
                     </span>
                   )}
@@ -154,7 +154,7 @@ export default function TicketChat({
           </div>
         </div>
         {state.error && (
-          <p role="alert" className="mt-2 text-sm text-red-400/90">
+          <p role="alert" className="mt-2 text-sm text-bad">
             {state.error}
           </p>
         )}

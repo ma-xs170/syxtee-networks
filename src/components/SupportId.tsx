@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { site } from "@/lib/site";
-import { DiscordIcon } from "./ui";
 
 // ID support du compte (SYX-XXXX-XXXX) : bouton Copier, et « Ouvrir un ticket Discord » qui copie l'ID avant d'ouvrir
 // le serveur. Le support se fait uniquement sur Discord.
@@ -43,7 +42,7 @@ export function SupportId({ id, compact = false }: { id: string; compact?: boole
   );
 }
 
-/** Copie l'ID, le confirme, puis ouvre le Discord (le ticket se crée là-bas). */
+/** Copie l'ID, le confirme, puis ouvre la communauté (le ticket se crée là-bas). */
 export function DiscordTicketButton({ id, size = "md" }: { id: string; size?: "md" | "sm" }) {
   const [note, setNote] = useState<string | null>(null);
   async function open() {
@@ -56,10 +55,9 @@ export function DiscordTicketButton({ id, size = "md" }: { id: string; size?: "m
       <button
         type="button"
         onClick={open}
-        className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-accent text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover ${size === "sm" ? "h-9 px-4" : "h-11 px-5"}`}
+        className={`btn-shine relative inline-flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-accent text-sm font-medium text-on-accent transition-[background-color,transform] hover:bg-accent-hover active:scale-[0.97] ${size === "sm" ? "h-9 px-4" : "h-11 px-5"}`}
       >
-        <DiscordIcon />
-        Ouvrir un ticket Discord
+        Ouvrir un ticket dans la communauté
       </button>
       <p aria-live="polite" className="min-h-[1.25rem] text-xs text-muted">
         {note}

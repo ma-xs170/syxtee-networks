@@ -13,7 +13,7 @@ export default async function ComptesReliesPage({ searchParams }: PageProps<"/co
   return (
     <Card title="Comptes reliés" text="Relie YouTube, Twitch et Kick pour lire et écrire dans ton Multichat. Rien à saisir : ta chaîne est reprise du compte relié.">
       {error && (
-        <p role="alert" className="mb-4 rounded-xl border border-red-400/30 px-4 py-3 text-sm text-red-300">
+        <p role="alert" className="mb-4 rounded-xl border border-bad/30 px-4 py-3 text-sm text-bad">
           {error}
         </p>
       )}

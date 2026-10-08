@@ -10,7 +10,7 @@ const button = "h-11 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-
 function Feedback({ state }: { state: BotState }) {
   return (
     <>
-      {state.error && <p role="alert" className="text-sm text-red-400/90">{state.error}</p>}
+      {state.error && <p role="alert" className="text-sm text-bad">{state.error}</p>}
       {state.ok && <p role="status" className="text-sm text-muted">{state.ok}</p>}
     </>
   );

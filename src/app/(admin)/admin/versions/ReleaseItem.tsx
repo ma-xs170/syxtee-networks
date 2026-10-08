@@ -26,7 +26,7 @@ export default function ReleaseItem({ id, version, title, notes, meta, sent }: P
             <label htmlFor={`n-${id}`} className="text-xs text-muted">Notes de version</label>
             <textarea id={`n-${id}`} name="notes" defaultValue={notes} required rows={8} maxLength={3500} className={`${field} py-3`} />
           </div>
-          {state.error && <p role="alert" className="text-sm text-red-400/90">{state.error}</p>}
+          {state.error && <p role="alert" className="text-sm text-bad">{state.error}</p>}
           {state.ok && <p role="status" className="text-sm text-muted">{state.ok}</p>}
           <div className="flex items-center gap-4">
             <button type="submit" disabled={pending} className="h-10 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60">

@@ -26,7 +26,7 @@ function CodeForm({ factorId }: { factorId: string }) {
       <input id="code" name="code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]{6,7}" maxLength={7} required autoFocus className={field} />
       <Submit />
       {state.error && (
-        <p role="alert" className="text-center text-sm text-red-400/90">
+        <p role="alert" className="text-center text-sm text-bad">
           {state.error}
         </p>
       )}
@@ -55,7 +55,7 @@ export default function TwoFactor({ factorId }: { factorId: string | null }) {
           {pending ? "Création…" : "Configurer la double authentification"}
         </button>
         {enroll?.error && (
-          <p role="alert" className="text-sm text-red-400/90">
+          <p role="alert" className="text-sm text-bad">
             {enroll.error}
           </p>
         )}

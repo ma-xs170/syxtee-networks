@@ -22,7 +22,7 @@ export default function NotifForm() {
         <label htmlFor="n-to" className={label}>Destinataire</label>
         <input id="n-to" name="supportId" placeholder="ID support (vide = tous les comptes)" className={`${field} h-11`} />
       </div>
-      {state.error && <p role="alert" className="text-sm text-red-400/90">{state.error}</p>}
+      {state.error && <p role="alert" className="text-sm text-bad">{state.error}</p>}
       {state.ok && <p role="status" className="text-sm text-muted">{state.ok}</p>}
       <button type="submit" disabled={pending} className="h-11 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60">
         {pending ? "Envoi…" : "Envoyer"}

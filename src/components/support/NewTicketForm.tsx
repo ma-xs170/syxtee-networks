@@ -48,7 +48,7 @@ export default function NewTicketForm() {
       </div>
 
       {state.error && (
-        <p role="alert" className="text-sm text-red-400/90">
+        <p role="alert" className="text-sm text-bad">
           {state.error}
         </p>
       )}

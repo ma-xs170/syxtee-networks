@@ -20,30 +20,30 @@ const list: Variants = { show: { transition: { staggerChildren: 0.05 } } };
 const item: Variants = { hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } } };
 
 export const fieldCls =
-  "h-[52px] w-full rounded-xl border border-foreground/20 bg-foreground/[0.08] px-4 text-[15px] text-foreground placeholder:text-foreground/35 transition-[border-color,box-shadow] focus:border-foreground/40 focus:outline-none focus:ring-4 focus:ring-foreground/[0.06]";
+  "h-12 w-full rounded-xl border border-line bg-input px-4 text-[15px] text-foreground placeholder:text-muted/70 transition-[border-color,box-shadow] focus:border-foreground/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20";
 
 export function LogoTile() {
   return (
-    <motion.div variants={item} className="mx-auto flex h-12 w-12 items-center justify-center rounded-[14px] border border-foreground/20 bg-[#0a0a0a] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-8px_16px_rgba(0,0,0,0.6)]">
+    <motion.div variants={item} className="glass-icon mx-auto flex h-14 w-14 items-center justify-center rounded-[22%]">
       <Image src="/logo-400.png" alt="SYXTEE" width={18} height={25} priority />
     </motion.div>
   );
 }
 
-/** Mot-clé d'un titre : même surlignage rouge que les titres du site. */
+/** Mot-clé d'un titre : italique serif, comme les titres du site. */
 function Mark({ children }: { children: ReactNode }) {
-  return <span className="box-decoration-clone bg-accent px-2 text-on-accent">{children}</span>;
+  return <em className="italic">{children}</em>;
 }
 
 function Shell({ title, sub, children }: { title: ReactNode; sub?: ReactNode; children: ReactNode }) {
   return (
     <motion.div initial="hidden" animate="show" variants={list} className="w-full max-w-[420px]">
       <LogoTile />
-      <motion.h1 variants={item} className="mt-8 text-center text-3xl font-semibold tracking-tight">
+      <motion.h1 variants={item} className="h-serif mt-8 text-center text-[2.75rem]">
         {title}
       </motion.h1>
       {sub && (
-        <motion.p variants={item} className="mt-3 text-center text-sm leading-relaxed text-foreground/60">
+        <motion.p variants={item} className="mt-3 text-center text-sm leading-relaxed text-muted">
           {sub}
         </motion.p>
       )}
@@ -72,7 +72,7 @@ function Submit({ idle, busy, disabled = false }: { idle: string; busy: string; 
     <button
       type="submit"
       disabled={disabled || pending}
-      className="h-12 w-full whitespace-nowrap rounded-xl bg-accent text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-foreground/20 disabled:text-foreground/35"
+      className="btn-shine relative h-12 w-full overflow-hidden whitespace-nowrap rounded-full bg-accent text-sm font-medium text-on-accent transition-[background-color,transform] hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.97] disabled:cursor-not-allowed disabled:!bg-surface-2 disabled:text-muted disabled:border disabled:border-line"
     >
       {pending ? busy : idle}
     </button>
@@ -108,10 +108,7 @@ function OAuthButtons({ next, solo = false }: { next: string; solo?: boolean }) 
               aria-label="Google : bientôt disponible"
               className={`flex cursor-not-allowed items-center justify-center gap-2.5 rounded-xl border border-foreground/15 bg-foreground/[0.04] font-medium text-foreground/45 ${solo ? "h-12 w-full text-sm" : "h-12 text-sm"}`}
             >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-                <path d={p.icon.path} />
-              </svg>
-              <span className={solo ? "" : "hidden sm:inline"}>{p.label}</span>
+              <span>{p.label}</span>
               <span className="rounded border border-foreground/20 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em]">Bientôt</span>
             </button>
           ) : (
@@ -121,12 +118,14 @@ function OAuthButtons({ next, solo = false }: { next: string; solo?: boolean }) 
             name="provider"
             value={p.id}
             aria-label={`Continuer avec ${p.label}`}
-            className={`flex items-center justify-center gap-2.5 rounded-xl border border-foreground/20 bg-foreground/[0.08] font-medium text-foreground transition-colors hover:bg-foreground/[0.14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.99] ${solo ? "h-12 w-full text-sm" : "h-12 text-sm"}`}
+            className={`flex items-center justify-center gap-2.5 rounded-xl border border-line-strong bg-surface-2 font-medium text-foreground transition-colors hover:bg-foreground/[0.14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.99] ${solo ? "h-12 w-full text-sm" : "h-12 text-sm"}`}
           >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-              <path d={p.icon.path} />
-            </svg>
-            {solo ? `Continuer avec ${p.label}` : <span className="hidden sm:inline">{p.label}</span>}
+            {p.id === "twitch" && (
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                <path d={p.icon.path} />
+              </svg>
+            )}
+            {solo ? `Continuer avec ${p.label}` : <span>{p.label}</span>}
           </button>
           ),
         )}
@@ -137,7 +136,7 @@ function OAuthButtons({ next, solo = false }: { next: string; solo?: boolean }) 
 
 function ErrorText({ children }: { children: ReactNode }) {
   return (
-    <p role="alert" className="text-center text-sm text-red-400/90">
+    <p role="alert" className="text-center text-sm text-bad">
       {children}
     </p>
   );
@@ -216,7 +215,7 @@ function ResendButton({ at }: { at: number }) {
     <button
       type="submit"
       disabled={left > 0 || pending}
-      className="h-12 w-full rounded-xl border border-foreground/20 bg-foreground/[0.08] text-sm font-medium text-foreground transition-colors hover:bg-foreground/[0.12] disabled:cursor-not-allowed disabled:text-foreground/40 disabled:hover:bg-foreground/[0.08]"
+      className="h-12 w-full rounded-xl border border-line-strong bg-surface-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/[0.12] disabled:cursor-not-allowed disabled:text-foreground/40 disabled:hover:bg-foreground/[0.08]"
     >
       <span className="tabular-nums">{pending ? "Envoi…" : left > 0 ? `Renvoyer l'email (${left} s)` : "Renvoyer l'email"}</span>
     </button>
@@ -246,7 +245,7 @@ function CheckMail({ email, at, lead, resend, next, onBack }: { email: string; a
       <motion.p variants={item} className="mt-2 text-center text-sm text-foreground/60">
         <span className="font-medium text-foreground">{email}</span>
       </motion.p>
-      <motion.ol variants={item} className="mt-8 space-y-3 rounded-xl border border-foreground/20 bg-foreground/[0.08] p-4 text-sm text-foreground/80">
+      <motion.ol variants={item} className="mt-8 space-y-3 rounded-xl border border-line-strong bg-surface-2 p-4 text-sm text-foreground/80">
         {(resend
           ? ["Ouvre l'email « Confirme ton adresse » reçu à l'instant.", "Clique sur le bouton de confirmation.", "Tu arrives directement dans ton dashboard."]
           : ["Ouvre l'email reçu à l'instant.", "Clique sur le lien.", "Choisis ton nouveau mot de passe."]
@@ -370,13 +369,13 @@ export function SignInCard({ next = "", error, email: prefill = "" }: { next?: s
         <motion.form variants={item} action={resendAction} className="mt-3">
           <input type="hidden" name="email" value={email.trim()} />
           <input type="hidden" name="next" value={next} />
-          <button type="submit" className="h-11 w-full rounded-xl border border-foreground/20 bg-foreground/[0.08] text-sm font-medium text-foreground transition-colors hover:bg-foreground/[0.14]">
+          <button type="submit" className="h-11 w-full rounded-xl border border-line-strong bg-surface-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/[0.14]">
             Renvoyer l&apos;email de confirmation
           </button>
         </motion.form>
       )}
 
-      <motion.p variants={item} className="mt-10 rounded-xl border border-foreground/20 bg-foreground/[0.08] p-4 text-center text-xs leading-relaxed text-foreground/55">
+      <motion.p variants={item} className="mt-10 rounded-xl border border-line-strong bg-surface-2 p-4 text-center text-xs leading-relaxed text-foreground/55">
         Compte créé avec un lien par email ?{" "}
         <Link href={`/mot-de-passe-oublie${email ? `?email=${encodeURIComponent(email)}` : ""}`} className="font-medium text-foreground hover:underline">
           Définis ton mot de passe
@@ -424,7 +423,7 @@ export function SignUpCard({ next = "", error, email: prefill = "" }: { next?: s
         </>
       }
     >
-      <motion.p variants={item} className="mt-8 rounded-xl border border-foreground/20 bg-foreground/[0.08] p-4 text-center text-xs leading-relaxed text-foreground/60">
+      <motion.p variants={item} className="mt-8 rounded-xl border border-line-strong bg-surface-2 p-4 text-center text-xs leading-relaxed text-foreground/60">
         Accès réservé aux demandes approuvées : utilise l&apos;adresse de ta demande.{" "}
         <Link href="/acces" className="font-medium text-foreground hover:underline">
           Demander l&apos;accès
@@ -446,7 +445,7 @@ export function SignUpCard({ next = "", error, email: prefill = "" }: { next?: s
         <PasswordInput id="password" name="password" label="Mot de passe" autoComplete="new-password" value={password} onChange={setPassword} gauge />
         <div className="space-y-2">
           <PasswordInput id="password_confirm" name="password_confirm" label="Confirmer le mot de passe" autoComplete="new-password" value={confirm} onChange={setConfirm} />
-          {mismatch && <p className="text-xs text-red-400/90">Les deux mots de passe ne correspondent pas.</p>}
+          {mismatch && <p className="text-xs text-bad">Les deux mots de passe ne correspondent pas.</p>}
         </div>
         <label className="flex cursor-pointer items-start gap-3 text-xs leading-relaxed text-foreground/60">
           <input type="checkbox" name="cgu" required className="mt-0.5 h-4 w-4 shrink-0 accent-accent" />
@@ -524,7 +523,7 @@ export function ResetCard({ email }: { email: string }) {
         <PasswordInput id="password" name="password" label="Nouveau mot de passe" autoComplete="new-password" value={password} onChange={setPassword} gauge />
         <div className="space-y-2">
           <PasswordInput id="password_confirm" name="password_confirm" label="Confirmer" autoComplete="new-password" value={confirm} onChange={setConfirm} />
-          {mismatch && <p className="text-xs text-red-400/90">Les deux mots de passe ne correspondent pas.</p>}
+          {mismatch && <p className="text-xs text-bad">Les deux mots de passe ne correspondent pas.</p>}
         </div>
         <Submit idle="Enregistrer" busy="Enregistrement…" disabled={mismatch || passwordStrength(password) === 0} />
       </motion.form>
@@ -563,7 +562,7 @@ export function FirstLoginCard({ login, first, last }: { login: string; first: s
         <PasswordInput id="password" name="password" label="Nouveau mot de passe" autoComplete="new-password" value={password} onChange={setPassword} gauge />
         <div className="space-y-2">
           <PasswordInput id="password_confirm" name="password_confirm" label="Confirmer" autoComplete="new-password" value={confirm} onChange={setConfirm} />
-          {mismatch && <p className="text-xs text-red-400/90">Les deux mots de passe ne correspondent pas.</p>}
+          {mismatch && <p className="text-xs text-bad">Les deux mots de passe ne correspondent pas.</p>}
         </div>
         <Submit idle="Continuer" busy="Enregistrement…" disabled={mismatch || passwordStrength(password) === 0} />
       </motion.form>

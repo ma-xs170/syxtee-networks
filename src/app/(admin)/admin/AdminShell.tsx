@@ -6,7 +6,6 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { signOut } from "@/app/(auth)/actions";
 import { Bell, ChartLineUp, ClockCounterClockwise, Globe, Key, Lifebuoy, List, MapTrifold, Radio, Robot, ShieldWarning, SquaresFour, Tag, Users, UsersThree, X, type IconProps } from "@/components/icons";
-import CloudBackdrop from "@/components/home/CloudBackdrop";
 import ThemeToggle from "@/components/ThemeToggle";
 import GlidePill from "@/components/ui/GlidePill";
 import { ROLE_META, roleStyle, type AnyRole, type Permission } from "@/lib/staff";
@@ -124,7 +123,7 @@ export default function AdminShell({ support, pendingAccess, name, role, permiss
                     aria-current={on ? "page" : undefined}
                     onMouseEnter={() => setHover(it.href)}
                     onFocus={() => setHover(it.href)}
-                    className={`relative flex items-center gap-3 rounded-lg border px-3 text-sm transition-colors ${compact ? "min-h-12 py-2.5" : "py-2"} ${on ? "border-line-strong bg-foreground/10 font-semibold text-foreground" : "border-transparent text-muted hover:bg-foreground/[0.06] hover:text-foreground"}`}
+                    className={`relative flex items-center gap-3 rounded-xl border px-3 text-sm transition-colors ${compact ? "min-h-12 py-2.5" : "py-2"} ${on ? "border-line-strong bg-foreground/10 font-semibold text-foreground" : "border-transparent text-muted hover:bg-foreground/[0.06] hover:text-foreground"}`}
                   >
                     {!compact && <GlidePill show={hover === it.href && !on} id="admin-nav-pill" />}
                     {on && !compact && <span aria-hidden="true" className="absolute -left-3 top-2 h-5 w-1 rounded-r bg-accent" />}
@@ -187,7 +186,7 @@ export default function AdminShell({ support, pendingAccess, name, role, permiss
       <aside className="sticky top-0 hidden h-dvh flex-col border-r border-line bg-surface lg:flex">
         <Link href={flat[0]?.href ?? "/admin"} className="flex items-center gap-3 px-5 pb-4 pt-5" aria-label="Espace admin SYXTEE">
           <Image src="/logo-400.png" alt="" width={18} height={25} style={{ width: 18, height: "auto" }} className="ink-img" priority />
-          <span className="text-sm font-semibold tracking-[0.18em]">
+          <span className="text-[15px] font-semibold tracking-[0.04em]">
             SYXTEE<span className="font-normal text-muted"> ADMIN</span>
           </span>
         </Link>
@@ -196,15 +195,11 @@ export default function AdminShell({ support, pendingAccess, name, role, permiss
       </aside>
 
       <div className="relative min-w-0">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[40rem] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_35%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_35%,transparent_100%)]">
-          <CloudBackdrop tone="theme" />
-        </div>
-
         {/* Téléphone : barre du haut (rôle) */}
         <header className="sticky top-0 z-40 flex h-[calc(3.5rem+env(safe-area-inset-top))] items-center justify-between gap-2 border-b border-line bg-background/90 px-3 pt-[env(safe-area-inset-top)] backdrop-blur-md lg:hidden">
           <Link href={flat[0]?.href ?? "/admin"} className="flex items-center gap-3" aria-label="Espace admin SYXTEE">
             <Image src="/logo-400.png" alt="" width={20} height={28} style={{ width: 20, height: "auto" }} className="ink-img" priority />
-            <span className="text-sm font-semibold tracking-[0.18em]">
+            <span className="text-[15px] font-semibold tracking-[0.04em]">
               SYXTEE<span className="font-normal text-muted"> ADMIN</span>
             </span>
           </Link>
@@ -220,7 +215,7 @@ export default function AdminShell({ support, pendingAccess, name, role, permiss
           <button type="button" aria-label="Fermer le menu" className="absolute inset-0 bg-black/60" onClick={() => setDrawer(false)} />
           <div className="relative flex h-dvh w-[310px] max-w-[88vw] flex-col border-r border-line bg-surface pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
             <div className="flex items-center justify-between px-4 pb-3 pt-4">
-              <span className="text-sm font-semibold tracking-[0.18em]">
+              <span className="text-[15px] font-semibold tracking-[0.04em]">
                 SYXTEE<span className="font-normal text-muted"> ADMIN</span>
               </span>
               <button type="button" onClick={() => setDrawer(false)} aria-label="Fermer le menu" className="grid size-11 place-items-center rounded-lg hover:bg-foreground/10">

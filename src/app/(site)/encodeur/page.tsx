@@ -74,7 +74,7 @@ export default function EncodeurPage() {
               </div>
               <div className="mt-6 grid gap-2">
                 <ButtonLink href="/boutique#encodeur" className="w-full">{ctaLabel(product.availability)}</ButtonLink>
-                <ButtonLink href="/demo-encodeur" variant="secondary" className="w-full">Essayer la démo</ButtonLink>
+                <ButtonLink href="/encodeur#interface" variant="secondary" className="w-full">Voir l&apos;interface</ButtonLink>
               </div>
             </div>
           </div>

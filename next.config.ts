@@ -16,19 +16,11 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
     ],
   },
-  // Sous-domaine de la démo de l'Encodeur (encodeur.<domaine>) : sa racine affiche la page /demo-encodeur.
-  // Il faut ajouter le domaine encodeur.<domaine> au projet Vercel (et le CNAME chez le registrar).
-  async rewrites() {
-    return {
-      beforeFiles: [{ source: "/", has: [{ type: "host" as const, value: "encodeur\\..*" }], destination: "/demo-encodeur" }],
-      afterFiles: [],
-      fallback: [],
-    };
-  },
   async redirects() {
     return [
       { source: "/login", destination: "/connexion", permanent: true },
-      { source: "/dashboard/encodeur", destination: "/dashboard/appareils", permanent: true },
+      { source: "/dashboard/encodeur", destination: "/dashboard/encodeurs", permanent: true },
+      { source: "/dashboard/appareils", destination: "/dashboard/encodeurs", permanent: true },
       { source: "/signup", destination: "/inscription", permanent: true },
       { source: "/studio", destination: "/dashboard/controle-a-distance", permanent: true },
       { source: "/syxtee-studio", destination: "/controle-a-distance", permanent: true },

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { activateEncoderAction } from "@/app/(dashboard)/dashboard/appareils/activation";
+import { activateEncoderAction } from "@/app/(dashboard)/dashboard/encodeurs/activation";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { ToastProvider, useToast } from "../ui/Toast";

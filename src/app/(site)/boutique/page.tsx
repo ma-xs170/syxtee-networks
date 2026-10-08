@@ -55,7 +55,7 @@ export default async function BoutiquePage({ searchParams }: { searchParams: Pro
             <p className="mt-3 rounded-xl border border-line bg-surface px-4 py-3 text-sm leading-relaxed"><span className="font-medium">{product.bonusMonths} mois de l&apos;abonnement le plus élevé offerts</span> à l&apos;activation, avec un code lié à ton compte (utilisable une seule fois).</p>
             <div className="mt-6 grid gap-2 sm:max-w-sm">
               {canBuyEncoder ? <BuyButton productId="encoder">Précommander</BuyButton> : <ButtonLink href="/acces" className="w-full">Être prévenu de l&apos;ouverture</ButtonLink>}
-              <ButtonLink href="/demo-encodeur" variant="secondary" className="w-full">Essayer la démo</ButtonLink>
+              <ButtonLink href="/encodeur#interface" variant="secondary" className="w-full">Voir l&apos;interface</ButtonLink>
             </div>
           </div>
         </Container>

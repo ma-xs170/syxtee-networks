@@ -8,7 +8,7 @@ export type ActivationState = { error?: string; until?: string; months?: number 
 
 /** Active l'Encodeur sur le compte connecté avec le code fourni avec le boîtier : mois d'abonnement Extra offerts. */
 export async function activateEncoderAction(raw: string): Promise<ActivationState> {
-  const user = await requireUser("/dashboard/appareils");
+  const user = await requireUser("/dashboard/encodeurs");
   const r = await activateCode(user.id, String(raw ?? ""));
   if (!r.ok) return { error: r.error };
   revalidatePath("/dashboard", "layout");

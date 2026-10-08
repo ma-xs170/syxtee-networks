@@ -662,7 +662,15 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
   return (
     <div className="flex h-dvh w-full min-w-0 max-w-[100vw] flex-col overflow-hidden overscroll-none bg-black pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] text-[13px] text-neutral-100 [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [touch-action:manipulation]">
       <header className="flex h-11 shrink-0 items-center justify-between border-b border-[#262626] px-3.5">
-        <h1 className="text-[14px] font-medium">Contrôle à distance</h1>
+        <h1 className="flex items-center gap-2.5 text-[14px] font-medium">
+          Contrôle à distance
+          {streaming && (
+            <span role="status" className="inline-flex items-center gap-1.5 rounded border border-red-700 bg-red-700/20 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-red-300">
+              <span aria-hidden="true" className="size-1.5 animate-pulse rounded-full bg-red-500 motion-reduce:animate-none" />
+              EN DIRECT {clock(stats?.streamMs ?? 0)}
+            </span>
+          )}
+        </h1>
         {guest ? (
           <p className="truncate text-[12px] text-neutral-400" title="Tu pilotes cet OBS avec un lien d'invitation">
             Invité · {guest.label} · {guest.level === "view" ? "lecture seule" : guest.level === "scenes" ? "scènes et son" : "tous les droits"}
@@ -777,7 +785,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
       {/* Programme (et, en Mode Studio, aperçu à gauche) */}
       <div className="flex min-h-0 min-w-0 flex-1 lg:gap-0">
       <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 p-2 max-lg:landscape:flex-row">
-        <section aria-label="Programme" className="relative grid min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-md border border-[#262626] bg-black max-lg:aspect-[16/12] max-lg:h-auto max-lg:landscape:aspect-auto max-lg:landscape:h-full max-lg:landscape:w-[56%] max-lg:landscape:shrink-0 lg:h-[64%]">
+        <section aria-label="Programme" className={`relative grid min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-md border border-[#262626] bg-black ${tab === "chat" ? "max-lg:max-h-0 max-lg:overflow-hidden max-lg:border-0 max-lg:landscape:max-h-none" : tab === "scenes" || tab === "sources" || tab === "mixer" ? "max-lg:aspect-[16/12]" : "max-lg:aspect-[16/8]"} max-lg:h-auto max-lg:landscape:aspect-auto max-lg:landscape:h-full max-lg:landscape:w-[56%] max-lg:landscape:shrink-0 lg:h-[64%]`}>
           <div className="flex min-w-0 items-center justify-between gap-2 px-3 py-2">
             {programLabel}
             <div className="flex shrink-0 gap-1.5">

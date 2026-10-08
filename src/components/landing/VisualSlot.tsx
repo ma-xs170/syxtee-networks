@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import Image from "next/image";
-import GlassIcon from "../ui/GlassIcon";
+import GlassBadge from "../ui/GlassBadge";
 import { visual } from "@/lib/visuals";
 
 // Emplacement d'image : si `public/visuals/<name>.(avif|webp|png|jpg)` existe, on l'affiche avec next/image (ratio fixe, chargement différé) ;
@@ -20,13 +20,13 @@ export default function VisualSlot({ name, className = "", fallback }: { name: s
         <Image src={`/visuals/${name}.${ext}`} alt={spec.label} width={w} height={h} sizes="(min-width: 1024px) 40vw, 90vw" loading="lazy" placeholder="blur" blurDataURL={BLUR} className="h-full w-full object-cover" />
       ) : (
         <div className="flex h-full w-full flex-col items-center justify-center gap-3 border border-dashed border-line bg-[radial-gradient(ellipse_at_30%_20%,color-mix(in_srgb,var(--foreground)_10%,transparent),transparent_65%),var(--surface)]">
-          <GlassIcon size={48}>
+          <GlassBadge size={48}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="4" width="18" height="16" rx="3" />
               <circle cx="9" cy="10" r="1.5" />
               <path d="M21 16l-5-5-8 9" />
             </svg>
-          </GlassIcon>
+          </GlassBadge>
           <p className="px-4 text-center font-mono text-xs text-muted">{spec.label}<span className="block text-foreground/40">{name} · {spec.size}</span></p>
         </div>
       )}

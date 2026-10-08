@@ -11,6 +11,7 @@ import PlatformStrip from "./PlatformStrip";
 import RelayBox from "./RelayBox";
 import VisualSlot from "./VisualSlot";
 import { ctaLabel, product } from "@/config/product";
+import { deviceImage } from "@/lib/device-images";
 
 const h2 = "text-3xl font-medium tracking-[-0.03em] sm:text-4xl";
 const lead = "mt-4 max-w-[60ch] text-base leading-relaxed text-muted";
@@ -43,7 +44,7 @@ export function ObsHeroSection() {
           <ButtonLink href="#comment" variant="secondary">Voir comment ça marche</ButtonLink>
         </div>
         <div className="rise mt-12" style={rise(3)}>
-          <ObsHero />
+          <ObsHero images={{ laptop: deviceImage("laptop"), phone: deviceImage("phone"), watch: deviceImage("watch") }} />
         </div>
         <div className="mt-6"><PlatformStrip /></div>
       </Container>

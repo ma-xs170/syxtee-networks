@@ -2,11 +2,13 @@
 
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react";
 import { memo, useEffect, useRef, useState } from "react";
+import { DeviceIphone, DeviceMac, DeviceWatch } from "../devices/Devices";
 import AnimatedNumber from "./AnimatedNumber";
 import { useLiveStats } from "./useLiveStats";
 
-// Hero OBS CLOUD : un MacBook (CSS générique, sans marque) et un iPhone qui affichent la MÊME interface, synchronisés.
-// Changer de scène, couper le micro ou lancer le live sur l'un agit sur l'autre. Tout est simulé côté client.
+// Hero OBS CLOUD : ordinateur, téléphone et montre (génériques, coloris noir) affichent la MÊME session, synchronisée.
+// Changer de scène, couper le micro ou lancer le live sur l'un agit sur les deux autres. Tout est simulé côté client.
+export type HeroImages = { laptop?: string | null; phone?: string | null; watch?: string | null };
 const SCENES = [
   { id: "live", name: "Live IRL" },
   { id: "drone", name: "Drone" },
@@ -145,7 +147,35 @@ function PhoneUI({ c }: { c: Ctl }) {
   );
 }
 
-export default function ObsHero() {
+/** Montre : scène active, scène précédente / suivante, micro, bouton LIVE avec timer. Écran 184 x 224. */
+function WatchUI({ c }: { c: Ctl }) {
+  const i = SCENES.findIndex((s) => s.id === c.scene);
+  const go = (d: number) => c.setScene(SCENES[(i + d + SCENES.length) % SCENES.length].id);
+  const btn = "grid h-[34px] place-items-center rounded-[12px] border border-white/10 bg-white/[0.06] text-[15px] active:scale-95";
+  return (
+    <div className="flex h-full w-full flex-col gap-[8px] bg-black p-[12px] pt-[16px] text-white">
+      <div className="flex items-center justify-between">
+        <span className="inline-flex items-center gap-[5px] rounded-full bg-white/[0.08] px-[7px] py-[2px] text-[11px]">
+          <span className="h-[6px] w-[6px] rounded-full" style={{ background: c.live ? "var(--ok)" : "#5b5f66" }} aria-hidden="true" />
+          {c.live ? "Live" : "Hors ligne"}
+        </span>
+        <span className="font-mono text-[11px] tabular-nums text-white/60">{c.live ? clock(c.seconds) : "00:00:00"}</span>
+      </div>
+      <p className="mt-[2px] text-[10px] uppercase tracking-[0.08em] text-white/45">Scène</p>
+      <p className="-mt-[6px] truncate text-[20px] font-semibold leading-tight">{SCENES[i].name}</p>
+      <div className="grid grid-cols-3 gap-[6px]">
+        <button type="button" aria-label="Scène précédente" onClick={() => go(-1)} className={btn}>‹</button>
+        <button type="button" aria-label={c.muted ? "Réactiver le micro" : "Couper le micro"} aria-pressed={c.muted} onClick={c.toggleMute} className={`${btn} text-[11px] ${c.muted ? "text-[var(--bad)]" : ""}`}>{c.muted ? "Muet" : "Micro"}</button>
+        <button type="button" aria-label="Scène suivante" onClick={() => go(1)} className={btn}>›</button>
+      </div>
+      <button type="button" onClick={c.toggleLive} className={`mt-auto h-[36px] rounded-full text-[13px] font-semibold ${c.live ? "bg-[color-mix(in_srgb,var(--bad)_25%,transparent)] text-[var(--bad)]" : "bg-white text-black"}`}>
+        {c.live ? "Arrêter" : "LIVE"}
+      </button>
+    </div>
+  );
+}
+
+export default function ObsHero({ images }: { images?: HeroImages }) {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -186,8 +216,8 @@ export default function ObsHero() {
   const macX = useSpring(useTransform(mx, [-1, 1], [-8, 8]), { stiffness: 90, damping: 18 });
   const phoneX = useSpring(useTransform(mx, [-1, 1], [18, -18]), { stiffness: 90, damping: 18 });
   const phoneY = useSpring(useTransform(my, [-1, 1], [10, -10]), { stiffness: 90, damping: 18 });
-  const shine = useTransform(mx, [-1, 1], ["15%", "85%"]);
-  const shineBg = useTransform(shine, (g) => `radial-gradient(60% 50% at ${g} 0%, rgba(255,255,255,0.16), transparent 70%)`);
+  const watchX = useSpring(useTransform(mx, [-1, 1], [28, -28]), { stiffness: 90, damping: 18 });
+  const watchY = useSpring(useTransform(my, [-1, 1], [14, -14]), { stiffness: 90, damping: 18 });
 
   return (
     <motion.div
@@ -206,27 +236,23 @@ export default function ObsHero() {
       onPointerLeave={() => { mx.set(0); my.set(0); }}
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-[8%] top-[10%] h-3/4 rounded-full bg-[radial-gradient(ellipse_at_center,color-mix(in_srgb,var(--foreground)_12%,transparent),transparent_70%)] blur-2xl" />
-      {/* MacBook générique */}
-      <motion.div style={{ x: reduce ? 0 : macX }} className="relative w-[88%] [perspective:1600px]">
-        <div className="[transform:rotateY(-8deg)_rotateX(3deg)] [transform-style:preserve-3d]">
-          <div className="relative rounded-t-[1.6%/2.6%] border border-white/15 bg-[#050506] p-[1.1%] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)]">
-            <span aria-hidden="true" className="absolute left-1/2 top-[0.8%] z-10 h-[2.2%] w-[9%] -translate-x-1/2 rounded-b-md bg-black" />
-            <div className="relative aspect-[16/10] overflow-hidden rounded-[0.8%/1.3%] [container-type:inline-size]">
-              <MacUI c={c} />
-              {!reduce && <motion.span aria-hidden="true" className="pointer-events-none absolute inset-0 mix-blend-overlay" style={{ background: shineBg }} />}
-            </div>
-          </div>
-          <div aria-hidden="true" className="relative mx-auto h-[3.2%] min-h-3 w-[104%] -translate-x-[2%] rounded-b-[40%/100%] border border-t-0 border-white/10 bg-[linear-gradient(to_bottom,#2a2a2e,#111113)] pt-[40%] [clip-path:polygon(0_0,100%_0,98%_100%,2%_100%)]" />
-        </div>
+      {/* Ordinateur : caché sur petit écran (téléphone et montre seulement), plus lent à la souris */}
+      <motion.div style={{ x: reduce ? 0 : macX }} className="relative mx-auto hidden w-[78%] md:block">
+        <DeviceMac image={images?.laptop}>
+          <div className="h-full w-full [container-type:inline-size]"><MacUI c={c} /></div>
+        </DeviceMac>
       </motion.div>
-      {/* iPhone générique */}
-      <motion.div style={{ x: reduce ? 0 : phoneX, y: reduce ? 0 : phoneY }} className="absolute bottom-0 right-[2%] w-[24%] min-w-[110px]">
-        <div className="relative rounded-[18%/8.5%] border border-white/20 bg-[#050506] p-[3.5%] shadow-[0_30px_70px_-15px_rgba(0,0,0,0.95)]">
-          <span aria-hidden="true" className="absolute left-1/2 top-[2.2%] z-10 h-[2.6%] w-[30%] -translate-x-1/2 rounded-full bg-black" />
-          <div className="relative aspect-[9/19.5] overflow-hidden rounded-[14%/6.4%] [container-type:inline-size]">
-            <PhoneUI c={c} />
-          </div>
-        </div>
+      {/* Téléphone : devant, à droite */}
+      <motion.div style={{ x: reduce ? 0 : phoneX, y: reduce ? 0 : phoneY }} className="relative mx-auto w-[46%] max-w-[220px] md:absolute md:bottom-0 md:right-[3%] md:mx-0 md:w-[20%] md:max-w-none">
+        <DeviceIphone image={images?.phone} className="device-float">
+          <div className="h-full w-full [container-type:inline-size]"><PhoneUI c={c} /></div>
+        </DeviceIphone>
+      </motion.div>
+      {/* Montre : devant, à gauche, la plus rapide */}
+      <motion.div style={{ x: reduce ? 0 : watchX, y: reduce ? 0 : watchY }} className="absolute bottom-[4%] left-[2%] w-[26%] max-w-[150px] md:bottom-[2%] md:left-[4%] md:w-[13%] md:max-w-none">
+        <DeviceWatch image={images?.watch} className="device-float [animation-delay:-3s]">
+          <WatchUI c={c} />
+        </DeviceWatch>
       </motion.div>
     </motion.div>
   );

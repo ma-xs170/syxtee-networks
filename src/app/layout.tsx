@@ -1,14 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Figtree, JetBrains_Mono } from "next/font/google";
+import { Instrument_Serif } from "next/font/google";
+import { GeistMono } from "geist/font/mono";
+import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import { site } from "@/lib/site";
 import { THEME_SCRIPT } from "@/components/ThemeToggle";
 import PwaRegister from "@/components/pwa/PwaRegister";
+import GrainOverlay from "@/components/ui/GrainOverlay";
 
 
-// Charte noir et blanc : Figtree (textes et titres) et JetBrains Mono (libellés techniques).
-const inter = Figtree({ subsets: ["latin", "latin-ext"], variable: "--font-inter", display: "swap" });
-const jetbrains = JetBrains_Mono({ subsets: ["latin", "latin-ext"], variable: "--font-jetbrains-mono", display: "swap" });
+// Trois familles : Instrument Serif (titres), Geist Sans (interface et texte), Geist Mono (code, valeurs, petits labels).
+const serif = Instrument_Serif({ subsets: ["latin", "latin-ext"], weight: "400", style: ["normal", "italic"], variable: "--font-instrument", display: "swap" });
 
 // Icône d'onglet sans fond, assortie à l'onglet (logo noir sur barre claire, blanc sur barre sombre).
 // Écran d'accueil iPhone : apple-touch-icon opaque (iOS refuse la transparence) et mode application plein écran.
@@ -53,12 +55,13 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" suppressHydrationWarning className={`${inter.variable} ${jetbrains.variable} h-full antialiased`}>
+    <html lang="fr" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} ${serif.variable} h-full antialiased`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col">
         {children}
+        <GrainOverlay />
         <PwaRegister />
       </body>
     </html>

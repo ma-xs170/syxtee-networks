@@ -67,10 +67,10 @@ const clock = (ms: number) => {
 };
 
 // Palette de la page : noir pur, filets gris, bleu pour la scène du programme (comme OBS).
-const panel = "flex min-h-0 min-w-0 flex-col rounded-md border border-[#262626] bg-black";
-const panelTitle = "flex items-baseline gap-2 border-b border-[#262626] px-3 py-2 text-[13px] font-semibold";
-const flat = "inline-flex items-center justify-center whitespace-nowrap rounded border border-[#2e2e2e] bg-[#141414] text-[13px] text-neutral-100 hover:bg-[#1d1d1d] disabled:opacity-40";
-const field = "h-7 rounded border border-[#2e2e2e] bg-[#111] px-2 text-[13px] text-neutral-100 disabled:opacity-40";
+const panel = "flex min-h-0 min-w-0 flex-col rounded-xl border border-white/[0.08] bg-[#0b0b0d] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]";
+const panelTitle = "flex items-baseline gap-2 border-b border-white/[0.08] px-3.5 py-2.5 text-[13px] font-semibold tracking-tight";
+const flat = "inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-white/10 bg-white/[0.04] text-[13px] text-neutral-100 transition-colors hover:bg-white/[0.09] disabled:opacity-40";
+const field = "h-7 rounded-lg border border-white/10 bg-white/[0.03] px-2 text-[13px] text-neutral-100 disabled:opacity-40";
 
 /** Petit retour tactile (Android) sur les actions du direct. Silencieux ailleurs. */
 const buzz = (ms = 12) => {
@@ -505,7 +505,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                     disabled={!ready}
                     aria-pressed={studioMode ? isPreview : isProgram}
                     onClick={() => pick(sc)}
-                    className={`flex min-h-9 w-full items-center gap-2 rounded px-2 py-1.5 text-left max-lg:min-h-12 text-[13px] disabled:opacity-50 ${isProgram ? "bg-[#2f4fc4] text-white" : isPreview ? "outline outline-1 -outline-offset-1 outline-[#2f4fc4]" : "text-neutral-300 hover:bg-[#161616]"}`}
+                    className={`flex min-h-9 w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left max-lg:min-h-12 text-[13px] disabled:opacity-50 ${isProgram ? "bg-white/[0.13] text-white shadow-[inset_2px_0_0_rgba(255,255,255,0.85)]" : isPreview ? "outline outline-1 -outline-offset-1 outline-white/40" : "text-neutral-300 hover:bg-[#161616]"}`}
                   >
                     <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${isProgram ? "bg-white" : "bg-neutral-600"}`} />
                     <span className="min-w-0 flex-1 break-words leading-tight">{sc}</span>
@@ -617,7 +617,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                       setMixer((m) => m.map((x) => (x.name === i.name ? { ...x, mon } : x)));
                       void run("SetInputAudioMonitorType", { inputName: i.name, monitorType: mon });
                     }}
-                    className={`${flat} size-7 ${i.mon !== MON_OFF ? "!border-[#2f4fc4] !text-[#8fa6ff]" : ""}`}
+                    className={`${flat} size-7 ${i.mon !== MON_OFF ? "!border-white/40 !text-white" : ""}`}
                   >
                     <HeadphonesIcon off={i.mon === MON_OFF} />
                   </button>
@@ -690,7 +690,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
   );
 
   return (
-    <div className="flex h-dvh w-full min-w-0 max-w-[100vw] flex-col overflow-hidden overscroll-none bg-black pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] text-[13px] text-neutral-100 [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [touch-action:manipulation]">
+    <div className="flex h-dvh w-full min-w-0 max-w-[100vw] flex-col overflow-hidden overscroll-none bg-[#070708] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] text-[13px] text-neutral-100 [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [touch-action:manipulation]">
       <header className="flex h-11 shrink-0 items-center justify-between border-b border-[#262626] px-3.5">
         <h1 className="flex items-center gap-2.5 text-[14px] font-medium">
           Contrôle à distance
@@ -712,7 +712,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
         )}
       </header>
 
-      <div className="relative mx-2 mt-2 flex h-11 shrink-0 items-center gap-3 overflow-x-auto rounded-md border border-[#262626] bg-[#0b0b0b] px-3 [scrollbar-width:none]">
+      <div className="relative mx-2 mt-2 flex h-11 shrink-0 items-center gap-3 overflow-x-auto rounded-xl border border-white/[0.08] bg-[#0b0b0d] px-3 [scrollbar-width:none]">
         <span role="status" className="shrink-0 whitespace-nowrap font-medium" title={latency != null ? `${latency} ms` : undefined}>
           {agent.name ?? "OBS"}
           {(statusText || latency != null) && <span className="ml-2 text-[12px] font-normal text-neutral-500">{statusText ?? `${latency} ms`}</span>}
@@ -803,7 +803,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 <legend className="text-[13px] font-semibold">Sensibilité du secours</legend>
                 <div className="mt-2 grid gap-2">
                   {TRIGGERS.map((t) => (
-                    <label key={t.id} className={`cursor-pointer rounded border p-2.5 ${roles.trigger === t.id ? "border-[#2f4fc4]" : "border-[#2e2e2e] hover:border-[#444]"}`}>
+                    <label key={t.id} className={`cursor-pointer rounded border p-2.5 ${roles.trigger === t.id ? "border-white/50" : "border-[#2e2e2e] hover:border-[#444]"}`}>
                       <span className="flex items-center gap-2 font-medium">
                         <input type="radio" name="trigger" checked={roles.trigger === t.id} onChange={() => saveRoles({ trigger: t.id })} className="accent-current" />
                         {t.title}
@@ -817,13 +817,13 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
           )}
         </div>
         {chatDefaults && (
-          <button type="button" aria-pressed={chatOn} onClick={toggleChat} className={`${flat} ml-auto h-7 shrink-0 px-2.5 max-lg:hidden ${chatOn ? "!border-[#2f4fc4] !bg-[#2f4fc4] !text-white" : ""}`}>
+          <button type="button" aria-pressed={chatOn} onClick={toggleChat} className={`${flat} ml-auto h-7 shrink-0 px-2.5 max-lg:hidden ${chatOn ? "!border-white/30 !bg-white/[0.14] !text-white" : ""}`}>
             Chat
           </button>
         )}
         <label className={`${chatDefaults ? "" : "ml-auto "}flex shrink-0 items-center gap-2 max-lg:hidden`}>
           <span className="sr-only">Mode studio</span>
-          <button type="button" role="switch" aria-label="Mode studio" aria-checked={studioMode} disabled={!ready} onClick={() => void run("SetStudioModeEnabled", { studioModeEnabled: !studioMode })} className={`${flat} h-7 px-2.5 ${studioMode ? "!border-[#2f4fc4] !bg-[#2f4fc4] !text-white" : ""}`}>
+          <button type="button" role="switch" aria-label="Mode studio" aria-checked={studioMode} disabled={!ready} onClick={() => void run("SetStudioModeEnabled", { studioModeEnabled: !studioMode })} className={`${flat} h-7 px-2.5 ${studioMode ? "!border-white/30 !bg-white/[0.14] !text-white" : ""}`}>
             Mode studio
           </button>
         </label>
@@ -850,7 +850,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
       {/* Programme (et, en Mode Studio, aperçu à gauche) */}
       <div className="flex min-h-0 min-w-0 flex-1 lg:gap-0">
       <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 p-2 max-lg:landscape:flex-row">
-        <section aria-label="Programme" className={`relative grid min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-md border border-[#262626] bg-black ${tab === "chat" ? "max-lg:max-h-0 max-lg:overflow-hidden max-lg:border-0 max-lg:landscape:max-h-none" : tab === "scenes" || tab === "sources" || tab === "mixer" ? "max-lg:aspect-[16/12]" : "max-lg:aspect-[16/8]"} max-lg:h-auto max-lg:landscape:aspect-auto max-lg:landscape:h-full max-lg:landscape:w-[56%] max-lg:landscape:shrink-0 lg:h-[64%]`}>
+        <section aria-label="Programme" className={`relative grid min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-xl border border-white/[0.08] bg-[#0b0b0d] ${tab === "chat" ? "max-lg:max-h-0 max-lg:overflow-hidden max-lg:border-0 max-lg:landscape:max-h-none" : tab === "scenes" || tab === "sources" || tab === "mixer" ? "max-lg:aspect-[16/12]" : "max-lg:aspect-[16/8]"} max-lg:h-auto max-lg:landscape:aspect-auto max-lg:landscape:h-full max-lg:landscape:w-[56%] max-lg:landscape:shrink-0 lg:h-[64%]`}>
           <div className="flex min-w-0 items-center justify-between gap-2 px-3 py-2">
             {programLabel}
             <div className="flex shrink-0 gap-1.5">
@@ -958,7 +958,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 setConfirm(null);
                 void run(a === "stop" ? "StopStream" : "StartStream");
               }}
-              className={`${flat} h-9 px-4 ${confirm === "stop" ? "!border-red-700 !bg-red-700" : "!border-[#2f4fc4] !bg-[#2f4fc4]"}`}
+              className={`${flat} h-9 px-4 ${confirm === "stop" ? "!border-red-700 !bg-red-700" : "!border-white/30 !bg-white/[0.14]"}`}
             >
               {confirm === "stop" ? "Arrêter le direct" : "Partir en direct"}
             </button>
@@ -974,7 +974,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
 
 function Switch({ label, on, disabled, onClick }: { label: string; on: boolean; disabled?: boolean; onClick: () => void }) {
   return (
-    <button type="button" role="switch" aria-label={label} aria-checked={on} disabled={disabled} onClick={onClick} className={`relative h-5 w-9 shrink-0 rounded-full disabled:opacity-40 ${on ? "bg-[#2f4fc4]" : "bg-[#333]"}`}>
+    <button type="button" role="switch" aria-label={label} aria-checked={on} disabled={disabled} onClick={onClick} className={`relative h-5 w-9 shrink-0 rounded-full disabled:opacity-40 ${on ? "bg-emerald-500" : "bg-[#333]"}`}>
       <span className={`absolute left-0.5 top-0.5 size-4 rounded-full bg-white transition-transform motion-reduce:transition-none ${on ? "translate-x-4" : ""}`} />
     </button>
   );

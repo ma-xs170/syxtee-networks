@@ -3,14 +3,14 @@
 :root,
 [data-theme="dark"] {
   color-scheme: dark;
-  --background: #000000;
+  --background: #070708;
   --foreground: #fafafa;
-  --muted: #8a8f98;
+  --muted: #8f949d;
   --faint: #5b5f66;
-  --line: rgba(255, 255, 255, 0.08);
-  --line-strong: rgba(255, 255, 255, 0.16);
-  --surface: #0a0a0b;
-  --surface-2: #111113;
+  --line: rgba(255, 255, 255, 0.085);
+  --line-strong: rgba(255, 255, 255, 0.17);
+  --surface: #0d0d10;
+  --surface-2: #141418;
   --accent: #fafafa;
   --accent-hover: #e4e4e7;
   --on-accent: #0a0a0a;
@@ -608,9 +608,13 @@ html[data-stream-mode="on"] [data-sensitive] {
 /* Tuile de dashboard façon Resend : grand rayon, filet fin, léger reflet en haut. */
 @utility tile {
   border: 1px solid var(--line);
-  border-radius: 1.5rem;
-  background: linear-gradient(to bottom, color-mix(in srgb, var(--foreground) 3%, var(--surface)), var(--surface));
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--foreground) 5%, transparent);
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% -15%, color-mix(in srgb, var(--foreground) 6%, transparent), transparent 70%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--foreground) 2.5%, var(--surface)), var(--surface));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--foreground) 6%, transparent), 0 18px 40px -28px rgba(0, 0, 0, 0.6);
+  transition: border-color 0.2s;
+  &:hover { border-color: var(--line-strong); }
 }
 
 /* Images blanches (logos) : inversées en thème clair */

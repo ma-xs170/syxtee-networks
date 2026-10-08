@@ -53,7 +53,7 @@ export function PlatformLogo({ id, size = 28 }: { id: string; size?: number }) {
   );
 }
 
-const flat = "inline-flex items-center justify-center whitespace-nowrap rounded border border-[#2e2e2e] bg-[#141414] text-[13px] text-neutral-100 hover:bg-[#1d1d1d] disabled:opacity-40";
+const flat = "inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-white/10 bg-white/[0.04] text-[13px] text-neutral-100 transition-colors hover:bg-white/[0.09] disabled:opacity-40";
 const input = "h-9 w-full rounded border border-[#2e2e2e] bg-[#111] px-2.5 text-[13px] text-neutral-100 placeholder:text-neutral-600";
 
 function Broadcast({ on }: { on: boolean }) {
@@ -88,7 +88,7 @@ export default function MultistreamPanel({ state, call, ready, canControl, canEd
   const mainId = main ? detectPlatform(main.service, main.server) : "other";
   const mainName = main ? (main.service && !/^(custom|personnalis)/i.test(main.service) ? main.service : preset(mainId).label) : "";
   return (
-    <section aria-label="Multistream" className="flex min-h-0 min-w-0 flex-col rounded-md border border-[#262626] bg-black">
+    <section aria-label="Multistream" className="flex min-h-0 min-w-0 flex-col rounded-xl border border-white/[0.08] bg-[#0b0b0d]">
       <div className="flex items-center justify-between gap-2 border-b border-[#262626] px-3 py-2">
         <h2 className="text-[13px] font-semibold">Multistream</h2>
         {canEdit && (
@@ -295,7 +295,7 @@ function OutputDialog({ dialog, setDialog, call, onChange }: { dialog: { step: "
               </p>
             )}
             <div className="mt-5 flex flex-wrap items-center gap-2">
-              <button type="submit" disabled={pending} className={`${flat} h-9 px-4 !border-[#2f4fc4] !bg-[#2f4fc4] !text-white`}>
+              <button type="submit" disabled={pending} className={`${flat} h-9 px-4 !border-white/30 !bg-white/[0.14] !text-white`}>
                 {pending ? "Enregistrement…" : "Enregistrer"}
               </button>
               {!e && (

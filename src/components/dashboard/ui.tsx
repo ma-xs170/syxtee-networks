@@ -41,16 +41,16 @@ export function DashHeader({ lead, hl, sub, children, highlight = false }: { lea
   return (
     <div className="mb-6 flex flex-wrap items-end sm:mb-8 justify-between gap-4">
       <div>
-        <h1 className="text-xl font-medium tracking-[-0.03em] sm:text-3xl">
+        <h1 className="h-serif pb-1.5 text-[clamp(2rem,4.2vw,3.25rem)]">
           {lead}
           {hl && (
             <>
               {" "}
-              {highlight ? <Highlight>{hl}</Highlight> : hl}
+              {highlight ? <Highlight>{hl}</Highlight> : <em>{hl}</em>}
             </>
           )}
         </h1>
-        {sub && <p className="mt-2 max-w-[65ch] text-sm text-muted">{sub}</p>}
+        {sub && <p className="mt-3 max-w-[65ch] text-sm leading-relaxed text-muted">{sub}</p>}
       </div>
       {children}
     </div>

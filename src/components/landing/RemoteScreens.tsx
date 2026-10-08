@@ -4,14 +4,14 @@ import { useState } from "react";
 import { clock, LivePreview, SCENES, type Ctl, type SceneId } from "./ObsScreens";
 
 // Démo d'accueil : la console du Contrôle à distance reproduite à l'identique (src/components/remote/RemoteObs.tsx) :
-// mêmes classes, mêmes panneaux (Scènes, Sources, Mixer audio, Contrôles, Flux, Multistream), même palette (noir, filets #262626, bleu #2f4fc4).
+// mêmes classes, mêmes panneaux (Scènes, Sources, Mixer audio, Contrôles, Flux, Multistream), même palette (noir doux, filets blancs à 8 %, scène du programme en blanc translucide).
 // Ordinateur 1280 x 800 : la page en plein écran. Téléphone 390 x 844 : panneaux en onglets. Montre : télécommande réduite.
 // Une même session synchronisée (scène, micro, direct). Réduit par le composant Device : tailles en pixels.
 
-const panel = "flex min-h-0 min-w-0 flex-col rounded-md border border-[#262626] bg-black";
-const panelTitle = "flex items-baseline gap-2 border-b border-[#262626] px-3 py-2 text-[13px] font-semibold";
-const flat = "inline-flex items-center justify-center whitespace-nowrap rounded border border-[#2e2e2e] bg-[#141414] text-[13px] text-neutral-100";
-const field = "inline-flex h-7 items-center rounded border border-[#2e2e2e] bg-[#111] px-2 text-[13px] text-neutral-100";
+const panel = "flex min-h-0 min-w-0 flex-col rounded-xl border border-white/[0.08] bg-[#0b0b0d] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]";
+const panelTitle = "flex items-baseline gap-2 border-b border-white/[0.08] px-3.5 py-2.5 text-[13px] font-semibold tracking-tight";
+const flat = "inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-white/10 bg-white/[0.04] text-[13px] text-neutral-100";
+const field = "inline-flex h-7 items-center rounded-lg border border-white/10 bg-white/[0.03] px-2 text-[13px] text-neutral-100";
 
 const sceneLabel = (id: SceneId) => (SCENES.find((s) => s.id === id)?.name ?? "").toUpperCase();
 const SOURCES: [string, string, boolean, string][] = [
@@ -76,7 +76,7 @@ function ScenesPanel({ c, touch = 0 }: { c: Ctl; touch?: number }) {
             const on = c.scene === s.id;
             return (
               <li key={s.id}>
-                <button type="button" aria-pressed={on} onClick={() => c.setScene(s.id)} className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[13px] ${touch ? "min-h-12" : "min-h-9"} ${on ? "bg-[#2f4fc4] text-white" : "text-neutral-300 hover:bg-[#161616]"}`}>
+                <button type="button" aria-pressed={on} onClick={() => c.setScene(s.id)} className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[13px] ${touch ? "min-h-12" : "min-h-9"} ${on ? "bg-white/[0.13] text-white shadow-[inset_2px_0_0_rgba(255,255,255,0.85)]" : "text-neutral-300 hover:bg-[#161616]"}`}>
                   <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${on ? "bg-white" : "bg-neutral-600"}`} />
                   <span className="min-w-0 flex-1 leading-tight">{sceneLabel(s.id)}</span>
                   {on && c.live && <span className="shrink-0 text-[12px] opacity-80">direct</span>}
@@ -137,7 +137,7 @@ function MixerPanel({ c, fill = false }: { c: Ctl; fill?: boolean }) {
                 <span className="mt-1 text-[12px] tabular-nums text-neutral-300">{m.db.toFixed(1)}</span>
                 <div className="mt-1 flex gap-1">
                   <button type="button" aria-pressed={muted} aria-label={muted ? "Réactiver le micro" : "Couper le micro"} onClick={mic ? c.toggleMute : undefined} className={`${flat} size-7 ${muted ? "!border-red-700 !text-red-400" : ""}`}><MicIcon off={muted} /></button>
-                  <span className={`${flat} size-7 ${mic ? "!border-[#2f4fc4] !text-[#8fa6ff]" : ""}`}><HeadphonesIcon /></span>
+                  <span className={`${flat} size-7 ${mic ? "!border-white/40 !text-white" : ""}`}><HeadphonesIcon /></span>
                 </div>
               </li>
             );
@@ -196,12 +196,12 @@ function MultiPanel({ c }: { c: Ctl }) {
 /** Ordinateur : la page Contrôle à distance en plein écran (Programme au-dessus, puis cinq panneaux). */
 export function MacUI({ c }: { c: Ctl }) {
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden bg-black text-[13px] text-neutral-100">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-[#070708] text-[13px] text-neutral-100">
       <header className="flex h-11 shrink-0 items-center justify-between border-b border-[#262626] px-3.5">
         <h1 className="flex items-center gap-2.5 text-[14px] font-medium">Contrôle à distance <LiveBadge c={c} /></h1>
         <span className="inline-flex h-8 items-center gap-1.5 rounded border border-[#2e2e2e] px-3 text-[13px] text-neutral-300"><span aria-hidden="true">←</span> Retour</span>
       </header>
-      <div className="mx-2 mt-2 flex h-11 shrink-0 items-center gap-3 rounded-md border border-[#262626] bg-[#0b0b0b] px-3">
+      <div className="mx-2 mt-2 flex h-11 shrink-0 items-center gap-3 rounded-xl border border-white/[0.08] bg-[#0b0b0d] px-3">
         <span className="shrink-0 whitespace-nowrap font-medium">OBS-DJ-SYXTEE<span className="ml-2 text-[12px] font-normal text-neutral-500">38 ms</span></span>
         <span className="flex shrink-0 items-center gap-1.5 text-neutral-400">Profil <span className={`${field} w-40`}>Direct IRL</span></span>
         <span className="flex shrink-0 items-center gap-1.5 text-neutral-400">Collection <span className={`${field} w-40`}>Stream</span></span>
@@ -211,7 +211,7 @@ export function MacUI({ c }: { c: Ctl }) {
         <span className={`${flat} h-7 px-2.5`}>Mode studio</span>
       </div>
       <main className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-        <section aria-label="Programme" className="relative grid h-[64%] min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-md border border-[#262626] bg-black">
+        <section aria-label="Programme" className="relative grid h-[64%] min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-xl border border-white/[0.08] bg-[#0b0b0d]">
           <div className="flex min-w-0 items-center justify-between gap-2 px-3 py-2">
             <p className="flex min-w-0 flex-1 items-baseline gap-2 overflow-hidden whitespace-nowrap text-[13px]">
               <span className="text-neutral-500">Programme</span>
@@ -224,7 +224,7 @@ export function MacUI({ c }: { c: Ctl }) {
             </div>
           </div>
           <div className="min-h-0 px-2 pb-2">
-            <div className="mx-auto aspect-video h-full max-w-full overflow-hidden rounded-sm"><LivePreview scene={c.scene} live={c.live} seconds={c.seconds} size={16} /></div>
+            <div className="mx-auto aspect-video h-full max-w-full overflow-hidden rounded-lg"><LivePreview scene={c.scene} live={c.live} seconds={c.seconds} size={16} /></div>
           </div>
         </section>
         <div className="grid min-h-0 min-w-0 flex-1 grid-cols-[minmax(9rem,1.1fr)_minmax(10rem,1.8fr)_minmax(12rem,2.2fr)_minmax(10rem,1fr)_minmax(13rem,1.5fr)] gap-2">
@@ -256,12 +256,12 @@ export function PhoneUI({ c }: { c: Ctl }) {
         <h1 className="flex items-center gap-2 text-[14px] font-medium">Contrôle à distance</h1>
         <span className="inline-flex h-9 items-center gap-1.5 rounded border border-[#2e2e2e] px-3 text-[13px] text-neutral-300"><span aria-hidden="true">←</span> Retour</span>
       </header>
-      <div className="mx-2 mt-2 flex h-11 shrink-0 items-center gap-3 rounded-md border border-[#262626] bg-[#0b0b0b] px-3">
+      <div className="mx-2 mt-2 flex h-11 shrink-0 items-center gap-3 rounded-xl border border-white/[0.08] bg-[#0b0b0d] px-3">
         <span className="shrink-0 whitespace-nowrap font-medium">OBS-DJ-SYXTEE<span className="ml-2 text-[12px] font-normal text-neutral-500">38 ms</span></span>
         <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-emerald-400"><span aria-hidden="true" className="size-2 rounded-full bg-emerald-400" />Flux reçu</span>
       </div>
       <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-        <section aria-label="Programme" className="grid aspect-[16/12] shrink-0 grid-rows-[auto_1fr] rounded-md border border-[#262626] bg-black">
+        <section aria-label="Programme" className="grid aspect-[16/12] shrink-0 grid-rows-[auto_1fr] rounded-xl border border-white/[0.08] bg-[#0b0b0d]">
           <div className="flex min-w-0 items-center justify-between gap-2 px-3 py-2">
             <p className="flex min-w-0 flex-1 items-baseline gap-2 overflow-hidden whitespace-nowrap text-[13px]">
               <span className="truncate text-neutral-100">{sceneLabel(c.scene)}</span>
@@ -308,7 +308,7 @@ export function WatchUI({ c }: { c: Ctl }) {
       </div>
       <div className="rounded border border-[#262626] bg-[#0b0b0b] px-[8px] py-[6px]">
         <p className="text-[9px] text-neutral-500">Programme</p>
-        <p className="mt-[2px] truncate rounded bg-[#2f4fc4] px-[6px] py-[3px] text-[11px] font-medium leading-tight">{sceneLabel(c.scene)}</p>
+        <p className="mt-[2px] truncate rounded bg-white/[0.13] px-[6px] py-[3px] text-[11px] font-medium leading-tight">{sceneLabel(c.scene)}</p>
       </div>
       <div className="grid grid-cols-3 gap-[5px]">
         <button type="button" aria-label="Scène précédente" onClick={() => go(-1)} className={btn}>‹</button>

@@ -16,7 +16,7 @@ const pages = [{ href: "/moblin", label: "Moblin" }];
 export default function CreditsPage() {
   return (
     <>
-      <PageHero kicker="Crédits" title="Crédits et licences." crumb="Crédits">
+      <PageHero kicker="Crédits" title={<>Crédits et <em>licences.</em></>} crumb="Crédits">
         Les visuels tiers utilisés sur le site, leurs auteurs, leurs licences et les modifications apportées.
       </PageHero>
 

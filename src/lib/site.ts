@@ -18,8 +18,8 @@ export type NavTool = NavLink & { desc: string; icon: ToolIcon; /** Miniature ve
 export type NavMenu = { label: string; children: NavTool[]; dot?: boolean; note?: string };
 export type NavItem = NavLink | NavMenu;
 
-// Menu du site : les quatre arguments de l'accueil. « Demander l'accès » est le bouton d'action à droite (Nav.tsx), pas une entrée du menu.
-// L'encodeur et la documentation vivent dans le pied de page.
+// Menu du site : les arguments de l'accueil et la documentation. « Demander l'accès » est le bouton d'action à droite (Nav.tsx), pas une entrée du menu.
+// L'encodeur vit aussi dans le pied de page.
 export const nav: NavItem[] = [
   { label: "Contrôle à distance", href: "/controle-a-distance" },
   {
@@ -31,6 +31,7 @@ export const nav: NavItem[] = [
   },
   { label: "Boutique", href: "/boutique" },
   { label: "Tarifs", href: "/tarifs" },
+  { label: "Documentation", href: "/docs" },
 ];
 
 export const isMenu = (item: NavItem): item is NavMenu => "children" in item;

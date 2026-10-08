@@ -96,7 +96,7 @@ export default function ControlePage() {
       {/* 2. Manifeste */}
       <section className="py-28 sm:py-40">
         <Container className="max-w-4xl text-center">
-          <h2 className="h-hero">Avant, ton direct s&apos;arrêtait là où ton ordinateur s&apos;arrêtait.</h2>
+          <h2 className="h-hero">Avant, ton direct s&apos;arrêtait là où <em>ton ordinateur s&apos;arrêtait.</em></h2>
           <p className="mt-10 text-3xl font-semibold tracking-tight text-muted sm:text-5xl">
             Maintenant, <Highlight>il te suit.</Highlight>
           </p>

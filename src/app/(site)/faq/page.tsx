@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default function FaqPage() {
   return (
     <>
-      <PageHero kicker="FAQ" title="Questions fréquentes." crumb="FAQ">
+      <PageHero kicker="FAQ" title={<>Questions <em>fréquentes.</em></>} crumb="FAQ">
         Tout ce qu&apos;on nous demande sur le Discord, au même endroit. Ta question n&apos;y est pas ? Ouvre un ticket.
       </PageHero>
 

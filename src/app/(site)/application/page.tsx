@@ -23,7 +23,7 @@ export default function ApplicationPage() {
       <Container className="max-w-5xl">
         <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-[1.2fr_1fr] lg:gap-20">
           <div>
-            <h1 className="h-hero">Mets SYXTEE sur ton écran d&apos;accueil.</h1>
+            <h1 className="h-hero">Mets SYXTEE sur ton <em>écran d&apos;accueil.</em></h1>
             <p className="mt-6 max-w-[48ch] text-base leading-relaxed text-muted sm:text-lg">
               Le contrôle à distance d&apos;OBS comme une vraie app, sans rien télécharger sur un magasin d&apos;applications. Ça prend dix secondes.
             </p>

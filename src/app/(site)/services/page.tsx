@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 export default function ServicesPage() {
   return (
     <>
-      <PageHero kicker="Services" title="Tout ce qu'il faut pour sortir streamer." crumb="Services">
+      <PageHero kicker="Services" title={<>Tout ce qu&apos;il faut pour sortir <em>streamer.</em></>} crumb="Services">
         Quatre briques simples : un relais qui encaisse les coupures, ton téléphone comme encodeur, ton OBS aux commandes, et
         une vraie personne sur Discord quand ça coince.
       </PageHero>

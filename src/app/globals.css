@@ -526,10 +526,13 @@ html[data-stream-mode="on"] [data-sensitive] {
   color: var(--muted);
 }
 @utility h-hero {
-  font-size: clamp(2.5rem, 7vw, 4.5rem);
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(2.75rem, 7vw, 4.75rem);
   line-height: 1.02;
-  font-weight: 500;
-  letter-spacing: -0.035em;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  & em { font-style: italic; }
 }
 @utility h-section {
   font-size: clamp(1.875rem, 4.5vw, 3rem);

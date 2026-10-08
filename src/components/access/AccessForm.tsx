@@ -25,7 +25,7 @@ export default function AccessForm() {
 
   if (state.ok) {
     return (
-      <div role="status" className="rounded-2xl border border-line bg-surface p-8 text-center">
+      <div role="status" className="tile p-8 text-center">
         <p className="text-xl font-semibold tracking-tight">Demande envoyée.</p>
         <p className="mx-auto mt-3 max-w-[46ch] text-sm leading-relaxed text-muted">
           On étudie chaque demande à la main. Si elle est acceptée, tu reçois un email de SYXTEE NETWORKS avec un bouton pour créer ton compte : ton accès partenaire s&apos;active tout seul.

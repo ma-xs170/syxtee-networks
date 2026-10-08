@@ -42,7 +42,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
           <div className="mt-auto pt-5">{profile?.support_id ? <DiscordTicketButton id={profile.support_id} /> : null}</div>
         </section>
 
-        <section aria-labelledby="canal-chat" className="flex flex-col rounded-2xl border border-line bg-surface p-5 sm:p-6">
+        <section aria-labelledby="canal-chat" className="flex flex-col tile p-5 sm:p-6">
           <h2 id="canal-chat" className="text-lg font-semibold tracking-tight">
             Support (chat)
           </h2>
@@ -84,7 +84,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
           </p>
         </div>
       ) : (
-        <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
+        <ul className="divide-y divide-line overflow-hidden tile">
           {tickets.map((t) => (
             <li key={t.id}>
               <Link href={`/dashboard/support/${t.id}`} className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-foreground/[0.04]">

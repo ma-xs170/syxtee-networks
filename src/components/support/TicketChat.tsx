@@ -122,7 +122,7 @@ export default function TicketChat({
       <div ref={end} />
 
       <form ref={form} action={run} className="mt-8">
-        <div className="rounded-2xl border border-line bg-surface p-3 focus-within:border-line-strong">
+        <div className="tile p-3 focus-within:border-line-strong">
           <label htmlFor="reply" className="sr-only">
             Ton message
           </label>

@@ -41,7 +41,7 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
       {/* Téléphone : une liste groupée, grandes lignes tactiles (la grille de cartes est pour tablette et ordinateur). */}
       <div className="grid gap-6 sm:hidden">
         <InstallCard />
-        <ul className="overflow-hidden rounded-2xl border border-line bg-surface">
+        <ul className="overflow-hidden tile">
           {cards
             .filter((c) => !c.danger)
             .map((c) => (
@@ -66,7 +66,7 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
             <ThemeRow className="flex min-h-14 w-full items-center gap-4 border-t border-line px-4 py-3 text-left text-[15px] font-medium transition-colors active:bg-foreground/10" />
           </li>
         </ul>
-        <ul className="overflow-hidden rounded-2xl border border-line bg-surface">
+        <ul className="overflow-hidden tile">
           <li className="border-b border-line">
             <form action={signOut}>
               <button type="submit" className="flex min-h-14 w-full items-center gap-4 px-4 py-3 text-left text-[15px] font-medium transition-colors active:bg-foreground/10">

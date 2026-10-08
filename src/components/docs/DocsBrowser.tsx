@@ -67,7 +67,7 @@ export default function DocsBrowser({ sections, backdrop, title }: { sections: S
                     <li key={g.href}>
                       <Link
                         href={g.href}
-                        className="group flex h-full items-center gap-5 rounded-2xl border border-line bg-surface p-5 transition-colors hover:border-line-strong hover:bg-surface-2 sm:p-6"
+                        className="group flex h-full items-center gap-5 tile p-5 transition-colors hover:border-line-strong hover:bg-surface-2 sm:p-6"
                       >
                         <span className="h-16 w-16 shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.06] sm:h-20 sm:w-20">
                           <ToolArt icon={g.icon} />

@@ -81,7 +81,7 @@ function Credentials({ login, password, loginUrl }: { login: string; password: s
 function CreateForm({ loginUrl }: { loginUrl: string }) {
   const [state, run, pending] = useActionState<ManagedState, FormData>(createManagedAction, {});
   return (
-    <form action={run} className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
+    <form action={run} className="tile p-5 sm:p-6">
       <h2 className="text-lg font-semibold tracking-tight">Créer un compte</h2>
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="grid gap-1.5 text-xs text-muted">
@@ -150,7 +150,7 @@ function Row({ m, now, loginUrl }: { m: ManagedRow; now: number | null; loginUrl
   const left = m.expiresAt && now != null ? Math.ceil((Date.parse(m.expiresAt) - now) / 86_400_000) : null;
   const status = m.mustChange ? "Première connexion en attente" : m.emailRequired ? "Adresse e-mail à renseigner" : "Actif";
   return (
-    <li className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
+    <li className="tile p-4 sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-base font-semibold">

@@ -26,7 +26,7 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
 
   return (
     <main className="mx-auto grid min-h-dvh max-w-md place-items-center px-4 py-16">
-      <div className="w-full rounded-2xl border border-line bg-surface p-7 text-center">
+      <div className="w-full tile p-7 text-center">
         {!valid ? (
           <>
             <h1 className="text-xl font-semibold tracking-tight">Invitation introuvable</h1>

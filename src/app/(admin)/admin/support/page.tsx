@@ -48,7 +48,7 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
       {rows.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-line p-10 text-center text-sm text-muted">Rien dans cette liste.</p>
       ) : (
-        <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
+        <ul className="divide-y divide-line overflow-hidden tile">
           {rows.map((t) => (
             <li key={t.id}>
               <Link href={`/admin/support/${t.id}`} className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-foreground/[0.04]">

@@ -46,7 +46,7 @@ export default function WorkspaceSettings({ id, name, role }: { id: string; name
   };
 
   return (
-    <section id="ws-settings" aria-labelledby="ws-settings-title" className="mt-10 scroll-mt-24 rounded-2xl border border-line bg-surface p-5 sm:p-6">
+    <section id="ws-settings" aria-labelledby="ws-settings-title" className="mt-10 scroll-mt-24 tile p-5 sm:p-6">
       <h2 id="ws-settings-title" className="text-base font-semibold tracking-tight">
         Réglages de l&apos;espace
       </h2>

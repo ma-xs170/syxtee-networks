@@ -20,13 +20,13 @@ export default function InstallGuide() {
 
   if (ready && standalone)
     return (
-      <p role="status" className="rounded-2xl border border-line bg-surface p-5 text-sm">
+      <p role="status" className="tile p-5 text-sm">
         SYXTEE est déjà sur ton écran d&apos;accueil. Tu peux fermer cette page.
       </p>
     );
 
   return (
-    <div className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
+    <div className="tile p-5 sm:p-6">
       {canPrompt && (
         <div className="mb-6 border-b border-line pb-6">
           <button type="button" onClick={() => void install()} className="btn btn-primary">

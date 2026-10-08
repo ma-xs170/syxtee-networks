@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Statistiques", robots: { index: fals
 
 function Figure({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
+    <div className="tile p-4 sm:p-5">
       <p className="text-xs text-muted">{label}</p>
       <p className="mt-1.5 font-mono text-2xl tabular-nums tracking-tight">{value}</p>
       {sub && <p className="mt-1 font-mono text-xs text-muted">{sub}</p>}

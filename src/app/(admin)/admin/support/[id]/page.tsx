@@ -71,7 +71,7 @@ export default async function AdminTicketPage({ params }: { params: Promise<{ id
           action={staffReplyAction.bind(null, ticket.id)}
           hint="Le client est prévenu par une notification."
         />
-        <aside className="h-fit space-y-5 rounded-2xl border border-line bg-surface p-5 text-sm lg:sticky lg:top-6">
+        <aside className="h-fit space-y-5 tile p-5 text-sm lg:sticky lg:top-6">
           <div>
             <p className="text-xs text-muted">Client</p>
             <p className="mt-1 font-medium">{client}</p>

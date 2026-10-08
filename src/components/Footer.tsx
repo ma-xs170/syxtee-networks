@@ -39,7 +39,10 @@ const columns: { title: string; links: NavLink[] }[] = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-line">
+    <footer className="overflow-hidden border-t border-line">
+      <div aria-hidden="true" className="mx-auto max-w-6xl px-4 pt-10 sm:px-6">
+        <p className="ghost-word h-[0.62em] overflow-hidden text-[clamp(3rem,14.5vw,10.5rem)]">SYXTEE</p>
+      </div>
       <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-4 py-14 sm:px-6 md:grid-cols-4">
         <div className="col-span-2 md:col-span-1">
           <div className="flex items-center gap-3">
@@ -47,6 +50,9 @@ export default function Footer() {
             <span className="text-sm font-semibold">SYXTEE NETWORKS</span>
           </div>
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-muted">Le direct en mobilité, simple et fiable.</p>
+          <a href={site.discord} target="_blank" rel="noopener noreferrer" aria-label="Discord" className="mt-5 flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition-colors hover:text-foreground">
+            <DiscordIcon />
+          </a>
         </div>
 
         {columns.map((col) => (

@@ -15,9 +15,9 @@ export default function DashLoading() {
         <div className="h-7 w-48 rounded-lg bg-foreground/10" />
         <div className="mt-3 h-4 w-72 max-w-full rounded bg-foreground/10" />
         <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <div className="h-56 rounded-2xl border border-line bg-surface lg:col-span-2" />
-          <div className="h-56 rounded-2xl border border-line bg-surface" />
-          <div className="h-40 rounded-2xl border border-line bg-surface lg:col-span-3" />
+          <div className="h-56 tile lg:col-span-2" />
+          <div className="h-56 tile" />
+          <div className="h-40 tile lg:col-span-3" />
         </div>
       </div>
     </DashPage>

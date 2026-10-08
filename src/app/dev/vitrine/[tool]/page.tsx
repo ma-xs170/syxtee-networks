@@ -216,7 +216,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
               <h1 className="mb-8 text-2xl font-semibold tracking-tight sm:text-3xl">Demandes d&apos;accès</h1>
               <ul className="space-y-4">
                 {["Inès Marlot", "Kairo Duval"].map((n) => (
-                  <li key={n} className="rounded-2xl border border-line bg-surface p-6">
+                  <li key={n} className="tile p-6">
                     <p className="text-lg font-semibold">{n}</p>
                     <p className="mt-1 text-sm text-muted">demo@exemple.net · il y a 12 min</p>
                   </li>

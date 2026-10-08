@@ -143,7 +143,7 @@ export default function StreamHealth({ coreUrl, relayId, demo }: { coreUrl: stri
   const peerMax = Math.max(1, ...peers.map((p) => p.bitrate));
 
   return (
-    <section className="rounded-2xl border border-line bg-surface p-5 sm:p-6" aria-labelledby="sante">
+    <section className="tile p-5 sm:p-6" aria-labelledby="sante">
       <div className="flex items-center justify-between gap-4">
         <h2 id="sante" className="text-sm font-semibold">
           Santé du flux

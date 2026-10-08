@@ -88,7 +88,7 @@ export default function PluginDownload({ coreUrl, latest: initial, demo }: { cor
       </ul>
 
       {(os === "macos" || os === null) && (
-        <details className="rounded-2xl border border-line bg-surface p-5 [&_summary]:cursor-pointer">
+        <details className="tile p-5 [&_summary]:cursor-pointer">
           <summary className="text-sm font-medium">Le Mac bloque l&apos;installation ?</summary>
           <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm text-muted">
             <li>Fais un clic droit sur le fichier téléchargé, puis Ouvrir, puis Ouvrir quand même.</li>

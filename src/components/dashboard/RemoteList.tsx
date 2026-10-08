@@ -17,7 +17,7 @@ const pilotOff = "inline-flex h-10 cursor-not-allowed items-center justify-cente
 function PluginBar({ coreUrl, latest }: { coreUrl: string; latest: PluginLatest | null }) {
   const mac = latest?.macos;
   return (
-    <section aria-label="Plugin OBS pour macOS" className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5 sm:flex-row sm:items-center sm:justify-between">
+    <section aria-label="Plugin OBS pour macOS" className="flex flex-col gap-4 tile p-5 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-4">
         <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-line">
           <AppleLogo size={24} aria-hidden="true" />
@@ -50,7 +50,7 @@ function PluginBar({ coreUrl, latest }: { coreUrl: string; latest: PluginLatest 
 
 function Card({ d, now, pushing, outdated }: { d: LinkDevice; now: number; pushing: string[]; outdated: boolean }) {
   return (
-    <li className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5 sm:flex-row sm:items-center sm:justify-between">
+    <li className="flex flex-col gap-4 tile p-5 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
         <p className={`flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] ${d.online ? "text-foreground" : "text-muted"}`}>
           <span aria-hidden="true" className={`size-2 rounded-full ${d.online ? "bg-foreground" : "border border-muted"}`} />

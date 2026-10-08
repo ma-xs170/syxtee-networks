@@ -312,7 +312,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
   };
 
   return (
-    <section aria-label="Multichat" className={`flex flex-col overflow-hidden rounded-2xl border border-line bg-surface ${height}`}>
+    <section aria-label="Multichat" className={`flex flex-col overflow-hidden tile ${height}`}>
       <header className={`flex items-center border-b border-line p-2.5 ${compact ? "gap-1.5" : "flex-wrap gap-2"}`}>
         <button
           type="button"

@@ -72,7 +72,7 @@ function StatusLine({ data, onLaunch }: { data: OverviewData; onLaunch: () => vo
 
 function Alerts({ alerts }: { alerts: OverviewData["alerts"] }) {
   return (
-    <section aria-labelledby="attention" className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
+    <section aria-labelledby="attention" className="tile p-4 sm:p-5">
       <h2 id="attention" className="flex items-center gap-2 text-sm font-semibold">
         Ce qui demande ton attention
         {alerts.length > 0 && <span className="rounded-full border border-line px-2 py-0.5 font-mono text-xs font-normal tabular-nums text-muted">{alerts.length}</span>}
@@ -108,7 +108,7 @@ function Delta({ current, previous }: { current: number; previous: number }) {
 
 function Kpi({ label, value, unit, children }: { label: string; value: string; unit?: string; children: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-line bg-surface p-4 sm:p-5">
+    <div className="tile p-4 sm:p-5">
       <p className="text-xs text-muted">{label}</p>
       <p className="mt-2 font-mono text-3xl tabular-nums tracking-tight text-foreground">
         {value}

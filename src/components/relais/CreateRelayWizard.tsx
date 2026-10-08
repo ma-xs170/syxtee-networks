@@ -334,7 +334,7 @@ export default function CreateRelayWizard({
                   ["Appareil", name.trim()],
                   ["Serveur", srv ? `${flag(srv.cc)} ${srv.city} (${srv.id})` : server],
                 ].map(([k, v]) => (
-                  <div key={k} className="rounded-2xl border border-line bg-surface p-5">
+                  <div key={k} className="tile p-5">
                     <dt className="text-xs text-muted">{k}</dt>
                     <dd className="mt-2 break-words text-base">{v}</dd>
                   </div>

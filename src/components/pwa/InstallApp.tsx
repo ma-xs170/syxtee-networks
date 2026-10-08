@@ -65,7 +65,7 @@ export default function InstallCard({ className = "" }: { className?: string }) 
   if (!ready || standalone || dismissed || !(touch || canPrompt)) return null;
 
   return (
-    <aside aria-label="Installer l'application" className={`relative rounded-2xl border border-line bg-surface p-4 sm:p-5 ${className}`}>
+    <aside aria-label="Installer l'application" className={`relative tile p-4 sm:p-5 ${className}`}>
       <button type="button" onClick={dismiss} aria-label="Masquer pour le moment" className="absolute right-2 top-2 grid size-9 place-items-center rounded-lg text-muted hover:bg-foreground/10 hover:text-foreground">
         <X size={16} aria-hidden="true" />
       </button>

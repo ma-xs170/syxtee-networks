@@ -31,7 +31,7 @@ export default async function InvitationPage({ params, searchParams }: { params:
               {inv.inviter ?? "L'équipe"} t&apos;invite avec l&apos;adresse <strong data-sensitive className="text-foreground">{inv.email}</strong>.
             </p>
 
-            <div className="mt-8 rounded-2xl border border-line bg-surface p-5 sm:p-6">
+            <div className="mt-8 tile p-5 sm:p-6">
               <span style={roleStyle(inv.role)} className="inline-flex rounded-md border px-2.5 py-1 font-mono text-xs font-semibold uppercase tracking-[0.1em]">
                 {ROLE_META[inv.role].label}
               </span>

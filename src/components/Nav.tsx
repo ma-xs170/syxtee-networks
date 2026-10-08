@@ -59,12 +59,12 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
   }, [dash]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-background/75 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-line bg-background/70 backdrop-blur-xl">
       {/* 3 zones : logo à gauche, menus centrés, compte + Discord à droite */}
       <div className={`mx-auto flex h-16 items-center justify-between gap-6 px-4 sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] ${dash ? "max-w-[1400px]" : "max-w-6xl"}`}>
         <Link href={dash ? "/dashboard" : "/"} onClick={() => setOpen(false)} className="flex shrink-0 items-center gap-3 justify-self-start" aria-label={dash ? "Dashboard SYXTEE" : "SYXTEE NETWORKS, accueil"}>
           <Image src="/logo-400.png" alt="" width={20} height={28} priority style={{ width: 20, height: "auto" }} className="ink-img" />
-          <span className="whitespace-nowrap text-sm font-semibold tracking-[0.18em]">
+          <span className="whitespace-nowrap text-[15px] font-semibold tracking-[0.04em]">
             SYXTEE<span className="hidden font-normal text-muted xl:inline"> {dash ? "DASHBOARD" : "NETWORKS"}</span>
           </span>
         </Link>
@@ -80,7 +80,7 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
         ) : (
           <div className="hidden shrink-0 items-center gap-6 justify-self-end lg:flex">
             {account ? (
-              <Link href="/dashboard" className="inline-flex h-9 items-center rounded-lg bg-foreground px-4 text-sm font-semibold text-background transition-colors hover:bg-foreground/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
+              <Link href="/dashboard" className="inline-flex h-9 items-center rounded-full border border-line-strong bg-surface-2 px-4 text-sm font-medium text-foreground shadow-[inset_0_1px_0_color-mix(in_srgb,var(--foreground)_8%,transparent)] transition-colors hover:bg-fill-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
                 Espace client
               </Link>
             ) : (
@@ -88,7 +88,7 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
                 <Link href="/connexion" className="whitespace-nowrap text-sm text-muted transition-colors hover:text-foreground">
                   Se connecter
                 </Link>
-                <Link href="/acces" className="inline-flex h-9 items-center whitespace-nowrap rounded-lg bg-foreground px-4 text-sm font-semibold text-background transition-colors hover:bg-foreground/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
+                <Link href="/acces" className="inline-flex h-9 items-center whitespace-nowrap rounded-full border border-line-strong bg-surface-2 px-4 text-sm font-medium text-foreground shadow-[inset_0_1px_0_color-mix(in_srgb,var(--foreground)_8%,transparent)] transition-colors hover:bg-fill-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
                   Demander l&apos;accès
                 </Link>
               </>

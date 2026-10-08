@@ -90,13 +90,13 @@ function NavLink({ item, active, locked, soon, onNavigate, hovered, onHover }: {
         <span className="ml-auto shrink-0 rounded border border-line px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em]">À venir</span>
       </div>
     );
-  const cls = `group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium tracking-[0.01em] transition-colors lg:py-1.5 ${
-    active ? "bg-foreground/10 text-foreground" : "text-muted hover:text-foreground"
+  const cls = `group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors lg:py-2 ${
+    active ? "bg-foreground/[0.07] text-foreground" : "text-muted hover:text-foreground"
   }`;
   const inner = (
     <>
       <GlidePill show={!!hovered && !active} id="dash-nav-pill" />
-      {active && <span aria-hidden="true" className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-accent" />}
+      
       {item.wordmark ? (
         <span className="relative z-10 min-w-0" aria-label={item.label}>
           <Wordmark name={item.wordmark} size="sm" className="gap-2" />

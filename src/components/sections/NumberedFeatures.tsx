@@ -67,7 +67,7 @@ export default function NumberedFeatures() {
             <p aria-hidden="true" className={num}>
               03
             </p>
-            <h2 id="f-03" className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">
+            <h2 id="f-03" className="mt-6 text-3xl font-medium tracking-[-0.03em] sm:text-4xl">
               Relais : une connexion qui ne lâche pas.
             </h2>
             <p className="mx-auto mt-5 max-w-[56ch] text-base leading-relaxed text-muted sm:text-lg">
@@ -97,7 +97,7 @@ export default function NumberedFeatures() {
             <p aria-hidden="true" className={num}>
               04
             </p>
-            <h2 id="f-04" className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">
+            <h2 id="f-04" className="mt-6 text-3xl font-medium tracking-[-0.03em] sm:text-4xl">
               Espaces partagés, pour les régies.
             </h2>
             <p className="mx-auto mt-5 max-w-[56ch] text-base leading-relaxed text-muted sm:text-lg">
@@ -119,7 +119,7 @@ export default function NumberedFeatures() {
             <p aria-hidden="true" className="font-mono text-6xl font-semibold text-foreground/15 sm:text-7xl">
               05
             </p>
-            <h2 id="f-05" className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">
+            <h2 id="f-05" className="mt-6 text-3xl font-medium tracking-[-0.03em] sm:text-4xl">
               Des tarifs accessibles à tous.
             </h2>
             <p className="mt-5 max-w-[48ch] text-base leading-relaxed text-muted sm:text-lg">
@@ -134,7 +134,7 @@ export default function NumberedFeatures() {
               </Link>
             </div>
           </div>
-          <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line">
+          <ul className="divide-y divide-line overflow-hidden rounded-3xl border border-line">
             {[
               { name: "Basique", price: "4,99", text: "1 flux, le contrôle à distance d'OBS", highlight: false },
               { name: "Premium", price: "9,99", text: "10 flux, 3 directs, 1 espace partagé", highlight: true },

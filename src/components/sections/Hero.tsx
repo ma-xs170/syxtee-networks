@@ -9,7 +9,7 @@ import { SHOTS } from "../device/shots";
 // Le reste de la page suit le thème choisi.
 
 const btn =
-  "inline-flex h-12 max-sm:w-full items-center justify-center gap-3 whitespace-nowrap rounded-xl px-7 text-base font-medium transition-[background-color,transform] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
+  "inline-flex h-12 max-sm:w-full items-center justify-center gap-3 whitespace-nowrap rounded-full px-7 text-base font-medium transition-[background-color,transform] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 
 export default function Hero() {
   return (

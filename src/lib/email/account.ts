@@ -28,7 +28,7 @@ function place(h: Headers) {
 
 /** Après une connexion par mot de passe : alerte si l'appareil est nouveau (jamais pour le premier appareil). */
 export async function checkNewDevice(user: User) {
-  if (!hasAdmin || !user.email) return;
+  if (!hasAdmin || !user.email || user.email.endsWith("@comptes.syxtee-networks.fr")) return;
   const jar = await cookies();
   let device = jar.get(DEVICE_COOKIE)?.value;
   if (!device || !/^[0-9a-f-]{36}$/.test(device)) {

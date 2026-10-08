@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
+import { managedOf } from "@/lib/managed";
 import { hasSupabase } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
@@ -65,6 +66,12 @@ export const getProfile = cache(async (): Promise<Profile | null> => {
 export async function requireUser(next: string) {
   const user = await getUser();
   if (!user) redirect(`/connexion?next=${encodeURIComponent(next)}`);
+  // Compte créé par l'équipe : expiré, ou première connexion pas finie.
+  const managed = await managedOf(user.id);
+  if (managed) {
+    if (managed.expires_at && Date.parse(managed.expires_at) <= Date.now()) redirect("/connexion?erreur=compte-expire");
+    if (managed.must_change_password || managed.email_required) redirect("/premiere-connexion");
+  }
   return user;
 }
 

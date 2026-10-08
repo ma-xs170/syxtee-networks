@@ -41,6 +41,7 @@ function groups(support: SupportBadges, pending: number): Group[] {
         },
         { icon: Key, label: "Demandes d'accès", href: "/admin/acces", need: "access", badge: pending },
         { icon: Users, label: "Comptes", href: "/admin/comptes", need: "accounts" },
+        { icon: UsersThree, label: "Comptes gérés", href: "/admin/comptes-geres", need: "accounts" },
         { icon: UsersThree, label: "Partenaires", href: "/admin/partenaires", need: "partners" },
       ],
     },

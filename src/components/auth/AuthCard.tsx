@@ -6,7 +6,7 @@ import { useActionState, useEffect, useId, useState, type ReactNode } from "reac
 import { useFormStatus } from "react-dom";
 import { motion, type Variants } from "motion/react";
 import { siDiscord, siGoogle, siTwitch } from "simple-icons";
-import { requestPasswordReset, signInWithProvider, resendVerification, resetPassword, signIn, signUp, type AuthState } from "@/app/(auth)/actions";
+import { completeFirstLogin, requestPasswordReset, signInWithProvider, resendVerification, resetPassword, signIn, signUp, type AuthState } from "@/app/(auth)/actions";
 import { PASSWORD_MIN, passwordStrength, STRENGTH_LABEL } from "@/lib/auth/password";
 
 // Cartes d'authentification (email + mot de passe) : connexion, inscription, mot de passe oublié, nouveau mot de passe.
@@ -338,8 +338,8 @@ export function SignInCard({ next = "", error, email: prefill = "" }: { next?: s
     >
       <motion.form variants={item} action={action} className="mt-10 space-y-5">
         <input type="hidden" name="next" value={next} />
-        <Field id="email" label="Email">
-          <input id="email" name="email" type="email" inputMode="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="toi@exemple.com" className={fieldCls} />
+        <Field id="email" label="Email ou identifiant">
+          <input id="email" name="email" type="text" inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="toi@exemple.com" className={fieldCls} />
         </Field>
         <PasswordInput
           id="password"
@@ -527,6 +527,45 @@ export function ResetCard({ email }: { email: string }) {
           {mismatch && <p className="text-xs text-red-400/90">Les deux mots de passe ne correspondent pas.</p>}
         </div>
         <Submit idle="Enregistrer" busy="Enregistrement…" disabled={mismatch || passwordStrength(password) === 0} />
+      </motion.form>
+      {state.status === "error" && (
+        <motion.div variants={item} className="mt-4">
+          <ErrorText>{state.message}</ErrorText>
+        </motion.div>
+      )}
+    </Shell>
+  );
+}
+
+// ─────────────────────────── Première connexion (compte créé par l'équipe) ───────────────────────────
+
+export function FirstLoginCard({ login, first, last }: { login: string; first: string; last: string }) {
+  const [state, action] = useActionState<AuthState, FormData>(completeFirstLogin, IDLE);
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const mismatch = confirm.length > 0 && confirm !== password;
+  const fields = state.status === "error" ? state.fields : undefined;
+  return (
+    <Shell title={<>Bienvenue sur <Mark>SYXTEE</Mark></>} sub={<>Compte <span className="font-medium text-foreground">{login}</span> : choisis ton mot de passe et renseigne ton adresse e-mail pour continuer.</>}>
+      <motion.form variants={item} action={action} className="mt-10 space-y-5">
+        <input type="text" name="username" autoComplete="username" value={login} readOnly hidden />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field id="first_name" label="Prénom">
+            <input id="first_name" name="first_name" type="text" autoComplete="given-name" required defaultValue={fields?.first_name ?? first} className={fieldCls} />
+          </Field>
+          <Field id="last_name" label="Nom">
+            <input id="last_name" name="last_name" type="text" autoComplete="family-name" required defaultValue={fields?.last_name ?? last} className={fieldCls} />
+          </Field>
+        </div>
+        <Field id="email" label="Adresse e-mail">
+          <input id="email" name="email" type="email" inputMode="email" autoComplete="email" required defaultValue={fields?.email} placeholder="toi@exemple.com" className={fieldCls} />
+        </Field>
+        <PasswordInput id="password" name="password" label="Nouveau mot de passe" autoComplete="new-password" value={password} onChange={setPassword} gauge />
+        <div className="space-y-2">
+          <PasswordInput id="password_confirm" name="password_confirm" label="Confirmer" autoComplete="new-password" value={confirm} onChange={setConfirm} />
+          {mismatch && <p className="text-xs text-red-400/90">Les deux mots de passe ne correspondent pas.</p>}
+        </div>
+        <Submit idle="Continuer" busy="Enregistrement…" disabled={mismatch || passwordStrength(password) === 0} />
       </motion.form>
       {state.status === "error" && (
         <motion.div variants={item} className="mt-4">

@@ -210,6 +210,21 @@ export function code(o: { token: string }): Email {
   };
 }
 
+/** Compte temporaire : il sera supprimé bientôt (prévenu 3 jours avant). */
+export function accountExpiring(o: { until: Date }): Email {
+  return {
+    subject: "Ton compte SYXTEE temporaire sera bientôt supprimé",
+    element: (
+      <Layout preview={`Fin du compte le ${day(o.until)}.`} reason="Ton compte a été créé par l'équipe SYXTEE pour une durée limitée.">
+        <Title lead="Ton compte se supprime" hl="bientôt." />
+        <Text style={p}>Ce compte temporaire sera supprimé le {day(o.until)}, avec ses relais et ses réglages.</Text>
+        <Text style={p}>Pour le garder, demande à l&apos;équipe SYXTEE de prolonger sa durée.</Text>
+        <Cta href={`${site.url}/dashboard`}>Ouvrir mon espace</Cta>
+      </Layout>
+    ),
+  };
+}
+
 /** Invitation à rejoindre l'équipe SYXTEE (lien personnel : il faut un compte avec cette adresse, puis la double authentification). */
 export function staffInvite(o: { inviter: string; role: StaffRole; url: string; expires: Date }): Email {
   const meta = ROLE_META[o.role];

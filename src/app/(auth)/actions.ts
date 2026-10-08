@@ -11,6 +11,8 @@ import { passwordProblem } from "@/lib/auth/password";
 import { personName } from "@/lib/auth/profileSchema";
 import { isPwned } from "@/lib/auth/pwned";
 import { isApprovedEmail } from "@/lib/access";
+import { isManagedEmail, LOGIN_RE, loginToEmail, managedOf } from "@/lib/managed";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { allow, clientIp } from "@/lib/auth/rateLimit";
 import { clearRecovery, hasRecovery } from "@/lib/auth/recovery";
 import { hasSupabase } from "@/lib/supabase/env";
@@ -94,7 +96,9 @@ export async function resendVerification(_prev: AuthState, f: FormData): Promise
 /** Connexion : 5 essais par 15 min et par adresse, 30 par IP. */
 export async function signIn(_prev: AuthState, f: FormData): Promise<AuthState> {
   const fields = { email: str(f, "email") };
-  const email = emailSchema.safeParse(fields.email);
+  // Un identifiant (sans « @ ») est celui d'un compte créé par l'équipe : il se connecte avec son adresse technique.
+  const typed = fields.email.trim().toLowerCase();
+  const email = emailSchema.safeParse(!typed.includes("@") && LOGIN_RE.test(typed) ? loginToEmail(typed) : typed);
   const password = str(f, "password");
   if (!email.success || !password) return fail(AUTH_ERRORS.identifiants, fields);
   if (!hasSupabase) return fail(AUTH_ERRORS.indisponible, fields);
@@ -144,6 +148,53 @@ export async function resetPassword(_prev: AuthState, f: FormData): Promise<Auth
   await clearRecovery();
   sendPasswordChanged(user.email);
   redirect(await afterLogin(user, "/dashboard?mdp=ok"));
+}
+
+/**
+ * Première connexion d'un compte créé par l'équipe (comme Pronote) : choisir son mot de passe, puis donner son adresse e-mail.
+ * Tant que ce n'est pas fait, le reste du site renvoie ici (voir requireUser).
+ */
+export async function completeFirstLogin(_prev: AuthState, f: FormData): Promise<AuthState> {
+  const user = await getUser();
+  if (!user) redirect("/connexion");
+  const managed = await managedOf(user.id);
+  if (!managed) redirect("/dashboard");
+  const fields = { first_name: str(f, "first_name"), last_name: str(f, "last_name"), email: str(f, "email") };
+  const first = nameSchema("Prénom").safeParse(fields.first_name);
+  if (!first.success) return fail(first.error.issues[0].message, fields);
+  const last = nameSchema("Nom").safeParse(fields.last_name);
+  if (!last.success) return fail(last.error.issues[0].message, fields);
+  const email = emailSchema.safeParse(fields.email);
+  if (!email.success || isManagedEmail(email.data)) return fail("Renseigne ta vraie adresse e-mail.", fields);
+  const password = str(f, "password");
+  const problem = passwordProblem(password);
+  if (problem) return fail(problem, fields);
+  if (password !== str(f, "password_confirm")) return fail("Les deux mots de passe ne correspondent pas.", fields);
+  if (!(await allow(`first:user:${user.id}`, 10, 900))) return fail(AUTH_ERRORS["limite-connexion"], fields);
+  if (await isPwned(password)) return fail(AUTH_ERRORS["mdp-fuite"], fields);
+
+  const admin = createAdminClient();
+  // Adresse d'abord (échec « déjà utilisée » possible), puis mot de passe : rien n'est validé tant que les deux ne sont pas passés.
+  if (email.data !== user.email) {
+    const { error } = await admin.auth.admin.updateUserById(user.id, { email: email.data, email_confirm: true });
+    if (error) {
+      if (error.code === "email_exists" || /already|registered/i.test(error.message)) return fail("Cette adresse est déjà utilisée par un autre compte.", fields);
+      console.error("completeFirstLogin email", error.code, error.message);
+      return fail("Enregistrement impossible. Réessaie.", fields);
+    }
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    if (error.code === "same_password") return fail("Choisis un mot de passe différent du mot de passe temporaire.", fields);
+    console.error("completeFirstLogin password", error.code, error.message);
+    return fail("Enregistrement impossible. Réessaie.", fields);
+  }
+  await admin.from("profiles").update({ first_name: first.data, last_name: last.data }).eq("id", user.id);
+  await admin.from("managed_accounts").update({ must_change_password: false, email_required: false }).eq("user_id", user.id);
+  await admin.from("admin_audit").insert({ admin_email: "compte géré", action: "managed.first_login", target_user: user.id, before: null, after: { login: managed.login } });
+  sendPasswordChanged(email.data);
+  redirect(await afterLogin({ ...user, email: email.data }, "/dashboard"));
 }
 
 /** Lier un Twitch vérifié à un compte existant (liaison manuelle activée dans Supabase). */

@@ -26,7 +26,8 @@ async function inviterName(userId: string, fallback: string) {
 async function mailInvite(to: string, inviter: string, role: Parameters<typeof staffInvite>[0]["role"], token: string, expires: Date): Promise<TeamState> {
   const link = `${site.url}/equipe/invitation/${token}`;
   const sent = await sendEmailResult(to, staffInvite({ inviter, role, url: link, expires }));
-  return sent.ok ? { ok: `Invitation envoyée à ${to}.` } : { ok: `Invitation créée pour ${to}.`, error: `E-mail non envoyé (${sent.reason}). Copie le lien ci-dessous et envoie-le toi-même.`, link };
+  // Le lien est toujours rendu : un e-mail peut finir dans les indésirables, ou ne pas partir tant que le domaine d'envoi n'est pas vérifié.
+  return sent.ok ? { ok: `Invitation envoyée à ${to}. Si la personne ne reçoit rien (regarde les indésirables), envoie-lui ce lien toi-même.`, link } : { ok: `Invitation créée pour ${to}.`, error: `E-mail non envoyé (${sent.reason}). Copie le lien ci-dessous et envoie-le toi-même.`, link };
 }
 
 export async function inviteStaffAction(_prev: TeamState, form: FormData): Promise<TeamState> {

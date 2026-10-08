@@ -8,6 +8,7 @@ import { site } from "@/lib/site";
 import { Container } from "../ui";
 import HeroObject from "./HeroObject";
 import IntegrationTabs from "./IntegrationTabs";
+import LiveDemo from "./LiveDemo";
 
 // Landing façon Resend : hero, compatibilité, intégration, deux produits, aperçus, grille de fonctions, formules, appel final.
 
@@ -34,6 +35,20 @@ export function LandingHero() {
         </div>
         <div className="rise flex justify-center lg:justify-end" style={{ "--i": 3 } as React.CSSProperties}>
           <HeroObject />
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+export function LiveDemoSection() {
+  return (
+    <section aria-label="Démo en direct" className="border-b border-line py-16 lg:py-24">
+      <Container>
+        <h2 className={h2}>Regarde le bonding travailler.</h2>
+        <p className={lead}>Une simulation : coupe une connexion et suis le débit, la latence et la perte réagir.</p>
+        <div className="mt-10">
+          <LiveDemo />
         </div>
       </Container>
     </section>

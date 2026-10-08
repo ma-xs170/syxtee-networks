@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CompatStrip, FeatureGrid, GoFurtherSection, IntegrationSection, LandingFinalCta, LandingHero, PricingSection, ProductsSection } from "@/components/landing/Landing";
+import { CompatStrip, FeatureGrid, LiveDemoSection, GoFurtherSection, IntegrationSection, LandingFinalCta, LandingHero, PricingSection, ProductsSection } from "@/components/landing/Landing";
 
 export const metadata: Metadata = {
   title: { absolute: "Contrôle à distance d'OBS Studio, multistream et relais · SYXTEE NETWORKS" },
@@ -13,6 +13,7 @@ export default function Home() {
   return (
     <>
       <LandingHero />
+      <LiveDemoSection />
       <CompatStrip />
       <IntegrationSection />
       <ProductsSection />

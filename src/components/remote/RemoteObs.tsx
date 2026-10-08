@@ -607,13 +607,13 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
   );
 
   const multiPanel = (
-    <div className={`min-h-0 min-w-0 flex-1 ${tab === "multi" ? "grid" : "max-lg:hidden lg:grid"} grid-rows-1`}>
+    <div className={`min-h-[13rem] min-w-0 flex-1 ${tab === "multi" ? "grid" : "max-lg:hidden lg:grid"} grid-rows-1`}>
       <MultistreamPanel state={ms} call={call} ready={ready} canControl={canLive} canEdit={!guest} onChange={setMs} />
     </div>
   );
 
   const controlsPanel = (
-    <div className={`flex min-h-0 min-w-0 flex-col gap-2 ${tab === "controls" || tab === "multi" ? "" : "max-lg:hidden"}`}>
+    <div className={`flex min-h-0 min-w-0 flex-col gap-2 overflow-y-auto overscroll-contain ${tab === "controls" || tab === "multi" ? "" : "max-lg:hidden"}`}>
      <div className={`flex shrink-0 flex-col gap-2 ${tab === "controls" ? "" : "max-lg:hidden"}`}>
       <section aria-label="Contrôles" className={panel}>
         <h2 className={panelTitle}>Contrôles</h2>
@@ -631,18 +631,14 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
           )}
         </div>
       </section>
-      <section aria-label="Flux" className={`${panel} min-h-[5rem]`}>
-        <h2 className={panelTitle}>Flux</h2>
-        <div className="flex flex-1 flex-col justify-between px-3 py-2">
-          <p className="text-[20px] font-semibold tabular-nums leading-none">{streaming ? (stats?.kbps != null ? <>{stats.kbps} <span className="text-[12px] font-normal text-neutral-500">kbit/s</span></> : "…") : "—"}</p>
-          <p className="flex items-baseline justify-between gap-2 text-[13px] text-neutral-400">
-            Sortie
-            <span className="min-w-0 truncate text-neutral-200" title={stats?.encoder}>
-              {streaming ? stats?.encoder || "en direct" : recording ? "enregistrement" : "—"}
-            </span>
-          </p>
-          {streaming && stats && stats.congestion > 0.3 && <p className="text-[12px] text-amber-400">Réseau du PC saturé.</p>}
+      <section aria-label="Flux" className={`${panel} shrink-0`}>
+        <div className="flex items-center justify-between gap-2 px-3 py-2 text-[13px]">
+          <span className="font-semibold">Flux</span>
+          <span className="min-w-0 truncate text-neutral-300" title={stats?.encoder}>
+            {streaming ? `${stats?.kbps != null ? `${stats.kbps} kbit/s` : "…"} · ${stats?.encoder || "en direct"}` : recording ? "enregistrement" : "—"}
+          </span>
         </div>
+        {streaming && stats && stats.congestion > 0.3 && <p className="px-3 pb-2 text-[12px] text-amber-400">Réseau du PC saturé.</p>}
       </section>
      </div>
      {multiPanel}

@@ -284,7 +284,7 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
           <Link
             key={label}
             href={item.href}
-            {...(item.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+            {...(item.href.startsWith("http") || ("arrow" in item && item.arrow) ? { target: "_blank", rel: "noopener noreferrer" } : {})}
             aria-current={active ? "page" : undefined}
             className={`${pill} ${active ? "font-medium text-foreground" : "text-foreground/75"}`}
             {...common}

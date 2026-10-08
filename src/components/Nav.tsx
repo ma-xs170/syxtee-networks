@@ -130,6 +130,7 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
                 <Link
                   key={item.href}
                   href={item.href}
+                  {...("arrow" in item && item.arrow ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                   onClick={() => setOpen(false)}
                   aria-current={isActive(item.href) ? "page" : undefined}
                   className={`border-b border-line py-4 text-base hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-muted"}`}

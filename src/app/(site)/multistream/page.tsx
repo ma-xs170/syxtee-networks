@@ -3,7 +3,6 @@ import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button";
 import GridBackground from "@/components/ui/GridBackground";
 import CircuitArt from "@/components/multistream/CircuitArt";
-import { ClickArt, EyesArt, SendArt } from "@/components/multistream/HoverArt";
 import SectionHeader from "@/components/ui/SectionHeader";
 import StatusPill from "@/components/ui/StatusPill";
 
@@ -13,7 +12,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/multistream" },
 };
 
-const ART = [EyesArt, SendArt, ClickArt];
+// Un symbole au trait avant chaque titre : vues (œil), envoi (avion en papier), clic (curseur).
+const ICONS = [
+  <><path key="a" d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" /><circle key="b" cx="12" cy="12" r="3" /></>,
+  <path key="c" d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" />,
+  <path key="d" d="M5 3l14 7-6 2-2 6L5 3Z" />,
+];
 const REASONS: [string, string][] = [
   ["Plus de vues", "Ton public est réparti sur plusieurs plateformes. Un seul direct les atteint toutes en même temps, sans refaire ton installation."],
   ["Un seul envoi", "Ton ordinateur n'envoie qu'un flux à OBS. La diffusion vers chaque plateforme se fait depuis le plugin : pas besoin de plusieurs encodeurs."],
@@ -57,11 +61,12 @@ export default function MultistreamPage() {
           <SectionHeader title={<>Pensé pour <em>grandir.</em></>} subtitle="Plus de plateformes, c'est plus de spectateurs. Sans compliquer ton direct." />
           <div className="mt-14 grid gap-4 md:grid-cols-3">
             {REASONS.map(([t, x], i) => {
-              const Art = ART[i];
               return (
-              <article key={t} className="group relative overflow-hidden bento-cell p-6 sm:p-7 sm:pb-28">
-                <Art />
-                <h3 className="text-lg font-semibold tracking-tight">{t}</h3>
+              <article key={t} className="bento-cell p-6 sm:p-7">
+                <h3 className="flex items-center gap-2.5 text-lg font-semibold tracking-tight">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 text-foreground/80">{ICONS[i]}</svg>
+                  {t}
+                </h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{x}</p>
               </article>
               );

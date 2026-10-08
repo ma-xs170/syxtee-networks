@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { siFacebook, siKick, siTiktok, siTwitch, siX, siYoutube } from "simple-icons";
+import { siFacebook, siInstagram, siKick, siTiktok, siTwitch, siX, siYoutube } from "simple-icons";
 
 // Multistream : envoyer le même direct vers d'autres plateformes, en un clic par logo (comme Aitum Multistream).
 // Les sorties vivent dans le plugin SYXTEE Link, sur le PC d'OBS ; la clé de stream y reste, elle n'est jamais renvoyée ici.
@@ -20,6 +20,7 @@ export const PRESETS: Preset[] = [
   { id: "youtube", label: "YouTube", server: "rtmp://a.rtmp.youtube.com/live2", hint: "Clé : YouTube Studio, Passer en direct, Clé de stream.", icon: siYoutube },
   { id: "facebook", label: "Facebook", server: "rtmps://live-api-s.facebook.com:443/rtmp/", hint: "Clé : Créateur de directs Facebook, Clé de stream.", icon: siFacebook },
   { id: "kick", label: "Kick", server: "", custom: true, hint: "Adresse et clé : tableau de bord Kick, Paramètres de stream (l'adresse change selon la région).", icon: siKick },
+  { id: "instagram", label: "Instagram", server: "", custom: true, hint: "Adresse et clé : Instagram, Producteur de direct (Live Producer) sur ordinateur.", icon: siInstagram },
   { id: "tiktok", label: "TikTok", server: "", custom: true, hint: "Adresse et clé : TikTok LIVE Studio, ou le formulaire de diffusion (accès LIVE requis).", icon: siTiktok },
   { id: "x", label: "X (Twitter)", server: "", custom: true, hint: "Adresse et clé : Media Studio, Producteur, Créer une diffusion.", icon: siX },
   { id: "trovo", label: "Trovo", server: "rtmp://livepush.trovo.live/live/", hint: "Clé : Trovo, Tableau de bord du stream.", letter: "T", color: "#19d65c" },
@@ -28,7 +29,7 @@ export const PRESETS: Preset[] = [
 /** Plateforme du service d'OBS, d'après son nom (« Twitch », « YouTube - RTMPS »…) ou son adresse. */
 export function detectPlatform(service: string, server: string) {
   const t = `${service} ${server}`.toLowerCase();
-  return ["twitch", "youtube", "facebook", "kick", "tiktok", "trovo"].find((id) => t.includes(id)) ?? (/(^|[^a-z])x([^a-z]|$)|twitter|pscp/.test(t) ? "x" : "other");
+  return ["twitch", "youtube", "facebook", "kick", "instagram", "tiktok", "trovo"].find((id) => t.includes(id)) ?? (/(^|[^a-z])x([^a-z]|$)|twitter|pscp/.test(t) ? "x" : "other");
 }
 const preset = (id: string) => PRESETS.find((p) => p.id === id) ?? PRESETS[PRESETS.length - 1];
 

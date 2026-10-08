@@ -40,7 +40,7 @@ export default function Footer() {
         <div className="col-span-2 md:col-span-1">
           <div className="flex items-center gap-3">
             <Image src="/logo-400.png" alt="" width={22} height={31} style={{ width: 22, height: "auto" }} className="ink-img" />
-            <span className="font-mono text-[13px] font-semibold leading-none tracking-[0.16em] text-foreground">SYXTEE NETWORKS</span>
+            <span className="text-sm font-medium tracking-[0.02em] text-foreground">SYXTEE NETWORKS</span>
           </div>
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-muted">Le direct en mobilité, simple et fiable.</p>
           <div className="mt-5"><StatusPill variant="ok" label="Tous les systèmes opérationnels" /></div>

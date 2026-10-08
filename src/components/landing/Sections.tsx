@@ -133,9 +133,9 @@ export function PricingSection() {
         <p className={lead}>{product.remoteName}, trois formules. Les prix seront annoncés bientôt. L&apos;accès se fait sur invitation.</p>
         <div className="mt-12 grid items-stretch gap-4 md:grid-cols-3">
           {product.plans.map((p) => (
-            <article key={p.id} className={`bento-cell flex flex-col p-6 ${"featured" in p && p.featured ? "!border-line-strong bg-surface-2 md:-my-3 md:py-9" : ""}`}>
+            <article key={p.id} className={`bento-cell flex flex-col p-6 ${"featured" in p && p.featured ? "!border-line-strong bg-surface-2" : ""}`}>
               <h3 className="text-xl font-semibold tracking-tight">{p.name}</h3>
-              <p className="mt-1 text-sm text-muted">{p.text}</p>
+              <p className="mt-1 min-h-10 text-sm text-muted">{p.text}</p>
               <p className="mt-5 text-2xl font-medium tracking-tight text-foreground/70">{product.priceLabel(p.price) ?? "Bientôt disponible"}</p>
               <ul className="mt-5 flex-1 space-y-2 text-sm text-muted">
                 {p.points.map((x) => (

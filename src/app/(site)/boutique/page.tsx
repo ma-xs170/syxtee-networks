@@ -66,7 +66,7 @@ export default async function BoutiquePage({ searchParams }: { searchParams: Pro
             {TIERS.map((t) => {
               const c = CATALOG[t];
               return (
-                <article key={t} className={`bento-cell flex flex-col p-6 ${c.featured ? "!border-line-strong bg-surface-2 md:-my-3 md:py-9" : ""}`}>
+                <article key={t} className={`bento-cell flex flex-col p-6 ${c.featured ? "!border-line-strong bg-surface-2" : ""}`}>
                   <h3 className="text-xl font-semibold tracking-tight">{c.name}</h3>
                   <p className="mt-1 text-sm text-muted">{c.pitch}</p>
                   <p className="mt-5 font-mono text-3xl tabular-nums">{c.prices.month.amount}<span className="ml-1 text-sm text-muted">par mois</span></p>

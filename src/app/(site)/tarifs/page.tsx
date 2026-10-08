@@ -98,7 +98,27 @@ export default function TarifsPage() {
 
       <section className="py-16 sm:py-20">
         <Container>
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <article className="flex flex-col rounded-2xl border border-line p-7">
+              <h2 className="text-lg font-semibold">Gratuit</h2>
+              <p className="mt-3 min-h-[3rem] text-sm leading-relaxed text-muted">Crée un compte pour découvrir le tableau de bord. Aucun service inclus.</p>
+              <p className="mt-6 flex items-baseline gap-1.5">
+                <span className="whitespace-nowrap text-4xl font-semibold tracking-tight">0 €</span>
+              </p>
+              <Link href="/inscription" className="btn btn-secondary mt-6 w-full">
+                Créer un compte
+              </Link>
+              <div className="mt-7 border-t border-line pt-6">
+                <ul className="space-y-3">
+                  {["Compte et tableau de bord", "Documentation", "Support, pour demander un accès", "Scanner et analyseur réseau"].map((i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm">
+                      <Check size={16} weight="bold" className="mt-0.5 shrink-0 text-foreground" aria-hidden="true" />
+                      {i}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </article>
             {tiers.map((t) => (
               <article key={t.id} className={`flex flex-col rounded-2xl border p-7 ${t.highlight ? "border-foreground/40 bg-surface" : "border-line"}`}>
                 <div className="flex items-center justify-between">
@@ -107,7 +127,7 @@ export default function TarifsPage() {
                 </div>
                 <p className="mt-3 min-h-[3rem] text-sm leading-relaxed text-muted">{t.pitch}</p>
                 <p className="mt-6 flex items-baseline gap-1.5">
-                  <span className="text-5xl font-semibold tracking-tight">{t.price} €</span>
+                  <span className="whitespace-nowrap text-4xl font-semibold tracking-tight">{t.price} €</span>
                   <span className="text-sm text-muted">/ mois</span>
                 </p>
                 <Link href="/acces" className={`btn mt-6 w-full ${t.highlight ? "btn-primary" : "btn-secondary"}`}>

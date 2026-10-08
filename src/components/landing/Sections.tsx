@@ -10,7 +10,7 @@ import VisualSlot from "./VisualSlot";
 import { ctaLabel, product } from "@/config/product";
 import { deviceImage } from "@/lib/device-images";
 
-const h2 = "text-3xl font-medium tracking-[-0.03em] sm:text-4xl";
+const h2 = "h-serif text-[clamp(2.25rem,4.5vw,3.5rem)]";
 const lead = "mt-4 max-w-[60ch] text-base leading-relaxed text-muted";
 const cap = "text-xs text-muted";
 const rise = (i: number) => ({ "--i": i }) as React.CSSProperties;
@@ -30,8 +30,8 @@ export function ObsHeroSection() {
   return (
     <section className="relative overflow-hidden border-b border-line">
       <Container className="pb-14 pt-14 text-center lg:pt-20">
-        <h1 className="rise h-hero mx-auto max-w-[18ch] text-[clamp(2.5rem,6.5vw,4.75rem)]" style={rise(0)}>
-          Pilote ton OBS à distance, depuis n&apos;importe où.
+        <h1 className="rise h-serif mx-auto max-w-[18ch] text-[clamp(2.75rem,6.5vw,5rem)]" style={rise(0)}>
+          Pilote ton OBS à distance, <em>depuis n&apos;importe où.</em>
         </h1>
         <p className="rise mx-auto mt-5 max-w-[56ch] text-lg leading-relaxed text-muted" style={rise(1)}>
           Scènes, audio, démarrage du live : depuis ton navigateur ou ton téléphone, sur ton propre PC ou Mac. Aucun serveur en plus.
@@ -53,7 +53,7 @@ export function ObsBento() {
   return (
     <section id="comment" className="scroll-mt-20 border-b border-line py-20 lg:py-28">
       <Container>
-        <h2 className={h2}>{product.remoteName}, ton OBS dans la poche.</h2>
+        <h2 className={h2}>{product.remoteName}, ton OBS <em>dans la poche.</em></h2>
         <p className={lead}>Chaque bouton agit sur ton vrai OBS, en direct.</p>
         <div className="mt-12 grid gap-4 md:grid-cols-4">
           <Cell className="md:col-span-2" title="Change de scène en un tap" text="Live, drone, BRB : la scène change sur ton OBS, sans attendre.">
@@ -108,7 +108,7 @@ export function EncoderSection() {
           </div>
           <div>
             <span className="inline-flex items-center rounded-full border border-warn/40 bg-warn/15 px-3.5 py-1 text-xs font-semibold tracking-[0.12em] text-warn">EN DÉVELOPPEMENT</span>
-            <h2 className={`${h2} mt-5`}>SYXTEE Encodeur.</h2>
+            <h2 className={`${h2} mt-5`}>SYXTEE <em>Encodeur.</em></h2>
             <p className={lead}>{product.tagline}</p>
             <dl className="mt-6 divide-y divide-line text-sm">
               {rows.map(([k, v]) => (
@@ -133,7 +133,7 @@ export function PricingSection() {
   return (
     <section className="border-b border-line py-20 lg:py-28">
       <Container>
-        <h2 className={h2}>Choisis ta formule.</h2>
+        <h2 className={h2}>Choisis ta <em>formule.</em></h2>
         <p className={lead}>{product.remoteName} et l&apos;interface de l&apos;Encodeur, trois formules. Les prix seront annoncés bientôt. L&apos;accès se fait sur invitation.</p>
         <div className="mt-12 grid items-stretch gap-4 md:grid-cols-3">
           {product.plans.map((p) => (
@@ -171,7 +171,7 @@ export function FaqSection() {
   return (
     <section className="border-b border-line py-20 lg:py-28">
       <Container>
-        <h2 className={`${h2} mb-10 text-center`}>Questions fréquentes</h2>
+        <h2 className={`${h2} mb-10 text-center`}>Questions <em>fréquentes</em></h2>
         <Faq items={items} />
       </Container>
     </section>
@@ -182,7 +182,7 @@ export function FinalCta() {
   return (
     <section className="py-24 sm:py-32">
       <Container className="text-center">
-        <h2 className="h-hero mx-auto max-w-3xl">Prêt à piloter ton direct ?</h2>
+        <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,6vw,4.5rem)]">Prêt à piloter ton <em>direct ?</em></h2>
         <div className="mt-9 flex justify-center">
           <ButtonLink href="/acces">Demander l&apos;accès</ButtonLink>
         </div>

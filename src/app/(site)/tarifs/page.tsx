@@ -88,7 +88,7 @@ export default function TarifsPage() {
     <>
       <section className="border-b border-line py-20 text-center sm:py-24">
         <Container>
-          <h1 className="h-hero mx-auto max-w-3xl">Des tarifs simples.</h1>
+          <h1 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,7vw,4.75rem)]">Des tarifs <em>simples.</em></h1>
           <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
             Trois formules, à partir de <strong>4,99 € par mois</strong>. Sans engagement : tu changes ou tu arrêtes quand tu veux.
           </p>

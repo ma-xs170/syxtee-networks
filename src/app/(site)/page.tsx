@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Hero from "@/components/sections/Hero";
 import HowItWorks3 from "@/components/sections/HowItWorks3";
 import NumberedFeatures, { FeatureStrip } from "@/components/sections/NumberedFeatures";
+import Multistream from "@/components/sections/Multistream";
 import FinalCta from "@/components/sections/FinalCta";
 import { getHomeStreamers } from "@/lib/streamers";
 
@@ -22,6 +23,7 @@ export default async function Home() {
       <FeatureStrip />
       <HowItWorks3 />
       <NumberedFeatures />
+      <Multistream />
       <FinalCta />
     </>
   );

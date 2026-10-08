@@ -5,6 +5,7 @@ import { decide, type Interval } from "@/lib/billing";
 import { sendEmail } from "@/lib/email/send";
 import { tierOfPrice } from "@/lib/stripe";
 import { applyBillingEvent } from "@/lib/plan-admin";
+import { createCodes } from "@/lib/encoder/activation";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // Traitement des webhooks Stripe. Aucun appel à l'API Stripe : tout est lu dans l'événement (testable hors ligne).
@@ -73,6 +74,13 @@ async function linkCheckout(s: Stripe.Checkout.Session) {
   await createAdminClient().from("profiles").update({ stripe_customer_id: customer }).eq("id", s.client_reference_id).is("stripe_customer_id", null);
 }
 
+/** Achat d'un article (paiement unique) : pour chaque Encodeur commandé, un code d'activation réservé à l'acheteur (jamais utilisable sur un autre compte). */
+async function fulfillProduct(s: Stripe.Checkout.Session) {
+  if (s.mode !== "payment" || s.metadata?.product !== "encoder" || !s.client_reference_id || s.payment_status !== "paid") return;
+  const qty = Math.max(1, Math.min(10, Number(s.metadata?.quantity ?? 1) || 1));
+  await createCodes(qty, { orderRef: s.id, buyerId: s.client_reference_id, months: 4 });
+}
+
 /** Traite un événement vérifié. false : déjà traité (doublon). */
 export async function handleStripeEvent(event: Stripe.Event) {
   const db = createAdminClient();
@@ -83,6 +91,7 @@ export async function handleStripeEvent(event: Stripe.Event) {
   switch (event.type) {
     case "checkout.session.completed":
       await linkCheckout(event.data.object);
+      await fulfillProduct(event.data.object);
       break;
     case "customer.subscription.created":
     case "customer.subscription.updated":

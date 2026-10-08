@@ -29,6 +29,7 @@ export const nav: NavItem[] = [
       { label: "Interface", href: "/encodeur#interface", desc: "La démo interactive de son tableau de bord.", icon: "docs", glass: "health" },
     ],
   },
+  { label: "Boutique", href: "/boutique" },
   { label: "Tarifs", href: "/tarifs" },
 ];
 

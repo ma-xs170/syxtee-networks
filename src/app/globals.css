@@ -599,18 +599,23 @@ body::before {
    Chaque bloc du site (enfant direct d'une section de <main>) apparaît en montant quand il entre dans l'écran, par animation
    liée au défilement (CSS pur, sans JavaScript ; ignoré par les navigateurs qui ne la gèrent pas). Les cartes se soulèvent au
    survol, les boutons pleins brillent, les portraits du hero flottent. Tout est coupé en prefers-reduced-motion. */
-@media (prefers-reduced-motion: no-preference) {
+@keyframes rv-up {
+  from { opacity: 0; transform: translateY(48px); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+/* Seulement sur grand écran avec souris : sur téléphone, les blocs hauts (plus hauts que l'écran) restaient flous ou vides
+   tant qu'on n'avait pas défilé jusqu'à leur bas. Sur mobile, tout est visible d'emblée, sans animation au défilement. */
+@media (prefers-reduced-motion: no-preference) and (min-width: 1024px) and (hover: hover) {
   @supports (animation-timeline: view()) {
-    main > section > :not(.no-reveal) {
+    main > section > :not(.no-reveal),
+    .reveal-block {
       animation: rv-up linear both;
       animation-timeline: view();
-      animation-range: entry 0% entry 45%;
-    }
-    @keyframes rv-up {
-      from { opacity: 0; transform: translateY(48px); filter: blur(6px); }
-      to { opacity: 1; transform: none; filter: none; }
+      animation-range: entry 0% entry 30%;
     }
   }
+}
+@media (prefers-reduced-motion: no-preference) {
   .panel, .panel-lg { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s; }
   .panel:hover, .panel-lg:hover { transform: translateY(-4px); }
   .btn-primary { position: relative; overflow: hidden; }
@@ -887,4 +892,16 @@ select,
   textarea {
     font-size: max(16px, 1em);
   }
+}
+
+
+/* ───── Téléphone : zones tactiles ─────
+   Les liens dans le texte et les petits liens des pages de connexion gardent leur aspect, mais leur zone de toucher grandit (44 px). */
+@media (pointer: coarse) {
+  main p a, main li a:not(.btn), main label a, main small a, main span > a { position: relative; }
+  main p a::after, main li a:not(.btn)::after, main label a::after, main small a::after, main span > a::after {
+    content: ""; position: absolute; inset: -0.8rem -0.25rem;
+  }
+  .btn { min-height: 3rem; }
+  button, [role="button"], select { min-height: 2.5rem; }
 }

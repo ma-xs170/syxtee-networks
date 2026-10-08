@@ -15,7 +15,7 @@ export default function CloudBackdrop({ flip = false, tone = "sky" }: { flip?: b
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
       <div className={`absolute inset-0 ${subtle ? "opacity-45" : ""} ${flip ? "-scale-y-100" : ""}`}>
-        <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" fill="none" className="absolute inset-0 h-full w-full blur-[34px]">
+        <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" fill="none" className="absolute inset-0 h-full w-full blur-[34px] max-sm:blur-[14px]">
           <g className="cloud-a">
             <path d="M-120 330 C 120 -40, 520 -70, 700 150 C 790 260, 640 330, 520 250" stroke={INK} strokeWidth="150" strokeLinecap="round" />
           </g>
@@ -31,7 +31,9 @@ export default function CloudBackdrop({ flip = false, tone = "sky" }: { flip?: b
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_55%_at_50%_50%,var(--background)_0%,transparent_75%)] opacity-70" />
       </div>
       <div className="absolute inset-0 opacity-[0.07] mix-blend-screen [html[data-theme=light]_&]:opacity-[0.12] [html[data-theme=light]_&]:mix-blend-multiply" style={{ backgroundImage: GRAIN }} />
-      <Particles density={subtle ? 0.45 : 1} />
+      <div className="max-sm:hidden">
+        <Particles density={subtle ? 0.45 : 1} />
+      </div>
       <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-b from-transparent to-background" />
     </div>
   );

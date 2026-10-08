@@ -3,21 +3,11 @@
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { useRef, type ReactNode } from "react";
 
-// Apparition au scroll (fondu + léger décalage vertical) et parallaxe subtile. Les deux se figent en mouvement réduit.
+// Apparition au scroll (CSS pur, grand écran seulement) et parallaxe subtile (figée en mouvement réduit et sur téléphone).
 
-export function Reveal({ children, delay = 0, className = "" }: { children: ReactNode; delay?: number; className?: string }) {
-  const reduce = useReducedMotion();
-  return (
-    <motion.div
-      className={className}
-      initial={reduce ? false : { opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
-    >
-      {children}
-    </motion.div>
-  );
+export function Reveal({ children, className = "" }: { children: ReactNode; /** Gardé pour compatibilité : l'apparition est en CSS pur (voir .reveal-block). */ delay?: number; className?: string }) {
+  // Visible dès le rendu serveur : jamais de contenu caché en attendant du JavaScript (navigateurs intégrés de Twitch, Discord, Instagram…).
+  return <div className={`reveal-block ${className}`}>{children}</div>;
 }
 
 /** Décale le visuel de `distance` px entre l'entrée et la sortie de l'écran. */

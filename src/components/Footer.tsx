@@ -52,10 +52,10 @@ export default function Footer() {
         {columns.map((col) => (
           <div key={col.title}>
             <p className="text-sm font-semibold">{col.title}</p>
-            <ul className="mt-4 space-y-3 text-sm">
+            <ul className="mt-3 text-sm">
               {col.links.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-muted hover:text-foreground">
+                  <Link href={l.href} className="inline-flex min-h-11 flex-wrap items-center gap-x-2 gap-y-1 text-muted hover:text-foreground sm:min-h-9">
                     <span className="whitespace-nowrap">{l.label}</span>
                     {l.badge && <span className="rounded border border-line px-1.5 py-0.5 text-[10px] uppercase tracking-[0.08em]">{l.badge}</span>}
                   </Link>
@@ -71,8 +71,8 @@ export default function Footer() {
           <p>© {site.year} {site.name}. Tous droits réservés.</p>
           <ThemeToggle />
           <div className="flex items-center gap-6">
-            <a href="mailto:contact@syxtee-networks.fr" className="hover:text-foreground">contact@syxtee-networks.fr</a>
-            <a href={site.discord} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-foreground">
+            <a href="mailto:contact@syxtee-networks.fr" className="inline-flex min-h-11 items-center hover:text-foreground">contact@syxtee-networks.fr</a>
+            <a href={site.discord} target="_blank" rel="noopener noreferrer" className="flex min-h-11 items-center gap-2 hover:text-foreground">
               <DiscordIcon /> Communauté
             </a>
           </div>

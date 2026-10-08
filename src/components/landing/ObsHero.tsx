@@ -74,8 +74,8 @@ export default function ObsHero({ images }: { images?: HeroImages }) {
   return (
     <motion.div
       ref={ref}
-      initial={reduce ? false : { opacity: 0, y: 24, filter: "blur(8px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      initial={reduce ? false : { opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       className="relative mx-auto w-full max-w-[960px] pb-[18%] md:pb-[9%]"

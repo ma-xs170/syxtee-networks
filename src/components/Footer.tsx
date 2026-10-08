@@ -9,8 +9,7 @@ const columns: { title: string; links: NavLink[] }[] = [
   {
     title: "Produit",
     links: [
-      { label: "Contrôle à distance (OBS CLOUD)", href: "/controle-a-distance" },
-      { label: "Espaces partagés", href: "/espaces-partages" },
+      { label: "Contrôle à distance", href: "/controle-a-distance" },
       { label: "Relais", href: "/relais" },
       { label: "Encodeur", href: "/encodeur", badge: "En développement" },
     ],
@@ -19,16 +18,12 @@ const columns: { title: string; links: NavLink[] }[] = [
     title: "Ressources",
     links: [
       { label: "Documentation", href: "/docs" },
-      { label: "Fonctionnement", href: "/fonctionnement" },
       { label: "FAQ", href: "/faq" },
     ],
   },
   {
     title: "Communauté",
-    links: [
-      { label: "Communauté", href: site.discord },
-      { label: "Demander l'accès", href: "/acces" },
-    ],
+    links: [{ label: "Rejoindre la communauté", href: site.discord }],
   },
   {
     title: "Légal",
@@ -65,7 +60,7 @@ export default function Footer() {
             <ul className="mt-3 text-sm">
               {col.links.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="inline-flex min-h-11 flex-wrap items-center gap-x-2 gap-y-1 text-muted hover:text-foreground sm:min-h-9">
+                  <Link href={l.href} {...(l.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})} className="inline-flex min-h-11 flex-wrap items-center gap-x-2 gap-y-1 text-muted hover:text-foreground sm:min-h-9">
                     <span className="whitespace-nowrap">{l.label}</span>
                     {l.badge && <span className="rounded border border-line px-1.5 py-0.5 text-[10px] uppercase tracking-[0.08em]">{l.badge}</span>}
                   </Link>

@@ -7,7 +7,9 @@ export const product = {
   brand: "SYXTEE NETWORKS",
   name: "SYXTEE Encodeur", // le boîtier (en développement)
   remoteName: "OBS CLOUD", // le contrôle OBS à distance (produit n°1)
-  tagline: "Le futur boîtier qui encode et envoie ton direct IRL vers le relais.",
+  tagline: "Branche ta caméra. Diffuse de n'importe où. Sans te ruiner.",
+  /** Positionnement : le boîtier le plus accessible du marché, sans matériel pro hors de prix ni abonnement compliqué. */
+  pitch: "Le boîtier où tu branches ta caméra : il bonde toutes tes connexions (4G, 5G, eSIM, Wi-Fi, Ethernet, satellite) vers le relais, puis vers YouTube, Twitch ou Kick.",
   /** soon : « bientôt disponible » ; preorder : « Précommander » ; available : « Acheter ». */
   availability: "soon" as Availability, // TODO À CONFIRMER
   /** Prix en euros TTC. null : « bientôt disponible ». */
@@ -19,7 +21,7 @@ export const product = {
     bondedConnections: 8, // TODO À CONFIRMER : connexions bondées au maximum
     latencyMs: 84, // TODO À CONFIRMER : latence moyenne de bout en bout
     protocols: ["SRT", "SRTLA", "RTMP"], // TODO À CONFIRMER
-    ports: ["Ethernet", "USB", "Antennes 4G/5G", "Wi-Fi"], // TODO À CONFIRMER
+    ports: ["Entrée vidéo HDMI", "Ethernet", "USB", "Antennes 4G/5G", "Wi-Fi"], // TODO À CONFIRMER
     modems: 2, // TODO À CONFIRMER : emplacements de modem 4G/5G
     power: "USB-C PD, 15 W", // TODO À CONFIRMER : alimentation
     consumption: "8 W en charge", // TODO À CONFIRMER

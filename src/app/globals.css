@@ -1065,3 +1065,9 @@ select,
 @keyframes gauge { from { transform: scaleX(0.2); } to { transform: scaleX(var(--p, 0.8)); } }
 @keyframes sun-drift { from { transform: translateX(-6px); } to { transform: translateX(8px); } }
 @keyframes walk-bob { from { transform: translateY(0); } to { transform: translateY(-1.2px); } }
+
+/* Changement de page dans les écrans de démo : fondu, montée et flou à l'entrée. L'animation finit sans filtre : un filtre qui reste empêche les clics dans un appareil en 3D. */
+@media (prefers-reduced-motion: no-preference) {
+  .page-in { animation: page-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+}
+@keyframes page-in { from { opacity: 0; transform: translateY(8px); filter: blur(6px); } }

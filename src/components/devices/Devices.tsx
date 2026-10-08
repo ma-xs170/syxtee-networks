@@ -53,8 +53,9 @@ export function DeviceMac({ children, image, className = "" }: { children: React
           <div className="absolute left-[13%] top-[8%] h-[62%] w-[74%]"><Screen w={1280} h={800}>{children}</Screen></div>
         </div>
       ) : (
-        <div className="[perspective:2200px]">
-          <div className="[transform:rotateY(-7deg)_rotateX(2deg)] [transform-style:preserve-3d]">
+        <div>
+          {/* de face : une rotation 3D casserait le ciblage des clics dans l'écran interactif */}
+          <div>
             {/* couvercle : contour métallique (1 px), tranche claire en haut et sur les côtés */}
             <div className={`relative rounded-[20px] p-px ${METAL_EDGE} shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_0_80px_-10px_rgba(255,255,255,0.08)]`}>
               <div className="relative rounded-[19px] bg-[#050506] p-[1.7%] shadow-[inset_0_1px_0_rgba(255,255,255,0.25),inset_1px_0_0_rgba(255,255,255,0.12),inset_-1px_0_0_rgba(255,255,255,0.08)]">

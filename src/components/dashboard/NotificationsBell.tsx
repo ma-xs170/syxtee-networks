@@ -79,7 +79,7 @@ export default function NotificationsBell() {
         {unread.length > 0 && <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-accent" aria-hidden="true" />}
       </button>
       {open && (
-        <div role="dialog" aria-label="Notifications" className="absolute left-full top-0 z-50 ml-3 w-[min(360px,calc(100vw-2rem))] overflow-hidden rounded-xl border border-line bg-background shadow-[0_18px_40px_rgba(0,0,0,0.6)] max-lg:fixed max-lg:inset-x-4 max-lg:bottom-24 max-lg:left-4 max-lg:top-auto max-lg:ml-0 max-lg:w-auto">
+        <div role="dialog" aria-label="Notifications" className="absolute left-full top-0 z-50 ml-3 w-[min(360px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-line-strong bg-[var(--surface-2)] shadow-[0_18px_40px_rgba(0,0,0,0.6)] max-lg:fixed max-lg:inset-x-4 max-lg:bottom-24 max-lg:left-4 max-lg:top-auto max-lg:ml-0 max-lg:w-auto">
           <div className="flex items-center justify-between border-b border-line px-4 py-3">
             <h2 className="text-sm font-semibold">Notifications</h2>
             <button type="button" onClick={() => setOpen(false)} aria-label="Fermer" className="grid h-9 w-9 place-items-center rounded-lg text-muted hover:text-foreground">

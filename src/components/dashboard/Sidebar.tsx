@@ -188,7 +188,7 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-haspopup="menu"
-          className="flex w-full items-center gap-3 rounded-xl border border-line bg-surface-2 p-2 text-left transition-colors hover:border-line-strong focus-visible:outline-none focus-visible:border-line-strong focus-visible:ring-1 focus-visible:ring-foreground/25"
+          className="flex w-full items-center gap-3 rounded-xl p-2 text-left transition-colors hover:bg-foreground/[0.06] focus-visible:outline-none focus-visible:bg-foreground/[0.08]"
         >
           <Avatar account={account} size={36} />
           <span className="min-w-0 flex-1">
@@ -407,7 +407,7 @@ export default function DashboardShell({ admin, children, workspace }: { admin: 
   return (
     <WsCtx.Provider value={workspace ?? { workspaces: [], activeId: null, left: 0, features: null }}>
     <div className="dash-surface min-h-dvh lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
-      <aside className="sticky top-0 hidden h-dvh border-r border-line bg-surface lg:block">
+      <aside className="sticky top-0 z-40 hidden h-dvh border-r border-line bg-surface lg:block">
         <Content admin={admin} onNavigate={() => {}} />
       </aside>
 

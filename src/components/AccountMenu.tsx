@@ -47,11 +47,12 @@ export function useAccount() {
   return account;
 }
 
-export function Avatar({ account, size = 32 }: { account: NonNullable<Account>; size?: number }) {
+export function Avatar({ account, size = 32, round = false }: { account: NonNullable<Account>; size?: number; round?: boolean }) {
+  const shape = round ? "rounded-full" : "rounded-lg";
   return account.avatar ? (
-    <Image src={account.avatar} alt="" width={size} height={size} className="rounded-lg border border-foreground/25 object-cover" style={{ width: size, height: size }} />
+    <Image src={account.avatar} alt="" width={size} height={size} className={`${shape} border border-foreground/25 object-cover`} style={{ width: size, height: size }} />
   ) : (
-    <span className="flex items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-pink-500 font-mono text-[11px] font-semibold uppercase text-white" style={{ width: size, height: size }}>
+    <span className={`flex items-center justify-center ${shape} bg-gradient-to-br from-violet-500 to-pink-500 font-mono text-[11px] font-semibold uppercase text-white`} style={{ width: size, height: size }}>
       {account.initials}
     </span>
   );

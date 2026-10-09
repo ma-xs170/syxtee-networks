@@ -190,7 +190,7 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
           aria-haspopup="menu"
           className="flex w-full items-center gap-3 rounded-xl p-2 text-left transition-colors hover:bg-foreground/[0.06] focus-visible:outline-none focus-visible:bg-foreground/[0.08]"
         >
-          <Avatar account={account} size={36} />
+          <Avatar account={account} size={36} round />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium">{account.name}</span>
             <span className="mt-0.5 flex items-center gap-1.5 truncate text-[12px] text-muted">

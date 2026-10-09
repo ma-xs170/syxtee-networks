@@ -505,11 +505,11 @@ html[data-stream-mode="on"] [data-sensitive] {
   &:focus-visible { outline: 2px solid var(--foreground); outline-offset: 3px; }
 }
 @utility btn-primary {
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--on-accent) 12%, transparent);
-  background: var(--fill);
-  color: var(--on-accent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--foreground) 8%, transparent);
+  background: color-mix(in srgb, var(--foreground) 7%, var(--surface));
+  color: var(--foreground);
   border: 1px solid var(--line-strong);
-  &:hover { background: var(--fill-hover); }
+  &:hover { background: color-mix(in srgb, var(--foreground) 12%, var(--surface)); }
 }
 @utility btn-secondary {
   border: 1px solid var(--line-strong);
@@ -723,7 +723,7 @@ body::before {
   .btn-primary { position: relative; overflow: hidden; }
   .btn-primary::after {
     content: ""; position: absolute; inset: 0; transform: translateX(-120%);
-    background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--on-accent) 30%, transparent) 50%, transparent 70%);
+    background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--foreground) 12%, transparent) 50%, transparent 70%);
     transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none;
   }
   .btn-primary:hover::after { transform: translateX(120%); }

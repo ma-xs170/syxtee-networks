@@ -12,14 +12,14 @@ import { sendEmailResult } from "@/lib/email/send";
 import { can, inviteLimit } from "@/lib/plans";
 import { site } from "@/lib/site";
 
-// Invitations au contrôle à distance : un lien secret donne accès à OBS à quelqu'un qui n'a pas de compte.
-// Le secret n'est montré qu'à la création (le Core n'en garde que l'empreinte) ; l'email, s'il y en a un, porte le même lien.
+// Invitations au contrôle à distance : un lien secret donne accès à OBS, mais seulement à la personne invitée : elle doit créer un compte
+// (ou se connecter) avec l'adresse email indiquée. Le secret n'est montré qu'à la création (le Core n'en garde que l'empreinte) ; l'email porte le même lien.
 
 export type InviteState = { error?: string; url?: string; emailed?: boolean; emailNote?: string };
 
 const input = z.object({
   label: z.string().trim().min(1, "Donne un nom à l'invitation.").max(40, "40 caractères au plus."),
-  email: z.string().trim().max(254).optional().or(z.literal("")),
+  email: z.string().trim().min(1, "Indique l'adresse email de la personne.").max(254),
   level: z.enum(["view", "scenes", "full"]),
   deviceId: z.uuid().optional().or(z.literal("")),
   /** 0 : jusqu'à révocation. */
@@ -32,8 +32,8 @@ export async function createInviteAction(raw: z.input<typeof input>): Promise<In
   const parsed = input.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Champs invalides." };
   const { label, level, expiresHours } = parsed.data;
-  const email = parsed.data.email ? parsed.data.email.toLowerCase() : undefined;
-  if (email && !z.email().safeParse(email).success) return { error: "Cette adresse email n'est pas valide." };
+  const email = parsed.data.email.toLowerCase();
+  if (!z.email().safeParse(email).success) return { error: "Cette adresse email n'est pas valide." };
   const plan = await getPlan();
   if (!can(plan, "relais")) return { error: LOCKED_MESSAGE };
   if (plan.maxInvites <= 0) return { error: `Les invités ne sont pas inclus dans la formule ${plan.name}.` };
@@ -48,8 +48,7 @@ export async function createInviteAction(raw: z.input<typeof input>): Promise<In
   }
   if (!r) return { error: "Le serveur n'est pas encore à jour pour les invitations. Réessaie après sa mise à jour." };
   revalidatePath("/dashboard/invitations");
-  const url = `${site.url}/invitation/${r.token}`;
-  if (!email) return { url };
+  const url = `${site.url}/invitation/${r.token}?o=${user.id}&i=${r.id}`;
   const profile = await getProfile();
   const ownerName = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || profile?.twitch_display_name || "Un streamer";
   const sent = await sendEmailResult(email, remoteInvite({ ownerName, label, level, url, expires: r.expires_at ? new Date(r.expires_at) : null }));

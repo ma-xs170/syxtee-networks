@@ -300,10 +300,10 @@ export function remoteInvite(o: { ownerName: string; label: string; level: "view
     element: (
       <Layout preview={`${o.ownerName} t'invite à piloter son OBS à distance.`} reason="Quelqu'un t'a envoyé ce lien. Sans action de ta part, rien ne se passe.">
         <Title lead="Tu es invité à" hl="piloter OBS." />
-        <Text style={p}>{o.ownerName} te donne accès à son OBS à distance. Pas besoin de compte : ouvre le lien, depuis ton téléphone ou ton ordinateur.</Text>
-        <Cta href={o.url}>Ouvrir le contrôle</Cta>
+        <Text style={p}>{o.ownerName} te donne accès à son OBS à distance. Un compte est nécessaire : le lien te propose de créer un compte ou de te connecter avec cette adresse email, puis ouvre le contrôle.</Text>
+        <Cta href={o.url}>Accepter l'invitation</Cta>
         <InfoPanel rows={[["Invitation", o.label], ["Tu peux", rights], ["Valable", o.expires ? `jusqu'au ${when(o.expires)}` : "jusqu'à ce que la personne la retire"]]} />
-        <Callout title="Ce lien est personnel">Ne le partage pas. La personne qui t&apos;invite peut le désactiver à tout moment.</Callout>
+        <Callout title="Cette invitation est liée à ton adresse email">Elle ne marche qu'avec un compte créé avec cette adresse. La personne qui t&apos;invite peut la retirer à tout moment.</Callout>
       </Layout>
     ),
   };

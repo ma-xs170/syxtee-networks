@@ -27,7 +27,7 @@ const tiers: Tier[] = [
     pitch: "Pour les créateurs qui diffusent régulièrement et veulent tout.",
     highlight: true,
     includes: "Tout Essentiel, plus :",
-    items: ["10 serveurs, 5 par protocole", "3 directs en même temps", "3 invités sans compte pour piloter ton OBS", "1 espace partagé pour ton équipe", "Statistiques détaillées et historique des directs", "Sauvegardes de scènes et Multichat"],
+    items: ["10 serveurs, 5 par protocole", "3 directs en même temps", "3 invités pour piloter ton OBS", "1 espace partagé pour ton équipe", "Statistiques détaillées et historique des directs", "Sauvegardes de scènes et Multichat"],
   },
   {
     id: "prestige",
@@ -35,7 +35,7 @@ const tiers: Tier[] = [
     price: "19,99",
     pitch: "Pour les régies et les équipes qui exigent le meilleur.",
     includes: "Tout Signature, plus :",
-    items: ["Serveurs illimités", "10 directs en même temps", "5 espaces partagés pour tes régies", "5 invités sans compte", "Accès anticipé aux nouveautés"],
+    items: ["Serveurs illimités", "10 directs en même temps", "5 espaces partagés pour tes régies", "5 invités pour piloter ton OBS", "Accès anticipé aux nouveautés"],
   },
 ];
 
@@ -55,7 +55,7 @@ const compare: { group: string; rows: Row[] }[] = [
     rows: [
       { label: "Piloter OBS depuis un navigateur ou un téléphone", v: [true, true, true] },
       { label: "Écran de secours automatique", v: [true, true, true] },
-      { label: "Invités sans compte (liens)", v: ["Aucun", "3", "5"] },
+      { label: "Invités OBS (avec compte)", v: ["Aucun", "3", "5"] },
       { label: "Sauvegardes de scènes", v: [false, true, true] },
     ],
   },

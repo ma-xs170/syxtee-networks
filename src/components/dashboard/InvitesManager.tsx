@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { createInviteAction, revokeInviteAction, type InviteState } from "@/app/(dashboard)/dashboard/invitations/actions";
 import { inviteMemberAction, leaveWorkspaceAction, removeMemberAction, revokeMemberInviteAction, setMemberRoleAction } from "@/app/(dashboard)/dashboard/espaces/actions";
@@ -8,9 +9,10 @@ import type { Invite, InviteLevel } from "@/lib/core";
 import type { WorkspaceInviteRow, WorkspaceMember } from "@/lib/workspace";
 import { Check, UserPlus, X } from "@/components/icons";
 import { useLinkDevices } from "./useLinkDevices";
+import { Card, Fact, Pill, RowMenu, TabsNav } from "./panel";
 
-// Membres. Espace partagé : les comptes de l'équipe (propriétaire, administrateurs, membres), les invitations par email en attente,
-// et les liens d'invité sans compte. Espace personnel : seulement les liens d'invité. Onglet Permissions : ce que permet chaque accès.
+// Équipe. Quatre onglets (?onglet=) : Membres, Invitations, Permissions, Espace. Toute personne invitée passe par un compte : l'invitation part
+// par email et elle crée un compte ou se connecte avec cette adresse. Même mise en page que la page d'un serveur : cartes à en-tête et synthèse « En bref ».
 
 const LEVELS: { id: InviteLevel; title: string; text: string }[] = [
   { id: "view", title: "Voir", text: "Aperçu, scènes, sources et niveaux audio. Rien ne peut être modifié." },
@@ -51,13 +53,22 @@ const dateTime = (iso: string) => new Date(iso).toLocaleString("fr-FR", { dateSt
 export type Owner = { name: string; email: string; avatar: string | null; since: string | null };
 export type TeamInfo = { name: string; role: "owner" | "admin" | "member"; meId: string; members: WorkspaceMember[]; pending: WorkspaceInviteRow[] };
 
-/** `max` : invités sans compte au plus selon la formule (null : illimité, 0 : pas d'accès). `team` : espace partagé actif. */
-export default function InvitesManager({ coreUrl, initial, planName, max, owner, team }: { coreUrl: string; initial: Invite[] | null; planName: string; max: number | null; owner: Owner; team: TeamInfo | null }) {
+const TABS = [
+  { id: "membres", label: "Membres" },
+  { id: "invitations", label: "Invitations" },
+  { id: "permissions", label: "Permissions" },
+  { id: "espace", label: "Espace" },
+] as const;
+const chip = "inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-line-strong px-4 text-sm font-medium transition-colors hover:bg-foreground/[0.08] disabled:opacity-60";
+
+/** `max` : invités OBS au plus selon la formule (null : illimité, 0 : pas d'accès). `team` : espace partagé actif. `settings` : réglages de l'espace (onglet Espace). */
+export default function InvitesManager({ coreUrl, initial, planName, max, owner, team, tab: tabId, settings }: { coreUrl: string; initial: Invite[] | null; planName: string; max: number | null; owner: Owner; team: TeamInfo | null; tab?: string; settings?: ReactNode }) {
   const { devices } = useLinkDevices(coreUrl, 15000);
   const active = (initial ?? []).filter((i) => !i.expired);
   const guestFull = max !== null && active.length >= max;
   const manage = !team || team.role !== "member";
-  const [tab, setTab] = useState<"members" | "perms">("members");
+  const tabs = TABS.filter((t) => t.id !== "espace" || !!team);
+  const tab = tabs.find((t) => t.id === tabId)?.id ?? "membres";
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"member" | "guest">(team ? "member" : "guest");
   const [label, setLabel] = useState("");
@@ -121,28 +132,29 @@ export default function InvitesManager({ coreUrl, initial, planName, max, owner,
   }
 
   const locked = !team && max === 0;
-  const memberCount = team ? team.members.length : 1;
-  const count = memberCount + active.length;
   const canInviteGuest = max !== 0;
   const canInvite = manage && (team || canInviteGuest);
+  const members = team ? team.members : [{ user_id: "me", role: "owner" as const, created_at: owner.since ?? "", name: owner.name, email: owner.email, avatar: owner.avatar }];
+  const waiting = (team?.pending.length ?? 0) + active.length;
+  const href = (id: string) => `/dashboard/invitations${id === "membres" ? "" : `?onglet=${id}`}`;
+  const levelTone = (l: InviteLevel) => (l === "full" ? "warn" : "idle") as "warn" | "idle";
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="h-page">Équi<em>pe</em></h1>
-          <p className="mt-1.5 text-sm text-muted">{team ? `Les personnes qui ont accès à ${team.name}.` : "Les personnes qui peuvent piloter ton OBS, sans avoir besoin de compte."}</p>
+          <p className="mt-2 text-sm text-muted">{team ? `Les personnes qui ont accès à ${team.name}.` : "Les personnes qui peuvent piloter ton OBS. Chacune passe par un compte."}</p>
         </div>
         {!locked && (
           <div className="flex items-center gap-3">
-            {canInviteGuest && <p className="hidden text-sm text-muted sm:block">{max === null ? `${active.length} invité${active.length > 1 ? "s" : ""}` : `${active.length} / ${max} invités`}</p>}
             {team && team.role !== "owner" && (
-              <button type="button" disabled={pending} onClick={() => run(leaveWorkspaceAction)} className="btn btn-secondary text-red-300 disabled:opacity-60">
-                Quitter
+              <button type="button" disabled={pending} onClick={() => run(leaveWorkspaceAction)} className={`${chip} text-red-300`}>
+                Quitter l&apos;espace
               </button>
             )}
             {canInvite && (
-              <button type="button" onClick={() => { setMode(team ? "member" : "guest"); setOpen(true); }} className="btn btn-secondary">
+              <button type="button" onClick={() => { setMode(team ? "member" : "guest"); setOpen(true); }} className="btn btn-primary">
                 <UserPlus size={18} aria-hidden="true" />
                 Inviter
               </button>
@@ -152,8 +164,8 @@ export default function InvitesManager({ coreUrl, initial, planName, max, owner,
       </div>
 
       {locked ? (
-        <section className="mt-10 rounded-2xl border border-line p-8 text-center">
-          <h2 className="text-lg font-semibold tracking-tight">Les invités ne sont pas inclus dans ta formule</h2>
+        <section className="rounded-2xl border border-line bg-surface p-8 text-center">
+          <h2 className="text-lg font-semibold tracking-tight">L&apos;équipe n&apos;est pas incluse dans ta formule</h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
             Avec la formule {planName}, tu ne peux pas inviter quelqu&apos;un à piloter ton OBS. Les formules Signature et Prestige le permettent.
           </p>
@@ -163,131 +175,103 @@ export default function InvitesManager({ coreUrl, initial, planName, max, owner,
         </section>
       ) : (
         <>
-          <div role="tablist" aria-label="Sections" className="mt-8 flex gap-6 border-b border-line">
-            {([["members", "Membres"], ["perms", "Permissions"]] as const).map(([id, text]) => (
-              <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={`-mb-px border-b-2 pb-3 text-sm transition-colors ${tab === id ? "border-foreground text-foreground" : "border-transparent text-muted hover:text-foreground"}`}>
-                {text}
-              </button>
-            ))}
-          </div>
+          <TabsNav tabs={tabs.map((t) => ({ id: t.id, label: t.id === "invitations" && waiting > 0 ? `${t.label} (${waiting})` : t.label, href: href(t.id) }))} current={tab} label="Sections de l'équipe" />
 
           {error && !open && (
-            <p role="alert" className="mt-4 text-sm text-red-400">
+            <p role="alert" className="mb-4 text-sm text-red-400">
               {error}
             </p>
           )}
+          {initial === null && <p className="mb-4 text-sm text-muted">Le serveur n&apos;est pas encore à jour pour les invitations.</p>}
 
-          {tab === "members" ? (
-            <section aria-label="Membres" className="mt-6 overflow-hidden rounded-2xl border border-line">
-              {initial === null && <p className="px-5 py-4 text-sm text-muted">Le serveur n&apos;est pas encore à jour pour les invitations.</p>}
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-4 border-b border-line px-5 py-3 text-xs text-muted sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
-                <span>Membre</span>
-                <span className="hidden sm:block">Rôle</span>
-                <span className="hidden sm:block">Depuis</span>
-                <span className="w-20" />
-              </div>
-              <ul>
-                {(team ? team.members : [{ user_id: "me", role: "owner" as const, created_at: owner.since ?? "", name: owner.name, email: owner.email, avatar: owner.avatar }]).map((m) => (
-                  <li key={m.user_id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-line px-5 py-4 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
-                    <div className="flex min-w-0 items-center gap-3">
+          {tab === "membres" && (
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+              <Card title="Membres">
+                {members.map((m) => {
+                  const canRemove = !!team && m.role !== "owner" && m.user_id !== team.meId && (team.role === "owner" || (team.role === "admin" && m.role === "member"));
+                  const items = [
+                    ...(team?.role === "owner" && m.role !== "owner" ? [m.role === "admin" ? { label: "Passer membre", onSelect: () => run(() => setMemberRoleAction(m.user_id, "member")) } : { label: "Passer administrateur", onSelect: () => run(() => setMemberRoleAction(m.user_id, "admin")) }] : []),
+                    ...(canRemove ? [{ label: "Retirer de l'équipe", danger: true, onSelect: () => run(() => removeMemberAction(m.user_id)) }] : []),
+                  ];
+                  return (
+                    <div key={m.user_id} className="flex min-h-[4.5rem] items-center gap-4 py-3">
                       <Avatar name={m.name} src={m.avatar} />
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[15px] font-semibold">
                           {m.name} {(!team || m.user_id === team.meId) && <span className="font-normal text-muted">(toi)</span>}
                         </p>
-                        <p data-sensitive className="truncate text-[13px] text-muted">{m.email}</p>
-                        <p className="text-[13px] text-muted sm:hidden">{ROLE_NAME[m.role]}</p>
+                        <p data-sensitive className="truncate text-xs text-muted">{m.email}{m.created_at ? ` · depuis le ${day(m.created_at)}` : ""}</p>
                       </div>
+                      <Pill tone={m.role === "owner" ? "ok" : "idle"}>{ROLE_NAME[m.role]}</Pill>
+                      {items.length > 0 ? <RowMenu label={`Actions pour ${m.name}`} items={items} /> : <span className="size-10 shrink-0" aria-hidden="true" />}
                     </div>
-                    <span className="hidden text-sm sm:block">
-                      {team && team.role === "owner" && m.role !== "owner" ? (
-                        <select aria-label={`Rôle de ${m.name}`} value={m.role} disabled={pending} onChange={(e) => run(() => setMemberRoleAction(m.user_id, e.target.value as "admin" | "member"))} className="h-9 rounded-lg border border-line bg-background px-2 text-sm">
-                          <option value="admin">Administrateur</option>
-                          <option value="member">Membre</option>
-                        </select>
-                      ) : (
-                        ROLE_NAME[m.role]
-                      )}
-                    </span>
-                    <span className="hidden text-sm text-muted sm:block">{m.created_at ? day(m.created_at) : "—"}</span>
-                    {team && m.role !== "owner" && m.user_id !== team.meId && (team.role === "owner" || (team.role === "admin" && m.role === "member")) ? (
-                      <button type="button" disabled={pending} onClick={() => run(() => removeMemberAction(m.user_id))} className="w-20 rounded-full border border-line px-3 py-1.5 text-sm text-red-300 transition-colors hover:bg-foreground/10 disabled:opacity-60">
-                        Retirer
-                      </button>
-                    ) : (
-                      <span className="w-20" />
-                    )}
-                  </li>
-                ))}
-                {(team?.pending ?? []).map((p) => (
-                  <li key={p.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-line px-5 py-4 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <Avatar name={p.email} src={null} />
-                      <div className="min-w-0">
-                        <p data-sensitive className="truncate text-sm font-medium">{p.email}</p>
-                        <p className="text-[13px] text-muted">Invitation envoyée, en attente</p>
-                      </div>
-                    </div>
-                    <span className="hidden text-sm sm:block">{ROLE_NAME[p.role]}</span>
-                    <span className="hidden text-[13px] text-muted sm:block">expire le {day(p.expires_at)}</span>
-                    {manage ? (
-                      <button type="button" disabled={pending} onClick={() => run(() => revokeMemberInviteAction(p.id))} className="w-20 rounded-full border border-line px-3 py-1.5 text-sm text-red-300 transition-colors hover:bg-foreground/10 disabled:opacity-60">
-                        Retirer
-                      </button>
-                    ) : (
-                      <span className="w-20" />
-                    )}
-                  </li>
-                ))}
-                {active.map((i) => {
-                  const dev = (devices ?? []).find((d) => d.id === i.device_id);
-                  return (
-                    <li key={i.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-line px-5 py-4 last:border-b-0 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <Avatar name={i.label} src={null} />
-                        <div className="min-w-0">
-                          <p className="flex items-center gap-2 text-sm font-medium">
-                            <span className="truncate">{i.label}</span>
-                            {i.connected > 0 && (
-                              <span className="inline-flex shrink-0 items-center gap-1.5 text-[11px] font-normal text-muted">
-                                <span className="size-1.5 rounded-full bg-emerald-400" /> connecté
-                              </span>
-                            )}
-                          </p>
-                          <p className="truncate text-[13px] text-muted">
-                            Invité sans compte · {dev ? dev.name : i.device_id ? "un OBS" : "tous les OBS"}
-                          </p>
-                          <p className="text-[13px] text-muted sm:hidden">{levelName(i.level)}</p>
-                        </div>
-                      </div>
-                      <span className="hidden text-sm sm:block">{levelName(i.level)}</span>
-                      <span className="hidden text-[13px] text-muted sm:block">
-                        {day(i.created_at)}
-                        <br />
-                        {i.expires_at ? `jusqu'au ${day(i.expires_at)}` : i.last_used_at ? `vu ${dateTime(i.last_used_at)}` : "jamais utilisé"}
-                      </span>
-                      {manage ? (
-                        <button type="button" disabled={pending} onClick={() => run(() => revokeInviteAction(i.id))} className="w-20 rounded-full border border-line px-3 py-1.5 text-sm text-red-300 transition-colors hover:bg-foreground/10 disabled:opacity-60">
-                          Retirer
-                        </button>
-                      ) : (
-                        <span className="w-20" />
-                      )}
-                    </li>
                   );
                 })}
-              </ul>
-              <p className="border-t border-line px-5 py-3.5 text-sm text-muted">
-                {count} personne{count > 1 ? "s" : ""}
-                {!team ? " · crée un espace partagé (menu en bas à gauche) pour une régie ou une équipe : plusieurs OBS, des membres avec leur compte et leur rôle" : ""}
-              </p>
-            </section>
-          ) : (
-            <div className="mt-6 space-y-6">
-              {team && <PermTable title="Rôles de l'espace" intro="Le rôle donne les droits d'un membre de l'équipe (compte requis)." head={["Membre", "Administrateur", "Propriétaire"]} rows={ROLE_RIGHTS} />}
-              <PermTable title="Invités sans compte" intro="Chaque invité (lien) a l'un de ces trois accès. Le serveur l'applique : l'interface n'est qu'un confort." head={LEVELS.map((l) => l.title)} rows={RIGHTS} note="Les sauvegardes, les réglages de bascule et les réglages d'OBS ne sont jamais accessibles aux invités." />
+              </Card>
+              <aside className="space-y-6 lg:sticky lg:top-6">
+                <Card title="En bref">
+                  <dl className="divide-y divide-line">
+                    <Fact label="Membres">{members.length}</Fact>
+                    <Fact label="Invitations en attente">{waiting}</Fact>
+                    <Fact label="Invités OBS">{max === null ? active.length : `${active.length} / ${max}`}</Fact>
+                    <Fact label="Ton rôle"><Pill>{team ? ROLE_NAME[team.role] : "Propriétaire"}</Pill></Fact>
+                    <Fact label="Formule">{planName}</Fact>
+                  </dl>
+                </Card>
+                {!team && <p className="px-1 text-sm leading-relaxed text-muted">Besoin d&apos;une régie ou de plusieurs OBS ? Crée un espace partagé depuis le menu en bas à gauche.</p>}
+              </aside>
             </div>
           )}
+
+          {tab === "invitations" && (
+            <div className="max-w-4xl">
+              <Card title="Invitations en attente" action={canInvite ? <button type="button" onClick={() => { setMode(team ? "member" : "guest"); setOpen(true); }} className={chip}>Inviter</button> : undefined}>
+                {waiting === 0 ? (
+                  <p className="py-10 text-center text-sm text-muted">Aucune invitation en attente. La personne invitée reçoit un email : elle crée un compte ou se connecte avec cette adresse.</p>
+                ) : (
+                  <>
+                    {(team?.pending ?? []).map((p) => (
+                      <div key={p.id} className="flex min-h-[4.5rem] items-center gap-4 py-3">
+                        <Avatar name={p.email} src={null} />
+                        <div className="min-w-0 flex-1">
+                          <p data-sensitive className="truncate text-[15px] font-semibold">{p.email}</p>
+                          <p className="truncate text-xs text-muted">Membre de l&apos;espace · rôle {ROLE_NAME[p.role].toLowerCase()} · expire le {day(p.expires_at)}</p>
+                        </div>
+                        <Pill tone="warn">En attente</Pill>
+                        {manage && <RowMenu label={`Actions pour ${p.email}`} items={[{ label: "Retirer l'invitation", danger: true, onSelect: () => run(() => revokeMemberInviteAction(p.id)) }]} />}
+                      </div>
+                    ))}
+                    {active.map((i) => {
+                      const dev = (devices ?? []).find((d) => d.id === i.device_id);
+                      return (
+                        <div key={i.id} className="flex min-h-[4.5rem] items-center gap-4 py-3">
+                          <Avatar name={i.label} src={null} />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-[15px] font-semibold">{i.label}</p>
+                            <p data-sensitive className="truncate text-xs text-muted">
+                              {i.email ?? "Ancien lien sans adresse"} · {dev ? dev.name : i.device_id ? "un OBS" : "tous les OBS"} · {i.expires_at ? `jusqu'au ${day(i.expires_at)}` : i.last_used_at ? `vu ${dateTime(i.last_used_at)}` : "jamais utilisé"}
+                            </p>
+                          </div>
+                          {i.connected > 0 && <Pill tone="ok">Connecté</Pill>}
+                          <Pill tone={levelTone(i.level)}>{levelName(i.level)}</Pill>
+                          {manage && <RowMenu label={`Actions pour ${i.label}`} items={[{ label: "Retirer l'accès", danger: true, onSelect: () => run(() => revokeInviteAction(i.id)) }]} />}
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
+              </Card>
+            </div>
+          )}
+
+          {tab === "permissions" && (
+            <div className="max-w-4xl space-y-6">
+              {team && <PermTable title="Rôles de l'espace" intro="Le rôle donne les droits d'un membre de l'équipe." head={["Membre", "Administrateur", "Propriétaire"]} rows={ROLE_RIGHTS} />}
+              <PermTable title="Invités OBS" intro="Chaque invité a l'un de ces trois accès. Le serveur l'applique : l'interface n'est qu'un confort." head={LEVELS.map((l) => l.title)} rows={RIGHTS} note="Les sauvegardes, les réglages de bascule et les réglages d'OBS ne sont jamais accessibles aux invités." />
+            </div>
+          )}
+
+          {tab === "espace" && team && <div className="max-w-4xl">{settings}</div>}
         </>
       )}
 
@@ -300,7 +284,7 @@ export default function InvitesManager({ coreUrl, initial, planName, max, owner,
 
           {team && canInviteGuest && !result && !done && (
             <div role="tablist" aria-label="Type d'invitation" className="mt-4 inline-flex rounded-full border border-line p-1 text-sm">
-              {([["member", "Membre (compte)"], ["guest", "Invité (lien)"]] as const).map(([id, text]) => (
+              {([["member", "Membre de l'espace"], ["guest", "Pilotage OBS"]] as const).map(([id, text]) => (
                 <button key={id} type="button" role="tab" aria-selected={mode === id} onClick={() => { setMode(id); setError(""); }} className={`rounded-full px-4 py-1.5 transition-colors ${mode === id ? "bg-foreground/10 text-foreground" : "text-muted hover:text-foreground"}`}>
                   {text}
                 </button>
@@ -308,35 +292,34 @@ export default function InvitesManager({ coreUrl, initial, planName, max, owner,
             </div>
           )}
 
-          {done ? (
+          {done || result?.url ? (
             <div role="status" className="mt-6">
               <p className="text-sm font-medium">Invitation envoyée.</p>
-              <p className="mt-1 text-[13px] leading-relaxed text-muted">La personne reçoit un email : elle se connecte avec cette adresse (ou crée un compte) puis rejoint l&apos;espace. L&apos;invitation est valable 7 jours.</p>
-              <button type="button" onClick={close} className="btn btn-primary mt-5">Terminer</button>
-            </div>
-          ) : result?.url ? (
-            <div role="status" className="mt-6">
-              <p className="text-sm font-medium">Invitation créée. Voici son lien :</p>
-              <p className="mt-0.5 text-[13px] text-muted">
-                {result.emailed ? "Il vient aussi d'être envoyé par email. " : ""}
-                {result.emailNote ?? ""} Il ne sera plus affiché ensuite : copie-le maintenant.
+              <p className="mt-1 text-[13px] leading-relaxed text-muted">
+                {result?.emailed === false ? (result.emailNote ?? "L'email n'a pas pu partir.") : "La personne reçoit un email : elle crée un compte ou se connecte avec cette adresse, puis accepte l'invitation."}
+                {done ? " L'invitation est valable 7 jours." : ""}
               </p>
-              <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                <input readOnly value={result.url} onFocus={(e) => e.currentTarget.select()} className={`${field} font-mono text-xs`} aria-label="Lien d'invitation" />
-                <button type="button" onClick={() => void copy(result.url!)} className="btn btn-secondary shrink-0">
-                  {copied ? "Copié" : "Copier le lien"}
-                </button>
-              </div>
+              {result?.url && (
+                <>
+                  <p className="mt-4 text-[13px] text-muted">Tu peux aussi lui envoyer le lien toi-même. Il ne sera plus affiché ensuite.</p>
+                  <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                    <input readOnly value={result.url} onFocus={(e) => e.currentTarget.select()} className={`${field} font-mono text-xs`} aria-label="Lien d'invitation" />
+                    <button type="button" onClick={() => void copy(result.url!)} className="btn btn-secondary shrink-0">
+                      {copied ? "Copié" : "Copier le lien"}
+                    </button>
+                  </div>
+                </>
+              )}
               <button type="button" onClick={close} className="btn btn-primary mt-5">Terminer</button>
             </div>
           ) : (
             <form onSubmit={submit} className="mt-5 space-y-4">
               <p className="text-sm leading-relaxed text-muted">
-                {mode === "member" ? `La personne reçoit un email pour rejoindre ${team?.name ?? "l'espace"}. Un compte avec cette adresse est nécessaire.` : "La personne reçoit un lien pour piloter ton OBS, par email si tu en indiques un. Elle n'a pas besoin de compte."}
+                {mode === "member" ? `La personne reçoit un email pour rejoindre ${team?.name ?? "l'espace"}.` : "La personne reçoit un email pour piloter ton OBS."} Elle doit créer un compte ou se connecter avec cette adresse.
               </p>
               <label className="grid gap-1.5 text-sm">
-                Adresse email{mode === "guest" ? " (facultatif)" : ""}
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required={mode === "member"} placeholder="prenom@exemple.com" className={field} />
+                Adresse email
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="prenom@exemple.com" className={field} />
               </label>
               {mode === "member" ? (
                 <label className="grid gap-1.5 text-sm">
@@ -395,7 +378,7 @@ export default function InvitesManager({ coreUrl, initial, planName, max, owner,
                 </p>
               )}
               <button type="submit" disabled={pending || (mode === "guest" && guestFull)} className="btn btn-primary w-full disabled:opacity-60">
-                {pending ? "Envoi…" : mode === "member" ? "Envoyer l'invitation" : "Créer le lien"}
+                {pending ? "Envoi…" : "Envoyer l'invitation"}
               </button>
             </form>
           )}

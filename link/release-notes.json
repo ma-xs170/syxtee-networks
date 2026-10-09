@@ -1,4 +1,7 @@
 {
+  "0.7.1": [
+    "Régie IA : une scène de caméra mise à l'antenne à la main est reprise par la régie, qui bascule seule sur une caméra vivante si celle-ci tombe"
+  ],
   "0.7.0": [
     "Régie automatique : plusieurs « prises » en plus du drone (caméra 2, écran, invité), chacune avec sa scène, le drone passant en premier",
     "Garde audio : alerte si le micro se tait ou se coupe pendant ta scène Live, remise du micro en option, bascule sur la scène de secours en option",

@@ -162,6 +162,15 @@ export class AiDirector {
     } catch {
       return;
     }
+    // Une scène de caméra mise à l'antenne à la main est reprise par la régie : si cette caméra tombe, elle bascule sur une vivante.
+    const onAir = cams.findIndex((c) => c.scene === cur);
+    if (onAir >= 0 && onAir !== this.current && cur !== this.live) {
+      this.current = onAir;
+      this.since = now;
+      this.candidate = -1;
+      this.votes = 0;
+      this.setState("cam", cams[onAir].label || cams[onAir].source);
+    }
     const ours = this.current >= 0 && cams[this.current]?.scene === cur;
     // Autre scène à l'antenne (choix manuel) : on se désarme sans rien toucher.
     if (cur !== this.live && !ours) {

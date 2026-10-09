@@ -115,6 +115,19 @@ test("régie IA : la caméra à l'antenne meurt = bascule immédiate sur une viv
   assert.equal(o.scene, "Cam Osmo");
 });
 
+test("régie IA : une scène de caméra mise à l'antenne à la main est reprise, et bascule seule si sa caméra tombe", async () => {
+  const { o, d, frame } = setup("Cam Osmo");
+  o.answer = '{"camera": 2}';
+  frame();
+  await d.tick(2000);
+  assert.equal(o.scene, "Cam Osmo"); // caméra vivante, avis de l'IA seulement 1 fois : on ne bouge pas
+  // L'Osmo est coupé : image figée. Le modèle choisit l'iPhone : bascule immédiate.
+  o.iphone = beau(801);
+  o.drone = beau(802);
+  await d.tick(4000);
+  assert.equal(o.scene, "Cam iPhone");
+});
+
 test("régie IA : scène autre que Live ou la nôtre = rien ne bascule ; réponse illisible = rien ne change", async () => {
   const a = setup("Pause");
   a.o.answer = '{"camera": 2}';

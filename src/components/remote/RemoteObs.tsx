@@ -919,7 +919,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
               {!roles.scene && <p className="mt-2 text-[12px] text-neutral-500">Choisis d&apos;abord ta scène de secours (étape 2).</p>}
               <h3 className="mt-5 text-[12px] font-semibold uppercase tracking-wide text-neutral-400">5 · Régie IA (plusieurs caméras)</h3>
               {noIa && upsell("La régie IA", "Signature")}
-              {!noIa && rights.cams < 6 && <p className="mt-1 text-[12px] text-neutral-500">Ta formule permet jusqu'à {rights.cams} caméras (6 avec Prestige).</p>}
+              {!noIa && rights.cams < 6 && <p className="mt-1 text-[12px] text-neutral-500">Ta formule permet jusqu&apos;à {rights.cams} caméras (6 avec Prestige).</p>}
               <p className="mt-1 text-[12px] leading-relaxed text-neutral-500">
                 Pour 2 caméras ou plus (Osmo, iPhone, drone, téléphones en SRTLA) : toutes les quelques secondes, une IA regarde chaque caméra et met au programme celle où il se passe quelque chose, selon tes consignes. Une caméra coupée ou figée n&apos;est jamais choisie. Chaque caméra a besoin de sa propre scène OBS : choisis la source, puis « Créer la scène » si elle n&apos;existe pas encore.
               </p>

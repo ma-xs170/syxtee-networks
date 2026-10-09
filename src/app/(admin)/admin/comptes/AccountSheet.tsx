@@ -2,11 +2,11 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowLink } from "@/components/dashboard/ui";
 import { Badge } from "@/components/NavTools";
-import PlanForms from "./PlanForms";
+import PlanEditor from "./PlanEditor";
 
 // Fiche d'un compte (admin) : en-tête d'identité, onglets soulignés, puis un Résumé en trois temps :
-// 1. quatre repères (formule, serveurs, dernier direct, assistance), 2. serveurs et activité à gauche, informations et notes à droite,
-// 3. la modification de la formule, repliée. Les autres onglets arrivent en `children`.
+// quatre repères (formule, serveurs, dernier direct, assistance), puis serveurs et activité à gauche, informations et notes à droite.
+// La modification de la formule s'ouvre depuis le bouton « Modifier » de la carte Formule. Les autres onglets arrivent en `children`.
 
 export type SheetTab = "resume" | "relais" | "compte" | "historique" | "securite";
 export const SHEET_TABS: { id: SheetTab; label: string }[] = [
@@ -125,7 +125,9 @@ export default function AccountSheet(p: SheetProps) {
         <div className="space-y-8">
           {/* 1. Quatre repères */}
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <Metric label="Formule" value={p.planName} sub={p.planUntil ? `Jusqu'au ${day(p.planUntil)}` : p.planId === "free" ? "Sans service" : "Sans échéance"} />
+            <Metric label="Formule" value={p.planName} sub={p.planUntil ? `Jusqu'au ${day(p.planUntil)}` : p.planId === "free" ? "Sans service" : "Sans échéance"}>
+              <PlanEditor userId={p.id} plan={p.planId} until={p.planUntil} note={p.planNote} />
+            </Metric>
             <Metric label="Serveurs actifs" value={<span className="font-mono tabular-nums">{used}<span className="text-base font-normal text-muted"> / {p.maxServers ?? "∞"}</span></span>} sub={p.liveCount > 0 ? `${p.liveCount} en direct` : "Aucun en direct"}>
               {p.maxServers ? (
                 <span className="mt-3 block h-1 overflow-hidden rounded-full bg-foreground/10" aria-hidden="true">
@@ -233,17 +235,6 @@ export default function AccountSheet(p: SheetProps) {
               </div>
             </aside>
           </div>
-
-          {/* 3. Modifier la formule, repliée */}
-          <details className="group rounded-2xl border border-line bg-surface">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-sm font-semibold [&::-webkit-details-marker]:hidden">
-              <span>Modifier la formule</span>
-              <span aria-hidden="true" className="text-muted transition-transform group-open:rotate-180">⌄</span>
-            </summary>
-            <div className="border-t border-line p-5">
-              <PlanForms key={`${p.planId}:${p.planUntil}`} userId={p.id} plan={p.planId} until={p.planUntil} note={p.planNote} />
-            </div>
-          </details>
         </div>
       )}
     </>

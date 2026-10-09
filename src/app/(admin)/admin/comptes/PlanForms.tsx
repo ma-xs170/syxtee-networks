@@ -11,7 +11,7 @@ const label = "text-xs text-muted";
 function Submit({ idle }: { idle: string }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className="h-11 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60">
+    <button type="submit" disabled={pending} className="h-11 whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors disabled:opacity-60">
       {pending ? "Enregistrement…" : idle}
     </button>
   );

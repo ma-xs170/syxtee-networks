@@ -31,7 +31,7 @@ export function PartnerNote({ className = "" }: { className?: string }) {
 /** Bouton « Obtenir une eSIM Saily » + code promo (s'il est rempli et `code`) + mention. */
 export function SailyLink({ variant = "primary", note = true, code = true }: { variant?: "primary" | "ghost"; note?: boolean; code?: boolean }) {
   const styles =
-    variant === "primary" ? "bg-accent text-on-accent hover:bg-accent-hover" : "border border-line text-foreground hover:bg-foreground/10";
+    variant === "primary" ? "btn-tonal" : "border border-line text-foreground hover:bg-foreground/10";
   return (
     <div>
       <div className="flex flex-wrap items-center gap-3">

@@ -85,7 +85,7 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
           <input type="checkbox" name="live" value="1" defaultChecked={filter.live} className="h-4 w-4 accent-accent" />
           En live
         </label>
-        <button type="submit" className="h-10 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
+        <button type="submit" className="h-10 whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors">
           Filtrer
         </button>
       </form>

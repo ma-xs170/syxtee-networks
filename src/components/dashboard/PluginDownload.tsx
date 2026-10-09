@@ -12,7 +12,7 @@ import { Tile } from "./ui";
 
 const ICON = { macos: AppleLogo, windows: WindowsLogo, linux: LinuxLogo } as const;
 const ORDER: OsId[] = ["macos", "windows", "linux"];
-const primary = "inline-flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover";
+const primary = "inline-flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors";
 const ghost = "inline-flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-full border border-line-strong px-5 text-sm font-medium transition-colors hover:bg-foreground/10";
 const disabled = "inline-flex h-11 w-full cursor-not-allowed items-center justify-center whitespace-nowrap rounded-full border border-line px-5 text-sm text-muted";
 

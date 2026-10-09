@@ -129,7 +129,7 @@ export function PrivateZones({ zones }: { zones: PrivateZone[] }) {
             </button>
           </div>
           <div className="flex flex-wrap items-center gap-4 sm:col-span-2">
-            <button type="submit" disabled={pending} className="h-11 rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60">
+            <button type="submit" disabled={pending} className="h-11 rounded-full btn-tonal px-5 text-sm font-medium transition-colors disabled:opacity-60">
               {pending ? "Un instant…" : "Ajouter la zone"}
             </button>
             {(state.error || geoError) && (

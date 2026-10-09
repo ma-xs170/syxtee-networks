@@ -93,9 +93,7 @@ function Row({ relay }: { relay: RelayRow }) {
 
 export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen = false }: Props) {
   const [wizard, setWizard] = useState(autoOpen && active < max);
-  const [protocol, setProtocol] = useState<"all" | RelayRow["protocol"]>("all");
   const [server, setServer] = useState("all");
-  const [q, setQ] = useState("");
   const { state } = useLiveStatus();
 
   // Statut en direct : le flux SSE du Core prime sur l'état lu au chargement de la page.
@@ -106,9 +104,8 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
   const withLive = relays.map((r) => ({ ...r, live: !r.archived && (liveIds ? liveIds.has(r.id) : r.live) }));
 
   const servers = [...new Set(relays.map((r) => r.server))];
-  const needle = q.trim().toLowerCase();
   const shown = withLive.filter(
-    (r) => (protocol === "all" || r.protocol === protocol) && (server === "all" || r.server === server) && (!needle || r.name.toLowerCase().includes(needle)),
+    (r) => server === "all" || r.server === server,
   );
   const ORDER: Record<RelayGroup, number> = { live: 0, active: 1, idle: 2, archived: 3 };
   const rows = [...shown].sort((a, b) => ORDER[relayGroup(a)] - ORDER[relayGroup(b)]);
@@ -139,7 +136,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
               <button
                 type="button"
                 onClick={() => setWizard(true)}
-                className="mt-6 h-11 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98]"
+                className="mt-6 h-11 whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors active:scale-[0.98]"
               >
                 Créer mon premier serveur
               </button>
@@ -153,18 +150,6 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
         <>
           <div className="mb-4 flex flex-wrap items-center justify-end gap-3">
             <div className="flex flex-wrap items-center gap-2">
-              <label className="relative">
-                <span className="sr-only">Rechercher un serveur</span>
-                <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher" className="h-10 w-44 rounded-full border border-line bg-background px-4 text-sm text-foreground placeholder:text-muted focus:border-line-strong focus:outline-none" />
-              </label>
-              <label>
-                <span className="sr-only">Protocole</span>
-                <select value={protocol} onChange={(e) => setProtocol(e.target.value as typeof protocol)} className="h-10 rounded-full border border-line bg-background px-4 text-sm text-foreground">
-                  <option value="all">Tous les protocoles</option>
-                  <option value="srtla">SRTLA</option>
-                  <option value="rtmp">RTMP</option>
-                </select>
-              </label>
               {servers.length > 1 && (
                 <label>
                   <span className="sr-only">Région</span>
@@ -186,7 +171,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
           <button
             type="button"
             onClick={() => setWizard(true)}
-            className="h-10 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98]"
+            className="h-10 whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors active:scale-[0.98]"
           >
             + Créer un serveur
           </button>

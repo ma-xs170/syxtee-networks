@@ -80,7 +80,7 @@ export default function InstallCard({ className = "" }: { className?: string }) 
       </div>
       <div className="mt-4">
         {canPrompt ? (
-          <button type="button" onClick={() => void install()} className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98] motion-reduce:active:scale-100">
+          <button type="button" onClick={() => void install()} className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors active:scale-[0.98] motion-reduce:active:scale-100">
             <DownloadSimple size={18} aria-hidden="true" />
             Installer l&apos;app
           </button>

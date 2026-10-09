@@ -9,7 +9,7 @@ const field = "w-full rounded-xl border border-line bg-background px-4 text-sm t
 function Send() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className="h-11 whitespace-nowrap rounded-full bg-accent px-6 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60">
+    <button type="submit" disabled={pending} className="h-11 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors disabled:opacity-60">
       {pending ? "Envoi…" : "Envoyer le message"}
     </button>
   );

@@ -65,7 +65,7 @@ export default function NewTicketForm({ person }: { person: PersonInfo }) {
           </dl>
         </section>
 
-        <button type="button" disabled={!category} onClick={() => setPage(2)} className="h-11 whitespace-nowrap rounded-full bg-accent px-6 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50">
+        <button type="button" disabled={!category} onClick={() => setPage(2)} className="h-11 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50">
           Continuer
         </button>
       </div>
@@ -139,7 +139,7 @@ export default function NewTicketForm({ person }: { person: PersonInfo }) {
           <button type="button" onClick={() => setPage(1)} className="h-11 whitespace-nowrap rounded-full border border-line-strong px-6 text-sm font-medium transition-colors hover:bg-foreground/[0.08]">
             Retour
           </button>
-          <button type="submit" disabled={pending || !category} className="h-11 whitespace-nowrap rounded-full bg-accent px-6 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60">
+          <button type="submit" disabled={pending || !category} className="h-11 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors disabled:opacity-60">
             {pending ? "Envoi…" : "Envoyer ma demande"}
           </button>
           <p className="text-xs text-muted">Réponse rapide, généralement sous 24 h.</p>

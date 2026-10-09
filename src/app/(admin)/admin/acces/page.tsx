@@ -116,7 +116,7 @@ export default async function AdminAccessPage({ searchParams }: { searchParams: 
                     <button type="submit" name="decision" value="refused" className="h-10 whitespace-nowrap rounded-lg border border-line-strong px-4 text-sm transition-colors hover:bg-foreground/10">
                       Refuser
                     </button>
-                    <button type="submit" name="decision" value="approved" className="h-10 whitespace-nowrap rounded-lg bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
+                    <button type="submit" name="decision" value="approved" className="h-10 whitespace-nowrap rounded-lg btn-tonal px-5 text-sm font-medium transition-colors">
                       Approuver
                     </button>
                   </form>

@@ -44,7 +44,7 @@ export default async function AdminJournalPage({ searchParams }: { searchParams:
           <input name="action" defaultValue={action} placeholder="plan., account., keys.…" className="h-10 w-64 rounded-full border border-line bg-background px-4 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60" />
         </label>
         {compte && <input type="hidden" name="compte" value={compte} />}
-        <button type="submit" className="h-10 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent hover:bg-accent-hover">
+        <button type="submit" className="h-10 whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium">
           Filtrer
         </button>
       </form>

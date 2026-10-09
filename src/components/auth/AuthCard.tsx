@@ -72,7 +72,7 @@ function Submit({ idle, busy, disabled = false }: { idle: string; busy: string; 
     <button
       type="submit"
       disabled={disabled || pending}
-      className="btn-shine relative h-12 w-full overflow-hidden whitespace-nowrap rounded-full bg-accent text-sm font-medium text-on-accent transition-[background-color,transform] hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.97] disabled:cursor-not-allowed disabled:!bg-surface-2 disabled:text-muted disabled:border disabled:border-line"
+      className="relative h-12 w-full overflow-hidden whitespace-nowrap rounded-full btn-tonal text-sm font-medium transition-[background-color,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.97] disabled:cursor-not-allowed disabled:!bg-surface-2 disabled:text-muted disabled:border disabled:border-line"
     >
       {pending ? busy : idle}
     </button>
@@ -259,7 +259,7 @@ function CheckMail({ email, at, lead, resend, next, onBack }: { email: string; a
         ))}
       </motion.ol>
       {mailbox(email) && (
-        <motion.a variants={item} href={mailbox(email)!.url} target="_blank" rel="noopener noreferrer" className="mt-4 flex h-12 w-full items-center justify-center rounded-xl bg-accent text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
+        <motion.a variants={item} href={mailbox(email)!.url} target="_blank" rel="noopener noreferrer" className="mt-4 flex h-12 w-full items-center justify-center rounded-xl btn-tonal text-sm font-medium transition-colors">
           Ouvrir {mailbox(email)!.name}
         </motion.a>
       )}

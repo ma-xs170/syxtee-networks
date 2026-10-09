@@ -21,7 +21,7 @@ export type ManagedRow = {
 
 const field = "h-11 w-full rounded-xl border border-line bg-background px-4 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60";
 const btn = "inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg border border-line-strong px-3 text-sm transition-colors hover:bg-foreground/10 disabled:opacity-50";
-const primary = "inline-flex h-11 items-center justify-center whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60";
+const primary = "inline-flex h-11 items-center justify-center whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors disabled:opacity-60";
 const LIFETIMES: [string, string][] = [
   ["none", "Indéfinie"],
   ["1", "1 jour"],

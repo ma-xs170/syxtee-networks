@@ -12,7 +12,7 @@ import { ArrowLink, Tile, TileLabel } from "./ui";
 // Trois étapes quand il n'y a encore aucun poste.
 
 const btnGhost = "inline-flex h-9 items-center justify-center whitespace-nowrap rounded-full border border-line px-4 text-xs font-medium transition-colors hover:bg-foreground/10 disabled:opacity-40";
-const btnPrimary = "inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover";
+const btnPrimary = "inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors";
 
 /** Bouton « Télécharger le plugin » : le fichier du système du visiteur s'il existe, sinon la page Plugin OBS. */
 export function DownloadButton({ coreUrl, latest, className = btnPrimary, label = "Télécharger le plugin" }: { coreUrl: string; latest: PluginLatest | null; className?: string; label?: string }) {

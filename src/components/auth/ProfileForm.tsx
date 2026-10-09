@@ -55,7 +55,7 @@ function Submit({ children }: { children: ReactNode }) {
     <button
       type="submit"
       disabled={pending}
-      className="h-12 w-full rounded-xl bg-accent text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.99] disabled:opacity-60 sm:w-auto sm:px-8"
+      className="h-12 w-full rounded-xl btn-tonal text-sm font-medium transition-colors active:scale-[0.99] disabled:opacity-60 sm:w-auto sm:px-8"
     >
       {pending ? "Enregistrement…" : children}
     </button>

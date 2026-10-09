@@ -261,7 +261,7 @@ export default function RelayActions({ relay, showView = true, onView, bare = fa
                 type="submit"
                 disabled={pending || (ask === "rename" && !name.trim()) || (ask === "server" && !target)}
                 className={`h-11 whitespace-nowrap rounded-full px-5 text-sm font-medium transition-colors disabled:opacity-60 ${
-                  t.danger ? "border border-red-400/40 text-red-300 hover:bg-red-400/10" : "bg-accent text-on-accent hover:bg-accent-hover"
+                  t.danger ? "border border-red-400/40 text-red-300 hover:bg-red-400/10" : "btn-tonal"
                 }`}
               >
                 {pending ? "Un instant…" : t.cta}

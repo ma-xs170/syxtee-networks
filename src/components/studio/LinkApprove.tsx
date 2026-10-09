@@ -74,7 +74,7 @@ export default function LinkApprove({ code: initial, coreUrl, email = "" }: { co
           <p className="mt-3 text-sm text-muted">
             Retourne dans OBS : le plugin se connecte automatiquement. Il te propose ensuite de <strong>sauvegarder tes scènes</strong> avant de commencer.
           </p>
-          <Link href="/dashboard/controle-a-distance" className={`${btn} mt-6 bg-accent text-on-accent hover:bg-accent-hover`}>
+          <Link href="/dashboard/controle-a-distance" className={`${btn} mt-6 btn-tonal`}>
             Ouvrir le contrôle à distance
           </Link>
         </>
@@ -90,7 +90,7 @@ export default function LinkApprove({ code: initial, coreUrl, email = "" }: { co
         <>
           <h1 className="mt-3 text-2xl font-semibold tracking-tight">Accès sur invitation</h1>
           <p className="mt-3 text-sm text-muted">Ton compte n&apos;a pas encore l&apos;accès à SYXTEE Link et au Studio. Demande ton accès.</p>
-          <a href="/acces" className={`${btn} mt-6 bg-accent text-on-accent hover:bg-accent-hover`}>
+          <a href="/acces" className={`${btn} mt-6 btn-tonal`}>
             Demander l&apos;accès
           </a>
         </>
@@ -135,7 +135,7 @@ export default function LinkApprove({ code: initial, coreUrl, email = "" }: { co
           <p className="mt-2 text-xs text-muted">Le code affiché dans OBS est le même : {code.replace(/(.{4})(.{4})/, "$1 $2")}. Si tu n&apos;as rien lancé, ferme cette page.</p>
           {state === "error" && <p role="alert" className="mt-3 text-sm text-red-400">Impossible de confirmer pour le moment. Réessaie.</p>}
           <div className="mt-6 flex flex-wrap gap-3">
-            <button type="button" onClick={approve} disabled={busy} className={`${btn} bg-accent text-on-accent hover:bg-accent-hover disabled:opacity-50`}>
+            <button type="button" onClick={approve} disabled={busy} className={`${btn} btn-tonal disabled:opacity-50`}>
               {busy ? "Connexion…" : "Autoriser"}
             </button>
             <button type="button" onClick={refuse} disabled={busy} className={`${btn} border border-line-strong hover:bg-foreground/10 disabled:opacity-50`}>
@@ -172,7 +172,7 @@ export default function LinkApprove({ code: initial, coreUrl, email = "" }: { co
                 spellCheck={false}
                 className="h-12 w-full rounded-xl border border-line bg-background px-4 text-center font-mono text-lg uppercase tracking-[0.3em]"
               />
-              <button type="submit" className={`${btn} bg-accent text-on-accent hover:bg-accent-hover`}>
+              <button type="submit" className={`${btn} btn-tonal`}>
                 Valider
               </button>
             </form>

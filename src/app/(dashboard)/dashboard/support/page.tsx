@@ -46,7 +46,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
             ))}
           </ul>
           <div className="mt-auto pt-6">
-            <Link href="/dashboard/support/nouveau" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full bg-accent px-6 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
+            <Link href="/dashboard/support/nouveau" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors">
               <span aria-hidden="true">+</span> Nouvelle demande
             </Link>
           </div>

@@ -26,7 +26,7 @@ export type MemberView = {
 export type InviteRow = { id: string; email: string; role: StaffRole; daysLeft: number };
 
 const btn = "inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg border border-line-strong px-3 text-sm transition-colors hover:bg-foreground/10 disabled:opacity-50";
-const primary = "inline-flex h-10 items-center justify-center whitespace-nowrap rounded-lg bg-accent px-4 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-50";
+const primary = "inline-flex h-10 items-center justify-center whitespace-nowrap rounded-lg btn-tonal px-4 text-sm font-medium transition-colors disabled:opacity-50";
 const field = "h-11 w-full rounded-lg border border-line bg-background px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60";
 
 export function RoleChip({ role, className = "" }: { role: AnyRole; className?: string }) {

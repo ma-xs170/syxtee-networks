@@ -476,7 +476,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
               <button
                 type="submit"
                 disabled={sending || !text.trim() || ![...targets].some((p) => sendable.includes(p))}
-                className="h-10 shrink-0 rounded-lg bg-accent px-4 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-10 shrink-0 rounded-lg btn-tonal px-4 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {sending ? "Envoi…" : "Envoyer"}
               </button>

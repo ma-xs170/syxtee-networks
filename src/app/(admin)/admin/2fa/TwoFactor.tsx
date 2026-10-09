@@ -9,7 +9,7 @@ const field = "h-12 w-full rounded-xl border border-foreground/20 bg-foreground/
 function Submit() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className="h-12 w-full rounded-xl bg-accent text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60">
+    <button type="submit" disabled={pending} className="h-12 w-full rounded-xl btn-tonal text-sm font-medium transition-colors disabled:opacity-60">
       {pending ? "Vérification…" : "Vérifier"}
     </button>
   );
@@ -50,7 +50,7 @@ export default function TwoFactor({ factorId }: { factorId: string | null }) {
           type="button"
           disabled={pending}
           onClick={() => start(async () => setEnroll(await enrollTotp()))}
-          className="h-12 w-full rounded-xl bg-accent text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60"
+          className="h-12 w-full rounded-xl btn-tonal text-sm font-medium transition-colors disabled:opacity-60"
         >
           {pending ? "Création…" : "Configurer la double authentification"}
         </button>

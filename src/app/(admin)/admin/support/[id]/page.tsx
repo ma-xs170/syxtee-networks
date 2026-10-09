@@ -96,7 +96,7 @@ export default async function AdminTicketPage({ params }: { params: Promise<{ id
             <div className="mt-3 flex flex-wrap gap-2">
               {canTake && (
                 <form action={claimTicketAction.bind(null, ticket.id)}>
-                  <button type="submit" className="h-9 whitespace-nowrap rounded-lg bg-accent px-3 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
+                  <button type="submit" className="h-9 whitespace-nowrap rounded-lg btn-tonal px-3 text-sm font-medium transition-colors">
                     {ticket.assigned_to ? "Reprendre" : "Prendre en charge"}
                   </button>
                 </form>

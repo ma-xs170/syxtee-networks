@@ -65,19 +65,19 @@ export default async function InvitationPage({ params, searchParams }: { params:
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               {user && user.email?.toLowerCase() !== inv.email.toLowerCase() ? (
                 <form action={switchAccountAction.bind(null, token, inv.email)}>
-                  <button type="submit" className={`${btn} border border-line-strong bg-accent text-on-accent hover:bg-accent-hover`}>
+                  <button type="submit" className={`${btn} btn-tonal`}>
                     Changer de compte
                   </button>
                 </form>
               ) : user && user.email?.toLowerCase() === inv.email.toLowerCase() ? (
                 <form action={acceptInvitationAction.bind(null, token)}>
-                  <button type="submit" className={`${btn} border border-line-strong bg-accent text-on-accent hover:bg-accent-hover`}>
+                  <button type="submit" className={`${btn} btn-tonal`}>
                     Accepter l&apos;invitation
                   </button>
                 </form>
               ) : (
                 <>
-                  <Link href={`/connexion?next=${next}`} className={`${btn} border border-line-strong bg-accent text-on-accent hover:bg-accent-hover`}>
+                  <Link href={`/connexion?next=${next}`} className={`${btn} btn-tonal`}>
                     Me connecter
                   </Link>
                   <Link href={`/inscription?email=${encodeURIComponent(inv.email)}&next=${next}`} className={`${btn} border border-line-strong hover:bg-foreground/10`}>

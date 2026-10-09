@@ -5,7 +5,7 @@ import { type BotState, postServicesAction, sendAnnounceAction, setPresenceActio
 
 const field = "w-full rounded-xl border border-line bg-background px-4 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60";
 const label = "text-xs text-muted";
-const button = "h-11 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60";
+const button = "h-11 whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors disabled:opacity-60";
 
 function Feedback({ state }: { state: BotState }) {
   return (

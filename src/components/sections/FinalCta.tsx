@@ -18,7 +18,7 @@ export default function FinalCta() {
           <div className="mt-10 flex flex-col items-center gap-4">
             <Link
               href="/acces"
-              className="inline-flex h-12 items-center justify-center gap-3 whitespace-nowrap rounded-full border border-line-strong bg-accent px-8 text-base font-medium text-on-accent transition-[background-color,transform] hover:bg-accent-hover active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+              className="inline-flex h-12 items-center justify-center gap-3 whitespace-nowrap rounded-full btn-tonal px-8 text-base font-medium transition-[background-color,transform] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
             >
               Demander l&apos;accès
               <span aria-hidden="true">↗</span>

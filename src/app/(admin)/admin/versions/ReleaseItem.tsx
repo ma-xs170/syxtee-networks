@@ -29,7 +29,7 @@ export default function ReleaseItem({ id, version, title, notes, meta, sent }: P
           {state.error && <p role="alert" className="text-sm text-bad">{state.error}</p>}
           {state.ok && <p role="status" className="text-sm text-muted">{state.ok}</p>}
           <div className="flex items-center gap-4">
-            <button type="submit" disabled={pending} className="h-10 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60">
+            <button type="submit" disabled={pending} className="h-10 whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors disabled:opacity-60">
               {pending ? "Enregistrement…" : sent ? "Enregistrer et mettre à jour Discord" : "Enregistrer"}
             </button>
             <button type="button" onClick={() => setEditing(false)} className={link}>Fermer</button>

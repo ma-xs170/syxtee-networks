@@ -78,7 +78,7 @@ const scenes: StoryScene[] = [
     footer: (
       <Link
         href="/saily"
-        className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover"
+        className="inline-flex items-center justify-center gap-2 rounded-full btn-tonal px-5 py-3 text-sm font-medium transition-colors"
       >
         Ajouter une 4G avec Saily <span aria-hidden="true">→</span>
       </Link>

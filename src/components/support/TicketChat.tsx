@@ -150,7 +150,7 @@ export default function TicketChat({
             <button
               type="submit"
               disabled={pending}
-              className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-lg bg-accent px-4 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60"
+              className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-lg btn-tonal px-4 text-sm font-medium transition-colors disabled:opacity-60"
             >
               <PaperPlaneTilt size={16} aria-hidden="true" />
               {pending ? "Envoi…" : "Envoyer"}

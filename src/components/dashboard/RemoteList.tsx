@@ -10,7 +10,7 @@ import { Tile } from "./ui";
 
 // Contrôle à distance, liste des postes : « En ligne (n) » et « Hors ligne (n) », une carte par poste avec « Piloter OBS ».
 
-const pilot = "inline-flex h-10 items-center justify-center whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover";
+const pilot = "inline-flex h-10 items-center justify-center whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors";
 const pilotOff = "inline-flex h-10 cursor-not-allowed items-center justify-center whitespace-nowrap rounded-full border border-line px-5 text-sm text-muted";
 
 /** Plugin pour macOS : toujours à portée, que l'on ait déjà un OBS relié ou non. Les étapes complètes sont sur la page Plugin OBS. */
@@ -34,7 +34,7 @@ function PluginBar({ coreUrl, latest }: { coreUrl: string; latest: PluginLatest 
           Comment l&apos;installer
         </Link>
         {mac?.available && mac.url ? (
-          <a href={`${coreUrl}${mac.url}`} download className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
+          <a href={`${coreUrl}${mac.url}`} download className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors">
             <DownloadSimple size={18} aria-hidden="true" />
             Télécharger pour macOS
           </a>

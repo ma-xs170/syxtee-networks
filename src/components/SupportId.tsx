@@ -55,7 +55,7 @@ export function DiscordTicketButton({ id, size = "md" }: { id: string; size?: "m
       <button
         type="button"
         onClick={open}
-        className={`btn-shine relative inline-flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-accent text-sm font-medium text-on-accent transition-[background-color,transform] hover:bg-accent-hover active:scale-[0.97] ${size === "sm" ? "h-9 px-4" : "h-11 px-5"}`}
+        className={`relative inline-flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full btn-tonal text-sm font-medium transition-[background-color,transform] active:scale-[0.97] ${size === "sm" ? "h-9 px-4" : "h-11 px-5"}`}
       >
         Ouvrir un ticket dans la communauté
       </button>

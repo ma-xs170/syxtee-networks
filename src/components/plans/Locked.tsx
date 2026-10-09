@@ -28,7 +28,7 @@ export function UpgradeCard({ feature }: { feature?: string }) {
         {feature ? <span className="text-foreground">{feature}</span> : "Cette fonction"} s&apos;ouvre avec un abonnement. Les services ne sont pas encore ouverts à tous : ton compte gratuit donne accès à la documentation et au support, où tu peux demander un accès.
       </p>
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-        <Link href="/tarifs" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
+        <Link href="/tarifs" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors">
           Voir les forfaits
         </Link>
         <Link href="/dashboard/support" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-line-strong px-5 text-sm font-medium transition-colors hover:bg-fill-hover">

@@ -365,7 +365,7 @@ export default function CreateRelayWizard({
           {created ? (
             <>
               <span />
-              <button type="button" onClick={close} className="h-11 whitespace-nowrap rounded-full bg-accent px-6 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98]">
+              <button type="button" onClick={close} className="h-11 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors active:scale-[0.98]">
                 Terminé
               </button>
             </>
@@ -383,7 +383,7 @@ export default function CreateRelayWizard({
                   type="button"
                   disabled={!canNext}
                   onClick={() => setStep(step + 1)}
-                  className="h-11 whitespace-nowrap rounded-full bg-accent px-6 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="h-11 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Suivant
                 </button>
@@ -392,7 +392,7 @@ export default function CreateRelayWizard({
                   type="button"
                   disabled={pending}
                   onClick={submit}
-                  className="h-11 whitespace-nowrap rounded-full bg-accent px-6 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98] disabled:opacity-60"
+                  className="h-11 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors active:scale-[0.98] disabled:opacity-60"
                 >
                   {pending ? "Création…" : "Créer le relais"}
                 </button>

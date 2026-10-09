@@ -68,7 +68,7 @@ export default async function AdminQuotesPage({ searchParams }: { searchParams: 
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <a href={`mailto:${q.email}?subject=${encodeURIComponent(`Votre demande de devis : ${q.event_type}`)}`} className={`${btn} inline-flex items-center border-transparent bg-accent font-medium text-on-accent hover:bg-accent-hover`}>
+                  <a href={`mailto:${q.email}?subject=${encodeURIComponent(`Votre demande de devis : ${q.event_type}`)}`} className={`${btn} inline-flex items-center border-transparent btn-tonal font-medium`}>
                     Répondre
                   </a>
                   <form action={setQuoteStatusAction} className="flex gap-2">

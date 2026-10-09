@@ -29,7 +29,7 @@ import { ArrowLink, Tile, TileLabel } from "./ui";
 // ─────────────── 1. Centre de contrôle ───────────────
 
 const btnPrimary =
-  "inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-accent px-6 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98]";
+  "inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors active:scale-[0.98]";
 
 /** Ligne fine de statut : « Hors ligne · dernier direct il y a X » + « Lancer un direct » ; en direct, le chrono et l'aperçu. */
 function StatusLine({ data, onLaunch }: { data: OverviewData; onLaunch: () => void }) {

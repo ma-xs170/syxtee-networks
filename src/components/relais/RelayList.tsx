@@ -45,37 +45,49 @@ export function ServerLabel({ id }: { id: string }) {
   );
 }
 
-function Row({ relay, live, onOpen }: { relay: RelayRow; live: boolean; onOpen: (r: RelayRow) => void }) {
+const COLS = "lg:grid-cols-[minmax(0,2fr)_96px_minmax(0,1.2fr)_110px_minmax(0,1.1fr)_110px_17.5rem]";
+
+const STATE: Record<RelayGroup, { label: string; dot: string; text: string }> = {
+  live: { label: "En direct", dot: "bg-live", text: "text-live" },
+  active: { label: "Actif", dot: "bg-ok", text: "text-foreground" },
+  idle: { label: "Inactif", dot: "bg-foreground/25", text: "text-muted" },
+  archived: { label: "Archivé", dot: "bg-foreground/15", text: "text-muted" },
+};
+
+/** Ligne du tableau des serveurs : nom et état, protocole, région, dernier direct, débit moyen, actions. Sur mobile, la ligne devient une carte. */
+function Row({ relay, onOpen }: { relay: RelayRow; onOpen: (r: RelayRow) => void }) {
+  const g = relayGroup(relay);
+  const st = STATE[g];
   return (
-    <li className="grid grid-cols-1 gap-4 rounded-2xl border border-line p-4 transition-colors hover:border-foreground/30 sm:p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2.5">
-          {live ? <span className="live-dot" aria-label="En live" /> : <span className="h-2 w-2 rounded-full border border-muted" aria-hidden="true" />}
-          <button type="button" onClick={() => onOpen(relay)} className="truncate text-left text-base font-medium underline-offset-4 hover:underline">
-            {relay.name}
-          </button>
+    <li className={`grid grid-cols-1 gap-x-4 gap-y-3 px-4 py-4 transition-colors hover:bg-foreground/[0.03] sm:px-5 lg:items-center ${COLS}`}>
+      <div className="flex min-w-0 items-center gap-3">
+        {g === "live" ? <span className="live-dot shrink-0" aria-label="En direct" /> : <span aria-hidden="true" className={`size-2 shrink-0 rounded-full ${st.dot}`} />}
+        <button type="button" onClick={() => onOpen(relay)} className="truncate text-left text-sm font-medium underline-offset-4 hover:underline">
+          {relay.name}
+        </button>
+        <span className={`shrink-0 text-xs lg:hidden ${st.text}`}>{st.label}</span>
+      </div>
+      <div className="flex items-center gap-3 lg:contents">
+        <div className="lg:block">
           <ProtocolBadge protocol={relay.protocol} />
         </div>
-        <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:flex sm:flex-wrap">
-          <div>
-            <dt className="sr-only">Serveur</dt>
-            <dd className="text-muted">
-              <ServerLabel id={relay.server} />
-            </dd>
-          </div>
-          <div>
-            <dt className="sr-only">Dernier live</dt>
-            <dd className={live ? "text-foreground" : "text-muted"}>
-              {live ? "En live" : relay.last_live_at ? `Dernier live ${fmtAgo(relay.last_live_at)}` : "Jamais utilisé"}
-            </dd>
-          </div>
-          <div>
-            <dt className="sr-only">Débit moyen sur 30 jours</dt>
-            <dd className="font-mono tabular-nums text-muted">{relay.avg_kbps != null ? `${fmtInt(relay.avg_kbps)} kbps moy.` : "Pas de débit"}</dd>
-          </div>
-        </dl>
+        <div className="min-w-0 text-sm text-muted">
+          <ServerLabel id={relay.server} />
+        </div>
       </div>
-      <RelayActions relay={relay} onView={() => onOpen(relay)} />
+      <div className={`hidden text-sm lg:flex lg:items-center ${st.text}`}>
+        <span className="inline-flex items-center gap-2">
+          <span aria-hidden="true" className={`size-1.5 rounded-full ${st.dot}`} />
+          {st.label}
+        </span>
+      </div>
+      <div className="flex items-center justify-between gap-4 text-sm text-muted lg:contents">
+        <span>{g === "live" ? "En ce moment" : relay.last_live_at ? fmtAgo(relay.last_live_at) : "Jamais utilisé"}</span>
+        <span className="font-mono tabular-nums lg:text-right">{relay.avg_kbps != null ? `${fmtInt(relay.avg_kbps)} kbps` : "-"}</span>
+      </div>
+      <div className="lg:justify-self-end">
+        <RelayActions relay={relay} onView={() => onOpen(relay)} />
+      </div>
     </li>
   );
 }
@@ -84,8 +96,8 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
   const [wizard, setWizard] = useState(autoOpen && active < max);
   const [protocol, setProtocol] = useState<"all" | RelayRow["protocol"]>("all");
   const [server, setServer] = useState("all");
-  const [q] = useState("");
-  const [showArchived, setShowArchived] = useState(false);
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState<"all" | RelayGroup>("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const { state } = useLiveStatus();
 
@@ -102,7 +114,9 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
   const shown = withLive.filter(
     (r) => (protocol === "all" || r.protocol === protocol) && (server === "all" || r.server === server) && (!needle || r.name.toLowerCase().includes(needle)),
   );
-  const archived = shown.filter((r) => r.archived);
+  const ORDER: Record<RelayGroup, number> = { live: 0, active: 1, idle: 2, archived: 3 };
+  const rows = shown.filter((r) => status === "all" ? true : relayGroup(r) === status).sort((a, b) => ORDER[relayGroup(a)] - ORDER[relayGroup(b)]);
+  const count = (g: RelayGroup) => withLive.filter((r) => relayGroup(r) === g).length;
   const full = active >= max;
   const unlimited = max >= 1_000_000;
 
@@ -155,82 +169,64 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
         </section>
       ) : (
         <>
-          <div className="mb-6 flex flex-wrap items-center gap-3">
-            <div role="radiogroup" aria-label="Protocole" className="flex rounded-full border border-line p-1">
-              {(["all", "srtla", "rtmp"] as const).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  role="radio"
-                  aria-checked={protocol === p}
-                  onClick={() => setProtocol(p)}
-                  className={`h-8 rounded-full px-3 text-xs font-medium uppercase tracking-wide transition-colors ${protocol === p ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}
-                >
-                  {p === "all" ? "Tous" : p}
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <nav aria-label="Filtrer par état" className="flex gap-6 overflow-x-auto border-b border-line">
+              {([["all", "Tous", withLive.length], ["live", "En direct", count("live")], ["active", "Actifs", count("active")], ["idle", "Inactifs", count("idle")], ["archived", "Archivés", count("archived")]] as const).map(([id, label, n]) => (
+                <button key={id} type="button" aria-pressed={status === id} onClick={() => setStatus(id)} className={`-mb-px whitespace-nowrap border-b-2 pb-3 text-sm transition-colors ${status === id ? "border-foreground text-foreground" : "border-transparent text-muted hover:text-foreground"}`}>
+                  {label}
+                  <span className="ml-2 tabular-nums text-muted">{n}</span>
                 </button>
               ))}
-            </div>
-            {servers.length > 1 && (
-              <label className="flex items-center gap-2 text-sm text-muted">
-                <span className="sr-only">Serveur</span>
-                <select value={server} onChange={(e) => setServer(e.target.value)} className="h-10 rounded-full border border-line bg-background px-3 text-sm text-foreground">
-                  <option value="all">Tous les serveurs</option>
-                  {servers.map((s) => (
-                    <option key={s} value={s}>
-                      {serverById(s)?.city ?? s}
-                    </option>
-                  ))}
+            </nav>
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="relative">
+                <span className="sr-only">Rechercher un serveur</span>
+                <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher" className="h-10 w-44 rounded-full border border-line bg-background px-4 text-sm text-foreground placeholder:text-muted focus:border-line-strong focus:outline-none" />
+              </label>
+              <label>
+                <span className="sr-only">Protocole</span>
+                <select value={protocol} onChange={(e) => setProtocol(e.target.value as typeof protocol)} className="h-10 rounded-full border border-line bg-background px-4 text-sm text-foreground">
+                  <option value="all">Tous les protocoles</option>
+                  <option value="srtla">SRTLA</option>
+                  <option value="rtmp">RTMP</option>
                 </select>
               </label>
-            )}
+              {servers.length > 1 && (
+                <label>
+                  <span className="sr-only">Région</span>
+                  <select value={server} onChange={(e) => setServer(e.target.value)} className="h-10 rounded-full border border-line bg-background px-4 text-sm text-foreground">
+                    <option value="all">Toutes les régions</option>
+                    {servers.map((sv) => (
+                      <option key={sv} value={sv}>
+                        {serverById(sv)?.city ?? sv}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+            </div>
           </div>
 
-          <div className="space-y-8">
-            {GROUPS.map((g) => {
-              const items = shown.filter((r) => relayGroup(r) === g.id);
-              if (!items.length) return null;
-              return (
-                <section key={g.id} aria-labelledby={`g-${g.id}`}>
-                  <h2 id={`g-${g.id}`} className="mb-3 flex items-center gap-2 text-sm font-medium">
-                    <span aria-hidden="true" className={g.id === "live" ? "text-live" : "text-muted"}>
-                      {g.mark}
-                    </span>
-                    {g.label}
-                    <span className="text-muted">{items.length}</span>
-                  </h2>
-                  <ul className="space-y-3">
-                    {items.map((r) => (
-                      <Row key={r.id} relay={r} live={g.id === "live"} onOpen={(x) => setOpenId(x.id)} />
-                    ))}
-                  </ul>
-                </section>
-              );
-            })}
-            {shown.length === archived.length && archived.length === 0 && <p className="text-sm text-muted">Aucun serveur ne correspond à ta recherche.</p>}
-            {archived.length > 0 && (
-              <section aria-labelledby="g-archived">
-                <button
-                  type="button"
-                  id="g-archived"
-                  aria-expanded={showArchived}
-                  onClick={() => setShowArchived((v) => !v)}
-                  className="flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground"
-                >
-                  <span aria-hidden="true" className={`inline-block transition-transform motion-reduce:transition-none ${showArchived ? "rotate-90" : ""}`}>
-                    ›
-                  </span>
-                  Archivés <span>{archived.length}</span>
-                </button>
-                {showArchived && (
-                  <ul className="mt-3 space-y-3 opacity-70">
-                    {archived.map((r) => (
-                      <Row key={r.id} relay={r} live={false} onOpen={(x) => setOpenId(x.id)} />
-                    ))}
-                  </ul>
-                )}
-              </section>
-            )}
-          </div>
+          {rows.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-line p-10 text-center text-sm text-muted">Aucun serveur ne correspond.</p>
+          ) : (
+            <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+              <div role="presentation" className={`hidden gap-x-4 border-b border-line px-5 py-3 text-xs text-muted lg:grid ${COLS}`}>
+                <span>Nom</span>
+                <span>Protocole</span>
+                <span>Région</span>
+                <span>État</span>
+                <span>Dernier direct</span>
+                <span className="text-right">Débit moyen</span>
+                <span aria-hidden="true" />
+              </div>
+              <ul className="divide-y divide-line">
+                {rows.map((r) => (
+                  <Row key={r.id} relay={r} onOpen={(x) => setOpenId(x.id)} />
+                ))}
+              </ul>
+            </div>
+          )}
         </>
       )}
 

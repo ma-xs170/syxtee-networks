@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { AiDirector, anthropicAsk, mistralAsk, cleanDirector, DEFAULT_DIRECTOR, type DirectorConfig } from "../src/director.ts";
+import { AiDirector, anthropicAsk, mistralAsk, ollamaAsk, cleanDirector, DEFAULT_DIRECTOR, type DirectorConfig } from "../src/director.ts";
 
 const beau = (n: number) => `${n}`.padEnd(3000, "x");
 
@@ -251,4 +251,34 @@ test("cleanDirector : fournisseur Mistral par défaut, valeur inconnue ignorée"
   assert.equal(cleanDirector(undefined).provider, "mistral");
   assert.equal(cleanDirector({ provider: "anthropic" }).provider, "anthropic");
   assert.equal(cleanDirector({ provider: "x" }, { ...DEFAULT_DIRECTOR, provider: "anthropic" }).provider, "anthropic");
+});
+
+test("ollamaAsk : appel local sans clé, images en base64 brut, erreurs lisibles", async () => {
+  let seen: { url: string; body: any } | null = null;
+  const ok = (async (url: string, init: RequestInit) => {
+    seen = { url, body: JSON.parse(String(init.body)) };
+    return new Response(JSON.stringify({ message: { content: '{"camera": 1}' } }), { status: 200 });
+  }) as unknown as typeof fetch;
+  assert.equal(await ollamaAsk("gemma3:4b", ok)("quoi ?", ["data:image/jpeg;base64,AAAA"]), '{"camera": 1}');
+  assert.equal(seen!.url, "http://127.0.0.1:11434/api/chat");
+  assert.deepEqual(seen!.body.messages[0].images, ["AAAA"]);
+  assert.equal(seen!.body.stream, false);
+  const down = (async () => {
+    throw new TypeError("fetch failed");
+  }) as unknown as typeof fetch;
+  await assert.rejects(ollamaAsk("m", down)("q", []), /Ollama ne répond pas/);
+  const missing = (async () => new Response("{}", { status: 404 })) as unknown as typeof fetch;
+  await assert.rejects(ollamaAsk("gemma3:4b", missing)("q", []), /ollama pull gemma3:4b/);
+});
+
+test("régie IA locale : sans clé, la décision passe par le modèle de ce PC (pas par le mode de reprise seule)", async () => {
+  const { o, d, frame } = setup();
+  d.set(cfg({ apiKey: "", provider: "local" }));
+  o.answer = '{"camera": 2}';
+  for (const t of [2000, 4000]) {
+    frame();
+    await d.tick(t);
+  }
+  assert.equal(o.scene, "Cam iPhone");
+  assert.ok(o.asked.length >= 2);
 });

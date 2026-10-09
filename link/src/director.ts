@@ -22,6 +22,8 @@ export type DirectorConfig = {
   provider: Provider;
   /** Identifiant de l'espace de travail Anthropic, seulement si la clé n'est pas rattachée à un espace. */
   workspaceId: string;
+  /** Modèle Ollama du mode « sur ce PC » (vide : LOCAL_MODEL). */
+  model: string;
   cams: DirectorCam[];
   /** Consignes en langage naturel. */
   rules: string;
@@ -31,13 +33,16 @@ export type DirectorConfig = {
   hold: number;
 };
 
-export type Provider = "mistral" | "anthropic";
-export const PROVIDERS: Provider[] = ["mistral", "anthropic"];
+export type Provider = "mistral" | "anthropic" | "local";
+export const PROVIDERS: Provider[] = ["mistral", "anthropic", "local"];
+/** Modèle de vision léger lancé sur le PC avec Ollama (ollama pull gemma3:4b). */
+export const LOCAL_MODEL = "gemma3:4b";
 export const MAX_CAMS = 6;
 export const DEFAULT_DIRECTOR: DirectorConfig = {
   enabled: false,
   apiKey: "",
   provider: "mistral",
+  model: "",
   workspaceId: "",
   cams: [],
   rules:
@@ -62,6 +67,7 @@ export function cleanDirector(v: unknown, prev: DirectorConfig = DEFAULT_DIRECTO
     // Clé : une valeur vide ne l'efface pas (l'interface ne la relit jamais) ; « clearKey » l'efface.
     apiKey: o.clearKey === true ? "" : typeof o.apiKey === "string" && o.apiKey.trim() ? o.apiKey.trim().slice(0, 300) : prev.apiKey,
     provider: PROVIDERS.includes(o.provider as Provider) ? (o.provider as Provider) : prev.provider ?? "mistral",
+    model: typeof o.model === "string" ? o.model.trim().slice(0, 80) : prev.model ?? "",
     workspaceId: typeof o.workspaceId === "string" ? o.workspaceId.trim().slice(0, 100) : prev.workspaceId ?? "",
     cams,
     rules: str(o.rules, prev.rules, 1000),
@@ -246,7 +252,7 @@ export class AiDirector {
   /** Numéro de caméra choisi par le modèle, ou null si la réponse est inutilisable (on ne change alors rien). */
   private async decide(cams: DirectorCam[], alive: { idx: number; img: string }[], current: number): Promise<number | null> {
     // Mode local, sans clé : on ne fait que remplacer la caméra à l'antenne quand elle est tombée.
-    if (!this.cfg.apiKey) {
+    if (!this.cfg.apiKey && this.cfg.provider !== "local") {
       if (current < 0 || alive.some((a) => a.idx === current)) return current >= 0 ? current : null;
       return alive[0].idx;
     }
@@ -262,6 +268,41 @@ export class AiDirector {
     const idx = Number(m[1]) - 1;
     return alive.some((a) => a.idx === idx) ? idx : null;
   }
+}
+
+/** IA sur ce PC : Ollama (http://127.0.0.1:11434), un petit modèle de vision. Rien ne quitte l'ordinateur, aucune clé, aucun coût. */
+export function ollamaAsk(model = LOCAL_MODEL, fetchFn: typeof fetch = fetch): Ask {
+  return async (prompt, images) => {
+    let r: Response;
+    try {
+      r = await fetchFn("http://127.0.0.1:11434/api/chat", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          model,
+          stream: false,
+          format: "json",
+          options: { temperature: 0, num_predict: 60 },
+          messages: [{ role: "user", content: prompt, images: images.map((i) => i.replace(/^data:image\/\w+;base64,/, "")) }],
+        }),
+        // Le premier appel charge le modèle en mémoire : plus long que les suivants.
+        signal: AbortSignal.timeout(60_000),
+      });
+    } catch {
+      throw new Error("Ollama ne répond pas : installe-le (ollama.com) et lance-le sur le PC d'OBS");
+    }
+    if (!r.ok) {
+      let detail = "";
+      try {
+        detail = String(((await r.json()) as { error?: string }).error ?? "").slice(0, 200);
+      } catch {
+        /* corps illisible */
+      }
+      throw new Error(r.status === 404 ? `modèle « ${model} » absent : lance « ollama pull ${model} »` : `Ollama ${r.status}${detail ? ` : ${detail}` : ""}`);
+    }
+    const j = (await r.json()) as { message?: { content?: unknown } };
+    return typeof j.message?.content === "string" ? j.message.content : "";
+  };
 }
 
 /** Appel à l'API Mistral (La Plateforme, offre gratuite d'expérimentation) avec la clé de l'utilisateur : modèle de vision, une image par caméra. */

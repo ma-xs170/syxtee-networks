@@ -1,4 +1,7 @@
 {
+  "0.7.5": [
+    "Régie IA : option « Sur ton PC » avec Ollama (modèle de vision léger gemma3:4b), gratuite, sans clé et sans rien envoyer hors de l'ordinateur"
+  ],
   "0.7.4": [
     "Régie IA : choix de l'IA, Mistral avec son offre gratuite (par défaut) ou Claude d'Anthropic",
     "Régie IA : sans clé API, mode gratuit qui reprend sur une caméra vivante quand celle à l'antenne tombe"

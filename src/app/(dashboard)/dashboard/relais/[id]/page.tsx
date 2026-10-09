@@ -86,24 +86,6 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
   const trigger = { cut: "Coupure seulement", cut_lowbitrate: "Coupure et débit très bas", sensitive: "Sensible" }[relay.switch_trigger];
   const serverOk = server ? server.available && !server.maintenance : false;
 
-  // Synthèse, toujours visible à droite (Informations et Paramètres).
-  const summary = (
-    <aside className="min-w-0">
-      <Card title="En bref" className="h-full">
-        <dl className="divide-y divide-line">
-          <Fact label="Diffusion"><Pill tone={relay.live ? "live" : "idle"}>{relay.live ? "En direct" : relay.last_live_at ? "Hors direct" : "Jamais utilisé"}</Pill></Fact>
-          <Fact label="Statut"><Pill tone={relay.archived ? "idle" : "ok"}>{relay.archived ? "Archivé" : "Actif"}</Pill></Fact>
-          <Fact label="Serveur"><Pill tone={serverOk ? "ok" : server?.maintenance ? "warn" : "idle"}>{serverOk ? "Opérationnel" : server?.maintenance ? "En maintenance" : "Bientôt"}</Pill></Fact>
-          <Fact label="Protocole"><ProtocolBadge protocol={relay.protocol} /></Fact>
-          <Fact label={fromLabel}><span className={`font-mono tabular-nums ${TONE[tone]}`}>{estimate != null ? `~${estimate} ms` : "-"}</span></Fact>
-          <Fact label="Dernier direct">{relay.last_live_at ? fmtAgo(relay.last_live_at) : "Jamais"}</Fact>
-          <Fact label="Directs sur 30 jours">{fmtInt(sessions.length)}{totalS ? <span className="text-muted"> · {fmtDuration(totalS)}</span> : null}</Fact>
-          <Fact label="Créé le">{new Date(relay.created_at).toLocaleDateString("fr-FR", { dateStyle: "long", timeZone: "Europe/Paris" })}</Fact>
-        </dl>
-      </Card>
-    </aside>
-  );
-
   return (
     <DashPage>
       <PlanGate feature="relais">
@@ -145,15 +127,28 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
                   )}
                 </div>
 
-                {summary}
+                {/* Synthèse, toujours visible à droite */}
+                <aside className="min-w-0">
+                  <Card title="En bref" className="h-full">
+                    <dl className="divide-y divide-line">
+                      <Fact label="Diffusion"><Pill tone={relay.live ? "live" : "idle"}>{relay.live ? "En direct" : relay.last_live_at ? "Hors direct" : "Jamais utilisé"}</Pill></Fact>
+                      <Fact label="Statut"><Pill tone={relay.archived ? "idle" : "ok"}>{relay.archived ? "Archivé" : "Actif"}</Pill></Fact>
+                      <Fact label="Serveur"><Pill tone={serverOk ? "ok" : server?.maintenance ? "warn" : "idle"}>{serverOk ? "Opérationnel" : server?.maintenance ? "En maintenance" : "Bientôt"}</Pill></Fact>
+                      <Fact label="Protocole"><ProtocolBadge protocol={relay.protocol} /></Fact>
+                      <Fact label={fromLabel}><span className={`font-mono tabular-nums ${TONE[tone]}`}>{estimate != null ? `~${estimate} ms` : "-"}</span></Fact>
+                      <Fact label="Dernier direct">{relay.last_live_at ? fmtAgo(relay.last_live_at) : "Jamais"}</Fact>
+                      <Fact label="Directs sur 30 jours">{fmtInt(sessions.length)}{totalS ? <span className="text-muted"> · {fmtDuration(totalS)}</span> : null}</Fact>
+                      <Fact label="Créé le">{new Date(relay.created_at).toLocaleDateString("fr-FR", { dateStyle: "long", timeZone: "Europe/Paris" })}</Fact>
+                    </dl>
+                  </Card>
+                </aside>
               </div>
             )}
 
             {tab === "analyse" && <RelayAnalysis coreUrl={publicCoreUrl} relayId={relay.id} />}
 
             {tab === "parametres" && (
-              <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-                <div className="min-w-0 space-y-6">
+              <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
                   <Card title="Réglages">
                     <Setting label="Nom" help="Le nom de l'appareil qui utilise ce serveur." value={<span className="font-medium">{relay.name}</span>} button={<ActionButton action={{ id: relay.id, action: "rename" }}>Renommer</ActionButton>} />
                     <Setting label="Emplacement" help="Où ton flux est reçu. Changer garde les mêmes adresses." value={<span className="font-medium">{server ? `${flag(server.cc)} ${server.city}, ${server.country}` : relay.server}</span>} button={<ActionButton action={{ id: relay.id, action: "server" }}>Changer</ActionButton>} />
@@ -173,8 +168,6 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
                     />
                     <Setting label="Supprimer ce serveur" help="Définitif. Tes directs restent dans l'historique." button={<ActionButton action={{ id: relay.id, action: "delete" }} danger>Supprimer</ActionButton>} />
                   </Card>
-                </div>
-                {summary}
               </div>
             )}
 

@@ -10,6 +10,8 @@ import RelayUrls from "@/components/relais/RelayUrls";
 import { Card, Item, Pill, RowMenu, TabsNav } from "@/components/dashboard/panel";
 import ProtocolBadge from "@/components/relais/ProtocolBadge";
 import { getRelay, publicCoreUrl } from "@/lib/core";
+import { getProfile } from "@/lib/auth/dal";
+import { countryCoords } from "@/lib/country-coords";
 import { fmtAgo, fmtDuration, fmtInt } from "@/lib/dashboard-data";
 import { distanceKm, estimateRtt, flag, latencyTone, serverById } from "@/lib/relay-servers";
 import { dataClient, requireOwner } from "@/lib/workspace";
@@ -29,7 +31,7 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
   const { db, ownerId } = await dataClient();
   let q = db.from("live_sessions").select("id, started_at, ended_at, duration_s, avg_kbps, peak_kbps, reconnects").eq("relay_id", id).gte("started_at", new Date(Date.now() - 30 * 86_400_000).toISOString()).order("started_at", { ascending: false }).limit(60);
   if (ownerId) q = q.eq("user_id", ownerId);
-  const [relay, sessionsRes, h] = await Promise.all([getRelay(user.id, id).catch(() => null), q, headers()]);
+  const [relay, sessionsRes, h, profile] = await Promise.all([getRelay(user.id, id).catch(() => null), q, headers(), getProfile()]);
   if (!relay) {
     return (
       <DashPage>
@@ -47,9 +49,14 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
 
   // Serveur utilisé et latence estimée depuis la position du visiteur.
   const server = serverById(relay.server);
+  // Position : le pays choisi à la création du compte ; à défaut, la position de la connexion.
+  const fromAccount = countryCoords(profile?.country);
   const lat = Number(h.get("x-vercel-ip-latitude"));
   const lon = Number(h.get("x-vercel-ip-longitude"));
-  const here = h.get("x-vercel-ip-latitude") && Number.isFinite(lat) && Number.isFinite(lon) ? { lat, lon } : null;
+  const fromIp = h.get("x-vercel-ip-latitude") && Number.isFinite(lat) && Number.isFinite(lon) ? { lat, lon } : null;
+  const here = fromAccount ?? fromIp;
+  const countryName = profile?.country ? (new Intl.DisplayNames(["fr"], { type: "region" }).of(profile.country) ?? profile.country) : null;
+  const fromLabel = fromAccount && countryName ? `Depuis ${countryName}` : fromIp ? "Depuis ta position" : "Position inconnue";
   const estimate = server && here ? estimateRtt(distanceKm(here, server)) : null;
   const tone = latencyTone(estimate);
 
@@ -146,8 +153,8 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
                       <p><strong>{server ? `${flag(server.cc)} ${server.city}` : relay.server}</strong></p>
                       <p className="mt-1">{server ? server.country : ""}</p>
                     </Item>
-                    <Item label="Latence estimée" hint="Depuis ta position">
-                      <p className={`font-mono text-lg tabular-nums ${TONE[tone]}`}>{estimate != null ? `~${estimate} ms` : "Position inconnue"}</p>
+                    <Item label="Latence estimée" hint={fromLabel}>
+                      <p className={`font-mono text-lg tabular-nums ${TONE[tone]}`}>{estimate != null ? `~${estimate} ms` : "Choisis ton pays dans ton profil"}</p>
                     </Item>
                     <Item label="Bascule automatique" hint="Quand passer sur la scène de secours" menu={{ label: "Actions de la bascule", items: [act("Changer le déclenchement", "trigger")] }}>
                       <p><strong>{trigger}</strong></p>
@@ -231,7 +238,7 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
                   <Item label="Emplacement"><p><strong>{server ? `${flag(server.cc)} ${server.city}, ${server.country}` : relay.server}</strong></p></Item>
                   <Item label="Identifiant"><p><strong>{relay.server}</strong></p></Item>
                   <Item label="Adresse"><p className="break-all" data-sensitive><strong>{relay.host}</strong></p></Item>
-                  <Item label="Latence estimée"><p className={`font-mono text-lg tabular-nums ${TONE[tone]}`}>{estimate != null ? `~${estimate} ms` : "-"}</p></Item>
+                  <Item label="Latence estimée" hint={fromLabel}><p className={`font-mono text-lg tabular-nums ${TONE[tone]}`}>{estimate != null ? `~${estimate} ms` : "-"}</p></Item>
                 </Card>
               </div>
             )}

@@ -8,6 +8,7 @@ const cfg = (over: Partial<DirectorConfig> = {}): DirectorConfig => ({
   ...DEFAULT_DIRECTOR,
   enabled: true,
   eco: false,
+  provider: "mistral",
   apiKey: "sk-test",
   interval: 2,
   hold: 6,
@@ -201,6 +202,18 @@ test("régie IA : caméra à l'antenne tombée et réponse illisible = repli sur
   assert.equal(o.asked.length, asked); // une seule caméra vivante : l'IA n'est pas interrogée
 });
 
+test("régie IA sans IA (provider none) : jamais d'appel, même avec une clé enregistrée ; reprend seulement sur une caméra vivante", async () => {
+  const { o, d, frame } = setup("Cam Osmo");
+  d.set(cfg({ provider: "none", apiKey: "sk-garde" }));
+  frame();
+  await d.tick(2000);
+  o.iphone = beau(721);
+  o.drone = beau(722);
+  await d.tick(4000);
+  assert.equal(o.scene, "Cam iPhone");
+  assert.equal(o.asked.length, 0);
+});
+
 test("régie IA : scène autre que Live ou la nôtre = rien ne bascule ; réponse illisible = rien ne change", async () => {
   const a = setup("Pause");
   a.o.answer = '{"camera": 2}';
@@ -296,7 +309,7 @@ test("mistralAsk : images en data URI, clé en Bearer, texte lu, erreurs lisible
 });
 
 test("cleanDirector : fournisseur Mistral par défaut, valeur inconnue ignorée", () => {
-  assert.equal(cleanDirector(undefined).provider, "mistral");
+  assert.equal(cleanDirector(undefined).provider, "none");
   assert.equal(cleanDirector({ provider: "anthropic" }).provider, "anthropic");
   assert.equal(cleanDirector({ provider: "x" }, { ...DEFAULT_DIRECTOR, provider: "anthropic" }).provider, "anthropic");
 });

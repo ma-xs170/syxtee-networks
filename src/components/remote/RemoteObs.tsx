@@ -17,7 +17,7 @@ import { useRemote, type LinkEvent } from "./useRemote";
 type Item = { id: number; name: string; kind: string; on: boolean; flux?: boolean };
 type Mix = { name: string; muted: boolean; db: number; mon: string; global: boolean };
 type Trigger = "cut" | "cut_lowbitrate" | "sensitive";
-type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioBackup?: boolean; directorEnabled?: boolean; directorKeySet?: boolean; directorKey?: string; directorClearKey?: boolean; directorCams?: { source: string; scene: string; label: string }[]; directorRules?: string; directorInterval?: number; directorHold?: number; directorState?: string; directorCam?: number; directorReason?: string; directorWorkspaceId?: string; directorProvider?: "mistral" | "anthropic" | "local"; directorModel?: string; directorEco?: boolean; audioState?: string };
+type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioBackup?: boolean; directorEnabled?: boolean; directorKeySet?: boolean; directorKey?: string; directorClearKey?: boolean; directorCams?: { source: string; scene: string; label: string }[]; directorRules?: string; directorInterval?: number; directorHold?: number; directorState?: string; directorCam?: number; directorReason?: string; directorWorkspaceId?: string; directorProvider?: "none" | "mistral" | "anthropic" | "local"; directorModel?: string; directorEco?: boolean; audioState?: string };
 type Stats = { cpu: number; fps: number; kbps: number | null; dropped: number; total: number; encoder: string; congestion: number; streamMs: number; recMs: number };
 type Named = { current: string; list: string[] };
 type Tab = "scenes" | "sources" | "mixer" | "controls" | "multi" | "chat";
@@ -966,13 +966,16 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
               </label>
               <label className="mt-3 grid gap-1 text-[12px] text-neutral-400">
                 IA utilisée
-                <select disabled={oldAgent} value={roles.directorProvider ?? "mistral"} onChange={(e) => saveRoles({ directorProvider: e.target.value as "mistral" | "anthropic" | "local" })} className="h-8 rounded border border-white/15 bg-transparent px-2 text-[13px] text-neutral-100">
+                <select disabled={oldAgent} value={roles.directorProvider ?? "none"} onChange={(e) => saveRoles({ directorProvider: e.target.value as "none" | "mistral" | "anthropic" | "local" })} className="h-8 rounded border border-white/15 bg-transparent px-2 text-[13px] text-neutral-100">
+                  <option value="none" className="bg-[#0b0b0d]">Sans IA (gratuit, aucun calcul)</option>
                   <option value="local" className="bg-[#0b0b0d]">Sur ton PC (gratuit, rien ne sort)</option>
                   <option value="mistral" className="bg-[#0b0b0d]">Mistral (offre gratuite)</option>
                   <option value="anthropic" className="bg-[#0b0b0d]">Claude d&apos;Anthropic (payant)</option>
                 </select>
               </label>
-              {roles.directorProvider === "local" ? (
+              {roles.directorProvider === "none" || !roles.directorProvider ? (
+                <p className="mt-3 text-[12px] leading-relaxed text-neutral-400">Sans IA : la régie ne choisit pas la caméra toute seule. Elle reprend sur une caméra vivante dès que celle à l&apos;antenne se fige ou se coupe. Rien n&apos;est envoyé, aucun calcul n&apos;est ajouté sur ton PC.</p>
+              ) : roles.directorProvider === "local" ? (
                 <div className="mt-3 grid gap-2 text-[12px] text-neutral-400">
                   <label className="grid gap-1">
                     Modèle Ollama (vide : gemma3:4b)
@@ -1017,7 +1020,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
               </label>}
                 </>
               )}
-              {roles.directorProvider !== "local" && roles.directorKeySet && (
+              {roles.directorProvider !== "local" && roles.directorProvider !== "none" && !!roles.directorProvider && roles.directorKeySet && (
                 <button type="button" onClick={() => saveRoles({ directorClearKey: true })} className={`${flat} mt-2 h-7 justify-self-start px-3`}>
                   Effacer la clé
                 </button>
@@ -1075,8 +1078,8 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 </p>
               )}
               {(roles.directorCams ?? []).filter((c) => c.source && c.scene).length < 2 && <p className="mt-2 text-[12px] text-neutral-500">Il faut ta scène Live et au moins 2 caméras complètes (source et scène).</p>}
-              <p className="mt-2 text-[12px] text-neutral-500">{roles.directorProvider === "local" ? "L'IA tourne sur ce PC avec Ollama : elle choisit la caméra selon tes consignes, sans clé ni envoi." : roles.directorKeySet ? "Avec ta clé API, l'IA choisit la caméra selon tes consignes." : "Sans clé API (gratuit) : la régie reprend sur une caméra vivante dès que celle à l'antenne tombe. Ajoute une clé pour que l'IA choisisse selon tes consignes."}</p>
-              <p className="mt-2 text-[12px] text-neutral-500">{roles.directorProvider === "local" ? "Rien n'est envoyé hors du PC : les vignettes de tes caméras sont analysées en local par Ollama. Désactive la régie IA pour arrêter." : <>Chaque analyse envoie de petites vignettes de tes caméras à {(roles.directorProvider ?? "mistral") === "mistral" ? "Mistral (offre gratuite d'expérimentation sur console.mistral.ai, avec des limites de débit)" : "Anthropic (facturé par appel)"} avec ta clé (un appel toutes les {roles.directorInterval ?? 4} s en direct). Désactive la régie IA pour ne rien envoyer.</>}</p>
+              <p className="mt-2 text-[12px] text-neutral-500">{roles.directorProvider === "none" || !roles.directorProvider ? "Sans IA : reprise automatique sur une caméra vivante si celle à l'antenne tombe." : roles.directorProvider === "local" ? "L'IA tourne sur ce PC avec Ollama : elle choisit la caméra selon tes consignes, sans clé ni envoi." : roles.directorKeySet ? "Avec ta clé API, l'IA choisit la caméra selon tes consignes." : "Sans clé API (gratuit) : la régie reprend sur une caméra vivante dès que celle à l'antenne tombe. Ajoute une clé pour que l'IA choisisse selon tes consignes."}</p>
+              <p className="mt-2 text-[12px] text-neutral-500">{roles.directorProvider === "none" || !roles.directorProvider ? "Rien n'est envoyé hors du PC." : roles.directorProvider === "local" ? "Rien n'est envoyé hors du PC : les vignettes de tes caméras sont analysées en local par Ollama. Désactive la régie IA pour arrêter." : <>Chaque analyse envoie de petites vignettes de tes caméras à {(roles.directorProvider ?? "mistral") === "mistral" ? "Mistral (offre gratuite d'expérimentation sur console.mistral.ai, avec des limites de débit)" : "Anthropic (facturé par appel)"} avec ta clé (un appel toutes les {roles.directorInterval ?? 4} s en direct). Désactive la régie IA pour ne rien envoyer.</>}</p>
               <fieldset className="mt-4">
                 <legend className="text-[13px] font-semibold">Sensibilité du secours</legend>
                 <div className="mt-2 grid gap-2">

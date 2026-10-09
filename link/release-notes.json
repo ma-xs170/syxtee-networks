@@ -1,4 +1,7 @@
 {
+  "0.7.7": [
+    "Régie IA : choix « Sans IA » (par défaut) qui reprend sur une caméra vivante quand celle à l'antenne tombe, sans calcul ni envoi ; repli plus sûr si la réponse de l'IA est illisible"
+  ],
   "0.7.6": [
     "Régie IA : mode économe (activé par défaut), vignettes plus petites et IA consultée seulement quand les images changent ou toutes les 30 s"
   ],

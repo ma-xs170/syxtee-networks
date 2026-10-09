@@ -18,7 +18,7 @@ export type DirectorConfig = {
   enabled: boolean;
   /** Clé API Anthropic de l'utilisateur : reste sur son PC. */
   apiKey: string;
-  /** Fournisseur de l'IA : « mistral » (offre gratuite d'expérimentation) ou « anthropic » (Claude, payant). */
+  /** Fournisseur de l'IA : « none » (sans IA : reprise sur une caméra vivante seulement), « mistral » (offre gratuite d'expérimentation), « anthropic » (Claude, payant) ou « local » (Ollama). */
   provider: Provider;
   /** Identifiant de l'espace de travail Anthropic, seulement si la clé n'est pas rattachée à un espace. */
   workspaceId: string;
@@ -35,15 +35,15 @@ export type DirectorConfig = {
   hold: number;
 };
 
-export type Provider = "mistral" | "anthropic" | "local";
-export const PROVIDERS: Provider[] = ["mistral", "anthropic", "local"];
+export type Provider = "none" | "mistral" | "anthropic" | "local";
+export const PROVIDERS: Provider[] = ["none", "mistral", "anthropic", "local"];
 /** Modèle de vision léger lancé sur le PC avec Ollama (ollama pull gemma3:4b). */
 export const LOCAL_MODEL = "gemma3:4b";
 export const MAX_CAMS = 6;
 export const DEFAULT_DIRECTOR: DirectorConfig = {
   enabled: false,
   apiKey: "",
-  provider: "mistral",
+  provider: "none",
   model: "",
   workspaceId: "",
   cams: [],
@@ -69,7 +69,7 @@ export function cleanDirector(v: unknown, prev: DirectorConfig = DEFAULT_DIRECTO
     enabled: typeof o.enabled === "boolean" ? o.enabled : prev.enabled,
     // Clé : une valeur vide ne l'efface pas (l'interface ne la relit jamais) ; « clearKey » l'efface.
     apiKey: o.clearKey === true ? "" : typeof o.apiKey === "string" && o.apiKey.trim() ? o.apiKey.trim().slice(0, 300) : prev.apiKey,
-    provider: PROVIDERS.includes(o.provider as Provider) ? (o.provider as Provider) : prev.provider ?? "mistral",
+    provider: PROVIDERS.includes(o.provider as Provider) ? (o.provider as Provider) : prev.provider ?? "none",
     model: typeof o.model === "string" ? o.model.trim().slice(0, 80) : prev.model ?? "",
     workspaceId: typeof o.workspaceId === "string" ? o.workspaceId.trim().slice(0, 100) : prev.workspaceId ?? "",
     cams,
@@ -278,7 +278,7 @@ export class AiDirector {
   /** Numéro de caméra choisi par le modèle, ou null si la réponse est inutilisable (on ne change alors rien). */
   private async decide(cams: DirectorCam[], alive: { idx: number; img: string }[], current: number): Promise<number | null> {
     // Mode local, sans clé : on ne fait que remplacer la caméra à l'antenne quand elle est tombée.
-    if (!this.cfg.apiKey && this.cfg.provider !== "local") {
+    if (this.cfg.provider === "none" || (!this.cfg.apiKey && this.cfg.provider !== "local")) {
       if (current < 0 || alive.some((a) => a.idx === current)) return current >= 0 ? current : null;
       return alive[0].idx;
     }

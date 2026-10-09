@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Container } from "../ui";
 import { ButtonLink } from "../ui/Button";
 import FxIcon from "../ui/FxIcon";
+import Highlight from "../ui/Highlight";
+import DirectorDemo from "./DirectorDemo";
 import Reveal from "../ui/Reveal";
 import Faq from "./Faq";
 import ObsHero from "./ObsHero";
@@ -87,6 +89,36 @@ export function ObsBento() {
             <MacAndPc className="mx-auto max-w-[440px]" />
           </Cell>
         </div>
+      </Container>
+    </section>
+  );
+}
+
+/* 2. Régie IA : plusieurs caméras, l'IA met la bonne au programme */
+export function DirectorSection() {
+  return (
+    <section id="regie-ia" className="scroll-mt-20 border-b border-line py-24 lg:py-36">
+      <Container>
+        <DirectorDemo
+          intro={
+            <Reveal>
+              <h2 className={h2}>
+                Ta régie IA choisit <Highlight>la bonne caméra.</Highlight>
+              </h2>
+              <p className={lead}>Osmo, iPhone, drone, téléphones en SRTLA : l&apos;IA regarde chaque image et met au programme celle où il se passe quelque chose.</p>
+            </Reveal>
+          }
+          outro={
+            <Reveal className="mt-8">
+              <p className="max-w-[52ch] text-sm leading-relaxed text-muted">
+                Tu écris tes consignes en français, comme à un réalisateur. Une caméra coupée ou figée n&apos;est jamais choisie, et tu reprends la main d&apos;un tap.
+              </p>
+              <div className="mt-6">
+                <ButtonLink href="/acces">Demander l&apos;accès</ButtonLink>
+              </div>
+            </Reveal>
+          }
+        />
       </Container>
     </section>
   );

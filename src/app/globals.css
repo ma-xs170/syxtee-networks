@@ -192,6 +192,15 @@ body {
   100% { transform: translateY(0); }
 }
 
+/* Régie IA (accueil) : la barre sous la situation choisie se remplit pendant la durée du scénario. */
+@media (prefers-reduced-motion: no-preference) {
+  .director-bar { animation: director-fill linear both; }
+}
+@keyframes director-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
 /* Chat (Multichat, démo de l'accueil) : un nouveau message déplie sa ligne, les anciens glissent vers le haut sans saut. */
 .chat-row { display: grid; grid-template-rows: 1fr; }
 .chat-row > div { min-height: 0; overflow: hidden; }

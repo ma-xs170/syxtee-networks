@@ -107,6 +107,7 @@ export class Agent {
     this.audio = new AudioGuard((t, d) => this.obs.request(t, d), log);
     this.audio.set(cfg.audio);
     this.audio.setLive(cfg.liveScene);
+    this.audio.setBackupScene(cfg.backup.scene);
     this.audio.onChange = (s) => this.send({ type: "event", name: "link.audioState", data: { state: s } });
     this.watcher.onChange = (s) => {
       this.status.backup = s;
@@ -155,12 +156,13 @@ export class Agent {
   /** Nouveau réglage du backup (appelé par l'application). */
   setBackup(b: LinkConfig["backup"]) {
     this.cfg.backup = b;
+    this.audio.setBackupScene(b.scene);
     this.watcher.set(b);
   }
 
   /** Auto-gérance telle que l'interface la lit (champs à plat). */
   private autoView() {
-    return { autoEnabled: this.cfg.auto.enabled, droneScene: this.cfg.auto.droneScene, droneSource: this.cfg.auto.droneSource, autoRules: this.cfg.auto.rules, audioEnabled: this.cfg.audio.enabled, audioSource: this.cfg.audio.source, audioSeconds: this.cfg.audio.seconds, audioUnmute: this.cfg.audio.unmute, audioState: this.audio.state };
+    return { autoEnabled: this.cfg.auto.enabled, droneScene: this.cfg.auto.droneScene, droneSource: this.cfg.auto.droneSource, autoRules: this.cfg.auto.rules, audioEnabled: this.cfg.audio.enabled, audioSource: this.cfg.audio.source, audioSeconds: this.cfg.audio.seconds, audioUnmute: this.cfg.audio.unmute, audioBackup: this.cfg.audio.backup, audioState: this.audio.state };
   }
 
   /** Requête directe à OBS (listes de scènes et de sources pour l'interface). */
@@ -630,11 +632,12 @@ export class Agent {
         if (typeof params.liveScene === "string") this.cfg.liveScene = params.liveScene.slice(0, 200);
         // Auto-gérance (drone) : champs à plat dans la même requête que les rôles de scènes.
         this.cfg.auto = cleanAuto({ enabled: params.autoEnabled, droneScene: params.droneScene, droneSource: params.droneSource, rules: params.autoRules }, this.cfg.auto);
-        this.cfg.audio = cleanAudio({ enabled: params.audioEnabled, source: params.audioSource, seconds: params.audioSeconds, unmute: params.audioUnmute }, this.cfg.audio);
+        this.cfg.audio = cleanAudio({ enabled: params.audioEnabled, source: params.audioSource, seconds: params.audioSeconds, unmute: params.audioUnmute, backup: params.audioBackup }, this.cfg.audio);
         this.watcher.set(this.cfg.backup);
         this.watcher.setAuto(this.cfg.auto);
         this.watcher.setLive(this.cfg.liveScene);
         this.audio.set(this.cfg.audio);
+        this.audio.setBackupScene(this.cfg.backup.scene);
         this.audio.setLive(this.cfg.liveScene);
         save(this.cfg);
         return reply(true, { ...this.cfg.backup, ...this.autoView(), liveScene: this.cfg.liveScene, state: this.watcher.state });

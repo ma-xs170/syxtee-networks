@@ -17,7 +17,7 @@ import { useRemote, type LinkEvent } from "./useRemote";
 type Item = { id: number; name: string; kind: string; on: boolean; flux?: boolean };
 type Mix = { name: string; muted: boolean; db: number; mon: string; global: boolean };
 type Trigger = "cut" | "cut_lowbitrate" | "sensitive";
-type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioState?: string };
+type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioBackup?: boolean; audioState?: string };
 type Stats = { cpu: number; fps: number; kbps: number | null; dropped: number; total: number; encoder: string; congestion: number; streamMs: number; recMs: number };
 type Named = { current: string; list: string[] };
 type Tab = "scenes" | "sources" | "mixer" | "controls" | "multi" | "chat";
@@ -880,6 +880,14 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 </div>
                 <Switch label="Remettre le micro" on={!!roles.audioUnmute} disabled={!roles.audioSource} onClick={() => saveRoles({ audioUnmute: !roles.audioUnmute })} />
               </div>
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-medium">Passer sur le secours</p>
+                  <p className="text-[12px] text-neutral-500">Affiche ta scène de secours tant que le micro est muet, puis revient sur Live quand le son repart.</p>
+                </div>
+                <Switch label="Secours si micro muet" on={!!roles.audioBackup} disabled={!roles.audioSource || !roles.scene} onClick={() => saveRoles({ audioBackup: !roles.audioBackup })} />
+              </div>
+              {!roles.scene && <p className="mt-2 text-[12px] text-neutral-500">Choisis d&apos;abord ta scène de secours (étape 2).</p>}
               <fieldset className="mt-4">
                 <legend className="text-[13px] font-semibold">Sensibilité du secours</legend>
                 <div className="mt-2 grid gap-2">
@@ -931,9 +939,9 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
       {/* Programme (et, en Mode Studio, aperçu à gauche) */}
       <div className="flex min-h-0 min-w-0 flex-1 lg:gap-0">
       <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 p-2 max-lg:landscape:flex-row">
-        {roles && (roles.audioState === "silent" || roles.audioState === "muted") && (
+        {roles && (roles.audioState === "silent" || roles.audioState === "muted" || roles.audioState === "backup") && (
           <p role="alert" className="shrink-0 rounded-xl border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-[13px] text-amber-200">
-            {roles.audioState === "muted" ? `Micro « ${roles.audioSource} » coupé : personne ne t'entend.` : `Silence sur « ${roles.audioSource} » depuis plus de ${roles.audioSeconds ?? 10} s : vérifie ton micro.`}
+            {roles.audioState === "backup" ? `Micro « ${roles.audioSource} » muet : scène de secours à l'antenne, retour sur Live quand le son repart.` : roles.audioState === "muted" ? `Micro « ${roles.audioSource} » coupé : personne ne t'entend.` : `Silence sur « ${roles.audioSource} » depuis plus de ${roles.audioSeconds ?? 10} s : vérifie ton micro.`}
           </p>
         )}
         <section aria-label="Programme" className={`relative grid min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-xl border border-white/[0.08] bg-[#0b0b0d] ${tab === "chat" ? "max-lg:max-h-0 max-lg:overflow-hidden max-lg:border-0 max-lg:landscape:max-h-none" : tab === "scenes" || tab === "sources" || tab === "mixer" ? "max-lg:aspect-[16/12]" : "max-lg:aspect-[16/8]"} max-lg:h-auto max-lg:landscape:aspect-auto max-lg:landscape:h-full max-lg:landscape:w-[56%] max-lg:landscape:shrink-0 lg:h-[64%]`}>

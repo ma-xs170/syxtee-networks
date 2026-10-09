@@ -8,7 +8,7 @@ export const faq: FaqItem[] = [
   },
   {
     q: "Quelles applications sont compatibles ?",
-    a: "Moblin (iOS), IRL Pro (Android) et BELABOX. Côté diffusion, tu récupères le flux dans OBS Studio puis tu streames vers Twitch, Kick, YouTube ou toute plateforme compatible.",
+    a: "Moblin (iOS), IRL Pro (Android), TVU et LiveU. Côté diffusion, tu récupères le flux dans OBS Studio puis tu streames vers Twitch, Kick, YouTube ou toute plateforme compatible.",
   },
   {
     q: "J'ai besoin d'un PC ?",

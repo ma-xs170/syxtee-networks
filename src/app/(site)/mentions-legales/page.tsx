@@ -39,7 +39,7 @@ export default function MentionsLegales() {
             <h2 className="text-base font-semibold text-foreground">Propriété intellectuelle</h2>
             <p className="mt-3">
               Le nom, le logo et les contenus de {site.name} sont protégés. Toute reproduction sans autorisation est interdite.
-              Les marques citées (Moblin, IRL Pro, BELABOX, OBS, Twitch, Kick, YouTube…) appartiennent à leurs propriétaires respectifs.
+              Les marques citées (Moblin, IRL Pro, TVU, LiveU, OBS, Twitch, Kick, YouTube…) appartiennent à leurs propriétaires respectifs.
             </p>
           </div>
 

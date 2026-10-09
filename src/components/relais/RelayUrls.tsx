@@ -34,7 +34,7 @@ export default function RelayUrls({ relay }: { relay: Pick<RelayView, "protocol"
       ) : (
         <>
           {u.srtla_url && <Url label="Moblin (SRTLA)" hint="Moblin → Réglages → Streams → ton stream → URL." url={u.srtla_url} />}
-          {u.srt_url && <Url label="IRL Pro, BELABOX ou encodeur SRT" hint="Envoi direct en SRT, sans agrégation de liens." url={u.srt_url} />}
+          {u.srt_url && <Url label="IRL Pro, TVU, LiveU ou encodeur SRT" hint="Envoi direct en SRT, sans agrégation de liens." url={u.srt_url} />}
         </>
       )}
       <Url label="OBS (source Média)" hint="OBS → Source média → décocher « Fichier local » → Entrée." url={relay.obs_srt_url} />

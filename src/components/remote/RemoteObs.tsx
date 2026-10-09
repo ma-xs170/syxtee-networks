@@ -496,6 +496,8 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
     const droneOk = !!(droneSource && droneScene && liveScene);
     saveRoles({ liveScene, scene, source, droneScene, droneSource, enabled: backupOk, autoEnabled: droneOk });
   }
+  // Les prises multiples, la garde audio et la régie IA demandent SYXTEE Link 0.7.0 : un agent plus ancien ignore ces réglages et les renvoie vides.
+  const oldAgent = agent.online && !!agent.version && agent.version.localeCompare("0.7.0", undefined, { numeric: true }) < 0;
   const autoOn = !!roles && (roles.enabled || !!roles.autoEnabled);
   const autoIncomplete = !!roles && !roles.enabled && !roles.autoEnabled && !(roles.liveScene && roles.scene && roles.source) && !(roles.droneSource && roles.droneScene && roles.liveScene);
 
@@ -806,6 +808,11 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 </button>
               </div>
               {autoIncomplete && <p className="-mt-2 mb-3 text-[12px] text-amber-300">On n&apos;a pas tout trouvé : choisis les scènes ci-dessous, puis réactive.</p>}
+              {oldAgent && (
+                <p role="alert" className="mb-3 rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-[12px] text-amber-200">
+                  Ton SYXTEE Link est en version {agent.version}. Les sections « Autres prises », « Garde audio » et « Régie IA » demandent la version 0.7.0 : mets-le à jour pour les utiliser.
+                </p>
+              )}
               <h2 className="text-[13px] font-semibold">Régie automatique</h2>
               <p className="mt-1 text-[12px] leading-relaxed text-neutral-500">
                 SYXTEE change de scène pour toi, mais seulement quand ta <strong className="font-medium text-neutral-300">scène Live</strong> est à l&apos;antenne : rien ne bouge tant que tu ne l&apos;as pas mise en direct.
@@ -856,7 +863,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 </div>
               ))}
               {(roles.autoRules ?? []).length < 8 && (
-                <button type="button" onClick={() => saveRoles({ autoRules: [...(roles.autoRules ?? []), { source: "", scene: "" }] })} className={`${flat} mt-2 h-8 px-4`}>
+                <button type="button" disabled={oldAgent} onClick={() => saveRoles({ autoRules: [...(roles.autoRules ?? []), { source: "", scene: "" }] })} className={`${flat} mt-2 h-8 px-4`}>
                   Ajouter une prise
                 </button>
               )}
@@ -871,11 +878,11 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                   <p className="font-medium">Alerte silence</p>
                   <p className="text-[12px] text-neutral-500">{roles.audioEnabled ? `Active : alerte après ${roles.audioSeconds ?? 10} s sans son.` : "Éteinte."}</p>
                 </div>
-                <Switch label="Alerte silence" on={!!roles.audioEnabled} disabled={!roles.audioSource || !roles.liveScene} onClick={() => saveRoles({ audioEnabled: !roles.audioEnabled })} />
+                <Switch label="Alerte silence" on={!!roles.audioEnabled} disabled={oldAgent || !roles.audioSource || !roles.liveScene} onClick={() => saveRoles({ audioEnabled: !roles.audioEnabled })} />
               </div>
               <label className="mt-3 flex items-center justify-between gap-3 text-[13px]">
                 <span>Délai avant l&apos;alerte</span>
-                <select
+                <select disabled={oldAgent}
                   value={roles.audioSeconds ?? 10}
                   onChange={(e) => saveRoles({ audioSeconds: Number(e.target.value) })}
                   className="h-8 rounded border border-white/15 bg-transparent px-2 text-[13px]"
@@ -892,14 +899,14 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                   <p className="font-medium">Remettre le micro tout seul</p>
                   <p className="text-[12px] text-neutral-500">S&apos;il est coupé par erreur pendant ta scène Live.</p>
                 </div>
-                <Switch label="Remettre le micro" on={!!roles.audioUnmute} disabled={!roles.audioSource} onClick={() => saveRoles({ audioUnmute: !roles.audioUnmute })} />
+                <Switch label="Remettre le micro" on={!!roles.audioUnmute} disabled={oldAgent || !roles.audioSource} onClick={() => saveRoles({ audioUnmute: !roles.audioUnmute })} />
               </div>
               <div className="mt-3 flex items-center justify-between gap-3">
                 <div>
                   <p className="font-medium">Passer sur le secours</p>
                   <p className="text-[12px] text-neutral-500">Affiche ta scène de secours tant que le micro est muet, puis revient sur Live quand le son repart.</p>
                 </div>
-                <Switch label="Secours si micro muet" on={!!roles.audioBackup} disabled={!roles.audioSource || !roles.scene} onClick={() => saveRoles({ audioBackup: !roles.audioBackup })} />
+                <Switch label="Secours si micro muet" on={!!roles.audioBackup} disabled={oldAgent || !roles.audioSource || !roles.scene} onClick={() => saveRoles({ audioBackup: !roles.audioBackup })} />
               </div>
               {!roles.scene && <p className="mt-2 text-[12px] text-neutral-500">Choisis d&apos;abord ta scène de secours (étape 2).</p>}
               <h3 className="mt-5 text-[12px] font-semibold uppercase tracking-wide text-neutral-400">5 · Régie IA (plusieurs caméras)</h3>
@@ -910,7 +917,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 <div key={i} className="mt-2 grid gap-2 rounded-lg border border-white/10 p-2.5">
                   <label className="grid gap-1 text-[12px] text-neutral-400">
                     Rôle (lu par l&apos;IA)
-                    <input
+                    <input disabled={oldAgent}
                       defaultValue={c.label}
                       maxLength={80}
                       placeholder="ex. Osmo à la main"
@@ -933,13 +940,13 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 </div>
               ))}
               {(roles.directorCams ?? []).length < 6 && (
-                <button type="button" onClick={() => saveRoles({ directorCams: [...(roles.directorCams ?? []), { source: "", scene: "", label: "" }] })} className={`${flat} mt-2 h-8 px-4`}>
+                <button type="button" disabled={oldAgent} onClick={() => saveRoles({ directorCams: [...(roles.directorCams ?? []), { source: "", scene: "", label: "" }] })} className={`${flat} mt-2 h-8 px-4`}>
                   Ajouter une caméra
                 </button>
               )}
               <label className="mt-3 grid gap-1 text-[12px] text-neutral-400">
                 Consignes (en français, comme à un réalisateur)
-                <textarea
+                <textarea disabled={oldAgent}
                   defaultValue={roles.directorRules ?? ""}
                   maxLength={1000}
                   rows={4}
@@ -949,7 +956,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
               </label>
               <label className="mt-3 grid gap-1 text-[12px] text-neutral-400">
                 Clé API Anthropic {roles.directorKeySet ? "(enregistrée sur ce PC)" : "(reste sur ton PC)"}
-                <input
+                <input disabled={oldAgent}
                   type="password"
                   autoComplete="off"
                   placeholder={roles.directorKeySet ? "••••••••  (laisser vide pour garder)" : "sk-ant-…"}
@@ -970,7 +977,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
               <div className="mt-3 flex items-center justify-between gap-3 text-[13px]">
                 <label className="flex items-center gap-2">
                   Analyse toutes les
-                  <select value={roles.directorInterval ?? 4} onChange={(e) => saveRoles({ directorInterval: Number(e.target.value) })} className="h-8 rounded border border-white/15 bg-transparent px-2">
+                  <select disabled={oldAgent} value={roles.directorInterval ?? 4} onChange={(e) => saveRoles({ directorInterval: Number(e.target.value) })} className="h-8 rounded border border-white/15 bg-transparent px-2">
                     {[2, 4, 6, 10].map((n) => (
                       <option key={n} value={n} className="bg-[#0b0b0d]">
                         {n} s
@@ -980,7 +987,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 </label>
                 <label className="flex items-center gap-2">
                   Garde au moins
-                  <select value={roles.directorHold ?? 6} onChange={(e) => saveRoles({ directorHold: Number(e.target.value) })} className="h-8 rounded border border-white/15 bg-transparent px-2">
+                  <select disabled={oldAgent} value={roles.directorHold ?? 6} onChange={(e) => saveRoles({ directorHold: Number(e.target.value) })} className="h-8 rounded border border-white/15 bg-transparent px-2">
                     {[3, 6, 10, 20].map((n) => (
                       <option key={n} value={n} className="bg-[#0b0b0d]">
                         {n} s
@@ -1003,7 +1010,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 <Switch
                   label="Régie IA"
                   on={!!roles.directorEnabled}
-                  disabled={!roles.directorKeySet || !roles.liveScene || (roles.directorCams ?? []).filter((c) => c.source && c.scene).length < 2}
+                  disabled={oldAgent || !roles.directorKeySet || !roles.liveScene || (roles.directorCams ?? []).filter((c) => c.source && c.scene).length < 2}
                   onClick={() => saveRoles({ directorEnabled: !roles.directorEnabled })}
                 />
               </div>

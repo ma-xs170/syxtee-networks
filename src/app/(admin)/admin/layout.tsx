@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Heartbeat from "@/components/dashboard/Heartbeat";
 import { currentStaff } from "@/lib/admin";
 import { pendingCount } from "@/lib/access";
+import { newQuotesCount } from "@/lib/quotes";
 import { supportBadges } from "@/lib/support";
 import AdminShell from "./AdminShell";
 
@@ -14,9 +15,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   if (!me?.access) notFound();
   const { user, access } = me;
   const full = access.role === "owner" || access.role === "admin";
-  const [support, pending] = await Promise.all([access.permissions.has("support") ? supportBadges() : Promise.resolve({ all: 0, byCategory: { relais: 0, compte: 0, facturation: 0, bug: 0, suggestion: 0, autre: 0 } }), access.permissions.has("access") ? pendingCount() : Promise.resolve(0)]);
+  const [support, pending, newQuotes] = await Promise.all([access.permissions.has("support") ? supportBadges() : Promise.resolve({ all: 0, byCategory: { relais: 0, compte: 0, facturation: 0, bug: 0, suggestion: 0, autre: 0 } }), access.permissions.has("access") ? pendingCount() : Promise.resolve(0), access.permissions.has("access") ? newQuotesCount() : Promise.resolve(0)]);
   return (
-    <AdminShell support={support} pendingAccess={pending} name={user.email ?? "Admin"} role={access.role} permissions={[...access.permissions]} full={full}>
+    <AdminShell support={support} pendingAccess={pending} newQuotes={newQuotes} name={user.email ?? "Admin"} role={access.role} permissions={[...access.permissions]} full={full}>
       <Heartbeat />
       {children}
     </AdminShell>

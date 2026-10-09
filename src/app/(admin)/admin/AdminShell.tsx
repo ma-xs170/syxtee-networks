@@ -23,7 +23,7 @@ type Item = { label: string; href: string; icon: Icon; need: Need; badge?: numbe
 type Group = { title?: string; items: Item[] };
 export type SupportBadges = { all: number; byCategory: Record<SupportCategory, number> };
 
-function groups(support: SupportBadges, pending: number): Group[] {
+function groups(support: SupportBadges, pending: number, quotes: number): Group[] {
   return [
     { items: [{ icon: SquaresFour, label: "Vue d'ensemble", href: "/admin", need: "full" }] },
     {
@@ -38,6 +38,7 @@ function groups(support: SupportBadges, pending: number): Group[] {
           // Pas de sous-menu : les catégories se choisissent sur la page Support (pastilles de filtre).
         },
         { icon: Key, label: "Demandes d'accès", href: "/admin/acces", need: "access", badge: pending },
+        { icon: Tag, label: "Demandes de devis", href: "/admin/devis", need: "access", badge: quotes },
         { icon: Users, label: "Comptes", href: "/admin/comptes", need: "accounts" },
         { icon: UsersThree, label: "Comptes gérés", href: "/admin/comptes-geres", need: "accounts" },
         { icon: UsersThree, label: "Partenaires", href: "/admin/partenaires", need: "partners" },
@@ -66,9 +67,9 @@ function groups(support: SupportBadges, pending: number): Group[] {
   ];
 }
 
-export type AdminShellProps = { support: SupportBadges; pendingAccess: number; name: string; role: AnyRole; permissions: Permission[]; full: boolean; children: ReactNode };
+export type AdminShellProps = { support: SupportBadges; pendingAccess: number; newQuotes?: number; name: string; role: AnyRole; permissions: Permission[]; full: boolean; children: ReactNode };
 
-export default function AdminShell({ support, pendingAccess, name, role, permissions, full, children }: AdminShellProps) {
+export default function AdminShell({ support, pendingAccess, newQuotes = 0, name, role, permissions, full, children }: AdminShellProps) {
   const path = usePathname();
   const category = useSearchParams().get("categorie");
   const [hover, setHover] = useState<string | null>(null);
@@ -88,7 +89,7 @@ export default function AdminShell({ support, pendingAccess, name, role, permiss
   if (path === "/admin/2fa") return <>{children}</>;
 
   const allowed = (n: Need) => n === "any" || full || (n !== "full" && permissions.includes(n));
-  const all = groups(support, pendingAccess)
+  const all = groups(support, pendingAccess, newQuotes)
     .map((g) => ({ ...g, items: g.items.filter((i) => allowed(i.need)) }))
     .filter((g) => g.items.length > 0);
   const flat = all.flatMap((g) => g.items);

@@ -18,7 +18,7 @@ const tiers: Tier[] = [
     name: "Essentiel",
     price: "4,99",
     pitch: "Le point de départ d'un direct maîtrisé, de n'importe où.",
-    items: ["1 serveur dédié, en SRTLA ou RTMP", "1 direct à la fois", "Contrôle à distance d'OBS", "Santé du flux en temps réel", "Écran de secours automatique", "Clés de diffusion privées"],
+    items: ["1 serveur dédié, en SRTLA ou RTMP", "1 direct à la fois", "Contrôle à distance d'OBS", "Santé du flux en temps réel", "Écran de secours automatique", "Garde audio du micro", "Clés de diffusion privées"],
   },
   {
     id: "signature",
@@ -27,7 +27,7 @@ const tiers: Tier[] = [
     pitch: "Pour les créateurs qui diffusent régulièrement et veulent tout.",
     highlight: true,
     includes: "Tout Essentiel, plus :",
-    items: ["10 serveurs, 5 par protocole", "3 directs en même temps", "3 invités pour piloter ton OBS", "1 espace partagé pour ton équipe", "Statistiques détaillées et historique des directs", "Sauvegardes de scènes et Multichat"],
+    items: ["10 serveurs, 5 par protocole", "3 directs en même temps", "3 invités pour piloter ton OBS", "1 espace partagé pour ton équipe", "Statistiques détaillées et historique des directs", "Sauvegardes de scènes et Multichat", "Autogérance du drone et des prises", "Régie IA jusqu'à 3 caméras"],
   },
   {
     id: "prestige",
@@ -35,7 +35,7 @@ const tiers: Tier[] = [
     price: "19,99",
     pitch: "Pour les régies et les équipes qui exigent le meilleur.",
     includes: "Tout Signature, plus :",
-    items: ["Serveurs illimités", "10 directs en même temps", "5 espaces partagés pour tes régies", "5 invités pour piloter ton OBS", "Accès anticipé aux nouveautés"],
+    items: ["Serveurs illimités", "10 directs en même temps", "5 espaces partagés pour tes régies", "5 invités pour piloter ton OBS", "Régie IA jusqu'à 6 caméras", "Accès anticipé aux nouveautés"],
   },
 ];
 
@@ -57,6 +57,15 @@ const compare: { group: string; rows: Row[] }[] = [
       { label: "Écran de secours automatique", v: [true, true, true] },
       { label: "Invités OBS (avec compte)", v: ["Aucun", "3", "5"] },
       { label: "Sauvegardes de scènes", v: [false, true, true] },
+    ],
+  },
+  {
+    group: "Régie automatique",
+    rows: [
+      { label: "Écran de secours si la connexion coupe", v: [true, true, true] },
+      { label: "Garde audio du micro", v: [true, true, true] },
+      { label: "Autogérance du drone et des autres prises", v: [false, true, true] },
+      { label: "Régie IA multi-caméras (avec ta clé API Anthropic)", v: [false, "3 caméras", "6 caméras"] },
     ],
   },
   {

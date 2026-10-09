@@ -27,7 +27,7 @@ import { createRecordings } from "./recordings.ts";
 import { createSessionTracker, supabaseSessionDb } from "./sessions.ts";
 import { createSls } from "./sls.ts";
 import { createSealer, parseSecret } from "./keys.ts";
-import { publisherVerdict } from "./plans.ts";
+import { planOf, publisherVerdict } from "./plans.ts";
 import { createGuardClient, createSecurity, supabaseSecurityDb } from "./security.ts";
 
 // SYXTEE Core : point d'entrée.
@@ -169,13 +169,14 @@ const remote = config.LINK_ENABLED
       account: async (id) => {
         const [{ data: u }, { data: p }] = await Promise.all([
           supabase.auth.admin.getUserById(id),
-          supabase.from("profiles").select("first_name, last_name, username, twitch_display_name, avatar_url, plan").eq("id", id).maybeSingle(),
+          supabase.from("profiles").select("first_name, last_name, username, twitch_display_name, avatar_url, plan, plan_until").eq("id", id).maybeSingle(),
         ]);
         if (!u?.user) return null;
         const email = u.user.email ?? "";
         const full = [p?.first_name, p?.last_name].filter(Boolean).join(" ");
         const name = full || p?.twitch_display_name || p?.username || email.split("@")[0];
-        return { email, name, avatar_url: p?.avatar_url ?? null, plan: p?.plan ?? null };
+        // Formule effective : une échéance passée vaut Gratuit.
+        return { email, name, avatar_url: p?.avatar_url ?? null, plan: planOf({ plan: p?.plan ?? null, suspended: false, until: p?.plan_until ?? null }) };
       },
     })
   : null;

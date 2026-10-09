@@ -12,20 +12,20 @@ export const CATALOG: Record<Tier, { name: string; pitch: string; points: string
   basic: {
     name: "Essentiel",
     pitch: "Le point de départ d'un direct maîtrisé.",
-    points: ["1 serveur SRTLA ou RTMP", "1 direct à la fois", "Contrôle à distance d'OBS", "Santé du flux"],
+    points: ["1 serveur SRTLA ou RTMP", "1 direct à la fois", "Contrôle à distance d'OBS", "Santé du flux", "Secours automatique et garde audio"],
     prices: { month: { amount: "4,99 €", cents: 499 }, year: { amount: "49 €", cents: 4900 } },
   },
   paid: {
     name: "Signature",
     pitch: "Pour les créateurs qui diffusent régulièrement.",
-    points: ["10 serveurs, 5 par protocole", "3 directs en même temps", "3 invités au contrôle à distance", "Statistiques et historique des directs", "Sauvegardes de scènes et Multichat"],
+    points: ["10 serveurs, 5 par protocole", "3 directs en même temps", "3 invités au contrôle à distance", "Statistiques et historique des directs", "Sauvegardes de scènes et Multichat", "Autogérance des prises et régie IA (3 caméras)"],
     prices: { month: { amount: "9,99 €", cents: 999 }, year: { amount: "99 €", cents: 9900 } },
     featured: true,
   },
   extra: {
     name: "Prestige",
     pitch: "Pour les régies et les équipes exigeantes.",
-    points: ["Serveurs illimités", "10 directs en même temps", "5 invités au contrôle à distance", "Toutes les fonctions Signature"],
+    points: ["Serveurs illimités", "10 directs en même temps", "5 invités au contrôle à distance", "Régie IA jusqu'à 6 caméras", "Toutes les fonctions Signature"],
     prices: { month: { amount: "19,99 €", cents: 1999 }, year: { amount: "199 €", cents: 19900 } },
   },
 };

@@ -7,6 +7,41 @@ export type PlanId = "free" | "basic" | "beta" | "paid" | "extra" | "partner" | 
 /** `maxPerProtocol` : relais actifs au plus par protocole (SRTLA, RTMP, RIST), en plus du total. Absent = pas de limite. */
 export type Limits = { maxRelays: number; maxConcurrentStreams: number; maxPerProtocol?: number };
 
+/** Régie automatique du contrôle à distance : prises (drone et autres sources) et caméras de la régie IA. Le secours et la garde audio sont pour toutes les formules payantes. */
+export type RegieRights = { prises: boolean; cams: number };
+export const REGIE_RIGHTS: Record<PlanId, RegieRights> = {
+  free: { prises: false, cams: 0 },
+  basic: { prises: false, cams: 0 },
+  beta: { prises: true, cams: 3 },
+  paid: { prises: true, cams: 3 },
+  extra: { prises: true, cams: 6 },
+  partner: { prises: true, cams: 6 },
+  admin: { prises: true, cams: 6 },
+};
+export const regieOf = (plan: string | null | undefined): RegieRights => REGIE_RIGHTS[(plan ?? "") as PlanId] ?? REGIE_RIGHTS.free;
+
+/**
+ * Réglages de régie envoyés par un navigateur (link.setBackup) : ce que la formule ne couvre pas est retiré avant d'arriver à l'agent.
+ * Sans « prises » : ni auto-gérance du drone ni prises supplémentaires. Les caméras de la régie IA sont limitées, et elle s'éteint sans caméra permise.
+ */
+export function gateRegie(plan: string | null | undefined, params: unknown): Record<string, unknown> {
+  const p = { ...((params && typeof params === "object" ? params : {}) as Record<string, unknown>) };
+  const r = regieOf(plan);
+  if (!r.prises) {
+    if ("autoEnabled" in p) p.autoEnabled = false;
+    delete p.autoRules;
+  }
+  if (r.cams === 0) {
+    if ("directorEnabled" in p) p.directorEnabled = false;
+    delete p.directorCams;
+    delete p.directorKey;
+    delete p.directorRules;
+  } else if (Array.isArray(p.directorCams)) {
+    p.directorCams = p.directorCams.slice(0, r.cams);
+  }
+  return p;
+}
+
 export const PLAN_LIMITS: Record<PlanId, Limits> = {
   free: { maxRelays: 0, maxConcurrentStreams: 0 },
   basic: { maxRelays: 1, maxConcurrentStreams: 1 },

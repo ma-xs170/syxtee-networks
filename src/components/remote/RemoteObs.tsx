@@ -82,7 +82,7 @@ const buzz = (ms = 12) => {
 };
 
 /** `demoToken` : pages de démo des captures (le jeton de session n'est pas demandé). */
-export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDefaults }: { coreUrl: string; deviceId: string; demoToken?: string; /** Chaînes du propriétaire pour le chat (absent pour un invité). */ chatDefaults?: ChatDefaults; /** Secret d'un lien d'invitation : l'invité pilote sans compte, avec les droits de son invitation. */ invite?: string }) {
+export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDefaults, rights = { prises: true, cams: 6 } }: { coreUrl: string; deviceId: string; /** Droits de la formule pour la régie : prises (drone, autres sources) et caméras de la régie IA (le Core applique les mêmes limites). */ rights?: { prises: boolean; cams: number }; demoToken?: string; /** Chaînes du propriétaire pour le chat (absent pour un invité). */ chatDefaults?: ChatDefaults; /** Secret d'un lien d'invitation : l'invité pilote sans compte, avec les droits de son invitation. */ invite?: string }) {
   const [scenes, setScenes] = useState<string[]>([]);
   const [program, setProgram] = useState("");
   const [preview, setPreview] = useState("");
@@ -493,10 +493,17 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
     const droneScene = roles.droneScene || find(/drone/i);
     const droneSource = roles.droneSource || inputNames.find((n) => /drone/i.test(n)) || "";
     const backupOk = !!(source && scene && liveScene);
-    const droneOk = !!(droneSource && droneScene && liveScene);
+    const droneOk = rights.prises && !!(droneSource && droneScene && liveScene);
     saveRoles({ liveScene, scene, source, droneScene, droneSource, enabled: backupOk, autoEnabled: droneOk });
   }
   // Les prises multiples, la garde audio et la régie IA demandent SYXTEE Link 0.7.0 : un agent plus ancien ignore ces réglages et les renvoie vides.
+  const noPrises = !rights.prises;
+  const noIa = rights.cams === 0;
+  const upsell = (what: string, tier: string) => (
+    <p className="mt-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-[12px] text-neutral-300">
+      {what} : inclus avec la formule {tier}. <a href="/tarifs" className="underline underline-offset-2">Voir les formules</a>
+    </p>
+  );
   const oldAgent = agent.online && !!agent.version && agent.version.localeCompare("0.7.0", undefined, { numeric: true }) < 0;
   const autoOn = !!roles && (roles.enabled || !!roles.autoEnabled);
   const autoIncomplete = !!roles && !roles.enabled && !roles.autoEnabled && !(roles.liveScene && roles.scene && roles.source) && !(roles.droneSource && roles.droneScene && roles.liveScene);
@@ -849,8 +856,9 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                   <p className="font-medium">Auto-gérance</p>
                   <p className="text-[12px] text-neutral-500">{roles.autoEnabled ? "Active : elle surveille le drone." : "Éteinte."}</p>
                 </div>
-                <Switch label="Auto-gérance" on={!!roles.autoEnabled} disabled={!roles.droneSource || !roles.droneScene || !roles.liveScene} onClick={() => saveRoles({ autoEnabled: !roles.autoEnabled })} />
+                <Switch label="Auto-gérance" on={!!roles.autoEnabled} disabled={noPrises || !roles.droneSource || !roles.droneScene || !roles.liveScene} onClick={() => saveRoles({ autoEnabled: !roles.autoEnabled })} />
               </div>
+              {noPrises && upsell("L'auto-gérance du drone et les autres prises", "Signature")}
               <h3 className="mt-5 text-[12px] font-semibold uppercase tracking-wide text-neutral-400">Autres prises</h3>
               <p className="mt-1 text-[12px] leading-relaxed text-neutral-500">Même principe pour une autre caméra, un écran ou un invité : belle image sur la source, on passe sur sa scène. Le drone passe en premier, puis la liste dans l&apos;ordre.</p>
               {(roles.autoRules ?? []).map((r, i) => (
@@ -863,7 +871,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 </div>
               ))}
               {(roles.autoRules ?? []).length < 8 && (
-                <button type="button" disabled={oldAgent} onClick={() => saveRoles({ autoRules: [...(roles.autoRules ?? []), { source: "", scene: "" }] })} className={`${flat} mt-2 h-8 px-4`}>
+                <button type="button" disabled={oldAgent || noPrises} onClick={() => saveRoles({ autoRules: [...(roles.autoRules ?? []), { source: "", scene: "" }] })} className={`${flat} mt-2 h-8 px-4`}>
                   Ajouter une prise
                 </button>
               )}
@@ -910,6 +918,8 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
               </div>
               {!roles.scene && <p className="mt-2 text-[12px] text-neutral-500">Choisis d&apos;abord ta scène de secours (étape 2).</p>}
               <h3 className="mt-5 text-[12px] font-semibold uppercase tracking-wide text-neutral-400">5 · Régie IA (plusieurs caméras)</h3>
+              {noIa && upsell("La régie IA", "Signature")}
+              {!noIa && rights.cams < 6 && <p className="mt-1 text-[12px] text-neutral-500">Ta formule permet jusqu'à {rights.cams} caméras (6 avec Prestige).</p>}
               <p className="mt-1 text-[12px] leading-relaxed text-neutral-500">
                 Pour 2 caméras ou plus (Osmo, iPhone, drone, téléphones en SRTLA) : toutes les quelques secondes, une IA regarde chaque caméra et met au programme celle où il se passe quelque chose, selon tes consignes. Une caméra coupée ou figée n&apos;est jamais choisie. Chaque caméra a besoin de sa propre scène OBS : choisis la source, puis « Créer la scène » si elle n&apos;existe pas encore.
               </p>
@@ -939,7 +949,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                   </div>
                 </div>
               ))}
-              {(roles.directorCams ?? []).length < 6 && (
+              {(roles.directorCams ?? []).length < rights.cams && (
                 <button type="button" disabled={oldAgent} onClick={() => saveRoles({ directorCams: [...(roles.directorCams ?? []), { source: "", scene: "", label: "" }] })} className={`${flat} mt-2 h-8 px-4`}>
                   Ajouter une caméra
                 </button>
@@ -1010,7 +1020,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 <Switch
                   label="Régie IA"
                   on={!!roles.directorEnabled}
-                  disabled={oldAgent || !roles.directorKeySet || !roles.liveScene || (roles.directorCams ?? []).filter((c) => c.source && c.scene).length < 2}
+                  disabled={oldAgent || noIa || !roles.directorKeySet || !roles.liveScene || (roles.directorCams ?? []).filter((c) => c.source && c.scene).length < 2}
                   onClick={() => saveRoles({ directorEnabled: !roles.directorEnabled })}
                 />
               </div>

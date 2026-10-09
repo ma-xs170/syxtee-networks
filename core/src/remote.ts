@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import type { IncomingMessage } from "node:http";
 import type { Duplex } from "node:stream";
 import { WebSocketServer, type WebSocket } from "ws";
+import { gateRegie } from "./plans.ts";
 
 // SYXTEE Link : télécommande d'OBS. Une petite app (l'agent) tourne sur le PC où est OBS, parle à OBS en local (obs-websocket)
 // et ouvre une connexion sortante vers le Core. Le navigateur (SYXTEE Studio) se connecte au Core et envoie ses ordres : le Core les
@@ -234,7 +235,7 @@ export function createRemote(o: {
 
   function handleRemote(ws: WebSocket, conn: Conn) {
     let bucket = { n: 0, since: now() };
-    ws.on("message", (raw) => {
+    ws.on("message", async (raw) => {
       let m: { type?: string; id?: unknown; method?: unknown; params?: unknown; device?: unknown };
       try {
         m = JSON.parse(String(raw));
@@ -259,6 +260,12 @@ export function createRemote(o: {
       if (conn.guest && !guestAllows(conn.guest.level, m.method)) {
         audit(conn.userId, null, m.method, false, "forbidden", `invité « ${conn.guest.label} »`);
         return send(ws, { type: "res", id: m.id, ok: false, error: "forbidden" });
+      }
+      // Réglages de la régie : ce que la formule du compte ne couvre pas (prises, régie IA) est retiré avant d'arriver à l'agent.
+      // Compte introuvable : traité comme Gratuit (refus par défaut).
+      if (m.method === "link.setBackup" && o.account) {
+        const acc = await o.account(conn.userId).catch(() => null);
+        m.params = gateRegie(acc?.plan, m.params);
       }
       const agent = pick(conn.userId, conn.device);
       if (!agent) return send(ws, { type: "res", id: m.id, ok: false, error: "agent_offline" });

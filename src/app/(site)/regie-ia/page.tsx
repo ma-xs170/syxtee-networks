@@ -132,8 +132,12 @@ export default function RegieIaPage() {
               </div>
             ))}
           </dl>
-          <div className="mt-14">
+          <p className="mt-14 max-w-[60ch] text-sm leading-relaxed text-muted">
+            Le secours automatique et la garde audio sont inclus dès Essentiel. L&apos;autogérance des prises et la régie IA (3 caméras) arrivent avec Signature, et la régie IA passe à 6 caméras avec Prestige.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
             <ButtonLink href="/acces">Demander l&apos;accès</ButtonLink>
+            <ButtonLink href="/tarifs" variant="secondary">Voir les tarifs</ButtonLink>
           </div>
         </Container>
       </section>

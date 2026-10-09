@@ -10,7 +10,7 @@ import ProtocolBadge from "./ProtocolBadge";
 import CreateRelayWizard from "./CreateRelayWizard";
 import Link from "next/link";
 
-// Page « Mes relais » : compteur, bouton de création, filtres, et relais classés (en live, actifs, inactifs, archivés).
+// Page « Mes relais » : compteur, bouton de création, filtres, et serveurs classés automatiquement : en direct (pastille rouge) tout en haut, actifs au milieu, inactifs puis archivés en bas.
 
 const GROUPS: { id: RelayGroup; label: string; mark: string }[] = [
   { id: "live", label: "En live", mark: "●" },
@@ -96,7 +96,6 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
   const [protocol, setProtocol] = useState<"all" | RelayRow["protocol"]>("all");
   const [server, setServer] = useState("all");
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState<"all" | RelayGroup>("all");
   const { state } = useLiveStatus();
 
   // Statut en direct : le flux SSE du Core prime sur l'état lu au chargement de la page.
@@ -112,8 +111,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
     (r) => (protocol === "all" || r.protocol === protocol) && (server === "all" || r.server === server) && (!needle || r.name.toLowerCase().includes(needle)),
   );
   const ORDER: Record<RelayGroup, number> = { live: 0, active: 1, idle: 2, archived: 3 };
-  const rows = shown.filter((r) => status === "all" ? true : relayGroup(r) === status).sort((a, b) => ORDER[relayGroup(a)] - ORDER[relayGroup(b)]);
-  const count = (g: RelayGroup) => withLive.filter((r) => relayGroup(r) === g).length;
+  const rows = [...shown].sort((a, b) => ORDER[relayGroup(a)] - ORDER[relayGroup(b)]);
   const full = active >= max;
   const unlimited = max >= 1_000_000;
 
@@ -166,15 +164,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
         </section>
       ) : (
         <>
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <nav aria-label="Filtrer par état" className="flex gap-6 overflow-x-auto border-b border-line">
-              {([["all", "Tous", withLive.length], ["live", "En direct", count("live")], ["active", "Actifs", count("active")], ["idle", "Inactifs", count("idle")], ["archived", "Archivés", count("archived")]] as const).map(([id, label, n]) => (
-                <button key={id} type="button" aria-pressed={status === id} onClick={() => setStatus(id)} className={`-mb-px whitespace-nowrap border-b-2 pb-3 text-sm transition-colors ${status === id ? "border-foreground text-foreground" : "border-transparent text-muted hover:text-foreground"}`}>
-                  {label}
-                  <span className="ml-2 tabular-nums text-muted">{n}</span>
-                </button>
-              ))}
-            </nav>
+          <div className="mb-5 flex flex-wrap items-center justify-end gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <label className="relative">
                 <span className="sr-only">Rechercher un serveur</span>

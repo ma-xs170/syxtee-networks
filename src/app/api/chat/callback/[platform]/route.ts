@@ -7,13 +7,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const { platform } = await params;
   const { origin, searchParams } = request.nextUrl;
   const back = (q: string) => {
-    const res = NextResponse.redirect(`${origin}/dashboard/multichat?${q}`);
+    const res = NextResponse.redirect(`${origin}/compte/comptes-relies?${q}`);
     res.cookies.delete({ name: "chat_oauth", path: "/api/chat" });
     return res;
   };
   if (!isPlatform(platform)) return NextResponse.json({ error: "bad_platform" }, { status: 404 });
   const user = await getUser();
-  if (!user) return NextResponse.redirect(`${origin}/connexion?next=${encodeURIComponent("/dashboard/multichat")}`);
+  if (!user) return NextResponse.redirect(`${origin}/connexion?next=${encodeURIComponent("/compte/comptes-relies")}`);
 
   const code = searchParams.get("code");
   if (searchParams.get("error") || !code) return back(`chat_erreur=${platform}-refuse`);

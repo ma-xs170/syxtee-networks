@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
-import { Archive, ChartBar, ChatsCircle, Eye, MapTrifold, Radio, SlidersHorizontal, type IconProps } from "@/components/icons";
+import { Archive, ChartBar, Eye, MapTrifold, Radio, SlidersHorizontal, type IconProps } from "@/components/icons";
 import {
   delta,
   deviceLabel,
@@ -270,7 +270,6 @@ const shortcuts: Shortcut[] = [
   { label: "Contrôle à distance", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal },
   { label: "Aperçu", href: "/dashboard/apercu", icon: Eye },
   { label: "Mes relais", href: "/dashboard/relais", icon: Radio },
-  { label: "Multichat", href: "/dashboard/multichat", icon: ChatsCircle },
   { label: "Backups de scènes", href: "/dashboard/backups", icon: Archive },
   { label: "Scanner", href: "/dashboard/scanner", icon: MapTrifold },
   { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },

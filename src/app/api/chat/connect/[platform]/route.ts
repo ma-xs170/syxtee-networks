@@ -9,8 +9,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const { platform } = await params;
   const { origin } = request.nextUrl;
   if (!isPlatform(platform)) return NextResponse.json({ error: "bad_platform" }, { status: 404 });
-  if (!(await getUser())) return NextResponse.redirect(`${origin}/connexion?next=${encodeURIComponent("/dashboard/multichat")}`);
-  if (!configured(platform)) return NextResponse.redirect(`${origin}/dashboard/multichat?chat_erreur=${platform}-indisponible`);
+  if (!(await getUser())) return NextResponse.redirect(`${origin}/connexion?next=${encodeURIComponent("/compte/comptes-relies")}`);
+  if (!configured(platform)) return NextResponse.redirect(`${origin}/compte/comptes-relies?chat_erreur=${platform}-indisponible`);
 
   const state = randomBytes(16).toString("base64url");
   const verifier = randomBytes(32).toString("base64url");

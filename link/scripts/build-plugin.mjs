@@ -16,7 +16,7 @@ if (process.platform !== "darwin") {
 
 const root = resolve(fileURLToPath(import.meta.url), "../..");
 const out = resolve((process.env.PLUGIN_OUT || "~/syxtee-link-plugin").replace(/^~(?=$|\/)/, homedir()));
-const VERSION = "0.7.13";
+const VERSION = "0.7.14";
 const OBS_TAG = "32.0.0"; // en-têtes de l'API d'OBS : seule l'interface (stable) est utilisée, le plugin se lie à OBS au chargement
 const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { stdio: "inherit", ...opts });
 

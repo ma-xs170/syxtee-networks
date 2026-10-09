@@ -1,4 +1,7 @@
 {
+  "0.7.14": [
+    "Faible latence : l'option OBS « Reprendre depuis le début quand la source redevient active » n'est plus jamais modifiée par l'agent, c'est ton choix"
+  ],
   "0.7.13": [
     "Faible latence : les caméras de la régie restent ouvertes mais OBS les reprend depuis le direct quand leur scène repasse à l'antenne (plus de lecture de vieilles images accumulées)"
   ],

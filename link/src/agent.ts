@@ -18,7 +18,7 @@ import { coreCall } from "./corehttp.ts";
 import { fixLiveScene, fluxName } from "./livescene.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
 
-export const VERSION = "0.7.10";
+export const VERSION = "0.7.11";
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
 export const OBS_METHODS = new Set([
@@ -147,7 +147,7 @@ export class Agent {
     this.previewMgr = setInterval(() => void this.managePreview(), 5000);
     this.relayMgr = setInterval(() => void this.syncRelays(), 30_000);
     this.bitrateMgr = setInterval(() => void this.pollBitrate(), 2000);
-    this.liveMgr = setInterval(() => void this.refreshLive(), 4000);
+    this.liveMgr = setInterval(() => void this.refreshLive(), 2000);
     void this.previewLoop();
   }
 
@@ -354,8 +354,13 @@ export class Agent {
     try {
       const list = ((await this.obs.request("GetInputList")).inputs as { inputName?: string }[]) ?? [];
       const names = list.map((i) => String(i.inputName ?? "")).filter((n) => n.startsWith("Flux ›"));
-      const settings = this.cfg.lowLatency ? { close_when_inactive: true, buffering_mb: 1 } : { close_when_inactive: false, buffering_mb: 2 };
-      for (const inputName of names) await this.obs.request("SetInputSettings", { inputName, inputSettings: settings, overlay: true }).catch(() => {});
+      // Les caméras de la régie restent ouvertes en permanence : un passage de l'une à l'autre (secours d'une caméra tombée) doit être instantané.
+      const d = this.cfg.director;
+      const ready = new Set(d.enabled ? d.cams.map((c) => c.source) : []);
+      for (const inputName of names) {
+        const settings = this.cfg.lowLatency && !ready.has(inputName) ? { close_when_inactive: true, buffering_mb: 1 } : { close_when_inactive: false, buffering_mb: this.cfg.lowLatency ? 1 : 2 };
+        await this.obs.request("SetInputSettings", { inputName, inputSettings: settings, overlay: true }).catch(() => {});
+      }
       if (names.length) this.log(`faible latence ${this.cfg.lowLatency ? "activée" : "désactivée"} sur ${names.length} flux`);
     } catch {
       /* OBS ne répond pas : réessayé à la prochaine connexion */
@@ -694,6 +699,7 @@ export class Agent {
         this.cfg.director = cleanDirector({ enabled: params.directorEnabled, apiKey: params.directorKey, clearKey: params.directorClearKey, provider: params.directorProvider, eco: params.directorEco, model: params.directorModel, workspaceId: params.directorWorkspaceId, cams: params.directorCams, rules: params.directorRules, interval: params.directorInterval, hold: params.directorHold }, this.cfg.director);
         this.director.set(this.cfg.director);
         this.director.setLive(this.cfg.liveScene);
+        void this.applyLatency();
         this.watcher.set(this.cfg.backup);
         this.watcher.setAuto(this.cfg.auto);
         this.watcher.setLive(this.cfg.liveScene);

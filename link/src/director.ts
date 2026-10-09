@@ -112,6 +112,8 @@ export class AiDirector {
   private ask: Ask;
   private log: (m: string) => void;
   private last = new Map<string, string>();
+  /** Vignettes identiques de suite, par source (une image figée plus d'une analyse). */
+  private frozen = new Map<string, number>();
   private busy = false;
   private lastRun = 0;
   private since = 0;
@@ -138,6 +140,11 @@ export class AiDirector {
     this.live = scene;
   }
 
+  /** Sans IA, la régie ne coûte presque rien (une vignette par seconde, celle de la caméra à l'antenne) : elle surveille chaque seconde pour réagir vite. */
+  private period() {
+    return this.cfg.provider === "none" ? 1000 : this.cfg.interval * 1000;
+  }
+
   private ready() {
     // Sans clé API : mode local gratuit (reprise sur une caméra vivante quand celle à l'antenne tombe). Avec une clé : choix par l'IA.
     return this.cfg.enabled && this.usable().length >= 2;
@@ -150,6 +157,7 @@ export class AiDirector {
 
   private disarm() {
     this.last.clear();
+    this.frozen.clear();
     this.current = -1;
     this.candidate = -1;
     this.votes = 0;
@@ -177,7 +185,7 @@ export class AiDirector {
   /** Appelée une fois par seconde ; fait son travail toutes les `interval` secondes, jamais deux analyses en même temps. */
   async tick(now = Date.now()): Promise<void> {
     if (!this.ready() || !this.live || this.busy) return;
-    if (now - this.lastRun < this.cfg.interval * 1000) return;
+    if (now - this.lastRun < this.period()) return;
     this.busy = true;
     this.lastRun = now;
     try {
@@ -228,14 +236,24 @@ export class AiDirector {
 
     // Une vignette par caméra ; figée ou noire = morte, jamais proposée au modèle.
     const alive: { idx: number; img: string }[] = [];
+    // Avec la vivacité donnée par le serveur, une caméra hors antenne n'a pas besoin de vignette (OBS ne la rend pas) : on n'en demande pas.
+    const freezeAt = this.period() >= 2000 ? 1 : 2; // analyses identiques de suite avant de la dire figée
     for (let i = 0; i < cams.length; i++) {
+      const onAir = cams[i].scene === cur;
+      const hint = onAir ? null : this.liveHint(cams[i].source);
+      const relay = this.liveHint(cams[i].source);
+      if (hint !== null && this.cfg.provider === "none") {
+        if (hint) alive.push({ idx: i, img: "" });
+        continue;
+      }
       const img = await this.shot(cams[i].source);
-      const moved = img !== "" && img !== this.last.get(cams[i].source);
+      const same = img === "" || img === this.last.get(cams[i].source);
       this.last.set(cams[i].source, img);
-      const seen = img.length > MIN_IMAGE_CHARS && moved;
-      // Caméra à l'antenne : la vignette est fiable (image figée = tombée). Caméra hors antenne : la vignette est noire, on se fie au serveur.
-      const hint = cams[i].scene === cur ? null : this.liveHint(cams[i].source);
-      if (hint === true || (hint === null && seen)) alive.push({ idx: i, img });
+      this.frozen.set(cams[i].source, same ? (this.frozen.get(cams[i].source) ?? 0) + 1 : 0);
+      const seen = img.length > MIN_IMAGE_CHARS && (this.frozen.get(cams[i].source) ?? 0) < freezeAt;
+      // Caméra à l'antenne : vignette fiable (figée = tombée), et serveur qui dit « hors ligne » = tombée tout de suite.
+      // Caméra hors antenne : vignette noire, on se fie au serveur.
+      if (onAir ? seen && relay !== false : hint === true || (hint === null && seen)) alive.push({ idx: i, img });
     }
     this.scan = { at: now, sources: alive.map((a) => cams[a.idx].source) };
     if (this.state === "idle") this.setState("watching", "");

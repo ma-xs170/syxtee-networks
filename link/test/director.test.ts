@@ -209,7 +209,8 @@ test("régie IA sans IA (provider none) : jamais d'appel, même avec une clé en
   await d.tick(2000);
   o.iphone = beau(721);
   o.drone = beau(722);
-  await d.tick(4000);
+  await d.tick(3000);
+  await d.tick(4000); // l'Osmo est figé depuis deux relevés de suite
   assert.equal(o.scene, "Cam iPhone");
   assert.equal(o.asked.length, 0);
 });
@@ -238,9 +239,9 @@ test("régie IA : une caméra hors antenne dont la vignette est noire est vivant
   o.drone = "x";
   await d.tick(4000);
   assert.equal(o.scene, "Cam Osmo");
-  o.osmo = beau(9999); // l'Osmo se fige au tick suivant
+  o.osmo = beau(9999); // l'Osmo se fige
   await d.tick(6000);
-  o.osmo = beau(9999);
+  await d.tick(7000);
   await d.tick(8000);
   assert.equal(o.scene, "Cam iPhone"); // jamais le drone (flux hors ligne)
 });

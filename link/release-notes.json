@@ -1,4 +1,8 @@
 {
+  "0.7.11": [
+    "Régie : bascule plus rapide quand une caméra tombe (surveillance chaque seconde sans IA, serveur consulté toutes les 2 s)",
+    "Régie : les caméras de la régie restent ouvertes dans OBS pour passer de l'une à l'autre sans temps de connexion"
+  ],
   "0.7.10": [
     "Régie : une caméra qui n'est pas à l'antenne est jugée vivante d'après le serveur (OBS ne rend pas sa vignette), la régie peut donc passer sur elle",
     "Flux : option « Faible latence » (activée par défaut) : le flux est rouvert à chaque passage à l'antenne, fini le retard qui s'accumule"

@@ -112,11 +112,11 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
         ) : (
           <>
             {tab === "info" && (
-              <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-                <div className="min-w-0 space-y-6">
+              <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+                <div className="flex min-w-0 flex-col gap-6 [&>section]:flex-1">
                   {/* 1. De quoi se connecter */}
                   {!relay.archived && (
-                    <Card title="Se connecter">
+                    <Card title="Se connecter" className="h-full">
                       <div className="py-5">
                         <p className="mb-5 max-w-[62ch] text-sm leading-relaxed text-muted">
                           Colle l&apos;adresse correspondant à ton appareil ou à ton logiciel. Elle contient la clé de ce serveur : ne la partage pas et ne la montre pas en direct.
@@ -128,8 +128,8 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
                 </div>
 
                 {/* Synthèse, toujours visible à droite */}
-                <aside className="space-y-6 lg:sticky lg:top-6">
-                  <Card title="En bref">
+                <aside className="min-w-0">
+                  <Card title="En bref" className="h-full">
                     <dl className="divide-y divide-line">
                       <Fact label="Diffusion"><Pill tone={relay.live ? "live" : "idle"}>{relay.live ? "En direct" : relay.last_live_at ? "Hors direct" : "Jamais utilisé"}</Pill></Fact>
                       <Fact label="Statut"><Pill tone={relay.archived ? "idle" : "ok"}>{relay.archived ? "Archivé" : "Actif"}</Pill></Fact>

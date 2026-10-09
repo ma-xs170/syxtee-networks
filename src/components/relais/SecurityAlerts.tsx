@@ -1,4 +1,3 @@
-import { Tile, TileLabel } from "@/components/dashboard/ui";
 import type { SecurityAlert } from "@/lib/core";
 
 // Mes relais : tentatives de connexion refusées sur tes clés (7 derniers jours). Ex-page « Sécurité & clés ».
@@ -8,21 +7,21 @@ const place = (a: SecurityAlert) =>
   a.ip ? `${a.ip}${a.country ? ` / ${new Intl.DisplayNames(["fr"], { type: "region" }).of(a.country) ?? a.country}` : ""}` : "un appareil via SRTLA (IP masquée par le relais)";
 
 export default function SecurityAlerts({ alerts, relays }: { alerts: SecurityAlert[]; relays: { id: string; name: string }[] }) {
-  const name = (id: string | null) => relays.find((r) => r.id === id)?.name ?? "un relais supprimé";
+  const name = (id: string | null) => relays.find((r) => r.id === id)?.name ?? "un serveur supprimé";
   return (
-    <Tile className="mt-10" aria-labelledby="tentatives">
-      <TileLabel id="tentatives">Tentatives de connexion</TileLabel>
+    <section aria-labelledby="tentatives" className="mt-6 overflow-hidden rounded-2xl border border-line bg-surface">
+      <h2 id="tentatives" className="border-b border-line px-5 py-3 text-sm font-medium">
+        Tentatives de connexion <span className="ml-2 font-normal tabular-nums text-muted">{alerts.length}</span>
+      </h2>
       {alerts.length === 0 ? (
-        <p className="mt-4 max-w-[65ch] text-sm leading-relaxed text-muted">
-          Aucune sur les 7 derniers jours. Un seul appareil peut diffuser sur une clé : si un autre essaie pendant ton direct, il est refusé et tu le vois ici.
-        </p>
+        <p className="px-5 py-4 text-sm leading-relaxed text-muted">Aucune sur les 7 derniers jours. Si un autre appareil essaie de diffuser sur ta clé pendant ton direct, il est refusé et tu le vois ici.</p>
       ) : (
         <>
-          <ul className="mt-4 grid gap-3">
+          <ul className="divide-y divide-line">
             {alerts.map((a, i) => (
-              <li key={`${a.at}-${i}`} className="rounded-2xl border border-line px-4 py-3">
+              <li key={`${a.at}-${i}`} className="px-5 py-3.5">
                 <p className="text-sm">
-                  Tentative sur ton relais <span className="font-medium">{name(a.relay_id)}</span> depuis <span className="font-mono">{place(a)}</span>
+                  Tentative sur <span className="font-medium">{name(a.relay_id)}</span> depuis <span className="font-mono">{place(a)}</span>
                 </p>
                 <p className="mt-1 font-mono text-xs text-muted">
                   {when(a.at)}
@@ -31,9 +30,9 @@ export default function SecurityAlerts({ alerts, relays }: { alerts: SecurityAle
               </li>
             ))}
           </ul>
-          <p className="mt-4 text-sm text-muted">Ce n&apos;était pas toi ? Régénère la clé de ce relais : l&apos;ancienne est coupée immédiatement.</p>
+          <p className="border-t border-line px-5 py-3.5 text-sm text-muted">Ce n&apos;était pas toi ? Régénère la clé de ce serveur : l&apos;ancienne est coupée immédiatement.</p>
         </>
       )}
-    </Tile>
+    </section>
   );
 }

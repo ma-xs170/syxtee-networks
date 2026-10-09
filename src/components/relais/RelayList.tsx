@@ -117,7 +117,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
 
   return (
     <div>
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="h-page">
             Mes <em>serveurs</em>
@@ -126,19 +126,6 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
             {active} / {unlimited ? "∞" : max} serveurs
           </p>
         </div>
-        {full ? (
-          <a href="https://discord.gg/CD68F8yZuZ" target="_blank" rel="noopener noreferrer" className="inline-flex h-12 items-center whitespace-nowrap rounded-full border border-line px-6 text-sm font-medium transition-colors hover:bg-foreground/10">
-            Limite atteinte · Demander plus de serveurs
-          </a>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setWizard(true)}
-            className="h-12 whitespace-nowrap rounded-full bg-accent px-6 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98]"
-          >
-            + Créer un serveur
-          </button>
-        )}
       </div>
 
       {relays.length === 0 ? (
@@ -164,7 +151,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
         </section>
       ) : (
         <>
-          <div className="mb-5 flex flex-wrap items-center justify-end gap-3">
+          <div className="mb-4 flex flex-wrap items-center justify-end gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <label className="relative">
                 <span className="sr-only">Rechercher un serveur</span>
@@ -191,6 +178,19 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
                   </select>
                 </label>
               )}
+        {full ? (
+          <a href="https://discord.gg/CD68F8yZuZ" target="_blank" rel="noopener noreferrer" className="inline-flex h-10 items-center whitespace-nowrap rounded-full border border-line px-5 text-sm font-medium transition-colors hover:bg-foreground/10">
+            Limite atteinte · Demander plus de serveurs
+          </a>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setWizard(true)}
+            className="h-10 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98]"
+          >
+            + Créer un serveur
+          </button>
+        )}
             </div>
           </div>
 

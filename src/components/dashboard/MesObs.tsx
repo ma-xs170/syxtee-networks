@@ -7,7 +7,7 @@ import { ago, detectOs, pluginState, since, type OsId, type PluginLatest } from 
 import { useLiveStatus } from "./LiveStatus";
 import { useLinkDevices, type DevicesDemo, type LinkDevice } from "./useLinkDevices";
 import { ArrowLink } from "./ui";
-import { Card } from "./panel";
+import { Card, Pill } from "./panel";
 
 // « Mes OBS » : les postes OBS reliés au compte (état, version du plugin, renommer, révoquer) et le téléchargement du plugin.
 // Trois étapes quand il n'y a encore aucun poste.
@@ -157,12 +157,12 @@ const STEPS = [
 ];
 
 export default function MesObs({ coreUrl, demo }: { coreUrl: string; demo?: DevicesDemo }) {
-  const { devices, latest, error, rename, revoke } = useLinkDevices(coreUrl, 5000, demo);
+  const { devices, latest, error } = useLinkDevices(coreUrl, 5000, demo);
   const live = useLiveStatus();
   const pushing = (live.state?.relays ?? []).filter((r) => r.live).map((r) => r.name).filter(Boolean);
 
   return (
-    <Card title="Mes OBS" action={<DownloadButton coreUrl={coreUrl} latest={latest} className={btnGhost} label="Plugin" />}>
+    <Card title="Mes OBS" action={<ArrowLink href="/dashboard/controle-a-distance">Ouvrir</ArrowLink>}>
       {error && !devices ? (
         <p className="py-5 text-sm text-muted">{error}</p>
       ) : !devices ? (
@@ -181,14 +181,29 @@ export default function MesObs({ coreUrl, demo }: { coreUrl: string; demo?: Devi
               </li>
             ))}
           </ol>
-        </div>
-      ) : (
-        <div className="py-5">
-          <DeviceRows devices={devices} latest={latest} pushing={pushing} onRename={rename} onRevoke={revoke} />
-          <div className="mt-4">
-            <ArrowLink href="/dashboard/controle-a-distance">Ouvrir le contrôle</ArrowLink>
+          <div className="mt-5">
+            <DownloadButton coreUrl={coreUrl} latest={latest} />
           </div>
         </div>
+      ) : (
+        <ul className="divide-y divide-line">
+          {devices.slice(0, 4).map((d) => {
+            const st = pluginState(d.plugin_version, latest);
+            return (
+              <li key={d.id} className="flex min-h-[3.5rem] items-center justify-between gap-4 py-3">
+                <div className="min-w-0">
+                  <p className="truncate text-[15px] font-medium">{d.name}</p>
+                  <p className="mt-0.5 truncate text-xs text-muted">
+                    Plugin {d.plugin_version || "?"}
+                    {st === "outdated" ? " · mise à jour disponible" : ""}
+                    {d.online && pushing.length > 0 ? ` · pousse ${pushing.join(", ")}` : ""}
+                  </p>
+                </div>
+                <Pill tone={d.online ? "ok" : "idle"}>{d.online ? "En ligne" : "Hors ligne"}</Pill>
+              </li>
+            );
+          })}
+        </ul>
       )}
     </Card>
   );

@@ -148,7 +148,7 @@ function Shortcuts() {
       <ul className="divide-y divide-line">
         {shortcuts.map((s) => (
           <li key={s.href}>
-            <Link href={s.href} className="flex items-center justify-between gap-4 py-3.5 text-[15px] transition-colors hover:text-foreground">
+            <Link href={s.href} className="flex min-h-[3.5rem] items-center justify-between gap-4 py-3 text-[15px] transition-colors hover:text-foreground">
               {s.label}
               <span aria-hidden="true" className="text-muted">→</span>
             </Link>

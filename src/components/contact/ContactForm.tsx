@@ -114,7 +114,7 @@ export default function ContactForm() {
       </div>
 
       <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface p-4 text-sm leading-relaxed text-muted">
-        <input type="checkbox" name="consent" required className="mt-1 size-4 shrink-0 accent-[var(--foreground)]" />
+        <input type="checkbox" name="consent" required className="mt-0.5 size-5 shrink-0 accent-[var(--foreground)]" />
         <span>J&apos;accepte que mes données soient utilisées pour me recontacter au sujet de ce devis. <a href="/confidentialite" className="font-medium text-foreground underline underline-offset-4">Politique de confidentialité</a></span>
       </label>
 

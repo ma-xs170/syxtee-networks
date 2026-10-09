@@ -432,14 +432,14 @@ export default function Overview({ initial, coreUrl = "", demo }: { initial: Ove
                 {data.recent.slice(0, 6).map((s) => (
                   <li key={s.id}>
                     <Link href={`/dashboard/lives/${s.id}`} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-0.5 px-5 py-3.5 text-sm transition-colors hover:bg-foreground/[0.04] sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_100px_130px]">
-                      <span className="flex min-w-0 items-center gap-2.5">
+                      <span className="col-start-1 row-start-1 flex min-w-0 items-center gap-2.5">
                         <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${s.ended_at ? "bg-muted" : "bg-ok"}`} />
                         <span className="truncate font-medium">{deviceLabel(s)}</span>
                         {s.reconnects > 0 && <span className="shrink-0 font-mono text-xs text-muted">{s.reconnects} coupure{s.reconnects > 1 ? "s" : ""}</span>}
                       </span>
-                      <span className="col-start-1 truncate text-xs text-muted sm:col-start-auto sm:text-sm">{fmtDate(s.started_at, data.timezone)}</span>
-                      <span className="row-start-1 text-right font-mono tabular-nums sm:row-start-auto">{s.ended_at ? fmtDuration(s.duration_s) : "En cours"}</span>
-                      <span className="hidden text-right font-mono text-muted tabular-nums sm:block">{fmtKbps(s.avg_kbps)}</span>
+                      <span className="col-start-1 row-start-2 truncate text-xs text-muted sm:col-start-2 sm:row-start-1 sm:text-sm">{fmtDate(s.started_at, data.timezone)}</span>
+                      <span className="col-start-2 row-start-1 text-right font-mono tabular-nums sm:col-start-3">{s.ended_at ? fmtDuration(s.duration_s) : "En cours"}</span>
+                      <span className="hidden text-right font-mono text-muted tabular-nums sm:col-start-4 sm:row-start-1 sm:block">{fmtKbps(s.avg_kbps)}</span>
                     </Link>
                   </li>
                 ))}

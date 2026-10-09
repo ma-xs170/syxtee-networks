@@ -24,7 +24,7 @@ function Cell({ className = "", title, text, children, delay = 0, href, cta }: {
       <div className="flex h-44 items-center justify-center">{children}</div>
       <h3 className="mt-6 text-lg font-semibold tracking-tight">{title}</h3>
       <p className="mt-1.5 max-w-[48ch] text-sm leading-relaxed text-muted">{text}</p>
-      {href && cta && <Link href={href} className="mt-4 inline-flex items-center gap-1.5 text-sm text-foreground underline-offset-4 hover:underline">{cta} <span aria-hidden="true">→</span></Link>}
+      {href && cta && <Link href={href} className="mt-2 inline-flex min-h-11 items-center gap-1.5 text-sm text-foreground underline-offset-4 hover:underline">{cta} <span aria-hidden="true">→</span></Link>}
     </Reveal>
   );
 }

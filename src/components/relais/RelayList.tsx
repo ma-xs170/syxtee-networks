@@ -114,12 +114,12 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
             Mes <em>serveurs</em>
           </h1>
           <p className="mt-2 font-mono text-sm tabular-nums text-muted">
-            {active} / {unlimited ? "∞" : max} relais
+            {active} / {unlimited ? "∞" : max} serveurs
           </p>
         </div>
         {full ? (
           <a href="https://discord.gg/CD68F8yZuZ" target="_blank" rel="noopener noreferrer" className="inline-flex h-12 items-center whitespace-nowrap rounded-full border border-line px-6 text-sm font-medium transition-colors hover:bg-foreground/10">
-            Limite atteinte · Demander plus de relais
+            Limite atteinte · Demander plus de serveurs
           </a>
         ) : (
           <button
@@ -127,7 +127,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
             onClick={() => setWizard(true)}
             className="h-12 whitespace-nowrap rounded-full bg-accent px-6 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98]"
           >
-            + Créer un relais
+            + Créer un serveur
           </button>
         )}
       </div>
@@ -135,9 +135,9 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
       {relays.length === 0 ? (
         <section className="grid grid-cols-1 items-center gap-8 rounded-2xl border border-dashed border-line p-8 md:grid-cols-[minmax(0,1fr)_240px]">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight">Aucun relais pour l&apos;instant</h2>
+            <h2 className="text-xl font-semibold tracking-tight">Aucun serveur pour l&apos;instant</h2>
             <p className="mt-2 max-w-[55ch] text-sm leading-relaxed text-muted">
-              Un relais reçoit le flux de ton téléphone ou de ta caméra, et le renvoie à OBS. Crée-en un par appareil.
+              Un serveur reçoit le flux de ton téléphone ou de ta caméra, et le renvoie à OBS. Crée-en un par appareil.
             </p>
             {!full && (
               <button
@@ -145,7 +145,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
                 onClick={() => setWizard(true)}
                 className="mt-6 h-11 whitespace-nowrap rounded-full bg-accent px-5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover active:scale-[0.98]"
               >
-                Créer mon premier relais
+                Créer mon premier serveur
               </button>
             )}
           </div>
@@ -206,7 +206,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
                 </section>
               );
             })}
-            {shown.length === archived.length && archived.length === 0 && <p className="text-sm text-muted">Aucun relais ne correspond à ta recherche.</p>}
+            {shown.length === archived.length && archived.length === 0 && <p className="text-sm text-muted">Aucun serveur ne correspond à ta recherche.</p>}
             {archived.length > 0 && (
               <section aria-labelledby="g-archived">
                 <button

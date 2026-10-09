@@ -14,17 +14,20 @@ export default function NotificationsBell() {
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState<Note[]>([]);
   const [read, setRead] = useState<Set<string>>(new Set());
+  const [gone, setGone] = useState<Set<string>>(new Set());
   const box = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
     try {
       const supabase = createClient();
-      const [n, r] = await Promise.all([
+      const [n, r, d] = await Promise.all([
         supabase.from("notifications").select("id, title, body, created_at").order("created_at", { ascending: false }).limit(20),
         supabase.from("notification_reads").select("notification_id"),
+        supabase.from("notification_dismissals").select("notification_id"),
       ]);
       setNotes((n.data ?? []) as Note[]);
       setRead(new Set((r.data ?? []).map((x) => x.notification_id as string)));
+      setGone(new Set((d.data ?? []).map((x) => x.notification_id as string)));
     } catch {
       // Table absente ou hors ligne : la cloche reste vide.
     }
@@ -52,7 +55,17 @@ export default function NotificationsBell() {
     };
   }, [open]);
 
-  const unread = notes.filter((n) => !read.has(n.id));
+  const shown = notes.filter((n) => !gone.has(n.id));
+  const unread = shown.filter((n) => !read.has(n.id));
+
+  /** Masque une ou toutes les notifications pour ce compte (elles restent pour les autres). */
+  async function dismiss(ids: string[]) {
+    if (!ids.length) return;
+    setGone((s) => new Set([...s, ...ids]));
+    const { data } = await createClient().auth.getUser();
+    if (!data.user) return;
+    await createClient().from("notification_dismissals").upsert(ids.map((id) => ({ user_id: data.user!.id, notification_id: id })), { ignoreDuplicates: true });
+  }
 
   async function toggle() {
     const next = !open;
@@ -82,22 +95,34 @@ export default function NotificationsBell() {
         <div role="dialog" aria-label="Notifications" className="absolute left-full top-0 z-50 ml-3 w-[min(360px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-line-strong bg-[var(--surface-2)] shadow-[0_18px_40px_rgba(0,0,0,0.6)] max-lg:fixed max-lg:inset-x-4 max-lg:bottom-24 max-lg:left-4 max-lg:top-auto max-lg:ml-0 max-lg:w-auto">
           <div className="flex items-center justify-between border-b border-line px-4 py-3">
             <h2 className="text-sm font-semibold">Notifications</h2>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Fermer" className="grid h-9 w-9 place-items-center rounded-lg text-muted hover:text-foreground">
-              <X size={16} />
-            </button>
+            <div className="flex items-center gap-1">
+              {shown.length > 0 && (
+                <button type="button" onClick={() => dismiss(shown.map((n) => n.id))} className="h-9 rounded-full px-3 text-xs text-muted transition-colors hover:bg-foreground/10 hover:text-foreground">
+                  Tout effacer
+                </button>
+              )}
+              <button type="button" onClick={() => setOpen(false)} aria-label="Fermer" className="grid h-9 w-9 place-items-center rounded-full text-muted hover:bg-foreground/10 hover:text-foreground">
+                <X size={16} />
+              </button>
+            </div>
           </div>
-          {notes.length === 0 ? (
+          {shown.length === 0 ? (
             <div className="flex flex-col items-center gap-2 px-4 py-10 text-sm text-muted">
               <Bell size={20} aria-hidden="true" />
               Aucune notification
             </div>
           ) : (
             <ul className="max-h-80 divide-y divide-line overflow-y-auto">
-              {notes.map((n) => (
-                <li key={n.id} className="px-4 py-3">
-                  <p className="text-sm font-medium">{n.title}</p>
-                  {n.body && <p className="mt-1 whitespace-pre-line text-sm text-muted">{n.body}</p>}
-                  <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{fmtAgo(n.created_at)}</p>
+              {shown.map((n) => (
+                <li key={n.id} className="flex items-start gap-3 px-4 py-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">{n.title}</p>
+                    {n.body && <p className="mt-1 whitespace-pre-line text-sm text-muted">{n.body}</p>}
+                    <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{fmtAgo(n.created_at)}</p>
+                  </div>
+                  <button type="button" onClick={() => dismiss([n.id])} aria-label={`Supprimer la notification : ${n.title}`} className="-mr-2 grid h-9 w-9 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-foreground/10 hover:text-foreground">
+                    <X size={14} />
+                  </button>
                 </li>
               ))}
             </ul>

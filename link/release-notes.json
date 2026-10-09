@@ -1,4 +1,7 @@
 {
+  "0.7.13": [
+    "Faible latence : les caméras de la régie restent ouvertes mais OBS les reprend depuis le direct quand leur scène repasse à l'antenne (plus de lecture de vieilles images accumulées)"
+  ],
   "0.7.12": [
     "Régie : une caméra mise à l'antenne à la main et pas encore connectée a 8 secondes avant d'être jugée tombée (fini le va-et-vient avec un flux qui se reconnecte)"
   ],

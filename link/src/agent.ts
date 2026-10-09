@@ -18,7 +18,7 @@ import { coreCall } from "./corehttp.ts";
 import { fixLiveScene, fluxName } from "./livescene.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
 
-export const VERSION = "0.7.12";
+export const VERSION = "0.7.13";
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
 export const OBS_METHODS = new Set([
@@ -358,7 +358,13 @@ export class Agent {
       const d = this.cfg.director;
       const ready = new Set(d.enabled ? d.cams.map((c) => c.source) : []);
       for (const inputName of names) {
-        const settings = this.cfg.lowLatency && !ready.has(inputName) ? { close_when_inactive: true, buffering_mb: 1 } : { close_when_inactive: false, buffering_mb: this.cfg.lowLatency ? 1 : 2 };
+        // Caméras de la régie : ouvertes en permanence, mais « reprendre depuis le début quand la source redevient active » : OBS jette ce qui s'est
+        // accumulé pendant qu'elle était cachée et repart sur le direct, au lieu de relire de vieilles images. Autres flux : fermés quand cachés.
+        const settings = !this.cfg.lowLatency
+          ? { close_when_inactive: false, restart_on_activate: false, buffering_mb: 2, reconnect_delay_sec: 3 }
+          : ready.has(inputName)
+            ? { close_when_inactive: false, restart_on_activate: true, buffering_mb: 1, reconnect_delay_sec: 1 }
+            : { close_when_inactive: true, restart_on_activate: false, buffering_mb: 1, reconnect_delay_sec: 1 };
         await this.obs.request("SetInputSettings", { inputName, inputSettings: settings, overlay: true }).catch(() => {});
       }
       if (names.length) this.log(`faible latence ${this.cfg.lowLatency ? "activée" : "désactivée"} sur ${names.length} flux`);

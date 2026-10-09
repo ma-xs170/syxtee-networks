@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { AiDirector, anthropicAsk, cleanDirector, DEFAULT_DIRECTOR, type DirectorConfig } from "../src/director.ts";
+import { AiDirector, anthropicAsk, mistralAsk, cleanDirector, DEFAULT_DIRECTOR, type DirectorConfig } from "../src/director.ts";
 
 const beau = (n: number) => `${n}`.padEnd(3000, "x");
 
@@ -128,6 +128,31 @@ test("régie IA : une scène de caméra mise à l'antenne à la main est reprise
   assert.equal(o.scene, "Cam iPhone");
 });
 
+test("régie IA sans clé (gratuit) : reprend sur une caméra vivante quand celle à l'antenne tombe, ne choisit jamais seule", async () => {
+  const { o, d, frame } = setup("Cam Osmo");
+  d.set(cfg({ apiKey: "" }));
+  frame();
+  await d.tick(2000);
+  assert.equal(o.scene, "Cam Osmo");
+  assert.equal(o.asked.length, 0); // aucun appel à l'IA
+  o.iphone = beau(701);
+  o.drone = beau(702);
+  await d.tick(4000);
+  assert.equal(o.scene, "Cam iPhone");
+});
+
+test("régie IA sans clé : si la scène Live est la scène d'une caméra, elle compte comme caméra à l'antenne", async () => {
+  const { o, d, frame } = setup("Cam Osmo");
+  d.setLive("Cam Osmo");
+  d.set(cfg({ apiKey: "" }));
+  frame();
+  await d.tick(2000);
+  o.iphone = beau(711);
+  o.drone = beau(712);
+  await d.tick(4000);
+  assert.equal(o.scene, "Cam iPhone");
+});
+
 test("régie IA : scène autre que Live ou la nôtre = rien ne bascule ; réponse illisible = rien ne change", async () => {
   const a = setup("Pause");
   a.o.answer = '{"camera": 2}';
@@ -202,4 +227,28 @@ test("anthropicAsk : envoie les images en base64 avec la clé, lit le texte, sig
   await assert.rejects(anthropicAsk("k", "m", bad)("q", []), /clé API refusée/);
   const ws = (async () => new Response(JSON.stringify({ error: { message: "This API key is not scoped to a workspace" } }), { status: 400 })) as unknown as typeof fetch;
   await assert.rejects(anthropicAsk("k", "m", ws)("q", []), /API 400 : This API key is not scoped to a workspace/);
+});
+
+test("mistralAsk : images en data URI, clé en Bearer, texte lu, erreurs lisibles", async () => {
+  let seen: { url: string; headers: Record<string, string>; body: any } | null = null;
+  const ok = (async (url: string, init: RequestInit) => {
+    seen = { url, headers: init.headers as Record<string, string>, body: JSON.parse(String(init.body)) };
+    return new Response(JSON.stringify({ choices: [{ message: { content: '{"camera": 2}' } }] }), { status: 200 });
+  }) as unknown as typeof fetch;
+  const text = await mistralAsk("mk", "mistral-small-latest", ok)("quoi ?", ["data:image/jpeg;base64,AAAA", "BBBB"]);
+  assert.equal(text, '{"camera": 2}');
+  assert.equal(seen!.url, "https://api.mistral.ai/v1/chat/completions");
+  assert.equal(seen!.headers.authorization, "Bearer mk");
+  assert.equal(seen!.body.messages[0].content[0].image_url, "data:image/jpeg;base64,AAAA");
+  assert.equal(seen!.body.messages[0].content[1].image_url, "data:image/jpeg;base64,BBBB");
+  const limit = (async () => new Response("{}", { status: 429 })) as unknown as typeof fetch;
+  await assert.rejects(mistralAsk("k", "m", limit)("q", []), /limite de requêtes/);
+  const bad = (async () => new Response(JSON.stringify({ message: "Unknown model" }), { status: 400 })) as unknown as typeof fetch;
+  await assert.rejects(mistralAsk("k", "m", bad)("q", []), /API 400 : Unknown model/);
+});
+
+test("cleanDirector : fournisseur Mistral par défaut, valeur inconnue ignorée", () => {
+  assert.equal(cleanDirector(undefined).provider, "mistral");
+  assert.equal(cleanDirector({ provider: "anthropic" }).provider, "anthropic");
+  assert.equal(cleanDirector({ provider: "x" }, { ...DEFAULT_DIRECTOR, provider: "anthropic" }).provider, "anthropic");
 });

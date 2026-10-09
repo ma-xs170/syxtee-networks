@@ -17,7 +17,7 @@ import { useRemote, type LinkEvent } from "./useRemote";
 type Item = { id: number; name: string; kind: string; on: boolean; flux?: boolean };
 type Mix = { name: string; muted: boolean; db: number; mon: string; global: boolean };
 type Trigger = "cut" | "cut_lowbitrate" | "sensitive";
-type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioBackup?: boolean; directorEnabled?: boolean; directorKeySet?: boolean; directorKey?: string; directorClearKey?: boolean; directorCams?: { source: string; scene: string; label: string }[]; directorRules?: string; directorInterval?: number; directorHold?: number; directorState?: string; directorCam?: number; directorReason?: string; directorWorkspaceId?: string; audioState?: string };
+type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioBackup?: boolean; directorEnabled?: boolean; directorKeySet?: boolean; directorKey?: string; directorClearKey?: boolean; directorCams?: { source: string; scene: string; label: string }[]; directorRules?: string; directorInterval?: number; directorHold?: number; directorState?: string; directorCam?: number; directorReason?: string; directorWorkspaceId?: string; directorProvider?: "mistral" | "anthropic"; audioState?: string };
 type Stats = { cpu: number; fps: number; kbps: number | null; dropped: number; total: number; encoder: string; congestion: number; streamMs: number; recMs: number };
 type Named = { current: string; list: string[] };
 type Tab = "scenes" | "sources" | "mixer" | "controls" | "multi" | "chat";
@@ -965,11 +965,18 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 />
               </label>
               <label className="mt-3 grid gap-1 text-[12px] text-neutral-400">
-                Clé API Anthropic {roles.directorKeySet ? "(enregistrée sur ce PC)" : "(reste sur ton PC)"}
+                IA utilisée
+                <select disabled={oldAgent} value={roles.directorProvider ?? "mistral"} onChange={(e) => saveRoles({ directorProvider: e.target.value as "mistral" | "anthropic" })} className="h-8 rounded border border-white/15 bg-transparent px-2 text-[13px] text-neutral-100">
+                  <option value="mistral" className="bg-[#0b0b0d]">Mistral (offre gratuite)</option>
+                  <option value="anthropic" className="bg-[#0b0b0d]">Claude d&apos;Anthropic (payant)</option>
+                </select>
+              </label>
+              <label className="mt-3 grid gap-1 text-[12px] text-neutral-400">
+                Clé API {(roles.directorProvider ?? "mistral") === "mistral" ? "Mistral" : "Anthropic"}, facultative {roles.directorKeySet ? "(enregistrée sur ce PC)" : "(reste sur ton PC)"}
                 <input disabled={oldAgent}
                   type="password"
                   autoComplete="off"
-                  placeholder={roles.directorKeySet ? "••••••••  (laisser vide pour garder)" : "sk-ant-…"}
+                  placeholder={roles.directorKeySet ? "••••••••  (laisser vide pour garder)" : roles.directorProvider === "anthropic" ? "sk-ant-…" : "Clé de console.mistral.ai"}
                   onBlur={(e) => {
                     if (e.target.value.trim()) {
                       saveRoles({ directorKey: e.target.value.trim() });
@@ -979,7 +986,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                   className="h-8 rounded border border-white/15 bg-transparent px-2 text-[13px] text-neutral-100"
                 />
               </label>
-              <label className="mt-3 grid gap-1 text-[12px] text-neutral-400">
+              {roles.directorProvider === "anthropic" && <label className="mt-3 grid gap-1 text-[12px] text-neutral-400">
                 Identifiant d&apos;espace de travail Anthropic (seulement si ta clé n&apos;est pas rattachée à un espace)
                 <input
                   disabled={oldAgent}
@@ -989,7 +996,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                   onBlur={(e) => e.target.value.trim() !== (roles.directorWorkspaceId ?? "") && saveRoles({ directorWorkspaceId: e.target.value.trim() })}
                   className="h-8 rounded border border-white/15 bg-transparent px-2 text-[13px] text-neutral-100"
                 />
-              </label>
+              </label>}
               {roles.directorKeySet && (
                 <button type="button" onClick={() => saveRoles({ directorClearKey: true })} className={`${flat} mt-2 h-7 justify-self-start px-3`}>
                   Effacer la clé
@@ -1031,7 +1038,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 <Switch
                   label="Régie IA"
                   on={!!roles.directorEnabled}
-                  disabled={oldAgent || noIa || !roles.directorKeySet || !roles.liveScene || (roles.directorCams ?? []).filter((c) => c.source && c.scene).length < 2}
+                  disabled={oldAgent || noIa || !roles.liveScene || (roles.directorCams ?? []).filter((c) => c.source && c.scene).length < 2}
                   onClick={() => saveRoles({ directorEnabled: !roles.directorEnabled })}
                 />
               </div>
@@ -1040,8 +1047,9 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                   La régie IA n&apos;arrive pas à joindre l&apos;IA : {roles.directorReason || "erreur inconnue"}
                 </p>
               )}
-              {(!roles.directorKeySet || (roles.directorCams ?? []).filter((c) => c.source && c.scene).length < 2) && <p className="mt-2 text-[12px] text-neutral-500">Il faut ta scène Live, une clé API et au moins 2 caméras complètes (source et scène).</p>}
-              <p className="mt-2 text-[12px] text-neutral-500">Chaque analyse envoie de petites vignettes de tes caméras à Anthropic avec ta clé : c&apos;est facturé par Anthropic, par appel (un appel toutes les {roles.directorInterval ?? 4} s en direct). Désactive la régie IA pour ne rien envoyer.</p>
+              {(roles.directorCams ?? []).filter((c) => c.source && c.scene).length < 2 && <p className="mt-2 text-[12px] text-neutral-500">Il faut ta scène Live et au moins 2 caméras complètes (source et scène).</p>}
+              <p className="mt-2 text-[12px] text-neutral-500">{roles.directorKeySet ? "Avec ta clé API, l'IA choisit la caméra selon tes consignes." : "Sans clé API (gratuit) : la régie reprend sur une caméra vivante dès que celle à l'antenne tombe. Ajoute une clé pour que l'IA choisisse selon tes consignes."}</p>
+              <p className="mt-2 text-[12px] text-neutral-500">Chaque analyse envoie de petites vignettes de tes caméras à {(roles.directorProvider ?? "mistral") === "mistral" ? "Mistral (offre gratuite d'expérimentation sur console.mistral.ai, avec des limites de débit)" : "Anthropic (facturé par appel)"} avec ta clé (un appel toutes les {roles.directorInterval ?? 4} s en direct). Désactive la régie IA pour ne rien envoyer.</p>
               <fieldset className="mt-4">
                 <legend className="text-[13px] font-semibold">Sensibilité du secours</legend>
                 <div className="mt-2 grid gap-2">

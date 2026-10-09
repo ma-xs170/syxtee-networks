@@ -1,4 +1,8 @@
 {
+  "0.7.4": [
+    "Régie IA : choix de l'IA, Mistral avec son offre gratuite (par défaut) ou Claude d'Anthropic",
+    "Régie IA : sans clé API, mode gratuit qui reprend sur une caméra vivante quand celle à l'antenne tombe"
+  ],
   "0.7.3": [
     "Régie IA : champ facultatif pour l'identifiant d'espace de travail Anthropic, pour les clés qui ne sont pas rattachées à un espace"
   ],

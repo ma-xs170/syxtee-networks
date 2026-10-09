@@ -18,6 +18,8 @@ export type DirectorConfig = {
   enabled: boolean;
   /** Clé API Anthropic de l'utilisateur : reste sur son PC. */
   apiKey: string;
+  /** Fournisseur de l'IA : « mistral » (offre gratuite d'expérimentation) ou « anthropic » (Claude, payant). */
+  provider: Provider;
   /** Identifiant de l'espace de travail Anthropic, seulement si la clé n'est pas rattachée à un espace. */
   workspaceId: string;
   cams: DirectorCam[];
@@ -29,10 +31,13 @@ export type DirectorConfig = {
   hold: number;
 };
 
+export type Provider = "mistral" | "anthropic";
+export const PROVIDERS: Provider[] = ["mistral", "anthropic"];
 export const MAX_CAMS = 6;
 export const DEFAULT_DIRECTOR: DirectorConfig = {
   enabled: false,
   apiKey: "",
+  provider: "mistral",
   workspaceId: "",
   cams: [],
   rules:
@@ -56,6 +61,7 @@ export function cleanDirector(v: unknown, prev: DirectorConfig = DEFAULT_DIRECTO
     enabled: typeof o.enabled === "boolean" ? o.enabled : prev.enabled,
     // Clé : une valeur vide ne l'efface pas (l'interface ne la relit jamais) ; « clearKey » l'efface.
     apiKey: o.clearKey === true ? "" : typeof o.apiKey === "string" && o.apiKey.trim() ? o.apiKey.trim().slice(0, 300) : prev.apiKey,
+    provider: PROVIDERS.includes(o.provider as Provider) ? (o.provider as Provider) : prev.provider ?? "mistral",
     workspaceId: typeof o.workspaceId === "string" ? o.workspaceId.trim().slice(0, 100) : prev.workspaceId ?? "",
     cams,
     rules: str(o.rules, prev.rules, 1000),
@@ -110,7 +116,8 @@ export class AiDirector {
   }
 
   private ready() {
-    return this.cfg.enabled && !!this.cfg.apiKey && this.usable().length >= 2;
+    // Sans clé API : mode local gratuit (reprise sur une caméra vivante quand celle à l'antenne tombe). Avec une clé : choix par l'IA.
+    return this.cfg.enabled && this.usable().length >= 2;
   }
 
   /** Caméras complètes (source et scène). Leur position dans cette liste est le numéro donné au modèle. */
@@ -170,8 +177,10 @@ export class AiDirector {
       return;
     }
     // Une scène de caméra mise à l'antenne à la main est reprise par la régie : si cette caméra tombe, elle bascule sur une vivante.
+    // Cas où la scène Live est elle-même une scène de caméra : elle compte comme la caméra à l'antenne.
     const onAir = cams.findIndex((c) => c.scene === cur);
-    if (onAir >= 0 && onAir !== this.current && cur !== this.live) {
+    const liveIsCam = cams.some((c) => c.scene === this.live);
+    if (onAir >= 0 && onAir !== this.current && (cur !== this.live || liveIsCam)) {
       this.current = onAir;
       this.since = now;
       this.candidate = -1;
@@ -185,7 +194,7 @@ export class AiDirector {
       return;
     }
     // Retour manuel sur Live pendant que nous tenions une caméra : la main revient à l'utilisateur pour un moment.
-    if (cur === this.live && this.current >= 0) {
+    if (cur === this.live && this.current >= 0 && !liveIsCam) {
       this.current = -1;
       this.since = now + 30_000;
     }
@@ -236,6 +245,11 @@ export class AiDirector {
 
   /** Numéro de caméra choisi par le modèle, ou null si la réponse est inutilisable (on ne change alors rien). */
   private async decide(cams: DirectorCam[], alive: { idx: number; img: string }[], current: number): Promise<number | null> {
+    // Mode local, sans clé : on ne fait que remplacer la caméra à l'antenne quand elle est tombée.
+    if (!this.cfg.apiKey) {
+      if (current < 0 || alive.some((a) => a.idx === current)) return current >= 0 ? current : null;
+      return alive[0].idx;
+    }
     const list = alive.map((a, n) => `Image ${n + 1} = caméra ${a.idx + 1} : ${cams[a.idx].label || cams[a.idx].source}`).join("\n");
     const prompt =
       `Tu es le réalisateur d'un direct. Chaque image est la vue actuelle d'une caméra.\n${list}\n` +
@@ -248,6 +262,33 @@ export class AiDirector {
     const idx = Number(m[1]) - 1;
     return alive.some((a) => a.idx === idx) ? idx : null;
   }
+}
+
+/** Appel à l'API Mistral (La Plateforme, offre gratuite d'expérimentation) avec la clé de l'utilisateur : modèle de vision, une image par caméra. */
+export function mistralAsk(apiKey: string, model = "mistral-small-latest", fetchFn: typeof fetch = fetch): Ask {
+  return async (prompt, images) => {
+    const content: unknown[] = images.map((img) => ({ type: "image_url", image_url: img.startsWith("data:") ? img : `data:image/jpeg;base64,${img}` }));
+    content.push({ type: "text", text: prompt });
+    const r = await fetchFn("https://api.mistral.ai/v1/chat/completions", {
+      method: "POST",
+      headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
+      body: JSON.stringify({ model, max_tokens: 100, temperature: 0, messages: [{ role: "user", content }] }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!r.ok) {
+      let detail = "";
+      try {
+        const j = (await r.json()) as { message?: string; detail?: unknown; error?: { message?: string } };
+        detail = String(j.message ?? j.error?.message ?? (typeof j.detail === "string" ? j.detail : "")).slice(0, 200);
+      } catch {
+        /* corps illisible */
+      }
+      throw new Error(r.status === 401 ? "clé API refusée" : r.status === 429 ? "limite de requêtes atteinte, la régie réessaie" : `API ${r.status}${detail ? ` : ${detail}` : ""}`);
+    }
+    const j = (await r.json()) as { choices?: { message?: { content?: unknown } }[] };
+    const c = j.choices?.[0]?.message?.content;
+    return typeof c === "string" ? c : "";
+  };
 }
 
 /** Appel direct à l'API Anthropic avec la clé de l'utilisateur (la clé ne quitte pas le PC). */

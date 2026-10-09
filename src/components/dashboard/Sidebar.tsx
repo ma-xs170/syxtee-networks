@@ -188,7 +188,7 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-haspopup="menu"
-          className="flex w-full items-center gap-3 rounded-xl border border-line bg-surface-2 p-2 text-left transition-colors hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60"
+          className="flex w-full items-center gap-3 rounded-xl border border-line bg-surface-2 p-2 text-left transition-colors hover:border-line-strong focus-visible:outline-none focus-visible:border-line-strong focus-visible:ring-1 focus-visible:ring-foreground/25"
         >
           <Avatar account={account} size={36} />
           <span className="min-w-0 flex-1">

@@ -27,6 +27,8 @@ export type DirectorConfig = {
   cams: DirectorCam[];
   /** Consignes en langage naturel. */
   rules: string;
+  /** Mode économe : vignettes plus petites, et l'IA n'est interrogée que lorsque les images ont changé de façon notable (ou toutes les 30 s). */
+  eco: boolean;
   /** Secondes entre deux analyses. */
   interval: number;
   /** Secondes minimales sur une caméra avant d'en changer. */
@@ -47,6 +49,7 @@ export const DEFAULT_DIRECTOR: DirectorConfig = {
   cams: [],
   rules:
     "Montre la caméra où il se passe quelque chose : une personne qui parle à la caméra, un objet montré de près, une entrée dans un véhicule. Le drone, quand il vole avec une belle vue. Reste sur la caméra actuelle si rien ne change.",
+  eco: true,
   interval: 4,
   hold: 6,
 };
@@ -71,6 +74,7 @@ export function cleanDirector(v: unknown, prev: DirectorConfig = DEFAULT_DIRECTO
     workspaceId: typeof o.workspaceId === "string" ? o.workspaceId.trim().slice(0, 100) : prev.workspaceId ?? "",
     cams,
     rules: str(o.rules, prev.rules, 1000),
+    eco: typeof o.eco === "boolean" ? o.eco : prev.eco ?? true,
     interval: num(o.interval, prev.interval, 2, 30),
     hold: num(o.hold, prev.hold, 2, 120),
   };
@@ -84,6 +88,10 @@ export type Ask = (prompt: string, images: string[]) => Promise<string>;
 
 /** Une vignette presque noire se compresse en très peu d'octets : en dessous, ce n'est pas une image exploitable. */
 const MIN_IMAGE_CHARS = 2500;
+/** Mode économe : variation de taille de la vignette (en proportion) à partir de laquelle on considère que l'image a changé. */
+const ECO_CHANGE = 0.12;
+/** Mode économe : l'IA est interrogée au moins toutes les 30 s, même si rien ne semble avoir changé. */
+const ECO_REFRESH_MS = 30_000;
 /** Avis concordants avant de changer de caméra. */
 const AGREE = 2;
 
@@ -104,6 +112,8 @@ export class AiDirector {
   private since = 0;
   private candidate = -1;
   private votes = 0;
+  /** Dernière consultation de l'IA : caméras vivantes et taille de leur vignette, pour le mode économe. */
+  private asked: { at: number; sizes: Map<number, number> } | null = null;
 
   constructor(req: Req, ask: Ask, log: (m: string) => void = () => {}) {
     this.req = req;
@@ -137,6 +147,7 @@ export class AiDirector {
     this.candidate = -1;
     this.votes = 0;
     this.since = 0;
+    this.asked = null;
     this.setState("idle", "");
   }
 
@@ -149,7 +160,7 @@ export class AiDirector {
 
   private async shot(source: string): Promise<string> {
     try {
-      const r = await this.req("GetSourceScreenshot", { sourceName: source, imageFormat: "jpg", imageWidth: 320, imageHeight: 180, imageCompressionQuality: 50 });
+      const r = await this.req("GetSourceScreenshot", { sourceName: source, imageFormat: "jpg", imageWidth: this.cfg.eco ? 224 : 320, imageHeight: this.cfg.eco ? 126 : 180, imageCompressionQuality: this.cfg.eco ? 40 : 50 });
       return String(r.imageData ?? "");
     } catch {
       return "";
@@ -218,6 +229,10 @@ export class AiDirector {
     if (alive.length === 0) return;
 
     const curAlive = this.current >= 0 && alive.some((a) => a.idx === this.current);
+    // Mode économe : si les mêmes caméras sont vivantes et que leurs images n'ont pas notablement changé, on ne dérange pas l'IA.
+    // Un avis en attente de confirmation (candidat) force toujours une deuxième consultation.
+    if (this.cfg.eco && this.candidate < 0 && this.skipAsk(alive, now)) return;
+    this.asked = { at: now, sizes: new Map(alive.map((a) => [a.idx, a.img.length])) };
     const pick = await this.decide(cams, alive, this.current);
     if (this.state === "error") this.setState(this.current >= 0 ? "cam" : "watching", this.current >= 0 ? cams[this.current].label || cams[this.current].source : "");
     if (pick === null) return;
@@ -247,6 +262,17 @@ export class AiDirector {
     this.candidate = -1;
     this.votes = 0;
     this.setState("cam", cams[pick].label || cams[pick].source);
+  }
+
+  /** Vrai si l'IA peut être épargnée : mêmes caméras vivantes, vignettes de taille voisine, dernière consultation récente. */
+  private skipAsk(alive: { idx: number; img: string }[], now: number): boolean {
+    const a = this.asked;
+    if (!a || now - a.at >= ECO_REFRESH_MS || a.sizes.size !== alive.length) return false;
+    for (const { idx, img } of alive) {
+      const before = a.sizes.get(idx);
+      if (before === undefined || Math.abs(img.length - before) / before > ECO_CHANGE) return false;
+    }
+    return true;
   }
 
   /** Numéro de caméra choisi par le modèle, ou null si la réponse est inutilisable (on ne change alors rien). */

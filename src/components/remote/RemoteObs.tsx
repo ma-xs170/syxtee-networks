@@ -17,7 +17,7 @@ import { useRemote, type LinkEvent } from "./useRemote";
 type Item = { id: number; name: string; kind: string; on: boolean; flux?: boolean };
 type Mix = { name: string; muted: boolean; db: number; mon: string; global: boolean };
 type Trigger = "cut" | "cut_lowbitrate" | "sensitive";
-type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioBackup?: boolean; directorEnabled?: boolean; directorKeySet?: boolean; directorKey?: string; directorClearKey?: boolean; directorCams?: { source: string; scene: string; label: string }[]; directorRules?: string; directorInterval?: number; directorHold?: number; directorState?: string; directorCam?: number; directorReason?: string; directorWorkspaceId?: string; directorProvider?: "mistral" | "anthropic" | "local"; directorModel?: string; audioState?: string };
+type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioBackup?: boolean; directorEnabled?: boolean; directorKeySet?: boolean; directorKey?: string; directorClearKey?: boolean; directorCams?: { source: string; scene: string; label: string }[]; directorRules?: string; directorInterval?: number; directorHold?: number; directorState?: string; directorCam?: number; directorReason?: string; directorWorkspaceId?: string; directorProvider?: "mistral" | "anthropic" | "local"; directorModel?: string; directorEco?: boolean; audioState?: string };
 type Stats = { cpu: number; fps: number; kbps: number | null; dropped: number; total: number; encoder: string; congestion: number; streamMs: number; recMs: number };
 type Named = { current: string; list: string[] };
 type Tab = "scenes" | "sources" | "mixer" | "controls" | "multi" | "chat";
@@ -1022,6 +1022,13 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                   Effacer la clé
                 </button>
               )}
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-medium">Mode économe</p>
+                  <p className="text-[12px] text-neutral-500">Petites vignettes, et l&apos;IA n&apos;est consultée que si les images ont changé (ou toutes les 30 s). Moins de calcul sur le PC, moins d&apos;appels.</p>
+                </div>
+                <Switch label="Mode économe" on={roles.directorEco !== false} disabled={oldAgent} onClick={() => saveRoles({ directorEco: roles.directorEco === false })} />
+              </div>
               <div className="mt-3 flex items-center justify-between gap-3 text-[13px]">
                 <label className="flex items-center gap-2">
                   Analyse toutes les

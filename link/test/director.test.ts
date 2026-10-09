@@ -7,6 +7,7 @@ const beau = (n: number) => `${n}`.padEnd(3000, "x");
 const cfg = (over: Partial<DirectorConfig> = {}): DirectorConfig => ({
   ...DEFAULT_DIRECTOR,
   enabled: true,
+  eco: false,
   apiKey: "sk-test",
   interval: 2,
   hold: 6,
@@ -151,6 +152,39 @@ test("régie IA sans clé : si la scène Live est la scène d'une caméra, elle 
   o.drone = beau(712);
   await d.tick(4000);
   assert.equal(o.scene, "Cam iPhone");
+});
+
+test("mode économe : l'IA n'est pas interrogée tant que les images ne changent pas notablement, puis l'est quand elles changent", async () => {
+  const { o, d, frame } = setup();
+  d.set(cfg({ eco: true }));
+  o.answer = '{"camera": 1}';
+  for (const t of [2000, 4000, 6000, 8000]) {
+    frame(); // images de taille identique : rien de notable
+    await d.tick(t);
+  }
+  // Deux consultations pour confirmer le choix (avis en attente), puis plus rien tant que les images sont stables.
+  assert.equal(o.asked.length, 2);
+  assert.equal(o.scene, "Cam Osmo");
+  // Une caméra change fortement (image bien plus riche) : l'IA est consultée.
+  o.osmo = "z".repeat(6000);
+  await d.tick(10000);
+  assert.equal(o.asked.length, 3);
+  // Rafraîchissement au bout de 30 s même sans changement.
+  frame();
+  o.osmo = "z".repeat(6000) + "1";
+  await d.tick(41000);
+  assert.equal(o.asked.length, 4);
+});
+
+test("mode non économe : l'IA est interrogée à chaque analyse", async () => {
+  const { o, d, frame } = setup();
+  d.set(cfg({ eco: false }));
+  o.answer = '{"camera": 1}';
+  for (const t of [2000, 4000, 6000]) {
+    frame();
+    await d.tick(t);
+  }
+  assert.equal(o.asked.length, 3);
 });
 
 test("régie IA : scène autre que Live ou la nôtre = rien ne bascule ; réponse illisible = rien ne change", async () => {

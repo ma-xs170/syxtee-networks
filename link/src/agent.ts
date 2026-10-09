@@ -18,7 +18,7 @@ import { coreCall } from "./corehttp.ts";
 import { fixLiveScene } from "./livescene.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
 
-export const VERSION = "0.7.5";
+export const VERSION = "0.7.6";
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
 export const OBS_METHODS = new Set([
@@ -169,7 +169,7 @@ export class Agent {
 
   /** Auto-gérance telle que l'interface la lit (champs à plat). */
   private autoView() {
-    return { autoEnabled: this.cfg.auto.enabled, droneScene: this.cfg.auto.droneScene, droneSource: this.cfg.auto.droneSource, autoRules: this.cfg.auto.rules, audioEnabled: this.cfg.audio.enabled, audioSource: this.cfg.audio.source, audioSeconds: this.cfg.audio.seconds, audioUnmute: this.cfg.audio.unmute, audioBackup: this.cfg.audio.backup, audioState: this.audio.state, directorEnabled: this.cfg.director.enabled, directorKeySet: !!this.cfg.director.apiKey, directorProvider: this.cfg.director.provider, directorModel: this.cfg.director.model, directorWorkspaceId: this.cfg.director.workspaceId, directorCams: this.cfg.director.cams, directorRules: this.cfg.director.rules, directorInterval: this.cfg.director.interval, directorHold: this.cfg.director.hold, directorState: this.director.state, directorCam: this.director.current, directorReason: this.director.lastReason };
+    return { autoEnabled: this.cfg.auto.enabled, droneScene: this.cfg.auto.droneScene, droneSource: this.cfg.auto.droneSource, autoRules: this.cfg.auto.rules, audioEnabled: this.cfg.audio.enabled, audioSource: this.cfg.audio.source, audioSeconds: this.cfg.audio.seconds, audioUnmute: this.cfg.audio.unmute, audioBackup: this.cfg.audio.backup, audioState: this.audio.state, directorEnabled: this.cfg.director.enabled, directorKeySet: !!this.cfg.director.apiKey, directorProvider: this.cfg.director.provider, directorEco: this.cfg.director.eco, directorModel: this.cfg.director.model, directorWorkspaceId: this.cfg.director.workspaceId, directorCams: this.cfg.director.cams, directorRules: this.cfg.director.rules, directorInterval: this.cfg.director.interval, directorHold: this.cfg.director.hold, directorState: this.director.state, directorCam: this.director.current, directorReason: this.director.lastReason };
   }
 
   /** Requête directe à OBS (listes de scènes et de sources pour l'interface). */
@@ -640,7 +640,7 @@ export class Agent {
         // Auto-gérance (drone) : champs à plat dans la même requête que les rôles de scènes.
         this.cfg.auto = cleanAuto({ enabled: params.autoEnabled, droneScene: params.droneScene, droneSource: params.droneSource, rules: params.autoRules }, this.cfg.auto);
         this.cfg.audio = cleanAudio({ enabled: params.audioEnabled, source: params.audioSource, seconds: params.audioSeconds, unmute: params.audioUnmute, backup: params.audioBackup }, this.cfg.audio);
-        this.cfg.director = cleanDirector({ enabled: params.directorEnabled, apiKey: params.directorKey, clearKey: params.directorClearKey, provider: params.directorProvider, model: params.directorModel, workspaceId: params.directorWorkspaceId, cams: params.directorCams, rules: params.directorRules, interval: params.directorInterval, hold: params.directorHold }, this.cfg.director);
+        this.cfg.director = cleanDirector({ enabled: params.directorEnabled, apiKey: params.directorKey, clearKey: params.directorClearKey, provider: params.directorProvider, eco: params.directorEco, model: params.directorModel, workspaceId: params.directorWorkspaceId, cams: params.directorCams, rules: params.directorRules, interval: params.directorInterval, hold: params.directorHold }, this.cfg.director);
         this.director.set(this.cfg.director);
         this.director.setLive(this.cfg.liveScene);
         this.watcher.set(this.cfg.backup);

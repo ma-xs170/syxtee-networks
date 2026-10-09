@@ -6,7 +6,8 @@ import { DownloadSimple } from "@/components/icons";
 import { ago, detectOs, pluginState, since, type OsId, type PluginLatest } from "@/lib/plugin";
 import { useLiveStatus } from "./LiveStatus";
 import { useLinkDevices, type DevicesDemo, type LinkDevice } from "./useLinkDevices";
-import { ArrowLink, Tile, TileLabel } from "./ui";
+import { ArrowLink } from "./ui";
+import { Card } from "./panel";
 
 // « Mes OBS » : les postes OBS reliés au compte (état, version du plugin, renommer, révoquer) et le téléchargement du plugin.
 // Trois étapes quand il n'y a encore aucun poste.
@@ -161,16 +162,13 @@ export default function MesObs({ coreUrl, demo }: { coreUrl: string; demo?: Devi
   const pushing = (live.state?.relays ?? []).filter((r) => r.live).map((r) => r.name).filter(Boolean);
 
   return (
-    <Tile aria-labelledby="mes-obs">
-      <TileLabel id="mes-obs" right={<DownloadButton coreUrl={coreUrl} latest={latest} className={btnGhost} />}>
-        Mes OBS
-      </TileLabel>
+    <Card title="Mes OBS" action={<DownloadButton coreUrl={coreUrl} latest={latest} className={btnGhost} label="Plugin" />}>
       {error && !devices ? (
-        <p className="mt-4 text-sm text-muted">{error}</p>
+        <p className="py-5 text-sm text-muted">{error}</p>
       ) : !devices ? (
-        <p className="mt-4 text-sm text-muted">Chargement…</p>
+        <p className="py-5 text-sm text-muted">Chargement…</p>
       ) : devices.length === 0 ? (
-        <div className="mt-4">
+        <div className="py-5">
           <p className="text-sm text-muted">Aucun OBS relié. Le plugin te permet de piloter OBS depuis le site, même depuis ton téléphone.</p>
           <ol className="mt-4 grid gap-3">
             {STEPS.map((s, i) => (
@@ -183,18 +181,15 @@ export default function MesObs({ coreUrl, demo }: { coreUrl: string; demo?: Devi
               </li>
             ))}
           </ol>
-          <div className="mt-5">
-            <DownloadButton coreUrl={coreUrl} latest={latest} />
-          </div>
         </div>
       ) : (
-        <div className="mt-4">
+        <div className="py-5">
           <DeviceRows devices={devices} latest={latest} pushing={pushing} onRename={rename} onRevoke={revoke} />
           <div className="mt-4">
-            <ArrowLink href="/dashboard/controle-a-distance">Contrôle à distance</ArrowLink>
+            <ArrowLink href="/dashboard/controle-a-distance">Ouvrir le contrôle</ArrowLink>
           </div>
         </div>
       )}
-    </Tile>
+    </Card>
   );
 }

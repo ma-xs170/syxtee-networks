@@ -18,10 +18,13 @@ export function TabsNav({ tabs, current, label = "Sections" }: { tabs: { id: str
   );
 }
 
-export function Card({ title, children, className = "" }: { title: string; children: ReactNode; className?: string }) {
+export function Card({ title, children, className = "", action }: { title: string; children: ReactNode; className?: string; /** À droite du titre : un lien ou un bouton propre à la carte (Gérer, Tout l'historique…). */ action?: ReactNode }) {
   return (
     <section aria-label={title} className={`rounded-2xl border border-line bg-surface ${className}`}>
-      <h2 className="border-b border-line px-6 py-5 text-lg font-semibold tracking-tight">{title}</h2>
+      <div className="flex min-h-[4.25rem] items-center justify-between gap-4 border-b border-line px-6 py-3">
+        <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+        {action}
+      </div>
       <div className="divide-y divide-line px-6">{children}</div>
     </section>
   );

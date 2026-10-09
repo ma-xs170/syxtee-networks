@@ -11,6 +11,7 @@ const columns: { title: string; links: NavLink[] }[] = [
     links: [
       { label: "Contrôle à distance", href: "/controle-a-distance" },
       { label: "Multistream", href: "/multistream" },
+      { label: "Régie IA", href: "/regie-ia" },
       { label: "Espaces partagés", href: "/espaces-partages" },
       { label: "Tarifs", href: "/tarifs" },
     ],

@@ -23,6 +23,7 @@ export type NavItem = NavLink | NavMenu;
 export const nav: NavItem[] = [
   { label: "Contrôle à distance", href: "/controle-a-distance" },
   { label: "Multistream", href: "/multistream" },
+  { label: "Régie IA", href: "/regie-ia" },
   { label: "Tarifs", href: "/tarifs" },
   { label: "Contacter", href: "/contact", underline: true },
 ];

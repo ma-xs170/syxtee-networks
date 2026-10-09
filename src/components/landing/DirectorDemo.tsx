@@ -1,25 +1,50 @@
 "use client";
 
 import { useInView, useReducedMotion } from "motion/react";
+import { DeviceGlyph } from "./RegieVisuals";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 // Démo de la régie IA : trois caméras en fil de fer, un écran Programme, et ce que « voit » l'IA à chaque situation.
 // Le scénario change tout seul toutes les quelques secondes (seulement quand la démo est à l'écran) et se choisit au clic.
 // prefers-reduced-motion : pas de défilement automatique, les fondus sont coupés.
 
-type Scene = { id: string; cam: number; situation: string; reason: string };
+type Tone = "ok" | "warn" | "idle";
+type Scene = { id: string; cam: number; situation: string; rule: string; reason: string; status: [string, Tone][] };
 
 const CAMS = [
-  { name: "Osmo", full: "Osmo Pocket 3", role: "à la main" },
-  { name: "iPhone", full: "iPhone", role: "tableau de bord" },
-  { name: "Drone", full: "Drone", role: "en vol" },
+  { name: "Osmo", full: "DJI Osmo Pocket 3", role: "à la main" },
+  { name: "iPhone", full: "iPhone 16", role: "tableau de bord" },
+  { name: "Drone", full: "DJI Mini", role: "en vol" },
 ];
 
 const SCENES: Scene[] = [
-  { id: "objet", cam: 0, situation: "Tu montres un objet à la caméra", reason: "Objet montré de près, l'Osmo passe au programme." },
-  { id: "voiture", cam: 1, situation: "Tu montes dans la voiture", reason: "Personne qui s'installe au volant, l'iPhone du tableau de bord prend la main." },
-  { id: "drone", cam: 2, situation: "Le drone décolle", reason: "Belle image qui bouge, le drone passe devant." },
+  {
+    id: "objet",
+    cam: 0,
+    situation: "Tu montres un objet à la caméra",
+    rule: "Si je montre un objet de près, prends la caméra à la main.",
+    reason: "Objet de près au centre de l'image : l'Osmo passe au programme.",
+    status: [["objet de près", "ok"], ["plan fixe", "idle"], ["au sol", "idle"]],
+  },
+  {
+    id: "voiture",
+    cam: 1,
+    situation: "Tu montes dans la voiture",
+    rule: "Quand je monte dans la voiture, prends l'iPhone du tableau de bord.",
+    reason: "Personne au volant : l'iPhone prend la main. Le drone, sans signal, est écarté.",
+    status: [["rangé", "idle"], ["personne au volant", "ok"], ["signal perdu, écarté", "warn"]],
+  },
+  {
+    id: "drone",
+    cam: 2,
+    situation: "Le drone décolle",
+    rule: "Si le drone vole avec une belle vue, passe sur le drone.",
+    reason: "Image qui bouge et cadrage large : le drone passe devant.",
+    status: [["plan fixe", "idle"], ["plan fixe", "idle"], ["belle image", "ok"]],
+  },
 ];
+
+const CHIP: Record<Tone, string> = { ok: "bg-ok/15 text-ok", warn: "bg-warn/15 text-warn", idle: "bg-foreground/[0.06] text-muted" };
 
 const STEP_MS = 5000;
 
@@ -137,22 +162,32 @@ export default function DirectorDemo({ intro, outro }: { intro?: ReactNode; outr
           <span className="absolute bottom-3 right-3 rounded-md border border-line bg-surface/90 px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">{CAMS[scene.cam].full}</span>
         </div>
 
-        {/* Caméras */}
+        {/* Caméras : vignette, vrai appareil, état lu par l'IA */}
         <div className="mt-3 grid grid-cols-3 gap-3">
           {CAMS.map((c, n) => (
-            <div key={c.name} className={`rounded-xl border p-2 transition-colors motion-reduce:transition-none ${n === scene.cam ? "border-foreground/50 bg-surface-2" : "border-line"}`}>
+            <div key={c.name} className={`min-w-0 rounded-xl border p-2 transition-colors motion-reduce:transition-none ${n === scene.cam ? "border-ok/60 bg-surface-2" : "border-line"}`}>
               <div className={`aspect-video overflow-hidden rounded-lg bg-background transition-opacity motion-reduce:transition-none ${n === scene.cam ? "opacity-100" : "opacity-60"}`}>
                 <Wire cam={n} />
               </div>
-              <p className="mt-2 truncate font-mono text-[11px] uppercase tracking-[0.1em]">{c.name}</p>
-              <p className="truncate text-xs text-muted">{c.role}</p>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="h-9 w-7 shrink-0"><DeviceGlyph cam={n} on={n === scene.cam} /></span>
+                <span className="min-w-0">
+                  <span className="block truncate font-mono text-[11px] uppercase tracking-[0.1em]">{c.name}</span>
+                  <span className="block truncate text-xs text-muted">{c.role}</span>
+                </span>
+              </div>
+              <span className={`mt-2 inline-flex max-w-full rounded-md px-2 py-1 text-[11px] leading-tight ${CHIP[scene.status[n][1]]}`}>
+                <span>{scene.status[n][0]}</span>
+              </span>
             </div>
           ))}
         </div>
 
         {/* Ce que dit l'IA */}
         <div className="mt-3 rounded-xl border border-line px-4 py-3" aria-live="polite">
-          <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Régie IA</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Ta consigne</p>
+          <p className="mt-1 text-sm leading-relaxed text-muted">« {scene.rule} »</p>
+          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Décision de l&apos;IA</p>
           <p className="mt-1 text-sm leading-relaxed">{scene.reason}</p>
         </div>
       </div>

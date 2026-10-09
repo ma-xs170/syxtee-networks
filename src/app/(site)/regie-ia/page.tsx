@@ -7,6 +7,7 @@ import Reveal from "@/components/ui/Reveal";
 import SectionHeader from "@/components/ui/SectionHeader";
 import StatusPill from "@/components/ui/StatusPill";
 import DirectorDemo from "@/components/landing/DirectorDemo";
+import { AudioVisual, BackupVisual, MultiCamVisual, TakesVisual } from "@/components/landing/RegieVisuals";
 
 export const metadata: Metadata = {
   title: "Régie IA",
@@ -14,11 +15,31 @@ export const metadata: Metadata = {
   alternates: { canonical: "/regie-ia" },
 };
 
-const MODES: [string, string, string][] = [
-  ["Régie IA multi-caméras", "Osmo, iPhone, drone, téléphones en SRTLA. Une IA regarde une vignette de chaque caméra et met au programme celle qui montre l'action, selon tes consignes écrites en français.", "Ta consigne : « si je montre un objet de près, prends cette caméra »."],
-  ["Autogérance des prises", "Une belle prise sur une source (drone, caméra 2, écran, invité) bascule sur sa scène. Quand la prise s'arrête, la régie revient sur ta scène Live. Le drone passe en premier.", "Sans IA, sans clé, directement sur ton PC."],
-  ["Secours si la connexion coupe", "Si l'image se fige ou si le débit s'effondre, OBS passe sur ta scène de secours, puis revient seul quand le flux repart. Trois niveaux de sensibilité.", "Utile en mobilité, en 4G ou en Starlink."],
-  ["Garde audio", "Silence prolongé ou micro coupé pendant ta scène Live : une alerte s'affiche. En option, le micro est remis tout seul, ou la régie passe sur le secours.", "Plus de direct de dix minutes sans son."],
+const MODES: { title: string; text: string; example: string; visual: React.ReactNode }[] = [
+  {
+    title: "Régie IA multi-caméras",
+    text: "Osmo, iPhone, drone, téléphones en SRTLA. L'IA regarde une vignette de chaque caméra et met au programme celle qui montre l'action, selon tes consignes écrites en français.",
+    example: "Exemple : « si je montre un objet de près, prends la caméra à la main ; quand je monte dans la voiture, prends l'iPhone du tableau de bord ».",
+    visual: <MultiCamVisual />,
+  },
+  {
+    title: "Autogérance des prises",
+    text: "Une belle prise sur une source (drone, caméra 2, écran, invité) bascule sur sa scène. Quand la prise s'arrête, la régie revient sur ta scène Live. Le drone passe en premier.",
+    example: "Exemple : ton DJI Mini décolle pendant un direct, la scène Drone passe à l'antenne, puis tu reviens sur Live à l'atterrissage. Sans IA ni clé, directement sur ton PC.",
+    visual: <TakesVisual />,
+  },
+  {
+    title: "Secours si la connexion coupe",
+    text: "Si l'image se fige ou si le débit s'effondre, OBS passe sur ta scène de secours, puis revient seul quand le flux repart. Trois niveaux de sensibilité.",
+    example: "Exemple : tu passes sous un pont en 4G ou en Starlink, le public voit « On revient vite » au lieu d'une image figée.",
+    visual: <BackupVisual />,
+  },
+  {
+    title: "Garde audio",
+    text: "Silence prolongé ou micro coupé pendant ta scène Live : une alerte s'affiche. En option, le micro est remis tout seul, ou la régie passe sur le secours.",
+    example: "Exemple : tu as coupé ton micro en répondant au téléphone et tu l'as oublié, la régie le remet ou t'avertit après dix secondes.",
+    visual: <AudioVisual />,
+  },
 ];
 
 const STEPS = [
@@ -74,12 +95,13 @@ export default function RegieIaPage() {
         <Container>
           <SectionHeader title={<>Quatre automatismes, <em>un panneau.</em></>} subtitle="Active seulement ce dont tu as besoin. Ils fonctionnent ensemble, depuis le bouton « Régie auto » du Contrôle à distance." />
           <div className="mt-14 grid gap-4 md:grid-cols-2">
-            {MODES.map(([t, x, hint]) => (
-              <article key={t} className="bento-cell flex flex-col p-6 sm:p-8">
-                <h3 className="text-lg font-semibold tracking-tight">{t}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{x}</p>
-                <p className="mt-auto pt-5 font-mono text-xs text-muted">{hint}</p>
-              </article>
+            {MODES.map((m) => (
+              <Reveal as="article" key={m.title} className="bento-cell flex flex-col p-6 sm:p-8">
+                <div className="flex h-48 items-center justify-center sm:h-56">{m.visual}</div>
+                <h3 className="mt-6 text-lg font-semibold tracking-tight">{m.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{m.text}</p>
+                <p className="mt-4 border-t border-line pt-4 text-sm leading-relaxed text-foreground/80">{m.example}</p>
+              </Reveal>
             ))}
           </div>
         </Container>

@@ -17,7 +17,7 @@ import { useRemote, type LinkEvent } from "./useRemote";
 type Item = { id: number; name: string; kind: string; on: boolean; flux?: boolean };
 type Mix = { name: string; muted: boolean; db: number; mon: string; global: boolean };
 type Trigger = "cut" | "cut_lowbitrate" | "sensitive";
-type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[] };
+type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioState?: string };
 type Stats = { cpu: number; fps: number; kbps: number | null; dropped: number; total: number; encoder: string; congestion: number; streamMs: number; recMs: number };
 type Named = { current: string; list: string[] };
 type Tab = "scenes" | "sources" | "mixer" | "controls" | "multi" | "chat";
@@ -170,6 +170,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
       else if (name === "link.studioPreview") previewSink.current?.(String(d.image));
       else if (name === "link.previewState") setPreviewOn(!!d.enabled);
       else if (name === "link.previewMode") setPmode({ mode: d.mode as "video" | "jpeg" | "idle", reason: String(d.reason ?? "") });
+      else if (name === "link.audioState") setRoles((r) => (r ? { ...r, audioState: String(d.state) } : r));
       else if (name === "link.backupState") setRoles((r) => (r ? { ...r, state: String(d.state) } : r));
       else if (name === "link.stats") {
         const st = (d.stream ?? {}) as Record<string, unknown>;
@@ -846,6 +847,39 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 </button>
               )}
               {(roles.autoRules ?? []).some((r) => !r.source || !r.scene) && <p className="mt-2 text-[12px] text-amber-300">Une prise sans source ou sans scène est ignorée.</p>}
+              <h3 className="mt-5 text-[12px] font-semibold uppercase tracking-wide text-neutral-400">4 · Garde audio</h3>
+              <p className="mt-1 text-[12px] leading-relaxed text-neutral-500">Quand ta scène Live est à l&apos;antenne, SYXTEE te prévient si ton micro se tait ou se coupe.</p>
+              <div className="mt-2 grid gap-3">
+                <PopSelect label="Micro à surveiller" value={roles.audioSource ?? ""} options={inputNames} onChange={(v) => saveRoles({ audioSource: v })} />
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-medium">Alerte silence</p>
+                  <p className="text-[12px] text-neutral-500">{roles.audioEnabled ? `Active : alerte après ${roles.audioSeconds ?? 10} s sans son.` : "Éteinte."}</p>
+                </div>
+                <Switch label="Alerte silence" on={!!roles.audioEnabled} disabled={!roles.audioSource || !roles.liveScene} onClick={() => saveRoles({ audioEnabled: !roles.audioEnabled })} />
+              </div>
+              <label className="mt-3 flex items-center justify-between gap-3 text-[13px]">
+                <span>Délai avant l&apos;alerte</span>
+                <select
+                  value={roles.audioSeconds ?? 10}
+                  onChange={(e) => saveRoles({ audioSeconds: Number(e.target.value) })}
+                  className="h-8 rounded border border-white/15 bg-transparent px-2 text-[13px]"
+                >
+                  {[5, 10, 20, 30, 60].map((n) => (
+                    <option key={n} value={n} className="bg-[#0b0b0d]">
+                      {n} secondes
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-medium">Remettre le micro tout seul</p>
+                  <p className="text-[12px] text-neutral-500">S&apos;il est coupé par erreur pendant ta scène Live.</p>
+                </div>
+                <Switch label="Remettre le micro" on={!!roles.audioUnmute} disabled={!roles.audioSource} onClick={() => saveRoles({ audioUnmute: !roles.audioUnmute })} />
+              </div>
               <fieldset className="mt-4">
                 <legend className="text-[13px] font-semibold">Sensibilité du secours</legend>
                 <div className="mt-2 grid gap-2">
@@ -897,6 +931,11 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
       {/* Programme (et, en Mode Studio, aperçu à gauche) */}
       <div className="flex min-h-0 min-w-0 flex-1 lg:gap-0">
       <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 p-2 max-lg:landscape:flex-row">
+        {roles && (roles.audioState === "silent" || roles.audioState === "muted") && (
+          <p role="alert" className="shrink-0 rounded-xl border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-[13px] text-amber-200">
+            {roles.audioState === "muted" ? `Micro « ${roles.audioSource} » coupé : personne ne t'entend.` : `Silence sur « ${roles.audioSource} » depuis plus de ${roles.audioSeconds ?? 10} s : vérifie ton micro.`}
+          </p>
+        )}
         <section aria-label="Programme" className={`relative grid min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-xl border border-white/[0.08] bg-[#0b0b0d] ${tab === "chat" ? "max-lg:max-h-0 max-lg:overflow-hidden max-lg:border-0 max-lg:landscape:max-h-none" : tab === "scenes" || tab === "sources" || tab === "mixer" ? "max-lg:aspect-[16/12]" : "max-lg:aspect-[16/8]"} max-lg:h-auto max-lg:landscape:aspect-auto max-lg:landscape:h-full max-lg:landscape:w-[56%] max-lg:landscape:shrink-0 lg:h-[64%]`}>
           <div className="flex min-w-0 items-center justify-between gap-2 px-3 py-2">
             {programLabel}

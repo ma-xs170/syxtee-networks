@@ -1,6 +1,7 @@
 import { rm } from "node:fs/promises";
 import { hostname, tmpdir } from "node:os";
 import { join } from "node:path";
+import { AudioGuard, cleanAudio } from "./audio.ts";
 import { BackupWatcher, cleanAuto, cleanBackup, TRIGGERS, type Trigger } from "./backup.ts";
 import { downloadArchive, uploadArchive } from "./cloud.ts";
 import { save, type LinkConfig } from "./config.ts";
@@ -62,6 +63,7 @@ export class Agent {
   private core: WebSocket | null = null;
   private stopped = false;
   private watcher: BackupWatcher;
+  private audio: AudioGuard;
   private timers: ReturnType<typeof setTimeout>[] = [];
   private tickTimer: ReturnType<typeof setInterval> | null = null;
   private autoTimer: ReturnType<typeof setInterval> | null = null;
@@ -102,6 +104,10 @@ export class Agent {
     this.watcher.set(cfg.backup);
     this.watcher.setAuto(cfg.auto);
     this.watcher.setLive(cfg.liveScene);
+    this.audio = new AudioGuard((t, d) => this.obs.request(t, d), log);
+    this.audio.set(cfg.audio);
+    this.audio.setLive(cfg.liveScene);
+    this.audio.onChange = (s) => this.send({ type: "event", name: "link.audioState", data: { state: s } });
     this.watcher.onChange = (s) => {
       this.status.backup = s;
       this.emit();
@@ -113,7 +119,7 @@ export class Agent {
     this.stopped = false;
     void this.connectObs();
     this.connectCore();
-    this.tickTimer = setInterval(() => void this.watcher.tick(), 1000);
+    this.tickTimer = setInterval(() => void this.watcher.tick().then(() => this.audio.tick()), 1000);
     this.autoTimer = setInterval(() => void this.autoBackupTick(), 30_000);
     this.previewMgr = setInterval(() => void this.managePreview(), 5000);
     this.relayMgr = setInterval(() => void this.syncRelays(), 30_000);
@@ -139,6 +145,7 @@ export class Agent {
   setLive(scene: string) {
     this.cfg.liveScene = scene;
     this.watcher.setLive(scene);
+    this.audio.setLive(scene);
   }
   setAuto(a: LinkConfig["auto"]) {
     this.cfg.auto = a;
@@ -153,7 +160,7 @@ export class Agent {
 
   /** Auto-gérance telle que l'interface la lit (champs à plat). */
   private autoView() {
-    return { autoEnabled: this.cfg.auto.enabled, droneScene: this.cfg.auto.droneScene, droneSource: this.cfg.auto.droneSource, autoRules: this.cfg.auto.rules };
+    return { autoEnabled: this.cfg.auto.enabled, droneScene: this.cfg.auto.droneScene, droneSource: this.cfg.auto.droneSource, autoRules: this.cfg.auto.rules, audioEnabled: this.cfg.audio.enabled, audioSource: this.cfg.audio.source, audioSeconds: this.cfg.audio.seconds, audioUnmute: this.cfg.audio.unmute, audioState: this.audio.state };
   }
 
   /** Requête directe à OBS (listes de scènes et de sources pour l'interface). */
@@ -514,6 +521,7 @@ export class Agent {
     for (const i of inputs) {
       const peak = Math.max(0, ...i.inputLevelsMul.map((ch) => ch[1] ?? 0));
       this.meterPeak.set(i.inputName, Math.max(this.meterPeak.get(i.inputName) ?? 0, peak));
+      this.audio.feed(i.inputName, peak);
     }
     const t = Date.now();
     if (t - this.lastMeters < 45) return;
@@ -622,9 +630,12 @@ export class Agent {
         if (typeof params.liveScene === "string") this.cfg.liveScene = params.liveScene.slice(0, 200);
         // Auto-gérance (drone) : champs à plat dans la même requête que les rôles de scènes.
         this.cfg.auto = cleanAuto({ enabled: params.autoEnabled, droneScene: params.droneScene, droneSource: params.droneSource, rules: params.autoRules }, this.cfg.auto);
+        this.cfg.audio = cleanAudio({ enabled: params.audioEnabled, source: params.audioSource, seconds: params.audioSeconds, unmute: params.audioUnmute }, this.cfg.audio);
         this.watcher.set(this.cfg.backup);
         this.watcher.setAuto(this.cfg.auto);
         this.watcher.setLive(this.cfg.liveScene);
+        this.audio.set(this.cfg.audio);
+        this.audio.setLive(this.cfg.liveScene);
         save(this.cfg);
         return reply(true, { ...this.cfg.backup, ...this.autoView(), liveScene: this.cfg.liveScene, state: this.watcher.state });
       }

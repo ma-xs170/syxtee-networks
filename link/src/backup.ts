@@ -122,6 +122,8 @@ export class BackupWatcher {
   /** Scène à rétablir quand l'image revient. */
   private returnTo: string | null = null;
   onChange: (state: DirectorState) => void = () => {};
+  /** Renvoie vrai si la régie de caméras peut reprendre la main sur une autre caméra : le secours patiente alors (au plus le double du délai) au lieu de couper vers « Connexion perdue ». */
+  defer: ((source: string) => boolean) | null = null;
 
   private req: Req;
   private log: (m: string) => void;
@@ -283,7 +285,7 @@ export class BackupWatcher {
       const needed = c.trigger === "sensitive" ? Math.min(c.freezeSeconds, 2) : c.freezeSeconds;
       // À la mise à l'antenne de la scène Live, on laisse au flux le temps d'arriver avant de crier à la coupure.
       const graced = this.seenMoving || this.armedTicks > GRACE_TICKS;
-      if (this.still >= needed && graced) await this.engage(cur);
+      if (this.still >= needed && graced && !(this.defer?.(c.source) && this.still < needed * 2)) await this.engage(cur);
       else this.setState(this.still > 0 && graced ? "frozen" : "ok");
     } else if (this.moving >= c.recoverSeconds) {
       await this.back("backup", "image revenue");

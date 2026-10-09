@@ -214,6 +214,17 @@ test("régie IA sans IA (provider none) : jamais d'appel, même avec une clé en
   assert.equal(o.asked.length, 0);
 });
 
+test("régie IA : canTakeOver dit si une autre caméra que la source du secours est vivante", async () => {
+  const { o, d, frame } = setup("Cam Osmo");
+  d.set(cfg({ provider: "none", apiKey: "" }));
+  assert.equal(d.canTakeOver("OSMO", 2000), false); // pas encore de balayage
+  frame();
+  await d.tick(2000);
+  assert.equal(d.canTakeOver("OSMO", 3000), true);
+  assert.equal(d.canTakeOver("OSMO", 20000), false); // balayage trop ancien
+  void o;
+});
+
 test("régie IA : scène autre que Live ou la nôtre = rien ne bascule ; réponse illisible = rien ne change", async () => {
   const a = setup("Pause");
   a.o.answer = '{"camera": 2}';

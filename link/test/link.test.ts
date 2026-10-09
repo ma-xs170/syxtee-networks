@@ -64,6 +64,19 @@ test("backup : image figée → scène de secours → retour quand l'image repar
   assert.deepEqual(o.switches, ["BRB", "Live"]);
 });
 
+test("backup : patiente (jusqu'au double du délai) quand une autre caméra peut prendre le relais, puis coupe vers le secours si personne ne reprend", async () => {
+  const { o, req } = fakeObs();
+  const w = new BackupWatcher(req);
+  w.setLive("Live");
+  w.defer = () => true;
+  w.set({ enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 3, recoverSeconds: 1, trigger: "cut" });
+  o.image = "x";
+  for (let i = 0; i < 5; i++) await w.tick(); // figée depuis 4 s : au-delà de 3 s, mais le secours patiente
+  assert.equal(o.scene, "Live");
+  for (let i = 0; i < 4; i++) await w.tick(); // au-delà de 2 x 3 s : le secours prend la main
+  assert.equal(o.scene, "BRB");
+});
+
 test("backup : capture en échec (flux coupé) = figée ; désactivé = aucune action", async () => {
   const { o, req } = fakeObs();
   const w = new BackupWatcher(req);

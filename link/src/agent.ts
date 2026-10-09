@@ -18,7 +18,7 @@ import { coreCall } from "./corehttp.ts";
 import { fixLiveScene } from "./livescene.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
 
-export const VERSION = "0.7.7";
+export const VERSION = "0.7.8";
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
 export const OBS_METHODS = new Set([
@@ -113,6 +113,8 @@ export class Agent {
     this.director = new AiDirector((t, d) => this.obs.request(t, d), (p, imgs) => (this.cfg.director.provider === "local" ? ollamaAsk(this.cfg.director.model || undefined) : this.cfg.director.provider === "anthropic" ? anthropicAsk(this.cfg.director.apiKey, undefined, undefined, this.cfg.director.workspaceId) : mistralAsk(this.cfg.director.apiKey))(p, imgs), log);
     this.director.set(cfg.director);
     this.director.setLive(cfg.liveScene);
+    // Le secours « connexion perdue » patiente si la régie de caméras peut passer sur une autre caméra vivante.
+    this.watcher.defer = (source) => this.director.canTakeOver(source);
     this.director.onChange = (state, cam, reason) => this.send({ type: "event", name: "link.directorState", data: { state, cam, reason } });
     this.audio.onChange = (s) => this.send({ type: "event", name: "link.audioState", data: { state: s } });
     this.watcher.onChange = (s) => {

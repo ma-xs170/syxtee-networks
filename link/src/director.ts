@@ -113,6 +113,8 @@ export class AiDirector {
   private candidate = -1;
   private votes = 0;
   /** Dernière consultation de l'IA : caméras vivantes et taille de leur vignette, pour le mode économe. */
+  /** Dernier balayage : caméras vivantes et heure, pour que le secours sache si une autre caméra peut prendre le relais. */
+  private scan: { at: number; sources: string[] } | null = null;
   private asked: { at: number; sizes: Map<number, number> } | null = null;
 
   constructor(req: Req, ask: Ask, log: (m: string) => void = () => {}) {
@@ -225,6 +227,7 @@ export class AiDirector {
       this.last.set(cams[i].source, img);
       if (img.length > MIN_IMAGE_CHARS && moved) alive.push({ idx: i, img });
     }
+    this.scan = { at: now, sources: alive.map((a) => cams[a.idx].source) };
     this.setState("watching", this.lastReason);
     if (alive.length === 0) return;
 
@@ -262,6 +265,11 @@ export class AiDirector {
     this.candidate = -1;
     this.votes = 0;
     this.setState("cam", cams[pick].label || cams[pick].source);
+  }
+
+  /** Vrai si la régie surveille et qu'une caméra autre que `source` était vivante au dernier balayage (moins de 10 s). */
+  canTakeOver(source: string, now = Date.now()): boolean {
+    return this.ready() && !!this.scan && now - this.scan.at < 10_000 && this.scan.sources.some((s) => s !== source);
   }
 
   /** Vrai si l'IA peut être épargnée : mêmes caméras vivantes, vignettes de taille voisine, dernière consultation récente. */

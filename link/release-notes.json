@@ -1,4 +1,7 @@
 {
+  "0.7.8": [
+    "Régie : le secours « Connexion perdue » patiente quand une autre caméra de la régie peut prendre le relais, au lieu de couper tout de suite vers la scène de secours"
+  ],
   "0.7.7": [
     "Régie IA : choix « Sans IA » (par défaut) qui reprend sur une caméra vivante quand celle à l'antenne tombe, sans calcul ni envoi ; repli plus sûr si la réponse de l'IA est illisible"
   ],

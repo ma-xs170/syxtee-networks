@@ -10,7 +10,7 @@ import { delta, fmtDuration, fmtInt, isRange } from "@/lib/dashboard-data";
 import { getStats } from "@/lib/dashboard-overview";
 import PlanGate from "@/components/plans/PlanGate";
 
-export const metadata: Metadata = { title: "Analytique", robots: { index: false } };
+export const metadata: Metadata = { title: "Statistiques", robots: { index: false } };
 
 function Figure({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
@@ -31,7 +31,7 @@ export default async function StatsPage({ searchParams }: PageProps<"/dashboard/
 
   return (
     <DashPage>
-      <SectionTabs tabs={statsTabs} current="/dashboard/stats" label="Analytique" />
+      <SectionTabs tabs={statsTabs} current="/dashboard/stats" label="Statistiques" />
       <PlanGate feature="stats">
       <DashHeader lead="Ton" hl="analytique" sub={`Tes directs sur les ${days} derniers jours, comparés aux ${days} jours d'avant. Jours et heures en fuseau ${timezone.replace(/_/g, " ")}.`}>
         <div role="radiogroup" aria-label="Période" className="inline-flex rounded-full border border-line p-0.5">

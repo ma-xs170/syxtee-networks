@@ -13,19 +13,19 @@ export type DashItem = DashLink | DashMenu;
 // 4 entrées : un seul menu déroulant (Direct). Statistiques et Scanner regroupent leurs pages en onglets (SectionTabs).
 // Le compte (profil, formule, paramètres, admin, aide) vit dans le panneau de l'avatar, à droite.
 export const dashboardNav: DashItem[] = [
-  { label: "Vue d'ensemble", href: "/dashboard" },
+  { label: "Accueil", href: "/dashboard" },
   {
     label: "Diffusion",
     children: [
       { label: "Serveurs", href: "/dashboard/relais", desc: "SRTLA, RTMP, tes adresses et clés", icon: "relays", feature: "relais" },
-      { label: "Contrôle à distance", href: "/dashboard/controle-a-distance", desc: "Pilote ton OBS depuis un onglet", icon: "control", feature: "relais" },
+      { label: "Contrôle", href: "/dashboard/controle-a-distance", desc: "Pilote ton OBS depuis un onglet", icon: "control", feature: "relais" },
     ],
   },
   {
-    label: "Bibliothèque",
-    children: [{ label: "Sauvegardes", href: "/dashboard/backups", desc: "Tes collections de scènes sauvegardées", icon: "plan", feature: "relais" }],
+    label: "Production",
+    children: [{ label: "Scènes", href: "/dashboard/backups", desc: "Tes collections de scènes sauvegardées", icon: "plan", feature: "relais" }],
   },
-  { label: "Analytique", href: "/dashboard/stats" },
+  { label: "Statistiques", href: "/dashboard/stats" },
 ];
 
 export type SectionTab = { label: string; href: string };

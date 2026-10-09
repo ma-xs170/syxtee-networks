@@ -253,9 +253,9 @@ function LaunchGuide({ open, onClose, keys }: { open: boolean; onClose: () => vo
           </ol>
         ) : (
           <p className="mt-4 text-sm text-muted">
-            Crée d&apos;abord un relais dans{" "}
+            Crée d&apos;abord un serveur dans{" "}
             <Link href="/dashboard/relais" className="text-foreground underline underline-offset-4">
-              Mes relais
+              Serveurs
             </Link>
             .
           </p>
@@ -267,10 +267,10 @@ function LaunchGuide({ open, onClose, keys }: { open: boolean; onClose: () => vo
 
 type Shortcut = { label: string; href: string; icon: ComponentType<IconProps> };
 const shortcuts: Shortcut[] = [
-  { label: "Contrôle à distance", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal },
+  { label: "Serveurs", href: "/dashboard/relais", icon: Radio },
+  { label: "Contrôle", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal },
   { label: "Aperçu", href: "/dashboard/apercu", icon: Eye },
-  { label: "Mes relais", href: "/dashboard/relais", icon: Radio },
-  { label: "Backups de scènes", href: "/dashboard/backups", icon: Archive },
+  { label: "Scènes", href: "/dashboard/backups", icon: Archive },
   { label: "Scanner", href: "/dashboard/scanner", icon: MapTrifold },
   { label: "Statistiques", href: "/dashboard/stats", icon: ChartBar },
 ];

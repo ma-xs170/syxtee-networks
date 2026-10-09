@@ -44,25 +44,25 @@ type Group = { title?: string; items: Item[] };
 
 // Barre minimale (comme un espace client de service) : Accueil, trois groupes, puis aide, thème et compte en bas.
 const GROUPS: Group[] = [
-  { items: [{ label: "Vue d'ensemble", href: "/dashboard", icon: SquaresFour }] },
+  { items: [{ label: "Accueil", href: "/dashboard", icon: SquaresFour }] },
   {
     title: "Diffusion",
     items: [
       { label: "Serveurs", href: "/dashboard/relais", icon: Radio, feature: "relais" },
-      { label: "Contrôle à distance", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais" },
-      { label: "Équipe", href: "/dashboard/invitations", icon: UsersThree, feature: "relais" },
       { label: "Encodeurs", href: "/dashboard/encodeurs", icon: HardDrives },
+      { label: "Contrôle", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais" },
     ],
   },
   {
-    title: "Bibliothèque",
-    items: [{ label: "Sauvegardes", href: "/dashboard/backups", icon: Archive, feature: "relais" }],
-  },
-  {
-    title: "Analyse",
+    title: "Production",
     items: [
-      { label: "Analytique", href: "/dashboard/stats", icon: ChartBar },
+      { label: "Scènes", href: "/dashboard/backups", icon: Archive, feature: "relais" },
+      { label: "Équipe", href: "/dashboard/invitations", icon: UsersThree, feature: "relais" },
     ],
+  },
+  {
+    title: "Suivi",
+    items: [{ label: "Statistiques", href: "/dashboard/stats", icon: ChartBar }],
   },
 ];
 
@@ -327,9 +327,9 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
 // Barre d'onglets du bas (mobile), dans cet ordre : Accueil, Flux, OBS, Menu (le tiroir). Chaque onglet reste actif sur les pages de sa famille :
 // Flux = tes flux (SRTLA, RTMP) ; OBS = liste des postes, plugin, et l'interface d'un OBS (/controle-a-distance/<poste>).
 const TABS: (Item & { also?: string[] })[] = [
-  { label: "Vue d'ensemble", href: "/dashboard", icon: SquaresFour },
+  { label: "Accueil", href: "/dashboard", icon: SquaresFour },
   { label: "Serveurs", href: "/dashboard/relais", icon: Radio, feature: "relais" },
-  { label: "OBS", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais", also: ["/dashboard/obs", "/dashboard/plugin", "/controle-a-distance"] },
+  { label: "Contrôle", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais", also: ["/dashboard/obs", "/dashboard/plugin", "/controle-a-distance"] },
 ];
 
 function MobileTabs({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolean }) {

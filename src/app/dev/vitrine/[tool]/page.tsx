@@ -17,6 +17,7 @@ import InvitesManager from "@/components/dashboard/InvitesManager";
 import TeamUI, { type MemberView } from "@/app/(admin)/admin/equipe/TeamUI";
 import type { DevicesDemo } from "@/components/dashboard/useLinkDevices";
 import RelayList from "@/components/relais/RelayList";
+import TicketChat from "@/components/support/TicketChat";
 import AccountSheet from "@/app/(admin)/admin/comptes/AccountSheet";
 import type { Overview as OverviewData, LiveSession } from "@/lib/dashboard-data";
 import type { RelayRow } from "@/lib/relay-groups";
@@ -155,6 +156,20 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           tab="resume"
         />
       )}
+      {tool === "ticket" && (
+        <TicketChat
+          viewer="user"
+          messages={[
+            { id: "s", from_staff: true, body: "Mathis, de l'Équipe SYXTEE, a pris en charge votre demande.", created_at: iso(3 * 3600_000), name: "Équipe SYXTEE", kind: "system" },
+            { id: "1", from_staff: true, body: "Bonjour, ton serveur est prêt. Dis-nous si la connexion tient bien en 4G.", created_at: iso(2 * 3600_000), name: "Équipe SYXTEE", signature: "Mathis - Équipe SYXTEE" },
+            { id: "2", from_staff: false, body: "Merci, ça marche !", created_at: iso(3600_000), name: "Toi" },
+          ]}
+          action={async () => {
+            "use server";
+            return {};
+          }}
+        />
+      )}
       {tool === "relais" && <RelayList relays={RELAYS} active={6} max={10} coreUrl="" geo={null} />}
       {tool === "sante" && (
         <div className="space-y-4">
@@ -287,7 +302,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           }))}
         />
       )}
-      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "membres", "equipe", "controle-obs", "backups", "compte"].includes(tool) && notFound()}
+      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "membres", "equipe", "controle-obs", "backups", "compte", "ticket"].includes(tool) && notFound()}
     </div>
   );
 }

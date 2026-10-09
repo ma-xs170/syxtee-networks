@@ -44,7 +44,7 @@ export default function TicketChat({
   const router = useRouter();
   const [state, run, pending] = useActionState(action, {});
   const form = useRef<HTMLFormElement>(null);
-  const end = useRef<HTMLDivElement>(null);
+  const scroller = useRef<HTMLDivElement>(null);
   const last = messages[messages.length - 1]?.id;
 
   useEffect(() => {
@@ -54,8 +54,10 @@ export default function TicketChat({
     return () => clearInterval(t);
   }, [router]);
 
+  // Défilement interne : seul le fil descend au dernier message, la page ne bouge pas.
   useEffect(() => {
-    end.current?.scrollIntoView({ block: "end" });
+    const el = scroller.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [last]);
 
   useEffect(() => {
@@ -63,7 +65,8 @@ export default function TicketChat({
   }, [pending, state]);
 
   return (
-    <div>
+    <div className="flex h-[calc(100dvh-15rem)] min-h-[26rem] flex-col overflow-hidden rounded-2xl border border-line bg-surface lg:h-[min(72dvh,46rem)]">
+      <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6">
       <ul className="space-y-5" aria-live="polite">
         {messages.map((m) => {
           const mine = (viewer === "staff") === m.from_staff;
@@ -119,30 +122,31 @@ export default function TicketChat({
           );
         })}
       </ul>
-      <div ref={end} />
+      </div>
 
-      <form ref={form} action={run} className="mt-8">
-        <div className="tile p-3 focus-within:border-line-strong">
+      <form ref={form} action={run} className="shrink-0 border-t border-line bg-background/60 p-2.5 sm:p-4">
+        <div className="rounded-xl border border-line bg-surface p-2.5 focus-within:border-line-strong sm:p-3">
           <label htmlFor="reply" className="sr-only">
             Ton message
           </label>
           <textarea
             id="reply"
             name="body"
-            rows={3}
+            rows={1}
             maxLength={4000}
             placeholder="Écris ton message"
+            aria-label="Ton message"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 form.current?.requestSubmit();
               }
             }}
-            className="block w-full resize-none bg-transparent px-1 text-sm text-foreground placeholder:text-muted focus:outline-none"
+            className="block max-h-32 min-h-[2.75rem] w-full resize-none bg-transparent px-1 text-base text-foreground placeholder:text-muted focus:outline-none sm:text-sm"
           />
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <div className="flex items-center justify-between gap-3 pt-2">
             <PhotoPicker />
-            <p className="order-last basis-full text-xs text-muted sm:order-none sm:basis-auto">{hint ?? "Entrée pour envoyer, Maj + Entrée pour un retour à la ligne."}</p>
+            <p className="hidden text-xs text-muted sm:block">{hint ?? "Entrée pour envoyer, Maj + Entrée pour un retour à la ligne."}</p>
             <button
               type="submit"
               disabled={pending}

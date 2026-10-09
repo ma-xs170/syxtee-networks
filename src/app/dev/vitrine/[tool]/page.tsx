@@ -17,6 +17,7 @@ import InvitesManager from "@/components/dashboard/InvitesManager";
 import TeamUI, { type MemberView } from "@/app/(admin)/admin/equipe/TeamUI";
 import type { DevicesDemo } from "@/components/dashboard/useLinkDevices";
 import RelayList from "@/components/relais/RelayList";
+import AccountSheet from "@/app/(admin)/admin/comptes/AccountSheet";
 import type { Overview as OverviewData, LiveSession } from "@/lib/dashboard-data";
 import type { RelayRow } from "@/lib/relay-groups";
 
@@ -125,6 +126,34 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
   const { tool } = await params;
   return (
     <div id="capture" data-theme="dark" className={`mx-auto bg-background p-8 text-foreground ${tool === "accueil" ? "w-[1500px]" : tool === "controle-obs" || tool === "equipe" ? "w-full !p-0" : "w-[1100px]"}`}>
+      {tool === "compte" && (
+        <AccountSheet
+          id="00000000-0000-4000-8000-000000000001"
+          name="Sloane EUXIN"
+          email="sl.euxin@comptes.syxtee-networks.fr"
+          avatarUrl={null}
+          supportId="K7QX2M"
+          managed
+          suspendedAt={null}
+          planId="paid"
+          planName="Signature"
+          planUntil={new Date(Date.now() + 26 * 86_400_000).toISOString()}
+          planNote="Ami"
+          maxServers={10}
+          createdAt={new Date(Date.now() - 40 * 86_400_000).toISOString()}
+          lastSignIn={new Date(Date.now() - 3 * 3600_000).toISOString()}
+          presence="Vu il y a 3 h"
+          twitch="sloane_irl"
+          liveCount={1}
+          servers={[{ id: "1", name: "iPhone 16 Pro", protocol: "srtla", live: true }, { id: "2", name: "Osmo Pocket 3", protocol: "rtmp", live: false }, { id: "3", name: "Drone", protocol: "rtmp", live: false }]}
+          lastLiveAt={new Date(Date.now() - 20 * 60_000).toISOString()}
+          tickets={{ open: 1, resolved: 4 }}
+          billing={{ interval: "month", status: "active", periodEnd: new Date(Date.now() + 12 * 86_400_000).toISOString(), renews: true, manual: false, customerId: "cus_demo" }}
+          note="Ami"
+          activity={[{ id: 1, action: "account.view", admin: "mathxs.170@gmail.com", at: new Date(Date.now() - 600_000).toISOString() }, { id: 2, action: "plan.set", admin: "mathxs.170@gmail.com", at: new Date(Date.now() - 86_400_000).toISOString() }, { id: 3, action: "managed.create", admin: "mathxs.170@gmail.com", at: new Date(Date.now() - 2 * 86_400_000).toISOString() }]}
+          tab="resume"
+        />
+      )}
       {tool === "relais" && <RelayList relays={RELAYS} active={6} max={10} coreUrl="" geo={null} />}
       {tool === "sante" && (
         <div className="space-y-4">
@@ -257,7 +286,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           }))}
         />
       )}
-      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "membres", "equipe", "controle-obs", "backups"].includes(tool) && notFound()}
+      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "membres", "equipe", "controle-obs", "backups", "compte"].includes(tool) && notFound()}
     </div>
   );
 }

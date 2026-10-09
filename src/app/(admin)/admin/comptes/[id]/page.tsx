@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLink, DashHeader, DashPage, SectionTabs, Tile, TileLabel } from "@/components/dashboard/ui";
+import { ticketCounts } from "@/lib/support";
+import AccountSheet from "../AccountSheet";
 import { Badge } from "@/components/NavTools";
 import { SupportId } from "@/components/SupportId";
 import { requireAdmin } from "@/lib/admin";
@@ -35,13 +37,14 @@ export default async function AdminAccountPage({ params, searchParams }: { param
   const tab = TABS.find((t) => t.id === onglet)?.id ?? "resume";
   if (!hasAdmin || !/^[0-9a-f-]{36}$/.test(id)) notFound();
   const db = createAdminClient();
-  const [{ data: p }, { data: u }, { data: relays }, { data: notes }, { data: log }, live] = await Promise.all([
+  const [{ data: p }, { data: u }, { data: relays }, { data: notes }, { data: log }, live, tickets] = await Promise.all([
     db.from("profiles").select("*").eq("id", id).maybeSingle(),
     db.auth.admin.getUserById(id),
     db.from("relays").select("id, name, protocol, server, mode, archived, created_at, last_live_at").eq("user_id", id).order("created_at"),
     db.from("admin_notes").select("id, author, body, at").eq("user_id", id).order("at", { ascending: false }).limit(50),
     db.from("admin_audit").select("id, at, admin_email, action").eq("target_user", id).order("at", { ascending: false }).limit(50),
     liveNow(),
+    ticketCounts(id).catch(() => ({ open: 0, resolved: 0 })),
   ]);
   if (!p || !u.user) notFound();
   // Onglet Relais : liste du Core (URLs, enregistrement), seule source complète. Sans Core, la liste de la base sert de repli en lecture.
@@ -62,139 +65,36 @@ export default async function AdminAccountPage({ params, searchParams }: { param
     ["Twitch", p.twitch_login ? `@${p.twitch_login}` : "non lié"],
   ];
 
-  // Fiche compte : en-tête et repères toujours visibles, puis un onglet par sujet (adresse ?onglet=) pour ne montrer qu'une chose à la fois.
-  const initials = name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "?";
-  const managed = (u.user.email ?? "").endsWith("@comptes.syxtee-networks.fr");
-  const last = (log ?? []).slice(0, 4);
+  const maxServers = PLANS[p.plan as PlanId] && Number.isFinite(PLANS[p.plan as PlanId].maxRelays) ? PLANS[p.plan as PlanId].maxRelays : null;
+  const lastLiveAt = (relays ?? []).map((r) => r.last_live_at as string | null).filter((x): x is string => !!x).sort().pop() ?? null;
   return (
     <DashPage>
-      <div className="mb-6">
-        <ArrowLink href="/admin/comptes">Tous les comptes</ArrowLink>
-      </div>
-
-      {/* En-tête : identité à gauche, repères d'état à droite */}
-      <header className="mb-8 flex flex-wrap items-start justify-between gap-6">
-        <div className="flex min-w-0 items-center gap-5">
-          {p.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={p.avatar_url} alt="" width={64} height={64} className="size-16 shrink-0 rounded-2xl border border-line-strong object-cover" />
-          ) : (
-            <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-2xl border border-line-strong bg-surface-2 font-mono text-lg font-semibold">{initials}</span>
-          )}
-          <div className="min-w-0">
-            <h1 className="h-page truncate">{name}</h1>
-            <p className="mt-1 truncate text-sm text-muted" data-sensitive>{u.user.email}</p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge>{`Formule ${plan}`}</Badge>
-          <Badge>{p.suspended_at ? `Suspendu le ${day(p.suspended_at)}` : "Actif"}</Badge>
-          {managed && <Badge>Compte géré</Badge>}
-          {p.plan_until && <Badge>{`Jusqu'au ${day(p.plan_until)}`}</Badge>}
-          {liveIds.size > 0 && (
-            <span className="inline-flex items-center gap-1.5 rounded border border-live/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-foreground">
-              <span className="live-dot" aria-hidden="true" />
-              En direct
-            </span>
-          )}
-        </div>
-      </header>
-
-      <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1fr)_300px]">
-      <div className="min-w-0">
-      <nav aria-label="Sections du compte" className="mb-8 flex gap-7 overflow-x-auto border-b border-line">
-        {TABS.map((t) => (
-          <Link
-            key={t.id}
-            href={`/admin/comptes/${id}${t.id === "resume" ? "" : `?onglet=${t.id}`}`}
-            aria-current={t.id === tab ? "page" : undefined}
-            className={`-mb-px whitespace-nowrap border-b-2 pb-3 text-sm transition-colors ${t.id === tab ? "border-foreground text-foreground" : "border-transparent text-muted hover:text-foreground"}`}
-          >
-            {t.label}
-          </Link>
-        ))}
-      </nav>
-
-      {tab === "resume" && (
-        <div className="space-y-10">
-          <section aria-labelledby="formule">
-            <h2 id="formule" className="text-sm font-semibold">Formule</h2>
-            <p className="mt-1 text-sm text-muted">Change la formule, fixe une échéance ou offre des jours.</p>
-            <div className="mt-5">
-              <PlanForms key={`${p.plan}:${p.plan_until}`} userId={id} plan={p.plan} until={p.plan_until} note={p.plan_note} />
-            </div>
-          </section>
-
-          <section aria-labelledby="abo" className="border-t border-line pt-8">
-            <div className="flex items-center justify-between gap-4">
-              <h2 id="abo" className="text-sm font-semibold">Abonnement</h2>
-              {p.stripe_customer_id && (
-                <a href={`https://dashboard.stripe.com/customers/${p.stripe_customer_id}`} target="_blank" rel="noreferrer" className="text-xs text-muted underline underline-offset-4 hover:text-foreground">
-                  Ouvrir dans Stripe ↗
-                </a>
-              )}
-            </div>
-            {!p.billing_status ? (
-              <p className="mt-3 text-sm text-muted">Aucun abonnement Stripe.</p>
-            ) : (
-              <div className="mt-3 grid gap-1 text-sm">
-                <p>
-                  {p.billing_interval === "year" ? "Annuel" : "Mensuel"} · <span className="font-mono text-xs uppercase">{p.billing_status}</span>
-                </p>
-                {p.billing_period_end && <p className="text-muted">{`${renews(p) ? "Prochain prélèvement le" : "Fin le"} ${day(p.billing_period_end)}`}</p>}
-                {renews(p) && ["partner", "beta", "admin"].includes(p.plan) && (
-                  <p role="alert" className="mt-2 text-bad">
-                    Formule {plan} attribuée à la main, mais l&apos;abonnement Stripe continue : résilie-le dans Stripe pour qu&apos;il ne paie pas pour rien.
-                  </p>
-                )}
-              </div>
-            )}
-          </section>
-
-          <section aria-labelledby="serveurs" className="border-t border-line pt-8">
-            <div className="flex items-center justify-between gap-4">
-              <h2 id="serveurs" className="text-sm font-semibold">Serveurs <span className="ml-1 font-normal text-muted">{active.length}</span></h2>
-              <ArrowLink href={`/admin/comptes/${id}?onglet=relais`}>Gérer</ArrowLink>
-            </div>
-            {active.length === 0 ? (
-              <p className="mt-3 text-sm text-muted">Aucun serveur actif.</p>
-            ) : (
-              <ul className="mt-4 divide-y divide-line rounded-xl border border-line">
-                {active.slice(0, 6).map((r) => (
-                  <li key={r.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
-                    <span className="flex min-w-0 items-center gap-2.5">
-                      <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${liveIds.has(r.id) ? "bg-live" : "bg-muted"}`} />
-                      <span className="truncate font-medium">{r.name}</span>
-                    </span>
-                    <span className="shrink-0 font-mono text-xs uppercase text-muted">{r.protocol}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-
-          <section aria-labelledby="dernieres" className="border-t border-line pt-8">
-            <div className="flex items-center justify-between gap-4">
-              <h2 id="dernieres" className="text-sm font-semibold">Activité récente</h2>
-              <ArrowLink href={`/admin/comptes/${id}?onglet=historique`}>Tout voir</ArrowLink>
-            </div>
-            {last.length === 0 ? (
-              <p className="mt-3 text-sm text-muted">Aucune action enregistrée.</p>
-            ) : (
-              <ol className="mt-4 space-y-4 border-l border-line pl-5">
-                {last.map((l) => (
-                  <li key={l.id} className="relative">
-                    <span aria-hidden="true" className="absolute -left-[25px] top-1.5 size-2 rounded-full border border-line-strong bg-background" />
-                    <p className="font-mono text-xs">{l.action}</p>
-                    <p className="mt-0.5 text-xs text-muted">{l.admin_email} · {day(l.at)}</p>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </section>
-        </div>
-      )}
-
+      <AccountSheet
+        id={id}
+        name={name}
+        email={u.user.email ?? ""}
+        avatarUrl={p.avatar_url ?? null}
+        supportId={p.support_id}
+        managed={(u.user.email ?? "").endsWith("@comptes.syxtee-networks.fr")}
+        suspendedAt={p.suspended_at}
+        planId={p.plan}
+        planName={plan}
+        planUntil={p.plan_until}
+        planNote={p.plan_note}
+        maxServers={maxServers}
+        createdAt={p.created_at}
+        lastSignIn={u.user.last_sign_in_at ?? null}
+        presence={presenceOf(p.last_seen_at, u.user.last_sign_in_at).label}
+        twitch={p.twitch_login ?? null}
+        liveCount={liveIds.size}
+        servers={active.map((r) => ({ id: r.id, name: r.name, protocol: r.protocol, live: liveIds.has(r.id) }))}
+        lastLiveAt={lastLiveAt}
+        tickets={tickets}
+        billing={p.billing_status ? { interval: p.billing_interval, status: p.billing_status, periodEnd: p.billing_period_end, renews: renews(p), manual: ["partner", "beta", "admin"].includes(p.plan), customerId: p.stripe_customer_id ?? null } : p.stripe_customer_id ? { interval: null, status: null, periodEnd: null, renews: false, manual: false, customerId: p.stripe_customer_id } : null}
+        note={p.plan_note ?? null}
+        activity={(log ?? []).slice(0, 5).map((l) => ({ id: l.id, action: l.action, admin: l.admin_email, at: l.at }))}
+        tab={tab}
+      >
       {tab === "relais" && (
         <div className="grid max-w-3xl gap-4">
 <Tile aria-labelledby="relais">
@@ -329,36 +229,7 @@ export default async function AdminAccountPage({ params, searchParams }: { param
           </div>
         </section>
       )}
-      </div>
-
-      {/* Colonne de droite : repères et actions rapides, toujours visibles */}
-      <aside className="space-y-8 lg:sticky lg:top-6 lg:self-start">
-        <section aria-labelledby="repere">
-          <h2 id="repere" className="text-sm font-semibold">Compte</h2>
-          <dl className="mt-4 divide-y divide-line text-sm">
-            {[
-              ["ID support", p.support_id],
-              ...facts,
-              ["Formule", plan],
-              ...(p.plan_until ? ([["Expire le", day(p.plan_until)]] as [string, string][]) : []),
-            ].map(([k, v]) => (
-              <div key={k} className="flex items-baseline justify-between gap-4 py-2.5">
-                <dt className="shrink-0 text-muted">{k}</dt>
-                <dd className="min-w-0 truncate text-right font-medium" data-sensitive>{v}</dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-        <section aria-labelledby="actions">
-          <h2 id="actions" className="text-sm font-semibold">Actions rapides</h2>
-          <div className="mt-4 grid gap-2">
-            <a href={`mailto:${u.user.email}`} className="btn btn-secondary w-full">Écrire au client</a>
-            <Link href={`/admin/comptes/${id}?onglet=securite`} className="btn btn-secondary w-full">Mot de passe et sécurité</Link>
-            <Link href={`/admin/comptes/${id}?onglet=relais`} className="btn btn-secondary w-full">Serveurs et clés</Link>
-          </div>
-        </section>
-      </aside>
-      </div>
+      </AccountSheet>
     </DashPage>
   );
 }

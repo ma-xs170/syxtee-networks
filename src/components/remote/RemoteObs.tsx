@@ -17,7 +17,7 @@ import { useRemote, type LinkEvent } from "./useRemote";
 type Item = { id: number; name: string; kind: string; on: boolean; flux?: boolean };
 type Mix = { name: string; muted: boolean; db: number; mon: string; global: boolean };
 type Trigger = "cut" | "cut_lowbitrate" | "sensitive";
-type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string };
+type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[] };
 type Stats = { cpu: number; fps: number; kbps: number | null; dropped: number; total: number; encoder: string; congestion: number; streamMs: number; recMs: number };
 type Named = { current: string; list: string[] };
 type Tab = "scenes" | "sources" | "mixer" | "controls" | "multi" | "chat";
@@ -829,6 +829,23 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 </div>
                 <Switch label="Auto-gérance" on={!!roles.autoEnabled} disabled={!roles.droneSource || !roles.droneScene || !roles.liveScene} onClick={() => saveRoles({ autoEnabled: !roles.autoEnabled })} />
               </div>
+              <h3 className="mt-5 text-[12px] font-semibold uppercase tracking-wide text-neutral-400">Autres prises</h3>
+              <p className="mt-1 text-[12px] leading-relaxed text-neutral-500">Même principe pour une autre caméra, un écran ou un invité : belle image sur la source, on passe sur sa scène. Le drone passe en premier, puis la liste dans l&apos;ordre.</p>
+              {(roles.autoRules ?? []).map((r, i) => (
+                <div key={i} className="mt-2 grid gap-2 rounded-lg border border-white/10 p-2.5">
+                  <PopSelect label={`Source ${i + 1}`} value={r.source} options={inputNames} onChange={(v) => saveRoles({ autoRules: (roles.autoRules ?? []).map((x, j) => (j === i ? { ...x, source: v } : x)) })} />
+                  <PopSelect label={`Scène ${i + 1}`} value={r.scene} options={scenes} onChange={(v) => saveRoles({ autoRules: (roles.autoRules ?? []).map((x, j) => (j === i ? { ...x, scene: v } : x)) })} />
+                  <button type="button" onClick={() => saveRoles({ autoRules: (roles.autoRules ?? []).filter((_, j) => j !== i) })} className={`${flat} h-7 justify-self-start px-3`}>
+                    Retirer
+                  </button>
+                </div>
+              ))}
+              {(roles.autoRules ?? []).length < 8 && (
+                <button type="button" onClick={() => saveRoles({ autoRules: [...(roles.autoRules ?? []), { source: "", scene: "" }] })} className={`${flat} mt-2 h-8 px-4`}>
+                  Ajouter une prise
+                </button>
+              )}
+              {(roles.autoRules ?? []).some((r) => !r.source || !r.scene) && <p className="mt-2 text-[12px] text-amber-300">Une prise sans source ou sans scène est ignorée.</p>}
               <fieldset className="mt-4">
                 <legend className="text-[13px] font-semibold">Sensibilité du secours</legend>
                 <div className="mt-2 grid gap-2">

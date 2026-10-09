@@ -153,7 +153,7 @@ export class Agent {
 
   /** Auto-gérance telle que l'interface la lit (champs à plat). */
   private autoView() {
-    return { autoEnabled: this.cfg.auto.enabled, droneScene: this.cfg.auto.droneScene, droneSource: this.cfg.auto.droneSource };
+    return { autoEnabled: this.cfg.auto.enabled, droneScene: this.cfg.auto.droneScene, droneSource: this.cfg.auto.droneSource, autoRules: this.cfg.auto.rules };
   }
 
   /** Requête directe à OBS (listes de scènes et de sources pour l'interface). */
@@ -621,7 +621,7 @@ export class Agent {
         if (this.cfg.backup.trigger !== before) await this.setTrigger(this.cfg.backup.trigger);
         if (typeof params.liveScene === "string") this.cfg.liveScene = params.liveScene.slice(0, 200);
         // Auto-gérance (drone) : champs à plat dans la même requête que les rôles de scènes.
-        this.cfg.auto = cleanAuto({ enabled: params.autoEnabled, droneScene: params.droneScene, droneSource: params.droneSource }, this.cfg.auto);
+        this.cfg.auto = cleanAuto({ enabled: params.autoEnabled, droneScene: params.droneScene, droneSource: params.droneSource, rules: params.autoRules }, this.cfg.auto);
         this.watcher.set(this.cfg.backup);
         this.watcher.setAuto(this.cfg.auto);
         this.watcher.setLive(this.cfg.liveScene);

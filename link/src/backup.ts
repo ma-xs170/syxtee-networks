@@ -46,13 +46,34 @@ export type AutoConfig = {
   droneScene: string;
   /** Source OBS dont on juge l'image : entrée média ou navigateur du drone. */
   droneSource: string;
+  /** Règles supplémentaires (caméra 2, écran, invité…) : même logique que le drone, par ordre de priorité après lui. */
+  rules: AutoRule[];
 };
-export const DEFAULT_AUTO: AutoConfig = { enabled: false, droneScene: "", droneSource: "" };
+export type AutoRule = { source: string; scene: string };
+export const MAX_RULES = 8;
+export const DEFAULT_AUTO: AutoConfig = { enabled: false, droneScene: "", droneSource: "", rules: [] };
+
+function cleanRules(v: unknown, prev: AutoRule[]): AutoRule[] {
+  if (!Array.isArray(v)) return prev;
+  const out: AutoRule[] = [];
+  for (const r of v.slice(0, MAX_RULES)) {
+    const o = (r && typeof r === "object" ? r : {}) as Record<string, unknown>;
+    const source = typeof o.source === "string" ? o.source.slice(0, 200) : "";
+    const scene = typeof o.scene === "string" ? o.scene.slice(0, 200) : "";
+    out.push({ source, scene }); // les lignes vides restent : l'interface les remplit ensuite (targets() les ignore)
+  }
+  return out;
+}
 
 export function cleanAuto(v: unknown, prev: AutoConfig = DEFAULT_AUTO): AutoConfig {
   const o = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
   const str = (x: unknown, d: string) => (typeof x === "string" ? x.slice(0, 200) : d);
-  return { enabled: typeof o.enabled === "boolean" ? o.enabled : prev.enabled, droneScene: str(o.droneScene, prev.droneScene), droneSource: str(o.droneSource, prev.droneSource) };
+  return {
+    enabled: typeof o.enabled === "boolean" ? o.enabled : prev.enabled,
+    droneScene: str(o.droneScene, prev.droneScene),
+    droneSource: str(o.droneSource, prev.droneSource),
+    rules: cleanRules(o.rules, prev.rules ?? []),
+  };
 }
 
 type Req = (type: string, data?: Record<string, unknown>) => Promise<Record<string, unknown>>;
@@ -91,9 +112,10 @@ export class BackupWatcher {
   private last = "";
   private still = 0;
   private moving = 0;
-  private lastDrone = "";
-  private droneUp = 0;
-  private droneDown = 0;
+  /** Règles de prise (drone + règles supplémentaires) : dernière image et compteurs par couple source/scène. */
+  private takes = new Map<string, { last: string; up: number; down: number }>();
+  /** Règle dont la scène est à l'antenne (état « drone »). */
+  private active: AutoRule | null = null;
   private armedTicks = 0;
   private seenMoving = false;
   private hold = 0;
@@ -116,10 +138,7 @@ export class BackupWatcher {
 
   setAuto(a: AutoConfig) {
     this.auto = a;
-    if (!a.enabled) {
-      this.droneUp = this.droneDown = 0;
-      this.lastDrone = "";
-    }
+    if (!a.enabled) this.takes.clear();
   }
 
   setLive(scene: string) {
@@ -129,11 +148,10 @@ export class BackupWatcher {
 
   private disarm() {
     this.last = "";
-    this.lastDrone = "";
+    this.takes.clear();
+    this.active = null;
     this.still = 0;
     this.moving = 0;
-    this.droneUp = 0;
-    this.droneDown = 0;
     this.armedTicks = 0;
     this.seenMoving = false;
     this.returnTo = null;
@@ -162,7 +180,8 @@ export class BackupWatcher {
   async tick(): Promise<void> {
     const c = this.cfg;
     const watching = c.enabled && !!c.source && !!c.scene;
-    const piloting = this.auto.enabled && !!this.auto.droneScene && !!this.auto.droneSource;
+    const targets = this.targets();
+    const piloting = targets.length > 0;
     if (!watching && !piloting) return;
     if (!this.live) return; // pas de scène Live choisie : rien ne bascule jamais tout seul
     let cur = "";
@@ -174,7 +193,7 @@ export class BackupWatcher {
     if (this.hold > 0) this.hold--;
 
     // La logique n'existe que sur la scène Live, ou sur une scène que NOUS avons mise à l'antenne (secours, drone).
-    const ours = (this.state === "backup" && cur === c.scene) || (this.state === "drone" && cur === this.auto.droneScene);
+    const ours = (this.state === "backup" && cur === c.scene) || (this.state === "drone" && cur === this.active?.scene);
     if (cur !== this.live && !ours) {
       // Autre scène à l'antenne (choix manuel) : on se désarme sans rien toucher.
       if (this.state !== "idle" || this.armedTicks > 0) this.disarm();
@@ -184,40 +203,58 @@ export class BackupWatcher {
     if (cur === this.live && (this.state === "backup" || this.state === "drone")) {
       this.hold = HOLD_TICKS;
       this.returnTo = null;
-      this.droneUp = this.droneDown = 0;
+      this.active = null;
+      this.takes.clear();
       this.setState("ok");
     }
     this.armedTicks++;
 
-    // ───── Drone : belle prise → scène drone, prise perdue → retour ─────
+    // ───── Prises (drone et autres règles) : belle prise → scène cible, prise perdue → retour ─────
     if (piloting) {
-      const shot = await this.shot(this.auto.droneSource);
-      const good = shot.length > MIN_IMAGE_CHARS && shot !== this.lastDrone;
-      this.lastDrone = shot;
-      if (good) {
-        this.droneUp++;
-        this.droneDown = 0;
-      } else {
-        this.droneDown++;
-        this.droneUp = 0;
+      // Une capture par source, même si plusieurs règles la partagent.
+      const shots = new Map<string, string>();
+      for (const t of targets) if (!shots.has(t.source)) shots.set(t.source, await this.shot(t.source));
+      for (const t of targets) {
+        const key = `${t.source}\n${t.scene}`;
+        const seen = this.takes.get(key);
+        const st = seen ?? { last: "", up: 0, down: 0 };
+        const shot = shots.get(t.source) ?? "";
+        // Première capture après un armement : on la mémorise seulement (une image périmée ne compte pas comme « qui bouge »).
+        const good = !!seen && shot.length > MIN_IMAGE_CHARS && shot !== st.last;
+        st.last = shot;
+        if (good) {
+          st.up++;
+          st.down = 0;
+        } else {
+          st.down++;
+          st.up = 0;
+        }
+        this.takes.set(key, st);
       }
-      if (this.state === "drone") {
-        if (this.droneDown >= DRONE_DOWN) {
-          await this.back("drone", `prise de « ${this.auto.droneSource} » perdue`);
+      if (this.state === "drone" && this.active) {
+        const act = this.active;
+        const st = this.takes.get(`${act.source}\n${act.scene}`);
+        if (!st || st.down >= DRONE_DOWN) {
+          await this.back("drone", `prise de « ${act.source} » perdue`);
           return;
         }
-        return; // on reste sur le drone ; le secours ne joue pas pendant une belle prise
+        return; // on reste sur la prise ; le secours ne joue pas pendant une belle prise
       }
-      if (cur === this.live && this.hold === 0 && this.droneUp >= DRONE_UP && this.state !== "backup") {
-        try {
-          this.returnTo = cur;
-          await this.req("SetCurrentProgramScene", { sceneName: this.auto.droneScene });
-          this.log(`auto-gérance : belle prise de « ${this.auto.droneSource} », bascule sur « ${this.auto.droneScene} »`);
-          this.setState("drone");
-          this.droneDown = 0;
-          return;
-        } catch (e) {
-          this.log(`auto-gérance : bascule impossible (${(e as Error).message})`);
+      if (cur === this.live && this.hold === 0 && this.state !== "backup") {
+        // Priorité : ordre de la liste (drone d'abord).
+        const pick = targets.find((t) => (this.takes.get(`${t.source}\n${t.scene}`)?.up ?? 0) >= DRONE_UP);
+        if (pick) {
+          try {
+            this.returnTo = cur;
+            await this.req("SetCurrentProgramScene", { sceneName: pick.scene });
+            this.log(`auto-gérance : belle prise de « ${pick.source} », bascule sur « ${pick.scene} »`);
+            this.active = pick;
+            this.setState("drone");
+            for (const v of this.takes.values()) v.down = 0;
+            return;
+          } catch (e) {
+            this.log(`auto-gérance : bascule impossible (${(e as Error).message})`);
+          }
         }
       }
     }
@@ -271,7 +308,7 @@ export class BackupWatcher {
     const target = this.returnTo ?? this.live;
     try {
       const cur = String((await this.req("GetCurrentProgramScene")).currentProgramSceneName ?? "");
-      const mine = from === "backup" ? this.cfg.scene : this.auto.droneScene;
+      const mine = from === "backup" ? this.cfg.scene : this.active?.scene;
       // Si l'utilisateur a changé de scène à la main entre-temps, on ne touche à rien.
       if (target && cur === mine) {
         await this.req("SetCurrentProgramScene", { sceneName: target });
@@ -282,7 +319,15 @@ export class BackupWatcher {
       return;
     }
     this.returnTo = null;
-    this.droneUp = this.droneDown = 0;
+    this.active = null;
+    this.takes.clear();
     this.setState("ok");
+  }
+
+  /** Règles actives, par priorité : le drone, puis les règles supplémentaires complètes (source et scène). */
+  private targets(): AutoRule[] {
+    if (!this.auto.enabled) return [];
+    const list: AutoRule[] = [{ source: this.auto.droneSource, scene: this.auto.droneScene }, ...(this.auto.rules ?? [])];
+    return list.filter((r) => r.source && r.scene);
   }
 }

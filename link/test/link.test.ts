@@ -180,11 +180,11 @@ test("déclenchements : coupure seulement ignore le débit ; débit très bas ba
 
 /** Faux OBS à deux sources : le flux (SRT) et le drone. Une image de drone « belle » est longue (plus de 3000 caractères) et change. */
 function fakeObs2(initial: string) {
-  const o = { scene: initial, srt: "a", drone: "", switches: [] as string[] };
+  const o = { scene: initial, srt: "a", drone: "", cam2: "", switches: [] as string[] };
   const beau = (n: number) => `${n}`.padEnd(3200, "x");
   const req = async (t: string, d?: Record<string, unknown>) => {
     if (t === "GetSourceScreenshot") {
-      const img = d?.sourceName === "DRONE" ? o.drone : o.srt;
+      const img = d?.sourceName === "DRONE" ? o.drone : d?.sourceName === "CAM2" ? o.cam2 : o.srt;
       if (img === "") throw new Error("source absente");
       return { imageData: img };
     }
@@ -204,7 +204,7 @@ test("régie : rien ne bascule tant que la scène Live n'est pas à l'antenne", 
   const w = new BackupWatcher(req);
   w.setLive("Live");
   w.set({ enabled: true, source: "SRT", scene: "BRB", freezeSeconds: 1, recoverSeconds: 1, trigger: "cut" });
-  w.setAuto({ enabled: true, droneScene: "Drone", droneSource: "DRONE" });
+  w.setAuto({ enabled: true, droneScene: "Drone", droneSource: "DRONE", rules: [] });
   o.srt = "";
   let n = 0;
   for (let i = 0; i < 20; i++) {
@@ -219,7 +219,7 @@ test("auto-gérance : belle prise de drone → scène drone, prise perdue → re
   const { o, req, beau } = fakeObs2("Live");
   const w = new BackupWatcher(req);
   w.setLive("Live");
-  w.setAuto({ enabled: true, droneScene: "Scène quelconque", droneSource: "DRONE" });
+  w.setAuto({ enabled: true, droneScene: "Scène quelconque", droneSource: "DRONE", rules: [] });
   o.srt = "a";
   let n = 0;
   for (let i = 0; i < 4; i++) {
@@ -239,7 +239,7 @@ test("auto-gérance : image noire ou trop pauvre = pas une belle prise ; retour 
   const { o, req, beau } = fakeObs2("Live");
   const w = new BackupWatcher(req);
   w.setLive("Live");
-  w.setAuto({ enabled: true, droneScene: "Drone", droneSource: "DRONE" });
+  w.setAuto({ enabled: true, droneScene: "Drone", droneSource: "DRONE", rules: [] });
   let n = 0;
   for (let i = 0; i < 8; i++) {
     o.drone = `${++n}`; // image noire : quelques octets seulement
@@ -263,5 +263,34 @@ test("auto-gérance : image noire ou trop pauvre = pas une belle prise ; retour 
 
 test("cleanAuto : valeurs par défaut et bornes", () => {
   assert.deepEqual(cleanAuto(undefined), DEFAULT_AUTO);
-  assert.deepEqual(cleanAuto({ enabled: true, droneScene: "D", droneSource: 4 }, { ...DEFAULT_AUTO, droneSource: "S" }), { enabled: true, droneScene: "D", droneSource: "S" });
+  assert.deepEqual(cleanAuto({ enabled: true, droneScene: "D", droneSource: 4 }, { ...DEFAULT_AUTO, droneSource: "S" }), { enabled: true, droneScene: "D", droneSource: "S", rules: [] });
+  const r = cleanAuto({ rules: [{ source: "CAM2", scene: "Plan 2" }, { source: 3 }, {}] });
+  assert.deepEqual(r.rules, [{ source: "CAM2", scene: "Plan 2" }, { source: "", scene: "" }, { source: "", scene: "" }]);
+  assert.equal(cleanAuto({ rules: Array.from({ length: 20 }, () => ({ source: "a", scene: "b" })) }).rules.length, 8);
+  assert.deepEqual(cleanAuto({ enabled: true }, { ...DEFAULT_AUTO, rules: [{ source: "A", scene: "B" }] }).rules, [{ source: "A", scene: "B" }]);
+});
+
+test("auto-gérance : règle supplémentaire (caméra 2) bascule et revient ; le drone garde la priorité", async () => {
+  const { o, req, beau } = fakeObs2("Live");
+  const w = new BackupWatcher(req);
+  w.setLive("Live");
+  w.setAuto({ enabled: true, droneScene: "Drone", droneSource: "DRONE", rules: [{ source: "CAM2", scene: "Plan 2" }] });
+  o.srt = "a";
+  let n = 0;
+  for (let i = 0; i < 4; i++) {
+    o.cam2 = beau(++n);
+    await w.tick();
+  }
+  assert.equal(o.scene, "Plan 2");
+  assert.equal(w.state, "drone");
+  // La caméra 2 se fige : retour sur Live.
+  for (let i = 0; i < 5; i++) await w.tick();
+  assert.equal(o.scene, "Live");
+  // Les deux sont belles en même temps : le drone passe en premier.
+  for (let i = 0; i < 4; i++) {
+    o.cam2 = beau(++n);
+    o.drone = beau(++n);
+    await w.tick();
+  }
+  assert.equal(o.scene, "Drone");
 });

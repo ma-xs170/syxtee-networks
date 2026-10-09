@@ -17,7 +17,7 @@ import { useRemote, type LinkEvent } from "./useRemote";
 type Item = { id: number; name: string; kind: string; on: boolean; flux?: boolean };
 type Mix = { name: string; muted: boolean; db: number; mon: string; global: boolean };
 type Trigger = "cut" | "cut_lowbitrate" | "sensitive";
-type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioBackup?: boolean; audioState?: string };
+type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioBackup?: boolean; directorEnabled?: boolean; directorKeySet?: boolean; directorKey?: string; directorClearKey?: boolean; directorCams?: { source: string; scene: string; label: string }[]; directorRules?: string; directorInterval?: number; directorHold?: number; directorState?: string; directorCam?: number; audioState?: string };
 type Stats = { cpu: number; fps: number; kbps: number | null; dropped: number; total: number; encoder: string; congestion: number; streamMs: number; recMs: number };
 type Named = { current: string; list: string[] };
 type Tab = "scenes" | "sources" | "mixer" | "controls" | "multi" | "chat";
@@ -170,6 +170,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
       else if (name === "link.studioPreview") previewSink.current?.(String(d.image));
       else if (name === "link.previewState") setPreviewOn(!!d.enabled);
       else if (name === "link.previewMode") setPmode({ mode: d.mode as "video" | "jpeg" | "idle", reason: String(d.reason ?? "") });
+      else if (name === "link.directorState") setRoles((r) => (r ? { ...r, directorState: String(d.state), directorCam: Number(d.cam ?? -1) } : r));
       else if (name === "link.audioState") setRoles((r) => (r ? { ...r, audioState: String(d.state) } : r));
       else if (name === "link.backupState") setRoles((r) => (r ? { ...r, state: String(d.state) } : r));
       else if (name === "link.stats") {
@@ -888,6 +889,106 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 <Switch label="Secours si micro muet" on={!!roles.audioBackup} disabled={!roles.audioSource || !roles.scene} onClick={() => saveRoles({ audioBackup: !roles.audioBackup })} />
               </div>
               {!roles.scene && <p className="mt-2 text-[12px] text-neutral-500">Choisis d&apos;abord ta scène de secours (étape 2).</p>}
+              <h3 className="mt-5 text-[12px] font-semibold uppercase tracking-wide text-neutral-400">5 · Régie IA (plusieurs caméras)</h3>
+              <p className="mt-1 text-[12px] leading-relaxed text-neutral-500">
+                Pour 2 caméras ou plus (Osmo, iPhone, drone, téléphones en SRTLA) : toutes les quelques secondes, une IA regarde chaque caméra et met au programme celle où il se passe quelque chose, selon tes consignes. Une caméra coupée ou figée n&apos;est jamais choisie.
+              </p>
+              {(roles.directorCams ?? []).map((c, i) => (
+                <div key={i} className="mt-2 grid gap-2 rounded-lg border border-white/10 p-2.5">
+                  <label className="grid gap-1 text-[12px] text-neutral-400">
+                    Rôle (lu par l&apos;IA)
+                    <input
+                      defaultValue={c.label}
+                      maxLength={80}
+                      placeholder="ex. Osmo à la main"
+                      onBlur={(e) => saveRoles({ directorCams: (roles.directorCams ?? []).map((x, j) => (j === i ? { ...x, label: e.target.value } : x)) })}
+                      className="h-8 rounded border border-white/15 bg-transparent px-2 text-[13px] text-neutral-100"
+                    />
+                  </label>
+                  <PopSelect label={`Source caméra ${i + 1}`} value={c.source} options={inputNames} onChange={(v) => saveRoles({ directorCams: (roles.directorCams ?? []).map((x, j) => (j === i ? { ...x, source: v } : x)) })} />
+                  <PopSelect label={`Scène caméra ${i + 1}`} value={c.scene} options={scenes} onChange={(v) => saveRoles({ directorCams: (roles.directorCams ?? []).map((x, j) => (j === i ? { ...x, scene: v } : x)) })} />
+                  <button type="button" onClick={() => saveRoles({ directorCams: (roles.directorCams ?? []).filter((_, j) => j !== i) })} className={`${flat} h-7 justify-self-start px-3`}>
+                    Retirer
+                  </button>
+                </div>
+              ))}
+              {(roles.directorCams ?? []).length < 6 && (
+                <button type="button" onClick={() => saveRoles({ directorCams: [...(roles.directorCams ?? []), { source: "", scene: "", label: "" }] })} className={`${flat} mt-2 h-8 px-4`}>
+                  Ajouter une caméra
+                </button>
+              )}
+              <label className="mt-3 grid gap-1 text-[12px] text-neutral-400">
+                Consignes (en français, comme à un réalisateur)
+                <textarea
+                  defaultValue={roles.directorRules ?? ""}
+                  maxLength={1000}
+                  rows={4}
+                  onBlur={(e) => e.target.value !== (roles.directorRules ?? "") && saveRoles({ directorRules: e.target.value })}
+                  className="rounded border border-white/15 bg-transparent p-2 text-[13px] leading-relaxed text-neutral-100"
+                />
+              </label>
+              <label className="mt-3 grid gap-1 text-[12px] text-neutral-400">
+                Clé API Anthropic {roles.directorKeySet ? "(enregistrée sur ce PC)" : "(reste sur ton PC)"}
+                <input
+                  type="password"
+                  autoComplete="off"
+                  placeholder={roles.directorKeySet ? "••••••••  (laisser vide pour garder)" : "sk-ant-…"}
+                  onBlur={(e) => {
+                    if (e.target.value.trim()) {
+                      saveRoles({ directorKey: e.target.value.trim() });
+                      e.target.value = "";
+                    }
+                  }}
+                  className="h-8 rounded border border-white/15 bg-transparent px-2 text-[13px] text-neutral-100"
+                />
+              </label>
+              {roles.directorKeySet && (
+                <button type="button" onClick={() => saveRoles({ directorClearKey: true })} className={`${flat} mt-2 h-7 justify-self-start px-3`}>
+                  Effacer la clé
+                </button>
+              )}
+              <div className="mt-3 flex items-center justify-between gap-3 text-[13px]">
+                <label className="flex items-center gap-2">
+                  Analyse toutes les
+                  <select value={roles.directorInterval ?? 4} onChange={(e) => saveRoles({ directorInterval: Number(e.target.value) })} className="h-8 rounded border border-white/15 bg-transparent px-2">
+                    {[2, 4, 6, 10].map((n) => (
+                      <option key={n} value={n} className="bg-[#0b0b0d]">
+                        {n} s
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex items-center gap-2">
+                  Garde au moins
+                  <select value={roles.directorHold ?? 6} onChange={(e) => saveRoles({ directorHold: Number(e.target.value) })} className="h-8 rounded border border-white/15 bg-transparent px-2">
+                    {[3, 6, 10, 20].map((n) => (
+                      <option key={n} value={n} className="bg-[#0b0b0d]">
+                        {n} s
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-medium">Régie IA</p>
+                  <p className="text-[12px] text-neutral-500">
+                    {roles.directorEnabled
+                      ? roles.directorState === "cam" && roles.directorCam != null && roles.directorCam >= 0
+                        ? `Active : « ${roles.directorCams?.filter((c) => c.source && c.scene)[roles.directorCam]?.label || "caméra " + (roles.directorCam + 1)} » au programme.`
+                        : "Active : elle regarde tes caméras."
+                      : "Éteinte."}
+                  </p>
+                </div>
+                <Switch
+                  label="Régie IA"
+                  on={!!roles.directorEnabled}
+                  disabled={!roles.directorKeySet || !roles.liveScene || (roles.directorCams ?? []).filter((c) => c.source && c.scene).length < 2}
+                  onClick={() => saveRoles({ directorEnabled: !roles.directorEnabled })}
+                />
+              </div>
+              {(!roles.directorKeySet || (roles.directorCams ?? []).filter((c) => c.source && c.scene).length < 2) && <p className="mt-2 text-[12px] text-neutral-500">Il faut ta scène Live, une clé API et au moins 2 caméras complètes (source et scène).</p>}
+              <p className="mt-2 text-[12px] text-neutral-500">Chaque analyse envoie de petites vignettes de tes caméras à Anthropic avec ta clé : c&apos;est facturé par Anthropic, par appel (un appel toutes les {roles.directorInterval ?? 4} s en direct). Désactive la régie IA pour ne rien envoyer.</p>
               <fieldset className="mt-4">
                 <legend className="text-[13px] font-semibold">Sensibilité du secours</legend>
                 <div className="mt-2 grid gap-2">

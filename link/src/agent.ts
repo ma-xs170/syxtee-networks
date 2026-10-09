@@ -1,6 +1,7 @@
 import { rm } from "node:fs/promises";
 import { hostname, tmpdir } from "node:os";
 import { join } from "node:path";
+import { AiDirector, anthropicAsk, cleanDirector } from "./director.ts";
 import { AudioGuard, cleanAudio } from "./audio.ts";
 import { BackupWatcher, cleanAuto, cleanBackup, TRIGGERS, type Trigger } from "./backup.ts";
 import { downloadArchive, uploadArchive } from "./cloud.ts";
@@ -64,6 +65,7 @@ export class Agent {
   private stopped = false;
   private watcher: BackupWatcher;
   private audio: AudioGuard;
+  private director: AiDirector;
   private timers: ReturnType<typeof setTimeout>[] = [];
   private tickTimer: ReturnType<typeof setInterval> | null = null;
   private autoTimer: ReturnType<typeof setInterval> | null = null;
@@ -108,6 +110,10 @@ export class Agent {
     this.audio.set(cfg.audio);
     this.audio.setLive(cfg.liveScene);
     this.audio.setBackupScene(cfg.backup.scene);
+    this.director = new AiDirector((t, d) => this.obs.request(t, d), (p, imgs) => anthropicAsk(this.cfg.director.apiKey)(p, imgs), log);
+    this.director.set(cfg.director);
+    this.director.setLive(cfg.liveScene);
+    this.director.onChange = (state, cam, reason) => this.send({ type: "event", name: "link.directorState", data: { state, cam, reason } });
     this.audio.onChange = (s) => this.send({ type: "event", name: "link.audioState", data: { state: s } });
     this.watcher.onChange = (s) => {
       this.status.backup = s;
@@ -120,7 +126,7 @@ export class Agent {
     this.stopped = false;
     void this.connectObs();
     this.connectCore();
-    this.tickTimer = setInterval(() => void this.watcher.tick().then(() => this.audio.tick()), 1000);
+    this.tickTimer = setInterval(() => void this.watcher.tick().then(() => this.audio.tick()).then(() => this.director.tick()), 1000);
     this.autoTimer = setInterval(() => void this.autoBackupTick(), 30_000);
     this.previewMgr = setInterval(() => void this.managePreview(), 5000);
     this.relayMgr = setInterval(() => void this.syncRelays(), 30_000);
@@ -147,6 +153,7 @@ export class Agent {
     this.cfg.liveScene = scene;
     this.watcher.setLive(scene);
     this.audio.setLive(scene);
+    this.director.setLive(scene);
   }
   setAuto(a: LinkConfig["auto"]) {
     this.cfg.auto = a;
@@ -162,7 +169,7 @@ export class Agent {
 
   /** Auto-gérance telle que l'interface la lit (champs à plat). */
   private autoView() {
-    return { autoEnabled: this.cfg.auto.enabled, droneScene: this.cfg.auto.droneScene, droneSource: this.cfg.auto.droneSource, autoRules: this.cfg.auto.rules, audioEnabled: this.cfg.audio.enabled, audioSource: this.cfg.audio.source, audioSeconds: this.cfg.audio.seconds, audioUnmute: this.cfg.audio.unmute, audioBackup: this.cfg.audio.backup, audioState: this.audio.state };
+    return { autoEnabled: this.cfg.auto.enabled, droneScene: this.cfg.auto.droneScene, droneSource: this.cfg.auto.droneSource, autoRules: this.cfg.auto.rules, audioEnabled: this.cfg.audio.enabled, audioSource: this.cfg.audio.source, audioSeconds: this.cfg.audio.seconds, audioUnmute: this.cfg.audio.unmute, audioBackup: this.cfg.audio.backup, audioState: this.audio.state, directorEnabled: this.cfg.director.enabled, directorKeySet: !!this.cfg.director.apiKey, directorCams: this.cfg.director.cams, directorRules: this.cfg.director.rules, directorInterval: this.cfg.director.interval, directorHold: this.cfg.director.hold, directorState: this.director.state, directorCam: this.director.current };
   }
 
   /** Requête directe à OBS (listes de scènes et de sources pour l'interface). */
@@ -633,6 +640,9 @@ export class Agent {
         // Auto-gérance (drone) : champs à plat dans la même requête que les rôles de scènes.
         this.cfg.auto = cleanAuto({ enabled: params.autoEnabled, droneScene: params.droneScene, droneSource: params.droneSource, rules: params.autoRules }, this.cfg.auto);
         this.cfg.audio = cleanAudio({ enabled: params.audioEnabled, source: params.audioSource, seconds: params.audioSeconds, unmute: params.audioUnmute, backup: params.audioBackup }, this.cfg.audio);
+        this.cfg.director = cleanDirector({ enabled: params.directorEnabled, apiKey: params.directorKey, clearKey: params.directorClearKey, cams: params.directorCams, rules: params.directorRules, interval: params.directorInterval, hold: params.directorHold }, this.cfg.director);
+        this.director.set(this.cfg.director);
+        this.director.setLive(this.cfg.liveScene);
         this.watcher.set(this.cfg.backup);
         this.watcher.setAuto(this.cfg.auto);
         this.watcher.setLive(this.cfg.liveScene);

@@ -1,6 +1,7 @@
 import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { cleanDirector, DEFAULT_DIRECTOR, type DirectorConfig } from "./director.ts";
 import { cleanAudio, DEFAULT_AUDIO, type AudioConfig } from "./audio.ts";
 import { cleanAuto, cleanBackup, DEFAULT_AUTO, DEFAULT_BACKUP, type AutoConfig, type BackupConfig } from "./backup.ts";
 
@@ -29,12 +30,14 @@ export type LinkConfig = {
   auto: AutoConfig;
   /** Garde audio : alerte si le micro se tait ou se coupe pendant le direct. */
   audio: AudioConfig;
+  /** Régie IA : plusieurs caméras, une vignette de chacune analysée par un modèle de vision. */
+  director: DirectorConfig;
 };
 
 export const DEFAULT_CORE = "https://15-235-25-77.sslip.io";
 export const DEFAULT_SITE = "https://syxtee-networks.vercel.app";
 
-export const defaults = (): LinkConfig => ({ core: DEFAULT_CORE, site: DEFAULT_SITE, token: "", refresh: "", expires: 0, destination: "", liveScene: "", autoBackup: {}, lastBackup: {}, previewEnabled: true, onboarded: false, obs: { host: "127.0.0.1", port: 4455, password: "" }, backup: DEFAULT_BACKUP, auto: DEFAULT_AUTO, audio: DEFAULT_AUDIO });
+export const defaults = (): LinkConfig => ({ core: DEFAULT_CORE, site: DEFAULT_SITE, token: "", refresh: "", expires: 0, destination: "", liveScene: "", autoBackup: {}, lastBackup: {}, previewEnabled: true, onboarded: false, obs: { host: "127.0.0.1", port: 4455, password: "" }, backup: DEFAULT_BACKUP, auto: DEFAULT_AUTO, audio: DEFAULT_AUDIO, director: DEFAULT_DIRECTOR });
 
 /** Dictionnaire nettoyé : clés courtes, valeurs acceptées par `ok` seulement. */
 function recordOf<T>(v: unknown, ok: (x: unknown) => boolean): Record<string, T> {
@@ -68,6 +71,7 @@ export function load(): LinkConfig {
       backup: cleanBackup(j.backup),
       auto: cleanAuto(j.auto),
       audio: cleanAudio(j.audio),
+      director: cleanDirector(j.director),
     };
   } catch {
     return d;

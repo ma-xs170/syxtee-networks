@@ -136,7 +136,7 @@ export function Setting({ label, help, value, button }: { label: string; help?: 
 /** Ligne de synthèse : libellé en gris à gauche, valeur à droite. */
 export function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="flex min-h-[3.5rem] items-center justify-between gap-4 py-3 text-[15px]">
+    <div className="flex min-h-[4rem] items-center justify-between gap-4 py-3 text-[15px]">
       <dt className="text-muted">{label}</dt>
       <dd className="min-w-0 text-right font-medium">{children}</dd>
     </div>

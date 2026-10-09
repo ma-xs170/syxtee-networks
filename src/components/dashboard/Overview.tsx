@@ -148,7 +148,7 @@ function Shortcuts() {
       <ul className="divide-y divide-line">
         {shortcuts.map((s) => (
           <li key={s.href}>
-            <Link href={s.href} className="flex min-h-[3.5rem] items-center justify-between gap-4 py-3 text-[15px] transition-colors hover:text-foreground">
+            <Link href={s.href} className="flex min-h-[4rem] items-center justify-between gap-4 py-3 text-[15px] transition-colors hover:text-foreground">
               {s.label}
               <span aria-hidden="true" className="text-muted">→</span>
             </Link>
@@ -211,7 +211,7 @@ export default function Overview({ initial, coreUrl = "", demo }: { initial: Ove
           <Card title="Activité" action={<RangeToggle range={range} onChange={changeRange} pending={pending} />}>
             <dl className={`-mx-6 grid grid-cols-2 divide-line transition-opacity max-lg:divide-y lg:grid-cols-4 lg:divide-x ${pending ? "opacity-50" : ""}`}>
               {stats.map((k, i) => (
-                <div key={k.label} className={`p-5 ${i % 2 === 1 ? "max-lg:border-l max-lg:border-line" : ""} ${i > 1 ? "max-lg:border-t max-lg:border-line" : ""}`}>
+                <div key={k.label} className={`px-6 py-5 ${i % 2 === 1 ? "max-lg:border-l max-lg:border-line" : ""} ${i > 1 ? "max-lg:border-t max-lg:border-line" : ""}`}>
                   <dt className="text-xs text-muted">{k.label}</dt>
                   <dd className="mt-2 font-mono text-2xl tabular-nums tracking-tight">
                     {k.value}
@@ -221,7 +221,7 @@ export default function Overview({ initial, coreUrl = "", demo }: { initial: Ove
                 </div>
               ))}
             </dl>
-            <div className="-mx-6 border-t border-line p-5">
+            <div className="-mx-6 border-t border-line px-6 py-5">
               {error && (
                 <p role="alert" className="mb-3 text-sm text-red-400/90">
                   Impossible de charger cette période. Réessaie dans un instant.

@@ -190,7 +190,7 @@ export default function MesObs({ coreUrl, demo }: { coreUrl: string; demo?: Devi
           {devices.slice(0, 4).map((d) => {
             const st = pluginState(d.plugin_version, latest);
             return (
-              <li key={d.id} className="flex min-h-[3.5rem] items-center justify-between gap-4 py-3">
+              <li key={d.id} className="flex min-h-[4rem] items-center justify-between gap-4 py-3">
                 <div className="min-w-0">
                   <p className="truncate text-[15px] font-medium">{d.name}</p>
                   <p className="mt-0.5 truncate text-xs text-muted">

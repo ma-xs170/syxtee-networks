@@ -7,7 +7,7 @@ import PlanGate from "@/components/plans/PlanGate";
 import RelayActions from "@/components/relais/RelayActions";
 import RelayAnalysis from "@/components/relais/RelayAnalysis";
 import RelayUrls from "@/components/relais/RelayUrls";
-import { ActionButton, Card, Fact, Item, Pill, RowMenu, Setting, TabsNav } from "@/components/dashboard/panel";
+import { ActionButton, Card, Fact, Pill, Setting, TabsNav } from "@/components/dashboard/panel";
 import ProtocolBadge from "@/components/relais/ProtocolBadge";
 import { getRelay, publicCoreUrl } from "@/lib/core";
 import { getProfile } from "@/lib/auth/dal";
@@ -172,46 +172,53 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
             )}
 
             {tab === "stats" && (
-              <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
-                <Card title="Statistiques sur 30 jours">
-                  {([["Directs", fmtInt(sessions.length)], ["Temps de direct", totalS ? fmtDuration(totalS) : "-"], ["Débit moyen", avg ? `${fmtInt(avg)} kbit/s` : "-"], ["Débit de crête", peak ? `${fmtInt(peak)} kbit/s` : "-"], ["Coupures", fmtInt(cuts)]] as [string, string][]).map(([k, v]) => (
-                    <Item key={k} label={k}>
-                      <p className="font-mono text-lg tabular-nums text-foreground">{v}</p>
-                    </Item>
-                  ))}
+              <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
+                <Card title="Statistiques sur 30 jours" className="h-full">
+                  <dl className="divide-y divide-line">
+                    {([["Directs", fmtInt(sessions.length)], ["Temps de direct", totalS ? fmtDuration(totalS) : "-"], ["Débit moyen", avg ? `${fmtInt(avg)} kbit/s` : "-"], ["Débit de crête", peak ? `${fmtInt(peak)} kbit/s` : "-"], ["Coupures", fmtInt(cuts)]] as const).map(([k, v]) => (
+                      <Fact key={k} label={k}><span className="font-mono tabular-nums">{v}</span></Fact>
+                    ))}
+                  </dl>
                 </Card>
-                <Card title="Derniers directs">
+                <Card title="Derniers directs" className="h-full">
                   {sessions.length === 0 ? (
                     <p className="py-8 text-center text-sm text-muted">Aucun direct sur ce serveur.</p>
                   ) : (
-                    sessions.slice(0, 8).map((s) => (
-                      <Link key={s.id} href={`/dashboard/lives/${s.id}`} className="flex items-center justify-between gap-4 py-4 text-sm transition-colors hover:text-foreground">
-                        <span>
-                          <span className="block font-medium text-foreground">{fmtAgo(s.started_at)}</span>
-                          <span className="mt-0.5 block text-xs text-muted">{s.reconnects} coupure{s.reconnects > 1 ? "s" : ""}</span>
-                        </span>
-                        <span className="text-right font-mono tabular-nums text-muted">{s.ended_at ? fmtDuration(s.duration_s) : "En cours"}<br />{fmtInt(s.avg_kbps)} kbit/s</span>
-                      </Link>
-                    ))
+                    <ul className="divide-y divide-line">
+                      {sessions.slice(0, 5).map((s) => (
+                        <li key={s.id}>
+                          <Link href={`/dashboard/lives/${s.id}`} className="flex items-center justify-between gap-4 py-3.5 text-[15px] transition-colors hover:text-foreground">
+                            <span className="min-w-0">
+                              <span className="block font-medium text-foreground">{fmtAgo(s.started_at)}</span>
+                              <span className="mt-0.5 block text-xs text-muted">{s.reconnects} coupure{s.reconnects > 1 ? "s" : ""}</span>
+                            </span>
+                            <span className="text-right font-mono text-sm tabular-nums text-muted">{s.ended_at ? fmtDuration(s.duration_s) : "En cours"}<br />{fmtInt(s.avg_kbps)} kbit/s</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
                   )}
                 </Card>
               </div>
             )}
 
             {tab === "services" && (
-              <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
-                <Card title="Disponibilité des services">
-                  {services.map((sv) => (
-                    <Item key={sv.name} label={sv.name}>
-                      <Pill tone={sv.ok === true ? "ok" : sv.ok === false ? "bad" : "idle"}>{sv.text}</Pill>
-                    </Item>
-                  ))}
+              <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
+                <Card title="Disponibilité des services" className="h-full">
+                  <dl className="divide-y divide-line">
+                    {services.map((sv) => (
+                      <Fact key={sv.name} label={sv.name}><Pill tone={sv.ok === true ? "ok" : sv.ok === false ? "bad" : "idle"}>{sv.text}</Pill></Fact>
+                    ))}
+                  </dl>
                 </Card>
-                <Card title="Serveur utilisé">
-                  <Item label="Emplacement"><p><strong>{server ? `${flag(server.cc)} ${server.city}, ${server.country}` : relay.server}</strong></p></Item>
-                  <Item label="Identifiant"><p><strong>{relay.server}</strong></p></Item>
-                  <Item label="Adresse"><p className="break-all" data-sensitive><strong>{relay.host}</strong></p></Item>
-                  <Item label="Latence estimée" hint={fromLabel}><p className={`font-mono text-lg tabular-nums ${TONE[tone]}`}>{estimate != null ? `~${estimate} ms` : "-"}</p></Item>
+                <Card title="Serveur utilisé" className="h-full">
+                  <dl className="divide-y divide-line">
+                    <Fact label="Emplacement">{server ? `${flag(server.cc)} ${server.city}, ${server.country}` : relay.server}</Fact>
+                    <Fact label="Identifiant">{relay.server}</Fact>
+                    <Fact label="Adresse"><span className="break-all" data-sensitive>{relay.host}</span></Fact>
+                    <Fact label={`Latence estimée · ${fromLabel.replace(/^Depuis /, "depuis ")}`}><span className={`font-mono tabular-nums ${TONE[tone]}`}>{estimate != null ? `~${estimate} ms` : "-"}</span></Fact>
+                    <Fact label="Protocole"><ProtocolBadge protocol={relay.protocol} /></Fact>
+                  </dl>
                 </Card>
               </div>
             )}

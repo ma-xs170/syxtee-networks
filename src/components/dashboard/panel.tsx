@@ -40,7 +40,7 @@ export function Pill({ tone = "idle", children }: { tone?: Tone; children: React
 }
 
 /** Menu ⋮ d'une ligne : une liste de liens. */
-export type MenuItem = { label: string; href?: string; /** Action de serveur (relay-action) : ouvre une fenêtre de confirmation de la page. */ action?: { id: string; action: string }; danger?: boolean };
+export type MenuItem = { label: string; href?: string; /** Action de serveur (relay-action) : ouvre une fenêtre de confirmation de la page. */ action?: { id: string; action: string }; danger?: boolean; /** Action locale (page cliente) : appelée au clic. */ onSelect?: () => void };
 
 export function RowMenu({ label, items }: { label: string; items: MenuItem[] }) {
   const [open, setOpen] = useState(false);
@@ -65,14 +65,15 @@ export function RowMenu({ label, items }: { label: string; items: MenuItem[] }) 
       {open && (
         <div role="menu" className="absolute right-0 top-full z-30 mt-2 min-w-48 overflow-hidden rounded-xl border border-line-strong bg-[var(--surface-2)] py-1 shadow-[0_18px_40px_rgba(0,0,0,0.6)]">
           {items.map((i) =>
-            i.action ? (
+            i.action || i.onSelect ? (
               <button
                 key={i.label}
                 type="button"
                 role="menuitem"
                 onClick={() => {
                   setOpen(false);
-                  window.dispatchEvent(new CustomEvent("relay-action", { detail: i.action }));
+                  if (i.onSelect) i.onSelect();
+                  else window.dispatchEvent(new CustomEvent("relay-action", { detail: i.action }));
                 }}
                 className={`block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-foreground/[0.08] ${i.danger ? "text-red-300" : ""}`}
               >

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ArrowLink, DashHeader, DashPage, SectionTabs, Tile, TileLabel } from "@/components/dashboard/ui";
 import { ticketCounts } from "@/lib/support";
 import AccountSheet from "../AccountSheet";
+import { flag } from "@/lib/regions";
 import { Badge } from "@/components/NavTools";
 import { SupportId } from "@/components/SupportId";
 import { requireAdmin } from "@/lib/admin";
@@ -24,6 +25,7 @@ const day = (iso: string | null | undefined) =>
 
 const TABS = [
   { id: "resume", label: "Résumé" },
+  { id: "profil", label: "Profil" },
   { id: "relais", label: "Serveurs et clés" },
   { id: "compte", label: "Identité et notes" },
   { id: "historique", label: "Historique" },
@@ -85,7 +87,8 @@ export default async function AdminAccountPage({ params, searchParams }: { param
         createdAt={p.created_at}
         lastSignIn={u.user.last_sign_in_at ?? null}
         presence={presenceOf(p.last_seen_at, u.user.last_sign_in_at).label}
-        twitch={p.twitch_login ?? null}
+        twitch={p.twitch_login ?? p.twitch ?? null}
+        country={p.country ? { name: new Intl.DisplayNames(["fr"], { type: "region" }).of(p.country) ?? p.country, flag: flag(p.country), timezone: p.timezone ?? null } : null}
         liveCount={liveIds.size}
         servers={active.map((r) => ({ id: r.id, name: r.name, protocol: r.protocol, live: liveIds.has(r.id) }))}
         lastLiveAt={lastLiveAt}
@@ -95,6 +98,31 @@ export default async function AdminAccountPage({ params, searchParams }: { param
         activity={(log ?? []).slice(0, 5).map((l) => ({ id: l.id, action: l.action, admin: l.admin_email, at: l.at }))}
         tab={tab}
       >
+      {tab === "profil" && (
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          {([
+            ["Identité", [["Prénom", p.first_name], ["Nom", p.last_name], ["Nom d'utilisateur", p.username], ["Adresse e-mail", u.user.email], ["E-mail vérifié", u.user.email_confirmed_at ? day(u.user.email_confirmed_at) : "Non vérifié"], ["Bio", p.bio]]],
+            ["Localisation", [["Pays", p.country ? `${flag(p.country)} ${new Intl.DisplayNames(["fr"], { type: "region" }).of(p.country) ?? p.country}` : null], ["Fuseau horaire", p.timezone]]],
+            ["Réseaux", [["Twitch", p.twitch_login ? `@${p.twitch_login}` : p.twitch ? `@${p.twitch}` : null], ["Kick", p.kick], ["YouTube", p.youtube], ["TikTok", p.tiktok], ["Instagram", p.instagram], ["X", p.x]]],
+            ["Compte", [["Inscrit le", day(p.created_at)], ["Dernière connexion", day(u.user.last_sign_in_at)], ["Dernière activité", day(p.last_seen_at)], ["Présence", presenceOf(p.last_seen_at, u.user.last_sign_in_at).label], ["Connexion via", ((u.user.app_metadata?.providers as string[] | undefined) ?? []).join(", ") || "e-mail"], ["Profil complété", p.onboarded_at ? day(p.onboarded_at) : "Non"]]],
+            ["Préférences", [["Visible sur le site", p.show_on_site ? "Oui" : "Non"], ["Prénom affiché", p.show_first_name ? "Oui" : "Non"], ["Carte de couverture", p.coverage_consent ? "Consentement donné" : "Non"]]],
+            ["Identifiants", [["ID support", p.support_id], ["ID interne", id], ["Client Stripe", p.stripe_customer_id]]],
+          ] as [string, [string, string | null | undefined][]][]).map(([title, rows]) => (
+            <section key={title} aria-label={title} className="rounded-2xl border border-line bg-surface">
+              <h2 className="border-b border-line px-5 py-3.5 text-sm font-semibold">{title}</h2>
+              <dl className="divide-y divide-line px-5 text-sm">
+                {rows.map(([k, v]) => (
+                  <div key={k} className="flex items-baseline justify-between gap-6 py-3">
+                    <dt className="shrink-0 text-muted">{k}</dt>
+                    <dd className={`min-w-0 break-words text-right ${v ? "font-medium" : "text-muted"}`} data-sensitive>{v || "Non renseigné"}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          ))}
+        </div>
+      )}
+
       {tab === "relais" && (
         <div className="grid max-w-3xl gap-4">
 <Tile aria-labelledby="relais">

@@ -144,6 +144,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           lastSignIn={new Date(Date.now() - 3 * 3600_000).toISOString()}
           presence="Vu il y a 3 h"
           twitch="sloane_irl"
+          country={{ name: "Guadeloupe", flag: "🇬🇵", timezone: "America/Guadeloupe" }}
           liveCount={1}
           servers={[{ id: "1", name: "iPhone 16 Pro", protocol: "srtla", live: true }, { id: "2", name: "Osmo Pocket 3", protocol: "rtmp", live: false }, { id: "3", name: "Drone", protocol: "rtmp", live: false }]}
           lastLiveAt={new Date(Date.now() - 20 * 60_000).toISOString()}

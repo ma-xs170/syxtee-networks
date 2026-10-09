@@ -8,9 +8,10 @@ import PlanEditor from "./PlanEditor";
 // quatre repères (formule, serveurs, dernier direct, assistance), puis serveurs et activité à gauche, informations et notes à droite.
 // La modification de la formule s'ouvre depuis le bouton « Modifier » de la carte Formule. Les autres onglets arrivent en `children`.
 
-export type SheetTab = "resume" | "relais" | "compte" | "historique" | "securite";
+export type SheetTab = "resume" | "profil" | "relais" | "compte" | "historique" | "securite";
 export const SHEET_TABS: { id: SheetTab; label: string }[] = [
   { id: "resume", label: "Résumé" },
+  { id: "profil", label: "Profil" },
   { id: "relais", label: "Serveurs et clés" },
   { id: "compte", label: "Identité et notes" },
   { id: "historique", label: "Historique" },
@@ -34,6 +35,8 @@ export type SheetProps = {
   lastSignIn: string | null;
   presence: string;
   twitch: string | null;
+  /** Pays du compte : nom, drapeau et fuseau (null : non renseigné). */
+  country: { name: string; flag: string; timezone: string | null } | null;
   liveCount: number;
   servers: { id: string; name: string; protocol: string; live: boolean }[];
   lastLiveAt: string | null;
@@ -75,6 +78,7 @@ export default function AccountSheet(p: SheetProps) {
     ["Inscrit le", day(p.createdAt)],
     ["Dernière connexion", day(p.lastSignIn)],
     ["Présence", p.presence],
+    ["Pays", p.country ? `${p.country.flag} ${p.country.name}` : "non renseigné"],
     ["Twitch", p.twitch ? `@${p.twitch}` : "non lié"],
   ];
 
@@ -95,7 +99,7 @@ export default function AccountSheet(p: SheetProps) {
           )}
           <div className="min-w-0">
             <h1 className="h-page truncate">{p.name}</h1>
-            <p className="mt-1 truncate text-sm text-muted" data-sensitive>{p.email}</p>
+            <p className="mt-1 truncate text-sm text-muted" data-sensitive>{p.email}{p.country ? ` · ${p.country.flag} ${p.country.name}` : ""}</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">

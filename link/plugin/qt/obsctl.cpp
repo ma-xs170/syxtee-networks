@@ -1367,6 +1367,17 @@ std::map<QString, Handler> &handlers()
 			r["sceneItemId"] = double(obs_sceneitem_get_id(it));
 			return r;
 		};
+		// Lecture des réglages d'une entrée (diagnostic local : le Core ne laisse pas passer cette demande).
+		m["GetInputSettings"] = [](const Json &d) {
+			Src s(req(d, "inputName"));
+			obs_source_t *src = s.need("Entrée");
+			obs_data_t *settings = obs_source_get_settings(src);
+			Json r;
+			r["inputKind"] = q(obs_source_get_unversioned_id(src));
+			r["inputSettings"] = jsonFrom(settings);
+			obs_data_release(settings);
+			return r;
+		};
 		m["SetInputSettings"] = [](const Json &d) {
 			Src s(req(d, "inputName"));
 			obs_source_t *src = s.need("Entrée");

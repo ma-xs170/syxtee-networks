@@ -1,4 +1,7 @@
 {
+  "0.7.16": [
+    "Plugin : lecture locale des réglages d'une source (diagnostic des flux Osmo et iPhone)"
+  ],
   "0.7.15": [
     "Flux : plus aucune source « Flux › » n'est fermée quand sa scène quitte l'antenne, elle reste visible sans coupure dans le Multiview d'OBS"
   ],

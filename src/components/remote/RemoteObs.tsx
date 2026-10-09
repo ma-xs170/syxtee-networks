@@ -862,7 +862,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
               <div className="mt-5 flex items-center justify-between gap-3">
                 <div>
                   <p className="font-medium">Faible latence des flux</p>
-                  <p className="text-[12px] text-neutral-500">Évite le retard qui s&apos;accumule quand une scène n&apos;est pas à l&apos;antenne : le flux est rouvert à chaque passage (environ 1 s de chargement).</p>
+                  <p className="text-[12px] text-neutral-500">Tampon de 1 Mo et reconnexion en 1 s sur tes flux. Ils restent ouverts : aucune coupure dans le Multiview d&apos;OBS quand tu changes de scène.</p>
                 </div>
                 <Switch label="Faible latence des flux" on={roles.lowLatency !== false} disabled={oldAgent} onClick={() => saveRoles({ lowLatency: roles.lowLatency === false })} />
               </div>

@@ -47,7 +47,6 @@ const nextConfig: NextConfig = {
       { source: "/dashboard/mire", destination: "/dashboard/relais", permanent: true },
       { source: "/dashboard/obs", destination: "/dashboard/controle-a-distance", permanent: true },
       { source: "/dashboard/relais/:id/dji", destination: "/dashboard/relais", permanent: true },
-      { source: "/dashboard/relais/:id", destination: "/dashboard/relais", permanent: true },
     ];
   },
 };

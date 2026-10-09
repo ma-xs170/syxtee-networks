@@ -103,6 +103,9 @@ export class AiDirector {
   lastReason = "";
   onChange: (s: DirectorState, cam: number, reason: string) => void = () => {};
   private live = "";
+  /** Scène de secours du « Connexion perdue » et question « est-elle à l'antenne à cause du secours ? » : la régie reprend alors la main dès qu'une caméra revient. */
+  fallbackScene = "";
+  backupActive: () => boolean = () => false;
   private req: Req;
   private ask: Ask;
   private log: (m: string) => void;
@@ -206,7 +209,9 @@ export class AiDirector {
       this.votes = 0;
       this.setState("cam", cams[onAir].label || cams[onAir].source);
     }
-    const ours = this.current >= 0 && cams[this.current]?.scene === cur;
+    // Le secours a mis sa scène à l'antenne (aucune caméra vivante) : on la considère nôtre pour reprendre dès qu'une caméra revient.
+    const onFallback = !!this.fallbackScene && cur === this.fallbackScene && cur !== this.live && this.backupActive();
+    const ours = onFallback || (this.current >= 0 && cams[this.current]?.scene === cur);
     // Autre scène à l'antenne (choix manuel) : on se désarme sans rien toucher.
     if (cur !== this.live && !ours) {
       if (this.state !== "idle") this.disarm();
@@ -228,9 +233,26 @@ export class AiDirector {
       if (img.length > MIN_IMAGE_CHARS && moved) alive.push({ idx: i, img });
     }
     this.scan = { at: now, sources: alive.map((a) => cams[a.idx].source) };
-    this.setState("watching", this.lastReason);
+    if (this.state === "idle") this.setState("watching", "");
     if (alive.length === 0) return;
 
+    if (onFallback) {
+      // Une caméra est revenue : on la prend tout de suite (le secours n'a plus de raison d'être).
+      const back = (await this.decide(cams, alive, -1)) ?? alive[0].idx;
+      try {
+        await this.req("SetCurrentProgramScene", { sceneName: cams[back].scene });
+      } catch (e) {
+        this.log(`régie IA : retour impossible (${(e as Error).message})`);
+        return;
+      }
+      this.log(`régie IA : « ${cams[back].label || cams[back].source} » revenue, reprise depuis le secours`);
+      this.current = back;
+      this.since = now;
+      this.candidate = -1;
+      this.votes = 0;
+      this.setState("cam", cams[back].label || cams[back].source);
+      return;
+    }
     const curAlive = this.current >= 0 && alive.some((a) => a.idx === this.current);
     // Mode économe : si les mêmes caméras sont vivantes et que leurs images n'ont pas notablement changé, on ne dérange pas l'IA.
     // Un avis en attente de confirmation (candidat) force toujours une deuxième consultation.

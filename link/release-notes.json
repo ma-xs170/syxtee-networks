@@ -1,4 +1,9 @@
 {
+  "0.7.9": [
+    "Régie : la régie des caméras reprend la main depuis le secours dès qu'une caméra revient",
+    "Régie : l'état « caméra choisie » n'est plus écrasé à chaque analyse",
+    "Agent : le secours, la garde audio et la régie des caméras tournent indépendamment (l'échec de l'un n'arrête plus les autres)"
+  ],
   "0.7.8": [
     "Régie : le secours « Connexion perdue » patiente quand une autre caméra de la régie peut prendre le relais, au lieu de couper tout de suite vers la scène de secours"
   ],

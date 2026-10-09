@@ -993,7 +993,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
               ) : (
                 <>
               <label className="mt-3 grid gap-1 text-[12px] text-neutral-400">
-                Clé API {(roles.directorProvider ?? "mistral") === "mistral" ? "Mistral" : "Anthropic"}, facultative {roles.directorKeySet ? "(enregistrée sur ce PC)" : "(reste sur ton PC)"}
+                Clé API {(roles.directorProvider ?? "mistral") === "mistral" ? "Mistral" : "Anthropic"}, facultative {roles.directorKeySet ? "(enregistrée sur ce PC)" : "(enregistrée seulement sur ton PC)"}
                 <input disabled={oldAgent}
                   type="password"
                   autoComplete="off"

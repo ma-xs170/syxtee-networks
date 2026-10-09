@@ -65,7 +65,7 @@ const compare: { group: string; rows: Row[] }[] = [
       { label: "Écran de secours si la connexion coupe", v: [true, true, true] },
       { label: "Garde audio du micro", v: [true, true, true] },
       { label: "Autogérance du drone et des autres prises", v: [false, true, true] },
-      { label: "Régie IA multi-caméras (avec ta clé API Anthropic)", v: [false, "3 caméras", "6 caméras"] },
+      { label: "Régie IA multi-caméras (Mistral ou Claude, avec ta clé)", v: [false, "3 caméras", "6 caméras"] },
     ],
   },
   {

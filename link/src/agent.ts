@@ -18,7 +18,7 @@ import { coreCall } from "./corehttp.ts";
 import { fixLiveScene } from "./livescene.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
 
-export const VERSION = "0.7.8";
+export const VERSION = "0.7.9";
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
 export const OBS_METHODS = new Set([
@@ -115,6 +115,8 @@ export class Agent {
     this.director.setLive(cfg.liveScene);
     // Le secours « connexion perdue » patiente si la régie de caméras peut passer sur une autre caméra vivante.
     this.watcher.defer = (source) => this.director.canTakeOver(source);
+    this.director.fallbackScene = cfg.backup.scene;
+    this.director.backupActive = () => this.watcher.state === "backup";
     this.director.onChange = (state, cam, reason) => this.send({ type: "event", name: "link.directorState", data: { state, cam, reason } });
     this.audio.onChange = (s) => this.send({ type: "event", name: "link.audioState", data: { state: s } });
     this.watcher.onChange = (s) => {
@@ -128,7 +130,13 @@ export class Agent {
     this.stopped = false;
     void this.connectObs();
     this.connectCore();
-    this.tickTimer = setInterval(() => void this.watcher.tick().then(() => this.audio.tick()).then(() => this.director.tick()), 1000);
+    // Trois automatismes indépendants : l'échec de l'un (exception) ne doit ni arrêter les autres ni faire tomber l'agent.
+    const safe = (name: string, f: () => Promise<void>) => f().catch((e) => this.log(`${name} : ${(e as Error).message}`));
+    this.tickTimer = setInterval(() => {
+      void safe("backup", () => this.watcher.tick());
+      void safe("audio", () => this.audio.tick());
+      void safe("régie IA", () => this.director.tick());
+    }, 1000);
     this.autoTimer = setInterval(() => void this.autoBackupTick(), 30_000);
     this.previewMgr = setInterval(() => void this.managePreview(), 5000);
     this.relayMgr = setInterval(() => void this.syncRelays(), 30_000);
@@ -166,6 +174,7 @@ export class Agent {
   setBackup(b: LinkConfig["backup"]) {
     this.cfg.backup = b;
     this.audio.setBackupScene(b.scene);
+    this.director.fallbackScene = b.scene;
     this.watcher.set(b);
   }
 
@@ -650,6 +659,7 @@ export class Agent {
         this.watcher.setLive(this.cfg.liveScene);
         this.audio.set(this.cfg.audio);
         this.audio.setBackupScene(this.cfg.backup.scene);
+        this.director.fallbackScene = this.cfg.backup.scene;
         this.audio.setLive(this.cfg.liveScene);
         save(this.cfg);
         return reply(true, { ...this.cfg.backup, ...this.autoView(), liveScene: this.cfg.liveScene, state: this.watcher.state });

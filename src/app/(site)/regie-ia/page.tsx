@@ -46,14 +46,14 @@ const STEPS = [
   "Installe SYXTEE Link (0.7.0 ou plus récent) sur le Mac ou le PC qui fait tourner OBS.",
   "Dans OBS, crée une scène par caméra, ou laisse SYXTEE la créer depuis le panneau Régie.",
   "Ouvre le Contrôle à distance, bouton « Régie auto », et choisis ta scène Live.",
-  "Ajoute tes caméras, écris tes consignes et colle ta clé API. Active la Régie IA.",
+  "Ajoute tes caméras, écris tes consignes, choisis l'IA (ou « Sans IA ») et active la Régie IA.",
 ];
 
 const SAFEGUARDS = [
   ["Rien ne bouge hors de ta scène Live", "Tant que ta scène Live n'est pas à l'antenne, la régie ne change aucune scène."],
   ["Tu reprends la main d'un tap", "Si tu changes de scène à la main, la régie se met en pause pendant trente secondes."],
   ["Une caméra coupée n'est jamais choisie", "Une image figée ou noire est écartée avant même d'être soumise à l'IA."],
-  ["Ta clé reste chez toi", "Les vignettes partent de ton ordinateur vers Anthropic avec ta propre clé. Elles ne passent pas par SYXTEE, et chaque analyse est facturée par Anthropic."],
+  ["Tu choisis où tourne l'IA", "Sans IA, la régie reprend seulement sur une caméra vivante. Avec Mistral ou Claude, les vignettes partent de ton ordinateur vers le fournisseur avec ta propre clé : elles ne passent pas par SYXTEE, et la clé n'est enregistrée que sur ton PC."],
 ];
 
 export default function RegieIaPage() {

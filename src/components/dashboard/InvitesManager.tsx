@@ -131,7 +131,7 @@ export default function InvitesManager({ coreUrl, initial, planName, max, owner,
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="h-page">Équi<em>pe</em></h1>
-          <p className="mt-1.5 text-sm text-muted">{team ? `Les personnes qui ont accès à ${team.name}.` : "Les personnes qui peuvent piloter ton OBS, sans avoir besoin de compte."}</p>
+          <p className="mt-1.5 text-sm text-muted">{team ? `Les personnes qui ont accès à ${team.name}.` : "Les personnes qui peuvent piloter ton OBS. Chacune passe par un compte."}</p>
         </div>
         {!locked && (
           <div className="flex items-center gap-3">
@@ -255,7 +255,7 @@ export default function InvitesManager({ coreUrl, initial, planName, max, owner,
                             )}
                           </p>
                           <p className="truncate text-[13px] text-muted">
-                            Invité sans compte · {dev ? dev.name : i.device_id ? "un OBS" : "tous les OBS"}
+                            Invité OBS · {dev ? dev.name : i.device_id ? "un OBS" : "tous les OBS"}
                           </p>
                           <p className="text-[13px] text-muted sm:hidden">{levelName(i.level)}</p>
                         </div>
@@ -285,7 +285,7 @@ export default function InvitesManager({ coreUrl, initial, planName, max, owner,
           ) : (
             <div className="mt-6 space-y-6">
               {team && <PermTable title="Rôles de l'espace" intro="Le rôle donne les droits d'un membre de l'équipe (compte requis)." head={["Membre", "Administrateur", "Propriétaire"]} rows={ROLE_RIGHTS} />}
-              <PermTable title="Invités sans compte" intro="Chaque invité (lien) a l'un de ces trois accès. Le serveur l'applique : l'interface n'est qu'un confort." head={LEVELS.map((l) => l.title)} rows={RIGHTS} note="Les sauvegardes, les réglages de bascule et les réglages d'OBS ne sont jamais accessibles aux invités." />
+              <PermTable title="Invités OBS" intro="Chaque invité a l'un de ces trois accès. Le serveur l'applique : l'interface n'est qu'un confort." head={LEVELS.map((l) => l.title)} rows={RIGHTS} note="Les sauvegardes, les réglages de bascule et les réglages d'OBS ne sont jamais accessibles aux invités." />
             </div>
           )}
         </>
@@ -300,7 +300,7 @@ export default function InvitesManager({ coreUrl, initial, planName, max, owner,
 
           {team && canInviteGuest && !result && !done && (
             <div role="tablist" aria-label="Type d'invitation" className="mt-4 inline-flex rounded-full border border-line p-1 text-sm">
-              {([["member", "Membre (compte)"], ["guest", "Invité (lien)"]] as const).map(([id, text]) => (
+              {([["member", "Membre (espace)"], ["guest", "Invité (OBS)"]] as const).map(([id, text]) => (
                 <button key={id} type="button" role="tab" aria-selected={mode === id} onClick={() => { setMode(id); setError(""); }} className={`rounded-full px-4 py-1.5 transition-colors ${mode === id ? "bg-foreground/10 text-foreground" : "text-muted hover:text-foreground"}`}>
                   {text}
                 </button>
@@ -316,10 +316,10 @@ export default function InvitesManager({ coreUrl, initial, planName, max, owner,
             </div>
           ) : result?.url ? (
             <div role="status" className="mt-6">
-              <p className="text-sm font-medium">Invitation créée. Voici son lien :</p>
+              <p className="text-sm font-medium">Invitation envoyée.</p>
               <p className="mt-0.5 text-[13px] text-muted">
-                {result.emailed ? "Il vient aussi d'être envoyé par email. " : ""}
-                {result.emailNote ?? ""} Il ne sera plus affiché ensuite : copie-le maintenant.
+                {result.emailed ? "La personne reçoit un email : elle crée un compte ou se connecte avec cette adresse. " : ""}
+                {result.emailNote ?? ""} Tu peux aussi lui envoyer ce lien toi-même ; il ne sera plus affiché ensuite.
               </p>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                 <input readOnly value={result.url} onFocus={(e) => e.currentTarget.select()} className={`${field} font-mono text-xs`} aria-label="Lien d'invitation" />
@@ -332,11 +332,11 @@ export default function InvitesManager({ coreUrl, initial, planName, max, owner,
           ) : (
             <form onSubmit={submit} className="mt-5 space-y-4">
               <p className="text-sm leading-relaxed text-muted">
-                {mode === "member" ? `La personne reçoit un email pour rejoindre ${team?.name ?? "l'espace"}. Un compte avec cette adresse est nécessaire.` : "La personne reçoit un lien pour piloter ton OBS, par email si tu en indiques un. Elle n'a pas besoin de compte."}
+                {mode === "member" ? `La personne reçoit un email pour rejoindre ${team?.name ?? "l'espace"}. Elle doit créer un compte ou se connecter avec cette adresse.` : "La personne reçoit un email pour piloter ton OBS. Elle doit créer un compte ou se connecter avec cette adresse."}
               </p>
               <label className="grid gap-1.5 text-sm">
-                Adresse email{mode === "guest" ? " (facultatif)" : ""}
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required={mode === "member"} placeholder="prenom@exemple.com" className={field} />
+                Adresse email
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="prenom@exemple.com" className={field} />
               </label>
               {mode === "member" ? (
                 <label className="grid gap-1.5 text-sm">
@@ -395,7 +395,7 @@ export default function InvitesManager({ coreUrl, initial, planName, max, owner,
                 </p>
               )}
               <button type="submit" disabled={pending || (mode === "guest" && guestFull)} className="btn btn-primary w-full disabled:opacity-60">
-                {pending ? "Envoi…" : mode === "member" ? "Envoyer l'invitation" : "Créer le lien"}
+                {pending ? "Envoi…" : "Envoyer l'invitation"}
               </button>
             </form>
           )}

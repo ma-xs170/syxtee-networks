@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowLink } from "@/components/dashboard/ui";
 import { Badge } from "@/components/NavTools";
+import MessageButton from "./MessageButton";
 import PlanEditor from "./PlanEditor";
 
 // Fiche d'un compte (admin) : en-tête d'identité, onglets soulignés, puis un Résumé en trois temps :
@@ -57,13 +58,15 @@ const ago = (iso: string | null | undefined) => {
   return `il y a ${Math.round(s / 86400)} j`;
 };
 
+const btn = "mt-auto inline-flex h-9 items-center justify-center self-start rounded-full border border-line-strong px-4 text-sm font-medium transition-colors hover:bg-foreground/[0.08]";
+
 function Metric({ label, value, sub, children }: { label: string; value: ReactNode; sub?: ReactNode; children?: ReactNode }) {
   return (
     <div className="flex flex-col rounded-2xl border border-line bg-surface p-5">
       <p className="text-xs text-muted">{label}</p>
       <p className="mt-3 text-2xl font-semibold tracking-tight">{value}</p>
       {sub && <p className="mt-1 text-xs text-muted">{sub}</p>}
-      {children}
+      <div className="mt-auto flex flex-col pt-4 [&>*]:mt-0 [&>button]:self-start [&>a]:self-start">{children}</div>
     </div>
   );
 }
@@ -134,13 +137,18 @@ export default function AccountSheet(p: SheetProps) {
             </Metric>
             <Metric label="Serveurs actifs" value={<span className="font-mono tabular-nums">{used}<span className="text-base font-normal text-muted"> / {p.maxServers ?? "∞"}</span></span>} sub={p.liveCount > 0 ? `${p.liveCount} en direct` : "Aucun en direct"}>
               {p.maxServers ? (
-                <span className="mt-3 block h-1 overflow-hidden rounded-full bg-foreground/10" aria-hidden="true">
+                <span className="mb-4 mt-3 block h-1 overflow-hidden rounded-full bg-foreground/10" aria-hidden="true">
                   <span className="block h-full rounded-full bg-foreground/70" style={{ width: `${pct}%` }} />
                 </span>
               ) : null}
+              <Link href={href("relais")} className={btn}>Modifier</Link>
             </Metric>
-            <Metric label="Dernier direct" value={ago(p.lastLiveAt)} sub={p.lastLiveAt ? day(p.lastLiveAt) : "Aucun direct enregistré"} />
-            <Metric label="Assistance" value={<span className="font-mono tabular-nums">{p.tickets.open}<span className="text-base font-normal text-muted"> ouverte{p.tickets.open > 1 ? "s" : ""}</span></span>} sub={`${p.tickets.resolved} résolue${p.tickets.resolved > 1 ? "s" : ""}`} />
+            <Metric label="Dernier direct" value={ago(p.lastLiveAt)} sub={p.lastLiveAt ? day(p.lastLiveAt) : "Aucun direct enregistré"}>
+              <Link href={href("historique")} className={btn}>Voir</Link>
+            </Metric>
+            <Metric label="Assistance" value={<span className="font-mono tabular-nums">{p.tickets.open}<span className="text-base font-normal text-muted"> ouverte{p.tickets.open > 1 ? "s" : ""}</span></span>} sub={`${p.tickets.resolved} résolue${p.tickets.resolved > 1 ? "s" : ""}`}>
+              <MessageButton userId={p.id} email={p.email} />
+            </Metric>
           </div>
 
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">

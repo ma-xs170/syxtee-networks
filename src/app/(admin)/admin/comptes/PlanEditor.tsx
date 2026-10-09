@@ -15,7 +15,7 @@ export default function PlanEditor({ userId, plan, until, note }: { userId: stri
   }, []);
   return (
     <>
-      <button type="button" onClick={() => ref.current?.showModal()} className="mt-4 inline-flex h-9 items-center justify-center self-start rounded-full border border-line-strong px-4 text-sm font-medium transition-colors hover:bg-foreground/[0.08]">
+      <button type="button" onClick={() => ref.current?.showModal()} className="mt-auto inline-flex h-9 items-center justify-center self-start rounded-full border border-line-strong px-4 text-sm font-medium transition-colors hover:bg-foreground/[0.08]">
         Modifier
       </button>
       <dialog

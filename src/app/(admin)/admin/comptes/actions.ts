@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin";
-import { passwordChanged, resetPassword } from "@/emails/templates";
+import { passwordChanged, resetPassword, staffMessage } from "@/emails/templates";
 import { passwordProblem } from "@/lib/auth/password";
 import { sendEmailResult } from "@/lib/email/send";
 import { site } from "@/lib/site";
@@ -317,4 +317,22 @@ export async function setPasswordAction(_prev: PlanState, form: FormData): Promi
   await audit(admin.email!, "account.set_password", userId.data, null, null);
   const sent = await sendEmailResult(email, passwordChanged({ at: new Date() }));
   return { ok: sent.ok ? `Mot de passe changé. ${email} est prévenu par e-mail. Communique-lui le nouveau mot de passe par un canal sûr.` : "Mot de passe changé, mais l'e-mail de prévenance n'est pas parti." };
+}
+
+/** Écrit un e-mail au client depuis la fiche compte (sujet et message libres). L'envoi est tracé dans le journal d'audit. */
+export async function sendMessageAction(_prev: PlanState, form: FormData): Promise<PlanState> {
+  const admin = await requireAdmin("accounts");
+  const userId = uid.safeParse(form.get("userId"));
+  if (!userId.success) return { error: "Requête invalide." };
+  const subject = String(form.get("subject") ?? "").trim();
+  const body = String(form.get("body") ?? "").trim();
+  if (subject.length < 3 || subject.length > 120) return { error: "Objet : 3 à 120 caractères." };
+  if (body.length < 5 || body.length > 4000) return { error: "Message : 5 à 4000 caractères." };
+  const db = createAdminClient();
+  const [{ data: u }, { data: p }] = await Promise.all([db.auth.admin.getUserById(userId.data), db.from("profiles").select("first_name").eq("id", userId.data).maybeSingle()]);
+  const email = u.user?.email;
+  if (!email) return { error: "Compte introuvable." };
+  const sent = await sendEmailResult(email, staffMessage({ firstName: p?.first_name ?? null, subject, body, from: String(admin.email ?? "L'équipe").split("@")[0] }));
+  await audit(admin.email!, "account.message", userId.data, null, { subject });
+  return sent.ok ? { ok: `Message envoyé à ${email}.` } : { error: `E-mail non envoyé : ${sent.reason}` };
 }

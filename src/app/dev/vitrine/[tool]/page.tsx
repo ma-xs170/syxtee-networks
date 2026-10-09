@@ -18,6 +18,7 @@ import TeamUI, { type MemberView } from "@/app/(admin)/admin/equipe/TeamUI";
 import type { DevicesDemo } from "@/components/dashboard/useLinkDevices";
 import RelayList from "@/components/relais/RelayList";
 import TicketChat from "@/components/support/TicketChat";
+import RelayAnalysis, { type Sample as AnSample } from "@/components/relais/RelayAnalysis";
 import NewTicketForm from "@/components/support/NewTicketForm";
 import AccountSheet from "@/app/(admin)/admin/comptes/AccountSheet";
 import type { Overview as OverviewData, LiveSession } from "@/lib/dashboard-data";
@@ -157,6 +158,17 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           tab="resume"
         />
       )}
+      {tool === "analyse" && (() => {
+        const end = Date.now();
+        const history: AnSample[] = Array.from({ length: 180 }, (_, i) => {
+          const t = end - (180 - i) * 5000;
+          const base = 5200 + Math.sin(i / 9) * 700 + Math.sin(i / 3.3) * 250;
+          const spike = i === 62 ? 2400 : i === 131 ? 1700 : i === 150 ? 2000 : 0;
+          return { t, bitrate: Math.round(base + spike), rtt: Math.round(38 + Math.sin(i / 7) * 9 + (i === 131 ? 55 : 0)), dropped: i % 37 === 0 ? 3 : 0, congestion: 0.05, links: 3 };
+        });
+        const last = history[history.length - 1];
+        return <RelayAnalysis coreUrl="" relayId="demo" demo={{ live: { live: true, since: end - 3_600_000, sample: last, peers: [{ connection_id: "a", bitrate: 3100 }, { connection_id: "b", bitrate: 1800 }, { connection_id: "c", bitrate: 450 }] }, history }} />;
+      })()}
       {tool === "demande" && <NewTicketForm person={{ name: "Mathis Custos", email: "mathis@exemple.fr", supportId: "SYX-K7QX-2MPA", plan: "Signature", country: "Guadeloupe" }} />}
       {tool === "ticket" && (
         <TicketChat
@@ -304,7 +316,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           }))}
         />
       )}
-      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "membres", "equipe", "controle-obs", "backups", "compte", "ticket", "demande"].includes(tool) && notFound()}
+      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "membres", "equipe", "controle-obs", "backups", "compte", "ticket", "demande", "analyse"].includes(tool) && notFound()}
     </div>
   );
 }

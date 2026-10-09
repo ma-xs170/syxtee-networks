@@ -8,8 +8,7 @@ import { flag, serverById } from "@/lib/relay-servers";
 import RelayServer from "../illustrations/RelayServer";
 import ProtocolBadge from "./ProtocolBadge";
 import CreateRelayWizard from "./CreateRelayWizard";
-import RelayActions from "./RelayActions";
-import RelayDetailModal from "./RelayDetailModal";
+import Link from "next/link";
 
 // Page « Mes relais » : compteur, bouton de création, filtres, et relais classés (en live, actifs, inactifs, archivés).
 
@@ -45,7 +44,7 @@ export function ServerLabel({ id }: { id: string }) {
   );
 }
 
-const COLS = "lg:grid-cols-[minmax(0,2fr)_96px_minmax(0,1.2fr)_110px_minmax(0,1.1fr)_110px_17.5rem]";
+const COLS = "lg:grid-cols-[minmax(0,2fr)_96px_minmax(0,1.2fr)_110px_minmax(0,1.1fr)_110px_6.5rem]";
 
 const STATE: Record<RelayGroup, { label: string; dot: string; text: string }> = {
   live: { label: "En direct", dot: "bg-live", text: "text-live" },
@@ -55,16 +54,16 @@ const STATE: Record<RelayGroup, { label: string; dot: string; text: string }> = 
 };
 
 /** Ligne du tableau des serveurs : nom et état, protocole, région, dernier direct, débit moyen, actions. Sur mobile, la ligne devient une carte. */
-function Row({ relay, onOpen }: { relay: RelayRow; onOpen: (r: RelayRow) => void }) {
+function Row({ relay }: { relay: RelayRow }) {
   const g = relayGroup(relay);
   const st = STATE[g];
   return (
-    <li className={`grid grid-cols-1 gap-x-4 gap-y-3 px-4 py-4 transition-colors hover:bg-foreground/[0.03] sm:px-5 lg:items-center ${COLS}`}>
+    <li className={`group relative grid grid-cols-1 gap-x-4 gap-y-3 px-4 py-4 transition-colors hover:bg-foreground/[0.04] sm:px-5 lg:items-center ${COLS}`}>
       <div className="flex min-w-0 items-center gap-3">
         {g === "live" ? <span className="live-dot shrink-0" aria-label="En direct" /> : <span aria-hidden="true" className={`size-2 shrink-0 rounded-full ${st.dot}`} />}
-        <button type="button" onClick={() => onOpen(relay)} className="truncate text-left text-sm font-medium underline-offset-4 hover:underline">
+        <Link href={`/dashboard/relais/${relay.id}`} className="truncate text-left text-sm font-medium after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:ring-1 focus-visible:after:ring-foreground/30">
           {relay.name}
-        </button>
+        </Link>
         <span className={`shrink-0 text-xs lg:hidden ${st.text}`}>{st.label}</span>
       </div>
       <div className="flex items-center gap-3 lg:contents">
@@ -85,9 +84,9 @@ function Row({ relay, onOpen }: { relay: RelayRow; onOpen: (r: RelayRow) => void
         <span>{g === "live" ? "En ce moment" : relay.last_live_at ? fmtAgo(relay.last_live_at) : "Jamais utilisé"}</span>
         <span className="font-mono tabular-nums lg:text-right">{relay.avg_kbps != null ? `${fmtInt(relay.avg_kbps)} kbps` : "-"}</span>
       </div>
-      <div className="lg:justify-self-end">
-        <RelayActions relay={relay} onView={() => onOpen(relay)} />
-      </div>
+      <span aria-hidden="true" className="hidden items-center justify-end gap-1.5 text-sm text-muted transition-colors group-hover:text-foreground lg:flex">
+        Détails <span className="transition-transform group-hover:translate-x-0.5">→</span>
+      </span>
     </li>
   );
 }
@@ -98,7 +97,6 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
   const [server, setServer] = useState("all");
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<"all" | RelayGroup>("all");
-  const [openId, setOpenId] = useState<string | null>(null);
   const { state } = useLiveStatus();
 
   // Statut en direct : le flux SSE du Core prime sur l'état lu au chargement de la page.
@@ -108,7 +106,6 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
   }, [state]);
   const withLive = relays.map((r) => ({ ...r, live: !r.archived && (liveIds ? liveIds.has(r.id) : r.live) }));
 
-  const opened = withLive.find((r) => r.id === openId) ?? null;
   const servers = [...new Set(relays.map((r) => r.server))];
   const needle = q.trim().toLowerCase();
   const shown = withLive.filter(
@@ -222,7 +219,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
               </div>
               <ul className="divide-y divide-line">
                 {rows.map((r) => (
-                  <Row key={r.id} relay={r} onOpen={(x) => setOpenId(x.id)} />
+                  <Row key={r.id} relay={r} />
                 ))}
               </ul>
             </div>
@@ -230,7 +227,6 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
         </>
       )}
 
-      <RelayDetailModal relay={opened} coreUrl={coreUrl} onClose={() => setOpenId(null)} />
       <CreateRelayWizard open={wizard} onClose={() => setWizard(false)} coreUrl={coreUrl} geo={geo} />
     </div>
   );

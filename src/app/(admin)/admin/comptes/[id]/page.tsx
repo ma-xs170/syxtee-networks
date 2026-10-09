@@ -62,29 +62,49 @@ export default async function AdminAccountPage({ params, searchParams }: { param
   ];
 
   // Fiche compte : en-tête et repères toujours visibles, puis un onglet par sujet (adresse ?onglet=) pour ne montrer qu'une chose à la fois.
+  const initials = name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "?";
+  const managed = (u.user.email ?? "").endsWith("@comptes.syxtee-networks.fr");
+  const last = (log ?? []).slice(0, 4);
   return (
     <DashPage>
-      <DashHeader lead="Compte" hl={name} sub={u.user.email ?? undefined}>
+      <div className="mb-6">
         <ArrowLink href="/admin/comptes">Tous les comptes</ArrowLink>
-      </DashHeader>
-
-      <div className="-mt-4 mb-6 flex flex-wrap items-center gap-2">
-        <Badge>{`Formule ${plan}`}</Badge>
-        <Badge>{p.suspended_at ? `Suspendu le ${day(p.suspended_at)}` : "Actif"}</Badge>
-        {p.plan_until && <Badge>{`Jusqu'au ${day(p.plan_until)}`}</Badge>}
-        {liveIds.size > 0 && (
-          <span className="inline-flex items-center gap-1.5 rounded border border-live/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-foreground">
-            <span className="live-dot" aria-hidden="true" />
-            En direct
-          </span>
-        )}
       </div>
 
-      <dl className="mb-8 grid grid-cols-2 gap-x-6 gap-y-5 rounded-2xl border border-line p-5 sm:p-6 lg:grid-cols-4">
-        {facts.map(([k, v]) => (
-          <div key={k} className="min-w-0">
+      {/* En-tête : identité à gauche, repères d'état à droite */}
+      <header className="mb-8 flex flex-wrap items-start justify-between gap-6">
+        <div className="flex min-w-0 items-center gap-5">
+          {p.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={p.avatar_url} alt="" width={64} height={64} className="size-16 shrink-0 rounded-2xl border border-line-strong object-cover" />
+          ) : (
+            <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-2xl border border-line-strong bg-surface-2 font-mono text-lg font-semibold">{initials}</span>
+          )}
+          <div className="min-w-0">
+            <h1 className="h-page truncate">{name}</h1>
+            <p className="mt-1 truncate text-sm text-muted" data-sensitive>{u.user.email}</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge>{`Formule ${plan}`}</Badge>
+          <Badge>{p.suspended_at ? `Suspendu le ${day(p.suspended_at)}` : "Actif"}</Badge>
+          {managed && <Badge>Compte géré</Badge>}
+          {p.plan_until && <Badge>{`Jusqu'au ${day(p.plan_until)}`}</Badge>}
+          {liveIds.size > 0 && (
+            <span className="inline-flex items-center gap-1.5 rounded border border-live/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-foreground">
+              <span className="live-dot" aria-hidden="true" />
+              En direct
+            </span>
+          )}
+        </div>
+      </header>
+
+      {/* Repères : une seule rangée de chiffres */}
+      <dl className="mb-8 grid grid-cols-2 divide-line overflow-hidden rounded-2xl border border-line bg-surface sm:grid-cols-3 lg:grid-cols-5 lg:divide-x">
+        {facts.map(([k, v], i) => (
+          <div key={k} className={`min-w-0 p-5 ${i > 0 ? "max-lg:border-t max-lg:border-line" : ""} ${i % 2 === 1 ? "max-sm:border-l max-sm:border-line" : ""}`}>
             <dt className="text-xs text-muted">{k}</dt>
-            <dd className="mt-1.5 truncate text-sm" data-sensitive>
+            <dd className="mt-2 truncate text-sm font-medium" data-sensitive>
               {v}
             </dd>
           </div>
@@ -102,6 +122,7 @@ export default async function AdminAccountPage({ params, searchParams }: { param
             </div>
           </Tile>
 
+          <div className="space-y-4">
           <Tile aria-labelledby="abo">
             <TileLabel
               id="abo"
@@ -133,6 +154,46 @@ export default async function AdminAccountPage({ params, searchParams }: { param
               </div>
             )}
           </Tile>
+
+          <Tile aria-labelledby="serveurs">
+            <TileLabel id="serveurs" right={<ArrowLink href={`/admin/comptes/${id}?onglet=relais`}>Gérer</ArrowLink>}>
+              Serveurs
+            </TileLabel>
+            {active.length === 0 ? (
+              <p className="mt-4 text-sm text-muted">Aucun serveur actif.</p>
+            ) : (
+              <ul className="mt-4 divide-y divide-line">
+                {active.slice(0, 5).map((r) => (
+                  <li key={r.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${liveIds.has(r.id) ? "bg-live" : "bg-muted"}`} />
+                      <span className="truncate">{r.name}</span>
+                    </span>
+                    <span className="shrink-0 font-mono text-xs uppercase text-muted">{r.protocol}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Tile>
+
+          <Tile aria-labelledby="dernieres">
+            <TileLabel id="dernieres" right={<ArrowLink href={`/admin/comptes/${id}?onglet=historique`}>Tout voir</ArrowLink>}>
+              Dernières actions
+            </TileLabel>
+            {last.length === 0 ? (
+              <p className="mt-4 text-sm text-muted">Aucune action enregistrée.</p>
+            ) : (
+              <ul className="mt-4 divide-y divide-line">
+                {last.map((l) => (
+                  <li key={l.id} className="py-2.5 text-sm">
+                    <p className="truncate font-mono text-xs">{l.action}</p>
+                    <p className="mt-0.5 truncate text-xs text-muted">{l.admin_email} · {day(l.at)}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Tile>
+          </div>
 
         </div>
       )}

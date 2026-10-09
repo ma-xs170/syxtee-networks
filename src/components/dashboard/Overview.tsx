@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import {
   delta,
   deviceLabel,
@@ -15,7 +15,6 @@ import {
 } from "@/lib/dashboard-data";
 import { DailyBars } from "./charts";
 import { useLiveClock, useLiveStatus } from "./LiveStatus";
-import MaskedUrl from "./MaskedUrl";
 import MesObs from "./MesObs";
 import type { DevicesDemo } from "./useLinkDevices";
 import { ArrowLink } from "./ui";
@@ -31,7 +30,7 @@ const btnPrimary =
   "inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors active:scale-[0.98]";
 
 /** Ligne fine de statut : « Hors ligne · dernier direct il y a X » + « Lancer un direct » ; en direct, le chrono et l'aperçu. */
-function StatusLine({ data, onLaunch }: { data: OverviewData; onLaunch: () => void }) {
+function StatusLine({ data }: { data: OverviewData }) {
   const { state, link } = useLiveStatus();
   const clock = useLiveClock();
   const reconnecting = !!state?.reconnecting;
@@ -59,9 +58,9 @@ function StatusLine({ data, onLaunch }: { data: OverviewData; onLaunch: () => vo
           Ouvrir l&apos;aperçu <span aria-hidden="true">→</span>
         </Link>
       ) : (
-        <button type="button" onClick={onLaunch} className={btnPrimary}>
+        <Link href="/dashboard/controle-a-distance" className={btnPrimary}>
           Lancer un direct <span aria-hidden="true">→</span>
-        </button>
+        </Link>
       )}
     </section>
   );
@@ -122,71 +121,6 @@ function RangeToggle({ range, onChange, pending }: { range: Range; onChange: (r:
   );
 }
 
-// ─────────────── Mini-guide « Lancer un direct » ───────────────
-
-function LaunchGuide({ open, onClose, keys }: { open: boolean; onClose: () => void; keys: OverviewData["keys"] }) {
-  const ref = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    const d = ref.current;
-    if (!d) return;
-    if (open && !d.open) d.showModal();
-    if (!open && d.open) d.close();
-  }, [open]);
-
-  return (
-    <dialog
-      ref={ref}
-      onClose={onClose}
-      onClick={(e) => e.target === ref.current && onClose()}
-      aria-labelledby="launch-title"
-      className="m-auto w-[min(560px,calc(100vw-2rem))] rounded-2xl border border-line bg-background p-0 text-foreground backdrop:bg-background/80 backdrop:backdrop-blur-sm"
-    >
-      <div className="p-6">
-        <div className="flex items-start justify-between gap-4">
-          <h2 id="launch-title" className="text-xl font-semibold tracking-tight">
-            Lancer un direct
-          </h2>
-          <button type="button" onClick={onClose} className="-m-2 p-2 text-muted hover:text-foreground" aria-label="Fermer">
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
-          </button>
-        </div>
-        {keys ? (
-          <ol className="mt-6 space-y-6">
-            <li>
-              <p className="text-sm font-medium">1. Colle l&apos;URL dans Moblin</p>
-              <p className="mt-1 text-xs text-muted">Moblin → Réglages → Streams → ton stream → URL.</p>
-              <div className="mt-2">
-                <MaskedUrl url={keys.moblin} label="Moblin" size="sm" />
-              </div>
-            </li>
-            <li>
-              <p className="text-sm font-medium">2. Lance le direct dans Moblin</p>
-              <p className="mt-1 text-xs text-muted">Le bandeau passe en « En live » quelques secondes après.</p>
-            </li>
-            <li>
-              <p className="text-sm font-medium">3. Vérifie OBS</p>
-              <p className="mt-1 text-xs text-muted">Source Média → décocher « Fichier local » → cette URL.</p>
-              <div className="mt-2">
-                <MaskedUrl url={keys.obs} label="OBS" size="sm" />
-              </div>
-            </li>
-          </ol>
-        ) : (
-          <p className="mt-4 text-sm text-muted">
-            Crée d&apos;abord un serveur dans{" "}
-            <Link href="/dashboard/relais" className="text-foreground underline underline-offset-4">
-              Serveurs
-            </Link>
-            .
-          </p>
-        )}
-      </div>
-    </dialog>
-  );
-}
-
 // ─────────────── Colonne de droite ───────────────
 
 function Plan({ data }: { data: OverviewData }) {
@@ -232,7 +166,6 @@ export default function Overview({ initial, coreUrl = "", demo }: { initial: Ove
   const [data, setData] = useState(initial);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
-  const [guide, setGuide] = useState(false);
   const cache = useRef(new Map<Range, OverviewData>([[initial.range, initial]]));
 
   async function changeRange(r: Range) {
@@ -270,8 +203,7 @@ export default function Overview({ initial, coreUrl = "", demo }: { initial: Ove
         <p className="mt-2 text-sm text-muted">L&apos;état de ton direct et l&apos;activité de tes serveurs.</p>
       </div>
 
-      <StatusLine data={data} onLaunch={() => setGuide(true)} />
-      <LaunchGuide open={guide} onClose={() => setGuide(false)} keys={data.keys} />
+      <StatusLine data={data} />
       {data.alerts.length > 0 && <Alerts alerts={data.alerts} />}
 
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
@@ -304,9 +236,9 @@ export default function Overview({ initial, coreUrl = "", demo }: { initial: Ove
                 <div className="grid place-items-center py-8 text-center">
                   <p className="text-sm font-medium">Aucun direct pour le moment</p>
                   <p className="mt-1 max-w-[44ch] text-sm text-muted">Tes chiffres apparaissent ici après ton premier direct.</p>
-                  <button type="button" onClick={() => setGuide(true)} className={`${btnPrimary} mt-5`}>
+                  <Link href="/dashboard/controle-a-distance" className={`${btnPrimary} mt-5`}>
                     Lancer un direct <span aria-hidden="true">→</span>
-                  </button>
+                  </Link>
                 </div>
               )}
             </div>

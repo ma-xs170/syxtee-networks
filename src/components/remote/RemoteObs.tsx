@@ -17,7 +17,7 @@ import { useRemote, type LinkEvent } from "./useRemote";
 type Item = { id: number; name: string; kind: string; on: boolean; flux?: boolean };
 type Mix = { name: string; muted: boolean; db: number; mon: string; global: boolean };
 type Trigger = "cut" | "cut_lowbitrate" | "sensitive";
-type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioBackup?: boolean; directorEnabled?: boolean; directorKeySet?: boolean; directorKey?: string; directorClearKey?: boolean; directorCams?: { source: string; scene: string; label: string }[]; directorRules?: string; directorInterval?: number; directorHold?: number; directorState?: string; directorCam?: number; audioState?: string };
+type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioBackup?: boolean; directorEnabled?: boolean; directorKeySet?: boolean; directorKey?: string; directorClearKey?: boolean; directorCams?: { source: string; scene: string; label: string }[]; directorRules?: string; directorInterval?: number; directorHold?: number; directorState?: string; directorCam?: number; directorReason?: string; audioState?: string };
 type Stats = { cpu: number; fps: number; kbps: number | null; dropped: number; total: number; encoder: string; congestion: number; streamMs: number; recMs: number };
 type Named = { current: string; list: string[] };
 type Tab = "scenes" | "sources" | "mixer" | "controls" | "multi" | "chat";
@@ -170,7 +170,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
       else if (name === "link.studioPreview") previewSink.current?.(String(d.image));
       else if (name === "link.previewState") setPreviewOn(!!d.enabled);
       else if (name === "link.previewMode") setPmode({ mode: d.mode as "video" | "jpeg" | "idle", reason: String(d.reason ?? "") });
-      else if (name === "link.directorState") setRoles((r) => (r ? { ...r, directorState: String(d.state), directorCam: Number(d.cam ?? -1) } : r));
+      else if (name === "link.directorState") setRoles((r) => (r ? { ...r, directorState: String(d.state), directorCam: Number(d.cam ?? -1), directorReason: String(d.reason ?? "") } : r));
       else if (name === "link.audioState") setRoles((r) => (r ? { ...r, audioState: String(d.state) } : r));
       else if (name === "link.backupState") setRoles((r) => (r ? { ...r, state: String(d.state) } : r));
       else if (name === "link.stats") {
@@ -1024,6 +1024,11 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                   onClick={() => saveRoles({ directorEnabled: !roles.directorEnabled })}
                 />
               </div>
+              {roles.directorEnabled && roles.directorState === "error" && (
+                <p role="alert" className="mt-2 rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-[12px] text-amber-200">
+                  La régie IA n&apos;arrive pas à joindre l&apos;IA : {roles.directorReason || "erreur inconnue"}
+                </p>
+              )}
               {(!roles.directorKeySet || (roles.directorCams ?? []).filter((c) => c.source && c.scene).length < 2) && <p className="mt-2 text-[12px] text-neutral-500">Il faut ta scène Live, une clé API et au moins 2 caméras complètes (source et scène).</p>}
               <p className="mt-2 text-[12px] text-neutral-500">Chaque analyse envoie de petites vignettes de tes caméras à Anthropic avec ta clé : c&apos;est facturé par Anthropic, par appel (un appel toutes les {roles.directorInterval ?? 4} s en direct). Désactive la régie IA pour ne rien envoyer.</p>
               <fieldset className="mt-4">

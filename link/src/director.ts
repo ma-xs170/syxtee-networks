@@ -60,7 +60,7 @@ export function cleanDirector(v: unknown, prev: DirectorConfig = DEFAULT_DIRECTO
   };
 }
 
-export type DirectorState = "idle" | "watching" | "cam";
+export type DirectorState = "idle" | "watching" | "cam" | "error";
 
 type Req = (type: string, data?: Record<string, unknown>) => Promise<Record<string, unknown>>;
 /** Interroge le modèle : images (data URI jpeg), une par caméra vivante, dans l'ordre donné. Renvoie le texte de la réponse. */
@@ -148,7 +148,10 @@ export class AiDirector {
     try {
       await this.run(now);
     } catch (e) {
-      this.log(`régie IA : ${(e as Error).message}`);
+      const msg = (e as Error).message;
+      // Même erreur en boucle : une seule ligne de journal, mais l'état d'erreur reste affiché dans la page.
+      if (this.lastReason !== msg) this.log(`régie IA : ${msg}`);
+      this.setState("error", msg);
     } finally {
       this.busy = false;
     }
@@ -197,6 +200,7 @@ export class AiDirector {
 
     const curAlive = this.current >= 0 && alive.some((a) => a.idx === this.current);
     const pick = await this.decide(cams, alive, this.current);
+    if (this.state === "error") this.setState(this.current >= 0 ? "cam" : "watching", this.current >= 0 ? cams[this.current].label || cams[this.current].source : "");
     if (pick === null) return;
 
     if (pick === this.current) {
@@ -253,7 +257,16 @@ export function anthropicAsk(apiKey: string, model = "claude-haiku-5-5", fetchFn
       body: JSON.stringify({ model, max_tokens: 100, messages: [{ role: "user", content }] }),
       signal: AbortSignal.timeout(15_000),
     });
-    if (!r.ok) throw new Error(r.status === 401 ? "clé API refusée" : `API ${r.status}`);
+    if (!r.ok) {
+      // Le message d'Anthropic dit la vraie cause (clé sans espace de travail, crédit épuisé, modèle inconnu).
+      let detail = "";
+      try {
+        detail = String(((await r.json()) as { error?: { message?: string } }).error?.message ?? "").slice(0, 200);
+      } catch {
+        /* corps illisible */
+      }
+      throw new Error(r.status === 401 ? "clé API refusée" : `API ${r.status}${detail ? ` : ${detail}` : ""}`);
+    }
     const j = (await r.json()) as { content?: { type: string; text?: string }[] };
     return (j.content ?? []).map((b) => (b.type === "text" ? (b.text ?? "") : "")).join("");
   };

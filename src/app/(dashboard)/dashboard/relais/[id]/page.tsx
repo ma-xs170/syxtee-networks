@@ -74,9 +74,9 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
   const TABS = [
     { id: "info", label: "Informations générales" },
     { id: "analyse", label: "Analyse en temps réel" },
-    { id: "adresses", label: "Adresses" },
     { id: "stats", label: "Statistiques" },
     { id: "services", label: "Services" },
+    { id: "parametres", label: "Paramètres" },
   ] as const;
   const tab = TABS.find((t) => t.id === onglet)?.id ?? "info";
   const href = (t: string) => `/dashboard/relais/${relay.id}${t === "info" ? "" : `?onglet=${t}`}`;
@@ -107,7 +107,7 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
 
         <TabsNav tabs={TABS.map((t) => ({ id: t.id, label: t.label, href: href(t.id) }))} current={tab} label="Sections du serveur" />
 
-        {relay.archived && tab !== "info" ? (
+        {relay.archived && tab !== "info" && tab !== "parametres" ? (
           <p className="rounded-2xl border border-line bg-surface p-6 text-sm text-muted">Ce serveur est archivé : ses adresses ne marchent plus. Réactive-le depuis le menu « Plus » pour diffuser de nouveau.</p>
         ) : (
           <>
@@ -125,28 +125,6 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
                       </div>
                     </Card>
                   )}
-
-                  {/* 2. Réglages modifiables */}
-                  <Card title="Réglages">
-                    <Setting label="Nom" help="Le nom de l'appareil qui utilise ce serveur." value={<span className="font-medium">{relay.name}</span>} button={<ActionButton action={{ id: relay.id, action: "rename" }}>Renommer</ActionButton>} />
-                    <Setting label="Emplacement" help="Où ton flux est reçu. Changer garde les mêmes adresses." value={<span className="font-medium">{server ? `${flag(server.cc)} ${server.city}, ${server.country}` : relay.server}</span>} button={<ActionButton action={{ id: relay.id, action: "server" }}>Changer</ActionButton>} />
-                    {!relay.archived && (
-                      <Setting label="Bascule automatique" help="Quand OBS passe sur ta scène de secours." value={<span className="font-medium">{trigger}</span>} button={<ActionButton action={{ id: relay.id, action: "trigger" }}>Modifier</ActionButton>} />
-                    )}
-                    {!relay.archived && (
-                      <Setting label="Clé de ce serveur" help={`Régénérer coupe les anciennes adresses tout de suite. ${sinceKey === "Jamais régénérée" ? "Jamais régénérée." : `Dernière fois : ${sinceKey}.`}`} button={<ActionButton action={{ id: relay.id, action: "rotate" }}>Régénérer</ActionButton>} />
-                    )}
-                  </Card>
-
-                  {/* 3. Zone sensible, à part */}
-                  <Card title="Archiver ou supprimer">
-                    <Setting
-                      label={relay.archived ? "Réactiver ce serveur" : "Archiver ce serveur"}
-                      help={relay.archived ? "Ses adresses remarchent tout de suite et il compte de nouveau dans ta limite." : "Ses adresses cessent de marcher, il ne compte plus dans ta limite. Tu peux le réactiver."}
-                      button={<ActionButton action={{ id: relay.id, action: "archive" }}>{relay.archived ? "Réactiver" : "Archiver"}</ActionButton>}
-                    />
-                    <Setting label="Supprimer ce serveur" help="Définitif. Tes directs restent dans l'historique." button={<ActionButton action={{ id: relay.id, action: "delete" }} danger>Supprimer</ActionButton>} />
-                  </Card>
                 </div>
 
                 {/* Synthèse, toujours visible à droite */}
@@ -169,17 +147,27 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
 
             {tab === "analyse" && <RelayAnalysis coreUrl={publicCoreUrl} relayId={relay.id} />}
 
-            {tab === "adresses" && (
-              <div className="max-w-3xl">
-                <Card title="Adresses de connexion">
-                  <div className="py-5">
-                    <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                      <p className="max-w-[60ch] text-xs text-muted">Elles contiennent la clé de ce serveur : ne les partage pas et ne les montre pas en direct.</p>
-                      <RowMenu label="Actions des adresses" items={[act("Copier l'adresse", "copy"), act("Régénérer la clé", "rotate", true)]} />
-                    </div>
-                    <RelayUrls relay={relay} />
-                  </div>
-                </Card>
+            {tab === "parametres" && (
+              <div className="max-w-4xl space-y-6">
+                  <Card title="Réglages">
+                    <Setting label="Nom" help="Le nom de l'appareil qui utilise ce serveur." value={<span className="font-medium">{relay.name}</span>} button={<ActionButton action={{ id: relay.id, action: "rename" }}>Renommer</ActionButton>} />
+                    <Setting label="Emplacement" help="Où ton flux est reçu. Changer garde les mêmes adresses." value={<span className="font-medium">{server ? `${flag(server.cc)} ${server.city}, ${server.country}` : relay.server}</span>} button={<ActionButton action={{ id: relay.id, action: "server" }}>Changer</ActionButton>} />
+                    {!relay.archived && (
+                      <Setting label="Bascule automatique" help="Quand OBS passe sur ta scène de secours." value={<span className="font-medium">{trigger}</span>} button={<ActionButton action={{ id: relay.id, action: "trigger" }}>Modifier</ActionButton>} />
+                    )}
+                    {!relay.archived && (
+                      <Setting label="Clé de ce serveur" help={`Régénérer coupe les anciennes adresses tout de suite. ${sinceKey === "Jamais régénérée" ? "Jamais régénérée." : `Dernière fois : ${sinceKey}.`}`} button={<ActionButton action={{ id: relay.id, action: "rotate" }}>Régénérer</ActionButton>} />
+                    )}
+                  </Card>
+
+                  <Card title="Archiver ou supprimer">
+                    <Setting
+                      label={relay.archived ? "Réactiver ce serveur" : "Archiver ce serveur"}
+                      help={relay.archived ? "Ses adresses remarchent tout de suite et il compte de nouveau dans ta limite." : "Ses adresses cessent de marcher, il ne compte plus dans ta limite. Tu peux le réactiver."}
+                      button={<ActionButton action={{ id: relay.id, action: "archive" }}>{relay.archived ? "Réactiver" : "Archiver"}</ActionButton>}
+                    />
+                    <Setting label="Supprimer ce serveur" help="Définitif. Tes directs restent dans l'historique." button={<ActionButton action={{ id: relay.id, action: "delete" }} danger>Supprimer</ActionButton>} />
+                  </Card>
               </div>
             )}
 

@@ -95,7 +95,7 @@ export default async function AdminAccountPage({ params, searchParams }: { param
         tickets={tickets}
         billing={p.billing_status ? { interval: p.billing_interval, status: p.billing_status, periodEnd: p.billing_period_end, renews: renews(p), manual: ["partner", "beta", "admin"].includes(p.plan), customerId: p.stripe_customer_id ?? null } : p.stripe_customer_id ? { interval: null, status: null, periodEnd: null, renews: false, manual: false, customerId: p.stripe_customer_id } : null}
         note={p.plan_note ?? null}
-        activity={(log ?? []).slice(0, 5).map((l) => ({ id: l.id, action: l.action, admin: l.admin_email, at: l.at }))}
+        activity={(log ?? []).filter((l) => l.action !== "account.view").slice(0, 5).map((l) => ({ id: l.id, action: l.action, admin: l.admin_email, at: l.at }))}
         tab={tab}
       >
       {tab === "profil" && (

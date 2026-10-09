@@ -326,18 +326,16 @@ export function workspaceInvite(o: { ownerName: string; workspace: string; role:
 }
 
 /** Message de l'équipe à un client, écrit depuis la fiche compte (admin). Le texte est libre, l'envoi est tracé dans le journal. */
-export function staffMessage(o: { firstName?: string | null; subject: string; body: string; from: string }): Email {
+export function staffMessage(o: { firstName?: string | null; subject: string; from: string; url: string }): Email {
   return {
-    subject: o.subject,
+    subject: `Nouveau message : ${o.subject}`,
     element: (
-      <Layout preview={o.subject} reason="Message de l'équipe SYXTEE NETWORKS concernant ton compte.">
-        <Title lead="Un message de" hl="l'équipe." />
+      <Layout preview={`${o.from} t'a écrit : ${o.subject}`} reason="Tu reçois cet e-mail parce que l'équipe SYXTEE t'a écrit dans ton espace Assistance.">
+        <Title lead="Tu as un nouveau" hl="message." />
         <Hi name={o.firstName} />
-        {o.body.split(/\n{2,}/).map((para, i) => (
-          <Text key={i} style={p}>{para}</Text>
-        ))}
-        <Text style={p}>{o.from}, SYXTEE NETWORKS</Text>
-        <Cta href={`${site.url}/dashboard/support`}>Répondre depuis mon espace</Cta>
+        <Text style={p}>{o.from} t&apos;a écrit dans ton espace Assistance, à propos de : <strong>{o.subject}</strong>.</Text>
+        <Text style={p}>Le message se lit et se répond directement sur le site.</Text>
+        <Cta href={o.url}>Lire le message</Cta>
       </Layout>
     ),
   };

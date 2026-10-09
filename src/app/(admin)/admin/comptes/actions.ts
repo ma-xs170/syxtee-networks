@@ -7,6 +7,7 @@ import { requireAdmin } from "@/lib/admin";
 import { passwordChanged, resetPassword, staffMessage } from "@/emails/templates";
 import { passwordProblem } from "@/lib/auth/password";
 import { sendEmailResult } from "@/lib/email/send";
+import { addMessage } from "@/lib/support";
 import { site } from "@/lib/site";
 import { CoreOutdated, CoreRefusal, createRelay, deleteAllRelays, deleteCoverage, deleteRelay, hasCore, listRelays, refreshCore, rotateRelay, updateRelay } from "@/lib/core";
 import { audit, offerPaidDays, setPlan } from "@/lib/plan-admin";
@@ -319,7 +320,7 @@ export async function setPasswordAction(_prev: PlanState, form: FormData): Promi
   return { ok: sent.ok ? `Mot de passe changé. ${email} est prévenu par e-mail. Communique-lui le nouveau mot de passe par un canal sûr.` : "Mot de passe changé, mais l'e-mail de prévenance n'est pas parti." };
 }
 
-/** Écrit un e-mail au client depuis la fiche compte (sujet et message libres). L'envoi est tracé dans le journal d'audit. */
+/** Écrit au client depuis la fiche compte : crée une conversation dans son espace Assistance, une notification dans sa cloche, puis le prévient par e-mail. */
 export async function sendMessageAction(_prev: PlanState, form: FormData): Promise<PlanState> {
   const admin = await requireAdmin("accounts");
   const userId = uid.safeParse(form.get("userId"));
@@ -332,7 +333,24 @@ export async function sendMessageAction(_prev: PlanState, form: FormData): Promi
   const [{ data: u }, { data: p }] = await Promise.all([db.auth.admin.getUserById(userId.data), db.from("profiles").select("first_name").eq("id", userId.data).maybeSingle()]);
   const email = u.user?.email;
   if (!email) return { error: "Compte introuvable." };
-  const sent = await sendEmailResult(email, staffMessage({ firstName: p?.first_name ?? null, subject, body, from: String(admin.email ?? "L'équipe").split("@")[0] }));
-  await audit(admin.email!, "account.message", userId.data, null, { subject });
-  return sent.ok ? { ok: `Message envoyé à ${email}.` } : { error: `E-mail non envoyé : ${sent.reason}` };
+  const now = new Date().toISOString();
+  // La conversation vit dans le système d'assistance : le client la voit dans « Assistance », l'équipe dans « Support ».
+  const ins = await db.from("support_tickets").insert({ user_id: userId.data, subject, category: "autre", status: "open", last_from: "staff", first_reply_at: now }).select("id").single();
+  if (ins.error || !ins.data) {
+    console.error("sendMessageAction : ticket", ins.error?.message);
+    return { error: "Impossible de créer la conversation." };
+  }
+  const ticketId = ins.data.id as string;
+  const first = String(admin.email ?? "").split("@")[0];
+  const err = await addMessage({ ticket_id: ticketId, author_id: admin.id, from_staff: true, body, signature: `${first || "L'équipe"} - Équipe SYXTEE` });
+  if (err) {
+    console.error("sendMessageAction : message", err.message);
+    return { error: "Impossible d'enregistrer le message." };
+  }
+  await db.from("support_tickets").update({ assigned_to: admin.id, assigned_at: now }).eq("id", ticketId);
+  await db.from("notifications").insert({ user_id: userId.data, title: "Nouveau message de l'équipe", body: subject });
+  await audit(admin.email!, "account.message", userId.data, null, { ticket: ticketId, subject });
+  const sent = await sendEmailResult(email, staffMessage({ firstName: p?.first_name ?? null, subject, from: first || "L'équipe SYXTEE", url: `${site.url}/dashboard/support/${ticketId}` }));
+  revalidatePath("/admin/support");
+  return sent.ok ? { ok: `Message envoyé dans l'espace Assistance de ${email}. Un e-mail le prévient.` } : { ok: "Message envoyé dans son espace Assistance. L'e-mail de prévenance n'est pas parti." };
 }

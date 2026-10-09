@@ -35,7 +35,7 @@ export default function MessageButton({ userId, email }: { userId: string; email
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 id="msg-title" className="text-lg font-semibold tracking-tight">Envoyer un message</h2>
-              <p className="mt-1 text-sm text-muted">Par e-mail, à <span data-sensitive className="text-foreground">{email}</span>.</p>
+              <p className="mt-1 text-sm text-muted">Dans l'espace Assistance de <span data-sensitive className="text-foreground">{email}</span>, avec une notification par e-mail.</p>
             </div>
             <button type="button" onClick={() => ref.current?.close()} aria-label="Fermer" className="-m-2 p-2 text-muted hover:text-foreground">
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>

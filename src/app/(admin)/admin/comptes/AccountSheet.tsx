@@ -179,20 +179,22 @@ export default function AccountSheet(p: SheetProps) {
                 )}
               </section>
 
-              <section aria-labelledby="activite">
-                <div className="mb-4 flex items-center justify-between gap-4">
+              <section aria-labelledby="activite" className="rounded-2xl border border-line bg-surface">
+                <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-4">
                   <h2 id="activite" className="text-sm font-semibold">Activité récente</h2>
                   <ArrowLink href={href("historique")}>Tout voir</ArrowLink>
                 </div>
                 {p.activity.length === 0 ? (
-                  <p className="rounded-2xl border border-dashed border-line px-5 py-8 text-center text-sm text-muted">Aucune action enregistrée.</p>
+                  <p className="px-5 py-8 text-center text-sm text-muted">Aucune action enregistrée.</p>
                 ) : (
-                  <ol className="space-y-5 border-l border-line pl-6">
+                  <ol className="divide-y divide-line">
                     {p.activity.map((l) => (
-                      <li key={l.id} className="relative">
-                        <span aria-hidden="true" className="absolute -left-[30px] top-1.5 size-2.5 rounded-full border border-line-strong bg-background" />
-                        <p className="font-mono text-xs">{l.action}</p>
-                        <p className="mt-0.5 text-xs text-muted">{l.admin} · {day(l.at)}</p>
+                      <li key={l.id} className="flex items-center justify-between gap-4 px-5 py-3.5 text-sm">
+                        <span className="min-w-0">
+                          <span className="block truncate font-mono text-xs">{l.action}</span>
+                          <span className="mt-0.5 block truncate text-xs text-muted">{l.admin}</span>
+                        </span>
+                        <span className="shrink-0 text-xs text-muted">{day(l.at)}</span>
                       </li>
                     ))}
                   </ol>
@@ -242,7 +244,6 @@ export default function AccountSheet(p: SheetProps) {
               )}
 
               <div className="grid gap-2">
-                <a href={`mailto:${p.email}`} className="btn btn-secondary w-full">Écrire au client</a>
                 <Link href={href("securite")} className="btn btn-secondary w-full">Mot de passe et sécurité</Link>
               </div>
             </aside>

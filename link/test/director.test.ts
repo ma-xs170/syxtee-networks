@@ -196,6 +196,8 @@ test("anthropicAsk : envoie les images en base64 avec la clé, lit le texte, sig
   assert.equal(text, '{"camera": 2}');
   assert.equal(seen!.headers["x-api-key"], "sk-x");
   assert.equal(seen!.body.messages[0].content[0].source.data, "AAAA");
+  await anthropicAsk("sk-x", "m", ok, "wrkspc_123")("q", []);
+  assert.equal(seen!.headers["anthropic-workspace-id"], "wrkspc_123");
   const bad = (async () => new Response("{}", { status: 401 })) as unknown as typeof fetch;
   await assert.rejects(anthropicAsk("k", "m", bad)("q", []), /clé API refusée/);
   const ws = (async () => new Response(JSON.stringify({ error: { message: "This API key is not scoped to a workspace" } }), { status: 400 })) as unknown as typeof fetch;

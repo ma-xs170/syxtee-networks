@@ -17,7 +17,7 @@ import { useRemote, type LinkEvent } from "./useRemote";
 type Item = { id: number; name: string; kind: string; on: boolean; flux?: boolean };
 type Mix = { name: string; muted: boolean; db: number; mon: string; global: boolean };
 type Trigger = "cut" | "cut_lowbitrate" | "sensitive";
-type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioBackup?: boolean; directorEnabled?: boolean; directorKeySet?: boolean; directorKey?: string; directorClearKey?: boolean; directorCams?: { source: string; scene: string; label: string }[]; directorRules?: string; directorInterval?: number; directorHold?: number; directorState?: string; directorCam?: number; directorReason?: string; audioState?: string };
+type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioBackup?: boolean; directorEnabled?: boolean; directorKeySet?: boolean; directorKey?: string; directorClearKey?: boolean; directorCams?: { source: string; scene: string; label: string }[]; directorRules?: string; directorInterval?: number; directorHold?: number; directorState?: string; directorCam?: number; directorReason?: string; directorWorkspaceId?: string; audioState?: string };
 type Stats = { cpu: number; fps: number; kbps: number | null; dropped: number; total: number; encoder: string; congestion: number; streamMs: number; recMs: number };
 type Named = { current: string; list: string[] };
 type Tab = "scenes" | "sources" | "mixer" | "controls" | "multi" | "chat";
@@ -976,6 +976,17 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                       e.target.value = "";
                     }
                   }}
+                  className="h-8 rounded border border-white/15 bg-transparent px-2 text-[13px] text-neutral-100"
+                />
+              </label>
+              <label className="mt-3 grid gap-1 text-[12px] text-neutral-400">
+                Identifiant d&apos;espace de travail Anthropic (seulement si ta clé n&apos;est pas rattachée à un espace)
+                <input
+                  disabled={oldAgent}
+                  defaultValue={roles.directorWorkspaceId ?? ""}
+                  maxLength={100}
+                  placeholder="wrkspc_…"
+                  onBlur={(e) => e.target.value.trim() !== (roles.directorWorkspaceId ?? "") && saveRoles({ directorWorkspaceId: e.target.value.trim() })}
                   className="h-8 rounded border border-white/15 bg-transparent px-2 text-[13px] text-neutral-100"
                 />
               </label>

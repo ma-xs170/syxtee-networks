@@ -18,6 +18,8 @@ export type DirectorConfig = {
   enabled: boolean;
   /** Clé API Anthropic de l'utilisateur : reste sur son PC. */
   apiKey: string;
+  /** Identifiant de l'espace de travail Anthropic, seulement si la clé n'est pas rattachée à un espace. */
+  workspaceId: string;
   cams: DirectorCam[];
   /** Consignes en langage naturel. */
   rules: string;
@@ -31,6 +33,7 @@ export const MAX_CAMS = 6;
 export const DEFAULT_DIRECTOR: DirectorConfig = {
   enabled: false,
   apiKey: "",
+  workspaceId: "",
   cams: [],
   rules:
     "Montre la caméra où il se passe quelque chose : une personne qui parle à la caméra, un objet montré de près, une entrée dans un véhicule. Le drone, quand il vole avec une belle vue. Reste sur la caméra actuelle si rien ne change.",
@@ -53,6 +56,7 @@ export function cleanDirector(v: unknown, prev: DirectorConfig = DEFAULT_DIRECTO
     enabled: typeof o.enabled === "boolean" ? o.enabled : prev.enabled,
     // Clé : une valeur vide ne l'efface pas (l'interface ne la relit jamais) ; « clearKey » l'efface.
     apiKey: o.clearKey === true ? "" : typeof o.apiKey === "string" && o.apiKey.trim() ? o.apiKey.trim().slice(0, 300) : prev.apiKey,
+    workspaceId: typeof o.workspaceId === "string" ? o.workspaceId.trim().slice(0, 100) : prev.workspaceId ?? "",
     cams,
     rules: str(o.rules, prev.rules, 1000),
     interval: num(o.interval, prev.interval, 2, 30),
@@ -247,13 +251,13 @@ export class AiDirector {
 }
 
 /** Appel direct à l'API Anthropic avec la clé de l'utilisateur (la clé ne quitte pas le PC). */
-export function anthropicAsk(apiKey: string, model = "claude-haiku-5-5", fetchFn: typeof fetch = fetch): Ask {
+export function anthropicAsk(apiKey: string, model = "claude-haiku-5-5", fetchFn: typeof fetch = fetch, workspaceId = ""): Ask {
   return async (prompt, images) => {
     const content: unknown[] = images.map((img) => ({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: img.replace(/^data:image\/\w+;base64,/, "") } }));
     content.push({ type: "text", text: prompt });
     const r = await fetchFn("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json", ...(workspaceId ? { "anthropic-workspace-id": workspaceId } : {}) },
       body: JSON.stringify({ model, max_tokens: 100, messages: [{ role: "user", content }] }),
       signal: AbortSignal.timeout(15_000),
     });

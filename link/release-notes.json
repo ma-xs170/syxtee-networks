@@ -1,4 +1,7 @@
 {
+  "0.7.3": [
+    "Régie IA : champ facultatif pour l'identifiant d'espace de travail Anthropic, pour les clés qui ne sont pas rattachées à un espace"
+  ],
   "0.7.2": [
     "Régie IA : quand l'IA refuse la requête (clé sans espace de travail, crédit épuisé), la raison s'affiche dans le panneau Régie au lieu d'un échec silencieux"
   ],

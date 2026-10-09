@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 const obsSteps = [
   "Dans ta scène IRL, clique sur + dans Sources, puis choisis « Source média ».",
   "Décoche « Fichier local ».",
-  "Dans « Entrée », colle l'adresse SRT qu'on te donne sur Discord (du type srt://<ADRESSE_RELAIS>:<PORT>…).",
+  "Dans « Entrée », colle l'adresse SRT affichée dans ton tableau de bord, page Serveurs (du type srt://<ADRESSE_RELAIS>:<PORT>…).",
   "Dans « Format d'entrée », mets mpegts, puis valide.",
   "Lance le live sur ton téléphone : l'image apparaît dans OBS en quelques secondes.",
 ];

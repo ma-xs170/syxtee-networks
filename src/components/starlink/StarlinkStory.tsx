@@ -5,7 +5,6 @@ import { motion, useTransform, type MotionValue } from "motion/react";
 import Starfield from "@/components/illustrations/Starfield";
 import ScrollStory, { type StoryScene } from "@/components/story/ScrollStory";
 import StoryStage from "@/components/story/StoryStage";
-import { DiscordButton } from "@/components/ui";
 import MiniExploded from "./MiniExploded";
 import { FlowOverlay, GroundLayer, SkyLayer } from "./SkyGround";
 import { FINALE_BAND, PARA_BANDS, SCENE_BANDS, SCENE_STARTS, STATIC_AT, ramp, skyState } from "./timeline";
@@ -34,7 +33,7 @@ function Finale() {
         ))}
       </dl>
       <div className="mt-5">
-        <DiscordButton />
+        <Link href="/dashboard/support" className="inline-flex items-center justify-center gap-2 rounded-full border border-line-strong px-5 py-3 text-sm font-medium transition-colors hover:bg-foreground/[0.08]">Une question ? Assistance</Link>
       </div>
     </div>
   );

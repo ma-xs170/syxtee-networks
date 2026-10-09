@@ -252,7 +252,7 @@ export function FaqSection() {
     { q: "Faut-il un abonnement ?", a: "Le compte est gratuit. Les services s'ouvrent avec une formule : Essentiel, Signature ou Prestige, sans engagement." },
     { q: "Dois-je louer un serveur pour le contrôle à distance ?", a: "Non. Le plugin tourne sur ton propre PC ou Mac et se relie à ton compte avec un code." },
     { q: "Quand est-ce disponible ?", a: "Le contrôle à distance est disponible pour les comptes invités. Demande ton accès." },
-    { q: "Comment obtenir de l'aide ?", a: "Le support se fait sur Discord. Donne ton ID de support dans ton ticket, on retrouve ton compte sans ton e-mail." },
+    { q: "Comment obtenir de l'aide ?", a: "Depuis ton espace, page Assistance : tu écris à l'équipe et tu suis la réponse sur place, généralement sous 24 h. Le Discord est réservé à la communauté." },
   ];
   return (
     <section className="border-b border-line py-24 lg:py-36">

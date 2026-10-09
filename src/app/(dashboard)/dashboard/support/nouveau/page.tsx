@@ -11,11 +11,11 @@ export default async function NewTicketPage() {
   return (
     <DashPage>
       <Link href="/dashboard/support" className="text-sm text-muted transition-colors hover:text-foreground">
-        ← Support
+        ← Assistance
       </Link>
       <h1 className="h-page mb-2 mt-4">Nouvelle <em>demande</em></h1>
       <p className="mb-8 max-w-[60ch] text-sm text-muted">
-        Décris ton problème : on te répond ici, dans ce fil. Tu seras prévenu dans ta cloche de notifications.
+        Décris ton problème : on te répond ici, dans ce fil, rapidement (généralement sous 24 h). Tu seras prévenu par une notification et par e-mail.
       </p>
       <NewTicketForm />
     </DashPage>

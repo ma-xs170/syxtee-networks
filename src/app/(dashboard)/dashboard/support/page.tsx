@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashPage } from "@/components/dashboard/ui";
-import { DiscordTicketButton, SupportId } from "@/components/SupportId";
+import { SupportId } from "@/components/SupportId";
+import { site } from "@/lib/site";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { fmtAgo } from "@/lib/dashboard-data";
 import { listTickets, ticketCounts } from "@/lib/support";
@@ -23,34 +24,49 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
   return (
     <DashPage>
       <h1 className="h-page">Assis<em>tance</em></h1>
-      <p className="mt-2 max-w-[65ch] text-sm text-muted">Choisis comment nous écrire. Pour une question de la documentation, lis d&apos;abord la <Link href="/docs" className="text-foreground underline underline-offset-4">documentation</Link>.</p>
+      <p className="mt-2 max-w-[65ch] text-sm text-muted">C&apos;est ici qu&apos;on règle tes soucis. Lis d&apos;abord la <Link href="/docs" className="text-foreground underline underline-offset-4">documentation</Link>, puis écris-nous : on te répond dans ton espace.</p>
 
-      <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-        <section aria-labelledby="canal-discord" className="bento-cell flex flex-col p-5 sm:p-6">
-          <div className="flex items-center justify-between gap-3">
-            <h2 id="canal-discord" className="text-lg font-semibold tracking-tight">
-              Communauté
+      <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+        <section aria-labelledby="canal-chat" className="bento-cell flex flex-col p-6 sm:p-8">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 id="canal-chat" className="text-xl font-semibold tracking-tight">
+              Écrire à l&apos;équipe
             </h2>
-            <span className="rounded-full bg-foreground/[0.08] px-2.5 py-0.5 text-xs font-medium text-foreground">Recommandé</span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-ok/30 bg-ok/10 px-3 py-1 text-xs font-medium text-ok">
+              <span aria-hidden="true" className="size-1.5 rounded-full bg-ok" />
+              Rapide (généralement sous 24 h)
+            </span>
           </div>
-          <p className="mt-3 text-sm leading-relaxed text-muted">Le plus rapide : l&apos;équipe et la communauté répondent sur le serveur. Donne ton ID support dans le ticket pour qu&apos;on retrouve ton compte.</p>
+          <p className="mt-4 max-w-[60ch] text-sm leading-relaxed text-muted">
+            Décris ton problème, ajoute une capture si besoin. Un agent prend ta demande en charge, et tu suis la conversation ici. Tu es prévenu par une notification et par e-mail à chaque réponse.
+          </p>
+          <ul className="mt-5 grid gap-2 text-sm text-muted sm:grid-cols-2">
+            {["Une demande par sujet", "Photos acceptées", "Réponse dans ton espace", "Historique conservé"].map((x) => (
+              <li key={x} className="flex gap-2.5"><span aria-hidden="true" className="text-foreground">+</span>{x}</li>
+            ))}
+          </ul>
+          <div className="mt-auto pt-6">
+            <Link href="/dashboard/support/nouveau" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full bg-accent px-6 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover">
+              <span aria-hidden="true">+</span> Nouvelle demande
+            </Link>
+          </div>
+        </section>
+
+        <section aria-labelledby="canal-discord" className="bento-cell flex flex-col p-5 sm:p-6">
+          <h2 id="canal-discord" className="text-lg font-semibold tracking-tight">
+            Communauté
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted">Le Discord est le lieu de rencontre des streamers SYXTEE : échanger, partager ses astuces, suivre les nouveautés. Ce n&apos;est pas le support.</p>
           {profile?.support_id && (
             <div className="mt-5">
+              <p className="mb-2 text-xs text-muted">Ton ID support, pour qu&apos;on retrouve ton compte</p>
               <SupportId id={profile.support_id} />
             </div>
           )}
-          <div className="mt-auto pt-5">{profile?.support_id ? <DiscordTicketButton id={profile.support_id} /> : null}</div>
-        </section>
-
-        <section aria-labelledby="canal-chat" className="bento-cell flex flex-col p-5 sm:p-6">
-          <h2 id="canal-chat" className="text-lg font-semibold tracking-tight">
-            Support (chat)
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-muted">Une demande écrite, suivie ici même : tu retrouves la réponse de l&apos;équipe dans la liste ci-dessous, sans passer par Discord.</p>
           <div className="mt-auto pt-5">
-            <Link href="/dashboard/support/nouveau" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full border border-line-strong bg-surface-2 px-5 text-sm font-medium transition-colors hover:border-foreground/30">
-              <span aria-hidden="true">+</span> Nouvelle demande
-            </Link>
+            <a href={site.discord} target="_blank" rel="noopener noreferrer" className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-full border border-line-strong px-5 text-sm font-medium transition-colors hover:bg-foreground/[0.08]">
+              Rejoindre la communauté <span aria-hidden="true">↗</span>
+            </a>
           </div>
         </section>
       </div>

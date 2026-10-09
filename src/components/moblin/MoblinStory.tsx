@@ -55,7 +55,7 @@ const scenes: StoryScene[] = [
   {
     kicker: "03 · SYXTEE",
     title: "Colle l'adresse du relais. Lance le live.",
-    paragraphs: ["L'adresse et ton identifiant sont donnés sur le Discord.", "C'est tout : le relais s'occupe du reste."],
+    paragraphs: ["L'adresse et ton identifiant sont dans ton tableau de bord, page Serveurs.", "C'est tout : le relais s'occupe du reste."],
     footer: (
       <a
         href="#tutoriel"

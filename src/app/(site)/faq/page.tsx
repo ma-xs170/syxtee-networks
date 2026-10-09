@@ -16,7 +16,7 @@ export default function FaqPage() {
   return (
     <>
       <PageHero kicker="FAQ" title={<>Questions <em>fréquentes.</em></>} crumb="FAQ">
-        Tout ce qu&apos;on nous demande sur le Discord, au même endroit. Ta question n&apos;y est pas ? Ouvre un ticket.
+        Les questions qu&apos;on nous pose le plus, au même endroit. Ta question n&apos;y est pas ? Écris à l&apos;équipe depuis ton espace Assistance.
       </PageHero>
 
       <section className="border-b border-line py-20 sm:py-24">

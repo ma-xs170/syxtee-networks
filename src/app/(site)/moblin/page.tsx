@@ -125,8 +125,8 @@ export default function MoblinPage() {
       <section id="tutoriel" className="scroll-mt-16 border-b border-line py-20 sm:py-24">
         <Container>
           <SectionHeader kicker="Tutoriel" title="Configurer Moblin avec SYXTEE.">
-            Six étapes, une dizaine de minutes. Garde le Discord ouvert à côté : ton adresse de relais et ton identifiant
-            y sont donnés à l&apos;ouverture de ton accès.
+            Six étapes, une dizaine de minutes. Garde ton tableau de bord ouvert à côté : ton adresse de serveur et ton identifiant
+            s&apos;y trouvent, dans la page Serveurs.
           </SectionHeader>
 
           <ol className="mt-8">
@@ -153,8 +153,8 @@ export default function MoblinPage() {
               <p className="text-sm">
                 Remplace <span className="font-mono text-foreground">&lt;ADRESSE_RELAIS&gt;</span>,{" "}
                 <span className="font-mono text-foreground">&lt;PORT&gt;</span> et{" "}
-                <span className="font-mono text-foreground">&lt;TON_ID&gt;</span> par les valeurs qu&apos;on te donne sur le
-                Discord. Ne partage jamais ton identifiant.
+                <span className="font-mono text-foreground">&lt;TON_ID&gt;</span> par les valeurs affichées dans ton tableau de bord, page Serveurs.
+                Ne partage jamais ton identifiant.
               </p>
             </Step>
 

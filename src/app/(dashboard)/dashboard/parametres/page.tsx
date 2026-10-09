@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { signOut } from "@/app/(auth)/actions";
 import { DeleteAccountForm, EmailForm, NamesForm, PasswordForm } from "@/components/auth/AccountForms";
 import { ConsentToggle, EraseCoverage, PrivateZones, type PrivateZone } from "@/components/dashboard/CoverageSettings";
-import { DiscordTicketButton, SupportId } from "@/components/SupportId";
+import { SupportId } from "@/components/SupportId";
 import LowDataToggle from "@/components/dashboard/LowDataToggle";
 import { cookies } from "next/headers";
 import { LOW_DATA_COOKIE } from "@/lib/low-data";
@@ -84,12 +85,12 @@ export default async function ParametresPage({ searchParams }: PageProps<"/dashb
         {profile?.support_id && (
           <Tile id="support" className="lg:col-span-2">
             <TileLabel>Support</TileLabel>
-            <p className="mt-4 text-sm leading-relaxed text-muted">Le support se fait uniquement sur Discord. Donne cet ID dans ton ticket : on retrouve ton compte sans te demander ton e-mail.</p>
+            <p className="mt-4 text-sm leading-relaxed text-muted">Un souci ? Écris à l'équipe depuis l'Assistance : réponse rapide, généralement sous 24 h. Ton ID support permet de retrouver ton compte sans te demander ton e-mail.</p>
             <div className="mt-4">
               <SupportId id={profile.support_id} />
             </div>
             <div className="mt-5">
-              <DiscordTicketButton id={profile.support_id} />
+              <Link href="/dashboard/support/nouveau" className="btn btn-primary">Nouvelle demande d'assistance</Link>
             </div>
           </Tile>
         )}

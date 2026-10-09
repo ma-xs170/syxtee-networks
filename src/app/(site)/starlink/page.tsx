@@ -4,7 +4,8 @@ import PopOutImage from "@/components/PopOutImage";
 import Powerbank from "@/components/illustrations/Powerbank";
 import StarlinkMiniBag from "@/components/illustrations/StarlinkMiniBag";
 import StarlinkStory from "@/components/starlink/StarlinkStory";
-import { Container, DiscordButton, SectionHeader } from "@/components/ui";
+import Link from "next/link";
+import { Container, SectionHeader } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Starlink Mini en IRL",
@@ -176,7 +177,7 @@ export default function StarlinkPage() {
                 >
                   Voir les forfaits Starlink <span aria-hidden="true">↗</span>
                 </a>
-                <DiscordButton variant="ghost">Une question ? Discord</DiscordButton>
+                <Link href="/dashboard/support" className="inline-flex items-center justify-center gap-2 rounded-full border border-line-strong px-5 py-3 text-sm font-medium transition-colors hover:bg-foreground/[0.08]">Une question ? Assistance</Link>
               </div>
             </div>
           </div>

@@ -12,7 +12,7 @@ import StarlinkMini from "@/components/illustrations/StarlinkMini";
 export const metadata: Metadata = {
   title: "Services",
   description:
-    "Relais SRTLA, bonding 4G/5G/Wi-Fi, flux SRT dans OBS et support Discord : tout ce que SYXTEE NETWORKS fait pour ton live IRL depuis ton téléphone.",
+    "Relais SRTLA, bonding 4G/5G/Wi-Fi, flux SRT dans OBS et assistance dédiée : tout ce que SYXTEE NETWORKS fait pour ton live IRL depuis ton téléphone.",
   alternates: { canonical: "/services" },
 };
 
@@ -21,7 +21,7 @@ export default function ServicesPage() {
     <>
       <PageHero kicker="Services" title={<>Tout ce qu&apos;il faut pour sortir <em>streamer.</em></>} crumb="Services">
         Quatre briques simples : un relais qui encaisse les coupures, ton téléphone comme encodeur, ton OBS aux commandes, et
-        une vraie personne sur Discord quand ça coince.
+        une vraie personne de l'équipe quand ça coince.
       </PageHero>
 
       <DetailSection
@@ -132,10 +132,10 @@ export default function ServicesPage() {
 
       <DetailSection
         n="04"
-        title="Support Discord"
+        title="Assistance"
         reverse
         visual={
-          <IllustrationCard label="Un ticket, un salon privé, une vraie personne">
+          <IllustrationCard label="Une demande, une conversation, une vraie personne">
             <div className="grid h-full grid-cols-[1.6fr_1fr] items-center gap-2">
               <DiscordChat />
               <WatchChat />
@@ -145,8 +145,8 @@ export default function ServicesPage() {
       >
         <Point label="Ce que c'est">
           <p>
-            Le support se fait uniquement sur le Discord. Tu vas dans le salon support, tu cliques pour{" "}
-            <strong>ouvrir un ticket</strong>, et un salon privé s&apos;ouvre entre toi et l&apos;équipe.
+            Depuis ton espace, page Assistance, tu cliques sur <strong>Nouvelle demande</strong> et tu discutes avec un agent
+            de l&apos;équipe. Réponse rapide, généralement sous 24 h. Le Discord reste le lieu de la communauté.
           </p>
         </Point>
         <Point label="Pourquoi c'est utile en IRL">

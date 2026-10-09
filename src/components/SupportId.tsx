@@ -4,7 +4,7 @@ import { useState } from "react";
 import { site } from "@/lib/site";
 
 // ID support du compte (SYX-XXXX-XXXX) : bouton Copier, et « Ouvrir un ticket Discord » qui copie l'ID avant d'ouvrir
-// le serveur. Le support se fait uniquement sur Discord.
+// le serveur.
 
 async function copyText(text: string) {
   try {

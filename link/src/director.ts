@@ -282,17 +282,26 @@ export class AiDirector {
       if (current < 0 || alive.some((a) => a.idx === current)) return current >= 0 ? current : null;
       return alive[0].idx;
     }
-    const list = alive.map((a, n) => `Image ${n + 1} = caméra ${a.idx + 1} : ${cams[a.idx].label || cams[a.idx].source}`).join("\n");
+    const curDead = current >= 0 && !alive.some((a) => a.idx === current);
+    // Une seule caméra vivante et celle à l'antenne est tombée : inutile de demander, on la prend.
+    if (curDead && alive.length === 1) return alive[0].idx;
+    // Numérotation par position (Image 1, Image 2...) : plus simple à suivre pour un petit modèle que des numéros de caméra qui sautent.
+    const list = alive.map((a, n) => `Image ${n + 1} : ${cams[a.idx].label || cams[a.idx].source}`).join("\n");
+    const onAir = alive.findIndex((a) => a.idx === current);
     const prompt =
       `Tu es le réalisateur d'un direct. Chaque image est la vue actuelle d'une caméra.\n${list}\n` +
-      `Caméra actuellement au programme : ${current >= 0 ? current + 1 : "aucune (plan large)"}.\n` +
+      `À l'antenne : ${onAir >= 0 ? `image ${onAir + 1}` : "plan large"}.\n` +
       `Consignes du streamer : ${this.cfg.rules}\n` +
-      `Réponds uniquement par un objet JSON : {"camera": <numéro de caméra>, "raison": "<5 mots>"}. Choisis parmi : ${alive.map((a) => a.idx + 1).join(", ")}.`;
+      `Réponds uniquement par un objet JSON : {"image": <numéro de l'image à mettre à l'antenne>, "raison": "<5 mots>"}. Choisis parmi : ${alive.map((_, n) => n + 1).join(", ")}.`;
     const text = await this.ask(prompt, alive.map((a) => a.img));
-    const m = /"camera"\s*:\s*(\d+)/.exec(text);
-    if (!m) return null;
-    const idx = Number(m[1]) - 1;
-    return alive.some((a) => a.idx === idx) ? idx : null;
+    const m = /"(?:image|camera)"\s*:\s*(\d+)/.exec(text);
+    const picked = m ? alive[Number(m[1]) - 1]?.idx : undefined;
+    if (picked === undefined) {
+      this.log(`régie IA : réponse inexploitable « ${text.slice(0, 80).replace(/\s+/g, " ")} »`);
+      // Caméra à l'antenne tombée : mieux vaut une caméra vivante que rester sur une image figée.
+      return curDead ? alive[0].idx : null;
+    }
+    return picked;
   }
 }
 

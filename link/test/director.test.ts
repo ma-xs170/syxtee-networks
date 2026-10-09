@@ -118,7 +118,7 @@ test("régie IA : la caméra à l'antenne meurt = bascule immédiate sur une viv
 
 test("régie IA : une scène de caméra mise à l'antenne à la main est reprise, et bascule seule si sa caméra tombe", async () => {
   const { o, d, frame } = setup("Cam Osmo");
-  o.answer = '{"camera": 2}';
+  o.answer = '{"image": 1}';
   frame();
   await d.tick(2000);
   assert.equal(o.scene, "Cam Osmo"); // caméra vivante, avis de l'IA seulement 1 fois : on ne bouge pas
@@ -185,6 +185,20 @@ test("mode non économe : l'IA est interrogée à chaque analyse", async () => {
     await d.tick(t);
   }
   assert.equal(o.asked.length, 3);
+});
+
+test("régie IA : caméra à l'antenne tombée et réponse illisible = repli sur une caméra vivante ; seule vivante = pas de question", async () => {
+  const { o, d, frame } = setup("Cam Osmo");
+  o.answer = "je ne sais pas";
+  frame();
+  await d.tick(2000);
+  assert.equal(o.scene, "Cam Osmo");
+  const asked = o.asked.length;
+  o.iphone = beau(901); // l'Osmo se fige
+  o.drone = "";
+  await d.tick(4000);
+  assert.equal(o.scene, "Cam iPhone");
+  assert.equal(o.asked.length, asked); // une seule caméra vivante : l'IA n'est pas interrogée
 });
 
 test("régie IA : scène autre que Live ou la nôtre = rien ne bascule ; réponse illisible = rien ne change", async () => {

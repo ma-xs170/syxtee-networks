@@ -18,7 +18,7 @@ import { coreCall } from "./corehttp.ts";
 import { fixLiveScene, fluxName } from "./livescene.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
 
-export const VERSION = "0.7.11";
+export const VERSION = "0.7.12";
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
 export const OBS_METHODS = new Set([

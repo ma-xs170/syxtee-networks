@@ -1,4 +1,7 @@
 {
+  "0.7.12": [
+    "Régie : une caméra mise à l'antenne à la main et pas encore connectée a 8 secondes avant d'être jugée tombée (fini le va-et-vient avec un flux qui se reconnecte)"
+  ],
   "0.7.11": [
     "Régie : bascule plus rapide quand une caméra tombe (surveillance chaque seconde sans IA, serveur consulté toutes les 2 s)",
     "Régie : les caméras de la régie restent ouvertes dans OBS pour passer de l'une à l'autre sans temps de connexion"

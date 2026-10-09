@@ -246,6 +246,18 @@ test("régie IA : une caméra hors antenne dont la vignette est noire est vivant
   assert.equal(o.scene, "Cam iPhone"); // jamais le drone (flux hors ligne)
 });
 
+test("régie IA : une caméra mise à l'antenne à la main mais pas encore en ligne a 8 s de grâce avant d'être jugée tombée", async () => {
+  const { o, d, frame } = setup("Cam iPhone");
+  d.set(cfg({ provider: "none", apiKey: "" }));
+  d.liveHint = (src) => (src === "OSMO" ? true : src === "IPHONE" ? false : null);
+  frame();
+  await d.tick(2000);
+  await d.tick(4000);
+  assert.equal(o.scene, "Cam iPhone"); // dans la grâce : on ne la quitte pas
+  await d.tick(12000);
+  assert.equal(o.scene, "Cam Osmo"); // grâce finie : l'iPhone est toujours hors ligne
+});
+
 test("régie IA : scène autre que Live ou la nôtre = rien ne bascule ; réponse illisible = rien ne change", async () => {
   const a = setup("Pause");
   a.o.answer = '{"camera": 2}';

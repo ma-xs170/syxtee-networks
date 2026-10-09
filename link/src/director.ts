@@ -92,6 +92,8 @@ const MIN_IMAGE_CHARS = 2500;
 const ECO_CHANGE = 0.12;
 /** Mode économe : l'IA est interrogée au moins toutes les 30 s, même si rien ne semble avoir changé. */
 const ECO_REFRESH_MS = 30_000;
+/** Une caméra que l'utilisateur vient de mettre à l'antenne à la main a ce délai pour se connecter avant que la régie la juge tombée (flux qui se reconnecte). */
+const MANUAL_GRACE_MS = 8000;
 /** Avis concordants avant de changer de caméra. */
 const AGREE = 2;
 
@@ -118,6 +120,10 @@ export class AiDirector {
   private lastRun = 0;
   private since = 0;
   private candidate = -1;
+  /** Heure de la mise à l'antenne manuelle de la caméra en cours (0 : c'est la régie qui l'a choisie). */
+  private manualAt = 0;
+  /** La caméra mise à l'antenne à la main a été vue vivante depuis : plus de grâce, si elle tombe on bascule. */
+  private manualSeen = false;
   private votes = 0;
   /** Dernière consultation de l'IA : caméras vivantes et taille de leur vignette, pour le mode économe. */
   /** Dernier balayage : caméras vivantes et heure, pour que le secours sache si une autre caméra peut prendre le relais. */
@@ -162,6 +168,7 @@ export class AiDirector {
     this.candidate = -1;
     this.votes = 0;
     this.since = 0;
+    this.manualAt = 0;
     this.asked = null;
     this.setState("idle", "");
   }
@@ -215,6 +222,8 @@ export class AiDirector {
     if (onAir >= 0 && onAir !== this.current && (cur !== this.live || liveIsCam)) {
       this.current = onAir;
       this.since = now;
+      this.manualAt = now;
+      this.manualSeen = false;
       this.candidate = -1;
       this.votes = 0;
       this.setState("cam", cams[onAir].label || cams[onAir].source);
@@ -277,6 +286,9 @@ export class AiDirector {
       return;
     }
     const curAlive = this.current >= 0 && alive.some((a) => a.idx === this.current);
+    // Caméra mise à l'antenne à la main et pas encore en ligne (le flux se reconnecte) : on lui laisse le temps avant de la juger tombée.
+    if (curAlive) this.manualSeen = true;
+    if (this.current >= 0 && !curAlive && !this.manualSeen && this.manualAt > 0 && now - this.manualAt < MANUAL_GRACE_MS) return;
     // Mode économe : si les mêmes caméras sont vivantes et que leurs images n'ont pas notablement changé, on ne dérange pas l'IA.
     // Un avis en attente de confirmation (candidat) force toujours une deuxième consultation.
     if (this.cfg.eco && this.candidate < 0 && this.skipAsk(alive, now)) return;
@@ -307,6 +319,7 @@ export class AiDirector {
     this.log(`régie IA : « ${cams[pick].label || cams[pick].source} » au programme`);
     this.current = pick;
     this.since = now;
+    this.manualAt = 0;
     this.candidate = -1;
     this.votes = 0;
     this.setState("cam", cams[pick].label || cams[pick].source);

@@ -225,6 +225,26 @@ test("régie IA : canTakeOver dit si une autre caméra que la source du secours 
   void o;
 });
 
+test("régie IA : une caméra hors antenne dont la vignette est noire est vivante si le serveur dit que son flux est en ligne", async () => {
+  const { o, d, frame } = setup("Cam Osmo");
+  d.set(cfg({ provider: "none", apiKey: "" }));
+  d.liveHint = (src) => (src === "IPHONE" ? true : src === "DRONE" ? false : null);
+  frame();
+  await d.tick(2000);
+  o.iphone = "x"; // OBS ne rend pas l'iPhone (scène hors antenne) : vignette noire
+  o.drone = "x";
+  frame();
+  o.iphone = "x";
+  o.drone = "x";
+  await d.tick(4000);
+  assert.equal(o.scene, "Cam Osmo");
+  o.osmo = beau(9999); // l'Osmo se fige au tick suivant
+  await d.tick(6000);
+  o.osmo = beau(9999);
+  await d.tick(8000);
+  assert.equal(o.scene, "Cam iPhone"); // jamais le drone (flux hors ligne)
+});
+
 test("régie IA : scène autre que Live ou la nôtre = rien ne bascule ; réponse illisible = rien ne change", async () => {
   const a = setup("Pause");
   a.o.answer = '{"camera": 2}';

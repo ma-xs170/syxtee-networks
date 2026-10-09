@@ -17,7 +17,7 @@ import { useRemote, type LinkEvent } from "./useRemote";
 type Item = { id: number; name: string; kind: string; on: boolean; flux?: boolean };
 type Mix = { name: string; muted: boolean; db: number; mon: string; global: boolean };
 type Trigger = "cut" | "cut_lowbitrate" | "sensitive";
-type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioBackup?: boolean; directorEnabled?: boolean; directorKeySet?: boolean; directorKey?: string; directorClearKey?: boolean; directorCams?: { source: string; scene: string; label: string }[]; directorRules?: string; directorInterval?: number; directorHold?: number; directorState?: string; directorCam?: number; directorReason?: string; directorWorkspaceId?: string; directorProvider?: "none" | "mistral" | "anthropic" | "local"; directorModel?: string; directorEco?: boolean; audioState?: string };
+type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioBackup?: boolean; directorEnabled?: boolean; directorKeySet?: boolean; directorKey?: string; directorClearKey?: boolean; directorCams?: { source: string; scene: string; label: string }[]; directorRules?: string; directorInterval?: number; directorHold?: number; directorState?: string; directorCam?: number; directorReason?: string; directorWorkspaceId?: string; directorProvider?: "none" | "mistral" | "anthropic" | "local"; directorModel?: string; directorEco?: boolean; lowLatency?: boolean; audioState?: string };
 type Stats = { cpu: number; fps: number; kbps: number | null; dropped: number; total: number; encoder: string; congestion: number; streamMs: number; recMs: number };
 type Named = { current: string; list: string[] };
 type Tab = "scenes" | "sources" | "mixer" | "controls" | "multi" | "chat";
@@ -859,6 +859,13 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                 <Switch label="Auto-gérance" on={!!roles.autoEnabled} disabled={noPrises || !roles.droneSource || !roles.droneScene || !roles.liveScene} onClick={() => saveRoles({ autoEnabled: !roles.autoEnabled })} />
               </div>
               {noPrises && upsell("L'auto-gérance du drone et les autres prises", "Signature")}
+              <div className="mt-5 flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-medium">Faible latence des flux</p>
+                  <p className="text-[12px] text-neutral-500">Évite le retard qui s&apos;accumule quand une scène n&apos;est pas à l&apos;antenne : le flux est rouvert à chaque passage (environ 1 s de chargement).</p>
+                </div>
+                <Switch label="Faible latence des flux" on={roles.lowLatency !== false} disabled={oldAgent} onClick={() => saveRoles({ lowLatency: roles.lowLatency === false })} />
+              </div>
               <h3 className="mt-5 text-[12px] font-semibold uppercase tracking-wide text-neutral-400">Autres prises</h3>
               <p className="mt-1 text-[12px] leading-relaxed text-neutral-500">Même principe pour une autre caméra, un écran ou un invité : belle image sur la source, on passe sur sa scène. Le drone passe en premier, puis la liste dans l&apos;ordre.</p>
               {(roles.autoRules ?? []).map((r, i) => (

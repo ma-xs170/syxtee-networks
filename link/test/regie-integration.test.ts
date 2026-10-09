@@ -8,12 +8,14 @@ import { AiDirector, DEFAULT_DIRECTOR } from "../src/director.ts";
 const beau = (n: number) => `${n}`.padEnd(3000, "x");
 
 function rig(initial: string, interval = 2) {
-  const o = { scene: initial, osmo: "", iphone: "", muted: false, switches: [] as string[], n: 0 };
+  const o = { scene: initial, osmo: "", iphone: "", live: { osmo: true, iphone: true }, muted: false, switches: [] as string[], n: 0 };
   const req = async (t: string, d?: Record<string, unknown>) => {
     if (t === "GetSourceScreenshot") {
+      // Comme OBS : une source dont la scène n'est pas à l'antenne n'est pas rendue (vignette noire, toujours la même).
+      const onAir = (d?.sourceName === "OSMO" && o.scene === "IRL Osmo") || (d?.sourceName === "IPHONE" && o.scene === "IRL iPhone");
       const img = d?.sourceName === "OSMO" ? o.osmo : d?.sourceName === "IPHONE" ? o.iphone : "";
       if (img === "") throw new Error("source absente");
-      return { imageData: img };
+      return { imageData: onAir ? img : "x" };
     }
     if (t === "GetCurrentProgramScene") return { currentProgramSceneName: o.scene };
     if (t === "SetCurrentProgramScene") {
@@ -43,10 +45,12 @@ function rig(initial: string, interval = 2) {
       { source: "IPHONE", scene: "IRL iPhone", label: "iPhone" },
     ],
   });
+  director.liveHint = (src) => (src === "OSMO" ? o.live.osmo : src === "IPHONE" ? o.live.iphone : null);
   watcher.defer = (s) => director.canTakeOver(s, o.n * 1000);
   /** Une seconde de direct : les images des caméras vivantes bougent, puis les trois automatismes tournent. */
   const second = async (live: { osmo: boolean; iphone: boolean }) => {
     o.n++;
+    o.live = live;
     if (live.osmo) o.osmo = beau(o.n * 2);
     if (live.iphone) o.iphone = beau(o.n * 2 + 1);
     await watcher.tick();

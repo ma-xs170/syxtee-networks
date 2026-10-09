@@ -15,10 +15,10 @@ import { backupV2, LegacyCore, restoreV2 } from "./backup2.ts";
 import { createArchive, plan, restoreArchive } from "./scenesync.ts";
 import { osLabel } from "./system.ts";
 import { coreCall } from "./corehttp.ts";
-import { fixLiveScene } from "./livescene.ts";
+import { fixLiveScene, fluxName } from "./livescene.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
 
-export const VERSION = "0.7.9";
+export const VERSION = "0.7.10";
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
 export const OBS_METHODS = new Set([
@@ -73,6 +73,7 @@ export class Agent {
   private previewMgr: ReturnType<typeof setInterval> | null = null;
   private relayMgr: ReturnType<typeof setInterval> | null = null;
   private bitrateMgr: ReturnType<typeof setInterval> | null = null;
+  private liveMgr: ReturnType<typeof setInterval> | null = null;
   /** Flux (relais) du compte, avec l'adresse de lecture pour OBS : jamais montrée dans une interface. */
   relays: RelayLite[] = [];
   private relaysAt = 0;
@@ -117,6 +118,11 @@ export class Agent {
     this.watcher.defer = (source) => this.director.canTakeOver(source);
     this.director.fallbackScene = cfg.backup.scene;
     this.director.backupActive = () => this.watcher.state === "backup";
+    // Flux en ligne côté serveur : seul signal fiable pour une caméra dont la scène n'est pas à l'antenne (OBS ne la rend pas).
+    this.director.liveHint = (source) => {
+      const r = this.relays.find((x) => fluxName(x.name) === source);
+      return r ? r.live : null;
+    };
     this.director.onChange = (state, cam, reason) => this.send({ type: "event", name: "link.directorState", data: { state, cam, reason } });
     this.audio.onChange = (s) => this.send({ type: "event", name: "link.audioState", data: { state: s } });
     this.watcher.onChange = (s) => {
@@ -141,6 +147,7 @@ export class Agent {
     this.previewMgr = setInterval(() => void this.managePreview(), 5000);
     this.relayMgr = setInterval(() => void this.syncRelays(), 30_000);
     this.bitrateMgr = setInterval(() => void this.pollBitrate(), 2000);
+    this.liveMgr = setInterval(() => void this.refreshLive(), 4000);
     void this.previewLoop();
   }
 
@@ -152,6 +159,7 @@ export class Agent {
     if (this.previewMgr) clearInterval(this.previewMgr);
     if (this.relayMgr) clearInterval(this.relayMgr);
     if (this.bitrateMgr) clearInterval(this.bitrateMgr);
+    if (this.liveMgr) clearInterval(this.liveMgr);
     void this.stopWhip();
     if (this.previewTimer) clearTimeout(this.previewTimer);
     this.core?.close();
@@ -180,7 +188,7 @@ export class Agent {
 
   /** Auto-gérance telle que l'interface la lit (champs à plat). */
   private autoView() {
-    return { autoEnabled: this.cfg.auto.enabled, droneScene: this.cfg.auto.droneScene, droneSource: this.cfg.auto.droneSource, autoRules: this.cfg.auto.rules, audioEnabled: this.cfg.audio.enabled, audioSource: this.cfg.audio.source, audioSeconds: this.cfg.audio.seconds, audioUnmute: this.cfg.audio.unmute, audioBackup: this.cfg.audio.backup, audioState: this.audio.state, directorEnabled: this.cfg.director.enabled, directorKeySet: !!this.cfg.director.apiKey, directorProvider: this.cfg.director.provider, directorEco: this.cfg.director.eco, directorModel: this.cfg.director.model, directorWorkspaceId: this.cfg.director.workspaceId, directorCams: this.cfg.director.cams, directorRules: this.cfg.director.rules, directorInterval: this.cfg.director.interval, directorHold: this.cfg.director.hold, directorState: this.director.state, directorCam: this.director.current, directorReason: this.director.lastReason };
+    return { autoEnabled: this.cfg.auto.enabled, droneScene: this.cfg.auto.droneScene, droneSource: this.cfg.auto.droneSource, autoRules: this.cfg.auto.rules, audioEnabled: this.cfg.audio.enabled, audioSource: this.cfg.audio.source, audioSeconds: this.cfg.audio.seconds, audioUnmute: this.cfg.audio.unmute, audioBackup: this.cfg.audio.backup, audioState: this.audio.state, lowLatency: this.cfg.lowLatency, directorEnabled: this.cfg.director.enabled, directorKeySet: !!this.cfg.director.apiKey, directorProvider: this.cfg.director.provider, directorEco: this.cfg.director.eco, directorModel: this.cfg.director.model, directorWorkspaceId: this.cfg.director.workspaceId, directorCams: this.cfg.director.cams, directorRules: this.cfg.director.rules, directorInterval: this.cfg.director.interval, directorHold: this.cfg.director.hold, directorState: this.director.state, directorCam: this.director.current, directorReason: this.director.lastReason };
   }
 
   /** Requête directe à OBS (listes de scènes et de sources pour l'interface). */
@@ -334,6 +342,33 @@ export class Agent {
       await this.obs.request("link.syncRelays", { relays: this.relays.map((s) => ({ id: s.id, name: s.name, url: s.obs_srt_url, live: s.live })) }).catch(() => {});
     }
     return true;
+  }
+
+  /**
+   * Faible latence : les sources « Flux › » (entrées média SRT) se vident à la fermeture. Sans cela, OBS laisse le flux se remplir en coulisses
+   * quand sa scène n'est pas à l'antenne et le rejoue en retard à la réapparition. Fermeture à l'inactivité = flux frais à chaque passage à l'antenne
+   * (environ une seconde de chargement). Désactivé : réglages d'origine du plugin.
+   */
+  async applyLatency(): Promise<void> {
+    if (!this.obs.connected) return;
+    try {
+      const list = ((await this.obs.request("GetInputList")).inputs as { inputName?: string }[]) ?? [];
+      const names = list.map((i) => String(i.inputName ?? "")).filter((n) => n.startsWith("Flux ›"));
+      const settings = this.cfg.lowLatency ? { close_when_inactive: true, buffering_mb: 1 } : { close_when_inactive: false, buffering_mb: 2 };
+      for (const inputName of names) await this.obs.request("SetInputSettings", { inputName, inputSettings: settings, overlay: true }).catch(() => {});
+      if (names.length) this.log(`faible latence ${this.cfg.lowLatency ? "activée" : "désactivée"} sur ${names.length} flux`);
+    } catch {
+      /* OBS ne répond pas : réessayé à la prochaine connexion */
+    }
+  }
+
+  /** Met à jour seulement l'état « en ligne » des flux (toutes les 4 s, seulement si la régie des caméras est active) : sans les effets de syncRelays. */
+  private async refreshLive() {
+    if (this.stopped || !this.cfg.token || !this.cfg.director.enabled || this.status.core !== "on") return;
+    const r = await coreCall(this.cfg, "GET", "/v1/link/streams");
+    if (!r.ok) return;
+    const live = new Map(((r.json.streams as { id: string; live: boolean }[]) ?? []).map((s) => [s.id, !!s.live]));
+    for (const rel of this.relays) if (live.has(rel.id)) rel.live = live.get(rel.id)!;
   }
 
   /** Débit du flux de destination, une fois toutes les 2 s, seulement si un déclenchement au débit est choisi. */
@@ -490,6 +525,7 @@ export class Agent {
       this.status.obsVersion = String(v.obsVersion ?? wsVersion);
       this.status.lastError = "";
       this.log(`OBS ${this.status.obsVersion} connecté`);
+      void this.applyLatency();
       this.obs.onEvent = (name, data) => {
         if (name === "InputVolumeMeters") return this.meters(data);
         if (name === "link.needRelays") {
@@ -651,6 +687,10 @@ export class Agent {
         // Auto-gérance (drone) : champs à plat dans la même requête que les rôles de scènes.
         this.cfg.auto = cleanAuto({ enabled: params.autoEnabled, droneScene: params.droneScene, droneSource: params.droneSource, rules: params.autoRules }, this.cfg.auto);
         this.cfg.audio = cleanAudio({ enabled: params.audioEnabled, source: params.audioSource, seconds: params.audioSeconds, unmute: params.audioUnmute, backup: params.audioBackup }, this.cfg.audio);
+        if (typeof params.lowLatency === "boolean" && params.lowLatency !== this.cfg.lowLatency) {
+          this.cfg.lowLatency = params.lowLatency;
+          void this.applyLatency();
+        }
         this.cfg.director = cleanDirector({ enabled: params.directorEnabled, apiKey: params.directorKey, clearKey: params.directorClearKey, provider: params.directorProvider, eco: params.directorEco, model: params.directorModel, workspaceId: params.directorWorkspaceId, cams: params.directorCams, rules: params.directorRules, interval: params.directorInterval, hold: params.directorHold }, this.cfg.director);
         this.director.set(this.cfg.director);
         this.director.setLive(this.cfg.liveScene);

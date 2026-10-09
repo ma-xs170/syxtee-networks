@@ -106,6 +106,8 @@ export class AiDirector {
   /** Scène de secours du « Connexion perdue » et question « est-elle à l'antenne à cause du secours ? » : la régie reprend alors la main dès qu'une caméra revient. */
   fallbackScene = "";
   backupActive: () => boolean = () => false;
+  /** Le flux de cette source est-il en ligne côté serveur ? null : inconnu. OBS ne rend pas une source qui n'est dans aucune scène à l'antenne (vignette noire) : pour une caméra hors antenne, c'est ce signal qui dit si elle est vivante. */
+  liveHint: (source: string) => boolean | null = () => null;
   private req: Req;
   private ask: Ask;
   private log: (m: string) => void;
@@ -230,7 +232,10 @@ export class AiDirector {
       const img = await this.shot(cams[i].source);
       const moved = img !== "" && img !== this.last.get(cams[i].source);
       this.last.set(cams[i].source, img);
-      if (img.length > MIN_IMAGE_CHARS && moved) alive.push({ idx: i, img });
+      const seen = img.length > MIN_IMAGE_CHARS && moved;
+      // Caméra à l'antenne : la vignette est fiable (image figée = tombée). Caméra hors antenne : la vignette est noire, on se fie au serveur.
+      const hint = cams[i].scene === cur ? null : this.liveHint(cams[i].source);
+      if (hint === true || (hint === null && seen)) alive.push({ idx: i, img });
     }
     this.scan = { at: now, sources: alive.map((a) => cams[a.idx].source) };
     if (this.state === "idle") this.setState("watching", "");

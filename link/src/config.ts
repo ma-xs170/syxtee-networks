@@ -24,6 +24,8 @@ export type LinkConfig = {
   previewEnabled: boolean;
   /** Fait une fois après la connexion : la proposition de sauvegarde a été vue (acceptée ou repoussée). */
   onboarded: boolean;
+  /** Faible latence des sources « Flux › » : OBS ferme et rouvre le flux quand sa scène quitte puis reprend l'antenne (plus d'accumulation de retard), tampon réduit. */
+  lowLatency: boolean;
   obs: { host: string; port: number; password: string };
   backup: BackupConfig;
   /** Auto-gérance : prises de drone qui s'enchaînent toutes seules avec la scène Live. */
@@ -37,7 +39,7 @@ export type LinkConfig = {
 export const DEFAULT_CORE = "https://15-235-25-77.sslip.io";
 export const DEFAULT_SITE = "https://syxtee-networks.vercel.app";
 
-export const defaults = (): LinkConfig => ({ core: DEFAULT_CORE, site: DEFAULT_SITE, token: "", refresh: "", expires: 0, destination: "", liveScene: "", autoBackup: {}, lastBackup: {}, previewEnabled: true, onboarded: false, obs: { host: "127.0.0.1", port: 4455, password: "" }, backup: DEFAULT_BACKUP, auto: DEFAULT_AUTO, audio: DEFAULT_AUDIO, director: DEFAULT_DIRECTOR });
+export const defaults = (): LinkConfig => ({ core: DEFAULT_CORE, site: DEFAULT_SITE, token: "", refresh: "", expires: 0, destination: "", liveScene: "", autoBackup: {}, lastBackup: {}, previewEnabled: true, onboarded: false, lowLatency: true, obs: { host: "127.0.0.1", port: 4455, password: "" }, backup: DEFAULT_BACKUP, auto: DEFAULT_AUTO, audio: DEFAULT_AUDIO, director: DEFAULT_DIRECTOR });
 
 /** Dictionnaire nettoyé : clés courtes, valeurs acceptées par `ok` seulement. */
 function recordOf<T>(v: unknown, ok: (x: unknown) => boolean): Record<string, T> {
@@ -67,6 +69,7 @@ export function load(): LinkConfig {
       lastBackup: recordOf(j.lastBackup, (v) => typeof v === "string" && !Number.isNaN(Date.parse(v))),
       previewEnabled: j.previewEnabled !== false,
       onboarded: j.onboarded === true,
+      lowLatency: j.lowLatency !== false,
       obs: { host: j.obs?.host || d.obs.host, port: Number(j.obs?.port) || d.obs.port, password: j.obs?.password ?? "" },
       backup: cleanBackup(j.backup),
       auto: cleanAuto(j.auto),

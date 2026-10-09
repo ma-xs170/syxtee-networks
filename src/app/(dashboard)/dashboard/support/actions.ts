@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/dal";
 import { addMessage, deleteTicket, getThread, savePhotos, WAITING_AGENT_TEXT } from "@/lib/support";
-import { isCategory } from "@/lib/support-categories";
+import { CATEGORY_FORMS, isCategory } from "@/lib/support-categories";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // Support côté client : ouvrir un ticket, écrire dans son fil (écrire dans un ticket résolu le rouvre), le clore.
@@ -22,6 +22,18 @@ export async function createTicketAction(_prev: SupportState, form: FormData): P
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide." };
   const category = form.get("category");
   if (!isCategory(category)) return { error: "Choisis une catégorie." };
+  // Champs propres à la catégorie : validés contre la liste, puis ajoutés en tête du message.
+  const details: string[] = [];
+  for (const f of CATEGORY_FORMS[category].fields) {
+    const v = String(form.get(`f_${f.name}`) ?? "").trim().slice(0, 200);
+    if (!v) {
+      if (f.required) return { error: `${f.label} : obligatoire.` };
+      continue;
+    }
+    if (f.type === "select" && !(f.options ?? []).includes(v)) return { error: `${f.label} : choix invalide.` };
+    details.push(`${f.label} : ${v}`);
+  }
+  const fullBody = [details.join("\n"), parsed.data.body].filter(Boolean).join("\n\n").slice(0, 4000);
   if (!parsed.data.body && !hasPhotos(form)) return { error: "Écris ton message ou ajoute une photo." };
   const db = createAdminClient();
   const open = await db.from("support_tickets").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "open");
@@ -36,7 +48,7 @@ export async function createTicketAction(_prev: SupportState, form: FormData): P
     await db.from("support_tickets").delete().eq("id", ticket.id);
     return { error: photos.error };
   }
-  await addMessage({ ticket_id: ticket.id, author_id: user.id, from_staff: false, body: parsed.data.body, attachments: photos.attachments });
+  await addMessage({ ticket_id: ticket.id, author_id: user.id, from_staff: false, body: fullBody, attachments: photos.attachments });
   // Message automatique : le client sait qu'on cherche un agent (le suivant, signé, arrive à la prise en charge).
   await addMessage({ ticket_id: ticket.id, author_id: null, from_staff: true, body: WAITING_AGENT_TEXT, kind: "system" });
   revalidatePath("/dashboard/support");

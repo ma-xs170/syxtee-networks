@@ -18,6 +18,7 @@ import TeamUI, { type MemberView } from "@/app/(admin)/admin/equipe/TeamUI";
 import type { DevicesDemo } from "@/components/dashboard/useLinkDevices";
 import RelayList from "@/components/relais/RelayList";
 import TicketChat from "@/components/support/TicketChat";
+import NewTicketForm from "@/components/support/NewTicketForm";
 import AccountSheet from "@/app/(admin)/admin/comptes/AccountSheet";
 import type { Overview as OverviewData, LiveSession } from "@/lib/dashboard-data";
 import type { RelayRow } from "@/lib/relay-groups";
@@ -156,6 +157,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           tab="resume"
         />
       )}
+      {tool === "demande" && <NewTicketForm category="relais" />}
       {tool === "ticket" && (
         <TicketChat
           viewer="user"
@@ -302,7 +304,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           }))}
         />
       )}
-      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "membres", "equipe", "controle-obs", "backups", "compte", "ticket"].includes(tool) && notFound()}
+      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "membres", "equipe", "controle-obs", "backups", "compte", "ticket", "demande"].includes(tool) && notFound()}
     </div>
   );
 }

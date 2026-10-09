@@ -22,7 +22,7 @@ export const ingestUrl = (r: Pick<RelayView, "protocol" | "urls">) => (r.protoco
 
 const btn = "h-10 whitespace-nowrap rounded-full border border-line px-4 text-sm transition-colors hover:bg-foreground/10 disabled:opacity-40";
 
-export default function RelayActions({ relay, showView = true, onView }: { relay: RelayView; showView?: boolean; onView?: () => void }) {
+export default function RelayActions({ relay, showView = true, onView, bare = false }: { relay: RelayView; showView?: boolean; onView?: () => void; /** Sans boutons : seules les fenêtres de confirmation, ouvertes par l'événement « relay-action » (menus ⋮ de la page). */ bare?: boolean }) {
   const router = useRouter();
   const [menu, setMenu] = useState(false);
   const [ask, setAsk] = useState<Pending>(null);
@@ -35,6 +35,19 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
   const [pending, start] = useTransition();
   const menuRef = useRef<HTMLDivElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
+
+  // Page du serveur : les menus ⋮ ouvrent les fenêtres d'ici par un événement (relay-action).
+  useEffect(() => {
+    const on = (e: Event) => {
+      const d = (e as CustomEvent<{ id: string; action: string }>).detail;
+      if (d?.id !== relay.id) return;
+      if (d.action === "copy") void copy();
+      else open(d.action as Exclude<Pending, null>);
+    };
+    window.addEventListener("relay-action", on);
+    return () => window.removeEventListener("relay-action", on);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [relay.id, relay.name, relay.switch_trigger]);
 
   useEffect(() => {
     if (!menu) return;
@@ -84,8 +97,10 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
       if (ask === "archive") r = await archiveRelayAction(relay.id, !relay.archived);
       if (ask === "delete") r = await deleteRelayAction(relay.id);
       if (r.error) return setError(r.error);
+      const wasDelete = ask === "delete";
       setAsk(null);
-      router.refresh();
+      if (wasDelete) router.push("/dashboard/relais");
+      else router.refresh();
     });
   }
 
@@ -121,18 +136,18 @@ export default function RelayActions({ relay, showView = true, onView }: { relay
   const t = ask ? texts[ask] : null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {!relay.archived && (
+    <div className={bare ? "contents" : "flex flex-wrap items-center gap-2"}>
+      {!bare && !relay.archived && (
         <button type="button" onClick={copy} className={btn} aria-label={`Copier l'URL de ${relay.name}`}>
           <span aria-live="polite">{copied ? "Copié" : "Copier l'URL"}</span>
         </button>
       )}
-      {showView && (
+      {!bare && showView && (
         <button type="button" onClick={onView} className={btn}>
           Voir
         </button>
       )}
-      <div ref={menuRef} className="relative">
+      <div ref={menuRef} className={bare ? "hidden" : "relative"}>
         <button type="button" onClick={() => setMenu((v) => !v)} aria-expanded={menu} aria-haspopup="menu" className={btn} aria-label={`Plus d'actions pour ${relay.name}`}>
           Plus
         </button>

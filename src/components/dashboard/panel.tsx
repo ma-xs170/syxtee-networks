@@ -40,7 +40,9 @@ export function Pill({ tone = "idle", children }: { tone?: Tone; children: React
 }
 
 /** Menu ⋮ d'une ligne : une liste de liens. */
-export function RowMenu({ label, items }: { label: string; items: { label: string; href: string }[] }) {
+export type MenuItem = { label: string; href?: string; /** Action de serveur (relay-action) : ouvre une fenêtre de confirmation de la page. */ action?: { id: string; action: string }; danger?: boolean };
+
+export function RowMenu({ label, items }: { label: string; items: MenuItem[] }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -62,11 +64,26 @@ export function RowMenu({ label, items }: { label: string; items: { label: strin
       </button>
       {open && (
         <div role="menu" className="absolute right-0 top-full z-30 mt-2 min-w-48 overflow-hidden rounded-xl border border-line-strong bg-[var(--surface-2)] py-1 shadow-[0_18px_40px_rgba(0,0,0,0.6)]">
-          {items.map((i) => (
-            <Link key={i.href + i.label} role="menuitem" href={i.href} onClick={() => setOpen(false)} className="block px-4 py-2.5 text-sm transition-colors hover:bg-foreground/[0.08]">
-              {i.label}
-            </Link>
-          ))}
+          {items.map((i) =>
+            i.action ? (
+              <button
+                key={i.label}
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setOpen(false);
+                  window.dispatchEvent(new CustomEvent("relay-action", { detail: i.action }));
+                }}
+                className={`block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-foreground/[0.08] ${i.danger ? "text-red-300" : ""}`}
+              >
+                {i.label}
+              </button>
+            ) : (
+              <Link key={i.href + i.label} role="menuitem" href={i.href ?? "#"} onClick={() => setOpen(false)} className="block px-4 py-2.5 text-sm transition-colors hover:bg-foreground/[0.08]">
+                {i.label}
+              </Link>
+            ),
+          )}
         </div>
       )}
     </div>
@@ -74,7 +91,7 @@ export function RowMenu({ label, items }: { label: string; items: { label: strin
 }
 
 /** Ligne : libellé en gras, valeur dessous, menu ⋮ à droite. */
-export function Item({ label, hint, children, menu }: { label: string; hint?: string; children: ReactNode; menu?: { label: string; items: { label: string; href: string }[] } }) {
+export function Item({ label, hint, children, menu }: { label: string; hint?: string; children: ReactNode; menu?: { label: string; items: MenuItem[] } }) {
   return (
     <div className="flex items-start justify-between gap-4 py-5">
       <div className="min-w-0">

@@ -7,7 +7,7 @@ import PlanGate from "@/components/plans/PlanGate";
 import RelayActions from "@/components/relais/RelayActions";
 import RelayAnalysis from "@/components/relais/RelayAnalysis";
 import RelayUrls from "@/components/relais/RelayUrls";
-import { Card, Item, Pill, RowMenu, TabsNav } from "@/components/dashboard/panel";
+import { ActionButton, Card, Fact, Item, Pill, RowMenu, Setting, TabsNav } from "@/components/dashboard/panel";
 import ProtocolBadge from "@/components/relais/ProtocolBadge";
 import { getRelay, publicCoreUrl } from "@/lib/core";
 import { getProfile } from "@/lib/auth/dal";
@@ -112,73 +112,58 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
         ) : (
           <>
             {tab === "info" && (
-              <div className="space-y-5">
-                {/* Adresses en premier : c'est ce qu'on vient chercher */}
-                {!relay.archived && (
-                  <Card title="Adresses de connexion">
-                    <div className="py-5">
-                      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                        <p className="max-w-[60ch] text-xs text-muted">Elles contiennent la clé de ce serveur : ne les partage pas et ne les montre pas en direct.</p>
-                        <RowMenu label="Actions des adresses" items={[act("Copier l'adresse", "copy"), act("Régénérer la clé", "rotate", true)]} />
+              <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+                <div className="min-w-0 space-y-6">
+                  {/* 1. De quoi se connecter */}
+                  {!relay.archived && (
+                    <Card title="Se connecter">
+                      <div className="py-5">
+                        <p className="mb-5 max-w-[62ch] text-sm leading-relaxed text-muted">
+                          Colle l&apos;adresse correspondant à ton appareil ou à ton logiciel. Elle contient la clé de ce serveur : ne la partage pas et ne la montre pas en direct.
+                        </p>
+                        <RelayUrls relay={relay} />
                       </div>
-                      <RelayUrls relay={relay} />
-                    </div>
-                  </Card>
-                )}
+                    </Card>
+                  )}
 
-                <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-3">
-                  <Card title="Informations générales">
-                    <Item label="Nom" menu={{ label: "Actions du nom", items: [act("Renommer", "rename")] }}>
-                      <p><strong>{relay.name}</strong></p>
-                    </Item>
-                    <Item
-                      label="Statut du serveur"
-                      menu={{ label: "Actions du statut", items: [act(relay.archived ? "Réactiver" : "Archiver", "archive"), act("Supprimer", "delete", true)] }}
-                    >
-                      <Pill tone={relay.archived ? "idle" : "ok"}>{relay.archived ? "Archivé" : "Actif"}</Pill>
-                    </Item>
-                    <Item label="État de la diffusion">
-                      <Pill tone={relay.live ? "live" : "idle"}>{relay.live ? "En direct" : relay.last_live_at ? "Hors direct" : "Jamais utilisé"}</Pill>
-                    </Item>
-                    <Item label="Protocole">
-                      <ProtocolBadge protocol={relay.protocol} />
-                    </Item>
+                  {/* 2. Réglages modifiables */}
+                  <Card title="Réglages">
+                    <Setting label="Nom" help="Le nom de l'appareil qui utilise ce serveur." value={<span className="font-medium">{relay.name}</span>} button={<ActionButton action={{ id: relay.id, action: "rename" }}>Renommer</ActionButton>} />
+                    <Setting label="Emplacement" help="Où ton flux est reçu. Changer garde les mêmes adresses." value={<span className="font-medium">{server ? `${flag(server.cc)} ${server.city}, ${server.country}` : relay.server}</span>} button={<ActionButton action={{ id: relay.id, action: "server" }}>Changer</ActionButton>} />
+                    {!relay.archived && (
+                      <Setting label="Bascule automatique" help="Quand OBS passe sur ta scène de secours." value={<span className="font-medium">{trigger}</span>} button={<ActionButton action={{ id: relay.id, action: "trigger" }}>Modifier</ActionButton>} />
+                    )}
+                    {!relay.archived && (
+                      <Setting label="Clé de ce serveur" help={`Régénérer coupe les anciennes adresses tout de suite. ${sinceKey === "Jamais régénérée" ? "Jamais régénérée." : `Dernière fois : ${sinceKey}.`}`} button={<ActionButton action={{ id: relay.id, action: "rotate" }}>Régénérer</ActionButton>} />
+                    )}
                   </Card>
 
-                  <Card title="Configuration">
-                    <Item
-                      label="Serveur utilisé"
-                      menu={{ label: "Actions du serveur", items: [act("Changer de serveur", "server"), goto("Voir la disponibilité", "services")] }}
-                    >
-                      <p><strong>{server ? `${flag(server.cc)} ${server.city}` : relay.server}</strong></p>
-                      <p className="mt-1">{server ? server.country : ""}</p>
-                    </Item>
-                    <Item label="Latence estimée" hint={fromLabel}>
-                      <p className={`font-mono text-lg tabular-nums ${TONE[tone]}`}>{estimate != null ? `~${estimate} ms` : "Choisis ton pays dans ton profil"}</p>
-                    </Item>
-                    <Item label="Bascule automatique" hint="Quand passer sur la scène de secours" menu={{ label: "Actions de la bascule", items: [act("Changer le déclenchement", "trigger")] }}>
-                      <p><strong>{trigger}</strong></p>
-                    </Item>
-                    <Item label="Disponibilité du serveur" menu={{ label: "Actions de la disponibilité", items: [goto("Voir les services", "services")] }}>
-                      <Pill tone={serverOk ? "ok" : server?.maintenance ? "warn" : "idle"}>{serverOk ? "Opérationnel" : server?.maintenance ? "En maintenance" : "Bientôt"}</Pill>
-                    </Item>
-                  </Card>
-
-                  <Card title="Utilisation">
-                    <Item label="Date de création">
-                      <p><strong>{new Date(relay.created_at).toLocaleDateString("fr-FR", { dateStyle: "long", timeZone: "Europe/Paris" })}</strong></p>
-                    </Item>
-                    <Item label="Dernier direct">
-                      <p><strong>{relay.last_live_at ? fmtAgo(relay.last_live_at) : "Jamais"}</strong></p>
-                    </Item>
-                    <Item label="Directs sur 30 jours" menu={{ label: "Actions des statistiques", items: [goto("Voir les statistiques", "stats"), goto("Voir l'analyse", "analyse")] }}>
-                      <p><strong>{fmtInt(sessions.length)}</strong>{totalS ? ` · ${fmtDuration(totalS)}` : ""}</p>
-                    </Item>
-                    <Item label="Clé régénérée">
-                      <p><strong>{sinceKey}</strong></p>
-                    </Item>
+                  {/* 3. Zone sensible, à part */}
+                  <Card title="Archiver ou supprimer">
+                    <Setting
+                      label={relay.archived ? "Réactiver ce serveur" : "Archiver ce serveur"}
+                      help={relay.archived ? "Ses adresses remarchent tout de suite et il compte de nouveau dans ta limite." : "Ses adresses cessent de marcher, il ne compte plus dans ta limite. Tu peux le réactiver."}
+                      button={<ActionButton action={{ id: relay.id, action: "archive" }}>{relay.archived ? "Réactiver" : "Archiver"}</ActionButton>}
+                    />
+                    <Setting label="Supprimer ce serveur" help="Définitif. Tes directs restent dans l'historique." button={<ActionButton action={{ id: relay.id, action: "delete" }} danger>Supprimer</ActionButton>} />
                   </Card>
                 </div>
+
+                {/* Synthèse, toujours visible à droite */}
+                <aside className="space-y-6 lg:sticky lg:top-6">
+                  <Card title="En bref">
+                    <dl className="divide-y divide-line">
+                      <Fact label="Diffusion"><Pill tone={relay.live ? "live" : "idle"}>{relay.live ? "En direct" : relay.last_live_at ? "Hors direct" : "Jamais utilisé"}</Pill></Fact>
+                      <Fact label="Statut"><Pill tone={relay.archived ? "idle" : "ok"}>{relay.archived ? "Archivé" : "Actif"}</Pill></Fact>
+                      <Fact label="Serveur"><Pill tone={serverOk ? "ok" : server?.maintenance ? "warn" : "idle"}>{serverOk ? "Opérationnel" : server?.maintenance ? "En maintenance" : "Bientôt"}</Pill></Fact>
+                      <Fact label="Protocole"><ProtocolBadge protocol={relay.protocol} /></Fact>
+                      <Fact label={fromLabel}><span className={`font-mono tabular-nums ${TONE[tone]}`}>{estimate != null ? `~${estimate} ms` : "-"}</span></Fact>
+                      <Fact label="Dernier direct">{relay.last_live_at ? fmtAgo(relay.last_live_at) : "Jamais"}</Fact>
+                      <Fact label="Directs sur 30 jours">{fmtInt(sessions.length)}{totalS ? <span className="text-muted"> · {fmtDuration(totalS)}</span> : null}</Fact>
+                      <Fact label="Créé le">{new Date(relay.created_at).toLocaleDateString("fr-FR", { dateStyle: "long", timeZone: "Europe/Paris" })}</Fact>
+                    </dl>
+                  </Card>
+                </aside>
               </div>
             )}
 

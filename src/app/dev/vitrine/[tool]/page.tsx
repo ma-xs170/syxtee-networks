@@ -18,7 +18,8 @@ import TeamUI, { type MemberView } from "@/app/(admin)/admin/equipe/TeamUI";
 import type { DevicesDemo } from "@/components/dashboard/useLinkDevices";
 import RelayList from "@/components/relais/RelayList";
 import TicketChat from "@/components/support/TicketChat";
-import { Card, Item, Pill, TabsNav } from "@/components/dashboard/panel";
+import { ActionButton, Card, Fact, Pill, Setting, TabsNav } from "@/components/dashboard/panel";
+import RelayUrls from "@/components/relais/RelayUrls";
 import RelayAnalysis, { type Sample as AnSample } from "@/components/relais/RelayAnalysis";
 import NewTicketForm from "@/components/support/NewTicketForm";
 import AccountSheet from "@/app/(admin)/admin/comptes/AccountSheet";
@@ -172,29 +173,37 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
       })()}
       {tool === "panneau" && (
         <div>
-          <h1 className="h-page mb-6">iPhone 16 <em>Pro</em></h1>
+          <p className="text-sm text-muted">← Retour à la liste des serveurs</p>
+          <h1 className="h-page mb-6 mt-5">iPhone 16 <em>Pro</em></h1>
           <TabsNav current="info" tabs={[{ id: "info", label: "Informations générales", href: "#" }, { id: "analyse", label: "Analyse en temps réel", href: "#" }, { id: "adresses", label: "Adresses", href: "#" }, { id: "stats", label: "Statistiques", href: "#" }, { id: "services", label: "Services", href: "#" }]} />
-          <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-3">
-            <div className="space-y-5">
-              <Card title="Informations générales">
-                <Item label="Statut du serveur" menu={{ label: "Actions", items: [{ label: "Voir l'analyse", href: "#" }] }}><Pill tone="ok">Actif</Pill></Item>
-                <Item label="État de la diffusion"><Pill tone="live">En direct</Pill></Item>
-                <Item label="Protocole"><p>SRTLA</p></Item>
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="space-y-6">
+              <Card title="Se connecter"><div className="py-5"><p className="mb-5 max-w-[62ch] text-sm leading-relaxed text-muted">Colle l&apos;adresse correspondant à ton appareil ou à ton logiciel. Elle contient la clé de ce serveur : ne la partage pas.</p><RelayUrls relay={{ protocol: "srtla", urls: { srtla_url: "srtla://relais.syxtee-networks.fr:5000?streamid=demo123", srt_url: "srt://relais.syxtee-networks.fr:5001?streamid=demo123" }, obs_srt_url: "srt://relais.syxtee-networks.fr:6000?streamid=obs123" }} /></div></Card>
+              <Card title="Réglages">
+                <Setting label="Nom" help="Le nom de l'appareil qui utilise ce serveur." value={<span className="font-medium">iPhone 16 Pro</span>} button={<ActionButton href="#">Renommer</ActionButton>} />
+                <Setting label="Emplacement" help="Où ton flux est reçu. Changer garde les mêmes adresses." value={<span className="font-medium">🇨🇦 Beauharnois, Canada</span>} button={<ActionButton href="#">Changer</ActionButton>} />
+                <Setting label="Bascule automatique" help="Quand OBS passe sur ta scène de secours." value={<span className="font-medium">Coupure seulement</span>} button={<ActionButton href="#">Modifier</ActionButton>} />
+                <Setting label="Clé de ce serveur" help="Régénérer coupe les anciennes adresses tout de suite. Jamais régénérée." button={<ActionButton href="#">Régénérer</ActionButton>} />
               </Card>
-              <Card title="Services associés">
-                <Item label="Enregistrement du flux" menu={{ label: "Actions", items: [{ label: "Voir les services", href: "#" }] }}><Pill>Désactivé</Pill></Item>
+              <Card title="Archiver ou supprimer">
+                <Setting label="Archiver ce serveur" help="Ses adresses cessent de marcher, il ne compte plus dans ta limite. Tu peux le réactiver." button={<ActionButton href="#">Archiver</ActionButton>} />
+                <Setting label="Supprimer ce serveur" help="Définitif. Tes directs restent dans l'historique." button={<ActionButton href="#" danger>Supprimer</ActionButton>} />
               </Card>
             </div>
-            <Card title="Configuration">
-              <Item label="Serveur utilisé" menu={{ label: "Actions", items: [{ label: "Voir la disponibilité", href: "#" }] }}><p><strong>🇨🇦 Beauharnois</strong></p><p className="mt-1">Canada</p></Item>
-              <Item label="Latence estimée" hint="Depuis ta position"><p className="font-mono text-lg text-ok">~42 ms</p></Item>
-              <Item label="Bascule automatique" hint="Quand passer sur la scène de secours"><p><strong>Coupure seulement</strong></p></Item>
-            </Card>
-            <Card title="Utilisation">
-              <Item label="Date de création"><p><strong>3 octobre 2026</strong></p></Item>
-              <Item label="Dernier direct"><p><strong>il y a 4 h</strong></p></Item>
-              <Item label="Directs sur 30 jours"><p><strong>7</strong> · 5 h 06</p></Item>
-            </Card>
+            <aside className="space-y-6">
+              <Card title="En bref">
+                <dl className="divide-y divide-line">
+                  <Fact label="Diffusion"><Pill tone="live">En direct</Pill></Fact>
+                  <Fact label="Statut"><Pill tone="ok">Actif</Pill></Fact>
+                  <Fact label="Serveur"><Pill tone="ok">Opérationnel</Pill></Fact>
+                  <Fact label="Protocole">SRTLA</Fact>
+                  <Fact label="Depuis la Guadeloupe"><span className="font-mono text-warn">~61 ms</span></Fact>
+                  <Fact label="Dernier direct">il y a 16 h</Fact>
+                  <Fact label="Directs sur 30 jours">30<span className="text-muted"> · 1 h 07</span></Fact>
+                  <Fact label="Créé le">2 octobre 2026</Fact>
+                </dl>
+              </Card>
+            </aside>
           </div>
         </div>
       )}

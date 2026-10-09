@@ -103,3 +103,38 @@ export function Item({ label, hint, children, menu }: { label: string; hint?: st
     </div>
   );
 }
+
+/** Bouton d'une ligne de réglage : déclenche une action du serveur (fenêtre de confirmation de la page) ou ouvre un lien. */
+export function ActionButton({ children, action, href, danger = false }: { children: ReactNode; action?: { id: string; action: string }; href?: string; danger?: boolean }) {
+  const cls = `inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-full border px-4 text-sm font-medium transition-colors ${danger ? "border-red-400/40 text-red-300 hover:bg-red-400/10" : "border-line-strong hover:bg-foreground/[0.08]"}`;
+  if (href) return <Link href={href} className={cls}>{children}</Link>;
+  return (
+    <button type="button" className={cls} onClick={() => window.dispatchEvent(new CustomEvent("relay-action", { detail: action }))}>
+      {children}
+    </button>
+  );
+}
+
+/** Ligne de réglage : libellé et explication à gauche, valeur au milieu, bouton à droite. */
+export function Setting({ label, help, value, button }: { label: string; help?: string; value?: ReactNode; button?: ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 py-5">
+      <div className="min-w-0 flex-1 basis-56">
+        <p className="text-[15px] font-semibold">{label}</p>
+        {help && <p className="mt-0.5 text-xs leading-relaxed text-muted">{help}</p>}
+      </div>
+      {value && <div className="text-[15px]">{value}</div>}
+      {button}
+    </div>
+  );
+}
+
+/** Ligne de synthèse : libellé en gris à gauche, valeur à droite. */
+export function Fact({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-3.5 text-[15px]">
+      <dt className="text-muted">{label}</dt>
+      <dd className="min-w-0 text-right font-medium">{children}</dd>
+    </div>
+  );
+}

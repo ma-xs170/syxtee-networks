@@ -463,6 +463,19 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
     }
   }
 
+  const camSceneName = (c: { source: string; label: string }) => `Cam ${c.label.trim() || c.source}`.slice(0, 60);
+  /** Crée dans OBS une scène qui ne contient que la source de la caméra, puis la rattache à la caméra. */
+  async function createCamScene(i: number) {
+    const c = roles?.directorCams?.[i];
+    if (!roles || !c?.source) return;
+    let name = camSceneName(c);
+    if (scenes.includes(name)) name = `${name} ${i + 1}`;
+    const made = await run("CreateScene", { sceneName: name });
+    if (made === null) return;
+    await run("CreateSceneItem", { sceneName: name, sourceName: c.source, sceneItemEnabled: true });
+    saveRoles({ directorCams: (roles.directorCams ?? []).map((x, j) => (j === i ? { ...x, scene: name } : x)) });
+    later();
+  }
   function saveRoles(patch: Partial<Roles>) {
     if (!roles) return;
     const next = { ...roles, ...patch };
@@ -891,7 +904,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
               {!roles.scene && <p className="mt-2 text-[12px] text-neutral-500">Choisis d&apos;abord ta scène de secours (étape 2).</p>}
               <h3 className="mt-5 text-[12px] font-semibold uppercase tracking-wide text-neutral-400">5 · Régie IA (plusieurs caméras)</h3>
               <p className="mt-1 text-[12px] leading-relaxed text-neutral-500">
-                Pour 2 caméras ou plus (Osmo, iPhone, drone, téléphones en SRTLA) : toutes les quelques secondes, une IA regarde chaque caméra et met au programme celle où il se passe quelque chose, selon tes consignes. Une caméra coupée ou figée n&apos;est jamais choisie.
+                Pour 2 caméras ou plus (Osmo, iPhone, drone, téléphones en SRTLA) : toutes les quelques secondes, une IA regarde chaque caméra et met au programme celle où il se passe quelque chose, selon tes consignes. Une caméra coupée ou figée n&apos;est jamais choisie. Chaque caméra a besoin de sa propre scène OBS : choisis la source, puis « Créer la scène » si elle n&apos;existe pas encore.
               </p>
               {(roles.directorCams ?? []).map((c, i) => (
                 <div key={i} className="mt-2 grid gap-2 rounded-lg border border-white/10 p-2.5">
@@ -907,9 +920,16 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                   </label>
                   <PopSelect label={`Source caméra ${i + 1}`} value={c.source} options={inputNames} onChange={(v) => saveRoles({ directorCams: (roles.directorCams ?? []).map((x, j) => (j === i ? { ...x, source: v } : x)) })} />
                   <PopSelect label={`Scène caméra ${i + 1}`} value={c.scene} options={scenes} onChange={(v) => saveRoles({ directorCams: (roles.directorCams ?? []).map((x, j) => (j === i ? { ...x, scene: v } : x)) })} />
-                  <button type="button" onClick={() => saveRoles({ directorCams: (roles.directorCams ?? []).filter((_, j) => j !== i) })} className={`${flat} h-7 justify-self-start px-3`}>
-                    Retirer
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    {c.source && !c.scene && (
+                      <button type="button" onClick={() => void createCamScene(i)} className={`${flat} h-7 px-3`}>
+                        Créer la scène « {camSceneName(c)} »
+                      </button>
+                    )}
+                    <button type="button" onClick={() => saveRoles({ directorCams: (roles.directorCams ?? []).filter((_, j) => j !== i) })} className={`${flat} h-7 px-3`}>
+                      Retirer
+                    </button>
+                  </div>
                 </div>
               ))}
               {(roles.directorCams ?? []).length < 6 && (

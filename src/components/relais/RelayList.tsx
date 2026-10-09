@@ -148,7 +148,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
         </section>
       ) : (
         <>
-          <div className="mb-4 flex flex-wrap items-center justify-end gap-3">
+          <div className="mb-4 flex flex-wrap items-center justify-start gap-3">
             <div className="flex flex-wrap items-center gap-2">
               {servers.length > 1 && (
                 <label>

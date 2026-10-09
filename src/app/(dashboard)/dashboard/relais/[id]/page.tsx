@@ -7,6 +7,7 @@ import PlanGate from "@/components/plans/PlanGate";
 import RelayActions from "@/components/relais/RelayActions";
 import RelayAnalysis from "@/components/relais/RelayAnalysis";
 import RelayUrls from "@/components/relais/RelayUrls";
+import { Card, Item, Pill, TabsNav } from "@/components/dashboard/panel";
 import ProtocolBadge from "@/components/relais/ProtocolBadge";
 import { publicCoreUrl } from "@/lib/core";
 import { fmtAgo, fmtDuration, fmtInt } from "@/lib/dashboard-data";
@@ -20,8 +21,9 @@ const TONE = { good: "text-ok", fair: "text-warn", bad: "text-bad", none: "text-
 
 type Session = { id: string; started_at: string; duration_s: number; avg_kbps: number; peak_kbps: number; reconnects: number; ended_at: string | null };
 
-export default async function RelayPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function RelayPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ onglet?: string }> }) {
   const { id } = await params;
+  const { onglet } = await searchParams;
   const user = await requireOwner(`/dashboard/relais/${id}`);
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const { relays, status } = await loadRelays(user.id);
@@ -67,108 +69,163 @@ export default async function RelayPage({ params }: { params: Promise<{ id: stri
 
   const stateText = relay.archived ? "Archivé" : relay.live ? "En direct" : relay.last_live_at ? `Dernier direct ${fmtAgo(relay.last_live_at)}` : "Jamais utilisé";
 
+  const TABS = [
+    { id: "info", label: "Informations générales" },
+    { id: "analyse", label: "Analyse en temps réel" },
+    { id: "adresses", label: "Adresses" },
+    { id: "stats", label: "Statistiques" },
+    { id: "services", label: "Services" },
+  ] as const;
+  const tab = TABS.find((t) => t.id === onglet)?.id ?? "info";
+  const href = (t: string) => `/dashboard/relais/${relay.id}${t === "info" ? "" : `?onglet=${t}`}`;
+  const goto = (label: string, t: string) => ({ label, href: href(t) });
+  const sinceKey = relay.rotated_at ? fmtAgo(relay.rotated_at) : "Jamais régénérée";
+  const trigger = { cut: "Coupure seulement", cut_lowbitrate: "Coupure et débit très bas", sensitive: "Sensible" }[relay.switch_trigger];
+  const serverOk = server ? server.available && !server.maintenance : false;
+
   return (
     <DashPage>
       <PlanGate feature="relais">
-        <Link href="/dashboard/relais" className="text-sm text-muted transition-colors hover:text-foreground">← Serveurs</Link>
+        <Link href="/dashboard/relais" className="inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground">
+          <span aria-hidden="true">←</span> Retour à la liste des serveurs
+        </Link>
 
-        <header className="mb-8 mt-4 flex flex-wrap items-start justify-between gap-5">
+        <header className="mb-8 mt-5 flex flex-wrap items-start justify-between gap-5">
           <div className="min-w-0">
             <h1 className="h-page break-words">{relay.name}</h1>
             <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted">
               {relay.live ? <span className="inline-flex items-center gap-2 text-live"><span className="live-dot" />En direct</span> : <span>{stateText}</span>}
               <ProtocolBadge protocol={relay.protocol} />
               {server && <span>{flag(server.cc)} {server.city}, {server.country}</span>}
-              <span>Créé {fmtAgo(relay.created_at)}</span>
             </p>
           </div>
           <RelayActions relay={relay} showView={false} />
         </header>
 
-        {relay.archived ? (
+        <TabsNav tabs={TABS.map((t) => ({ id: t.id, label: t.label, href: href(t.id) }))} current={tab} label="Sections du serveur" />
+
+        {relay.archived && tab !== "info" ? (
           <p className="rounded-2xl border border-line bg-surface p-6 text-sm text-muted">Ce serveur est archivé : ses adresses ne marchent plus. Réactive-le depuis le menu « Plus » pour diffuser de nouveau.</p>
         ) : (
-          <div className="space-y-10">
-            <RelayAnalysis coreUrl={publicCoreUrl} relayId={relay.id} />
+          <>
+            {tab === "info" && (
+              <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-3">
+                <div className="space-y-5">
+                  <Card title="Informations générales">
+                    <Item label="Statut du serveur" menu={{ label: "Actions du statut", items: [goto("Voir l'analyse", "analyse"), goto("Voir les services", "services")] }}>
+                      <Pill tone={relay.archived ? "idle" : "ok"}>{relay.archived ? "Archivé" : "Actif"}</Pill>
+                    </Item>
+                    <Item label="État de la diffusion">
+                      <Pill tone={relay.live ? "live" : "idle"}>{relay.live ? "En direct" : relay.last_live_at ? "Hors direct" : "Jamais utilisé"}</Pill>
+                    </Item>
+                    <Item label="Protocole">
+                      <ProtocolBadge protocol={relay.protocol} />
+                    </Item>
+                  </Card>
+                  <Card title="Services associés">
+                    <Item label="Adresses de connexion" menu={{ label: "Actions des adresses", items: [goto("Afficher les adresses", "adresses")] }}>
+                      <p>{proto} · clé masquée par défaut</p>
+                    </Item>
+                    <Item label="Enregistrement du flux" menu={{ label: "Actions de l'enregistrement", items: [goto("Voir les services", "services")] }}>
+                      <Pill tone={relay.record ? "ok" : "idle"}>{!relay.record_available ? "Indisponible" : relay.record ? "Activé" : "Désactivé"}</Pill>
+                    </Item>
+                    <Item label="Régie automatique">
+                      <Pill tone={relay.regie_available ? (relay.mode === "regie" ? "ok" : "idle") : "idle"}>{relay.regie_available ? (relay.mode === "regie" ? "Activée" : "Disponible") : "Indisponible"}</Pill>
+                    </Item>
+                  </Card>
+                </div>
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <section aria-labelledby="stats30" className="rounded-2xl border border-line bg-surface">
-                <h2 id="stats30" className="border-b border-line px-5 py-3.5 text-sm font-semibold">Statistiques sur 30 jours</h2>
-                <dl className="grid grid-cols-2 divide-line sm:grid-cols-3 [&>div]:border-b [&>div]:border-line">
-                  {([["Directs", fmtInt(sessions.length)], ["Temps de direct", totalS ? fmtDuration(totalS) : "-"], ["Débit moyen", avg ? `${fmtInt(avg)} kbit/s` : "-"], ["Débit de crête", peak ? `${fmtInt(peak)} kbit/s` : "-"], ["Coupures", fmtInt(cuts)], ["Dernier direct", relay.last_live_at ? fmtAgo(relay.last_live_at) : "-"]] as [string, string][]).map(([k, v]) => (
-                    <div key={k} className="p-5">
-                      <dt className="text-xs text-muted">{k}</dt>
-                      <dd className="mt-2 font-mono text-lg tabular-nums">{v}</dd>
-                    </div>
-                  ))}
-                </dl>
-                {sessions.length > 0 && (
-                  <ul className="divide-y divide-line">
-                    {sessions.slice(0, 4).map((s) => (
-                      <li key={s.id}>
-                        <Link href={`/dashboard/lives/${s.id}`} className="flex items-center justify-between gap-4 px-5 py-3 text-sm transition-colors hover:bg-foreground/[0.04]">
-                          <span className="text-muted">{fmtAgo(s.started_at)}</span>
-                          <span className="font-mono tabular-nums">{s.ended_at ? fmtDuration(s.duration_s) : "En cours"} · {fmtInt(s.avg_kbps)} kbit/s</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
+                <Card title="Configuration">
+                  <Item label="Serveur utilisé" menu={{ label: "Actions du serveur", items: [goto("Voir la disponibilité", "services")] }}>
+                    <p><strong>{server ? `${flag(server.cc)} ${server.city}` : relay.server}</strong></p>
+                    <p className="mt-1">{server ? server.country : ""}</p>
+                  </Item>
+                  <Item label="Latence estimée" hint="Depuis ta position">
+                    <p className={`font-mono text-lg tabular-nums ${TONE[tone]}`}>{estimate != null ? `~${estimate} ms` : "Position inconnue"}</p>
+                  </Item>
+                  <Item label="Bascule automatique" hint="Quand passer sur la scène de secours">
+                    <p><strong>{trigger}</strong></p>
+                  </Item>
+                  <Item label="Disponibilité du serveur">
+                    <Pill tone={serverOk ? "ok" : server?.maintenance ? "warn" : "idle"}>{serverOk ? "Opérationnel" : server?.maintenance ? "En maintenance" : "Bientôt"}</Pill>
+                  </Item>
+                </Card>
 
-              <div className="space-y-4">
-                <section aria-labelledby="serveur" className="rounded-2xl border border-line bg-surface">
-                  <h2 id="serveur" className="border-b border-line px-5 py-3.5 text-sm font-semibold">Serveur utilisé</h2>
-                  <dl className="divide-y divide-line px-5 text-sm">
-                    {([["Emplacement", server ? `${flag(server.cc)} ${server.city}, ${server.country}` : relay.server], ["Identifiant", relay.server], ["Adresse", relay.host], ["Protocole", proto]] as [string, string][]).map(([k, v]) => (
-                      <div key={k} className="flex items-baseline justify-between gap-4 py-3">
-                        <dt className="text-muted">{k}</dt>
-                        <dd className="min-w-0 truncate text-right font-medium" data-sensitive={k === "Adresse" ? true : undefined}>{v}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </section>
-
-                <section aria-labelledby="latence" className="rounded-2xl border border-line bg-surface">
-                  <h2 id="latence" className="border-b border-line px-5 py-3.5 text-sm font-semibold">Latence</h2>
-                  <div className="grid grid-cols-2 divide-x divide-line">
-                    <div className="p-5">
-                      <p className="text-xs text-muted">Estimée depuis chez toi</p>
-                      <p className={`mt-2 font-mono text-2xl tabular-nums ${TONE[tone]}`}>{estimate != null ? `~${estimate}` : "-"}<span className="ml-1 text-sm text-muted">ms</span></p>
-                      <p className="mt-1 text-xs text-muted">{estimate == null ? "Position inconnue" : tone === "good" ? "Excellente" : tone === "fair" ? "Correcte" : "Élevée"}</p>
-                    </div>
-                    <div className="p-5">
-                      <p className="text-xs text-muted">Mesurée en direct</p>
-                      <p className="mt-2 text-sm text-muted">Affichée dans l&apos;analyse ci-dessus pendant un direct.</p>
-                    </div>
-                  </div>
-                </section>
+                <Card title="Utilisation">
+                  <Item label="Date de création">
+                    <p><strong>{new Date(relay.created_at).toLocaleDateString("fr-FR", { dateStyle: "long", timeZone: "Europe/Paris" })}</strong></p>
+                  </Item>
+                  <Item label="Dernier direct">
+                    <p><strong>{relay.last_live_at ? fmtAgo(relay.last_live_at) : "Jamais"}</strong></p>
+                  </Item>
+                  <Item label="Directs sur 30 jours" menu={{ label: "Actions des statistiques", items: [goto("Voir les statistiques", "stats")] }}>
+                    <p><strong>{fmtInt(sessions.length)}</strong>{totalS ? ` · ${fmtDuration(totalS)}` : ""}</p>
+                  </Item>
+                  <Item label="Clé régénérée">
+                    <p><strong>{sinceKey}</strong></p>
+                  </Item>
+                </Card>
               </div>
-            </div>
+            )}
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <section aria-labelledby="dispo" className="rounded-2xl border border-line bg-surface">
-                <h2 id="dispo" className="border-b border-line px-5 py-3.5 text-sm font-semibold">Disponibilité des services</h2>
-                <ul className="divide-y divide-line px-5">
-                  {services.map((sv) => (
-                    <li key={sv.name} className="flex items-center justify-between gap-4 py-3.5 text-sm">
-                      <span className="flex items-center gap-2.5">
-                        <span aria-hidden="true" className={`size-2 rounded-full ${sv.ok === true ? "bg-ok" : sv.ok === false ? "bg-bad" : "bg-foreground/25"}`} />
-                        {sv.name}
-                      </span>
-                      <span className={sv.ok === false ? "text-bad" : "text-muted"}>{sv.text}</span>
-                    </li>
+            {tab === "analyse" && <RelayAnalysis coreUrl={publicCoreUrl} relayId={relay.id} />}
+
+            {tab === "adresses" && (
+              <div className="max-w-3xl">
+                <Card title="Adresses de connexion">
+                  <div className="py-5">
+                    <p className="mb-5 text-xs text-muted">Elles contiennent la clé de ce serveur : ne les partage pas et ne les montre pas en direct.</p>
+                    <RelayUrls relay={relay} />
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            {tab === "stats" && (
+              <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
+                <Card title="Statistiques sur 30 jours">
+                  {([["Directs", fmtInt(sessions.length)], ["Temps de direct", totalS ? fmtDuration(totalS) : "-"], ["Débit moyen", avg ? `${fmtInt(avg)} kbit/s` : "-"], ["Débit de crête", peak ? `${fmtInt(peak)} kbit/s` : "-"], ["Coupures", fmtInt(cuts)]] as [string, string][]).map(([k, v]) => (
+                    <Item key={k} label={k}>
+                      <p className="font-mono text-lg tabular-nums text-foreground">{v}</p>
+                    </Item>
                   ))}
-                </ul>
-              </section>
+                </Card>
+                <Card title="Derniers directs">
+                  {sessions.length === 0 ? (
+                    <p className="py-8 text-center text-sm text-muted">Aucun direct sur ce serveur.</p>
+                  ) : (
+                    sessions.slice(0, 8).map((s) => (
+                      <Link key={s.id} href={`/dashboard/lives/${s.id}`} className="flex items-center justify-between gap-4 py-4 text-sm transition-colors hover:text-foreground">
+                        <span>
+                          <span className="block font-medium text-foreground">{fmtAgo(s.started_at)}</span>
+                          <span className="mt-0.5 block text-xs text-muted">{s.reconnects} coupure{s.reconnects > 1 ? "s" : ""}</span>
+                        </span>
+                        <span className="text-right font-mono tabular-nums text-muted">{s.ended_at ? fmtDuration(s.duration_s) : "En cours"}<br />{fmtInt(s.avg_kbps)} kbit/s</span>
+                      </Link>
+                    ))
+                  )}
+                </Card>
+              </div>
+            )}
 
-              <section aria-labelledby="urls" className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
-                <h2 id="urls" className="text-sm font-semibold">Adresses de connexion</h2>
-                <p className="mb-5 mt-1 text-xs text-muted">Elles contiennent la clé de ce serveur : ne les partage pas et ne les montre pas en direct.</p>
-                <RelayUrls relay={relay} />
-              </section>
-            </div>
-          </div>
+            {tab === "services" && (
+              <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
+                <Card title="Disponibilité des services">
+                  {services.map((sv) => (
+                    <Item key={sv.name} label={sv.name}>
+                      <Pill tone={sv.ok === true ? "ok" : sv.ok === false ? "bad" : "idle"}>{sv.text}</Pill>
+                    </Item>
+                  ))}
+                </Card>
+                <Card title="Serveur utilisé">
+                  <Item label="Emplacement"><p><strong>{server ? `${flag(server.cc)} ${server.city}, ${server.country}` : relay.server}</strong></p></Item>
+                  <Item label="Identifiant"><p><strong>{relay.server}</strong></p></Item>
+                  <Item label="Adresse"><p className="break-all" data-sensitive><strong>{relay.host}</strong></p></Item>
+                  <Item label="Latence estimée"><p className={`font-mono text-lg tabular-nums ${TONE[tone]}`}>{estimate != null ? `~${estimate} ms` : "-"}</p></Item>
+                </Card>
+              </div>
+            )}
+          </>
         )}
       </PlanGate>
     </DashPage>

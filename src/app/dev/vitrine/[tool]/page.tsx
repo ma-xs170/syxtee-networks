@@ -18,6 +18,7 @@ import TeamUI, { type MemberView } from "@/app/(admin)/admin/equipe/TeamUI";
 import type { DevicesDemo } from "@/components/dashboard/useLinkDevices";
 import RelayList from "@/components/relais/RelayList";
 import TicketChat from "@/components/support/TicketChat";
+import { Card, Item, Pill, TabsNav } from "@/components/dashboard/panel";
 import RelayAnalysis, { type Sample as AnSample } from "@/components/relais/RelayAnalysis";
 import NewTicketForm from "@/components/support/NewTicketForm";
 import AccountSheet from "@/app/(admin)/admin/comptes/AccountSheet";
@@ -169,6 +170,34 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
         const last = history[history.length - 1];
         return <RelayAnalysis coreUrl="" relayId="demo" demo={{ live: { live: true, since: end - 3_600_000, sample: last, peers: [{ connection_id: "a", bitrate: 3100 }, { connection_id: "b", bitrate: 1800 }, { connection_id: "c", bitrate: 450 }] }, history }} />;
       })()}
+      {tool === "panneau" && (
+        <div>
+          <h1 className="h-page mb-6">iPhone 16 <em>Pro</em></h1>
+          <TabsNav current="info" tabs={[{ id: "info", label: "Informations générales", href: "#" }, { id: "analyse", label: "Analyse en temps réel", href: "#" }, { id: "adresses", label: "Adresses", href: "#" }, { id: "stats", label: "Statistiques", href: "#" }, { id: "services", label: "Services", href: "#" }]} />
+          <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-3">
+            <div className="space-y-5">
+              <Card title="Informations générales">
+                <Item label="Statut du serveur" menu={{ label: "Actions", items: [{ label: "Voir l'analyse", href: "#" }] }}><Pill tone="ok">Actif</Pill></Item>
+                <Item label="État de la diffusion"><Pill tone="live">En direct</Pill></Item>
+                <Item label="Protocole"><p>SRTLA</p></Item>
+              </Card>
+              <Card title="Services associés">
+                <Item label="Enregistrement du flux" menu={{ label: "Actions", items: [{ label: "Voir les services", href: "#" }] }}><Pill>Désactivé</Pill></Item>
+              </Card>
+            </div>
+            <Card title="Configuration">
+              <Item label="Serveur utilisé" menu={{ label: "Actions", items: [{ label: "Voir la disponibilité", href: "#" }] }}><p><strong>🇨🇦 Beauharnois</strong></p><p className="mt-1">Canada</p></Item>
+              <Item label="Latence estimée" hint="Depuis ta position"><p className="font-mono text-lg text-ok">~42 ms</p></Item>
+              <Item label="Bascule automatique" hint="Quand passer sur la scène de secours"><p><strong>Coupure seulement</strong></p></Item>
+            </Card>
+            <Card title="Utilisation">
+              <Item label="Date de création"><p><strong>3 octobre 2026</strong></p></Item>
+              <Item label="Dernier direct"><p><strong>il y a 4 h</strong></p></Item>
+              <Item label="Directs sur 30 jours"><p><strong>7</strong> · 5 h 06</p></Item>
+            </Card>
+          </div>
+        </div>
+      )}
       {tool === "demande" && <NewTicketForm person={{ name: "Mathis Custos", email: "mathis@exemple.fr", supportId: "SYX-K7QX-2MPA", plan: "Signature", country: "Guadeloupe" }} />}
       {tool === "ticket" && (
         <TicketChat
@@ -316,7 +345,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           }))}
         />
       )}
-      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "membres", "equipe", "controle-obs", "backups", "compte", "ticket", "demande", "analyse"].includes(tool) && notFound()}
+      {!["relais", "sante", "accueil", "studio", "mur", "fond", "admin", "plugin", "controle", "membres", "equipe", "controle-obs", "backups", "compte", "ticket", "demande", "analyse", "panneau"].includes(tool) && notFound()}
     </div>
   );
 }

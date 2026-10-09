@@ -783,7 +783,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
             <span aria-hidden="true" className={`size-1.5 rounded-full ${autoOn ? "bg-emerald-400" : "bg-neutral-600"}`} /> <span className="max-lg:hidden">Régie auto</span><span className="lg:hidden">Régie</span>
           </button>
           {deviceOpen && roles && (
-            <div role="dialog" aria-label="Appareil" className="fixed inset-x-2 top-24 z-40 max-h-[calc(100dvh-7rem)] overflow-y-auto rounded-md border border-[#333] bg-[#0b0b0b] p-4 shadow-xl sm:absolute sm:inset-x-auto sm:left-0 sm:top-9 sm:w-[26rem]">
+            <div role="dialog" aria-label="Appareil" className="fixed inset-x-2 top-24 z-40 max-h-[calc(100dvh-7rem)] overflow-y-auto rounded-md border border-[#333] bg-[#0b0b0b] p-4 shadow-xl sm:inset-x-auto sm:left-3 sm:w-[26rem]">
               <div className="mb-4 grid gap-3 border-b border-[#262626] pb-4 lg:hidden">
                 <PopSelect label="Profil" value={profiles.current} options={profiles.list} onChange={(v) => void run("SetCurrentProfile", { profileName: v }).then((r) => r && later())} />
                 <PopSelect label="Collection de scènes" value={collections.current} options={collections.list} onChange={(v) => void run("SetCurrentSceneCollection", { sceneCollectionName: v }).then((r) => r && later())} />

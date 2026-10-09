@@ -1,4 +1,9 @@
 {
+  "0.7.0": [
+    "Régie automatique : plusieurs « prises » en plus du drone (caméra 2, écran, invité), chacune avec sa scène, le drone passant en premier",
+    "Garde audio : alerte si le micro se tait ou se coupe pendant ta scène Live, remise du micro en option, bascule sur la scène de secours en option",
+    "Régie IA : avec 2 caméras ou plus (Osmo, iPhone, téléphones SRTLA, drone), une IA choisit la caméra au programme selon tes consignes ; bouton pour créer la scène de chaque caméra"
+  ],
   "0.6.1": [
     "Multistream : le bouton « Direct d'OBS » repasse tout de suite sur Arrêté quand le direct s'arrête (il pouvait rester sur « En direct »)"
   ],

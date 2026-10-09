@@ -130,15 +130,30 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
                 {/* Synthèse, toujours visible à droite */}
                 <aside className="min-w-0">
                   <Card title="En bref" className="h-full">
-                    <dl className="divide-y divide-line">
-                      <Fact label="Diffusion"><Pill tone={relay.live ? "live" : "idle"}>{relay.live ? "En direct" : relay.last_live_at ? "Hors direct" : "Jamais utilisé"}</Pill></Fact>
-                      <Fact label="Statut"><Pill tone={relay.archived ? "idle" : "ok"}>{relay.archived ? "Archivé" : "Actif"}</Pill></Fact>
-                      <Fact label="Serveur"><Pill tone={serverOk ? "ok" : server?.maintenance ? "warn" : "idle"}>{serverOk ? "Opérationnel" : server?.maintenance ? "En maintenance" : "Bientôt"}</Pill></Fact>
-                      <Fact label="Protocole"><ProtocolBadge protocol={relay.protocol} /></Fact>
-                      <Fact label={fromLabel}><span className={`font-mono tabular-nums ${TONE[tone]}`}>{estimate != null ? `~${estimate} ms` : "-"}</span></Fact>
-                      <Fact label="Dernier direct">{relay.last_live_at ? fmtAgo(relay.last_live_at) : "Jamais"}</Fact>
-                      <Fact label="Directs sur 30 jours">{fmtInt(sessions.length)}{totalS ? <span className="text-muted"> · {fmtDuration(totalS)}</span> : null}</Fact>
-                      <Fact label="Créé le">{new Date(relay.created_at).toLocaleDateString("fr-FR", { dateStyle: "long", timeZone: "Europe/Paris" })}</Fact>
+                    <div className="py-5">
+                      <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">État</p>
+                      <p className="mt-2 flex items-center gap-2.5 text-2xl font-semibold tracking-tight">
+                        {relay.live ? <span className="live-dot" aria-hidden="true" /> : <span aria-hidden="true" className={`size-2.5 rounded-full ${relay.archived ? "bg-muted" : "bg-ok"}`} />}
+                        <span className={relay.live ? "text-live" : ""}>{relay.archived ? "Archivé" : relay.live ? "En direct" : "Prêt"}</span>
+                      </p>
+                      <p className="mt-1.5 text-sm text-muted">{relay.archived ? "Adresses désactivées." : serverOk ? "Serveur opérationnel." : server?.maintenance ? "Serveur en maintenance." : "Serveur bientôt disponible."}</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-px bg-line -mx-6">
+                      <div className="bg-surface px-6 py-4">
+                        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">Latence</p>
+                        <p className={`mt-1.5 font-mono text-xl font-semibold tabular-nums ${TONE[tone]}`}>{estimate != null ? `~${estimate} ms` : "-"}</p>
+                        <p className="mt-0.5 truncate text-xs text-muted">{fromLabel}</p>
+                      </div>
+                      <div className="bg-surface px-6 py-4">
+                        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">Directs · 30 j</p>
+                        <p className="mt-1.5 font-mono text-xl font-semibold tabular-nums">{fmtInt(sessions.length)}</p>
+                        <p className="mt-0.5 truncate text-xs text-muted">{totalS ? fmtDuration(totalS) : "Aucun direct"}</p>
+                      </div>
+                    </div>
+                    <dl className="-mx-0 divide-y divide-line text-sm">
+                      <div className="flex items-center justify-between gap-4 py-3.5"><dt className="text-muted">Protocole</dt><dd><ProtocolBadge protocol={relay.protocol} /></dd></div>
+                      <div className="flex items-center justify-between gap-4 py-3.5"><dt className="text-muted">Dernier direct</dt><dd className="font-medium">{relay.last_live_at ? fmtAgo(relay.last_live_at) : "Jamais"}</dd></div>
+                      <div className="flex items-center justify-between gap-4 py-3.5"><dt className="text-muted">Créé le</dt><dd className="font-medium">{new Date(relay.created_at).toLocaleDateString("fr-FR", { dateStyle: "long", timeZone: "Europe/Paris" })}</dd></div>
                     </dl>
                   </Card>
                 </aside>

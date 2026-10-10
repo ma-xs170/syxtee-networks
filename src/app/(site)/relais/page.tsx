@@ -56,15 +56,6 @@ export default function RelaisPage() {
       <section className="py-24 sm:py-32">
         <Container>
           <SectionHeader title={<>Un petit retard, pour un flux qui <em>tient.</em></>} subtitle="En IRL, on échange un peu de latence contre de la stabilité : ce retard volontaire absorbe les micro-coupures du réseau mobile." />
-          <div className="bento-cell mt-14 flex flex-col items-start justify-between gap-6 p-6 sm:flex-row sm:items-center sm:p-8">
-            <div>
-              <p className="font-mono text-xs uppercase tracking-[0.08em] text-muted">Au total</p>
-              <p className="mt-2 font-mono text-5xl font-medium tabular-nums tracking-tight sm:text-6xl">+1 à 3 s</p>
-            </div>
-            <p className="max-w-[48ch] text-sm leading-relaxed text-muted">
-              Une à trois secondes de plus qu&apos;un live à la maison. Tes viewers ne le remarquent pas, et tu peux toujours répondre au chat normalement.
-            </p>
-          </div>
         </Container>
       </section>
       <NextStep label="Demander l'accès" href="/acces" />

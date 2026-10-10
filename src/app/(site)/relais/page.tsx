@@ -52,12 +52,6 @@ export default function RelaisPage() {
         </Container>
       </section>
 
-      {/* Latence */}
-      <section className="py-24 sm:py-32">
-        <Container>
-          <SectionHeader title={<>Un petit retard, pour un flux qui <em>tient.</em></>} subtitle="En IRL, on échange un peu de latence contre de la stabilité : ce retard volontaire absorbe les micro-coupures du réseau mobile." />
-        </Container>
-      </section>
       <NextStep label="Demander l'accès" href="/acces" />
     </>
   );

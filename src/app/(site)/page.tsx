@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { WhySection } from "@/components/landing/WhySection";
 import { FaqSection, FinalCta, ServersSection, ObsBento, ObsHeroSection, PricingSection } from "@/components/landing/Sections";
 
 export const metadata: Metadata = {
@@ -15,6 +16,7 @@ export default function Home() {
       <ObsHeroSection />
       <ObsBento />
       <ServersSection />
+      <WhySection />
       <PricingSection />
       <FaqSection />
       <FinalCta />

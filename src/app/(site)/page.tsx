@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { WhySection } from "@/components/landing/WhySection";
-import { FaqSection, FinalCta, ServersSection, ObsBento, ObsHeroSection, PricingSection } from "@/components/landing/Sections";
+import { FaqSection, FinalCta, ObsBento, ObsHeroSection, PricingSection } from "@/components/landing/Sections";
 
 export const metadata: Metadata = {
   title: { absolute: "SYXTEE NETWORKS · Le direct en mobilité, sans compromis" },
@@ -15,7 +15,6 @@ export default function Home() {
     <>
       <ObsHeroSection />
       <ObsBento />
-      <ServersSection />
       <WhySection />
       <PricingSection />
       <FaqSection />

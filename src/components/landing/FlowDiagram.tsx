@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-// Trajet du flux vidéo en logos : Moblin, S (SYXTEE), OBS. Traits en couleur d'encre : valable en clair comme en sombre.
+// Trajet du flux vidéo en logos : Moblin, S (SYXTEE), OBS (logo officiel).
 function Tile({ label, strong = false, children }: { label: string; strong?: boolean; children: React.ReactNode }) {
   return (
     <div className="flex shrink-0 flex-col items-center gap-3">
@@ -22,18 +22,6 @@ function Link({ label }: { label: string }) {
   );
 }
 
-// Logo de type OBS : disque et trois lobes en rotation.
-function ObsMark() {
-  return (
-    <svg viewBox="0 0 64 64" className="size-14 text-foreground sm:size-16" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-      <circle cx="32" cy="32" r="28" />
-      {[0, 120, 240].map((r) => (
-        <ellipse key={r} cx="32" cy="17" rx="8.5" ry="11" transform={`rotate(${r} 32 32)`} fill="currentColor" fillOpacity="0.9" stroke="none" />
-      ))}
-    </svg>
-  );
-}
-
 export default function FlowDiagram() {
   return (
     <div role="img" aria-label="Ton flux part de Moblin sur ton téléphone, arrive dans les serveurs SYXTEE, puis dans ton OBS" className="mx-auto flex max-w-3xl items-center justify-between gap-2 sm:gap-4">
@@ -47,7 +35,8 @@ export default function FlowDiagram() {
       </Tile>
       <Link label="Flux stable" />
       <Tile label="OBS">
-        <ObsMark />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/obs/logo.png" alt="" width={112} height={112} className="size-16 sm:size-[4.5rem]" />
       </Tile>
     </div>
   );

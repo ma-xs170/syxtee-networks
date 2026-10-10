@@ -27,7 +27,6 @@ const limits: { label: string; v: Three<string> }[] = [
   { label: "Directs en même temps", v: ["1", "3", "10"] },
   { label: "Espaces partagés", v: ["0", "1", "5"] },
   { label: "Invités au contrôle à distance", v: ["0", "3", "5"] },
-  { label: "Caméras pour la régie IA", v: ["0", "3", "6"] },
 ];
 
 // Fonctions : ✓ inclus, ✕ non inclus. Le serveur inclut le secours automatique, la garde audio et la santé du flux.

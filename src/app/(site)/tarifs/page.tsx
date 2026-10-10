@@ -38,8 +38,12 @@ const features: { label: string; v: Three<boolean> }[] = [
   { label: "Accès anticipé aux nouveautés", v: [false, false, true] },
 ];
 
-/** Barre de séparation en italique serif, comme les mots mis en avant des titres. */
-const Slash = () => <em aria-hidden="true" className="font-serif text-xl italic leading-none text-muted">/</em>;
+/** Barre de séparation fine façon calligraphie : trait effilé aux deux bouts, légèrement incurvé. */
+const Slash = () => (
+  <svg aria-hidden="true" viewBox="0 0 8 18" width="8" height="18" className="shrink-0 text-muted" fill="currentColor">
+    <path d="M6.9 0.4C6.3 5.2 3.6 12 0.9 17.6C3.9 12.4 6.2 6.2 6.9 0.4Z" />
+  </svg>
+);
 
 export default function TarifsPage() {
   return (

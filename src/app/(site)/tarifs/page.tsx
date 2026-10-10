@@ -26,7 +26,7 @@ const limits: { label: string; v: Three<string> }[] = [
   { label: "Serveurs actifs", v: ["1", "10", "Illimités"] },
   { label: "Directs en même temps", v: ["1", "3", "10"] },
   { label: "Espaces partagés", v: ["Aucun", "1", "5"] },
-  { label: "Invités au contrôle à distance", v: ["Aucun", "3", "5"] },
+  { label: "Invités OBS", v: ["Aucun", "3", "5"] },
   { label: "Caméras pour la régie IA", v: ["Aucune", "3", "6"] },
 ];
 
@@ -72,11 +72,11 @@ export default function TarifsPage() {
                   Demander l&apos;accès
                 </Link>
 
-                <dl className="mt-7 space-y-3 rounded-xl bg-foreground/[0.04] p-4 text-sm">
+                <dl className="mt-7 divide-y divide-foreground/10 rounded-xl bg-foreground/[0.04] px-4 text-sm">
                   {limits.map((l) => (
-                    <div key={l.label} className="flex items-baseline justify-between gap-4">
-                      <dt className="text-muted">{l.label}</dt>
-                      <dd className="font-mono font-semibold">{l.v[k]}</dd>
+                    <div key={l.label} className="flex items-stretch justify-between gap-4 py-3">
+                      <dt className="self-center text-muted">{l.label}</dt>
+                      <dd className="min-w-[5.5rem] self-center border-l border-foreground/15 pl-4 text-right font-mono font-semibold">{l.v[k]}</dd>
                     </div>
                   ))}
                 </dl>

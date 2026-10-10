@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 24 }
+        with: { node-version: 26 }
 
       # 1. Agent : un seul .exe autonome (Node intégré).
       - name: Agent
@@ -28,7 +28,7 @@ jobs:
         shell: bash
         run: |
           npm ci
-          npx esbuild src/main.ts --bundle --platform=node --format=cjs --target=node24 --outfile=dist/helper.cjs
+          npx esbuild src/main.ts --bundle --platform=node --format=cjs --target=node26 --outfile=dist/helper.cjs
           echo '{"main":"dist/helper.cjs","output":"dist/syxtee-link-helper.exe","disableExperimentalSEAWarning":true}' > dist/sea.json
           node --build-sea dist/sea.json
 

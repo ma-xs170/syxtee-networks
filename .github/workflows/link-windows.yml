@@ -45,10 +45,11 @@ jobs:
       - name: Module
         shell: pwsh
         run: |
-          $deps = (Get-ChildItem obs-studio/.deps -Directory | Where-Object { $_.Name -notmatch 'x86$' -and $_.Name -notmatch 'cef' } | ForEach-Object FullName) -join ';'
+          $deps = (Get-ChildItem obs-studio/.deps -Directory | Where-Object { $_.Name -notmatch 'x86$' -and $_.Name -notmatch 'cef' } | ForEach-Object { $_.FullName -replace '\\','/' }) -join ';'
+          $root = $PWD.Path -replace '\\','/'
           Write-Host $deps
           cmake -S link/plugin -B build -G "Visual Studio 17 2022" -A x64 `
-            -DCMAKE_PREFIX_PATH="$deps" -DCMAKE_MODULE_PATH="$PWD/obs-studio/cmake/finders" -Dlibobs_DIR="$PWD/obs-studio/build_x64/libobs" -Dobs-frontend-api_DIR="$PWD/obs-studio/build_x64/frontend/api"
+            -DCMAKE_PREFIX_PATH="$deps" -DCMAKE_MODULE_PATH="$root/obs-studio/cmake/finders" -Dlibobs_DIR="$root/obs-studio/build_x64/libobs" -Dobs-frontend-api_DIR="$root/obs-studio/build_x64/frontend/api"
           cmake --build build --config RelWithDebInfo
 
       # 4. Installeur : copie dans %APPDATA%\obs-studio\plugins\syxtee-link\bin\64bit (sans droits administrateur).

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
 import { Container } from "@/components/ui";
 import StatusPill from "@/components/ui/StatusPill";
+import { incidents, type IncidentStatus } from "@/lib/incidents";
 import { getServices, overall, type Status } from "@/lib/status";
 
 export const metadata: Metadata = {
@@ -18,6 +19,13 @@ const LABEL: Record<Status, { text: string; variant: "ok" | "unstable" | "offlin
   slow: { text: "Lent", variant: "unstable" },
   down: { text: "Hors ligne", variant: "offline" },
 };
+const INCIDENT: Record<IncidentStatus, { text: string; variant: "ok" | "unstable" | "offline" }> = {
+  resolved: { text: "Résolu", variant: "ok" },
+  monitoring: { text: "Surveillance", variant: "unstable" },
+  investigating: { text: "En cours d'analyse", variant: "offline" },
+  scheduled: { text: "Planifié", variant: "unstable" },
+};
+const fmt = (iso: string) => new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Paris" }).format(new Date(iso));
 const HEADLINE = { ok: "Tous les systèmes opérationnels", unstable: "Certains services sont lents", offline: "Un service est hors ligne" } as const;
 
 export default async function StatusPage() {
@@ -50,6 +58,38 @@ export default async function StatusPage() {
             ))}
           </ul>
           <p className="mt-6 max-w-2xl text-sm text-muted">Un souci qui n'apparaît pas ici ? Écris-nous depuis l'assistance du site, on regarde.</p>
+        </Container>
+      </section>
+
+      <section className="border-t border-line py-16 sm:py-24">
+        <Container>
+          <h2 className="h-section">Journal des incidents</h2>
+          <p className="mt-3 max-w-2xl text-sm text-muted">Chaque panne et chaque maintenance, avec ce qui s'est passé et quand c'est revenu.</p>
+          {incidents.length === 0 ? (
+            <p className="mt-8 rounded-xl border border-line bg-surface p-5 text-sm text-muted">Aucun incident à signaler.</p>
+          ) : (
+            <ol className="mt-8 grid gap-4">
+              {incidents.map((i) => (
+                <li key={i.id} className="rounded-xl border border-line bg-surface p-5 sm:p-6">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{i.kind === "maintenance" ? "Maintenance" : "Incident"} · {fmt(i.start)}{i.end ? ` → ${fmt(i.end)}` : ""}</p>
+                      <h3 className="mt-1.5 text-base font-semibold">{i.title}</h3>
+                    </div>
+                    <StatusPill variant={INCIDENT[i.status].variant} label={INCIDENT[i.status].text} />
+                  </div>
+                  <ul className="mt-4 grid gap-3 border-l border-line pl-4">
+                    {i.updates.map((u) => (
+                      <li key={u.at}>
+                        <p className="font-mono text-xs text-muted">{fmt(u.at)}</p>
+                        <p className="mt-0.5 text-sm leading-relaxed">{u.text}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ol>
+          )}
         </Container>
       </section>
     </>

@@ -32,11 +32,14 @@ const limits: { label: string; v: Three<string> }[] = [
 
 // Fonctions : ✓ inclus, ✕ non inclus. Le serveur inclut le secours automatique, la garde audio et la santé du flux.
 const features: { label: string; v: Three<boolean> }[] = [
-  { label: "Contrôle à distance (multistream inclus)", v: [false, true, true] },
+  { label: "Contrôle à distance (+ multistream)", v: [false, true, true] },
   { label: "Régie automatique (drone, prises)", v: [false, true, true] },
   { label: "Statistiques (+ historique des directs)", v: [false, true, true] },
   { label: "Accès anticipé aux nouveautés", v: [false, false, true] },
 ];
+
+/** Barre de séparation en italique serif, comme les mots mis en avant des titres. */
+const Slash = () => <em aria-hidden="true" className="font-serif text-xl italic leading-none text-muted">/</em>;
 
 export default function TarifsPage() {
   return (
@@ -76,10 +79,11 @@ export default function TarifsPage() {
                     const v = l.v[k];
                     const none = v === "0";
                     return (
-                      <li key={l.label} className={`grid grid-cols-[2.5rem_1fr] items-center ${none ? "text-muted" : ""}`}>
-                        <span className="font-mono text-base font-semibold leading-none">
+                      <li key={l.label} className={`flex items-center gap-2.5 ${none ? "text-muted" : ""}`}>
+                        <span className="flex min-w-7 justify-end font-mono text-base font-semibold leading-none">
                           {none ? <X size={15} weight="bold" aria-label="Aucun" /> : v}
                         </span>
+                        <Slash />
                         {l.label}
                       </li>
                     );
@@ -89,8 +93,11 @@ export default function TarifsPage() {
                   {features.map((f) => {
                     const on = f.v[k];
                     return (
-                      <li key={f.label} className={`grid grid-cols-[2.5rem_1fr] items-center ${on ? "" : "text-muted"}`}>
-                        {on ? <Check size={17} weight="bold" className="text-ok" aria-label="Inclus" /> : <X size={15} weight="bold" aria-label="Non inclus" />}
+                      <li key={f.label} className={`flex items-center gap-2.5 ${on ? "" : "text-muted"}`}>
+                        <span className="flex min-w-7 justify-end">
+                          {on ? <Check size={17} weight="bold" className="text-ok" aria-label="Inclus" /> : <X size={15} weight="bold" aria-label="Non inclus" />}
+                        </span>
+                        <Slash />
                         {f.label}
                       </li>
                     );

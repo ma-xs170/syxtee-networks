@@ -24,7 +24,7 @@ export const nav: NavItem[] = [
   { label: "Contrôle à distance", href: "/controle-a-distance" },
   { label: "Multistream", href: "/multistream" },
   { label: "Tarifs", href: "/tarifs" },
-  { label: "Contacter", href: "/contact", underline: true },
+  { label: "Demander l'accès", href: "/acces", underline: true },
 ];
 
 export const isMenu = (item: NavItem): item is NavMenu => "children" in item;

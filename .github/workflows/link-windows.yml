@@ -1,0 +1,80 @@
+# Plugin OBS SYXTEE pour Windows : module natif (CMake + Qt d'OBS) + agent (exécutable Node autonome) + installeur .exe.
+# BÊTA : mis au point par essais successifs sur le runner windows-latest de GitHub (pas de machine Windows locale).
+# Résultat : artefact « SYXTEE-Link-windows.exe », puis à poser dans DATA_DIR/downloads du serveur avec manifest.json (champ windows).
+name: SYXTEE Link Windows
+
+on:
+  workflow_dispatch:
+    inputs:
+      obs_tag:
+        description: "Version d'OBS visée (tag obs-studio)"
+        default: "32.0.0"
+
+env:
+  OBS_TAG: ${{ inputs.obs_tag || '32.0.0' }}
+  LINK_VERSION: "0.7.16"
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+
+      # 1. Agent : un seul .exe autonome (Node intégré).
+      - name: Agent
+        working-directory: link
+        shell: bash
+        run: |
+          npm ci
+          npx esbuild src/main.ts --bundle --platform=node --format=cjs --target=node24 --outfile=dist/helper.cjs
+          echo '{"main":"dist/helper.cjs","output":"dist/syxtee-link-helper.exe","disableExperimentalSEAWarning":true}' > dist/sea.json
+          node --build-sea dist/sea.json
+
+      # 2. Bibliothèques d'OBS (libobs, obs-frontend-api) et Qt 6 : construites depuis les sources d'OBS avec ses dépendances précompilées.
+      - name: OBS (libobs) et dépendances
+        shell: pwsh
+        run: |
+          git clone --depth 1 --branch $env:OBS_TAG https://github.com/obsproject/obs-studio.git obs-studio
+          cd obs-studio
+          cmake --preset windows-x64 -DENABLE_PLUGINS=OFF -DENABLE_BROWSER=OFF -DENABLE_SCRIPTING=OFF -DENABLE_WEBSOCKET=OFF
+          cmake --build build_x64 --config RelWithDebInfo --target libobs obs-frontend-api
+
+      # 3. Module natif.
+      - name: Module
+        shell: pwsh
+        run: |
+          $deps = (Get-ChildItem obs-studio/.deps -Directory | Select-Object -First 4 | ForEach-Object FullName) -join ';'
+          cmake -S link/plugin -B build -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_PREFIX_PATH="$deps" -Dlibobs_DIR="$PWD/obs-studio/build_x64/libobs" -Dobs-frontend-api_DIR="$PWD/obs-studio/build_x64/frontend/api"
+          cmake --build build --config RelWithDebInfo
+
+      # 4. Installeur : copie dans %APPDATA%\obs-studio\plugins\syxtee-link\bin\64bit (sans droits administrateur).
+      - name: Installeur
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+          New-Item -ItemType Directory -Force stage/obs-plugins/64bit | Out-Null
+          Copy-Item build/RelWithDebInfo/syxtee-link.dll stage/obs-plugins/64bit/
+          Copy-Item link/dist/syxtee-link-helper.exe stage/obs-plugins/64bit/
+          @"
+          [Setup]
+          AppName=SYXTEE Link
+          AppVersion=$env:LINK_VERSION
+          DefaultDirName={userappdata}\obs-studio\plugins\syxtee-link\bin\64bit
+          PrivilegesRequired=lowest
+          OutputBaseFilename=SYXTEE-Link-windows
+          OutputDir=out
+          DisableDirPage=yes
+          DisableProgramGroupPage=yes
+          [Files]
+          Source: "stage\obs-plugins\64bit\*"; DestDir: "{app}"; Flags: ignoreversion
+          "@ | Set-Content installer.iss
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SYXTEE-Link-windows
+          path: out/SYXTEE-Link-windows.exe
+          if-no-files-found: error

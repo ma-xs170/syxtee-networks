@@ -31,13 +31,13 @@ const limits: { label: string; v: [string, string, string] }[] = [
 
 // Fonctions : ✓ inclus, ✕ non inclus, dans le même ordre pour les trois formules.
 const features: { label: string; v: [boolean, boolean, boolean] }[] = [
-  { label: "Serveur SRTLA et RTMP", v: [true, true, true] },
-  { label: "Écran de secours et garde audio", v: [true, true, true] },
-  { label: "Santé du flux en temps réel", v: [true, true, true] },
-  { label: "OBS à distance, multistream inclus", v: [false, true, true] },
-  { label: "Régie automatique", v: [false, true, true] },
-  { label: "Statistiques et historique", v: [false, true, true] },
-  { label: "Accès anticipé aux nouveautés", v: [false, false, true] },
+  { label: "Serveur (SRTLA - RTMP)", v: [true, true, true] },
+  { label: "Écran de secours (+ garde audio)", v: [true, true, true] },
+  { label: "Santé du flux (temps réel)", v: [true, true, true] },
+  { label: "OBS à distance (multistream inclus)", v: [false, true, true] },
+  { label: "Régie automatique (drone, prises)", v: [false, true, true] },
+  { label: "Statistiques (+ historique des directs)", v: [false, true, true] },
+  { label: "Accès anticipé (nouveautés)", v: [false, false, true] },
 ];
 
 export default function TarifsPage() {

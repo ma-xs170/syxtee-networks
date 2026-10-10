@@ -90,46 +90,27 @@ function ObsScreen() {
   );
 }
 
-/* Flèche en pointillés animés : horizontale sur grand écran, verticale sur mobile. */
-function Hop({ label }: { label: string }) {
-  const dash = { className: "bond-dash", fill: "none", stroke: "currentColor", strokeOpacity: 0.6, strokeWidth: 1.5, vectorEffect: "non-scaling-stroke" } as const;
-  return (
-    <div className="flex flex-col items-center gap-2 px-2 text-foreground lg:min-w-20 lg:flex-1" aria-hidden="true">
-      <span className="text-center font-mono text-[10px] uppercase tracking-wider text-muted">{label}</span>
-      <svg viewBox="0 0 8 60" preserveAspectRatio="none" className="h-14 w-2 lg:hidden"><path d="M4 0v52" {...dash} /><path d="M1 48l3 8 3-8" {...dash} className="" /></svg>
-      <svg viewBox="0 0 100 8" preserveAspectRatio="none" className="hidden h-2 w-full lg:block"><path d="M0 4h92" {...dash} /><path d="M88 1l8 3-8 3" {...dash} className="" /></svg>
-    </div>
-  );
-}
-
-function Caption({ i }: { i: number }) {
+function Row({ i, tags, visual, flip = false }: { i: number; tags: string; visual: React.ReactNode; flip?: boolean }) {
   const s = STEPS[i];
   return (
-    <div className="mt-6 max-w-[34ch] text-center">
-      <p className="font-mono text-xs uppercase tracking-wider text-muted">{s.n}</p>
-      <h3 className="mt-1.5 text-lg font-semibold tracking-tight">{s.title}</h3>
-      <p className="mt-1.5 text-sm leading-relaxed text-muted">{s.text}</p>
+    <div className="grid items-center gap-10 border-t border-line py-14 first:border-t-0 first:pt-0 lg:grid-cols-2 lg:gap-20 lg:py-20">
+      <div className={flip ? "lg:order-2" : ""}>
+        <p className="font-mono text-7xl font-bold leading-none tracking-tighter text-foreground/15 sm:text-8xl">{s.n}</p>
+        <h3 className="mt-8 text-3xl font-semibold tracking-tight sm:text-4xl">{s.title}</h3>
+        <p className="mt-4 max-w-[44ch] text-base leading-relaxed text-muted">{s.text}</p>
+        <p className="mt-6 font-mono text-xs uppercase tracking-wider text-muted">{tags}</p>
+      </div>
+      <div className={`flex justify-center ${flip ? "lg:order-1" : ""}`}>{visual}</div>
     </div>
   );
 }
 
 export default function StreamPath() {
   return (
-    <div role="group" aria-label="Ta caméra envoie à nos serveurs, qui livrent à ton OBS" className="flex flex-col items-center gap-8 lg:flex-row lg:items-start lg:gap-0">
-      <div className="flex w-full max-w-[200px] flex-col items-center lg:w-[17%] lg:max-w-none lg:min-w-36">
-        <div className="w-full max-w-[160px]"><DeviceIphone><MoblinScreen /></DeviceIphone></div>
-        <Caption i={0} />
-      </div>
-      <div className="lg:mt-[12%]"><Hop label="4G · 5G · Wi-Fi" /></div>
-      <div className="flex w-full max-w-[260px] flex-col items-center lg:w-[20%] lg:max-w-none">
-        <div className="w-full"><RelayServer /></div>
-        <Caption i={1} />
-      </div>
-      <div className="lg:mt-[12%]"><Hop label="Flux stable" /></div>
-      <div className="flex w-full max-w-[520px] flex-col items-center lg:w-[40%] lg:max-w-none">
-        <div className="w-full"><DeviceMac><ObsScreen /></DeviceMac></div>
-        <Caption i={2} />
-      </div>
+    <div role="group" aria-label="Ta caméra envoie à nos serveurs, qui livrent à ton OBS">
+      <Row i={0} tags="Moblin · 4G · 5G · Wi-Fi" visual={<div className="w-full max-w-[220px]"><DeviceIphone><MoblinScreen /></DeviceIphone></div>} />
+      <Row i={1} flip tags="SRTLA · Flux stabilisé · Au plus près de toi" visual={<div className="w-full max-w-[340px]"><RelayServer /></div>} />
+      <Row i={2} tags="Sur ton Mac ou PC · Tes scènes, comme d'habitude" visual={<div className="w-full max-w-[560px]"><DeviceMac><ObsScreen /></DeviceMac></div>} />
     </div>
   );
 }

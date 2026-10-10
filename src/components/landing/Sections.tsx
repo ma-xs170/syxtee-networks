@@ -209,9 +209,22 @@ export function ServersSection() {
     <section id="serveurs" className="scroll-mt-20 border-b border-line py-24 lg:py-36">
       <Container>
         <Reveal>
-          <h2 className={h2}>Des serveurs prêts à <em>recevoir ton direct.</em></h2>
-          <p className={lead}>Envoie ta vidéo en direct vers l&apos;un de nos serveurs, répartis dans le monde. On la rend stable, tu la récupères dans OBS.</p>
+          <h2 className={h2}>Lance ton live depuis ton téléphone, <em>sans jamais couper.</em></h2>
+          <p className={lead}>Ton téléphone envoie la vidéo à l&apos;un de nos serveurs, répartis dans le monde, et OBS la récupère. Tu changes de scène d&apos;où tu veux. Si le signal tombe, ton stream continue.</p>
         </Reveal>
+        <div className="mt-12 grid gap-4 md:grid-cols-3">
+          {[
+            ["01", "Un appui, et tu es en direct", "Depuis ta chambre, tu appuies sur une scène : ton live part de ton téléphone. Tu sors, tu vaques à tes occupations."],
+            ["02", "OBS reçoit, tu gardes la main", "Notre serveur reçoit la vidéo de ton téléphone et la livre à OBS. Tu y ajoutes tes scènes et tu changes de scène depuis n'importe où."],
+            ["03", "Le flux coupe ? Ton stream reste en ligne", "Si la connexion de ton téléphone tombe, une scène de retour, que tu dessines toi-même, prend le relais. Va où tu veux : ton stream ne s'arrête jamais."],
+          ].map(([n, t, d], k) => (
+            <Reveal as="article" delay={k * 0.08} key={n} className="bento-cell p-6">
+              <p className="font-mono text-xs text-muted">{n}</p>
+              <h3 className="mt-3 text-lg font-semibold tracking-tight">{t}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">{d}</p>
+            </Reveal>
+          ))}
+        </div>
         <Reveal delay={0.1} className="bento-cell mt-12 grid items-center gap-8 p-6 sm:p-10 lg:grid-cols-[auto_1fr_auto] lg:gap-12">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/images/moblin/icon.png" alt="Logo de Moblin" width={120} height={120} className="size-24 rounded-[26px] border border-line shadow-[0_18px_40px_-18px_rgba(0,0,0,0.8)] sm:size-[120px]" />
@@ -222,7 +235,7 @@ export function ServersSection() {
             </p>
             <h3 className="mt-3 text-2xl font-semibold tracking-tight">Moblin</h3>
             <p className="mt-3 max-w-[62ch] text-sm leading-relaxed text-muted">
-              Moblin est née d&apos;un projet indépendant : une app d&apos;IRL pensée pour les streamers en mobilité, sans abonnement ni filigrane, dont le code est public. Elle envoie ta vidéo sur plusieurs connexions à la fois (4G, 5G, Wi-Fi) et se branche sur un de nos serveurs en quelques minutes.
+              Moblin est l&apos;app d&apos;IRL qu&apos;on te conseille pour streamer depuis ton téléphone : sans abonnement ni filigrane, avec un code public. Elle envoie ta vidéo sur plusieurs connexions à la fois (4G, 5G, Wi-Fi) et se branche sur un de nos serveurs en quelques minutes.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <Link href="/moblin" className="btn btn-primary">Connecter Moblin à un serveur</Link>

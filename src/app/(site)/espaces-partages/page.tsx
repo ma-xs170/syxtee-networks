@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
-import { Check } from "@/components/icons";
+import { Check, MonitorPlay, ShareNetwork, SquaresFour, UsersThree } from "@/components/icons";
+import type { ComponentType } from "react";
+import type { IconProps } from "@/components/icons";
 import DeviceScene from "@/components/mockups/Devices";
 import { Container } from "@/components/ui";
 import Highlight from "@/components/ui/Highlight";
@@ -15,6 +17,8 @@ export const metadata: Metadata = {
 const btn =
   "inline-flex h-12 items-center justify-center gap-3 whitespace-nowrap rounded-xl px-7 text-base font-medium transition-[background-color,transform] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 
+// Une icône par point : elle jaillit à l'affichage, puis respire doucement (animation globale des icônes de 28 px et plus).
+const POINT_ICONS: ComponentType<IconProps>[] = [MonitorPlay, UsersThree, ShareNetwork, SquaresFour];
 const POINTS: [string, string][] = [
   ["Plusieurs OBS, un espace", "Installe le plugin sur chaque ordinateur : tous apparaissent dans l'espace, pilotables depuis un téléphone ou un navigateur."],
   ["Chacun son compte et son rôle", "Tu invites par e-mail. Chaque personne se connecte avec son propre compte : pas de mot de passe partagé."],
@@ -63,12 +67,20 @@ export default function EspacesPartagesPage() {
             phone={{ src: "/images/remote/controle-mobile.png", alt: "Contrôle à distance d'un OBS de l'espace depuis un téléphone" }}
           />
           <ul className="mt-14 grid grid-cols-1 gap-x-12 gap-y-8 sm:grid-cols-2">
-            {POINTS.map(([t, d]) => (
-              <li key={t} className="border-t border-line-strong pt-5">
-                <h2 className="text-lg font-semibold tracking-tight">{t}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{d}</p>
-              </li>
-            ))}
+            {POINTS.map(([t, d], i) => {
+              const Icon = POINT_ICONS[i];
+              return (
+                <li key={t} className="flex gap-5 border-t border-line-strong pt-6">
+                  <span className="grid size-14 shrink-0 place-items-center rounded-2xl border border-line-strong bg-foreground/[0.04]">
+                    <Icon size={28} weight="regular" className="text-foreground" aria-hidden="true" />
+                  </span>
+                  <div>
+                    <h2 className="text-lg font-semibold tracking-tight">{t}</h2>
+                    <p className="mt-2 text-sm leading-relaxed text-muted">{d}</p>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </Container>
       </section>

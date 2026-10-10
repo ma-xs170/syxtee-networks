@@ -17,7 +17,7 @@ const SCENES: [string, string][] = [
   ["", "FIN DU STREAM"],
 ];
 const SOURCES: [string, string, boolean][] = [
-  ["Flux › IPHONE 16", "Média", true],
+  ["Flux › IPHONE 16", "Flux SYXTEE", true],
   ["Chat en direct", "Navigateur", true],
   ["(TXT) Pseudo", "Texte", true],
   ["Caméra salon", "Caméra", false],
@@ -30,7 +30,7 @@ const MIX: [string, number, number][] = [
   ["Discord", 58, 46],
 ];
 
-function Icon({ id }: { id: RemoteTab }) {
+function Icon({ id }: { id: RemoteTab | "multi" | "chat" }) {
   const p =
     id === "scenes" ? (
       <>
@@ -49,6 +49,15 @@ function Icon({ id }: { id: RemoteTab }) {
         <circle cx="12" cy="15" r="2" fill="currentColor" />
         <circle cx="18" cy="8" r="2" fill="currentColor" />
       </>
+    ) : id === "multi" ? (
+      <>
+        <rect x="3" y="4" width="8" height="7" rx="1" />
+        <rect x="13" y="4" width="8" height="7" rx="1" />
+        <rect x="3" y="13" width="8" height="7" rx="1" />
+        <rect x="13" y="13" width="8" height="7" rx="1" />
+      </>
+    ) : id === "chat" ? (
+      <path d="M4 5h16v11H9l-5 4V5Z" />
     ) : (
       <>
         <circle cx="12" cy="12" r="9" />
@@ -56,7 +65,7 @@ function Icon({ id }: { id: RemoteTab }) {
       </>
     );
   return (
-    <svg viewBox="0 0 24 24" className="size-[26px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 24 24" className="size-[24px]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
       {p}
     </svg>
   );
@@ -137,7 +146,7 @@ export default function RemotePhoneScreen({ tab = "scenes", className = "" }: { 
                   <li key={n} className={`flex h-[50px] items-center gap-3 px-4 text-[15px] ${i === 1 ? "bg-white/[0.13] text-white" : ""}`}>
                     <span className={`size-1.5 rounded-full ${i === 1 ? "bg-white" : "bg-neutral-500"}`} />
                     
-                    <span>› {n}</span>
+                    <span>{n}</span>
                     {i === 1 && <span className="ml-auto text-[12px] text-white/80">direct</span>}
                   </li>
                 ))}
@@ -150,7 +159,7 @@ export default function RemotePhoneScreen({ tab = "scenes", className = "" }: { 
                 {SOURCES.map(([n, kind, on]) => (
                   <li key={n} className="flex h-[50px] items-center gap-3 px-4 text-[15px]">
                     <svg viewBox="0 0 24 24" className={`size-5 ${on ? "text-neutral-100" : "text-neutral-600"}`} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" /><circle cx="12" cy="12" r="3" />{!on && <path d="M4 4l16 16" />}</svg>
-                    <span className={on ? "" : "text-neutral-500"}>{n}</span>
+                    <span className={on ? "" : "text-neutral-500 line-through"}>{n}</span>
                     <span className="ml-auto text-[12px] text-neutral-500">{kind}</span>
                   </li>
                 ))}
@@ -158,47 +167,49 @@ export default function RemotePhoneScreen({ tab = "scenes", className = "" }: { 
             </Panel>
           )}
           {tab === "mixer" && (
-            <Panel title="Mixeur audio">
-              <div className="flex items-end justify-around px-3 pb-3 pt-4">
+            <Panel title="Mixer audio">
+              <div className="flex gap-2 overflow-hidden p-1.5">
                 {MIX.map(([n, lvl, knob]) => (
-                  <div key={n} className="flex w-[72px] flex-col items-center gap-2">
-                    <div className="flex h-[170px] items-stretch gap-2">
-                      <div className="relative w-2 overflow-hidden rounded-sm bg-[#1a1a1a]">
+                  <div key={n} className="flex w-[88px] shrink-0 flex-col items-center rounded bg-[#0d0d0d] px-1.5 py-1.5">
+                    <span className="min-h-[2.3em] w-full text-center text-[11px] font-medium uppercase leading-tight text-neutral-200">{n}</span>
+                    <div className="mt-1 flex h-[130px] items-stretch gap-1">
+                      <div className="relative w-9">
+                        <span className="absolute inset-x-[16px] inset-y-0 rounded-full bg-[#2a2a2a]" />
+                        <span className="absolute left-0 h-3 w-9 rounded-sm bg-white" style={{ bottom: `${knob - 4}%` }} />
+                      </div>
+                      <div className="relative w-1.5 overflow-hidden rounded-sm bg-[#1a1a1a]">
                         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-emerald-600 via-emerald-500 to-red-500" style={{ height: `${lvl}%` }} />
                       </div>
-                      <div className="relative w-6">
-                        <span className="absolute inset-x-[10px] inset-y-0 rounded-full bg-[#2a2a2a]" />
-                        <span className="absolute left-0 h-3 w-6 rounded-sm bg-white" style={{ bottom: `${knob - 4}%` }} />
-                      </div>
                     </div>
-                    <span className="text-[12px] text-neutral-400">{n}</span>
-                    <span className="rounded-full border border-white/[0.14] px-2 py-0.5 text-[11px] text-neutral-400">Muet</span>
+                    <span className="mt-1 text-[12px] tabular-nums text-neutral-300">{(-(100 - knob) / 3).toFixed(1)}</span>
+                    <div className="mt-1 flex gap-1">
+                      <span className="grid size-7 place-items-center rounded-full border border-white/[0.14] bg-[#16161a] text-[11px] text-neutral-300">♪</span>
+                      <span className="grid size-7 place-items-center rounded-full border border-white/[0.14] bg-[#16161a] text-[11px] text-neutral-300">◖</span>
+                    </div>
                   </div>
                 ))}
               </div>
             </Panel>
           )}
           {tab === "controls" && (
-            <Panel title="Contrôles">
-              <div className="space-y-2.5 p-3">
-                <span className="block rounded bg-red-700 py-3 text-center text-[15px] font-medium">Arrêter le direct <span className="font-normal text-white/80">1:24:13</span></span>
-                <span className="block rounded-full border border-white/[0.14] bg-[#16161a] py-3 text-center text-[15px] text-neutral-200">Démarrer l&apos;enregistrement</span>
-                <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 pt-1 font-mono text-[13px]">
-                  {[["Débit", "6 010 kbit/s"], ["Encodeur", "6 000 kbps"], ["Congestion", "4 %"], ["Images perdues", "0"], ["Sortie", "1920×1080"]].map(([a, b]) => (
-                    <div key={a} className="contents">
-                      <dt className="text-neutral-500">{a}</dt>
-                      <dd className="text-right text-neutral-100">{b}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-            </Panel>
+            <div className="mt-3 space-y-3">
+              <Panel title="Contrôles">
+                <div className="grid gap-1.5 p-2">
+                  <span className="block rounded-full border border-red-700 bg-red-700 py-2.5 text-center text-[14px] text-white">Arrêter le direct · 1:24:13</span>
+                  <span className="block rounded-full border border-white/[0.14] bg-[#16161a] py-2.5 text-center text-[14px] text-neutral-200">Démarrer l&apos;enregistrement</span>
+                </div>
+              </Panel>
+              <section className="mx-3 flex items-center justify-between gap-2 rounded-lg border border-[#262626] bg-[#0b0b0b] px-3 py-2 text-[13px]">
+                <span className="font-semibold">Flux</span>
+                <span className="truncate text-neutral-300">6010 kbit/s · x264</span>
+              </section>
+            </div>
           )}
         </div>
 
         {/* Barre d'onglets du bas */}
-        <nav className="absolute inset-x-0 bottom-0 grid h-[84px] grid-cols-4 border-t border-[#262626] bg-black px-1 pt-1.5">
-          {([["scenes", "Scènes"], ["sources", "Sources"], ["mixer", "Mixer"], ["controls", "Contrôles"]] as const).map(([id, t]) => (
+        <nav className="absolute inset-x-0 bottom-0 grid h-[84px] grid-cols-6 border-t border-[#262626] bg-black px-1 pt-1.5">
+          {([["scenes", "Scènes"], ["sources", "Sources"], ["mixer", "Mixer"], ["controls", "Direct"], ["multi", "Multi"], ["chat", "Chat"]] as const).map(([id, t]) => (
             <span key={id} className={`relative flex flex-col items-center gap-1 pt-1.5 text-[11px] ${tab === id ? "text-white" : "text-neutral-500"}`}>
               {tab === id && <span className="absolute inset-x-8 -top-1.5 h-0.5 rounded-full bg-white" />}
               <Icon id={id} />

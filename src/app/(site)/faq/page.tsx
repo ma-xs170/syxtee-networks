@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
-import NextStep from "@/components/NextStep";
 import FaqList from "@/components/blocks/FaqList";
 import { Container } from "@/components/ui";
 import { faq } from "@/lib/faq";
@@ -27,7 +26,6 @@ export default function FaqPage() {
         </Container>
       </section>
 
-      <NextStep label="Retour à l'accueil" href="/" />
     </>
   );
 }

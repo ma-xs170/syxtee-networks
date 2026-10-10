@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import NextStep from "@/components/NextStep";
 import PopOutImage from "@/components/PopOutImage";
 import Powerbank from "@/components/illustrations/Powerbank";
 import StarlinkMiniBag from "@/components/illustrations/StarlinkMiniBag";
@@ -188,7 +187,6 @@ export default function StarlinkPage() {
         </Container>
       </section>
 
-      <NextStep label="Configurer Moblin" href="/moblin" />
     </>
   );
 }

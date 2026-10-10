@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import NextStep from "@/components/NextStep";
 import SailySection from "@/components/partners/SailySection";
 import SailyStory from "@/components/saily/SailyStory";
 
@@ -15,7 +14,6 @@ export default function SailyPage() {
     <>
       <SailyStory />
       <SailySection header="compact" />
-      <NextStep label="Configurer Moblin" href="/moblin" />
     </>
   );
 }

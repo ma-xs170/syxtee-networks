@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import NextStep from "@/components/NextStep";
 import BondingDiagram from "@/components/blocks/BondingDiagram";
 import DetailSection, { IllustrationCard, Point } from "@/components/blocks/DetailSection";
 import ObsInterface from "@/components/illustrations/ObsInterface";
@@ -126,7 +125,6 @@ export default function FonctionnementPage() {
           </dl>
         </Container>
       </section>
-      <NextStep label="Configurer Moblin" href="/moblin" />
     </>
   );
 }

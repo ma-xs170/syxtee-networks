@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import NextStep from "@/components/NextStep";
 import Glow from "@/components/landing/Glow";
 import { deviceImage } from "@/lib/device-images";
 import StreamPath from "@/components/landing/StreamPath";
@@ -52,7 +51,6 @@ export default function RelaisPage() {
         </Container>
       </section>
 
-      <NextStep label="Demander l'accès" href="/acces" />
     </>
   );
 }

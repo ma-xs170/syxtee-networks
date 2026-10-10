@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import NextStep from "@/components/NextStep";
 import MoblinStory from "@/components/moblin/MoblinStory";
 import PhoneAndroid from "@/components/illustrations/PhoneAndroid";
 import CopyCode from "@/components/CopyCode";
@@ -271,7 +270,6 @@ export default function MoblinPage() {
         </Container>
       </section>
 
-      <NextStep label="Starlink en IRL" href="/starlink" />
     </>
   );
 }

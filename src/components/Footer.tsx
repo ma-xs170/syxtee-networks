@@ -47,7 +47,7 @@ export default function Footer() {
             <span className="text-sm font-medium tracking-[0.02em] text-foreground">SYXTEE NETWORKS</span>
           </div>
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-muted">Le direct en mobilité, simple et fiable.</p>
-          <div className="mt-5"><StatusPill variant="ok" label="Tous les systèmes opérationnels" /></div>
+          <Link href="/statut" className="mt-5 inline-block max-w-full"><StatusPill variant="ok" label="Systèmes opérationnels" /></Link>
         </div>
 
         {columns.map((col) => (

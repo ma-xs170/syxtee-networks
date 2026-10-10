@@ -22,7 +22,7 @@ export type NavItem = NavLink | NavMenu;
 // L'encodeur vit aussi dans le pied de page.
 export const nav: NavItem[] = [
   { label: "Contrôle à distance", href: "/controle-a-distance" },
-  { label: "Multistream", href: "/multistream" },
+  { label: "Nos serveurs", href: "/relais" },
   { label: "Tarifs", href: "/tarifs" },
   { label: "Devenir partenaire", href: "/acces", underline: true },
 ];

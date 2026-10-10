@@ -31,17 +31,12 @@ const limits: { label: string; v: [string, string, string] }[] = [
 
 // Fonctions : ✓ inclus, ✕ non inclus, dans le même ordre pour les trois formules.
 const features: { label: string; v: [boolean, boolean, boolean] }[] = [
-  { label: "Serveurs SRTLA et RTMP", v: [true, true, true] },
-  { label: "Clés de diffusion privées", v: [true, true, true] },
-  { label: "Contrôle à distance d'OBS", v: [true, true, true] },
-  { label: "Écran de secours automatique", v: [true, true, true] },
-  { label: "Garde audio du micro", v: [true, true, true] },
+  { label: "Serveur SRTLA et RTMP", v: [true, true, true] },
+  { label: "Écran de secours et garde audio", v: [true, true, true] },
   { label: "Santé du flux en temps réel", v: [true, true, true] },
-  { label: "Sauvegardes de scènes", v: [false, true, true] },
-  { label: "Statistiques et historique des directs", v: [false, true, true] },
-  { label: "Multichat", v: [false, true, true] },
-  { label: "Autogérance du drone et des prises", v: [false, true, true] },
-  { label: "Membres avec rôles", v: [false, true, true] },
+  { label: "OBS à distance, multistream inclus", v: [false, true, true] },
+  { label: "Régie automatique", v: [false, true, true] },
+  { label: "Statistiques et historique", v: [false, true, true] },
   { label: "Accès anticipé aux nouveautés", v: [false, false, true] },
 ];
 

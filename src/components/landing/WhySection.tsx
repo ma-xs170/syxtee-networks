@@ -47,7 +47,7 @@ export function WhySection() {
         <Reveal delay={0.1} className="mt-16 border-t border-line pt-12">
           <p className="font-mono text-xs uppercase tracking-wider text-muted">Le trajet de ton flux</p>
           <p className={lead}>Ton flux part de ton téléphone, arrive dans nos serveurs, puis sur ton OBS. Tu y ajoutes tes scènes comme d&apos;habitude.</p>
-          <div className="mt-8"><FlowDiagram /></div>
+          <div className="mt-10"><FlowDiagram /></div>
         </Reveal>
       </Container>
     </section>

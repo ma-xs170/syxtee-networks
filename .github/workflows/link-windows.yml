@@ -39,7 +39,9 @@ jobs:
           git clone --depth 1 --recurse-submodules --shallow-submodules --branch $env:OBS_TAG https://github.com/obsproject/obs-studio.git obs-studio
           cd obs-studio
           cmake --preset windows-x64 -DENABLE_PLUGINS=OFF -DENABLE_BROWSER=OFF -DENABLE_SCRIPTING=OFF -DENABLE_WEBSOCKET=OFF
-          cmake --build build_x64 --config RelWithDebInfo --target libobs obs-frontend-api
+          cmake --build build_x64 --config RelWithDebInfo --target libobs obs-frontend-api w32-pthreads
+          cmake --install build_x64 --config RelWithDebInfo --prefix ../obs-install --component Development
+          Get-ChildItem ../obs-install -Recurse -Filter '*Config.cmake' | ForEach-Object FullName
 
       # 3. Module natif.
       - name: Module
@@ -49,7 +51,7 @@ jobs:
           $root = $PWD.Path -replace '\\','/'
           Write-Host $deps
           cmake -S link/plugin -B build -G "Visual Studio 17 2022" -A x64 `
-            -DCMAKE_PREFIX_PATH="$deps" -DCMAKE_MODULE_PATH="$root/obs-studio/cmake/finders" -Dlibobs_DIR="$root/obs-studio/build_x64/libobs" -Dobs-frontend-api_DIR="$root/obs-studio/build_x64/frontend/api"
+            -DCMAKE_MODULE_PATH="$root/obs-studio/cmake/finders" -DCMAKE_PREFIX_PATH="$deps;$root/obs-install"
           cmake --build build --config RelWithDebInfo
 
       # 4. Installeur : copie dans %APPDATA%\obs-studio\plugins\syxtee-link\bin\64bit (sans droits administrateur).

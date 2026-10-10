@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Check } from "@/components/icons";
+import Glow from "@/components/landing/Glow";
 import { Container } from "@/components/ui";
+import GridBackground from "@/components/ui/GridBackground";
 
 export const metadata: Metadata = {
   title: "Tarifs",
@@ -96,8 +98,10 @@ function Cell({ v }: { v: string | boolean }) {
 export default function TarifsPage() {
   return (
     <>
-      <section className="border-b border-line py-20 text-center sm:py-24">
-        <Container>
+      <Glow />
+      <section className="relative -mt-[4.0625rem] overflow-hidden border-b border-line pb-16 pt-[9rem] text-center sm:pb-24 sm:pt-[10.5rem]">
+        <GridBackground />
+        <Container className="relative">
           <h1 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,7vw,4.75rem)]">Des tarifs <em>simples.</em></h1>
           <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
             Trois formules, à partir de <strong>4,99 € par mois</strong>. Sans engagement : tu changes ou tu arrêtes quand tu veux.

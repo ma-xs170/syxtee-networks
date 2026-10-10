@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import NextStep from "@/components/NextStep";
 import Glow from "@/components/landing/Glow";
+import { deviceImage } from "@/lib/device-images";
 import StreamPath from "@/components/landing/StreamPath";
 import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button";
@@ -43,7 +44,7 @@ export default function RelaisPage() {
         <Container>
           <SectionHeader title={<>Le trajet de <em>ton flux.</em></>} subtitle="Trois étapes, de ta caméra jusqu'à ton direct." />
           <div className="mt-16">
-            <StreamPath />
+            <StreamPath images={{ laptop: deviceImage("laptop"), phone: deviceImage("phone") }} />
           </div>
           <p className="mx-auto mt-14 max-w-[58ch] text-center text-sm leading-relaxed text-muted">
             Prends le serveur le plus proche de l&apos;endroit où tu filmes, pas de chez toi : c&apos;est la liaison mobile entre ton téléphone et le serveur qui est fragile. En voyage, change de serveur avant le live.

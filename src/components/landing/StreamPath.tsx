@@ -13,24 +13,38 @@ const STEPS = [
   { n: "03", title: "Ton OBS récupère", text: "OBS reçoit un flux propre sur ton ordinateur. Tu ajoutes tes scènes et tu diffuses, comme à la maison." },
 ];
 
-/* Écran de l'iPhone : app Moblin en direct (390 x 852). */
+/* Écran de l'iPhone en paysage : app Moblin en direct, logo au centre. Le contenu (852 x 393) est tourné de 90° dans l'écran portrait (393 x 852), l'appareil de -90°. */
 function MoblinScreen() {
   return (
-    <div className="relative h-full w-full bg-[#0c0d10] font-sans text-white" style={{ width: 393, height: 852 }}>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#2a2d34,#0c0d10_70%)]" />
-      <div className="absolute left-6 top-24 flex items-center gap-2 rounded-lg bg-black/60 px-3 py-1.5 text-[22px] font-semibold">
-        <span className="size-3 rounded-full bg-[#ff3b30]" /> LIVE <span className="font-mono font-normal text-white/70">00:14:10</span>
+    <div className="relative bg-[#0c0d10] font-sans text-white" style={{ width: 393, height: 852 }}>
+      <div className="absolute left-1/2 top-1/2 overflow-hidden" style={{ width: 852, height: 393, transform: "translate(-50%, -50%) rotate(90deg)" }}>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,#2a2d34,#0c0d10_72%)]" />
+        <div className="absolute left-24 top-8 flex items-center gap-2 rounded-lg bg-black/60 px-3 py-1.5 text-[22px] font-semibold">
+          <span className="size-3 rounded-full bg-[#ff3b30]" /> LIVE <span className="font-mono font-normal text-white/70">00:14:10</span>
+        </div>
+        <div className="absolute right-12 top-8 rounded-lg bg-black/60 px-3 py-1.5 font-mono text-[20px] text-white/80">7,9 Mb/s</div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/moblin/icon.png" alt="" width={160} height={160} className="absolute left-1/2 top-1/2 size-40 -translate-x-1/2 -translate-y-1/2 rounded-[2.2rem]" />
+        <div className="absolute inset-x-24 bottom-8 grid grid-cols-3 gap-3">
+          {[["4G", "62%"], ["5G", "88%"], ["Wi-Fi", "45%"]].map(([l, w]) => (
+            <div key={l} className="rounded-xl bg-black/55 p-3">
+              <div className="text-[20px] text-white/70">{l}</div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full bg-[#3dd68c]" style={{ width: w }} /></div>
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="absolute right-6 top-24 rounded-lg bg-black/60 px-3 py-1.5 font-mono text-[20px] text-white/80">7,9 Mb/s</div>
-      <div className="absolute inset-x-6 bottom-40 grid grid-cols-3 gap-3">
-        {[["4G", "62%"], ["5G", "88%"], ["Wi-Fi", "45%"]].map(([l, w]) => (
-          <div key={l} className="rounded-xl bg-black/55 p-3">
-            <div className="text-[20px] text-white/70">{l}</div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full bg-[#3dd68c]" style={{ width: w }} /></div>
-          </div>
-        ))}
+    </div>
+  );
+}
+
+/* iPhone posé en paysage : l'appareil portrait est tourné de -90° dans une boîte 19,5:9. */
+function LandscapePhone({ image }: { image?: string | null }) {
+  return (
+    <div className="relative aspect-[19.5/9] w-full">
+      <div className="absolute left-1/2 top-1/2 w-[46.15%]" style={{ transform: "translate(-50%, -50%) rotate(-90deg)" }}>
+        <DeviceIphone image={image}><MoblinScreen /></DeviceIphone>
       </div>
-      <div className="absolute inset-x-6 bottom-16 rounded-2xl bg-white/10 py-4 text-center text-[24px] font-semibold">Vers relais.syxtee-networks.fr</div>
     </div>
   );
 }
@@ -51,22 +65,22 @@ function ObsScreen() {
         OBS Studio · Profil : Direct IRL · Scènes : Stream
       </div>
       {/* aperçu */}
-      <div className="flex h-[470px] items-center justify-center bg-[#0d0d0f]">
-        <div className="relative h-[430px] w-[764px] overflow-hidden border border-white/15 bg-[radial-gradient(ellipse_at_50%_40%,#2a2d34,#101114_75%)]">
+      <div className="flex h-[500px] items-center justify-center bg-[#0d0d0f]">
+        <div className="relative h-[450px] w-[800px] overflow-hidden border border-white/15 bg-[radial-gradient(ellipse_at_50%_40%,#2a2d34,#101114_75%)]">
           <div className="absolute left-4 top-4 flex items-center gap-2 rounded bg-black/60 px-2.5 py-1 text-[18px]"><span className="size-2.5 rounded-full bg-[#ff3b30]" />Flux iPhone 16</div>
           <Image src="/logo-400.png" alt="" width={64} height={88} className="absolute left-1/2 top-1/2 h-auto w-14 -translate-x-1/2 -translate-y-1/2 opacity-25 invert" />
         </div>
       </div>
       {/* docks */}
-      <div className="grid h-[350px] grid-cols-[1.1fr_1.2fr_1.5fr_1fr_1fr] gap-2 p-2">
+      <div className="grid h-[328px] grid-cols-[1.1fr_1.2fr_1.5fr_1fr_1fr] gap-2 p-2">
         <div className={panel}><div className={head}>Scènes</div>
-          {["Début du stream", "En direct", "Connexion perdue", "Fin du stream"].map((s, i) => <div key={s} className={`px-4 py-2 ${i === 1 ? "bg-[#3b4a6b] text-white" : "text-white/70"}`}>{s}</div>)}
+          {["Début du stream", "En direct", "Connexion perdue", "Fin du stream", "Pause"].map((s, i) => <div key={s} className={`px-4 py-2 ${i === 1 ? "bg-[#3b4a6b] text-white" : "text-white/70"}`}>{s}</div>)}
         </div>
         <div className={panel}><div className={head}>Sources</div>
-          {["Flux SYXTEE (SRT)", "Overlay alertes", "Chat en direct"].map((s) => <div key={s} className="flex items-center justify-between px-4 py-2 text-white/70">{s}<span className="size-2 rounded-full bg-white/40" /></div>)}
+          {["Flux SYXTEE (SRT)", "Overlay alertes", "Chat en direct", "Webcam"].map((s) => <div key={s} className="flex items-center justify-between px-4 py-2 text-white/70">{s}<span className="size-2 rounded-full bg-white/40" /></div>)}
         </div>
         <div className={panel}><div className={head}>Mixeur audio</div>
-          {[["Flux iPhone", "72%"], ["Micro", "55%"]].map(([l, w]) => (
+          {[["Flux iPhone", "72%"], ["Micro", "55%"], ["Musique", "34%"]].map(([l, w]) => (
             <div key={l} className="px-4 py-3"><div className="text-white/70">{l}</div>
               <div className="mt-2 h-3 overflow-hidden rounded-sm bg-white/10"><div className="h-full bg-gradient-to-r from-[#3dd68c] via-[#3dd68c] to-[#f5a524]" style={{ width: w }} /></div></div>
           ))}
@@ -79,6 +93,7 @@ function ObsScreen() {
             <div className="rounded bg-[#2d6a4f] py-2 text-white">Arrêter le direct</div>
             <div className="rounded bg-white/10 py-2">Enregistrer</div>
             <div className="rounded bg-white/10 py-2">Mode Studio</div>
+            <div className="rounded bg-white/10 py-2">Paramètres</div>
           </div>
         </div>
       </div>
@@ -105,12 +120,14 @@ function Row({ i, tags, visual, flip = false }: { i: number; tags: string; visua
   );
 }
 
-export default function StreamPath() {
+export type StreamImages = { laptop?: string | null; phone?: string | null };
+
+export default function StreamPath({ images }: { images?: StreamImages }) {
   return (
     <div role="group" aria-label="Ta caméra envoie à nos serveurs, qui livrent à ton OBS">
-      <Row i={0} tags="Moblin · 4G · 5G · Wi-Fi" visual={<div className="w-full max-w-[220px]"><DeviceIphone><MoblinScreen /></DeviceIphone></div>} />
+      <Row i={0} tags="Moblin · 4G · 5G · Wi-Fi" visual={<div className="w-full max-w-[460px]"><LandscapePhone image={images?.phone} /></div>} />
       <Row i={1} flip tags="SRTLA · Flux stabilisé · Au plus près de toi" visual={<div className="w-full max-w-[340px]"><RelayServer /></div>} />
-      <Row i={2} tags="Sur ton Mac ou PC · Tes scènes, comme d'habitude" visual={<div className="w-full max-w-[560px]"><DeviceMac><ObsScreen /></DeviceMac></div>} />
+      <Row i={2} tags="Sur ton Mac ou PC · Tes scènes, comme d'habitude" visual={<div className="w-full max-w-[560px]"><DeviceMac image={images?.laptop}><ObsScreen /></DeviceMac></div>} />
     </div>
   );
 }

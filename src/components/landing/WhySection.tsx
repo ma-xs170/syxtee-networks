@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Container } from "../ui";
 import Reveal from "../ui/Reveal";
+import { deviceImage } from "@/lib/device-images";
 import StreamPath from "./StreamPath";
 
 const h2 = "h-serif text-[clamp(2.25rem,4.5vw,3.5rem)]";
@@ -47,7 +48,7 @@ export function WhySection() {
         <Reveal delay={0.1} className="mt-16 border-t border-line pt-12">
           <p className="font-mono text-xs uppercase tracking-wider text-muted">Le trajet de ton flux</p>
           <p className={lead}>Ton flux part de ton téléphone, arrive dans nos serveurs, puis sur ton OBS. Tu y ajoutes tes scènes comme d&apos;habitude.</p>
-          <div className="mt-10"><StreamPath /></div>
+          <div className="mt-10"><StreamPath images={{ laptop: deviceImage("laptop"), phone: deviceImage("phone") }} /></div>
         </Reveal>
       </Container>
     </section>

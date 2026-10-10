@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Glow from "@/components/landing/Glow";
+import { Check } from "@/components/icons";
 import { Container } from "@/components/ui";
 import GridBackground from "@/components/ui/GridBackground";
 

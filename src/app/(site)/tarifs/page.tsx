@@ -7,37 +7,36 @@ import GridBackground from "@/components/ui/GridBackground";
 
 export const metadata: Metadata = {
   title: "Tarifs",
-  description: "Trois formules, à partir de 4,99 € par mois : serveurs SRTLA et RTMP, contrôle à distance d'OBS, multistream, équipes et régies. Sans engagement.",
+  description: "Trois formules, à partir de 4,99 € par mois : serveur SRTLA et RTMP, contrôle à distance d'OBS dès Signature, multistream, équipes et régies. Sans engagement.",
   alternates: { canonical: "/tarifs" },
 };
 
-// Les limites reprennent plans.ts : ne rien annoncer ici qui ne soit pas appliqué par le serveur.
 // Pas de paiement sur le site pour l'instant : le bouton de chaque formule est « Demander l'accès ».
-type Tier = { id: string; name: string; price: string; pitch: string; highlight?: boolean };
-const tiers: Tier[] = [
-  { id: "essentiel", name: "Essentiel", price: "4,99", pitch: "Le point de départ d'un direct maîtrisé, de n'importe où." },
+// Les trois tableaux ci-dessous donnent une valeur par formule, dans l'ordre : Essentiel, Signature, Prestige.
+type Three<T> = [T, T, T];
+
+const tiers = [
+  { id: "essentiel", name: "Essentiel", price: "4,99", pitch: "Le point de départ d'un direct maîtrisé, de n'importe où.", highlight: false },
   { id: "signature", name: "Signature", price: "9,99", pitch: "Pour les créateurs qui diffusent régulièrement et veulent tout.", highlight: true },
-  { id: "prestige", name: "Prestige", price: "19,99", pitch: "Pour les régies et les équipes qui exigent le meilleur." },
+  { id: "prestige", name: "Prestige", price: "19,99", pitch: "Pour les régies et les équipes qui exigent le meilleur.", highlight: false },
 ];
 
-// Chiffres clés : une valeur par formule (Essentiel, Signature, Prestige).
-const limits: { label: string; v: [string, string, string] }[] = [
+// Chiffres clés.
+const limits: { label: string; v: Three<string> }[] = [
   { label: "Serveurs actifs", v: ["1", "10", "Illimités"] },
   { label: "Directs en même temps", v: ["1", "3", "10"] },
-  { label: "Invités pour piloter ton OBS", v: ["Aucun", "3", "5"] },
   { label: "Espaces partagés", v: ["Aucun", "1", "5"] },
+  { label: "Invités au contrôle à distance", v: ["Aucun", "3", "5"] },
   { label: "Caméras pour la régie IA", v: ["Aucune", "3", "6"] },
 ];
 
-// Fonctions : ✓ inclus, ✕ non inclus, dans le même ordre pour les trois formules.
-const features: { label: string; v: [boolean, boolean, boolean] }[] = [
-  { label: "Serveur (SRTLA - RTMP)", v: [true, true, true] },
-  { label: "Écran de secours (+ garde audio)", v: [true, true, true] },
-  { label: "Santé du flux (temps réel)", v: [true, true, true] },
-  { label: "OBS à distance (multistream inclus)", v: [false, true, true] },
-  { label: "Régie automatique (drone, prises)", v: [false, true, true] },
-  { label: "Statistiques (+ historique des directs)", v: [false, true, true] },
-  { label: "Accès anticipé (nouveautés)", v: [false, false, true] },
+// Fonctions : ✓ inclus, ✕ non inclus.
+const features: { label: string; note?: string; v: Three<boolean> }[] = [
+  { label: "Serveur (SRTLA - RTMP)", note: "Secours, garde audio et santé du flux intégrés", v: [true, true, true] },
+  { label: "Contrôle à distance", note: "Scènes, audio, direct et multistream", v: [false, true, true] },
+  { label: "Régie automatique", note: "Drone et prises autogérés", v: [false, true, true] },
+  { label: "Statistiques", note: "Détail et historique des directs", v: [false, true, true] },
+  { label: "Accès anticipé", note: "Les nouveautés avant tout le monde", v: [false, false, true] },
 ];
 
 export default function TarifsPage() {
@@ -72,7 +71,8 @@ export default function TarifsPage() {
                 <Link href="/acces" className={`btn mt-6 w-full ${t.highlight ? "btn-primary" : "btn-secondary"}`}>
                   Demander l&apos;accès
                 </Link>
-                <dl className="mt-7 space-y-3 border-t border-line pt-6 text-sm">
+
+                <dl className="mt-7 space-y-3 rounded-xl bg-foreground/[0.04] p-4 text-sm">
                   {limits.map((l) => (
                     <div key={l.label} className="flex items-baseline justify-between gap-4">
                       <dt className="text-muted">{l.label}</dt>
@@ -80,13 +80,20 @@ export default function TarifsPage() {
                     </div>
                   ))}
                 </dl>
-                <ul className="mt-6 space-y-3 border-t border-line pt-6">
-                  {features.map((f) => (
-                    <li key={f.label} className={`flex items-start gap-3 text-sm ${f.v[k] ? "" : "text-muted"}`}>
-                      {f.v[k] ? <Check size={16} weight="bold" className="mt-0.5 shrink-0 text-ok" aria-label="Inclus" /> : <X size={16} weight="bold" className="mt-0.5 shrink-0 text-muted" aria-label="Non inclus" />}
-                      {f.label}
-                    </li>
-                  ))}
+
+                <ul className="mt-6 space-y-4">
+                  {features.map((f) => {
+                    const on = f.v[k];
+                    return (
+                      <li key={f.label} className="flex items-start gap-3 text-sm">
+                        {on ? <Check size={16} weight="bold" className="mt-0.5 shrink-0 text-ok" aria-label="Inclus" /> : <X size={16} weight="bold" className="mt-0.5 shrink-0 text-muted" aria-label="Non inclus" />}
+                        <span className={on ? "" : "text-muted"}>
+                          <span className="block font-medium">{f.label}</span>
+                          <span className="mt-0.5 block text-xs leading-relaxed text-muted">{f.note}</span>
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </article>
             ))}

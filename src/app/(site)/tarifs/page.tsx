@@ -21,21 +21,21 @@ const tiers = [
   { id: "prestige", name: "Prestige", price: "19,99", pitch: "Pour les régies et les équipes qui exigent le meilleur.", highlight: false },
 ];
 
-// Chiffres clés.
-const limits: { label: string; note?: string; v: Three<string> }[] = [
-  { label: "Serveurs (SRTLA - RTMP)", note: "Secours automatique, garde audio et santé du flux intégrés", v: ["1", "10", "∞"] },
+// Chiffres clés : « 0 » s'affiche ✕.
+const limits: { label: string; v: Three<string> }[] = [
+  { label: "Serveurs (SRTLA - RTMP)", v: ["1", "10", "∞"] },
   { label: "Directs en même temps", v: ["1", "3", "10"] },
   { label: "Espaces partagés", v: ["0", "1", "5"] },
   { label: "Invités au contrôle à distance", v: ["0", "3", "5"] },
   { label: "Caméras pour la régie IA", v: ["0", "3", "6"] },
 ];
 
-// Fonctions : ✓ inclus, ✕ non inclus.
-const features: { label: string; note?: string; v: Three<boolean> }[] = [
-  { label: "Contrôle à distance", note: "Scènes, audio, direct et multistream", v: [false, true, true] },
-  { label: "Régie automatique", note: "Drone et prises autogérés", v: [false, true, true] },
-  { label: "Statistiques", note: "Détail et historique des directs", v: [false, true, true] },
-  { label: "Accès anticipé", note: "Les nouveautés avant tout le monde", v: [false, false, true] },
+// Fonctions : ✓ inclus, ✕ non inclus. Le serveur inclut le secours automatique, la garde audio et la santé du flux.
+const features: { label: string; v: Three<boolean> }[] = [
+  { label: "Contrôle à distance (multistream inclus)", v: [false, true, true] },
+  { label: "Régie automatique (drone, prises)", v: [false, true, true] },
+  { label: "Statistiques (+ historique des directs)", v: [false, true, true] },
+  { label: "Accès anticipé aux nouveautés", v: [false, false, true] },
 ];
 
 export default function TarifsPage() {
@@ -71,32 +71,27 @@ export default function TarifsPage() {
                   Demander l&apos;accès
                 </Link>
 
-                <ul className="mt-7 divide-y divide-foreground/10 border-y border-foreground/10">
+                <ul className="mt-8 space-y-3.5 text-sm">
                   {limits.map((l) => {
                     const v = l.v[k];
+                    const none = v === "0";
                     return (
-                      <li key={l.label} className="grid grid-cols-[3.5rem_1fr] items-center">
-                        <span className="border-r border-foreground/15 py-3 pr-3 text-right font-mono text-lg font-semibold leading-none">
-                          {v === "0" ? <X size={16} weight="bold" className="ml-auto text-muted" aria-label="Aucun" /> : v}
+                      <li key={l.label} className={`grid grid-cols-[2.5rem_1fr] items-center ${none ? "text-muted" : ""}`}>
+                        <span className="font-mono text-base font-semibold leading-none">
+                          {none ? <X size={15} weight="bold" aria-label="Aucun" /> : v}
                         </span>
-                        <span className={`py-3 pl-4 text-sm ${v === "0" ? "text-muted" : ""}`}>
-                          {l.label}
-                          {l.note && <span className="mt-0.5 block text-xs text-muted">{l.note}</span>}
-                        </span>
+                        {l.label}
                       </li>
                     );
                   })}
+                </ul>
+                <ul className="mt-6 space-y-3.5 border-t border-foreground/10 pt-6 text-sm">
                   {features.map((f) => {
                     const on = f.v[k];
                     return (
-                      <li key={f.label} className="grid grid-cols-[3.5rem_1fr] items-center">
-                        <span className="border-r border-foreground/15 py-3 pr-3">
-                          {on ? <Check size={18} weight="bold" className="ml-auto text-ok" aria-label="Inclus" /> : <X size={16} weight="bold" className="ml-auto text-muted" aria-label="Non inclus" />}
-                        </span>
-                        <span className={`py-3 pl-4 text-sm ${on ? "" : "text-muted"}`}>
-                          <span className="block">{f.label}</span>
-                          <span className="mt-0.5 block text-xs text-muted">{f.note}</span>
-                        </span>
+                      <li key={f.label} className={`grid grid-cols-[2.5rem_1fr] items-center ${on ? "" : "text-muted"}`}>
+                        {on ? <Check size={17} weight="bold" className="text-ok" aria-label="Inclus" /> : <X size={15} weight="bold" aria-label="Non inclus" />}
+                        {f.label}
                       </li>
                     );
                   })}

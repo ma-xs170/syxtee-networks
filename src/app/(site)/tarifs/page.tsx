@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Check } from "@/components/icons";
 import Glow from "@/components/landing/Glow";
 import { Container } from "@/components/ui";
 import GridBackground from "@/components/ui/GridBackground";
@@ -40,60 +39,6 @@ const tiers: Tier[] = [
     items: ["Serveurs illimités", "10 directs en même temps", "5 espaces partagés pour tes régies", "5 invités pour piloter ton OBS", "Régie IA jusqu'à 6 caméras", "Accès anticipé aux nouveautés"],
   },
 ];
-
-type Row = { label: string; v: [string | boolean, string | boolean, string | boolean] };
-const compare: { group: string; rows: Row[] }[] = [
-  {
-    group: "Serveurs",
-    rows: [
-      { label: "Serveurs actifs", v: ["1", "10", "Illimités"] },
-      { label: "Directs en même temps", v: ["1", "3", "10"] },
-      { label: "Protocoles SRTLA et RTMP", v: [true, true, true] },
-      { label: "Clés de diffusion privées", v: [true, true, true] },
-    ],
-  },
-  {
-    group: "Contrôle à distance",
-    rows: [
-      { label: "Piloter OBS depuis un navigateur ou un téléphone", v: [true, true, true] },
-      { label: "Écran de secours automatique", v: [true, true, true] },
-      { label: "Invités OBS (avec compte)", v: ["Aucun", "3", "5"] },
-      { label: "Sauvegardes de scènes", v: [false, true, true] },
-    ],
-  },
-  {
-    group: "Régie automatique",
-    rows: [
-      { label: "Écran de secours si la connexion coupe", v: [true, true, true] },
-      { label: "Garde audio du micro", v: [true, true, true] },
-      { label: "Autogérance du drone et des autres prises", v: [false, true, true] },
-      { label: "Régie IA multi-caméras (Mistral ou Claude, avec ta clé)", v: [false, "3 caméras", "6 caméras"] },
-    ],
-  },
-  {
-    group: "Équipes et régies",
-    rows: [
-      { label: "Espaces partagés", v: ["Aucun", "1", "5"] },
-      { label: "Membres avec rôles (propriétaire, administrateur, membre)", v: [false, true, true] },
-    ],
-  },
-  {
-    group: "Suivi",
-    rows: [
-      { label: "Santé du flux en temps réel", v: [true, true, true] },
-      { label: "Statistiques détaillées", v: [false, true, true] },
-      { label: "Historique des directs", v: [false, true, true] },
-      { label: "Multichat", v: [false, true, true] },
-      { label: "Accès anticipé aux nouveautés", v: [false, false, true] },
-    ],
-  },
-];
-
-function Cell({ v }: { v: string | boolean }) {
-  if (v === true) return <Check size={18} weight="bold" className="mx-auto text-foreground" aria-label="Inclus" />;
-  if (v === false) return <span className="text-muted" aria-label="Non inclus">·</span>;
-  return <span className="font-medium">{v}</span>;
-}
 
 export default function TarifsPage() {
   return (
@@ -153,47 +98,6 @@ export default function TarifsPage() {
             </div>
             <Link href="/espaces-partages" className="btn btn-primary shrink-0">Découvrir les espaces partagés</Link>
           </div>
-        </Container>
-      </section>
-
-      <section className="border-t border-line py-16 sm:py-20">
-        <Container className="max-w-4xl">
-          <details className="group">
-          <summary className="cursor-pointer list-none text-center text-base text-foreground underline underline-offset-[6px] decoration-foreground/40 transition-colors hover:decoration-foreground [&::-webkit-details-marker]:hidden">
-            <span className="group-open:hidden">Comparer les formules en détail</span>
-            <span className="hidden group-open:inline">Masquer la comparaison</span>
-          </summary>
-          <div className="mt-10 overflow-x-auto">
-            <table className="w-full min-w-[34rem] text-left text-sm">
-              <thead>
-                <tr className="border-b border-line">
-                  <th scope="col" className="py-4 pr-4 font-normal text-muted"><span className="sr-only">Fonction</span></th>
-                  {tiers.map((t) => (
-                    <th key={t.id} scope="col" className="w-28 py-4 text-center font-semibold">{t.name}</th>
-                  ))}
-                </tr>
-              </thead>
-              {compare.map((g) => (
-                <tbody key={g.group}>
-                  <tr>
-                    <th colSpan={4} scope="colgroup" className="pb-2 pt-8 text-xs font-medium uppercase tracking-[0.12em] text-muted">{g.group}</th>
-                  </tr>
-                  {g.rows.map((r) => (
-                    <tr key={r.label} className="border-b border-line">
-                      <th scope="row" className="py-3.5 pr-4 font-normal">{r.label}</th>
-                      {r.v.map((v, i) => (
-                        <td key={i} className="py-3.5 text-center"><Cell v={v} /></td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              ))}
-            </table>
-          </div>
-          </details>
-          <p className="mt-8 text-center text-sm text-muted">
-            L&apos;ouverture au public arrive bientôt : en attendant, l&apos;accès se fait sur demande. <Link href="/acces" className="text-foreground underline underline-offset-4">Demander l&apos;accès</Link>.
-          </p>
         </Container>
       </section>
     </>

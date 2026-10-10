@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ComponentType, CSSProperties } from "react";
+import { siKick, siTwitch, siYoutube } from "simple-icons";
 import { DeviceMobile, Faders, LockKey, Rows, ShieldCheck, type IconProps } from "@/components/icons";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import FloatingPhone from "@/components/remote-showcase/FloatingPhone";
@@ -58,7 +59,7 @@ const STEPS: Step[] = [
   },
 ];
 
-type Tile = { title: string; text: string; icon?: ComponentType<IconProps>; className: string; image?: boolean; href?: string; cta?: string };
+type Tile = { title: string; text: string; icon?: ComponentType<IconProps>; platforms?: boolean; className: string; image?: boolean; href?: string; cta?: string };
 // 4 colonnes sur 3 rangées : aperçu (2x2), quatre tuiles, puis deux tuiles larges. 12 cases, 7 tuiles, aucune vide.
 const TILES: Tile[] = [
   { title: "L'image et le son de ton programme", text: "Tu vois ce que voient tes spectateurs, avec le son, sur ton téléphone. Coupé par défaut, un toucher pour l'entendre.", className: "lg:col-span-2 lg:row-span-2", image: true },
@@ -67,8 +68,23 @@ const TILES: Tile[] = [
   { title: "Rien à ouvrir", text: "Ton ordinateur se connecte à SYXTEE. Aucun port, aucun mot de passe, aucun réglage réseau.", icon: LockKey, className: "lg:col-span-1" },
   { title: "Profils et collections", text: "Change de profil ou de collection de scènes d'un toucher, hors direct.", icon: Rows, className: "lg:col-span-1" },
   { title: "Comme une vraie app", text: "Mets SYXTEE sur ton écran d'accueil : plein écran, écran toujours allumé, un toucher pour ouvrir.", icon: DeviceMobile, className: "lg:col-span-2", href: "/application", cta: "Mettre sur l'écran d'accueil" },
-  { title: "Multistream", text: "Diffuse sur Twitch, YouTube et Kick en même temps, et lance ou coupe chaque sortie d'un toucher depuis ton téléphone.", icon: Rows, className: "lg:col-span-2", href: "/multistream", cta: "Découvrir le multistream" },
+  { title: "Multistream", text: "Diffuse sur Twitch, YouTube et Kick en même temps, et lance ou coupe chaque sortie d'un toucher depuis ton téléphone.", platforms: true, className: "lg:col-span-2", href: "/multistream", cta: "Découvrir le multistream" },
 ];
+
+/** Logos en couleur des plateformes du multistream, puis « +50 » : il y en a plus de cinquante. */
+function PlatformLogos() {
+  const list = [siYoutube, siTwitch, siKick];
+  return (
+    <div className="flex items-center gap-4" role="img" aria-label="YouTube, Twitch, Kick et plus de 50 autres plateformes">
+      {list.map((p) => (
+        <svg key={p.title} viewBox="0 0 24 24" width="28" height="28" fill={`#${p.hex}`} aria-hidden="true" className="no-icon-anim">
+          <path d={p.path} />
+        </svg>
+      ))}
+      <span aria-hidden="true" className="font-mono text-lg font-semibold leading-none text-foreground">+50</span>
+    </div>
+  );
+}
 
 export default function ControlePage() {
   return (
@@ -131,6 +147,7 @@ export default function ControlePage() {
               return (
                 <article key={t.title} className={`relative flex flex-col overflow-hidden tile p-6 sm:p-7 ${t.className}`}>
                   {Icon && <Icon size={26} weight="regular" className="text-foreground" aria-hidden="true" />}
+                  {t.platforms && <PlatformLogos />}
                   <h3 className={`font-semibold tracking-tight ${t.image ? "text-2xl sm:text-3xl" : "mt-5 text-lg"}`}>{t.title}</h3>
                   <p className={`mt-2 text-sm leading-relaxed text-muted ${t.image ? "max-w-[40ch] sm:text-base" : ""}`}>{t.text}</p>
                   {t.image && (

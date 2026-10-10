@@ -1055,6 +1055,8 @@ select,
 }
 [data-theme="light"] .h-serif { background: linear-gradient(180deg, #0a0a0a 30%, #5c5c61 100%); -webkit-background-clip: text; background-clip: text; }
 @media (prefers-color-scheme: light) { :root:not([data-theme]) .h-serif { background: linear-gradient(180deg, #0a0a0a 30%, #5c5c61 100%); -webkit-background-clip: text; background-clip: text; } }
+/* Section forcée en sombre (hero à volutes) : le titre garde son dégradé clair, même si le site est en thème clair. */
+[data-theme="dark"] .h-serif, :root:not([data-theme]) [data-theme="dark"] .h-serif { background: linear-gradient(180deg, #ffffff 30%, #9a9ea6 100%); -webkit-background-clip: text; background-clip: text; }
 
 .pill-dot { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c, var(--ok)) 35%, transparent); }
 @media (prefers-reduced-motion: no-preference) {

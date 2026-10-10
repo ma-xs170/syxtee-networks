@@ -3,7 +3,7 @@ import Link from "next/link";
 import Glow from "@/components/landing/Glow";
 import { Check, X } from "@/components/icons";
 import { Container } from "@/components/ui";
-import GridBackground from "@/components/ui/GridBackground";
+import CloudBackdrop from "@/components/home/CloudBackdrop";
 
 export const metadata: Metadata = {
   title: "Tarifs",
@@ -48,8 +48,8 @@ export default function TarifsPage() {
   return (
     <>
       <Glow />
-      <section className="relative -mt-[4.0625rem] overflow-hidden border-b border-line pb-16 pt-[9rem] text-center sm:pb-24 sm:pt-[10.5rem]">
-        <GridBackground />
+      <section data-theme="dark" className="relative bg-background text-foreground -mt-[4.0625rem] overflow-hidden border-b border-line pb-16 pt-[9rem] text-center sm:pb-24 sm:pt-[10.5rem]">
+        <CloudBackdrop />
         <Container className="relative">
           <h1 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,7vw,4.75rem)]">Des tarifs <em>simples.</em></h1>
           <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg">

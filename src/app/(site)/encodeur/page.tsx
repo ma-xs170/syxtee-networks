@@ -6,7 +6,7 @@ import VisualSlot from "@/components/landing/VisualSlot";
 import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button";
 import GlassIcon from "@/components/ui/GlassIcon";
-import GridBackground from "@/components/ui/GridBackground";
+import CloudBackdrop from "@/components/home/CloudBackdrop";
 import SectionHeader from "@/components/ui/SectionHeader";
 import StatusPill from "@/components/ui/StatusPill";
 import WordsReveal from "@/components/ui/WordsReveal";
@@ -39,8 +39,8 @@ export default function EncodeurPage() {
     <>
       <Glow />
       {/* Présentation */}
-      <section id="presentation" className="relative -mt-[4.0625rem] scroll-mt-20 overflow-hidden border-b border-line pb-20 pt-[8.5rem] sm:pb-28 sm:pt-[9.5rem]">
-        <GridBackground />
+      <section data-theme="dark" id="presentation" className="relative bg-background text-foreground -mt-[4.0625rem] scroll-mt-20 overflow-hidden border-b border-line pb-20 pt-[8.5rem] sm:pb-28 sm:pt-[9.5rem]">
+        <CloudBackdrop />
         <Container className="relative">
           <div className="mx-auto max-w-3xl text-center">
             <StatusPill variant="dev" label="PRÉCOMMANDE" />

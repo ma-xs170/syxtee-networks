@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button";
-import GridBackground from "@/components/ui/GridBackground";
+import CloudBackdrop from "@/components/home/CloudBackdrop";
 import Highlight from "@/components/ui/Highlight";
 import Reveal from "@/components/ui/Reveal";
 import SectionHeader from "@/components/ui/SectionHeader";
@@ -59,8 +59,8 @@ const SAFEGUARDS = [
 export default function RegieIaPage() {
   return (
     <>
-      <section className="relative -mt-[4.0625rem] overflow-hidden border-b border-line pb-16 pt-[9rem] text-center sm:pb-24 sm:pt-[10.5rem]">
-        <GridBackground />
+      <section data-theme="dark" className="relative bg-background text-foreground -mt-[4.0625rem] overflow-hidden border-b border-line pb-16 pt-[9rem] text-center sm:pb-24 sm:pt-[10.5rem]">
+        <CloudBackdrop />
         <Container className="relative">
           <StatusPill variant="ok" label="DANS LE CONTRÔLE À DISTANCE" />
           <h1 className="h-serif mx-auto mt-8 max-w-[18ch] text-[clamp(3rem,8vw,5.5rem)]">

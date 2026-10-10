@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui";
 import FxIcon, { type FxKind } from "@/components/ui/FxIcon";
 import { ButtonLink } from "@/components/ui/Button";
-import GridBackground from "@/components/ui/GridBackground";
+import CloudBackdrop from "@/components/home/CloudBackdrop";
 import CircuitArt from "@/components/multistream/CircuitArt";
 import SectionHeader from "@/components/ui/SectionHeader";
 import StatusPill from "@/components/ui/StatusPill";
@@ -36,8 +36,8 @@ const STEPS = [
 export default function MultistreamPage() {
   return (
     <>
-      <section className="relative -mt-[4.0625rem] overflow-hidden border-b border-line pb-16 pt-[9rem] text-center sm:pb-24 sm:pt-[10.5rem]">
-        <GridBackground />
+      <section data-theme="dark" className="relative bg-background text-foreground -mt-[4.0625rem] overflow-hidden border-b border-line pb-16 pt-[9rem] text-center sm:pb-24 sm:pt-[10.5rem]">
+        <CloudBackdrop />
         <Container className="relative">
           <StatusPill variant="ok" label="DANS LE PLUGIN" />
           <h1 className="h-serif mx-auto mt-8 max-w-[16ch] text-[clamp(3rem,8vw,5.5rem)]">Un direct, <em>toutes tes plateformes.</em></h1>

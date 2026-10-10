@@ -5,7 +5,7 @@ import Glow from "@/components/landing/Glow";
 import RelayBox from "@/components/landing/RelayBox";
 import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button";
-import GridBackground from "@/components/ui/GridBackground";
+import CloudBackdrop from "@/components/home/CloudBackdrop";
 import SectionHeader from "@/components/ui/SectionHeader";
 import StatusPill from "@/components/ui/StatusPill";
 import WordsReveal from "@/components/ui/WordsReveal";
@@ -25,8 +25,8 @@ export default async function BoutiquePage({ searchParams }: { searchParams: Pro
   return (
     <>
       <Glow />
-      <section className="relative -mt-[4.0625rem] overflow-hidden border-b border-line pb-16 pt-[9rem] text-center sm:pb-24 sm:pt-[10.5rem]">
-        <GridBackground />
+      <section data-theme="dark" className="relative bg-background text-foreground -mt-[4.0625rem] overflow-hidden border-b border-line pb-16 pt-[9rem] text-center sm:pb-24 sm:pt-[10.5rem]">
+        <CloudBackdrop />
         <Container className="relative">
           <StatusPill variant="dev" label="BOUTIQUE" />
           <h1 className="h-serif mx-auto mt-8 max-w-[14ch] text-[clamp(3rem,8vw,5.5rem)]">

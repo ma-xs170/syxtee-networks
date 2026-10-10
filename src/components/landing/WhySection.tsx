@@ -122,7 +122,12 @@ export function WhySection() {
             <MacAndPc className="mx-auto max-w-[440px]" />
           </Cell>
         </div>
-        <Reveal delay={0.1} className="bento-cell mt-4 grid items-center gap-8 p-6 sm:p-10 lg:grid-cols-[auto_1fr_auto] lg:gap-12">
+        <Reveal className="mt-16 border-t border-line pt-12 lg:mt-20 lg:pt-16">
+          <p className="font-mono text-xs uppercase tracking-wider text-muted">Pour envoyer ton flux</p>
+          <h3 className="h-serif mt-3 text-[clamp(1.75rem,3.2vw,2.5rem)]">L&apos;app qu&apos;on <em>recommande.</em></h3>
+          <p className={lead}>Installe-la sur ton téléphone, branche-la à l&apos;un de nos serveurs : ton flux arrive dans OBS, prêt à être piloté.</p>
+        </Reveal>
+        <Reveal delay={0.1} className="bento-cell mt-8 grid items-center gap-8 p-6 sm:p-10 lg:grid-cols-[auto_1fr_auto] lg:gap-12">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/images/moblin/icon.png" alt="Logo de Moblin" width={120} height={120} className="size-24 rounded-[26px] border border-line shadow-[0_18px_40px_-18px_rgba(0,0,0,0.8)] sm:size-[120px]" />
           <div>

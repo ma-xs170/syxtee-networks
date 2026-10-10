@@ -13,26 +13,15 @@ const STEPS = [
   { n: "03", title: "Ton OBS récupère", text: "OBS reçoit un flux propre sur ton ordinateur. Tu ajoutes tes scènes et tu diffuses, comme à la maison." },
 ];
 
-/* Écran de l'iPhone en paysage : app Moblin en direct, logo au centre. Le contenu (852 x 393) est tourné de 90° dans l'écran portrait (393 x 852), l'appareil de -90°. */
+/* Écran de l'iPhone en paysage : fond noir, logo Moblin x S. Le contenu (852 x 393) est tourné de 90° dans l'écran portrait (393 x 852), l'appareil de -90°. */
 function MoblinScreen() {
   return (
-    <div className="relative bg-[#0c0d10] font-sans text-white" style={{ width: 393, height: 852 }}>
-      <div className="absolute left-1/2 top-1/2 overflow-hidden" style={{ width: 852, height: 393, transform: "translate(-50%, -50%) rotate(90deg)" }}>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,#2a2d34,#0c0d10_72%)]" />
-        <div className="absolute left-14 top-5 flex items-center gap-1.5 rounded-md bg-black/60 px-2 py-1 text-[14px] font-semibold">
-          <span className="size-2 rounded-full bg-[#ff3b30]" /> LIVE <span className="font-mono font-normal text-white/70">00:14:10</span>
-        </div>
-        <div className="absolute right-8 top-5 rounded-md bg-black/60 px-2 py-1 font-mono text-[13px] text-white/80">7,9 Mb/s</div>
+    <div className="relative bg-black" style={{ width: 393, height: 852 }}>
+      <div className="absolute left-1/2 top-1/2 flex items-center justify-center gap-7 bg-black" style={{ width: 852, height: 393, transform: "translate(-50%, -50%) rotate(90deg)" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/moblin/icon.png" alt="" width={80} height={80} className="absolute left-1/2 top-1/2 size-20 -translate-x-1/2 -translate-y-1/2 rounded-[1.2rem]" />
-        <div className="absolute inset-x-14 bottom-5 grid grid-cols-3 gap-2">
-          {[["4G", "62%"], ["5G", "88%"], ["Wi-Fi", "45%"]].map(([l, w]) => (
-            <div key={l} className="rounded-lg bg-black/55 px-2.5 py-2">
-              <div className="text-[12px] text-white/70">{l}</div>
-              <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full bg-[#3dd68c]" style={{ width: w }} /></div>
-            </div>
-          ))}
-        </div>
+        <img src="/images/moblin/icon.png" alt="" width={84} height={84} className="size-[84px] rounded-[1.4rem]" />
+        <span className="text-[34px] font-light text-white/60" aria-hidden="true">×</span>
+        <Image src="/logo-400.png" alt="" width={50} height={68} className="h-auto w-10" />
       </div>
     </div>
   );
@@ -68,7 +57,7 @@ function ObsScreen() {
       <div className="flex h-[500px] items-center justify-center bg-[#0d0d0f]">
         <div className="relative h-[450px] w-[800px] overflow-hidden border border-white/15 bg-[radial-gradient(ellipse_at_50%_40%,#2a2d34,#101114_75%)]">
           <div className="absolute left-4 top-4 flex items-center gap-2 rounded bg-black/60 px-2.5 py-1 text-[12px]"><span className="size-2.5 rounded-full bg-[#ff3b30]" />Flux iPhone 16</div>
-          <Image src="/logo-400.png" alt="" width={64} height={88} className="absolute left-1/2 top-1/2 h-auto w-14 -translate-x-1/2 -translate-y-1/2 opacity-25 invert" />
+          <Image src="/logo-400.png" alt="" width={64} height={88} className="absolute left-1/2 top-1/2 h-auto w-14 -translate-x-1/2 -translate-y-1/2 opacity-25" />
         </div>
       </div>
       {/* docks */}

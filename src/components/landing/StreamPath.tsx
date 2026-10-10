@@ -125,8 +125,8 @@ export type StreamImages = { laptop?: string | null; phone?: string | null };
 export default function StreamPath({ images }: { images?: StreamImages }) {
   return (
     <div role="group" aria-label="Ta caméra envoie à nos serveurs, qui livrent à ton OBS">
-      <Row i={0} tags="Moblin · 4G · 5G · Wi-Fi" visual={<div className="w-full max-w-[460px]"><LandscapePhone image={images?.phone} /></div>} />
-      <Row i={1} flip tags="SRTLA · Flux stabilisé · Au plus près de toi" visual={<div className="w-full max-w-[340px]"><RelayServer /></div>} />
+      <Row i={0} tags="Moblin · 4G · 5G · Wi-Fi" visual={<div className="w-full max-w-[270px]"><LandscapePhone image={images?.phone} /></div>} />
+      <Row i={1} flip tags="SRTLA · Flux stabilisé · Au plus près de toi" visual={<div className="w-full max-w-[250px]"><RelayServer /></div>} />
       <Row i={2} tags="Sur ton Mac ou PC · Tes scènes, comme d'habitude" visual={<div className="w-full max-w-[560px]"><DeviceMac image={images?.laptop}><ObsScreen /></DeviceMac></div>} />
     </div>
   );

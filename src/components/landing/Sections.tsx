@@ -212,19 +212,6 @@ export function ServersSection() {
           <h2 className={h2}>Lance ton live depuis ton téléphone, <em>sans jamais couper.</em></h2>
           <p className={lead}>Ton téléphone envoie la vidéo à l&apos;un de nos serveurs, répartis dans le monde, et OBS la récupère. Tu changes de scène d&apos;où tu veux. Si le signal tombe, ton stream continue.</p>
         </Reveal>
-        <div className="mt-12 grid gap-4 md:grid-cols-3">
-          {[
-            ["01", "Un appui, et tu es en direct", "Depuis ta chambre, tu appuies sur une scène : ton live part de ton téléphone. Tu sors, tu vaques à tes occupations."],
-            ["02", "OBS reçoit, tu gardes la main", "Notre serveur reçoit la vidéo de ton téléphone et la livre à OBS. Tu y ajoutes tes scènes et tu changes de scène depuis n'importe où."],
-            ["03", "Le flux coupe ? Ton stream reste en ligne", "Si la connexion de ton téléphone tombe, une scène de retour, que tu dessines toi-même, prend le relais. Va où tu veux : ton stream ne s'arrête jamais."],
-          ].map(([n, t, d], k) => (
-            <Reveal as="article" delay={k * 0.08} key={n} className="bento-cell p-6">
-              <p className="font-mono text-xs text-muted">{n}</p>
-              <h3 className="mt-3 text-lg font-semibold tracking-tight">{t}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{d}</p>
-            </Reveal>
-          ))}
-        </div>
         <Reveal delay={0.1} className="bento-cell mt-12 grid items-center gap-8 p-6 sm:p-10 lg:grid-cols-[auto_1fr_auto] lg:gap-12">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/images/moblin/icon.png" alt="Logo de Moblin" width={120} height={120} className="size-24 rounded-[26px] border border-line shadow-[0_18px_40px_-18px_rgba(0,0,0,0.8)] sm:size-[120px]" />

@@ -91,13 +91,13 @@ function DirectorVisual() {
   );
 }
 
-/* Pourquoi SYXTEE Networks : les raisons concrètes, une par cellule. */
+/* Pourquoi nous : les raisons concrètes, une par cellule. */
 export function WhySection() {
   return (
     <section id="pourquoi" className="scroll-mt-20 border-b border-line py-24 lg:py-36">
       <Container>
         <Reveal>
-          <h2 className={h2}>Pourquoi <Highlight>SYXTEE Networks</Highlight> ?</h2>
+          <h2 className={h2}>Pourquoi <Highlight>nous</Highlight> ?</h2>
           <p className={lead}>Parce qu&apos;un live en mobilité ne doit pas dépendre d&apos;un seul signal, d&apos;un seul réseau ou d&apos;un seul écran.</p>
         </Reveal>
         <div className="mt-12 grid gap-4 md:grid-cols-6">
@@ -119,6 +119,19 @@ export function WhySection() {
           <Cell n="06 · Chez toi" delay={0.4} className="md:col-span-6" title="Tout tourne sur ton propre PC ou Mac" text="Ton OBS reste sur ton ordinateur. Zéro serveur à louer, zéro configuration lourde : tu relies ton ordinateur avec un code et c'est parti.">
             <MacAndPc className="mx-auto max-w-[440px]" />
           </Cell>
+        </div>
+        <div className="mt-12 grid gap-4 md:grid-cols-3">
+          {[
+            ["01", "Un appui, et tu es en direct", "Depuis ta chambre, tu appuies sur une scène : ton live part de ton téléphone. Tu sors, tu vaques à tes occupations."],
+            ["02", "OBS reçoit, tu gardes la main", "Notre serveur reçoit la vidéo de ton téléphone et la livre à OBS. Tu y ajoutes tes scènes et tu changes de scène depuis n'importe où."],
+            ["03", "Le flux coupe ? Ton stream reste en ligne", "Si la connexion de ton téléphone tombe, une scène de retour, que tu dessines toi-même, prend le relais. Va où tu veux : ton stream ne s'arrête jamais."],
+          ].map(([n, t, d], k) => (
+            <Reveal as="article" delay={k * 0.08} key={n} className="bento-cell p-6">
+              <p className="font-mono text-xs text-muted">{n}</p>
+              <h3 className="mt-3 text-lg font-semibold tracking-tight">{t}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">{d}</p>
+            </Reveal>
+          ))}
         </div>
       </Container>
     </section>

@@ -36,7 +36,7 @@ jobs:
       - name: OBS (libobs) et dépendances
         shell: pwsh
         run: |
-          git clone --depth 1 --branch $env:OBS_TAG https://github.com/obsproject/obs-studio.git obs-studio
+          git clone --depth 1 --recurse-submodules --shallow-submodules --branch $env:OBS_TAG https://github.com/obsproject/obs-studio.git obs-studio
           cd obs-studio
           cmake --preset windows-x64 -DENABLE_PLUGINS=OFF -DENABLE_BROWSER=OFF -DENABLE_SCRIPTING=OFF -DENABLE_WEBSOCKET=OFF
           cmake --build build_x64 --config RelWithDebInfo --target libobs obs-frontend-api

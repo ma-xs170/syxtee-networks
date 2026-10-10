@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
 import NextStep from "@/components/NextStep";
-import RelayGrid from "@/components/blocks/RelayGrid";
-import RelayWorld from "@/components/globe/RelayWorld";
 import Glow from "@/components/landing/Glow";
-import FlowDiagram from "@/components/landing/FlowDiagram";
+import StreamPath from "@/components/landing/StreamPath";
 import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button";
 import GridBackground from "@/components/ui/GridBackground";
 import SectionHeader from "@/components/ui/SectionHeader";
 import StatusPill from "@/components/ui/StatusPill";
 import WordsReveal from "@/components/ui/WordsReveal";
-import { publicCoreUrl } from "@/lib/core";
 
 export const metadata: Metadata = {
   title: "Nos serveurs",
@@ -18,12 +15,6 @@ export const metadata: Metadata = {
     "Ta caméra envoie son flux à nos serveurs, qui le stabilisent avant de le livrer à ton OBS. Les serveurs SYXTEE NETWORKS en ligne et la latence à prévoir.",
   alternates: { canonical: "/relais" },
 };
-
-const steps = [
-  { n: "01", title: "Ta caméra envoie", text: "Ton téléphone, avec Moblin, envoie la vidéo sur toutes ses connexions à la fois : 4G, 5G et Wi-Fi." },
-  { n: "02", title: "Nos serveurs reçoivent", text: "Le serveur le plus proche de toi rassemble les connexions, récupère les paquets perdus et stabilise le flux." },
-  { n: "03", title: "Ton OBS récupère", text: "OBS reçoit un flux propre sur ton ordinateur. Tu ajoutes tes scènes et tu diffuses, comme à la maison." },
-];
 
 export default function RelaisPage() {
   return (
@@ -50,37 +41,20 @@ export default function RelaisPage() {
       {/* Le trajet du flux */}
       <section className="border-b border-line py-24 sm:py-32">
         <Container>
-          <SectionHeader icon="relay" title={<>Le trajet de <em>ton flux.</em></>} subtitle="Trois étapes, de ta caméra jusqu'à ton direct." />
-          <div className="mt-14"><FlowDiagram /></div>
-          <div className="mt-14 grid gap-4 md:grid-cols-3">
-            {steps.map((x) => (
-              <article key={x.n} className="bento-cell p-6 sm:p-7">
-                <p className="font-mono text-xs uppercase tracking-wider text-muted">{x.n}</p>
-                <h3 className="mt-3 text-lg font-semibold tracking-tight">{x.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{x.text}</p>
-              </article>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* Serveurs */}
-      <section id="serveurs" className="scroll-mt-20 border-b border-line py-24 sm:py-32">
-        <Container>
-          <SectionHeader icon="relay" title={<>Choisis ton <em>serveur.</em></>} subtitle="Prends le plus proche de l'endroit où tu filmes, pas de chez toi : c'est la liaison mobile entre ton téléphone et le serveur qui est fragile. En voyage, change de serveur avant le live." />
+          <SectionHeader title={<>Le trajet de <em>ton flux.</em></>} subtitle="Trois étapes, de ta caméra jusqu'à ton direct." />
           <div className="mt-16">
-            <RelayWorld coreUrl={publicCoreUrl} />
+            <StreamPath />
           </div>
-          <div className="mt-14">
-            <RelayGrid />
-          </div>
+          <p className="mx-auto mt-14 max-w-[58ch] text-center text-sm leading-relaxed text-muted">
+            Prends le serveur le plus proche de l&apos;endroit où tu filmes, pas de chez toi : c&apos;est la liaison mobile entre ton téléphone et le serveur qui est fragile. En voyage, change de serveur avant le live.
+          </p>
         </Container>
       </section>
 
       {/* Latence */}
       <section className="py-24 sm:py-32">
         <Container>
-          <SectionHeader icon="docs" title={<>Un petit retard, pour un flux qui <em>tient.</em></>} subtitle="En IRL, on échange un peu de latence contre de la stabilité : ce retard volontaire absorbe les micro-coupures du réseau mobile." />
+          <SectionHeader title={<>Un petit retard, pour un flux qui <em>tient.</em></>} subtitle="En IRL, on échange un peu de latence contre de la stabilité : ce retard volontaire absorbe les micro-coupures du réseau mobile." />
           <div className="bento-cell mt-14 flex flex-col items-start justify-between gap-6 p-6 sm:flex-row sm:items-center sm:p-8">
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.08em] text-muted">Au total</p>

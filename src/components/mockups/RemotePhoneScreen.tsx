@@ -6,7 +6,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 // mise à l'échelle de la largeur de son conteneur, donc jamais coupée, quelle que soit la taille du cadre.
 // À placer dans un cadre de téléphone (position relative, overflow caché). Décoratif : aria-hidden.
 
-export type RemoteTab = "scenes" | "sources" | "mixer" | "controls";
+export type RemoteTab = "scenes" | "sources" | "mixer" | "controls" | "multi" | "chat";
 const W = 390;
 const H = 844;
 
@@ -23,6 +23,19 @@ const SOURCES: [string, string, boolean][] = [
   ["Caméra salon", "Caméra", false],
   ["Overlay alertes", "Navigateur", true],
 ];
+const OUTPUTS: [string, string, string, boolean][] = [
+  ["Twitch", "Direct d'OBS · En direct", "#9146ff", true],
+  ["YouTube", "En direct", "#ff0033", true],
+  ["Kick", "En direct", "#53fc18", true],
+  ["TikTok", "Arrêté", "#25f4ee", false],
+];
+const CHAT: [string, string, string][] = [
+  ["Twitch", "lea_irl", "Trop beau ce lever de soleil"],
+  ["YouTube", "Marc D.", "Le son est parfait"],
+  ["Kick", "nox", "gg la team"],
+  ["Twitch", "kikou92", "Salut de Lyon !"],
+  ["YouTube", "Sam", "Super qualité, aucune coupure"],
+];
 const MIX: [string, number, number][] = [
   ["Micro", 66, 72],
   ["Flux IPHONE", 52, 58],
@@ -30,7 +43,7 @@ const MIX: [string, number, number][] = [
   ["Discord", 58, 46],
 ];
 
-function Icon({ id }: { id: RemoteTab | "multi" | "chat" }) {
+function Icon({ id }: { id: RemoteTab }) {
   const p =
     id === "scenes" ? (
       <>
@@ -189,6 +202,39 @@ export default function RemotePhoneScreen({ tab = "scenes", className = "" }: { 
                   </div>
                 ))}
               </div>
+            </Panel>
+          )}
+          {tab === "multi" && (
+            <section className="mx-3 mt-3 overflow-hidden rounded-xl border border-white/[0.08] bg-[#0b0b0d]">
+              <div className="flex items-center justify-between border-b border-[#262626] px-3 py-2">
+                <h3 className="text-[13px] font-semibold">Multistream</h3>
+                <span className="rounded-full border border-white/[0.14] bg-[#16161a] px-3.5 py-1 text-[12px] text-neutral-300">+ Ajouter</span>
+              </div>
+              <ul className="grid gap-1.5 p-2">
+                {OUTPUTS.map(([n, st, c, on]) => (
+                  <li key={n} className="flex items-center gap-2.5 rounded-md border border-[#262626] bg-[#0b0b0b] p-2">
+                    <span className="grid size-8 place-items-center rounded-md text-[13px] font-bold text-black" style={{ background: c }}>{n[0]}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-medium">{n}</p>
+                      <p className={`text-[12px] ${on ? "text-emerald-400" : "text-neutral-500"}`}>{st}</p>
+                    </div>
+                    <span className="grid size-9 place-items-center text-neutral-400">⚙</span>
+                    <span className={`grid h-9 w-12 place-items-center rounded border text-[13px] ${on ? "border-red-700 bg-red-700 text-white" : "border-[#2e2e2e] bg-[#141414] text-neutral-200"}`}>{on ? "■" : "●"}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          {tab === "chat" && (
+            <Panel title="Chat">
+              <ul className="space-y-2 p-3 text-[13px]">
+                {CHAT.map(([pf, who, msg]) => (
+                  <li key={who + msg}>
+                    <span className="mr-1.5 font-mono text-[10px] uppercase text-neutral-500">{pf}</span>
+                    <span className="font-medium">{who}</span> <span className="text-neutral-300">{msg}</span>
+                  </li>
+                ))}
+              </ul>
             </Panel>
           )}
           {tab === "controls" && (

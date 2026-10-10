@@ -44,6 +44,18 @@ const STEPS: Step[] = [
     src: "/images/remote/controle-mobile-controles.png",
     alt: "Bouton Arrêter le direct en rouge avec la durée, et le débit du flux",
   },
+  {
+    title: "Toutes tes plateformes.",
+    text: "Lance ou coupe chaque sortie multistream (Twitch, YouTube, Kick…) d'un toucher, sans quitter ton téléphone.",
+    src: "",
+    alt: "Liste des sorties multistream avec leur état et le bouton pour les lancer",
+  },
+  {
+    title: "Le chat, au même endroit.",
+    text: "Les messages de toutes tes plateformes dans un seul fil, à côté de ton programme.",
+    src: "",
+    alt: "Chat unifié de toutes les plateformes",
+  },
 ];
 
 type Tile = { title: string; text: string; icon?: ComponentType<IconProps>; className: string; image?: boolean; href?: string; cta?: string };

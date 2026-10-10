@@ -9,9 +9,9 @@ import { useRef } from "react";
 // prefers-reduced-motion : pas de défilement piloté, les quatre étapes se lisent à la suite, chacune avec sa capture.
 
 export type Step = { title: string; text: string; src?: string; alt: string };
-const TABS: RemoteTab[] = ["scenes", "sources", "mixer", "controls"];
+const TABS: RemoteTab[] = ["scenes", "sources", "mixer", "controls", "multi", "chat"];
 
-const N = 4;
+const N = 6;
 
 /** Poids d'une étape dans [0, 1] : plein autour de son centre, nul au-delà (la première et la dernière restent pleines à leur bord).
  *  Calculé par fonction (pas par plages) : les plages sortiraient de [0, 1] pour la première et la dernière étape. */

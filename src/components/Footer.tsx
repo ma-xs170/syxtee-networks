@@ -4,14 +4,14 @@ import { site, type NavLink } from "@/lib/site";
 import StatusPill from "./ui/StatusPill";
 import ThemeToggle from "./ThemeToggle";
 
-// Pied de page minimal : quatre colonnes, le reste du plan du site vit dans la documentation.
+// Pied de page : le logo, puis quatre colonnes (produit, ressources, société, légal). Le reste du plan du site vit dans la documentation.
 const columns: { title: string; links: NavLink[] }[] = [
   {
     title: "Produit",
     links: [
       { label: "Contrôle à distance", href: "/controle-a-distance" },
-      { label: "Nos serveurs", href: "/relais" },
       { label: "Espaces partagés", href: "/espaces-partages" },
+      { label: "Nos serveurs", href: "/relais" },
       { label: "Tarifs", href: "/tarifs" },
     ],
   },
@@ -20,12 +20,16 @@ const columns: { title: string; links: NavLink[] }[] = [
     links: [
       { label: "Documentation", href: "/docs" },
       { label: "FAQ", href: "/faq" },
-      { label: "Devenir Partenaire", href: "/acces" },
+      { label: "Communauté Discord", href: site.discord },
     ],
   },
   {
-    title: "Communauté",
-    links: [{ label: "Rejoindre la communauté", href: site.discord }],
+    title: "Société",
+    links: [
+      { label: "Devenir partenaire", href: "/acces" },
+      { label: "Nous contacter", href: "/contact" },
+      { label: "État des services", href: "/statut" },
+    ],
   },
   {
     title: "Légal",

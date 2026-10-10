@@ -22,17 +22,16 @@ const tiers = [
 ];
 
 // Chiffres clés.
-const limits: { label: string; v: Three<string> }[] = [
-  { label: "Serveurs actifs", v: ["1", "10", "Illimités"] },
+const limits: { label: string; note?: string; v: Three<string> }[] = [
+  { label: "Serveurs (SRTLA - RTMP)", note: "Secours automatique, garde audio et santé du flux intégrés", v: ["1", "10", "∞"] },
   { label: "Directs en même temps", v: ["1", "3", "10"] },
-  { label: "Espaces partagés", v: ["Aucun", "1", "5"] },
-  { label: "Invités OBS", v: ["Aucun", "3", "5"] },
-  { label: "Caméras pour la régie IA", v: ["Aucune", "3", "6"] },
+  { label: "Espaces partagés", v: ["0", "1", "5"] },
+  { label: "Invités au contrôle à distance", v: ["0", "3", "5"] },
+  { label: "Caméras pour la régie IA", v: ["0", "3", "6"] },
 ];
 
 // Fonctions : ✓ inclus, ✕ non inclus.
 const features: { label: string; note?: string; v: Three<boolean> }[] = [
-  { label: "Serveur (SRTLA - RTMP)", note: "Secours, garde audio et santé du flux intégrés", v: [true, true, true] },
   { label: "Contrôle à distance", note: "Scènes, audio, direct et multistream", v: [false, true, true] },
   { label: "Régie automatique", note: "Drone et prises autogérés", v: [false, true, true] },
   { label: "Statistiques", note: "Détail et historique des directs", v: [false, true, true] },
@@ -72,24 +71,31 @@ export default function TarifsPage() {
                   Demander l&apos;accès
                 </Link>
 
-                <dl className="mt-7 divide-y divide-foreground/10 rounded-xl bg-foreground/[0.04] px-4 text-sm">
-                  {limits.map((l) => (
-                    <div key={l.label} className="flex items-stretch justify-between gap-4 py-3">
-                      <dt className="self-center text-muted">{l.label}</dt>
-                      <dd className="min-w-[5.5rem] self-center border-l border-foreground/15 pl-4 text-right font-mono font-semibold">{l.v[k]}</dd>
-                    </div>
-                  ))}
-                </dl>
-
-                <ul className="mt-6 space-y-4">
+                <ul className="mt-7 divide-y divide-foreground/10 border-y border-foreground/10">
+                  {limits.map((l) => {
+                    const v = l.v[k];
+                    return (
+                      <li key={l.label} className="grid grid-cols-[3.5rem_1fr] items-center">
+                        <span className="border-r border-foreground/15 py-3 pr-3 text-right font-mono text-lg font-semibold leading-none">
+                          {v === "0" ? <X size={16} weight="bold" className="ml-auto text-muted" aria-label="Aucun" /> : v}
+                        </span>
+                        <span className={`py-3 pl-4 text-sm ${v === "0" ? "text-muted" : ""}`}>
+                          {l.label}
+                          {l.note && <span className="mt-0.5 block text-xs text-muted">{l.note}</span>}
+                        </span>
+                      </li>
+                    );
+                  })}
                   {features.map((f) => {
                     const on = f.v[k];
                     return (
-                      <li key={f.label} className="flex items-start gap-3 text-sm">
-                        {on ? <Check size={16} weight="bold" className="mt-0.5 shrink-0 text-ok" aria-label="Inclus" /> : <X size={16} weight="bold" className="mt-0.5 shrink-0 text-muted" aria-label="Non inclus" />}
-                        <span className={on ? "" : "text-muted"}>
-                          <span className="block font-medium">{f.label}</span>
-                          <span className="mt-0.5 block text-xs leading-relaxed text-muted">{f.note}</span>
+                      <li key={f.label} className="grid grid-cols-[3.5rem_1fr] items-center">
+                        <span className="border-r border-foreground/15 py-3 pr-3">
+                          {on ? <Check size={18} weight="bold" className="ml-auto text-ok" aria-label="Inclus" /> : <X size={16} weight="bold" className="ml-auto text-muted" aria-label="Non inclus" />}
+                        </span>
+                        <span className={`py-3 pl-4 text-sm ${on ? "" : "text-muted"}`}>
+                          <span className="block">{f.label}</span>
+                          <span className="mt-0.5 block text-xs text-muted">{f.note}</span>
                         </span>
                       </li>
                     );

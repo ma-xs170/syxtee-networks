@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import RemoteObs from "@/components/remote/RemoteObs";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { publicCoreUrl } from "@/lib/core";
-import { effectivePlan } from "@/lib/plans";
+import { can, effectivePlan } from "@/lib/plans";
 
 export const metadata: Metadata = { title: "Contrôle à distance", robots: { index: false } };
 
@@ -14,5 +14,7 @@ export default async function RemoteObsPage({ params }: { params: Promise<{ id: 
   await requireUser(`/controle-a-distance/${id}`);
   const profile = await getProfile();
   const plan = effectivePlan(profile);
+  // Contrôle à distance : Signature et au-dessus. En dessous, retour à l'abonnement.
+  if (!can(plan, "remote")) redirect("/dashboard/abonnement");
   return <RemoteObs coreUrl={publicCoreUrl} deviceId={id} rights={{ prises: plan.regiePrises, cams: plan.regieCams }} chatDefaults={{ twitch: profile?.twitch_login || profile?.twitch || "", kick: profile?.kick ?? "", youtube: "" }} />;
 }

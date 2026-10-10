@@ -13,7 +13,7 @@ export default async function BackupsPage() {
   return (
     <DashPage>
       <DashHeader lead="Scènes" hl="sauvegardées" sub="Tes collections de scènes OBS, avec leurs médias. Les scripts Lua et Python ne sont pas sauvegardés." />
-      <PlanGate feature="relais">
+      <PlanGate feature="remote">
         <BackupsList coreUrl={publicCoreUrl} />
       </PlanGate>
     </DashPage>

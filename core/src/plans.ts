@@ -42,6 +42,10 @@ export function gateRegie(plan: string | null | undefined, params: unknown): Rec
   return p;
 }
 
+/** Contrôle à distance (OBS, multistream, chat) : Signature et au-dessus, bêta, partenaire, admin. Essentiel et Gratuit : refusé. */
+const REMOTE_PLANS = new Set<PlanId>(["beta", "paid", "extra", "partner", "admin"]);
+export const remoteAllowed = (plan: string | null | undefined) => REMOTE_PLANS.has((plan ?? "") as PlanId);
+
 export const PLAN_LIMITS: Record<PlanId, Limits> = {
   free: { maxRelays: 0, maxConcurrentStreams: 0 },
   basic: { maxRelays: 1, maxConcurrentStreams: 1 },

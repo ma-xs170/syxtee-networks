@@ -35,7 +35,7 @@ export async function createInviteAction(raw: z.input<typeof input>): Promise<In
   const email = parsed.data.email.toLowerCase();
   if (!z.email().safeParse(email).success) return { error: "Cette adresse email n'est pas valide." };
   const plan = await getPlan();
-  if (!can(plan, "relais")) return { error: LOCKED_MESSAGE };
+  if (!can(plan, "remote")) return { error: LOCKED_MESSAGE };
   if (plan.maxInvites <= 0) return { error: `Les invités ne sont pas inclus dans la formule ${plan.name}.` };
   if (!(await allow(`invite-create:${user.id}`, 20, 3600))) return { error: "Trop d'invitations d'un coup. Réessaie dans une heure." };
   let r;

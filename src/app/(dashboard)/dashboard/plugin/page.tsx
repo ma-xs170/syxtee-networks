@@ -19,7 +19,7 @@ export default async function PluginPage() {
   return (
     <DashPage>
       <DashHeader lead="Plugin OBS" hl="SYXTEE" sub="Pilote OBS depuis un onglet. Tout tourne sur ton ordinateur : ta carte graphique fait déjà le travail." />
-      <PlanGate feature="relais">
+      <PlanGate feature="remote">
         <PluginDownload coreUrl={publicCoreUrl} latest={latest} />
       </PlanGate>
     </DashPage>

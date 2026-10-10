@@ -14,7 +14,7 @@ export default async function RemotePage() {
   return (
     <DashPage>
       <DashHeader lead="Contrôle" hl="à distance" sub="Tu pilotes OBS depuis un onglet. Change de scène depuis ton téléphone, comme devant ton écran." />
-      <PlanGate feature="relais">
+      <PlanGate feature="remote">
         <InstallCard className="mb-6" />
         <RemoteList coreUrl={publicCoreUrl} />
       </PlanGate>

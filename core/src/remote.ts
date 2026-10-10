@@ -2,7 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import type { IncomingMessage } from "node:http";
 import type { Duplex } from "node:stream";
 import { WebSocketServer, type WebSocket } from "ws";
-import { gateRegie } from "./plans.ts";
+import { gateRegie, remoteAllowed } from "./plans.ts";
 
 // SYXTEE Link : télécommande d'OBS. Une petite app (l'agent) tourne sur le PC où est OBS, parle à OBS en local (obs-websocket)
 // et ouvre une connexion sortante vers le Core. Le navigateur (SYXTEE Studio) se connecte au Core et envoie ses ordres : le Core les
@@ -260,6 +260,14 @@ export function createRemote(o: {
       if (conn.guest && !guestAllows(conn.guest.level, m.method)) {
         audit(conn.userId, null, m.method, false, "forbidden", `invité « ${conn.guest.label} »`);
         return send(ws, { type: "res", id: m.id, ok: false, error: "forbidden" });
+      }
+      // Contrôle à distance : réservé aux formules qui l'incluent (Signature et au-dessus). Compte introuvable : refus par défaut.
+      if (o.account) {
+        const acc = await o.account(conn.userId).catch(() => null);
+        if (!remoteAllowed(acc?.plan)) {
+          audit(conn.userId, null, m.method, false, "plan_required");
+          return send(ws, { type: "res", id: m.id, ok: false, error: "plan_required" });
+        }
       }
       // Réglages de la régie : ce que la formule du compte ne couvre pas (prises, régie IA) est retiré avant d'arriver à l'agent.
       // Compte introuvable : traité comme Gratuit (refus par défaut).

@@ -4,14 +4,15 @@
 // Formules vendues (Stripe) : basic (Basique), paid (Premium, identifiant historique gardé), extra (Extra).
 export type PlanId = "free" | "basic" | "beta" | "paid" | "extra" | "partner" | "admin";
 
-/** Fonctions verrouillées en Gratuit. Scanner et Analyseur restent actifs pour tous (hors liste). */
-export type Feature = "relais" | "sante" | "apercu" | "controle" | "stats" | "lives" | "carte" | "mire" | "cam" | "dji" | "cles";
+/** Fonctions verrouillées en Gratuit (et, pour « remote », en Essentiel : Signature et au-dessus). Scanner et Analyseur restent actifs pour tous (hors liste). */
+export type Feature = "relais" | "sante" | "apercu" | "controle" | "remote" | "stats" | "lives" | "carte" | "mire" | "cam" | "dji" | "cles";
 
 export const FEATURES: Record<Feature, string> = {
   relais: "Serveurs et URLs",
   sante: "Santé du flux",
   apercu: "Aperçu",
   controle: "Contrôle caméra",
+  remote: "Contrôle à distance (OBS, multistream, chat)",
   stats: "Statistiques détaillées",
   lives: "Historique des lives",
   carte: "Carte du débit",

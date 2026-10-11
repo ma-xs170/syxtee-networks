@@ -50,7 +50,7 @@ export default async function BoutiquePage({ searchParams }: { searchParams: Pro
               ))}
             </ul>
             <p className="mt-6 flex items-baseline gap-3 font-mono text-4xl tabular-nums">{product.priceLabel(product.price)}<span className="text-xs uppercase tracking-[0.08em] text-muted">À venir</span></p>
-            <p className="mt-2 text-sm text-muted">ou {product.priceLabel(product.subscription.perQuarter)} tous les 3 mois avec l&apos;abonnement, soit {product.priceLabel(product.subscription.perMonth)} par mois.</p>
+            <Link href="/tarifs#encodeur" className="mt-2 inline-block text-sm text-foreground underline underline-offset-4 decoration-foreground/50 hover:decoration-foreground">Abonnement (requis)</Link>
             <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">Livraison : {product.shipping.map((c) => <span key={c.cc}><span aria-hidden="true">{c.flag}</span> {c.name}</span>)}</p>
             <p className="mt-3 rounded-xl border border-line bg-surface px-4 py-3 text-sm leading-relaxed"><span className="font-medium">{product.bonusMonths} mois de l&apos;abonnement le plus élevé offerts</span> à l&apos;activation, avec un code lié à ton compte (utilisable une seule fois).</p>
             <div className="mt-6 grid gap-2 sm:max-w-sm">

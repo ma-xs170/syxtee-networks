@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { product } from "@/config/product";
 import { Illustration } from "@/components/illustrations/iso";
 
@@ -88,7 +89,7 @@ export default function Strengths() {
         <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">À venir</p>
         <div>
           <p className="h-serif text-[clamp(2.5rem,5vw,3.75rem)]">{product.priceLabel(product.price)}</p>
-          <p className="mt-3 text-sm leading-relaxed text-foreground/85">ou {product.priceLabel(product.subscription.perQuarter)} tous les 3 mois avec l&apos;abonnement, soit {product.priceLabel(product.subscription.perMonth)} par mois.</p>
+          <Link href="/tarifs#encodeur" className="mt-3 inline-block text-sm text-foreground underline underline-offset-4 decoration-foreground/50 hover:decoration-foreground">Abonnement (requis)</Link>
         </div>
         <p className="text-sm leading-relaxed text-muted">Le principe d&apos;un TVU, au prix d&apos;un accessoire de streamer.</p>
       </li>

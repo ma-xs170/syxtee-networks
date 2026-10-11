@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import CloserLook from "@/components/encoder/CloserLook";
 import EncoderViewer from "@/components/encoder/EncoderViewer";
-import HowItWorks from "@/components/encoder/HowItWorks";
 import Scenes from "@/components/encoder/Scenes";
 import Strengths from "@/components/encoder/Strengths";
 import Glow from "@/components/landing/Glow";
@@ -45,15 +44,6 @@ export default function EncodeurPage() {
         </Container>
       </section>
 
-      {/* Fonctionnement */}
-      <section id="fonctionnement" className="scroll-mt-20 py-24 sm:py-32">
-        <Container>
-          <h2 className="h-serif max-w-[16ch] text-[clamp(2.25rem,5vw,3.5rem)]">Comment ça <em>marche.</em></h2>
-          <p className="mt-5 max-w-xl text-base leading-relaxed text-muted">Une caméra, plusieurs réseaux, un seul direct stable. C&apos;est le principe d&apos;un TVU, en version accessible.</p>
-          <div className="mt-12"><HowItWorks /></div>
-        </Container>
-      </section>
-
       {/* Points forts */}
       <section id="points-forts" className="scroll-mt-20 pb-24 sm:pb-32">
         <Container>
@@ -76,21 +66,6 @@ export default function EncodeurPage() {
           <SectionHeader icon="health" title={<>Il marche <em>n&apos;importe où.</em></>} subtitle="Le boîtier diffuse dès qu'il capte un réseau mobile ou un ciel dégagé pour le satellite. Pas besoin de Wi-Fi, ni de câble, ni d'installation." />
           <Scenes />
           <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-muted">Sur un bateau ou dans un hélicoptère, branche un terminal satellite en Ethernet : l&apos;Encodeur prend le relais quand la 4G et la 5G s&apos;arrêtent.</p>
-        </Container>
-      </section>
-
-      {/* Livraison */}
-      <section id="livraison" className="scroll-mt-20 border-t border-line py-20 sm:py-24">
-        <Container>
-          <div className="bento-cell mx-auto max-w-3xl p-8 text-center">
-            <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Livraison</p>
-            <ul className="mt-5 flex flex-wrap justify-center gap-x-8 gap-y-3 text-base">
-              {product.shipping.map((c) => (
-                <li key={c.cc} className="flex items-center gap-2"><span aria-hidden="true" className="text-2xl">{c.flag}</span>{c.name}</li>
-              ))}
-            </ul>
-            <p className="mt-5 text-sm text-muted">Livraison uniquement dans ces quatre territoires.</p>
-          </div>
         </Container>
       </section>
     </>

@@ -1,15 +1,15 @@
 import CellTower from "@/components/illustrations/CellTower";
 import { Illustration } from "@/components/illustrations/iso";
 
-// « Il marche n'importe où » : six scènes filaires (trait encre, aucun aplat de couleur). Le petit boîtier de chaque scène porte la seule LED rouge « en direct ».
+// « Il marche n'importe où » : six scènes filaires (trait encre, aucun aplat de couleur). Le petit boîtier de chaque scène est le vrai Encodeur (dalle basse, barre lumineuse), avec la seule LED rouge « en direct ».
 
 /** Le boîtier SYXTEE en miniature, posé en (x, y) : coin haut-gauche. */
 function Unit({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`}>
-      <rect width={26} height={14} rx={3} fill="currentColor" fillOpacity={0.1} />
-      <path d="M4 10h10" strokeOpacity={0.5} />
-      <circle cx={21} cy={7} r={1.8} className="led-blink" fill="var(--live)" stroke="none" />
+      <path d="M3 4 H23 L26 9 V12 Q26 14 24 14 H2 Q0 14 0 12 V9 Z" fill="currentColor" fillOpacity={0.12} />
+      <path d="M0 9 H26" strokeOpacity={0.45} />
+      <path d="M9 11.5 H17" className="led-blink" stroke="var(--live)" strokeWidth={1.6} />
     </g>
   );
 }

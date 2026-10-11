@@ -34,10 +34,9 @@ export const product = {
     usbModem: "Chaque clé 4G USB ajoute une connexion supplémentaire",
     camera: "Entrée HDMI : n'importe quelle caméra, hybride ou de poche, en 1080p60", // TODO À CONFIRMER : liste des caméras compatibles
     videoInput: "1080p60",
-    screen: "Écran sur le boîtier : débit, connexions, batterie et état du direct",
     latencyMs: 84, // TODO À CONFIRMER : latence moyenne de bout en bout
     protocols: ["SRT", "SRTLA", "RTMP"], // TODO À CONFIRMER
-    ports: ["Entrée HDMI", "Ethernet", "Port USB pour clé 4G", "Wi-Fi"], // TODO À CONFIRMER
+    ports: ["Entrée HDMI", "Ethernet", "Port USB-C pour clé 4G", "Alimentation USB-C"], // TODO À CONFIRMER
     engraving: "SYXTEE NETWORKS gravé sur le boîtier",
     power: "USB-C PD, 15 W", // TODO À CONFIRMER : alimentation
     consumption: "8 W en charge", // TODO À CONFIRMER

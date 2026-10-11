@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import BuyButton from "@/components/BuyButton";
 import Glow from "@/components/landing/Glow";
-import RelayBox from "@/components/landing/RelayBox";
+import EncoderViewer from "@/components/encoder/EncoderViewer";
 import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
@@ -39,13 +39,13 @@ export default async function BoutiquePage({ searchParams }: { searchParams: Pro
 
       <section id="encodeur" className="scroll-mt-20 border-b border-line py-20 sm:py-28">
         <Container className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="bento-cell p-6 sm:p-10"><RelayBox /></div>
+          <div className="bento-cell p-4 sm:p-8"><EncoderViewer className="h-[300px] sm:h-[380px]" /></div>
           <div>
             <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Article</p>
             <h2 className="h-serif mt-3 text-[clamp(2.25rem,4.5vw,3.5rem)]">SYXTEE <em>Encodeur.</em></h2>
             <p className="mt-4 text-sm leading-relaxed text-muted">{product.pitch}</p>
             <ul className="mt-5 space-y-2 text-sm text-muted">
-              {["Trois connexions en même temps : Wi-Fi, Ethernet, 4G ou 5G", "Une clé 4G USB ajoute une connexion de plus", "Entrée HDMI : ta caméra en 1080p60, avec un écran sur le boîtier", "SYXTEE NETWORKS gravé sur le boîtier"].map((x) => (
+              {["Trois connexions en même temps : Wi-Fi, Ethernet, 4G ou 5G", "Une clé 4G USB ajoute une connexion de plus", "Entrée HDMI : ta caméra en 1080p60", "SYXTEE NETWORKS gravé sur le boîtier"].map((x) => (
                 <li key={x} className="flex gap-2.5"><span aria-hidden="true" className="text-foreground">+</span>{x}</li>
               ))}
             </ul>

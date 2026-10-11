@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import CloserLook from "@/components/encoder/CloserLook";
-import HeroEncoder from "@/components/encoder/HeroEncoder";
+import EncoderViewer from "@/components/encoder/EncoderViewer";
 import HowItWorks from "@/components/encoder/HowItWorks";
 import Scenes from "@/components/encoder/Scenes";
 import Strengths from "@/components/encoder/Strengths";
@@ -27,7 +27,7 @@ export default function EncodeurPage() {
         <CloudBackdrop />
         <Container className="relative flex flex-1 flex-col pb-10 pt-[5.5rem] sm:pb-14">
           <div className="flex flex-1 items-center justify-center">
-            <div className="w-full max-w-5xl"><HeroEncoder /></div>
+            <div className="w-full max-w-3xl"><EncoderViewer className="h-[320px] sm:h-[400px] lg:h-[min(48dvh,460px)]" /></div>
           </div>
           <div className="mt-10 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
             <div>

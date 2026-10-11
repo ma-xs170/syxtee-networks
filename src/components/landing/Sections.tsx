@@ -9,7 +9,7 @@ import Reveal from "../ui/Reveal";
 import Faq from "./Faq";
 import ObsHero from "./ObsHero";
 import PlatformStrip from "./PlatformStrip";
-import RelayBox from "./RelayBox";
+import EncoderViewer from "@/components/encoder/EncoderViewer";
 import VisualSlot from "./VisualSlot";
 import { ctaLabel, product } from "@/config/product";
 import { deviceImage } from "@/lib/device-images";
@@ -131,7 +131,6 @@ export function EncoderSection() {
     ["Connexions simultanées", `${specs.simultaneous} : Wi-Fi, Ethernet, 4G ou 5G`],
     ["Clé 4G USB", "Une connexion de plus par clé"],
     ["Caméra", "Entrée HDMI, 1080p60"],
-    ["Écran", "Sur le boîtier"],
     ["Prix", product.priceLabel(product.price)],
     ["Livraison", product.shipping.map((c) => c.flag).join(" ")],
   ];
@@ -140,7 +139,7 @@ export function EncoderSection() {
       <Container>
         <div className="bento-cell grid gap-10 p-6 sm:p-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div className="opacity-90 [filter:saturate(0.7)]">
-            <VisualSlot name="encoder-hero" fallback={<RelayBox />} />
+            <VisualSlot name="encoder-hero" fallback={<EncoderViewer className="h-[260px] sm:h-[340px]" />} />
           </div>
           <div>
             <span className="inline-flex items-center rounded-full border border-warn/40 bg-warn/15 px-3.5 py-1 text-xs font-semibold tracking-[0.12em] text-warn">À VENIR</span>

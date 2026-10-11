@@ -21,16 +21,15 @@ export default function HowItWorks() {
         </g>
         {/* câble HDMI */}
         <path d="M138 150 H214" />
-        <path d="M214 140 H234 V160 H214 Z" fill="currentColor" fillOpacity={0.08} />
+        <path d="M214 142 H234 V158 H214 Z" fill="currentColor" fillOpacity={0.08} />
         <text x={146} y={134} fill="currentColor" stroke="none" fontSize={11} className="font-mono" opacity={0.6}>HDMI</text>
-        {/* Encodeur */}
+        {/* Encodeur : dalle basse en aluminium, barre lumineuse en façade */}
         <g>
-          <rect x={234} y={104} width={150} height={92} rx={12} fill="currentColor" fillOpacity={0.06} />
-          <path d="M234 128 H384" strokeOpacity={0.35} />
-          <rect x={250} y={140} width={64} height={44} rx={5} />
-          {[0, 1, 2, 3].map((i) => <path key={i} d={`M258 ${150 + i * 9} h${[44, 52, 36, 30][i]}`} strokeWidth={3} strokeOpacity={0.55} />)}
-          <circle cx={360} cy={116} r={3} fill="currentColor" stroke="none" opacity={0.5} />
-          <text x={326} y={168} fill="currentColor" stroke="none" fontSize={10} className="font-mono" opacity={0.6}>SYXTEE</text>
+          <path d="M252 112 H366 L384 134 V176 Q384 190 370 190 H248 Q234 190 234 176 V134 Z" fill="currentColor" fillOpacity={0.07} />
+          <path d="M234 134 H384" strokeOpacity={0.4} />
+          <path d="M280 162 H338" strokeWidth={3} strokeOpacity={0.7} />
+          <path d="M296 124 l8 -8 h-5 l7 -6" strokeOpacity={0.5} />
+          <text x={309} y={208} textAnchor="middle" fill="currentColor" stroke="none" fontSize={10} className="font-mono" opacity={0.6}>SYXTEE</text>
         </g>
         {/* quatre liaisons */}
         {LINKS.map((l) => (

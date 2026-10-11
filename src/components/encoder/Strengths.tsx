@@ -1,33 +1,44 @@
 import { Illustration } from "@/components/illustrations/iso";
 
-// Points forts : quatre cartes (1+2 puis 2+1), trait encre, une seule LED rouge « en direct ».
-function Hdmi() {
+// Points forts : quatre cartes (1+2 puis 2+1), trait encre, boîtier dessiné comme le vrai Encodeur (dalle basse, ports à l'arrière, barre lumineuse en façade).
+/** Arrière du boîtier : les cinq ports dessinés comme sur le vrai Encodeur. */
+function Rear() {
+  const ports = [
+    { x: 56, w: 30, h: 14, l: "PWR" },
+    { x: 108, w: 40, h: 34, l: "ETH" },
+    { x: 170, w: 52, h: 16, l: "HDMI IN", hot: true },
+    { x: 244, w: 30, h: 14, l: "USB-C" },
+    { x: 296, w: 8, h: 8, l: "SYNC" },
+  ];
   return (
-    <Illustration viewBox="0 0 300 160">
-      <path d="M60 80 H150" />
-      <path d="M150 58 H234 L246 70 V90 L234 102 H150 Z" fill="currentColor" fillOpacity={0.07} />
-      <path d="M162 70 H230 M162 90 H230" strokeOpacity={0.5} />
-      {Array.from({ length: 10 }, (_, i) => <path key={i} d={`M${170 + i * 6} 76 v8`} strokeWidth={2} strokeOpacity={0.6} />)}
-      <path d="M246 80 H282" strokeDasharray="3 5" strokeOpacity={0.5} />
-      <text x={18} y={40} fill="currentColor" stroke="none" fontSize={13} className="font-mono" opacity={0.6}>1080p60</text>
+    <Illustration viewBox="0 0 360 160">
+      <path d="M24 40 H336 Q348 40 348 52 V122 Q348 134 336 134 H24 Q12 134 12 122 V52 Q12 40 24 40 Z" fill="currentColor" fillOpacity={0.06} />
+      {ports.map((p) => (
+        <g key={p.l}>
+          <rect x={p.x - p.w / 2 + 15} y={88 - p.h / 2} width={p.w} height={p.h} rx={p.h > 20 ? 3 : p.h / 2} strokeWidth={p.hot ? 1.8 : 1.2} />
+          <text x={p.x + 15} y={118} textAnchor="middle" fill="currentColor" stroke="none" fontSize={8} className="font-mono" opacity={p.hot ? 0.9 : 0.5}>{p.l}</text>
+        </g>
+      ))}
     </Illustration>
   );
 }
 
-function Screen() {
-  const rows = [14, 16, 12, 10];
+/** Façade : la barre lumineuse dans ses trois états. */
+function Led() {
+  const states = [
+    { y: 36, l: "Veille", o: 0.35 },
+    { y: 80, l: "Prêt", o: 0.7 },
+    { y: 124, l: "En direct", o: 1, live: true },
+  ];
   return (
     <Illustration viewBox="0 0 460 160">
-      <rect x={30} y={20} width={400} height={120} rx={14} fill="currentColor" fillOpacity={0.05} />
-      <rect x={70} y={38} width={250} height={84} rx={8} fill="currentColor" fillOpacity={0.08} />
-      {rows.map((n, r) => (
-        <g key={r}>
-          <text x={82} y={62 + r * 19} fill="currentColor" stroke="none" fontSize={9} className="font-mono" opacity={0.55}>{["WIFI", "ETH", "4G/5G", "USB"][r]}</text>
-          {Array.from({ length: 16 }, (_, c) => <rect key={c} x={124 + c * 12} y={55 + r * 19} width={9} height={9} rx={1.5} fill="currentColor" stroke="none" opacity={c < n ? 0.85 : 0.12} />)}
+      {states.map((s) => (
+        <g key={s.l}>
+          <path d={`M60 ${s.y - 12} H170 L180 ${s.y - 2} V${s.y + 8} Q180 ${s.y + 14} 174 ${s.y + 14} H56 Q50 ${s.y + 14} 50 ${s.y + 8} V${s.y - 2} Z`} fill="currentColor" fillOpacity={0.06} />
+          <path d={`M92 ${s.y + 2} H138`} strokeWidth={3} strokeOpacity={s.o} className={s.live ? "led-blink" : ""} stroke={s.live ? "var(--live)" : "currentColor"} />
+          <text x={210} y={s.y + 5} fill="currentColor" stroke="none" fontSize={12} className="font-mono" opacity={0.65}>{s.l}</text>
         </g>
       ))}
-      <circle cx={376} cy={80} r={14} />
-      <circle cx={376} cy={80} r={5} className="led-blink" fill="var(--live)" stroke="none" />
     </Illustration>
   );
 }
@@ -43,16 +54,16 @@ function Relay() {
         </g>
       ))}
       <path d="M230 30 V138 M230 84 H300" />
-      <rect x={300} y={60} width={110} height={48} rx={8} fill="currentColor" fillOpacity={0.06} />
-      <path d="M314 84 H360" strokeWidth={3} strokeOpacity={0.55} />
-      <circle cx={392} cy={84} r={3.5} className="led-blink" fill="var(--live)" stroke="none" />
+      <path d="M312 66 H388 L400 80 V96 Q400 104 392 104 H308 Q300 104 300 96 V80 Z" fill="currentColor" fillOpacity={0.07} />
+      <path d="M300 80 H400" strokeOpacity={0.4} />
+      <path d="M336 92 H366" strokeWidth={2.4} className="led-blink" stroke="var(--live)" />
     </Illustration>
   );
 }
 
 const cards = [
-  { title: "Une caméra. Un câble HDMI.", text: "N'importe quelle caméra, en 1080p60, sans téléphone au milieu.", art: <Hdmi />, span: "lg:col-span-1" },
-  { title: "Un écran sur le boîtier.", text: "Tu vois chaque connexion s'allumer, sans sortir ton téléphone.", art: <Screen />, span: "lg:col-span-2" },
+  { title: "Une caméra. Un câble HDMI.", text: "N'importe quelle caméra, en 1080p60, branchée à l'arrière. Pas de téléphone au milieu.", art: <Rear />, span: "lg:col-span-1" },
+  { title: "Un voyant qui parle.", text: "Orange en veille, vert quand il est prêt, rouge qui pulse en direct.", art: <Led />, span: "lg:col-span-2" },
   { title: "Une connexion lâche, le direct continue.", text: "Les autres liaisons prennent le relais, sans coupure.", art: <Relay />, span: "lg:col-span-2" },
 ] as const;
 

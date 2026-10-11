@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import CloserLook from "@/components/encoder/CloserLook";
+import HeroEncoder from "@/components/encoder/HeroEncoder";
 import HowItWorks from "@/components/encoder/HowItWorks";
 import Scenes from "@/components/encoder/Scenes";
 import Strengths from "@/components/encoder/Strengths";
 import Glow from "@/components/landing/Glow";
-import RelayBox from "@/components/landing/RelayBox";
 import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
@@ -25,9 +25,9 @@ export default function EncodeurPage() {
       {/* Présentation : nom, titre en bas à gauche, boîtier au centre, prix et bouton en pastille en bas à droite */}
       <section data-theme="dark" id="presentation" className="relative -mt-[4.0625rem] flex min-h-dvh scroll-mt-20 flex-col overflow-hidden border-b border-line bg-background text-foreground">
         <CloudBackdrop />
-        <Container className="relative flex flex-1 flex-col pb-10 pt-[8rem] sm:pb-14">
+        <Container className="relative flex flex-1 flex-col pb-10 pt-[5.5rem] sm:pb-14">
           <div className="flex flex-1 items-center justify-center">
-            <div className="w-full max-w-4xl opacity-95"><RelayBox /></div>
+            <div className="w-full max-w-5xl"><HeroEncoder /></div>
           </div>
           <div className="mt-10 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
             <div>

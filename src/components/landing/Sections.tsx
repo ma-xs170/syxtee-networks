@@ -131,7 +131,7 @@ export function EncoderSection() {
     ["Connexions simultanées", `${specs.simultaneous} : Wi-Fi, Ethernet, 4G ou 5G`],
     ["Clé 4G USB", "Une connexion de plus par clé"],
     ["Caméra", "Entrée HDMI, 1080p60"],
-    ["Prix", product.priceLabel(product.price)],
+    ["Prix", `${product.priceLabel(product.price)} ou ${product.priceLabel(product.subscription.perMonth)} par mois`],
     ["Livraison", product.shipping.map((c) => c.flag).join(" ")],
   ];
   return (

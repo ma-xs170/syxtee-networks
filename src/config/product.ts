@@ -12,9 +12,11 @@ export const product = {
   pitch: "Le boîtier où tu branches ta caméra en HDMI. Il réunit ta 4G, ta 5G, ton Wi-Fi et un terminal satellite pour diffuser ton direct vers YouTube, Twitch ou Kick, sur terre, en mer ou dans les airs.",
   /** soon : « à venir » ; preorder : « Précommander » ; available : « Acheter ». */
   availability: "soon" as Availability,
-  /** Prix en euros TTC. `null` : pas encore annoncé, le site affiche « Pas cher ». */
-  price: null as number | null,
-  priceLabel: (p: number | null) => (p === null ? "Pas cher" : `${p.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`),
+  /** Prix en euros TTC, achat du boîtier. `null` : pas encore annoncé, le site affiche « Pas cher ». */
+  price: 699 as number | null,
+  /** Formule avec abonnement : 60 € tous les 3 mois, soit 20 € par mois. */
+  subscription: { perQuarter: 60, perMonth: 20 },
+  priceLabel: (p: number | null) => (p === null ? "Pas cher" : `${p.toLocaleString("fr-FR", { minimumFractionDigits: p % 1 ? 2 : 0, maximumFractionDigits: 2 })} €`),
   discord: "https://discord.gg/CD68F8yZuZ",
   /** Mois offerts de l'abonnement le plus élevé à l'activation de l'Encodeur sur un compte (code à usage unique). */
   bonusMonths: 4,
@@ -44,7 +46,7 @@ export const product = {
   },
   platforms: ["YouTube", "Twitch", "Kick"], // seules marques tierces autorisées sur le site public
   /** Variantes du boîtier. Une seule : une carte produit. */
-  variants: [{ id: "standard", name: "SYXTEE Encodeur", pitch: "Le boîtier, prêt à brancher.", price: null as number | null, featured: true }],
+  variants: [{ id: "standard", name: "SYXTEE Encodeur", pitch: "Le boîtier, prêt à brancher.", price: 699 as number | null, featured: true }],
   /** Accessoires vendus avec l'Encodeur. */
   accessories: [
     {

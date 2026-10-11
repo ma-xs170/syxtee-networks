@@ -1,3 +1,4 @@
+import { product } from "@/config/product";
 import { Illustration } from "@/components/illustrations/iso";
 
 // Points forts : quatre cartes (1+2 puis 2+1), trait encre, boîtier dessiné comme le vrai Encodeur (dalle basse, ports à l'arrière, barre lumineuse en façade).
@@ -85,8 +86,11 @@ export default function Strengths() {
       ))}
       <li className="bento-cell flex flex-col justify-between p-7 lg:col-span-1">
         <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">À venir</p>
-        <p className="h-serif text-[clamp(2.5rem,5vw,3.75rem)]">Pas <em>cher.</em></p>
-        <p className="text-sm leading-relaxed text-muted">Le principe d&apos;un TVU, au prix d&apos;un accessoire de streamer. Le tarif sera annoncé à la sortie.</p>
+        <div>
+          <p className="h-serif text-[clamp(2.5rem,5vw,3.75rem)]">{product.priceLabel(product.price)}</p>
+          <p className="mt-3 text-sm leading-relaxed text-foreground/85">ou {product.priceLabel(product.subscription.perQuarter)} tous les 3 mois avec l&apos;abonnement, soit {product.priceLabel(product.subscription.perMonth)} par mois.</p>
+        </div>
+        <p className="text-sm leading-relaxed text-muted">Le principe d&apos;un TVU, au prix d&apos;un accessoire de streamer.</p>
       </li>
     </ul>
   );

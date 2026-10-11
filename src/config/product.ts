@@ -7,27 +7,37 @@ export const product = {
   brand: "SYXTEE NETWORKS",
   name: "SYXTEE Encodeur", // le boîtier
   remoteName: "Contrôle à distance", // le contrôle OBS à distance (produit n°1)
-  tagline: "Branche ta caméra. Diffuse de n'importe où. Sans te ruiner.",
-  /** Positionnement : le boîtier le plus accessible du marché, pensé pour les streamers (pas pour la télévision). */
-  pitch: "Le boîtier où tu branches ta caméra : il réunit jusqu'à trois connexions (Wi-Fi, Ethernet, 4G ou 5G) et diffuse ton direct vers YouTube, Twitch ou Kick.",
-  /** soon : « bientôt disponible » ; preorder : « Précommander » ; available : « Acheter ». */
-  availability: "preorder" as Availability, // TODO À CONFIRMER : précommande ou vente
-  /** Prix en euros TTC (annoncé par SYXTEE NETWORKS). */
-  price: 599.99,
-  priceLabel: (p: number | null) => (p === null ? null : `${p.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`),
+  tagline: "Branche ta caméra en HDMI. Diffuse de n'importe où. Sans te ruiner.",
+  /** Positionnement : un « TVU » à petit prix, pour les streamers (pas pour la télévision). */
+  pitch: "Le boîtier où tu branches ta caméra en HDMI. Il réunit ta 4G, ta 5G, ton Wi-Fi et un terminal satellite pour diffuser ton direct vers YouTube, Twitch ou Kick, sur terre, en mer ou dans les airs.",
+  /** soon : « à venir » ; preorder : « Précommander » ; available : « Acheter ». */
+  availability: "soon" as Availability,
+  /** Prix en euros TTC. `null` : pas encore annoncé, le site affiche « Pas cher ». */
+  price: null as number | null,
+  priceLabel: (p: number | null) => (p === null ? "Pas cher" : `${p.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`),
   discord: "https://discord.gg/CD68F8yZuZ",
   /** Mois offerts de l'abonnement le plus élevé à l'activation de l'Encodeur sur un compte (code à usage unique). */
   bonusMonths: 4,
+  /** Pays livrés (codes ISO pour Stripe, drapeaux affichés sur le site). */
+  shipping: [
+    { cc: "FR", name: "France", flag: "🇫🇷" },
+    { cc: "GP", name: "Guadeloupe", flag: "🇬🇵" },
+    { cc: "MQ", name: "Martinique", flag: "🇲🇶" },
+    { cc: "MF", name: "Saint-Martin", flag: "🇲🇫" },
+  ],
+  /** Où l'Encodeur fonctionne : partout où il y a du ciel ou un réseau. */
+  anywhere: ["Sur un bateau", "Dans un hélicoptère", "En montagne", "Sur un marathon", "En plein désert", "Dans une foule"],
   specs: {
     /** Connexions simultanées intégrées. Une clé 4G USB ajoute une connexion de plus, sans limite autre que les ports. */
     simultaneous: 3,
     connections: ["Wi-Fi", "Ethernet (pour un terminal satellite)", "4G ou 5G"],
     usbModem: "Chaque clé 4G USB ajoute une connexion supplémentaire",
-    camera: "Câble USB-C de 2 m : n'importe quelle caméra de poche en 1080p60", // TODO À CONFIRMER : liste des caméras compatibles
+    camera: "Entrée HDMI : n'importe quelle caméra, hybride ou de poche, en 1080p60", // TODO À CONFIRMER : liste des caméras compatibles
     videoInput: "1080p60",
+    screen: "Écran sur le boîtier : débit, connexions, batterie et état du direct",
     latencyMs: 84, // TODO À CONFIRMER : latence moyenne de bout en bout
     protocols: ["SRT", "SRTLA", "RTMP"], // TODO À CONFIRMER
-    ports: ["Entrée vidéo USB-C", "Ethernet", "Port USB pour clé 4G", "Wi-Fi"], // TODO À CONFIRMER
+    ports: ["Entrée HDMI", "Ethernet", "Port USB pour clé 4G", "Wi-Fi"], // TODO À CONFIRMER
     engraving: "SYXTEE NETWORKS gravé sur le boîtier",
     power: "USB-C PD, 15 W", // TODO À CONFIRMER : alimentation
     consumption: "8 W en charge", // TODO À CONFIRMER
@@ -35,7 +45,7 @@ export const product = {
   },
   platforms: ["YouTube", "Twitch", "Kick"], // seules marques tierces autorisées sur le site public
   /** Variantes du boîtier. Une seule : une carte produit. */
-  variants: [{ id: "standard", name: "SYXTEE Encodeur", pitch: "Le boîtier, prêt à brancher.", price: 599.99 as number | null, featured: true }],
+  variants: [{ id: "standard", name: "SYXTEE Encodeur", pitch: "Le boîtier, prêt à brancher.", price: null as number | null, featured: true }],
   /** Accessoires vendus avec l'Encodeur. */
   accessories: [
     {
@@ -54,8 +64,8 @@ export const product = {
   ],
 } as const;
 
-export const ctaLabel = (a: Availability) => (a === "available" ? "Acheter" : a === "preorder" ? "Précommander" : "Être prévenu du lancement");
+export const ctaLabel = (a: Availability) => (a === "available" ? "Acheter" : a === "preorder" ? "Précommander" : "Être prévenu de la sortie");
 export const fromPrice = () => {
   const p = product.variants.map((v) => v.price).filter((x): x is number => x !== null);
-  return p.length ? `À partir de ${product.priceLabel(Math.min(...p))}` : "Prix bientôt disponible";
+  return p.length ? `À partir de ${product.priceLabel(Math.min(...p))}` : "Pas cher";
 };

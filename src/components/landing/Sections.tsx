@@ -130,8 +130,10 @@ export function EncoderSection() {
   const rows: [string, string][] = [
     ["Connexions simultanées", `${specs.simultaneous} : Wi-Fi, Ethernet, 4G ou 5G`],
     ["Clé 4G USB", "Une connexion de plus par clé"],
-    ["Caméra", "USB-C 2 m, 1080p60"],
-    ["Prix", product.priceLabel(product.price) ?? "Bientôt disponible"],
+    ["Caméra", "Entrée HDMI, 1080p60"],
+    ["Écran", "Sur le boîtier"],
+    ["Prix", product.priceLabel(product.price)],
+    ["Livraison", product.shipping.map((c) => c.flag).join(" ")],
   ];
   return (
     <section id="encodeur" className="scroll-mt-20 border-b border-line py-24 lg:py-36">
@@ -141,7 +143,7 @@ export function EncoderSection() {
             <VisualSlot name="encoder-hero" fallback={<RelayBox />} />
           </div>
           <div>
-            <span className="inline-flex items-center rounded-full border border-warn/40 bg-warn/15 px-3.5 py-1 text-xs font-semibold tracking-[0.12em] text-warn">EN DÉVELOPPEMENT</span>
+            <span className="inline-flex items-center rounded-full border border-warn/40 bg-warn/15 px-3.5 py-1 text-xs font-semibold tracking-[0.12em] text-warn">À VENIR</span>
             <h2 className={`${h2} mt-5`}>SYXTEE <em>Encodeur.</em></h2>
             <p className={lead}>{product.tagline}</p>
             <dl className="mt-6 divide-y divide-line text-sm">
@@ -152,7 +154,7 @@ export function EncoderSection() {
                 </div>
               ))}
             </dl>
-            <p className="mt-3 text-xs text-muted">Caractéristiques indicatives, susceptibles d&apos;évoluer. Prix : bientôt disponible.</p>
+            <p className="mt-3 text-xs text-muted">Caractéristiques indicatives, susceptibles d&apos;évoluer. Prix annoncé à la sortie.</p>
             <div className="mt-6">
               <ButtonLink href={product.discord} external>{product.availability === "available" ? ctaLabel(product.availability) : "Être prévenu"}</ButtonLink>
             </div>

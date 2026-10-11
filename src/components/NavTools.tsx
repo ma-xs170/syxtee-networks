@@ -298,6 +298,7 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
                 </span>
               )}
             </span>
+            {item.badge && <span className="relative z-10 ml-2"><Badge>{item.badge}</Badge></span>}
           </Link>
         );
       })}

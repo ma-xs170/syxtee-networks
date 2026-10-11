@@ -45,14 +45,15 @@ export default async function BoutiquePage({ searchParams }: { searchParams: Pro
             <h2 className="h-serif mt-3 text-[clamp(2.25rem,4.5vw,3.5rem)]">SYXTEE <em>Encodeur.</em></h2>
             <p className="mt-4 text-sm leading-relaxed text-muted">{product.pitch}</p>
             <ul className="mt-5 space-y-2 text-sm text-muted">
-              {["Trois connexions en même temps : Wi-Fi, Ethernet, 4G ou 5G", "Une clé 4G USB ajoute une connexion de plus", "Câble USB-C de 2 m : ta caméra de poche en 1080p60", "SYXTEE NETWORKS gravé sur le boîtier"].map((x) => (
+              {["Trois connexions en même temps : Wi-Fi, Ethernet, 4G ou 5G", "Une clé 4G USB ajoute une connexion de plus", "Entrée HDMI : ta caméra en 1080p60, avec un écran sur le boîtier", "SYXTEE NETWORKS gravé sur le boîtier"].map((x) => (
                 <li key={x} className="flex gap-2.5"><span aria-hidden="true" className="text-foreground">+</span>{x}</li>
               ))}
             </ul>
-            <p className="mt-6 font-mono text-4xl tabular-nums">{product.priceLabel(product.price)}</p>
+            <p className="mt-6 flex items-baseline gap-3 font-mono text-4xl tabular-nums">{product.priceLabel(product.price)}<span className="text-xs uppercase tracking-[0.08em] text-muted">À venir</span></p>
+            <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">Livraison : {product.shipping.map((c) => <span key={c.cc}><span aria-hidden="true">{c.flag}</span> {c.name}</span>)}</p>
             <p className="mt-3 rounded-xl border border-line bg-surface px-4 py-3 text-sm leading-relaxed"><span className="font-medium">{product.bonusMonths} mois de l&apos;abonnement le plus élevé offerts</span> à l&apos;activation, avec un code lié à ton compte (utilisable une seule fois).</p>
             <div className="mt-6 grid gap-2 sm:max-w-sm">
-              {canBuyEncoder ? <BuyButton productId="encoder">Précommander</BuyButton> : <ButtonLink href="/acces" className="w-full">Être prévenu de l&apos;ouverture</ButtonLink>}
+              {canBuyEncoder && product.availability !== "soon" ? <BuyButton productId="encoder">{product.availability === "preorder" ? "Précommander" : "Acheter"}</BuyButton> : <ButtonLink href="/acces" className="w-full">Être prévenu de la sortie</ButtonLink>}
               <ButtonLink href="/encodeur#interface" variant="secondary" className="w-full">Voir l&apos;interface</ButtonLink>
             </div>
           </div>

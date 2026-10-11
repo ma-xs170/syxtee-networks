@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { product } from "@/config/product";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -9,6 +10,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // Boutique : achat d'un article (paiement unique) par Stripe Checkout. Le code d'activation de l'Encodeur est créé par le webhook
 // une fois le paiement confirmé (jamais ici). Variables : STRIPE_SECRET_KEY, STRIPE_PRICE_ENCODER, STRIPE_PRICE_SAC_MESH.
 
+type ShippingCountry = "FR" | "GP" | "MQ" | "MF";
 export type ShopState = { error?: string };
 const PRICE = { encoder: "STRIPE_PRICE_ENCODER", "sac-mesh": "STRIPE_PRICE_SAC_MESH" } as const;
 type Product = keyof typeof PRICE;
@@ -40,8 +42,8 @@ export async function startProductCheckout(productId: string, quantity = 1): Pro
       client_reference_id: user.id,
       line_items: [{ price, quantity: qty }],
       locale: "fr",
-      // TODO À CONFIRMER : pays livrés.
-      shipping_address_collection: { allowed_countries: ["FR", "BE", "CH", "LU", "CA", "GP", "MQ", "RE", "GF"] },
+      // Livraison : France, Guadeloupe, Martinique, Saint-Martin (liste dans product.shipping).
+      shipping_address_collection: { allowed_countries: product.shipping.map((c) => c.cc) as ShippingCountry[] },
       phone_number_collection: { enabled: true },
       metadata: { product: productId === "encoder" ? "encoder" : "accessory", item: productId, quantity: String(qty) },
       success_url: `${base}/boutique?commande=ok`,

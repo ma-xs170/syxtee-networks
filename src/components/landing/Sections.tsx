@@ -9,6 +9,8 @@ import Reveal from "../ui/Reveal";
 import Faq from "./Faq";
 import ObsHero from "./ObsHero";
 import PlatformStrip from "./PlatformStrip";
+import StreamerStack from "@/components/home/StreamerStack";
+import type { HomeStreamer } from "@/lib/streamers";
 import EncoderViewer from "@/components/encoder/EncoderViewer";
 import VisualSlot from "./VisualSlot";
 import { ctaLabel, product } from "@/config/product";
@@ -32,7 +34,7 @@ function Cell({ className = "", title, text, children, delay = 0, href, cta }: {
 }
 
 /* 1. OBS CLOUD : hero, démo Mac + iPhone, bento, schéma */
-export function ObsHeroSection() {
+export function ObsHeroSection({ streamers = [] }: { streamers?: HomeStreamer[] }) {
   return (
     <section className="relative overflow-hidden border-b border-line">
       <Container className="pb-14 pt-14 text-center lg:pt-20">
@@ -49,7 +51,8 @@ export function ObsHeroSection() {
         <div className="rise mt-12" style={rise(3)}>
           <ObsHero images={{ laptop: deviceImage("laptop"), phone: deviceImage("phone") }} />
         </div>
-        <div className="mt-6"><PlatformStrip /></div>
+        <div className="mt-8"><StreamerStack streamers={streamers.map((s) => ({ handle: s.handle, avatar: s.avatar }))} /></div>
+        <div className="mt-8"><PlatformStrip /></div>
       </Container>
     </section>
   );

@@ -19,11 +19,11 @@ export default async function Home() {
   const streamers = await getHomeStreamers();
   return (
     <>
-      <ObsHeroSection />
+      <ObsHeroSection streamers={streamers} />
       <ObsBento />
       <WhySection />
-      <StreamerWall streamers={streamers} />
       <PricingSection />
+      <StreamerWall streamers={streamers} />
       <FaqSection />
       <FinalCta />
     </>

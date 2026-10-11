@@ -28,7 +28,7 @@ const GROUPS: Group[] = [
     id: "conn",
     label: "Connectivité",
     items: [
-      { id: "pwr", label: "Alimentation", text: "Un câble USB-C, ou une batterie externe en déplacement.", view: "rear", zoom: 0.42, x: 6.8 },
+      { id: "pwr", label: "Alimentation", text: "Un câble USB-C, ou une batterie externe en déplacement.", view: "rear", zoom: 0.42, x: 4.7 },
       { id: "eth", label: "Ethernet", text: "Pour un terminal satellite : le direct tient là où il n'y a aucun réseau mobile.", view: "rear", zoom: 0.42, x: 2.5 },
       { id: "hdmi", label: "HDMI", text: "Ta caméra se branche ici, en HDMI, 1080p60.", view: "rear", zoom: 0.42, x: -0.45 },
       { id: "usb", label: "USB-C", text: "Une clé 4G de plus ajoute une connexion supplémentaire.", view: "rear", zoom: 0.42, x: -3.0 },

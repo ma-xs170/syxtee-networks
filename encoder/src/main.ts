@@ -2,12 +2,16 @@ import { execFileSync } from "node:child_process";
 import { parseArgs } from "node:util";
 import { defaultBackend, requiredPlugins, RESOLUTIONS, type Backend, type Resolution } from "./hardware.ts";
 import { listLinks } from "./links.ts";
-import { Pipeline, parseTarget } from "./pipeline.ts";
-import { hasSrtlaSend, startSrtlaSend } from "./srtla.ts";
+import { Controller } from "./controller.ts";
+import { createUiServer } from "./server.ts";
+import { hasSrtlaSend } from "./srtla.ts";
 
 const USAGE = `SYXTEE Encodeur (agent)
   doctor                       vérifie GStreamer, les plugins, srtla_send et les liens réseau
-  start --url <srt|srtla://…>  diffuse vers le Core
+  serve [--port 8080]          interface locale du boîtier (http://127.0.0.1:8080)
+    --host <ip> --pin <code>   écouter sur le réseau local (PIN obligatoire)
+    --data <dossier>           réglages (défaut ~/.syxtee-encoder)
+  start --url <srt|srtla://…>  diffuse vers le Core, sans interface
     --backend mac|test|rk3588  (défaut selon le système)
     --res 720p30|1080p30|1080p60  (défaut 1080p30)
     --bitrate <kbps>           (défaut 4000)
@@ -35,28 +39,36 @@ function doctor(backend: Backend): number {
 
 async function start(v: Record<string, string | undefined>): Promise<void> {
   if (!v.url) { console.error("--url manquant.\n\n" + USAGE); process.exit(2); }
-  const backend = (v.backend ?? defaultBackend()) as Backend;
   const res = (v.res ?? "1080p30") as Resolution;
   if (!(res in RESOLUTIONS)) { console.error(`Résolution inconnue : ${res}`); process.exit(2); }
-  const target = parseTarget(v.url, Number(v.latency ?? 1000));
-  let srtla: ReturnType<typeof startSrtlaSend> | null = null;
-  if (target.kind === "srtla") {
-    if (!hasSrtlaSend()) { console.error("srtla_send introuvable : installe-le ou utilise une URL srt://."); process.exit(1); }
-    srtla = startSrtlaSend(target, listLinks());
-  }
-  const p = new Pipeline({ backend, res, bitrateKbps: Number(v.bitrate ?? 4000), device: v.device }, target);
-  p.on("state", (s: string, d?: string) => console.log(`[${new Date().toISOString().slice(11, 19)}] ${s}${d ? ` : ${d}` : ""}`));
-  const quit = async () => { await p.stop(); srtla?.kill(); process.exit(0); };
+  const ctl = new Controller({ dataDir: null, overrides: { url: v.url, res, backend: (v.backend ?? defaultBackend()) as Backend, bitrateKbps: Number(v.bitrate ?? 4000), latencyMs: Number(v.latency ?? 1000), device: v.device } });
+  const err = ctl.start();
+  if (err) { console.error(err); process.exit(1); }
+  let seen = 0;
+  const tick = setInterval(() => { for (const e of ctl.events.slice(seen)) console.log(`[${new Date(e.at).toISOString().slice(11, 19)}] ${e.text}`); seen = ctl.events.length; }, 300);
+  const quit = async () => { clearInterval(tick); await ctl.stop(); process.exit(0); };
   process.on("SIGINT", quit);
   process.on("SIGTERM", quit);
-  p.start();
+}
+
+async function serve(v: Record<string, string | undefined>): Promise<void> {
+  const host = v.host ?? "127.0.0.1";
+  const port = Number(v.port ?? 8080);
+  const local = host === "127.0.0.1" || host === "localhost" || host === "::1";
+  if (!local && !v.pin) { console.error("Écouter sur le réseau demande un PIN : ajoute --pin <code>."); process.exit(2); }
+  const ctl = new Controller({ dataDir: v.data, overrides: v.backend ? { backend: v.backend as Backend } : {} });
+  createUiServer(ctl, { pin: v.pin }).listen(port, host, () => console.log(`Interface du boîtier : http://${host}:${port}${v.pin ? " (PIN requis)" : ""}`));
+  const quit = async () => { await ctl.stop(); process.exit(0); };
+  process.on("SIGINT", quit);
+  process.on("SIGTERM", quit);
 }
 
 const { positionals, values } = parseArgs({
   allowPositionals: true,
-  options: { url: { type: "string" }, backend: { type: "string" }, res: { type: "string" }, bitrate: { type: "string" }, latency: { type: "string" }, device: { type: "string" } },
+  options: { url: { type: "string" }, backend: { type: "string" }, res: { type: "string" }, bitrate: { type: "string" }, latency: { type: "string" }, device: { type: "string" }, host: { type: "string" }, port: { type: "string" }, pin: { type: "string" }, data: { type: "string" } },
 });
 const cmd = positionals[0];
 if (cmd === "doctor") process.exit(doctor((values.backend ?? defaultBackend()) as Backend));
 else if (cmd === "start") await start(values);
+else if (cmd === "serve") await serve(values);
 else { console.log(USAGE); process.exit(cmd ? 2 : 0); }

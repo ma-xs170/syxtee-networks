@@ -26,12 +26,22 @@ npm test                            # unitaires + test réel mire -> SRT -> srt-
 
 L'URL d'envoi vient de `GET /v1/me/ingest` du Core (`srt_url` ou `srtla_url`). Avec `srtla://`, `srtla_send` doit être installé (à compiler depuis les sources de srtla) ; sinon utiliser `srt://` (une seule connexion).
 
+## Interface locale
+
+```
+npm run dev -- serve                         # http://127.0.0.1:8080, sans PIN, uniquement en local
+npm run dev -- serve --host 0.0.0.0 --pin 4821   # sur le réseau local : PIN obligatoire
+```
+
+Page unique (`ui/index.html`, sans dépendance ni police distante : le boîtier peut être hors ligne) : démarrer/arrêter le direct, état des connexions avec activation par lien, réglages (destination, résolution, débit, latence), journal. Tokens du site, thèmes Auto / Sombre / Clair. La clé de diffusion n'est jamais renvoyée à l'écran (masquée) et le fichier de réglages (`~/.syxtee-encoder/settings.json`) est en 0600. L'API (`/api/state`, `/api/start`, `/api/stop`, `/api/settings`, `/api/link`) est celle que le canal du Core réutilisera.
+
 ## Reste à faire
 
 - Débit adaptatif appliqué en direct (`src/bitrate.ts` est prêt et testé ; il faut lire les stats SRT/SRTLA et changer le débit de l'encodeur sans couper le flux, ce que `gst-launch` ne permet pas : passer à une application GStreamer).
 - Appairage au compte et canal de contrôle WebSocket avec le Core.
 - Brancher `src/lib/encoder/supabaseProvider.ts` du site.
-- UI locale (Wi-Fi, résolution, liens), image système, mises à jour OTA.
+- UI locale : choix du réseau Wi-Fi au premier démarrage (NetworkManager), débit par lien sur Mac (le compteur vient de `/sys/class/net`, Linux seulement).
+- Image système, mises à jour OTA.
 - Valider le backend `rk3588` et la liste des caméras sur le vrai boîtier.
 
 ## Tester le bonding (Linux)

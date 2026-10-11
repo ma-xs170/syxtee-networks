@@ -5,11 +5,23 @@ struct MoreView: View {
     @Environment(Session.self) private var session
     @Environment(\.openURL) private var openURL
 
+    /// Pages du site pas encore reprises dans l'app (ouvertes dans Safari).
     private let links: [(String, String, String)] = [
-        ("Abonnement", "creditcard", "dashboard/abonnement"), ("Support", "lifepreserver", "dashboard/support"),
-        ("Multichat", "bubble.left.and.bubble.right", "dashboard/multichat"), ("Contrôle à distance", "slider.horizontal.3", "dashboard/controle-a-distance"),
-        ("Statistiques", "chart.xyaxis.line", "dashboard/stats"), ("Paramètres", "gearshape", "dashboard/parametres"),
+        ("Multichat", "bubble.left.and.bubble.right", "dashboard/multichat"), ("Paramètres", "gearshape", "dashboard/parametres"),
+        ("Scènes sauvegardées", "square.stack.3d.up", "dashboard/backups"), ("Invitations", "person.badge.plus", "dashboard/invitations"),
     ]
+
+    private func native<D: View>(_ title: String, _ icon: String, @ViewBuilder _ destination: @escaping () -> D) -> some View {
+        NavigationLink(destination: destination) {
+            HStack(spacing: 14) {
+                Image(systemName: icon).frame(width: 24).foregroundStyle(Brand.muted)
+                Text(title).foregroundStyle(Brand.foreground)
+                Spacer()
+                Image(systemName: "chevron.right").font(.caption).foregroundStyle(Brand.faint)
+            }
+            .padding(.vertical, 14).padding(.horizontal, 16)
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -24,6 +36,15 @@ struct MoreView: View {
                             }
                         }
                     }
+                    SectionLabel(text: "Dans l'app")
+                    VStack(spacing: 0) {
+                        native("Statistiques", "chart.xyaxis.line") { StatsView(store: store) }
+                        Divider().overlay(Brand.line)
+                        native("Assistance", "lifepreserver") { SupportView(store: store) }
+                        Divider().overlay(Brand.line)
+                        native("Abonnement", "creditcard") { BillingView(store: store) }
+                    }
+                    .background(Brand.surface, in: RoundedRectangle(cornerRadius: 18)).overlay(RoundedRectangle(cornerRadius: 18).stroke(Brand.line))
                     SectionLabel(text: "Sur le site")
                     VStack(spacing: 0) {
                         ForEach(links, id: \.2) { l in
@@ -49,7 +70,7 @@ struct MoreView: View {
             }
             .background(Brand.background.ignoresSafeArea())
             .refreshable { await store.loadMe() }
-            .navigationTitle("Compte").navigationBarTitleDisplayMode(.large)
+            .navigationTitle("Plus").navigationBarTitleDisplayMode(.large)
         }
     }
 }

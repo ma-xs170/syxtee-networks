@@ -6,6 +6,7 @@ import { DashPage } from "@/components/dashboard/ui";
 import PlanGate from "@/components/plans/PlanGate";
 import RelayActions from "@/components/relais/RelayActions";
 import RelayAnalysis from "@/components/relais/RelayAnalysis";
+import RelayConnections from "@/components/relais/RelayConnections";
 import RelayUrls from "@/components/relais/RelayUrls";
 import { ActionButton, Card, Fact, Pill, Setting, TabsNav } from "@/components/dashboard/panel";
 import ProtocolBadge from "@/components/relais/ProtocolBadge";
@@ -73,6 +74,7 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
 
   const TABS = [
     { id: "info", label: "Informations générales" },
+    { id: "connexions", label: "Connexions actives" },
     { id: "analyse", label: "Analyse en temps réel" },
     { id: "stats", label: "Statistiques" },
     { id: "services", label: "Services" },
@@ -161,6 +163,7 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
             )}
 
             {tab === "analyse" && <RelayAnalysis coreUrl={publicCoreUrl} relayId={relay.id} />}
+            {tab === "connexions" && <RelayConnections coreUrl={publicCoreUrl} relayId={relay.id} />}
 
             {tab === "parametres" && (
               <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">

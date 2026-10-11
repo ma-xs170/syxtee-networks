@@ -213,8 +213,6 @@ export default function RelayAnalysis({ coreUrl, relayId, demo }: { coreUrl: str
   }, [win]);
   const peaks = useMemo(() => findPeaks(win, rangeMs), [win, rangeMs]);
   const lostMinute = history.filter((h) => h.t > now - 60_000).reduce((a, h) => a + h.dropped, 0);
-  const peers = live?.live ? (live.peers ?? []) : [];
-  const peerMax = Math.max(1, ...peers.map((p) => p.bitrate));
 
   return (
     <section aria-labelledby="analyse" className="space-y-5">
@@ -293,22 +291,6 @@ export default function RelayAnalysis({ coreUrl, relayId, demo }: { coreUrl: str
                 </li>
               ))}
             </ol>
-          )}
-          {peers.length > 0 && (
-            <div className="border-t border-line px-5 py-4">
-              <p className="text-xs text-muted">Liens SRTLA · {peers.length}</p>
-              <ul className="mt-3 space-y-2.5">
-                {peers.map((p, i) => (
-                  <li key={p.connection_id} className="flex items-center gap-3 font-mono text-xs">
-                    <span className="w-12 text-muted">Lien {i + 1}</span>
-                    <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-foreground/15">
-                      <span className="block h-full rounded-full bg-foreground/70" style={{ width: `${(p.bitrate / peerMax) * 100}%` }} />
-                    </span>
-                    <span className="w-24 text-right tabular-nums">{mbps(p.bitrate)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
           )}
         </div>
       </div>

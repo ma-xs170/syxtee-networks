@@ -28,7 +28,7 @@ export function videoElements(o: CaptureOptions): string[] {
     case "test":
       // Sans caméra ni encodeur matériel : mire + x264 logiciel. Sert aux tests et à l'intégration continue.
       return [
-        "videotestsrc", "is-live=true", "pattern=ball", "!", raw, "!",
+        "videotestsrc", "is-live=true", `pattern=${process.env.SYXTEE_TEST_PATTERN ?? "ball"}`, "!", raw, "!",
         "x264enc", "tune=zerolatency", "speed-preset=ultrafast", `bitrate=${o.bitrateKbps}`, `key-int-max=${gop}`, "!",
         ...parse,
       ];

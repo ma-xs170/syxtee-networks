@@ -33,3 +33,7 @@ L'URL d'envoi vient de `GET /v1/me/ingest` du Core (`srt_url` ou `srtla_url`). A
 - Brancher `src/lib/encoder/supabaseProvider.ts` du site.
 - UI locale (Wi-Fi, résolution, liens), image système, mises à jour OTA.
 - Valider le backend `rk3588` et la liste des caméras sur le vrai boîtier.
+
+## Tester le bonding (Linux)
+
+`scripts/bonding-test.sh` (en root, sur Linux : VM OrbStack, boîtier) crée deux espaces réseau, envoie la mire par l'agent en SRTLA sur deux liens (`wlan0`, `eth0`), applique perte et latence (`tc netem`), coupe un lien en plein direct puis le rétablit, et vérifie que le flux continue d'arriver. `srtla` (AGPL) est téléchargé et compilé par le script, pas ajouté au dépôt. Sur Mac : `orb create debian syxtee-enc`, puis `orb -m syxtee-enc sudo "$PWD/scripts/bonding-test.sh"` (paquets : `build-essential git iproute2 gstreamer1.0-plugins-{base,good,bad,ugly} gstreamer1.0-libav srt-tools`, et Node 24).

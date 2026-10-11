@@ -44,19 +44,25 @@ function Led() {
 }
 
 function Relay() {
+  const links = [
+    { y: 36, l: "4G", down: false },
+    { y: 84, l: "5G", down: true },
+    { y: 132, l: "Satellite", down: false },
+  ];
   return (
     <Illustration viewBox="0 0 460 160">
-      {[34, 70, 106, 142].map((y, i) => (
-        <g key={y}>
-          <circle cx={36} cy={y - 4} r={4} fill="currentColor" stroke="none" opacity={i === 1 ? 0.2 : 0.85} />
-          <path d={`M48 ${y - 4} H${i === 1 ? 150 : 230}`} strokeDasharray={i === 1 ? "2 6" : "0"} strokeOpacity={i === 1 ? 0.4 : 1} />
-          {i === 1 && <path d="M168 54 l14 14 M182 54 l-14 14" strokeOpacity={0.6} />}
+      {links.map((k) => (
+        <g key={k.l}>
+          <circle cx={30} cy={k.y} r={4} fill="currentColor" stroke="none" opacity={k.down ? 0.25 : 0.85} />
+          <text x={44} y={k.y + 4} fill="currentColor" stroke="none" fontSize={12} className="font-mono" opacity={k.down ? 0.4 : 0.8}>{k.l}</text>
+          <path d={`M122 ${k.y} H${k.down ? 196 : 250}`} strokeDasharray={k.down ? "2 6" : "0"} strokeOpacity={k.down ? 0.4 : 1} />
+          {k.down && <path d="M214 76 l16 16 M230 76 l-16 16" strokeOpacity={0.6} />}
         </g>
       ))}
-      <path d="M230 30 V138 M230 84 H300" />
-      <path d="M312 66 H388 L400 80 V96 Q400 104 392 104 H308 Q300 104 300 96 V80 Z" fill="currentColor" fillOpacity={0.07} />
-      <path d="M300 80 H400" strokeOpacity={0.4} />
-      <path d="M336 92 H366" strokeWidth={2.4} className="led-blink" stroke="var(--live)" />
+      <path d="M250 36 V132 M250 84 H306" />
+      <path d="M318 66 H394 L406 80 V96 Q406 104 398 104 H314 Q306 104 306 96 V80 Z" fill="currentColor" fillOpacity={0.07} />
+      <path d="M306 80 H406" strokeOpacity={0.4} />
+      <path d="M342 92 H372" strokeWidth={2.4} className="led-blink" stroke="var(--live)" />
     </Illustration>
   );
 }

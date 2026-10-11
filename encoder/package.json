@@ -1,0 +1,20 @@
+{
+  "name": "syxtee-encoder",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "SYXTEE Encodeur : agent du boîtier. Capte la caméra, encode en H.264, envoie en SRT ou SRTLA (bonding) vers le Core. Même code sur Mac (développement) et sur le boîtier (RK3588).",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "node --experimental-strip-types src/main.ts",
+    "doctor": "node --experimental-strip-types src/main.ts doctor",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --experimental-strip-types --test test/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}

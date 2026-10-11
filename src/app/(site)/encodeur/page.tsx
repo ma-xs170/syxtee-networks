@@ -45,13 +45,8 @@ export default function EncodeurPage() {
         </Container>
       </section>
 
-      {/* Fabrication */}
-      <section id="fabrication" className="scroll-mt-20 pb-8 pt-16 sm:pt-20">
-        <Container className="max-w-4xl"><MadeToOrder /></Container>
-      </section>
-
       {/* Points forts */}
-      <section id="points-forts" className="scroll-mt-20 pb-24 sm:pb-32">
+      <section id="points-forts" className="scroll-mt-20 py-24 sm:py-32">
         <Container>
           <h2 className="h-serif mb-10 text-[clamp(2.25rem,5vw,3.5rem)]">Points forts.</h2>
           <Strengths />
@@ -72,6 +67,7 @@ export default function EncodeurPage() {
           <SectionHeader icon="health" title={<>Il marche <em>n&apos;importe où.</em></>} subtitle="Le boîtier diffuse dès qu'il capte un réseau mobile ou un ciel dégagé pour le satellite. Pas besoin de Wi-Fi, ni de câble, ni d'installation." />
           <Scenes />
           <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-muted">Sur un bateau ou dans un hélicoptère, branche un terminal satellite en Ethernet : l&apos;Encodeur prend le relais quand la 4G et la 5G s&apos;arrêtent.</p>
+          <div id="fabrication" className="mx-auto mt-16 max-w-4xl scroll-mt-20"><MadeToOrder /></div>
         </Container>
       </section>
     </>

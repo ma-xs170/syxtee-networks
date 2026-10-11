@@ -1,4 +1,7 @@
 {
+  "0.7.18": [
+    "Secours « Connexion perdue » : le débit et l'état en ligne sont lus sur le flux de la source surveillée (et non sur le flux de destination), ce qui supprime les retours en boucle sur le secours quand un autre flux est à l'arrêt"
+  ],
   "0.7.17": [
     "Secours « Connexion perdue » : plus de retour immédiat sur le secours après un clic manuel sur la scène Live, et le serveur confirme la coupure comme le retour du flux"
   ],

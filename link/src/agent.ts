@@ -18,7 +18,7 @@ import { coreCall } from "./corehttp.ts";
 import { fixLiveScene, fluxName } from "./livescene.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
 
-export const VERSION = "0.7.17";
+export const VERSION = "0.7.18";
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
 export const OBS_METHODS = new Set([
@@ -376,11 +376,13 @@ export class Agent {
   /** Débit du flux de destination, une fois toutes les 2 s, seulement si un déclenchement au débit est choisi. */
   private async pollBitrate() {
     const c = this.cfg.backup;
-    if (this.stopped || !c.enabled || !this.cfg.destination) {
+    // Le flux jugé est celui de la source surveillée (« Flux › NOM »), pas forcément la destination : sinon un autre flux à l'arrêt (0 kb/s) déclenche le secours en boucle.
+    const watched = this.relays.find((x) => fluxName(x.name) === c.source)?.id ?? this.cfg.destination;
+    if (this.stopped || !c.enabled || !watched) {
       this.watcher.setRelayLive(null);
       return this.watcher.setBitrate(null);
     }
-    const r = await coreCall(this.cfg, "GET", `/v1/link/streams/${encodeURIComponent(this.cfg.destination)}/status`);
+    const r = await coreCall(this.cfg, "GET", `/v1/link/streams/${encodeURIComponent(watched)}/status`);
     this.watcher.setRelayLive(r.ok ? !!r.json.live : null);
     this.watcher.setBitrate(c.trigger === "cut" ? null : r.ok ? (r.json.live ? Number(r.json.kbps) || 0 : 0) : null);
   }

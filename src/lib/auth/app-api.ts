@@ -14,3 +14,17 @@ export async function appUser(): Promise<{ id: string; email: string | null; pro
   if (profile.suspended_at) return privateJson({ error: "suspended" }, { status: 403 });
   return { id: user.id, email: user.email ?? null, profile };
 }
+
+/** Une Server Action qui se termine par `redirect()` lève NEXT_REDIRECT : on récupère la destination au lieu de suivre la redirection. */
+export async function redirectTarget<T>(job: () => Promise<T>): Promise<{ result: T } | { redirect: string }> {
+  try {
+    return { result: await job() };
+  } catch (e) {
+    const digest = (e as { digest?: string } | null)?.digest;
+    if (typeof digest === "string" && digest.startsWith("NEXT_REDIRECT")) {
+      const target = digest.split(";")[2];
+      if (target) return { redirect: target };
+    }
+    throw e;
+  }
+}

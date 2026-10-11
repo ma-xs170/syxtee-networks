@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Dashboard iOS : compiler et lancer sur le Mac (version iPhone)",
+      "type": "shell",
+      "command": "dashboard-ios/scripts/run-mac.sh",
+      "group": { "kind": "build", "isDefault": false },
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Dashboard iOS : compiler seulement",
+      "type": "shell",
+      "command": "xcodebuild -project dashboard-ios/SyxteeDashboard.xcodeproj -scheme SyxteeDashboard -destination 'generic/platform=iOS' build CODE_SIGNING_ALLOWED=NO | grep -E 'error:|BUILD'",
+      "problemMatcher": []
+    }
+  ]
+}

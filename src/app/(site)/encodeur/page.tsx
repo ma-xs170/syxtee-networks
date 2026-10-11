@@ -67,7 +67,7 @@ export default function EncodeurPage() {
           <SectionHeader icon="health" title={<>Il marche <em>n&apos;importe où.</em></>} subtitle="Le boîtier diffuse dès qu'il capte un réseau mobile ou un ciel dégagé pour le satellite. Pas besoin de Wi-Fi, ni de câble, ni d'installation." />
           <Scenes />
           <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-muted">Sur un bateau ou dans un hélicoptère, branche un terminal satellite en Ethernet : l&apos;Encodeur prend le relais quand la 4G et la 5G s&apos;arrêtent.</p>
-          <div id="fabrication" className="mx-auto mt-16 max-w-4xl scroll-mt-20"><MadeToOrder /></div>
+          <div id="fabrication" className="mt-16 scroll-mt-20"><MadeToOrder /></div>
         </Container>
       </section>
     </>

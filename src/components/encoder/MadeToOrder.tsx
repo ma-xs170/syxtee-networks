@@ -10,10 +10,12 @@ export default function MadeToOrder({ compact = false, className = "" }: { compa
       </p>
     );
   return (
-    <div className={`bento-cell p-7 sm:p-9 ${className}`}>
+    <div className={`bento-cell grid items-center gap-6 p-7 sm:p-10 lg:grid-cols-2 lg:gap-12 ${className}`}>
       <h2 className="h-section">Fabriqué <em>sur commande.</em></h2>
-      <p className="mt-4 max-w-[62ch] text-sm leading-relaxed text-muted"><span className="font-medium text-foreground">{title}</span> {text}</p>
-      <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.08em] text-foreground">{delay}</p>
+      <div>
+        <p className="text-sm leading-relaxed text-muted"><span className="font-medium text-foreground">{title}</span> {text}</p>
+        <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.08em] text-foreground">{delay}</p>
+      </div>
     </div>
   );
 }

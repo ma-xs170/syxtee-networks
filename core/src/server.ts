@@ -323,6 +323,14 @@ export function buildServer(d: Deps) {
     return r;
   };
 
+  // App iOS SYXTEE CAM : URLs d'envoi (SRT, SRTLA, RTMP) des relais du compte, pour choisir le protocole.
+  app.get("/v1/me/ingest", async (req, reply) => {
+    const id = await userId(req, reply);
+    if (!id) return;
+    const rows = (await d.relays.list(id)).filter((r) => !r.archived);
+    return { relays: rows.map((r) => { const v = view(r); return { id: v.id, name: v.name, protocol: v.protocol, live: v.live, urls: v.urls }; }) };
+  });
+
   app.get("/v1/me/relays/:rid/health", async (req, reply) => {
     const r = await myRelay(req, reply);
     if (!r) return;

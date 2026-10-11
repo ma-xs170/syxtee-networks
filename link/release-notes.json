@@ -1,4 +1,7 @@
 {
+  "0.7.17": [
+    "Secours « Connexion perdue » : plus de retour immédiat sur le secours après un clic manuel sur la scène Live, et le serveur confirme la coupure comme le retour du flux"
+  ],
   "0.7.16": [
     "Plugin : lecture locale des réglages d'une source (diagnostic des flux Osmo et iPhone)"
   ],

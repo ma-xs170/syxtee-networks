@@ -222,8 +222,9 @@ body {
 .marquee { display: flex; width: max-content; }
 @media (prefers-reduced-motion: no-preference) {
   .marquee-wrap { overflow: hidden; }
-  .marquee-l { animation: marquee-l 70s linear infinite; }
-  .marquee-r { animation: marquee-r 80s linear infinite; }
+  /* .marquee.… : plus spécifique que la règle `.marquee` du bandeau compatibilité (plus bas), sinon les deux rangées partent du même côté. */
+  .marquee.marquee-l { animation: marquee-l 70s linear infinite; }
+  .marquee.marquee-r { animation: marquee-r 80s linear infinite; }
   .marquee-wrap:hover .marquee, .marquee-wrap:focus-within .marquee { animation-play-state: paused; }
 }
 @keyframes marquee-l { to { transform: translateX(-50%); } }

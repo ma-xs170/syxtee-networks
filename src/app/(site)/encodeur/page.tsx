@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Anywhere from "@/components/encoder/Anywhere";
 import EncoderDashboardDemo from "@/components/encoder/EncoderDashboardDemo";
 import Glow from "@/components/landing/Glow";
 import RelayBox from "@/components/landing/RelayBox";
@@ -111,11 +112,7 @@ export default function EncodeurPage() {
       <section id="partout" className="scroll-mt-20 border-b border-line py-24 sm:py-32">
         <Container>
           <SectionHeader icon="health" title={<>Il marche <em>n&apos;importe où.</em></>} subtitle="Le boîtier diffuse dès qu'il capte un réseau mobile ou un ciel dégagé pour le satellite. Pas besoin de Wi-Fi, ni de câble, ni d'installation." />
-          <ul className="mx-auto mt-14 flex max-w-3xl flex-wrap justify-center gap-2.5">
-            {product.anywhere.map((x) => (
-              <li key={x} className="rounded-full border border-line bg-surface px-4 py-2 text-sm">{x}</li>
-            ))}
-          </ul>
+          <Anywhere />
           <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-muted">Sur un bateau ou dans un hélicoptère, branche un terminal satellite en Ethernet : l&apos;Encodeur prend le relais quand la 4G et la 5G s&apos;arrêtent.</p>
         </Container>
       </section>

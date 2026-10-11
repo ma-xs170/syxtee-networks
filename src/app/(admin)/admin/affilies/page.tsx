@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
 import { requireAdmin } from "@/lib/admin";
+import { isManagedEmail } from "@/lib/managed";
 import { affiliateUrl, type Affiliate } from "@/lib/affiliates";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 import InviteAffiliate from "./InviteAffiliate";
@@ -33,17 +34,19 @@ export default async function AdminAffiliesPage() {
             {rows.map((r) => (
               <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{r.display_name} <span className="font-normal text-muted" data-sensitive>· {r.email}</span></p>
+                  <p className="truncate text-sm font-medium">{r.display_name} <span className="font-normal text-muted" data-sensitive>· {isManagedEmail(r.email) ? `identifiant ${r.email.split("@")[0]}` : r.email}</span></p>
                   <p className="truncate font-mono text-xs text-muted">{affiliateUrl(r.slug)}</p>
                   <p className="text-xs text-muted">
                     {r.active ? (r.user_id ? "Compte relié" : "Invitation en attente de connexion") : "Désactivé"} · {r.clicks} clic{r.clicks > 1 ? "s" : ""} · invité le {day(r.created_at)}{r.invited_by ? ` par ${r.invited_by}` : ""}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <form action={resendAffiliateAction}>
-                    <input type="hidden" name="id" value={r.id} />
-                    <button type="submit" className={btn}>Renvoyer l&apos;e-mail</button>
-                  </form>
+                  {!isManagedEmail(r.email) && (
+                    <form action={resendAffiliateAction}>
+                      <input type="hidden" name="id" value={r.id} />
+                      <button type="submit" className={btn}>Renvoyer l&apos;e-mail</button>
+                    </form>
+                  )}
                   <form action={toggleAffiliateAction}>
                     <input type="hidden" name="id" value={r.id} />
                     <input type="hidden" name="active" value={String(!r.active)} />

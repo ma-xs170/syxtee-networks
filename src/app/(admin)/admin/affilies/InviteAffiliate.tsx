@@ -10,8 +10,8 @@ export default function InviteAffiliate() {
   return (
     <form action={action} className="grid gap-3 sm:grid-cols-[1.4fr_1fr_1fr_auto] sm:items-end">
       <div>
-        <label htmlFor="aff-email" className="mb-2 block text-sm">E-mail du compte</label>
-        <input id="aff-email" name="email" type="email" required placeholder="streamer@exemple.fr" className={input} />
+        <label htmlFor="aff-email" className="mb-2 block text-sm">E-mail ou identifiant</label>
+        <input id="aff-email" name="email" required placeholder="streamer@exemple.fr ou identifiant" className={input} />
       </div>
       <div>
         <label htmlFor="aff-pseudo" className="mb-2 block text-sm">Pseudo <span className="text-muted">(facultatif)</span></label>

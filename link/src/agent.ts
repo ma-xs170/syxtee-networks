@@ -376,9 +376,13 @@ export class Agent {
   /** Débit du flux de destination, une fois toutes les 2 s, seulement si un déclenchement au débit est choisi. */
   private async pollBitrate() {
     const c = this.cfg.backup;
-    if (this.stopped || !c.enabled || c.trigger === "cut" || !this.cfg.destination) return this.watcher.setBitrate(null);
+    if (this.stopped || !c.enabled || !this.cfg.destination) {
+      this.watcher.setRelayLive(null);
+      return this.watcher.setBitrate(null);
+    }
     const r = await coreCall(this.cfg, "GET", `/v1/link/streams/${encodeURIComponent(this.cfg.destination)}/status`);
-    this.watcher.setBitrate(r.ok ? (r.json.live ? Number(r.json.kbps) || 0 : 0) : null);
+    this.watcher.setRelayLive(r.ok ? !!r.json.live : null);
+    this.watcher.setBitrate(c.trigger === "cut" ? null : r.ok ? (r.json.live ? Number(r.json.kbps) || 0 : 0) : null);
   }
 
   /** Change le déclenchement : sur le flux de destination (compte) et ici. Renvoie le déclenchement retenu. */

@@ -105,6 +105,11 @@ export class BackupWatcher {
   setBitrate(kbps: number | null) {
     this.bitrate = kbps;
   }
+  /** Le flux surveillé est-il en ligne côté serveur ? null : inconnu. Seul signal fiable quand la scène de la source n'est pas à l'antenne (OBS ne la rend pas). */
+  private relayLive: boolean | null = null;
+  setRelayLive(live: boolean | null) {
+    this.relayLive = live;
+  }
   /** Seuil de « débit très bas » selon le déclenchement choisi. */
   static lowBitrate(t: Trigger): number {
     return t === "sensitive" ? 800 : t === "cut_lowbitrate" ? 300 : 0;
@@ -207,6 +212,12 @@ export class BackupWatcher {
       this.returnTo = null;
       this.active = null;
       this.takes.clear();
+      // Repartir de zéro : les compteurs d'image figée du secours ne doivent pas rebasculer aussitôt, et le flux a de nouveau le délai de grâce pour revenir.
+      this.last = "";
+      this.still = 0;
+      this.moving = 0;
+      this.armedTicks = 0;
+      this.seenMoving = false;
       this.setState("ok");
     }
     this.armedTicks++;
@@ -270,7 +281,10 @@ export class BackupWatcher {
     const low = threshold > 0 && this.bitrate !== null && this.bitrate < threshold;
     const imageMoves = shot !== "" && shot !== this.last;
     if (imageMoves) this.seenMoving = true;
-    const frozen = !imageMoves || low;
+    // Hors antenne (secours en cours), la vignette de la source ne bouge pas : le serveur dit si le flux est revenu.
+    const offAir = this.state === "backup";
+    const relayDown = this.relayLive === false;
+    const frozen = offAir && this.relayLive === true ? false : !imageMoves || low || relayDown;
     this.last = shot;
     if (frozen) {
       this.still++;

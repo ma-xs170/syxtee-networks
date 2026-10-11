@@ -15,6 +15,7 @@ import {
   Moon,
   Question,
   Radio,
+  ShareNetwork,
   UsersThree,
   SignOut,
   SlidersHorizontal,
@@ -38,8 +39,11 @@ import NotificationsBell from "./NotificationsBell";
 /** Espaces partagés de l'utilisateur et espace actif (null : espace personnel). `left` : espaces qu'il peut encore créer (null : illimité). `features` : droits de l'espace actif. */
 export type WorkspaceInfo = { workspaces: { id: string; name: string; color: string; role: string }[]; activeId: string | null; left: number | null; features: Feature[] | null };
 const WsCtx = createContext<WorkspaceInfo>({ workspaces: [], activeId: null, left: 0, features: null });
+/** Compte invité au programme affilié (null : pas d'entrée « Affilié »). `isNew` : jamais ouvert, la pastille « Nouveau » s'affiche. */
+export type AffiliateInfo = { isNew: boolean } | null;
+const AffCtx = createContext<AffiliateInfo>(null);
 
-type Item = { sharedOnly?: boolean; label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean; wordmark?: string; /** « À venir » : pas encore ouvert (l'admin y accède quand même). */ soon?: boolean };
+type Item = { sharedOnly?: boolean; label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean; wordmark?: string; /** « À venir » : pas encore ouvert (l'admin y accède quand même). */ soon?: boolean; /** Pastille de nouveauté à droite du libellé. */ fresh?: boolean };
 type Group = { title?: string; items: Item[] };
 
 // Barre minimale (comme un espace client de service) : Accueil, trois groupes, puis aide, thème et compte en bas.
@@ -107,6 +111,7 @@ function NavLink({ item, active, locked, soon, onNavigate, hovered, onHover }: {
         </>
       )}
       {locked && <Lock size={14} className="relative z-10 ml-auto shrink-0 text-muted" aria-label="Verrouillé dans ta formule" />}
+      {item.fresh && <span className="relative z-10 ml-auto shrink-0 rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-on-accent">Nouveau</span>}
     </>
   );
   return item.external ? (
@@ -291,13 +296,15 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
   const ws = useContext(WsCtx);
   const locked = (i: Item) => !!i.feature && !!account && !(ws.features ?? account.features).includes(i.feature);
   const [hover, setHover] = useState<string | null>(null);
+  const aff = useContext(AffCtx);
+  const groups: Group[] = aff ? [...GROUPS, { title: "Programme", items: [{ label: "Affilié", href: "/dashboard/affilie", icon: ShareNetwork, fresh: aff.isNew }] }] : GROUPS;
 
   return (
     <div className="flex h-full flex-col">
       <div className="border-b border-line p-3">{account && <AccountFooter account={account} admin={admin} onNavigate={onNavigate} />}</div>
 
       <nav aria-label="Navigation de l'espace client" className="flex-1 space-y-5 overflow-y-auto px-3 py-4" onMouseLeave={() => setHover(null)}>
-        {GROUPS.map((g, i) => (
+        {groups.map((g, i) => (
           <div key={g.title ?? i}>
             {g.title && <p className="px-3 pb-2 text-[11px] font-medium uppercase tracking-[0.12em] text-muted">{g.title}</p>}
             <ul className="space-y-0.5">
@@ -367,7 +374,7 @@ function MobileTabs({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolea
 }
 
 /** Mise en page : barre latérale fixe en desktop, barre du haut et tiroir en mobile. */
-export default function DashboardShell({ admin, children, workspace }: { admin: boolean; children: React.ReactNode; workspace?: WorkspaceInfo }) {
+export default function DashboardShell({ admin, children, workspace, affiliate = null }: { admin: boolean; children: React.ReactNode; workspace?: WorkspaceInfo; affiliate?: AffiliateInfo }) {
   // Cookie d'espace périmé (espace supprimé, membre retiré) : on l'efface, sinon le Core refuserait chaque appel.
   useEffect(() => {
     if (!workspace?.activeId && /(?:^|;\s*)syxtee_ws=/.test(document.cookie)) document.cookie = "syxtee_ws=; path=/; max-age=0";
@@ -404,6 +411,7 @@ export default function DashboardShell({ admin, children, workspace }: { admin: 
 
   return (
     <WsCtx.Provider value={workspace ?? { workspaces: [], activeId: null, left: 0, features: null }}>
+    <AffCtx.Provider value={affiliate}>
     <div className="dash-surface min-h-dvh lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
       <aside className="sticky top-0 z-40 hidden h-dvh border-r border-line bg-surface lg:block">
         <Content admin={admin} onNavigate={() => {}} />
@@ -445,6 +453,7 @@ export default function DashboardShell({ admin, children, workspace }: { admin: 
         <div className="relative">{children}</div>
       </div>
     </div>
+    </AffCtx.Provider>
     </WsCtx.Provider>
   );
 }

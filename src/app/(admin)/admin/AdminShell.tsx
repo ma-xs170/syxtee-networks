@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { signOut } from "@/app/(auth)/actions";
-import { Bell, ChartLineUp, ClockCounterClockwise, Globe, Key, Lifebuoy, List, MapTrifold, Radio, Robot, ShieldWarning, SquaresFour, Tag, Users, UsersThree, X, type IconProps } from "@/components/icons";
+import { Bell, ChartLineUp, ClockCounterClockwise, Globe, Key, Lifebuoy, List, MapTrifold, Radio, Robot, ShareNetwork, ShieldWarning, SquaresFour, Tag, Users, UsersThree, X, type IconProps } from "@/components/icons";
 import ThemeToggle from "@/components/ThemeToggle";
 import GlidePill from "@/components/ui/GlidePill";
 import { ROLE_META, roleStyle, type AnyRole, type Permission } from "@/lib/staff";
@@ -43,6 +43,7 @@ function groups(support: SupportBadges, pending: number, quotes: number): Group[
         { icon: UsersThree, label: "Comptes gérés", href: "/admin/comptes-geres", need: "accounts" },
         { icon: UsersThree, label: "Partenaires", href: "/admin/partenaires", need: "partners" },
         { icon: Radio, label: "Chaînes accueil", href: "/admin/chaines", need: "partners" },
+        { icon: ShareNetwork, label: "Affiliés", href: "/admin/affilies", need: "partners" },
         { icon: Key, label: "Codes Encodeur", href: "/admin/encodeurs", need: "accounts" },
       ],
     },

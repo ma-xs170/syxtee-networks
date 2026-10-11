@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import Anywhere from "@/components/encoder/Anywhere";
 import CloserLook from "@/components/encoder/CloserLook";
-import Highlights from "@/components/encoder/Highlights";
+import HowItWorks from "@/components/encoder/HowItWorks";
+import Scenes from "@/components/encoder/Scenes";
+import Strengths from "@/components/encoder/Strengths";
 import Glow from "@/components/landing/Glow";
 import RelayBox from "@/components/landing/RelayBox";
 import { Container } from "@/components/ui";
@@ -44,11 +45,20 @@ export default function EncodeurPage() {
         </Container>
       </section>
 
+      {/* Fonctionnement */}
+      <section id="fonctionnement" className="scroll-mt-20 py-24 sm:py-32">
+        <Container>
+          <h2 className="h-serif max-w-[16ch] text-[clamp(2.25rem,5vw,3.5rem)]">Comment ça <em>marche.</em></h2>
+          <p className="mt-5 max-w-xl text-base leading-relaxed text-muted">Une caméra, plusieurs réseaux, un seul direct stable. C&apos;est le principe d&apos;un TVU, en version accessible.</p>
+          <div className="mt-12"><HowItWorks /></div>
+        </Container>
+      </section>
+
       {/* Points forts */}
-      <section id="points-forts" className="scroll-mt-20 py-24 sm:py-32">
+      <section id="points-forts" className="scroll-mt-20 pb-24 sm:pb-32">
         <Container>
           <h2 className="h-serif mb-10 text-[clamp(2.25rem,5vw,3.5rem)]">Points forts.</h2>
-          <Highlights />
+          <Strengths />
         </Container>
       </section>
 
@@ -64,7 +74,7 @@ export default function EncodeurPage() {
       <section id="partout" className="scroll-mt-20 border-t border-line py-24 sm:py-32">
         <Container>
           <SectionHeader icon="health" title={<>Il marche <em>n&apos;importe où.</em></>} subtitle="Le boîtier diffuse dès qu'il capte un réseau mobile ou un ciel dégagé pour le satellite. Pas besoin de Wi-Fi, ni de câble, ni d'installation." />
-          <Anywhere />
+          <Scenes />
           <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-muted">Sur un bateau ou dans un hélicoptère, branche un terminal satellite en Ethernet : l&apos;Encodeur prend le relais quand la 4G et la 5G s&apos;arrêtent.</p>
         </Container>
       </section>

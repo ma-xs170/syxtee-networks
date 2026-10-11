@@ -1152,3 +1152,9 @@ select,
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
 }
+
+/* Flux du schéma Encodeur : tirets qui avancent le long des liaisons (coupés si l'utilisateur réduit les animations). */
+@media (prefers-reduced-motion: no-preference) {
+  .flow-dash { animation: flow-dash 1.6s linear infinite; }
+}
+@keyframes flow-dash { to { stroke-dashoffset: -14; } }

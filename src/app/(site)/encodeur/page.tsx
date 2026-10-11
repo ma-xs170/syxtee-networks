@@ -34,16 +34,6 @@ const bento = [
 ];
 
 export default function EncodeurPage() {
-  const { specs } = product;
-  const rows: [string, string][] = [
-    ["Connexions simultanées", `${specs.simultaneous} : Wi-Fi, Ethernet, 4G ou 5G`],
-    ["Clé 4G USB", "Une connexion de plus par clé"],
-    ["Ethernet", "Pour brancher un terminal satellite"],
-    ["Caméra", "Entrée HDMI, 1080p60"],
-    ["Écran", "Sur le boîtier : débit, connexions, batterie"],
-    ["Interface", "Température, processeur, carte graphique, mémoire, audio, débit"],
-    ["Gravure", "SYXTEE NETWORKS"],
-  ];
   return (
     <>
       <Glow />
@@ -62,15 +52,7 @@ export default function EncodeurPage() {
           <div className="mx-auto mt-14 max-w-4xl opacity-95">
             <VisualSlot name="encoder-hero" fallback={<RelayBox />} />
           </div>
-          <div className="mx-auto mt-12 grid max-w-4xl gap-4 md:grid-cols-[1.3fr_1fr]">
-            <dl className="bento-cell divide-y divide-line p-6 text-sm">
-              {rows.map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-6 py-3 first:pt-0 last:pb-0">
-                  <dt className="text-muted">{k}</dt>
-                  <dd className="text-right font-mono">{v}</dd>
-                </div>
-              ))}
-            </dl>
+          <div className="mx-auto mt-12 max-w-md">
             <div className="bento-cell flex flex-col justify-between p-6">
               <div>
                 <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Prix</p>
@@ -87,7 +69,6 @@ export default function EncodeurPage() {
               </div>
             </div>
           </div>
-          <p className="mx-auto mt-4 max-w-4xl text-xs text-muted">Caractéristiques indicatives, susceptibles d&apos;évoluer avant la sortie.</p>
         </Container>
       </section>
 

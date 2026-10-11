@@ -3,6 +3,9 @@
 export type LedState = "ok" | "warn" | "bad" | "off";
 const COLOR: Record<LedState, string> = { ok: "var(--ok)", warn: "var(--warn)", bad: "var(--bad)", off: "color-mix(in srgb, var(--foreground) 18%, transparent)" };
 
+/** Pixels allumés par ligne quand la connexion est active (niveau de signal). */
+const LEVEL = [14, 16, 12, 10];
+
 export default function RelayBox({ leds, live = true, className = "" }: { leds?: Partial<Record<"wifi" | "eth" | "cell" | "usb", LedState>>; live?: boolean; className?: string }) {
   const ports: { id: "wifi" | "eth" | "cell" | "usb"; label: string }[] = [
     { id: "wifi", label: "WIFI" },
@@ -52,20 +55,30 @@ export default function RelayBox({ leds, live = true, className = "" }: { leds?:
       </g>
       {/* LED par port */}
       {ports.map((p, i) => {
-        const x = 304 + i * 62;
+        const x = 298 + i * 66;
         const st = leds?.[p.id] ?? "ok";
         return (
-          <g key={p.id} transform={`translate(${x} 172)`}>
-            <rect x="-24" y="-12" width="48" height="24" rx="6" fill="#050506" stroke="#fff" strokeOpacity="0.14" />
-            <circle cx="-11" cy="0" r="3.5" fill={COLOR[st]} style={{ transition: "fill 0.3s" }} />
-            <text x="3" y="3.5" fill="#fff" fillOpacity="0.55" fontSize="9" fontFamily="var(--font-geist-mono), monospace" textAnchor="start">{p.label}</text>
+          <g key={p.id} transform={`translate(${x} 176)`}>
+            <rect x="-30" y="-12" width="60" height="24" rx="6" fill="#050506" stroke="#fff" strokeOpacity="0.14" />
+            <circle cx="-19" cy="0" r="3.5" fill={COLOR[st]} style={{ transition: "fill 0.3s" }} />
+            <text x="-10" y="3.5" fill="#fff" fillOpacity="0.55" fontSize="9" fontFamily="var(--font-geist-mono), monospace" textAnchor="start">{p.label}</text>
           </g>
         );
       })}
-      {/* aérations */}
-      {[0, 1, 2, 3, 4, 5].map((i) => (
-        <path key={i} d={`M${340 + i * 22} 108 h12`} stroke="#fff" strokeOpacity="0.14" strokeWidth="2" strokeLinecap="round" />
-      ))}
+      {/* écran : une ligne de pixels par connexion, allumés selon l'état (vert actif, orange instable, rouge coupé, éteint) */}
+      <rect x="300" y="99" width="190" height="52" rx="5" fill="#050506" stroke="#fff" strokeOpacity="0.16" />
+      {ports.map((p, r) => {
+        const st = leds?.[p.id] ?? "ok";
+        const lit = st === "ok" ? LEVEL[r] : st === "warn" ? 6 : st === "bad" ? 2 : 0;
+        return (
+          <g key={p.id} transform={`translate(0 ${106 + r * 11})`}>
+            <text x="308" y="6" fill="#fff" fillOpacity="0.5" fontSize="6" fontFamily="var(--font-geist-mono), monospace">{p.label}</text>
+            {Array.from({ length: 16 }, (_, c) => (
+              <rect key={c} x={346 + c * 8} y="0" width="6" height="6" rx="1" fill={c < lit ? COLOR[st === "off" ? "off" : st] : "#fff"} fillOpacity={c < lit ? 1 : 0.07} style={{ transition: "fill 0.3s" }} />
+            ))}
+          </g>
+        );
+      })}
     </svg>
   );
 }

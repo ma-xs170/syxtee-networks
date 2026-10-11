@@ -1147,3 +1147,8 @@ select,
 .btn-tonal:hover:not(:disabled) {
   background: color-mix(in srgb, var(--foreground) 12%, var(--surface));
 }
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}

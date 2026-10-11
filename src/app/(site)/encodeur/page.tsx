@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
 import Anywhere from "@/components/encoder/Anywhere";
-import EncoderDashboardDemo from "@/components/encoder/EncoderDashboardDemo";
+import CloserLook from "@/components/encoder/CloserLook";
+import Highlights from "@/components/encoder/Highlights";
 import Glow from "@/components/landing/Glow";
 import RelayBox from "@/components/landing/RelayBox";
-import VisualSlot from "@/components/landing/VisualSlot";
 import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button";
-import GlassIcon from "@/components/ui/GlassIcon";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import SectionHeader from "@/components/ui/SectionHeader";
-import StatusPill from "@/components/ui/StatusPill";
 import WordsReveal from "@/components/ui/WordsReveal";
 import { ctaLabel, product } from "@/config/product";
-import { deviceImage } from "@/lib/device-images";
 
 export const metadata: Metadata = {
   title: "Encodeur",
@@ -20,77 +17,51 @@ export const metadata: Metadata = {
   alternates: { canonical: "/encodeur" },
 };
 
-const steps = [
-  { n: "01", title: "Branche ta caméra en HDMI", text: "Un câble HDMI de ta caméra vers le boîtier. Pas de téléphone au milieu, pas d'application à lancer." },
-  { n: "02", title: "Ajoute tes connexions", text: "4G ou 5G avec ta carte SIM, Wi-Fi, ou un terminal satellite en Ethernet. Une clé 4G USB de plus ajoute une connexion." },
-  { n: "03", title: "Il les réunit en une seule", text: "L'Encodeur envoie ta vidéo par toutes les connexions à la fois, vers un serveur SYXTEE. Si l'une lâche, les autres prennent le relais." },
-  { n: "04", title: "Ton direct arrive en ligne", text: "Le serveur remet le flux en ordre et le diffuse vers YouTube, Twitch ou Kick. L'écran du boîtier te montre l'état en temps réel." },
-];
-
-const bento = [
-  { icon: "relay" as const, title: "Bonding en direct", text: "Coupe une connexion : le débit, la latence et le graphique réagissent tout de suite, et les autres connexions compensent." },
-  { icon: "health" as const, title: "Slate automatique", text: "Si tout lâche, une mire s'affiche pour tes viewers et le direct reprend dès que le réseau revient." },
-  { icon: "obs-cloud" as const, title: "Mises à jour à distance", text: "Le firmware se met à jour depuis le tableau de bord, sans rien brancher ni redémarrer à la main." },
-];
-
 export default function EncodeurPage() {
   return (
     <>
       <Glow />
-      {/* Présentation */}
-      <section data-theme="dark" id="presentation" className="relative bg-background text-foreground -mt-[4.0625rem] scroll-mt-20 overflow-hidden border-b border-line pb-20 pt-[8.5rem] sm:pb-28 sm:pt-[9.5rem]">
+      {/* Présentation : nom, titre en bas à gauche, boîtier au centre, prix et bouton en pastille en bas à droite */}
+      <section data-theme="dark" id="presentation" className="relative -mt-[4.0625rem] flex min-h-dvh scroll-mt-20 flex-col overflow-hidden border-b border-line bg-background text-foreground">
         <CloudBackdrop />
-        <Container className="relative">
-          <div className="mx-auto max-w-3xl text-center">
-            <StatusPill variant="dev" label="À VENIR" />
-            <h1 className="h-serif mx-auto mt-8 text-[clamp(3rem,8vw,5.5rem)]">
-              <WordsReveal text="SYXTEE Encodeur." em={["Encodeur."]} />
-            </h1>
-            <p className="mx-auto mt-6 max-w-[560px] text-lg leading-relaxed text-foreground/85">{product.tagline}</p>
-            <p className="mx-auto mt-4 max-w-[560px] text-base leading-relaxed text-muted">{product.pitch}</p>
+        <Container className="relative flex flex-1 flex-col pb-10 pt-[8rem] sm:pb-14">
+          <div className="flex flex-1 items-center justify-center">
+            <div className="w-full max-w-4xl opacity-95"><RelayBox /></div>
           </div>
-          <div className="mx-auto mt-14 max-w-4xl opacity-95">
-            <VisualSlot name="encoder-hero" fallback={<RelayBox />} />
-          </div>
-          <div className="mx-auto mt-12 max-w-md">
-            <div className="bento-cell flex flex-col justify-between p-6">
-              <div>
-                <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Prix</p>
-                <p className="mt-2 font-mono text-4xl font-medium tabular-nums tracking-tight">{product.priceLabel(product.price)}</p>
-                <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">À venir</p>
-                <p className="mt-3 text-sm leading-relaxed text-muted">Le principe des boîtiers de télévision comme le TVU, pensé pour les streamers, à un prix accessible. Le tarif sera annoncé à la sortie.</p>
-                <p className="mt-4 rounded-xl border border-line bg-background/60 px-4 py-3 text-sm leading-relaxed">
-                  <span className="font-medium">{product.bonusMonths} mois offerts</span> de l&apos;abonnement le plus élevé à l&apos;activation de ton Encodeur sur ton compte.
-                </p>
-              </div>
-              <div className="mt-6 grid gap-2">
-                <ButtonLink href="/acces" className="w-full">{ctaLabel(product.availability)}</ButtonLink>
-                <ButtonLink href="/encodeur#interface" variant="secondary" className="w-full">Voir l&apos;interface</ButtonLink>
-              </div>
+          <div className="mt-10 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-lg font-medium">{product.name}</p>
+              <h1 className="h-serif mt-2 max-w-[14ch] text-[clamp(2.75rem,7vw,5rem)]">
+                <WordsReveal text="Branche. Diffuse. N'importe où." em={["N'importe", "où."]} />
+              </h1>
+              <p className="mt-4 max-w-md text-base leading-relaxed text-foreground/85">{product.tagline}</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-4 self-start rounded-full bg-foreground/10 py-2 pl-6 pr-2 backdrop-blur lg:self-auto">
+              <span className="text-sm"><span className="font-medium">{product.priceLabel(product.price)}</span> <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">À venir</span></span>
+              <ButtonLink href="/acces" className="whitespace-nowrap">{ctaLabel(product.availability)}</ButtonLink>
             </div>
           </div>
         </Container>
       </section>
 
-      {/* Fonctionnement */}
-      <section id="fonctionnement" className="scroll-mt-20 border-b border-line py-24 sm:py-32">
+      {/* Points forts */}
+      <section id="points-forts" className="scroll-mt-20 py-24 sm:py-32">
         <Container>
-          <SectionHeader icon="relay" title={<>Comment ça <em>marche.</em></>} subtitle="Le principe d'un boîtier de télévision comme le TVU : une caméra en HDMI, plusieurs réseaux, un seul direct stable. Version accessible, pour les créateurs." />
-          <ol className="mt-16 grid gap-4 md:grid-cols-2">
-            {steps.map((st) => (
-              <li key={st.n} className="bento-cell flex flex-col p-7">
-                <span className="font-mono text-xs tracking-[0.08em] text-muted">{st.n}</span>
-                <h3 className="mt-4 text-lg font-semibold tracking-tight">{st.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{st.text}</p>
-              </li>
-            ))}
-          </ol>
-          <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-muted">Tout est affiché sur l&apos;écran du boîtier, et dans ton tableau de bord depuis ton téléphone ou ton ordinateur.</p>
+          <h2 className="h-serif mb-10 text-[clamp(2.25rem,5vw,3.5rem)]">Points forts.</h2>
+          <Highlights />
+        </Container>
+      </section>
+
+      {/* De plus près */}
+      <section id="de-plus-pres" className="scroll-mt-20 pb-24 sm:pb-32">
+        <Container>
+          <h2 className="h-serif mb-10 text-[clamp(2.25rem,5vw,3.5rem)]">De plus près.</h2>
+          <CloserLook />
         </Container>
       </section>
 
       {/* Partout */}
-      <section id="partout" className="scroll-mt-20 border-b border-line py-24 sm:py-32">
+      <section id="partout" className="scroll-mt-20 border-t border-line py-24 sm:py-32">
         <Container>
           <SectionHeader icon="health" title={<>Il marche <em>n&apos;importe où.</em></>} subtitle="Le boîtier diffuse dès qu'il capte un réseau mobile ou un ciel dégagé pour le satellite. Pas besoin de Wi-Fi, ni de câble, ni d'installation." />
           <Anywhere />
@@ -99,7 +70,7 @@ export default function EncodeurPage() {
       </section>
 
       {/* Livraison */}
-      <section id="livraison" className="scroll-mt-20 border-b border-line py-20 sm:py-24">
+      <section id="livraison" className="scroll-mt-20 border-t border-line py-20 sm:py-24">
         <Container>
           <div className="bento-cell mx-auto max-w-3xl p-8 text-center">
             <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Livraison</p>
@@ -109,25 +80,6 @@ export default function EncodeurPage() {
               ))}
             </ul>
             <p className="mt-5 text-sm text-muted">Livraison uniquement dans ces quatre territoires.</p>
-          </div>
-        </Container>
-      </section>
-
-      {/* Interface : démo du tableau de bord */}
-      <section id="interface" className="scroll-mt-20 py-24 sm:py-32">
-        <Container>
-          <SectionHeader icon="health" title={<>Toute ta mobilité, dans un seul <em>tableau de bord.</em></>} subtitle="Branche ta caméra, suis chaque connexion et pilote ton direct. Essaie : tout est simulé, rien à installer." />
-          <div className="mt-16">
-            <EncoderDashboardDemo images={{ laptop: deviceImage("laptop"), phone: deviceImage("phone") }} />
-          </div>
-          <div className="mt-20 grid gap-4 md:grid-cols-3">
-            {bento.map((b) => (
-              <article key={b.title} className="bento-cell flex flex-col p-7">
-                <GlassIcon name={b.icon} size={56} />
-                <h3 className="mt-6 text-lg font-semibold tracking-tight">{b.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{b.text}</p>
-              </article>
-            ))}
           </div>
         </Container>
       </section>

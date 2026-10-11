@@ -139,7 +139,7 @@ export function EncoderSection() {
       <Container>
         <div className="bento-cell grid gap-10 p-6 sm:p-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div className="opacity-90 [filter:saturate(0.7)]">
-            <VisualSlot name="encoder-hero" fallback={<EncoderViewer className="h-[260px] sm:h-[340px]" />} />
+            <VisualSlot name="encoder-hero" fallback={<EncoderViewer zoom={0.65} className="h-[280px] sm:h-[360px]" />} />
           </div>
           <div>
             <span className="inline-flex items-center rounded-full border border-warn/40 bg-warn/15 px-3.5 py-1 text-xs font-semibold tracking-[0.12em] text-warn">À VENIR</span>

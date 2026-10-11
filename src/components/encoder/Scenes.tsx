@@ -115,43 +115,44 @@ function Desert() {
   );
 }
 
+function Person({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
+  return (
+    <g transform={`translate(${x} ${y}) scale(${s})`}>
+      <circle cx={0} cy={-30} r={5} />
+      <path d="M0 -25 V-8 M0 -22 l-7 10 M0 -22 l7 10 M0 -8 l-6 12 M0 -8 l6 12" />
+    </g>
+  );
+}
+
 function Crowd() {
-  const rows = [0, 1, 2];
+  const rows = [
+    { y: 150, s: 0.8, n: 17, o: 0.35 },
+    { y: 176, s: 1, n: 15, o: 0.55 },
+    { y: 208, s: 1.25, n: 13, o: 0.85 },
+  ];
   return (
     <Illustration viewBox="0 0 800 240">
-      <path d="M40 150 H268 V204 H40 Z" fill="currentColor" fillOpacity={0.04} />
-      <rect x={78} y={56} width={152} height={78} rx={6} />
-      <path d="M92 104 l22 -24 l18 18 l14 -12 l30 30" strokeOpacity={0.45} />
-      <path d="M60 150 V44 M248 150 V44 M52 44 H68 M240 44 H256 M60 70 L248 70" strokeOpacity={0.5} />
-      <path d="M40 204 H268" strokeOpacity={0.5} />
-      {rows.map((r) =>
-        Array.from({ length: 13 - r }, (_, j) => {
-          const x = 300 + j * 40 + (r % 2) * 20;
-          const y = 190 + r * 18 - 0;
-          return (
-            <g key={`${r}-${j}`} strokeOpacity={0.45 + r * 0.2}>
-              <circle cx={x} cy={y - 28} r={7} />
-              <path d={`M${x - 14} ${y + 6} Q${x} ${y - 20} ${x + 14} ${y + 6}`} />
-              {(j + r) % 4 === 0 && <path d={`M${x + 8} ${y - 30} l6 -16 h8 v10 h-8`} />}
-            </g>
-          );
-        }),
-      )}
-      <path d="M560 96 V62 M544 62 H576 M552 96 H568" />
-      <Unit x={548} y={70} s={0.8} />
-      <CellTower x={724} top={34} horizon={150} />
-      <path d="M572 70 L720 40" strokeDasharray="3 4" strokeOpacity={0.6} />
+      {rows.map((r, i) => (
+        <g key={i} strokeOpacity={r.o}>
+          {Array.from({ length: r.n }, (_, j) => (
+            <Person key={j} x={40 + j * (720 / (r.n - 1)) + (i % 2) * 14} y={r.y} s={r.s} />
+          ))}
+        </g>
+      ))}
+      <Unit x={140} y={96} s={1.7} />
+      <CellTower x={690} top={30} horizon={118} />
+      <path d="M190 108 L682 44" strokeDasharray="3 5" strokeOpacity={0.6} />
     </Illustration>
   );
 }
 
 const scenes: { title: string; text: string; art: React.ReactNode; span: string; h: string }[] = [
-  { title: "Sur un bateau", text: "Un terminal satellite en Ethernet, et le direct tient en pleine mer.", art: <Boat />, span: "lg:col-span-2", h: "h-56" },
-  { title: "Dans un hélicoptère", text: "Des images aériennes en direct, sans attendre l'atterrissage.", art: <Helicopter />, span: "", h: "h-56" },
-  { title: "En montagne", text: "Un sommet, un col, un sentier : la 4G et le satellite se complètent.", art: <Mountain />, span: "", h: "h-44" },
-  { title: "Sur un marathon", text: "Un direct qui suit les coureurs sur 42 km, sans coupure.", art: <Marathon />, span: "", h: "h-44" },
-  { title: "En plein désert", text: "Aucun réseau mobile à l'horizon : le ciel suffit.", art: <Desert />, span: "", h: "h-44" },
-  { title: "Dans une foule", text: "Festival, manifestation : tes connexions se partagent, le flux reste stable.", art: <Crowd />, span: "sm:col-span-2 lg:col-span-3", h: "h-52" },
+  { title: "Sur un bateau", text: "Un terminal satellite en Ethernet, et le direct tient en pleine mer.", art: <Boat />, span: "lg:col-span-2", h: "h-64" },
+  { title: "Dans un hélicoptère", text: "Des images aériennes en direct, sans attendre l'atterrissage.", art: <Helicopter />, span: "", h: "h-64" },
+  { title: "En montagne", text: "Un sommet, un col, un sentier : la 4G et le satellite se complètent.", art: <Mountain />, span: "", h: "h-60" },
+  { title: "Sur un marathon", text: "Un direct qui suit les coureurs sur 42 km, sans coupure.", art: <Marathon />, span: "", h: "h-60" },
+  { title: "En plein désert", text: "Aucun réseau mobile à l'horizon : le ciel suffit.", art: <Desert />, span: "", h: "h-60" },
+  { title: "Dans une foule", text: "Festival, manifestation : tes connexions se partagent, le flux reste stable.", art: <Crowd />, span: "sm:col-span-2 lg:col-span-3", h: "h-60" },
 ];
 
 export default function Scenes() {

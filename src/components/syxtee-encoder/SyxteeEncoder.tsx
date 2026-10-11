@@ -10,13 +10,15 @@ export interface SyxteeEncoderProps {
   view?: ViewName;       // 'q' | 'front' | 'rear' | 'top' | 'bottom'
   interactive?: boolean; // glisser pour tourner, molette pour zoomer
   fontFamily?: string;
+  zoom?: number;         // < 1 = plus près
+  focusX?: number;       // décalage horizontal de la cible (zoom sur un port)
   className?: string;
   style?: CSSProperties;
 }
 
 /** Encodeur SYXTEE en 3D. Le conteneur parent doit avoir une hauteur (ex. h-[560px]). */
 export function SyxteeEncoder({
-  finish = 'noir', led = 'pret', theme = 'dark', view = 'q', interactive = true, fontFamily, className, style,
+  finish = 'noir', led = 'pret', theme = 'dark', view = 'q', interactive = true, fontFamily, zoom, focusX, className, style,
 }: SyxteeEncoderProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const handle = useRef<EncoderHandle | null>(null);
@@ -24,7 +26,7 @@ export function SyxteeEncoder({
   useEffect(() => {
     if (!canvasRef.current) return;
     try {
-      handle.current = createEncoder(canvasRef.current, { finish, led, theme, view, interactive, fontFamily });
+      handle.current = createEncoder(canvasRef.current, { finish, led, theme, view, interactive, fontFamily, zoom });
     } catch {
       handle.current = null; // WebGL indisponible
     }
@@ -35,7 +37,7 @@ export function SyxteeEncoder({
   useEffect(() => { handle.current?.setFinish(finish); }, [finish]);
   useEffect(() => { handle.current?.setLed(led); }, [led]);
   useEffect(() => { handle.current?.setTheme(theme); }, [theme]);
-  useEffect(() => { handle.current?.setView(view); }, [view]);
+  useEffect(() => { handle.current?.setView(view, { zoom, x: focusX }); }, [view, zoom, focusX]);
 
   return (
     <div className={className} style={{ position: 'relative', width: '100%', height: '100%', ...style }}>

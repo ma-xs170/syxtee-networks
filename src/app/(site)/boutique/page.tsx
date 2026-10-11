@@ -39,7 +39,7 @@ export default async function BoutiquePage({ searchParams }: { searchParams: Pro
 
       <section id="encodeur" className="scroll-mt-20 border-b border-line py-20 sm:py-28">
         <Container className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="bento-cell p-4 sm:p-8"><EncoderViewer className="h-[300px] sm:h-[380px]" /></div>
+          <div className="bento-cell p-4 sm:p-8"><EncoderViewer zoom={0.65} className="h-[320px] sm:h-[420px]" /></div>
           <div>
             <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Article</p>
             <h2 className="h-serif mt-3 text-[clamp(2.25rem,4.5vw,3.5rem)]">SYXTEE <em>Encodeur.</em></h2>

@@ -7,10 +7,10 @@ import type { LedState, ViewName } from "@/components/syxtee-encoder";
 const SyxteeEncoder = dynamic(() => import("@/components/syxtee-encoder").then((m) => m.SyxteeEncoder), { ssr: false });
 
 /** Le vrai Encodeur en 3D. Pas d'interaction (ni glisser ni molette) : la page défile normalement par-dessus. Le conteneur donne la hauteur. */
-export default function EncoderViewer({ view = "q", led = "pret", className = "h-[320px] sm:h-[420px]" }: { view?: ViewName; led?: LedState; className?: string }) {
+export default function EncoderViewer({ view = "q", led = "pret", zoom, focusX, className = "h-[320px] sm:h-[420px]" }: { view?: ViewName; led?: LedState; zoom?: number; focusX?: number; className?: string }) {
   return (
-    <div className={`w-full ${className}`}>
-      <SyxteeEncoder finish="noir" led={led} theme="dark" view={view} interactive={false} />
+    <div className={`w-full [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)] ${className}`}>
+      <SyxteeEncoder finish="noir" led={led} theme="dark" view={view} zoom={zoom} focusX={focusX} interactive={false} />
     </div>
   );
 }

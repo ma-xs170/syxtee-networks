@@ -19,13 +19,16 @@ export interface EncoderOptions {
   interactive?: boolean;
   /** Famille de police du texte gravé (doit être déjà chargée sur la page). */
   fontFamily?: string;
+  /** Zoom de départ (< 1 = plus près). */
+  zoom?: number;
 }
 
 export interface EncoderHandle {
   setFinish(f: Finish): void;
   setLed(l: LedState): void;
   setTheme(t: Theme): void;
-  setView(v: ViewName): void;
+  /** `f.x` : décalage horizontal de la cible (unités de la scène, monde) ; `f.zoom` : multiplicateur de distance (< 1 = plus près). */
+  setView(v: ViewName, f?: { x?: number; zoom?: number }): void;
   dispose(): void;
 }
 
@@ -338,11 +341,12 @@ export function createEncoder(canvas: HTMLCanvasElement, opts: EncoderOptions = 
   const T = new THREE.Vector3(0, 1.85, 0);
   const v0 = VIEWS[opts.view ?? 'q'];
   const cur = { th: v0.th, ph: v0.ph, r: 70 }, tgt = { th: v0.th, ph: v0.ph };
-  let vs = v0.s, zoomT = 1, sw = 1, sh = 1;
+  let vs = v0.s * (opts.zoom ?? 1), zoomT = 1, sw = 1, sh = 1;
   const rBase = () => Math.max(52, 40 / (sw / sh));
-  const setView = (name: ViewName) => {
+  let tx = 0;
+  const setView = (name: ViewName, f?: { x?: number; zoom?: number }) => {
     const v = VIEWS[name], TP = Math.PI * 2;
-    tgt.th = v.th + TP * Math.round((cur.th - v.th) / TP); tgt.ph = v.ph; vs = v.s; zoomT = 1;
+    tgt.th = v.th + TP * Math.round((cur.th - v.th) / TP); tgt.ph = v.ph; vs = v.s * (f?.zoom ?? 1); zoomT = 1; tx = f?.x ?? 0;
   };
 
   const pts = new Map<number, { x: number; y: number }>(); let lastD = 0;
@@ -379,7 +383,7 @@ export function createEncoder(canvas: HTMLCanvasElement, opts: EncoderOptions = 
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     const k = reduce ? 1 : 1 - Math.exp(-dt * 7);
     cur.th += (tgt.th - cur.th) * k; cur.ph += (tgt.ph - cur.ph) * k;
-    cur.r += (rBase() * vs * zoomT - cur.r) * k;
+    cur.r += (rBase() * vs * zoomT - cur.r) * k; T.x += (tx - T.x) * k;
     const sp = Math.sin(cur.ph);
     camera.position.set(T.x + cur.r * sp * Math.sin(cur.th), T.y + cur.r * Math.cos(cur.ph), T.z + cur.r * sp * Math.cos(cur.th));
     camera.lookAt(T);

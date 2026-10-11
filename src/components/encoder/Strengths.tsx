@@ -72,7 +72,7 @@ export default function Strengths() {
     <ul className="grid gap-4 lg:grid-cols-3">
       {cards.map((c) => (
         <li key={c.title} className={`bento-cell flex flex-col p-7 ${c.span}`}>
-          <div className="h-40 w-full">{c.art}</div>
+          <div className="h-52 w-full">{c.art}</div>
           <h3 className="mt-6 text-xl font-semibold tracking-tight">{c.title}</h3>
           <p className="mt-2 max-w-[44ch] text-sm leading-relaxed text-muted">{c.text}</p>
         </li>

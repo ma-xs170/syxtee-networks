@@ -14,7 +14,7 @@ function Avatar({ s }: { s: HomeStreamer }) {
   );
 }
 
-type Card = { key: string; s: HomeStreamer; platform: "twitch" | "kick" | "youtube"; handle: string; url: string };
+type Card = { key: string; s: HomeStreamer; platform: "twitch" | "kick" | "youtube"; handle: string; url: string; dup?: boolean };
 const ICON = { twitch: siTwitch, kick: siKick, youtube: siYoutube };
 
 function Card({ c }: { c: Card }) {
@@ -24,6 +24,7 @@ function Card({ c }: { c: Card }) {
       href={c.url}
       target="_blank"
       rel="noopener noreferrer"
+      {...(c.dup ? { "aria-hidden": true, tabIndex: -1 } : {})}
       className="mr-3 flex w-64 shrink-0 items-center gap-4 rounded-xl border border-line bg-surface px-5 py-4 transition-colors hover:border-line-strong hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground sm:w-72"
     >
       <Avatar s={s} />
@@ -66,31 +67,27 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
   const ranked = [...streamers].sort((a, b) => Number(!!b.live) - Number(!!a.live) || Number(b.partner) - Number(a.partner));
   // Une carte par chaîne vérifiée de chaque streamer.
   const cards: Card[] = ranked.flatMap((s) => s.channels.filter((ch) => ch.platform === "twitch").map((ch) => ({ key: `${s.handle}-${ch.platform}`, s, platform: ch.platform, handle: ch.handle, url: ch.url })));
-  // Assez de chaînes pour remplir deux rangées : elles défilent (la boucle recopie la liste une fois, hors écran).
-  // Sinon : une rangée fixe, centrée, sans aucune carte répétée.
-  const scroll = cards.length >= 10;
-  const top = cards.filter((_, i) => i % 2 === 0);
-  const bottom = cards.filter((_, i) => i % 2 === 1);
+  if (cards.length === 0) return null;
+  // Toujours en défilement : la liste est répétée (copies masquées aux lecteurs d'écran) jusqu'à remplir la largeur de l'écran.
+  // Peu de chaînes : une seule rangée ; à partir de 8 chaînes : deux rangées en sens inverse.
+  const pad = (list: Card[]) => {
+    const out: Card[] = [];
+    while (list.length && out.length < 8) out.push(...list.map((c) => ({ ...c, dup: out.length > 0 })));
+    return out;
+  };
+  const two = cards.length >= 8;
+  const top = pad(two ? cards.filter((_, i) => i % 2 === 0) : cards);
+  const bottom = two ? pad(cards.filter((_, i) => i % 2 === 1)) : [];
 
   return (
     <section aria-labelledby="mur-titre" className="border-b border-line py-24 sm:py-32">
       <h2 id="mur-titre" className="h-section px-4 text-center">
         Ils streament avec SYXTEE.
       </h2>
-      {scroll ? (
-        <div className="mt-14 space-y-3">
-          <Row items={top} />
-          <Row items={bottom} reverse />
-        </div>
-      ) : (
-        <ul className="mx-auto mt-14 flex max-w-6xl flex-wrap justify-center gap-y-3 px-4">
-          {cards.map((c) => (
-            <li key={c.key}>
-              <Card c={c} />
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="mt-14 space-y-3">
+        <Row items={top} />
+        {two && <Row items={bottom} reverse />}
+      </div>
     </section>
   );
 }

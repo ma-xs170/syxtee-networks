@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import StreamerWall from "@/components/home/StreamerWall";
+import { getHomeStreamers } from "@/lib/streamers";
 import { WhySection } from "@/components/landing/WhySection";
 import { FaqSection, FinalCta, ObsBento, ObsHeroSection, PricingSection } from "@/components/landing/Sections";
 
@@ -10,12 +12,17 @@ export const metadata: Metadata = {
 };
 
 // Accueil statique : le contrôle à distance d'OBS Studio avec multistream et relais (hero), puis contrôle, multistream, relais, espaces partagés, tarifs. Aucun paiement : « Demander l'accès ».
-export default function Home() {
+// Le mur de chaînes se rafraîchit toutes les 5 minutes (nouvelles chaînes ajoutées dans l'admin, statut en direct).
+export const revalidate = 300;
+
+export default async function Home() {
+  const streamers = await getHomeStreamers();
   return (
     <>
       <ObsHeroSection />
       <ObsBento />
       <WhySection />
+      <StreamerWall streamers={streamers} />
       <PricingSection />
       <FaqSection />
       <FinalCta />

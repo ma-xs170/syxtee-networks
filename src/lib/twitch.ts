@@ -57,3 +57,15 @@ export async function getTwitchUser(id: string): Promise<TwitchUser | null> {
   const { data } = await helix<{ data: TwitchUser[] }>(`/users?id=${encodeURIComponent(id)}`, 0);
   return data[0] ?? null;
 }
+
+/** Profils Twitch par pseudo (par lots de 100, cache 1 h) : avatar, nom affiché, identifiant. */
+export async function getTwitchUsersByLogin(logins: string[]): Promise<Map<string, TwitchUser>> {
+  const out = new Map<string, TwitchUser>();
+  if (!hasTwitch || logins.length === 0) return out;
+  for (const batch of chunks(logins, 100)) {
+    const q = batch.map((l) => `login=${encodeURIComponent(l)}`).join("&");
+    const { data } = await helix<{ data: TwitchUser[] }>(`/users?${q}`, 3600);
+    for (const u of data) out.set(u.login.toLowerCase(), u);
+  }
+  return out;
+}

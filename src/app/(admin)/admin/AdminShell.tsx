@@ -42,6 +42,7 @@ function groups(support: SupportBadges, pending: number, quotes: number): Group[
         { icon: Users, label: "Comptes", href: "/admin/comptes", need: "accounts" },
         { icon: UsersThree, label: "Comptes gérés", href: "/admin/comptes-geres", need: "accounts" },
         { icon: UsersThree, label: "Partenaires", href: "/admin/partenaires", need: "partners" },
+        { icon: Radio, label: "Chaînes accueil", href: "/admin/chaines", need: "partners" },
         { icon: Key, label: "Codes Encodeur", href: "/admin/encodeurs", need: "accounts" },
       ],
     },

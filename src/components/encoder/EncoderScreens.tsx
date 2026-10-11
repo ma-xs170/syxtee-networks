@@ -172,7 +172,7 @@ function Camera({ d }: { d: EncoderDemo }) {
       <div className={`${card} p-[20px]`}>
         <div className="flex items-center justify-between"><p className="text-[15px] font-semibold">Caméra</p><Pill c={ok ? "var(--ok)" : "var(--bad)"}>{ok ? "Branchée" : "Aucun signal"}</Pill></div>
         <dl className="mt-[16px] grid grid-cols-2 gap-[14px] text-[13px]">
-          <div><dt className="text-white/50">Entrée</dt><dd className="mt-[3px] font-mono text-[16px]">{ok ? "USB-C" : "—"}</dd></div>
+          <div><dt className="text-white/50">Entrée</dt><dd className="mt-[3px] font-mono text-[16px]">{ok ? "HDMI" : "—"}</dd></div>
           <div><dt className="text-white/50">Signal détecté</dt><dd className="mt-[3px] font-mono text-[16px] tabular-nums">{ok ? cam.detected : "—"}</dd></div>
         </dl>
         <div className="mt-[18px]">

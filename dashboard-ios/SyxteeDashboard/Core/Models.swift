@@ -169,3 +169,44 @@ struct Stats: Decodable {
     let short: Int
     let daily: [Day]
 }
+
+
+struct ObsDevice: Decodable, Identifiable, Equatable {
+    let id: String, name: String, platform: String, host: String
+    let plugin_version: String
+    let online: Bool
+    let last_seen: String?
+}
+struct DevicesResponse: Decodable { let devices: [ObsDevice] }
+struct PairCode: Decodable { let code: String; let expires_in: Int }
+
+struct BackupItem: Decodable, Identifiable, Equatable {
+    let id: String, name: String, collection: String
+    let version: Int, size: Int
+    let media_count: Int
+    let obs_version: String, host: String, created_at: String
+}
+struct BackupsResponse: Decodable { let backups: [BackupItem]; let used: Int; let quota: Int }
+
+struct InviteItem: Decodable, Identifiable, Equatable {
+    let id: String, label: String, level: String
+    let email: String?
+    let expires_at: String?
+    let last_used_at: String?
+    let connected: Int
+    let expired: Bool
+}
+struct InvitesResponse: Decodable { let invites: [InviteItem]; let max: Int?; let plan: String }
+struct CreatedInvite: Decodable { let url: String?; let emailed: Bool?; let note: String? }
+
+struct ProfileData: Decodable, Equatable {
+    var email: String?
+    var first_name: String?, last_name: String?, username: String?
+    var bio: String?, country: String?
+    var twitch: String?, kick: String?, youtube: String?, tiktok: String?, instagram: String?, x: String?
+    var show_on_site: Bool
+    var show_first_name: Bool
+    var support_id: String?
+}
+
+func formatBytes(_ b: Int) -> String { ByteCountFormatter.string(fromByteCount: Int64(b), countStyle: .file) }

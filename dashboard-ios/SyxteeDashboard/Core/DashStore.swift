@@ -9,11 +9,12 @@ import Observation
     var me: Me?
     var servers: [RelayServer] = []
     let api: API
+    let core: API
     var range = "7d"
     var error: String?
     var loading = false
 
-    init(session: Session) { api = API(session: session) }
+    init(session: Session) { api = API(session: session); core = API(session: session, base: Config.coreURL) }
 
     func refreshAll() async {
         loading = true; defer { loading = false }

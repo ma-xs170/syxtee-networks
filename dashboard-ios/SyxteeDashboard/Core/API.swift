@@ -17,6 +17,7 @@ enum APIError: LocalizedError {
 /// Appels à l'API du site (/api/...), authentifiés par le jeton Supabase de la session.
 @MainActor struct API {
     let session: Session
+    var base: URL = Config.siteURL
 
     func get<T: Decodable>(_ path: String, query: [String: String] = [:]) async throws -> T {
         try await request(path, query: query, retry: true)
@@ -36,7 +37,7 @@ enum APIError: LocalizedError {
 
     private func request<T: Decodable>(_ path: String, query: [String: String], retry: Bool, method: String = "GET", body: [String: Any]? = nil) async throws -> T {
         guard let token = session.accessToken else { throw APIError.unauthorized }
-        var comps = URLComponents(url: Config.siteURL.appending(path: path), resolvingAgainstBaseURL: false)!
+        var comps = URLComponents(url: base.appending(path: path), resolvingAgainstBaseURL: false)!
         if !query.isEmpty { comps.queryItems = query.map { URLQueryItem(name: $0.key, value: $0.value) } }
         var r = URLRequest(url: comps.url!)
         r.timeoutInterval = 25

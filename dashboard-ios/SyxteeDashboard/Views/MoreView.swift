@@ -7,8 +7,8 @@ struct MoreView: View {
 
     /// Pages du site pas encore reprises dans l'app (ouvertes dans Safari).
     private let links: [(String, String, String)] = [
-        ("Multichat", "bubble.left.and.bubble.right", "dashboard/multichat"), ("Paramètres", "gearshape", "dashboard/parametres"),
-        ("Scènes sauvegardées", "square.stack.3d.up", "dashboard/backups"), ("Invitations", "person.badge.plus", "dashboard/invitations"),
+        ("Multichat", "bubble.left.and.bubble.right", "dashboard/multichat"), ("Paramètres (intégrations, équipe, usage)", "gearshape", "dashboard/parametres"),
+        ("SYXTEE Cam", "camera", "dashboard/cam"), ("Encodeurs", "cpu", "dashboard/encodeurs"),
     ]
 
     private func native<D: View>(_ title: String, _ icon: String, @ViewBuilder _ destination: @escaping () -> D) -> some View {
@@ -38,6 +38,14 @@ struct MoreView: View {
                     }
                     SectionLabel(text: "Dans l'app")
                     VStack(spacing: 0) {
+                        native("Profil", "person.text.rectangle") { ProfileView(store: store) }
+                        Divider().overlay(Brand.line)
+                        native("Postes OBS (plugin)", "desktopcomputer") { DevicesView(store: store) }
+                        Divider().overlay(Brand.line)
+                        native("Invitations", "person.badge.plus") { InvitesView(store: store) }
+                        Divider().overlay(Brand.line)
+                        native("Scènes sauvegardées", "square.stack.3d.up") { BackupsView(store: store) }
+                        Divider().overlay(Brand.line)
                         native("Statistiques", "chart.xyaxis.line") { StatsView(store: store) }
                         Divider().overlay(Brand.line)
                         native("Assistance", "lifepreserver") { SupportView(store: store) }

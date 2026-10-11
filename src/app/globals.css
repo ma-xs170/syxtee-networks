@@ -1154,3 +1154,21 @@ select,
   &::-webkit-scrollbar { display: none; }
 }
 
+/* Curseur du site (SiteCursor) : un point qui suit la souris, uniquement sur les pages du site et avec une vraie souris. Le curseur du système reste
+   sur les champs de saisie. La classe `has-site-cursor` n'est ajoutée que par le composant (jamais en tactile, jamais sur le dashboard). */
+html.has-site-cursor, html.has-site-cursor *:not(input, textarea, select, [contenteditable="true"]) { cursor: none !important; }
+.site-cursor {
+  position: fixed; left: 0; top: 0; z-index: 100; pointer-events: none;
+  width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 9999px;
+  background: var(--foreground);
+  border: 2px solid var(--background);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--foreground) 40%, transparent);
+  opacity: 0; will-change: transform;
+  transition: width 0.18s cubic-bezier(0.16, 1, 0.3, 1), height 0.18s cubic-bezier(0.16, 1, 0.3, 1), margin 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s, opacity 0.2s;
+}
+.site-cursor[data-on="true"] { opacity: 1; }
+.site-cursor[data-state="link"] { width: 40px; height: 40px; margin: -20px 0 0 -20px; background: color-mix(in srgb, var(--foreground) 14%, transparent); }
+.site-cursor[data-state="down"] { width: 10px; height: 10px; margin: -5px 0 0 -5px; }
+.site-cursor[data-state="link"][data-down="true"] { width: 30px; height: 30px; margin: -15px 0 0 -15px; }
+@media (prefers-reduced-motion: reduce) { .site-cursor { transition: none; } }
+

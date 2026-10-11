@@ -1,11 +1,13 @@
 import Footer from "@/components/Footer";
 import MobileCta from "@/components/MobileCta";
+import SiteCursor from "@/components/SiteCursor";
 import Nav from "@/components/Nav";
 
 // Pages du site : nav + footer. Les pages de connexion (groupe (auth)) ont leur propre layout, sans nav ni footer.
 export default function SiteLayout({ children }: LayoutProps<"/">) {
   return (
     <>
+      <SiteCursor />
       <Nav />
       <main className="flex-1">{children}</main>
       <Footer />

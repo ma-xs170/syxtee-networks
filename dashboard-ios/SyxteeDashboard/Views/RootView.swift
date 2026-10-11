@@ -47,8 +47,9 @@ struct DashboardTabs: View {
         TabView {
             HomeView(store: store).tabItem { Label("Accueil", systemImage: "house") }
             RelaysView(store: store).tabItem { Label("Serveurs", systemImage: "server.rack") }
+            RemoteView().tabItem { Label("Contrôle", systemImage: "slider.horizontal.3") }
             LivesView(store: store).tabItem { Label("Directs", systemImage: "dot.radiowaves.left.and.right") }
-            MoreView(store: store).tabItem { Label("Compte", systemImage: "person.crop.circle") }
+            MoreView(store: store).tabItem { Label("Plus", systemImage: "ellipsis.circle") }
         }
         .task { await store.refreshAll() }
     }

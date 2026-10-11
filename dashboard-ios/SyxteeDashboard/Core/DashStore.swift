@@ -7,11 +7,12 @@ import Observation
     var relays: RelaysResponse?
     var lives: [LiveSession] = []
     var me: Me?
+    var servers: [RelayServer] = []
+    let api: API
     var range = "7d"
     var error: String?
     var loading = false
 
-    private let api: API
     init(session: Session) { api = API(session: session) }
 
     func refreshAll() async {
@@ -20,12 +21,14 @@ import Observation
         async let r: Void = loadRelays()
         async let l: Void = loadLives()
         async let m: Void = loadMe()
-        _ = await (o, r, l, m)
+        async let sv: Void = loadServers()
+        _ = await (o, r, l, m, sv)
     }
 
     func loadOverview() async { await run { self.overview = try await self.api.get("api/dashboard/overview", query: ["range": self.range]) } }
     func loadRelays() async { await run { self.relays = try await self.api.get("api/app/relays") } }
     func loadLives() async { await run { self.lives = (try await self.api.get("api/app/lives", query: ["limit": "50"]) as LivesResponse).lives } }
+    func loadServers() async { await run { self.servers = (try await self.api.get("api/app/servers") as ServersResponse).servers } }
     func loadMe() async { await run { self.me = try await self.api.get("api/app/me") } }
 
     private func run(_ work: @escaping () async throws -> Void) async {

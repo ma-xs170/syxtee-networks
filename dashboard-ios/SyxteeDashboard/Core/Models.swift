@@ -81,6 +81,10 @@ struct RelayItem: Decodable, Identifiable, Equatable {
     let live: Bool
     let mode: String
     let record: Bool
+    let recordFormat: String?
+    let recordAvailable: Bool?
+    let regieAvailable: Bool?
+    let switchTrigger: String?
     let urls: Urls
     let obsSrtUrl: String
     let lastLiveAt: String?
@@ -88,6 +92,7 @@ struct RelayItem: Decodable, Identifiable, Equatable {
     enum CodingKeys: String, CodingKey {
         case id, name, server, archived, live, mode, record, urls
         case protocol_ = "protocol", obsSrtUrl = "obs_srt_url", lastLiveAt = "last_live_at"
+        case recordFormat = "record_format", recordAvailable = "record_available", regieAvailable = "regie_available", switchTrigger = "switch_trigger"
     }
 }
 
@@ -103,4 +108,64 @@ struct Me: Decodable, Equatable {
     let plan: PlanInfo
     let plan_until: String?
     let billing_status: String?
+}
+
+
+struct RelayServer: Decodable, Identifiable, Equatable {
+    let id: String, city: String, country: String, cc: String
+    let available: Bool
+    let maintenance: Bool?
+    var flag: String { String(String.UnicodeScalarView(cc.uppercased().unicodeScalars.compactMap { UnicodeScalar(0x1F1A5 + $0.value) })) }
+    var title: String { "\(flag) \(city), \(country)" }
+}
+struct ServersResponse: Decodable { let servers: [RelayServer] }
+
+// Support
+struct SupportTicket: Decodable, Identifiable, Equatable {
+    let id: String, subject: String, status: String
+    let updated_at: String
+    let last_from: String
+    let category_label: String
+}
+struct SupportList: Decodable { let tickets: [SupportTicket]; let counts: Counts; let support_id: String?
+    struct Counts: Decodable, Equatable { let open: Int; let resolved: Int } }
+struct SupportMessage: Decodable, Identifiable, Equatable {
+    let id: String, body: String, created_at: String, from_staff: Bool
+    let kind: String?
+    let signature: String?
+}
+struct SupportThread: Decodable { let ticket: SupportTicket; let messages: [SupportMessage] }
+struct SupportField: Decodable, Identifiable, Equatable { let name: String, label: String, type: String; let options: [String]?; let placeholder: String?; let required: Bool?; var id: String { name } }
+struct SupportCategory: Decodable, Identifiable, Equatable {
+    struct Form: Decodable, Equatable { let title: String, intro: String, subjectPlaceholder: String, messageLabel: String, messagePlaceholder: String; let fields: [SupportField] }
+    let id: String, label: String, hint: String
+    let form: Form
+}
+struct SupportCategories: Decodable { let categories: [SupportCategory] }
+struct CreatedTicket: Decodable { let id: String? }
+
+// Abonnement
+struct Billing: Decodable {
+    struct Current: Decodable { let name: String, id: String; let until: String?; let relays: Int, streams: Int }
+    struct State: Decodable { let status: String?; let interval: String?; let renews: Bool; let cancel_at_period_end: Bool; let period_end: String?; let has_customer: Bool }
+    struct Price: Decodable { let amount: String, cents: Int }
+    struct Tier: Decodable, Identifiable { let id: String, name: String, pitch: String; let points: [String]; let prices: [String: Price]; let featured: Bool? }
+    let current: Current
+    let billing: State
+    let can_subscribe: Bool
+    let tiers: [Tier]
+}
+struct UrlResponse: Decodable { let url: String? }
+
+// Statistiques
+struct Stats: Decodable {
+    struct Day: Decodable, Identifiable { let day: String; let minutes: Double; var id: String { day } }
+    let days: Int
+    let any: Bool
+    let kpis: Kpis
+    let previous: Kpis
+    let longest: LiveSession?
+    let reconnects: Int
+    let short: Int
+    let daily: [Day]
 }

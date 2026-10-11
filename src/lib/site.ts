@@ -5,6 +5,7 @@ export const site = {
   description:
     "Pilote ton OBS à distance, diffuse partout en un clic et garde un flux stable, où que tu sois. Pensé pour les créateurs exigeants.",
   discord: "https://discord.gg/CD68F8yZuZ",
+  instagram: "https://www.instagram.com/syxtee.networks/",
   year: new Date().getFullYear(),
 };
 

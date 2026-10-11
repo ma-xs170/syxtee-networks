@@ -548,6 +548,13 @@ export function buildServer(d: Deps) {
       return camView(k, reply);
     });
 
+    // App iOS SYXTEE CAM : le compte se connecte (jeton de session Supabase) et reçoit sa clé caméra.
+    app.get("/v1/me/cam", async (req, reply) => {
+      const id = await userId(req, reply);
+      if (!id) return;
+      return camView(await cam.ensure(id), reply);
+    });
+
     // App /cam : authentifiée par la clé caméra (Authorization: Bearer cam_…).
     const camRow = async (req: FastifyRequest, reply: FastifyReply) => {
       const h = req.headers.authorization ?? "";

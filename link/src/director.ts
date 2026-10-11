@@ -359,7 +359,17 @@ export class AiDirector {
       `À l'antenne : ${onAir >= 0 ? `image ${onAir + 1}` : "plan large"}.\n` +
       `Consignes du streamer : ${this.cfg.rules}\n` +
       `Réponds uniquement par un objet JSON : {"image": <numéro de l'image à mettre à l'antenne>, "raison": "<5 mots>"}. Choisis parmi : ${alive.map((_, n) => n + 1).join(", ")}.`;
-    const text = await this.ask(prompt, alive.map((a) => a.img));
+    let text: string;
+    try {
+      text = await this.ask(prompt, alive.map((a) => a.img));
+    } catch (e) {
+      // IA en panne (clé, quota, réseau) alors que la caméra à l'antenne est tombée : une caméra vivante vaut mieux qu'une image figée.
+      if (curDead) {
+        this.log(`régie IA : ${(e as Error).message}, repli sur une caméra vivante`);
+        return alive[0].idx;
+      }
+      throw e;
+    }
     const m = /"(?:image|camera)"\s*:\s*(\d+)/.exec(text);
     const picked = m ? alive[Number(m[1]) - 1]?.idx : undefined;
     if (picked === undefined) {

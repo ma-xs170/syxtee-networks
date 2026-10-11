@@ -352,6 +352,36 @@ test("mistralAsk : images en data URI, clé en Bearer, texte lu, erreurs lisible
   await assert.rejects(mistralAsk("k", "m", bad)("q", []), /API 400 : Unknown model/);
 });
 
+test("régie IA : IA en panne + caméra à l'antenne tombée = repli sur une vivante, avec 5 caméras", async () => {
+  const cams = [1, 2, 3, 4, 5].map((n) => ({ source: `C${n}`, scene: `Scène ${n}`, label: `cam ${n}` }));
+  const live = new Set(cams.map((c) => c.source));
+  let scene = "Scène 1";
+  let fail = false;
+  let n = 0;
+  const req = async (t: string, d?: Record<string, unknown>) => {
+    if (t === "GetSourceScreenshot") {
+      if (!live.has(String(d?.sourceName))) throw new Error("source absente");
+      return { imageData: beau(++n) };
+    }
+    if (t === "GetCurrentProgramScene") return { currentProgramSceneName: scene };
+    if (t === "SetCurrentProgramScene") scene = String(d?.sceneName);
+    return {};
+  };
+  const d = new AiDirector(req, async () => {
+    if (fail) throw new Error("API 500");
+    return '{"image": 1}';
+  });
+  d.setLive("Live");
+  d.set(cfg({ cams }));
+  await d.tick(2000);
+  assert.equal(scene, "Scène 1");
+  fail = true;
+  live.delete("C1");
+  await d.tick(4000);
+  assert.notEqual(scene, "Scène 1");
+  assert.equal(d.state, "cam");
+});
+
 test("cleanDirector : fournisseur Mistral par défaut, valeur inconnue ignorée", () => {
   assert.equal(cleanDirector(undefined).provider, "none");
   assert.equal(cleanDirector({ provider: "anthropic" }).provider, "anthropic");

@@ -26,16 +26,16 @@ function Rear() {
 /** Façade : la barre lumineuse dans ses trois états. */
 function Led() {
   const states = [
-    { y: 36, l: "Veille", o: 0.35 },
-    { y: 80, l: "Prêt", o: 0.7 },
-    { y: 124, l: "En direct", o: 1, live: true },
+    { y: 36, l: "Veille", c: "var(--warn)" },
+    { y: 80, l: "Prêt", c: "var(--ok)" },
+    { y: 124, l: "En direct", c: "var(--live)", live: true },
   ];
   return (
     <Illustration viewBox="0 0 460 160">
       {states.map((s) => (
         <g key={s.l}>
           <path d={`M60 ${s.y - 12} H170 L180 ${s.y - 2} V${s.y + 8} Q180 ${s.y + 14} 174 ${s.y + 14} H56 Q50 ${s.y + 14} 50 ${s.y + 8} V${s.y - 2} Z`} fill="currentColor" fillOpacity={0.06} />
-          <path d={`M92 ${s.y + 2} H138`} strokeWidth={3} strokeOpacity={s.o} className={s.live ? "led-blink" : ""} stroke={s.live ? "var(--live)" : "currentColor"} />
+          <path d={`M92 ${s.y + 2} H138`} strokeWidth={3} className={s.live ? "led-blink" : ""} stroke={s.c} />
           <text x={210} y={s.y + 5} fill="currentColor" stroke="none" fontSize={12} className="font-mono" opacity={0.65}>{s.l}</text>
         </g>
       ))}

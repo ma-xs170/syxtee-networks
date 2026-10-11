@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import EncoderApp from "@/components/encoder/EncoderApp";
+import { ButtonLink } from "@/components/ui/Button";
 import { DashPage } from "@/components/dashboard/ui";
 import { requireUser } from "@/lib/auth/dal";
 import { getPlan } from "@/lib/auth/plan";
@@ -12,7 +13,10 @@ export default async function EncodeursPage() {
   const [, plan] = await Promise.all([requireUser("/dashboard/encodeurs"), getPlan()]);
   return (
     <DashPage>
-      <h1 className="h-page mb-8">Enco<em>deurs</em></h1>
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <h1 className="h-page">Enco<em>deurs</em></h1>
+        <ButtonLink href="/encodeur" variant="secondary">Voir les encodeurs disponibles</ButtonLink>
+      </div>
       <div className="grid gap-6">
         <EncoderApp locked={plan.id === "free"} />
       </div>

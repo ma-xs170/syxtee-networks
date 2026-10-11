@@ -68,16 +68,16 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
   // Une carte par chaîne vérifiée de chaque streamer.
   const cards: Card[] = ranked.flatMap((s) => s.channels.filter((ch) => ch.platform === "twitch").map((ch) => ({ key: `${s.handle}-${ch.platform}`, s, platform: ch.platform, handle: ch.handle, url: ch.url })));
   if (cards.length === 0) return null;
-  // Toujours en défilement : la liste est répétée (copies masquées aux lecteurs d'écran) jusqu'à remplir la largeur de l'écran.
-  // Peu de chaînes : une seule rangée ; à partir de 8 chaînes : deux rangées en sens inverse.
-  const pad = (list: Card[]) => {
+  // Toujours deux rangées en défilement, la première vers la gauche, la seconde vers la droite. La liste est répétée (copies masquées
+  // aux lecteurs d'écran) jusqu'à remplir la largeur. Peu de chaînes : la seconde rangée reprend les mêmes, décalées d'un cran.
+  const pad = (list: Card[], allDup = false) => {
     const out: Card[] = [];
-    while (list.length && out.length < 8) out.push(...list.map((c) => ({ ...c, dup: out.length > 0 })));
+    while (list.length && out.length < 8) out.push(...list.map((c) => ({ ...c, dup: allDup || out.length > 0 })));
     return out;
   };
-  const two = cards.length >= 8;
-  const top = pad(two ? cards.filter((_, i) => i % 2 === 0) : cards);
-  const bottom = two ? pad(cards.filter((_, i) => i % 2 === 1)) : [];
+  const many = cards.length >= 8;
+  const top = pad(many ? cards.filter((_, i) => i % 2 === 0) : cards);
+  const bottom = many ? pad(cards.filter((_, i) => i % 2 === 1)) : pad([...cards.slice(1), ...cards.slice(0, 1)], true);
 
   return (
     <section aria-labelledby="mur-titre" className="border-b border-line py-24 sm:py-32">
@@ -86,7 +86,7 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
       </h2>
       <div className="mt-14 space-y-3">
         <Row items={top} />
-        {two && <Row items={bottom} reverse />}
+        <Row items={bottom} reverse />
       </div>
     </section>
   );

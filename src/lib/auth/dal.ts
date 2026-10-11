@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { managedOf } from "@/lib/managed";
 import { hasSupabase } from "@/lib/supabase/env";
-import { createClient } from "@/lib/supabase/server";
+import { bearerToken, createClient } from "@/lib/supabase/server";
 
 export type Profile = {
   id: string;
@@ -50,7 +50,9 @@ export const getUser = cache(async () => {
   await connection();
   if (!hasSupabase) return null;
   const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
+  // App native : le jeton est vérifié auprès de Supabase (jamais décodé à la main).
+  const token = await bearerToken();
+  const { data } = token ? await supabase.auth.getUser(token) : await supabase.auth.getUser();
   return data.user;
 });
 

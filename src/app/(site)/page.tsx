@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import EncoderNotice from "@/components/landing/EncoderNotice";
 import { WhySection } from "@/components/landing/WhySection";
 import { FaqSection, FinalCta, ObsBento, ObsHeroSection, PricingSection } from "@/components/landing/Sections";
 
@@ -16,6 +17,7 @@ export default function Home() {
       <ObsHeroSection />
       <ObsBento />
       <WhySection />
+      <EncoderNotice />
       <PricingSection />
       <FaqSection />
       <FinalCta />

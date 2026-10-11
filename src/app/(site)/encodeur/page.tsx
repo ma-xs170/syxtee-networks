@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import CloserLook from "@/components/encoder/CloserLook";
 import EncoderViewer from "@/components/encoder/EncoderViewer";
+import MadeToOrder from "@/components/encoder/MadeToOrder";
 import Scenes from "@/components/encoder/Scenes";
 import Strengths from "@/components/encoder/Strengths";
 import Glow from "@/components/landing/Glow";
@@ -42,6 +43,11 @@ export default function EncodeurPage() {
             </div>
           </div>
         </Container>
+      </section>
+
+      {/* Fabrication */}
+      <section id="fabrication" className="scroll-mt-20 pb-8 pt-16 sm:pt-20">
+        <Container className="max-w-4xl"><MadeToOrder /></Container>
       </section>
 
       {/* Points forts */}

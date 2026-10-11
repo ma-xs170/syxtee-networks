@@ -127,6 +127,7 @@ export default function TarifsPage() {
                 <span className="text-sm text-muted">tous les 3 mois</span>
               </p>
               <p className="mt-1 text-sm text-muted">soit {product.priceLabel(product.subscription.perMonth)} par mois</p>
+              <Link href="/boutique#encodeur" className="btn btn-primary mt-5 whitespace-nowrap">Accéder à l&apos;achat</Link>
             </div>
           </div>
         </Container>

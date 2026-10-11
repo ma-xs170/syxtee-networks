@@ -14,6 +14,12 @@ export const product = {
   availability: "soon" as Availability,
   /** Prix en euros TTC, achat du boîtier. `null` : pas encore annoncé, le site affiche « Pas cher ». */
   price: 699 as number | null,
+  /** Fabrication : artisanale, sur commande, en petite série. */
+  madeToOrder: {
+    title: "Tarif bas, quantités limitées.",
+    text: "Chaque Encodeur est fabriqué sur commande, de façon artisanale : nous commandons les composants, puis nous assemblons le boîtier avec soin. C'est un appareil d'une très grande complexité, réalisé avec rigueur.",
+    delay: "Délai de fabrication : 4 mois maximum.",
+  },
   /** Formule avec abonnement : 60 € tous les 3 mois, soit 20 € par mois. */
   subscription: { perQuarter: 60, perMonth: 20 },
   priceLabel: (p: number | null) => (p === null ? "Pas cher" : `${p.toLocaleString("fr-FR", { minimumFractionDigits: p % 1 ? 2 : 0, maximumFractionDigits: 2 })} €`),

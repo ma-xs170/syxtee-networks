@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import BuyButton from "@/components/BuyButton";
 import Glow from "@/components/landing/Glow";
+import MadeToOrder from "@/components/encoder/MadeToOrder";
 import EncoderViewer from "@/components/encoder/EncoderViewer";
 import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button";
@@ -52,6 +53,7 @@ export default async function BoutiquePage({ searchParams }: { searchParams: Pro
             <p className="mt-6 flex items-baseline gap-3 font-mono text-4xl tabular-nums">{product.priceLabel(product.price)}<span className="text-xs uppercase tracking-[0.08em] text-muted">À venir</span></p>
             <Link href="/tarifs#encodeur" className="mt-2 inline-block text-sm text-foreground underline underline-offset-4 decoration-foreground/50 hover:decoration-foreground">Abonnement (requis)</Link>
             <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">Livraison : {product.shipping.map((c) => <span key={c.cc}><span aria-hidden="true">{c.flag}</span> {c.name}</span>)}</p>
+            <MadeToOrder compact className="mt-4" />
             <p className="mt-3 rounded-xl border border-line bg-surface px-4 py-3 text-sm leading-relaxed"><span className="font-medium">{product.bonusMonths} mois de l&apos;abonnement le plus élevé offerts</span> à l&apos;activation, avec un code lié à ton compte (utilisable une seule fois).</p>
             <div className="mt-6 grid gap-2 sm:max-w-sm">
               {canBuyEncoder && product.availability !== "soon" ? <BuyButton productId="encoder">{product.availability === "preorder" ? "Précommander" : "Acheter"}</BuyButton> : <ButtonLink href="/acces" className="w-full">Être prévenu de la sortie</ButtonLink>}

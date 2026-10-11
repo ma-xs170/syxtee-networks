@@ -17,12 +17,12 @@ const refresh = () => {
 export async function addChannelAction(_prev: ChannelState, form: FormData): Promise<ChannelState> {
   const admin = await requireAdmin("partners");
   const parsed = parseChannelLink(String(form.get("link") ?? ""));
-  if (!parsed) return { error: "Lien non reconnu. Colle un lien twitch.tv/…, kick.com/… ou youtube.com/@…" };
+  if (!parsed) return { error: "Lien non reconnu. Colle un lien de chaîne Twitch (twitch.tv/…)." };
   const { error } = await createAdminClient().from("featured_channels").insert({ platform: parsed.platform, login: parsed.login, approved: true, added_by: admin.email });
   if (error) return { error: error.code === "23505" ? "Cette chaîne est déjà dans la liste." : `Ajout impossible (${error.message}). Migration 0052 appliquée ?` };
   await audit(admin.email!, "channel.add", null, null, parsed);
   refresh();
-  return { ok: `${parsed.platform} · ${parsed.login} ajoutée à l'accueil.` };
+  return { ok: `Twitch · ${parsed.login} ajoutée à l'accueil.` };
 }
 
 export async function toggleChannelAction(form: FormData) {

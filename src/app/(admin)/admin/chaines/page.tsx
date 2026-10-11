@@ -9,7 +9,6 @@ export const metadata: Metadata = { title: "Admin · Chaînes", robots: { index:
 
 // Admin : chaînes affichées sur l'accueil (« Ils streament avec SYXTEE. »). Un lien ajouté ici est approuvé et visible aussitôt (accueil rafraîchi sous 5 min).
 type Row = { id: string; platform: "twitch" | "kick" | "youtube"; login: string; approved: boolean; added_by: string | null; created_at: string };
-const LABEL = { twitch: "Twitch", kick: "Kick", youtube: "YouTube" } as const;
 const btn = "inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg border border-line-strong px-3 text-sm transition-colors hover:bg-foreground/10";
 
 export default async function AdminChainesPage() {
@@ -22,7 +21,7 @@ export default async function AdminChainesPage() {
       <Tile className="mb-6">
         <TileLabel>Ajouter une chaîne</TileLabel>
         <div className="mt-4"><AddChannel /></div>
-        <p className="mt-3 text-xs text-muted">Twitch, Kick ou YouTube. La chaîne est approuvée tout de suite ; tu peux la masquer ou la retirer ci-dessous.</p>
+        <p className="mt-3 text-xs text-muted">Chaînes Twitch uniquement. La chaîne est approuvée tout de suite ; tu peux la masquer ou la retirer ci-dessous.</p>
       </Tile>
       <Tile>
         <TileLabel>{`${rows.length} chaîne${rows.length > 1 ? "s" : ""}`}</TileLabel>
@@ -33,7 +32,7 @@ export default async function AdminChainesPage() {
             {rows.map((r) => (
               <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <div className="min-w-0">
-                  <p className="font-mono text-sm">{LABEL[r.platform]} · @{r.login}</p>
+                  <p className="font-mono text-sm">Twitch · @{r.login}</p>
                   <p className="text-xs text-muted">{r.approved ? "Visible sur l'accueil" : "Masquée"}{r.added_by ? ` · ajoutée par ${r.added_by}` : ""}</p>
                 </div>
                 <div className="flex gap-2">

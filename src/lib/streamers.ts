@@ -20,8 +20,8 @@ export type HomeStreamer = {
 
 type Row = { username: string; first_name?: string | null; partner?: boolean | null; avatar_url: string | null; twitch_id: string | null; twitch_login: string; twitch_display_name: string | null; kick_name?: string | null; youtube_name?: string | null; youtube_id?: string | null; youtube_handle?: string | null };
 
-/** Lien de chaîne collé par l'équipe (twitch.tv/x, kick.com/x, youtube.com/@x ou /channel/…) vers plateforme et pseudo. */
-export function parseChannelLink(input: string): { platform: Channel["platform"]; login: string } | null {
+/** Lien de chaîne Twitch collé par l'équipe (twitch.tv/x, @x ou x) vers le pseudo. Les autres plateformes ne sont pas affichées. */
+export function parseChannelLink(input: string): { platform: "twitch"; login: string } | null {
   const v = input.trim();
   if (!v) return null;
   const bare = /^@?([A-Za-z0-9_]{2,40})$/.exec(v);
@@ -30,21 +30,14 @@ export function parseChannelLink(input: string): { platform: Channel["platform"]
   try { u = new URL(/^https?:\/\//i.test(v) ? v : `https://${v}`); } catch { return null; }
   const host = u.hostname.replace(/^(www|m)\./, "").toLowerCase();
   const seg = u.pathname.split("/").filter(Boolean);
-  if (host === "twitch.tv" && seg[0] && /^[A-Za-z0-9_]{2,40}$/.test(seg[0])) return { platform: "twitch", login: seg[0].toLowerCase() };
-  if (host === "kick.com" && seg[0] && /^[A-Za-z0-9_-]{2,40}$/.test(seg[0])) return { platform: "kick", login: seg[0].toLowerCase() };
-  if (host === "youtube.com") {
-    if (seg[0]?.startsWith("@")) return { platform: "youtube", login: seg[0].slice(1) };
-    if (seg[0] === "channel" && seg[1]) return { platform: "youtube", login: seg[1] };
-  }
-  return null;
+  return host === "twitch.tv" && seg[0] && /^[A-Za-z0-9_]{2,40}$/.test(seg[0]) ? { platform: "twitch", login: seg[0].toLowerCase() } : null;
 }
 
-const channelUrl = (platform: Channel["platform"], login: string) =>
-  platform === "twitch" ? `https://twitch.tv/${login}` : platform === "kick" ? `https://kick.com/${login.replace(/_/g, "-")}` : login.startsWith("UC") && login.length > 20 ? `https://www.youtube.com/channel/${login}` : `https://www.youtube.com/@${login}`;
+const channelUrl = (login: string) => `https://twitch.tv/${login}`;
 
 /** Chaînes ajoutées à la main (approuvées), avec avatar et statut live pour Twitch. */
 async function getFeatured(supabase: SupabaseClient): Promise<HomeStreamer[]> {
-  const { data } = await supabase.from("featured_channels").select("platform, login").order("created_at", { ascending: true }).limit(100);
+  const { data } = await supabase.from("featured_channels").select("platform, login").eq("platform", "twitch").order("created_at", { ascending: true }).limit(100);
   const rows = (data ?? []) as { platform: Channel["platform"]; login: string }[];
   if (rows.length === 0) return [];
   let users = new Map<string, Awaited<ReturnType<typeof getTwitchUsersByLogin>> extends Map<string, infer U> ? U : never>();
@@ -58,7 +51,7 @@ async function getFeatured(supabase: SupabaseClient): Promise<HomeStreamer[]> {
   return rows.map((r) => {
     const u = r.platform === "twitch" ? users.get(r.login.toLowerCase()) : undefined;
     const handle = u?.display_name || r.login;
-    return { handle, firstName: null, partner: false, url: channelUrl(r.platform, r.login), avatar: u?.profile_image_url ?? null, live: u && live.get(u.id) ? { viewers: live.get(u.id)!.viewers } : null, channels: [{ platform: r.platform, handle, url: channelUrl(r.platform, r.login) }] };
+    return { handle, firstName: null, partner: false, url: channelUrl(r.login), avatar: u?.profile_image_url ?? null, live: u && live.get(u.id) ? { viewers: live.get(u.id)!.viewers } : null, channels: [{ platform: "twitch" as const, handle, url: channelUrl(r.login) }] };
   });
 }
 
@@ -87,16 +80,7 @@ export async function getHomeStreamers(): Promise<HomeStreamer[]> {
       url: `https://twitch.tv/${r.twitch_login}`,
       avatar: r.avatar_url,
       live: r.twitch_id && live.get(r.twitch_id) ? { viewers: live.get(r.twitch_id)!.viewers } : null,
-      channels: [
-        { platform: "twitch" as const, handle: r.twitch_display_name || r.twitch_login, url: `https://twitch.tv/${r.twitch_login}` },
-        ...(r.kick_name ? [{ platform: "kick" as const, handle: r.kick_name, url: `https://kick.com/${r.kick_name.replace(/_/g, "-").toLowerCase()}` }] : []),
-        // YouTube : chaîne vérifiée (compte relié) si elle existe, sinon le pseudo saisi à l'inscription.
-        ...(r.youtube_name && r.youtube_id
-          ? [{ platform: "youtube" as const, handle: r.youtube_name, url: `https://www.youtube.com/channel/${r.youtube_id}` }]
-          : r.youtube_handle
-            ? [{ platform: "youtube" as const, handle: r.youtube_handle, url: `https://www.youtube.com/@${r.youtube_handle}` }]
-            : []),
-      ],
+      channels: [{ platform: "twitch" as const, handle: r.twitch_display_name || r.twitch_login, url: `https://twitch.tv/${r.twitch_login}` }],
     }));
   // Une chaîne déjà présente via un compte n'est pas répétée.
   const taken = new Set(accounts.flatMap((a) => a.channels.map((c) => `${c.platform}:${c.url.toLowerCase()}`)));

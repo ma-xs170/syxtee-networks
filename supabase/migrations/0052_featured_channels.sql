@@ -3,7 +3,7 @@
 create table public.featured_channels (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
-  platform text not null check (platform in ('twitch', 'kick', 'youtube')),
+  platform text not null check (platform = 'twitch'),
   login text not null check (char_length(login) between 1 and 80),
   approved boolean not null default true,
   added_by text

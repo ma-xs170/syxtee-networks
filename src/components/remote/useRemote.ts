@@ -7,11 +7,14 @@ import { activeWorkspace, coreToken } from "../dashboard/coreClient";
 // sur le PC et répond. La vidéo du direct ne passe jamais par le serveur : OBS diffuse depuis le PC, ce navigateur ne fait que commander.
 
 export type Agent = { online: boolean; id?: string; name?: string; platform?: string; version?: string; since?: number };
+/** Gardien SYXTEE du poste (processus séparé d'OBS). `status` : état envoyé par lui (OBS ouvert, surveillance, reprise, Mac éveillé…). */
+export type Guardian = { online: boolean; id?: string; version?: string; since?: number; status?: Record<string, string | number | boolean> };
 export type LinkState = "connecting" | "on" | "off" | "denied";
 export type LinkEvent = (name: string, data: Record<string, unknown>) => void;
 
 const ERR: Record<string, string> = {
   agent_offline: "OBS n'est pas connecté à SYXTEE.",
+  guardian_offline: "Le Gardien SYXTEE n'est pas en ligne sur ce Mac.",
   timeout: "OBS met trop de temps à répondre.",
   rate_limited: "Trop de commandes d'un coup.",
   method_not_allowed: "Commande refusée.",
@@ -27,6 +30,7 @@ export function useRemote(coreUrl: string, onEvent: LinkEvent, device?: string, 
   const [guest, setGuest] = useState<Guest | null>(null);
   const [link, setLink] = useState<LinkState>("connecting");
   const [agent, setAgent] = useState<Agent>({ online: false });
+  const [guardian, setGuardian] = useState<Guardian>({ online: false });
   const [latency, setLatency] = useState<number | null>(null);
   const ws = useRef<WebSocket | null>(null);
   const waiting = useRef(new Map<string, { ok: (v: unknown) => void; ko: (e: Error) => void }>());
@@ -58,8 +62,10 @@ export function useRemote(coreUrl: string, onEvent: LinkEvent, device?: string, 
         if (m.type === "ready") {
           setLink("on");
           setAgent(m.agent ?? { online: false });
+          setGuardian(m.guardian ?? { online: false });
           setGuest(m.guest ?? null);
         } else if (m.type === "agent") setAgent({ online: !!m.online, id: m.id, name: m.name, platform: m.platform, version: m.version, since: m.since });
+        else if (m.type === "guardian") setGuardian({ online: !!m.online, id: m.id, version: m.version, since: m.since, status: m.status });
         else if (m.type === "event") handler.current(m.name, m.data ?? {});
         else if (m.type === "res") {
           const w = waiting.current.get(m.id);
@@ -71,6 +77,7 @@ export function useRemote(coreUrl: string, onEvent: LinkEvent, device?: string, 
       };
       s.onclose = (e) => {
         setAgent({ online: false });
+        setGuardian({ online: false });
         setLatency(null);
         for (const w of waiting.current.values()) w.ko(new Error("Connexion perdue."));
         waiting.current.clear();
@@ -122,5 +129,5 @@ export function useRemote(coreUrl: string, onEvent: LinkEvent, device?: string, 
     };
   }, [link, agent.online, call]);
 
-  return { link, agent, call, latency, guest };
+  return { link, agent, guardian, call, latency, guest };
 }

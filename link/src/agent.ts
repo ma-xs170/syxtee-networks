@@ -17,8 +17,9 @@ import { osLabel } from "./system.ts";
 import { coreCall } from "./corehttp.ts";
 import { fixLiveScene, fluxName } from "./livescene.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
+import { takeResume, writeStreaming } from "./state.ts";
 
-export const VERSION = "0.7.19";
+export const VERSION = "0.8.0";
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
 export const OBS_METHODS = new Set([
@@ -534,7 +535,10 @@ export class Agent {
       this.status.lastError = "";
       this.log(`OBS ${this.status.obsVersion} connecté`);
       void this.applyLatency();
+      void this.resumeAfterRestart();
       this.obs.onEvent = (name, data) => {
+        // Le Gardien relance OBS après un plantage : il lui faut savoir si le direct était actif.
+        if (name === "StreamStateChanged") writeStreaming(data.outputActive === true);
         if (name === "InputVolumeMeters") return this.meters(data);
         if (name === "link.needRelays") {
           void this.syncRelays(true);
@@ -576,6 +580,30 @@ export class Agent {
     } finally {
       this.obsBusy = false;
       this.emit();
+    }
+  }
+
+  /**
+   * OBS vient d'être relancé par le Gardien alors que le direct était actif : le direct repart (essais toutes les 10 s pendant une minute,
+   * le temps qu'OBS finisse de charger). Sans demande du Gardien, rien ne démarre jamais tout seul.
+   */
+  private async resumeAfterRestart() {
+    let resume = takeResume();
+    const status = await this.obs.request<{ outputActive?: boolean }>("GetStreamStatus").catch(() => null);
+    writeStreaming(status?.outputActive === true);
+    if (!resume || status?.outputActive) return;
+    this.log("direct interrompu par un plantage d'OBS : reprise");
+    for (let i = 0; i < 6 && resume && !this.stopped && this.obs.connected; i++) {
+      await new Promise((r) => setTimeout(r, 10_000));
+      try {
+        const st = await this.obs.request<{ outputActive?: boolean }>("GetStreamStatus");
+        if (st.outputActive) return;
+        await this.obs.request("StartStream");
+        this.log("direct repris");
+        resume = false;
+      } catch (e) {
+        this.log(`reprise du direct : ${(e as Error).message}`);
+      }
     }
   }
 

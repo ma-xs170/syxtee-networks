@@ -3,12 +3,16 @@ import { startHelper } from "./helper.ts";
 import { claimCode } from "./pair.ts";
 import { setTokens } from "./tokens.ts";
 import { openUrl } from "./system.ts";
+import { startGuardian } from "./guardian.ts";
+import { installGuardian, uninstallGuardian } from "./launchd.ts";
 
 // Agent SYXTEE Link. Lancé par le plugin OBS (syxtee-link --parent-pid <pid>), ou à la main :
 //   syxtee-link run            lance l'agent (par défaut), page de réglages sur http://127.0.0.1:47831
 //   syxtee-link pair CODE      associe ce PC avec un code généré dans SYXTEE Studio (alternative à la connexion par le navigateur)
 //   syxtee-link unpair         oublie la connexion de ce PC
 //   syxtee-link panel          ouvre la page de réglages
+//   syxtee-link guardian       lance le Gardien (surveille OBS, garde le Mac éveillé) ; launchd s'en charge après install-guardian
+//   syxtee-link install-guardian / uninstall-guardian   (macOS) enregistre ou retire le Gardien au démarrage de session
 
 const argv = process.argv.slice(2);
 const pidAt = argv.indexOf("--parent-pid");
@@ -48,6 +52,19 @@ async function main() {
         h.stop();
         process.exit(0);
       });
+  } else if (cmd === "guardian") {
+    const stamp = () => new Date().toLocaleTimeString("fr-FR");
+    const g = startGuardian({ log: (m) => console.log(`${stamp()}  ${m}`) });
+    console.log("SYXTEE Gardien lancé");
+    for (const sig of ["SIGINT", "SIGTERM"] as const)
+      process.on(sig, () => {
+        g.stop();
+        process.exit(0);
+      });
+  } else if (cmd === "install-guardian") {
+    console.log(await installGuardian());
+  } else if (cmd === "uninstall-guardian") {
+    console.log(await uninstallGuardian());
   } else fail(`Commande inconnue : ${cmd}`);
 }
 

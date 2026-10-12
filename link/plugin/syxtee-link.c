@@ -205,6 +205,30 @@ static void open_panel(void *data)
 }
 #endif
 
+/* Note de session pour le Gardien : ~/.syxtee-link/session.json {pid, exited}. « exited » passe à true à la fermeture normale d'OBS ;
+ * un plantage le laisse à false, et le Gardien relance alors OBS. */
+static void write_session(bool exited)
+{
+#ifndef _WIN32
+	const char *home = getenv("HOME");
+	if (!home)
+		return;
+	char dir[4096], path[4200], tmp[4210];
+	snprintf(dir, sizeof(dir), "%s/.syxtee-link", home);
+	mkdir(dir, 0700);
+	snprintf(path, sizeof(path), "%s/session.json", dir);
+	snprintf(tmp, sizeof(tmp), "%s.tmp", path);
+	FILE *f = fopen(tmp, "w");
+	if (!f)
+		return;
+	fprintf(f, "{\"pid\":%d,\"exited\":%s}\n", (int)getpid(), exited ? "true" : "false");
+	fclose(f);
+	rename(tmp, path);
+#else
+	(void)exited;
+#endif
+}
+
 /* Socket local par lequel l'agent pilote OBS (plugin = serveur, agent = client). Réservé à l'utilisateur : ~/.syxtee-link, droits 0700. */
 static void set_obs_ipc_path(void)
 {
@@ -229,6 +253,7 @@ bool obs_module_load(void)
 	blog(LOG_INFO, "[syxtee-link] chargé");
 	make_ipc_token();
 	set_obs_ipc_path();
+	write_session(false);
 #ifdef _WIN32
 	SetEnvironmentVariableA("SYXTEE_LINK_IPC", ipc_token);
 #else
@@ -255,5 +280,6 @@ void obs_module_unload(void)
 {
 	syxtee_ui_unload();
 	stop_helper();
+	write_session(true);
 	blog(LOG_INFO, "[syxtee-link] déchargé");
 }

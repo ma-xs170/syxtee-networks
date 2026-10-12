@@ -1,4 +1,7 @@
 {
+  "0.8.0": [
+    "Gardien SYXTEE : petit processus séparé d'OBS qui garde le Mac éveillé (écran verrouillé), relance OBS s'il plante et reprend le direct, et permet de relancer OBS depuis le site quand il est hors ligne"
+  ],
   "0.7.19": [
     "Régie IA : si l'IA ne répond plus (clé, quota, réseau) et que la caméra à l'antenne est tombée, la régie bascule quand même sur une caméra vivante"
   ],

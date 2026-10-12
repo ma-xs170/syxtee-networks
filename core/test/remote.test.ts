@@ -541,3 +541,63 @@ test("invitation : lien secret sans compte, droits appliqués par le serveur, r�
     stop();
   }
 });
+
+test("gardien : reste en ligne quand l'agent tombe, relance routée vers lui, invités exclus", async () => {
+  const { remote, port, stop } = await setup();
+  const { code } = remote.newCode(U);
+  const claim = await remote.claim("1.1.1.1", code, "Mac", "darwin");
+  const token = "token" in claim ? claim.token : "";
+
+  const g = client(port, "/v1/link/guardian");
+  await g.open();
+  g.send({ type: "hello", token, name: "Mac", platform: "darwin", version: "0.8.0" });
+  assert.equal((await g.next()).type, "ready");
+
+  // Navigateur : OBS (agent) est hors ligne, le gardien est en ligne.
+  const rem = client(port, "/v1/link/remote");
+  await rem.open();
+  rem.send({ type: "hello", access: "jwt-u" });
+  const ready = await rem.next();
+  assert.equal(ready.agent.online, false);
+  assert.equal(ready.guardian.online, true);
+  assert.equal((await rem.next()).type, "instances");
+
+  // L'état du gardien est relayé (valeurs simples seulement).
+  g.send({ type: "status", status: { obs: false, watch: true, awake: true, restarts: 1, evil: { a: 1 }, "bad key": true } });
+  const st = await rem.next();
+  assert.equal(st.type, "guardian");
+  assert.deepEqual(st.status, { obs: false, watch: true, awake: true, restarts: 1 });
+
+  // Relance d'OBS : va au gardien, la réponse revient avec l'identifiant d'origine.
+  rem.send({ type: "req", id: "g1", method: "guardian.launchObs" });
+  const req = await g.next();
+  assert.equal(req.method, "guardian.launchObs");
+  g.send({ type: "res", id: req.id, ok: true, result: {} });
+  assert.deepEqual(await rem.next(), { type: "res", id: "g1", ok: true, result: {} });
+
+  // Les commandes d'OBS, elles, attendent toujours l'agent.
+  rem.send({ type: "req", id: "g2", method: "GetStats" });
+  assert.deepEqual(await rem.next(), { type: "res", id: "g2", ok: false, error: "agent_offline" });
+
+  // Gardien parti : demande en attente en échec immédiat, navigateur prévenu.
+  rem.send({ type: "req", id: "g3", method: "guardian.restartObs" });
+  await g.next();
+  g.ws.close();
+  const after = [await rem.next(), await rem.next()];
+  assert.ok(after.some((m) => m.type === "res" && m.id === "g3" && m.error === "guardian_offline"));
+  assert.ok(after.some((m) => m.type === "guardian" && m.online === false));
+  rem.send({ type: "req", id: "g4", method: "guardian.status" });
+  assert.deepEqual(await rem.next(), { type: "res", id: "g4", ok: false, error: "guardian_offline" });
+  rem.ws.close();
+  stop();
+});
+
+test("gardien : jeton inconnu refusé, invités sans accès", async () => {
+  const { port, stop } = await setup();
+  const g = client(port, "/v1/link/guardian");
+  await g.open();
+  g.send({ type: "hello", token: "slk_" + "0".repeat(48) });
+  assert.equal(await g.closed, 4003);
+  for (const level of ["view", "scenes", "full"] as const) for (const m of ["guardian.launchObs", "guardian.status", "guardian.setWatch"]) assert.equal(guestAllows(level, m), false, `${level} ${m}`);
+  stop();
+});

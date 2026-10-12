@@ -16,7 +16,7 @@ if (process.platform !== "darwin") {
 
 const root = resolve(fileURLToPath(import.meta.url), "../..");
 const out = resolve((process.env.PLUGIN_OUT || "~/syxtee-link-plugin").replace(/^~(?=$|\/)/, homedir()));
-const VERSION = "0.7.19";
+const VERSION = "0.8.0";
 const OBS_TAG = "32.0.0"; // en-têtes de l'API d'OBS : seule l'interface (stable) est utilisée, le plugin se lie à OBS au chargement
 const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { stdio: "inherit", ...opts });
 
@@ -141,8 +141,30 @@ try {
 } catch {
   // rien à nettoyer
 }
+// Script d'après-installation : enregistre le Gardien (LaunchAgent) pour l'utilisateur qui installe.
+const scripts = join(work, "scripts");
+rmSync(scripts, { recursive: true, force: true });
+mkdirSync(scripts, { recursive: true });
+writeFileSync(
+  join(scripts, "postinstall"),
+  `#!/bin/sh
+U=$(stat -f%Su /dev/console)
+H=$(dscl . -read "/Users/$U" NFSHomeDirectory 2>/dev/null | awk '{print $2}')
+[ -n "$H" ] || H="/Users/$U"
+BIN="$H/Library/Application Support/obs-studio/plugins/syxtee-link.plugin/Contents/Resources/syxtee-link-helper"
+[ -x "$BIN" ] || exit 0
+if [ "$(id -u)" = "0" ]; then
+  sudo -u "$U" env HOME="$H" "$BIN" install-guardian >/dev/null 2>&1
+else
+  "$BIN" install-guardian >/dev/null 2>&1
+fi
+exit 0
+`,
+  { mode: 0o755 },
+);
+chmodSync(join(scripts, "postinstall"), 0o755);
 const component = join(work, "component.pkg");
-run("pkgbuild", ["--root", join(work, "payload"), "--identifier", "fr.syxtee.obs-plugin.pkg", "--version", VERSION, "--install-location", "/", component]);
+run("pkgbuild", ["--root", join(work, "payload"), "--scripts", scripts, "--identifier", "fr.syxtee.obs-plugin.pkg", "--version", VERSION, "--install-location", "/", component]);
 writeFileSync(
   join(work, "distribution.xml"),
   `<?xml version="1.0" encoding="utf-8"?>

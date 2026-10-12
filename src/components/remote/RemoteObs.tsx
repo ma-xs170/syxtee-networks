@@ -7,6 +7,7 @@ import MultiChat, { type ChatDefaults } from "../dashboard/MultiChat";
 import MultistreamPanel, { type MsState } from "./MultistreamPanel";
 import ProgramPreview, { type FrameSink } from "./ProgramPreview";
 import ProgramVideo, { type Watch } from "./ProgramVideo";
+import { GuardianBar } from "./GuardianBar";
 import { useRemote, type LinkEvent } from "./useRemote";
 
 // Contrôle à distance : l'interface d'OBS dans un onglet. Chaque bouton agit sur le VRAI OBS du poste (par le plugin SYXTEE), et ce
@@ -196,7 +197,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
     },
     [later],
   );
-  const { link, agent, call, latency, guest } = useRemote(coreUrl, onEvent, deviceId, demoToken, invite);
+  const { link, agent, guardian, call, latency, guest } = useRemote(coreUrl, onEvent, deviceId, demoToken, invite);
   const canLive = !guest || guest.level === "full";
 
   const run = useCallback(
@@ -1134,6 +1135,8 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                     : error || `OBS n'a pas répondu à : ${loadErrors.join(" ; ")}`}
         </div>
       )}
+
+      {link === "on" && !guest && !invite && <GuardianBar guardian={guardian} agentOnline={agent.online} call={call} />}
 
       {/* Programme (et, en Mode Studio, aperçu à gauche) */}
       <div className="flex min-h-0 min-w-0 flex-1 lg:gap-0">

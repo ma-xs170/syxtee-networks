@@ -25,6 +25,8 @@ export const ALLOWED = new Set([
   "SetInputMute", "SetInputVolume", "SetInputAudioMonitorType", "SetCurrentProfile", "SetCurrentSceneCollection", "SetCurrentSceneTransition", "StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord",
   // SYXTEE Link : bascule automatique sur une scène de secours, état de l'agent
   "link.multistreamList", "link.multistreamSave", "link.multistreamRemove", "link.multistreamStart", "link.multistreamStop", "link.fixFlux", "link.getBackup", "link.setBackup", "link.getPreview", "link.setPreview", "link.getInfo", "link.preview", "link.collections", "link.backupNow", "link.restore",
+  // Gardien SYXTEE (processus séparé d'OBS, sur le même poste) : état, relance d'OBS, surveillance
+  "guardian.status", "guardian.launchObs", "guardian.restartObs", "guardian.setWatch", "guardian.setResume",
 ]);
 
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -65,7 +67,7 @@ export function guestAllows(level: InviteLevel, method: string): boolean {
 /** Permissions montrées à l'utilisateur à l'appairage, enregistrées avec l'appareil. */
 export const LINK_SCOPES = ["profile", "email", "offline", "obs.control", "backups"] as const;
 /** Lectures : jamais écrites au journal d'audit (elles tournent en boucle). */
-const isRead = (m: string) => /^(Get|link\.(get|preview|collections|multistreamList))/.test(m);
+const isRead = (m: string) => /^(Get|link\.(get|preview|collections|multistreamList)|guardian\.status)/.test(m);
 /** Seuls ces paramètres (noms de scène, de source…) sont gardés dans le journal. Jamais de clé, de mot de passe ou de réglage. */
 const AUDIT_PARAMS = ["sceneName", "inputName", "sourceName", "transitionName", "sceneItemEnabled", "inputMuted"];
 
@@ -94,6 +96,8 @@ type Pending = { remote: Conn; rid: string; agent: Agent; method: string; detail
 /** `device` : poste que ce navigateur pilote (par défaut, le dernier connecté). */
 /** `guest` : invité sans compte (lien d'invitation) : il pilote le compte `userId` avec les droits de son invitation. */
 type Conn = { ws: WebSocket; id: string; userId: string; device?: string; guest?: { id: string; level: InviteLevel; label: string; locked: boolean } };
+/** Gardien : petit processus du poste, indépendant d'OBS (reste en ligne quand OBS plante). `status` : dernier état envoyé par lui. */
+type Guardian = Agent & { status: Record<string, unknown> };
 type Agent = Conn & { deviceId: string; name: string; platform: string; version: string; os: string; host: string; since: number; expires: number | null; expiry?: ReturnType<typeof setTimeout> };
 
 export function createRemote(o: {
@@ -111,6 +115,7 @@ export function createRemote(o: {
   const codes = new Map<string, { userId: string; expires: number }>();
   const failures = new Map<string, { n: number; since: number }>();
   const agents = new Map<string, Map<string, Agent>>(); // compte → appareil → agent connecté
+  const guardians = new Map<string, Map<string, Guardian>>(); // compte → appareil → gardien connecté
   const buckets = new Map<string, { n: number; since: number }>(); // appareil → actions récentes
   const remotes = new Map<string, Set<Conn>>(); // compte → navigateurs connectés
   const guests = new Map<string, Set<Conn>>(); // invitation → navigateurs invités connectés
@@ -135,6 +140,20 @@ export function createRemote(o: {
     for (const a of m.values()) if (!best || a.since >= best.since) best = a;
     return best;
   };
+  /** Gardien du poste choisi, sinon celui du poste de l'agent en ligne, sinon le dernier connecté. */
+  const pickGuardian = (userId: string, device?: string): Guardian | undefined => {
+    const m = guardians.get(userId);
+    if (!m) return undefined;
+    const dev = device ?? pick(userId)?.deviceId;
+    if (dev && m.has(dev)) return m.get(dev);
+    if (device) return undefined;
+    let best: Guardian | undefined;
+    for (const g of m.values()) if (!best || g.since >= best.since) best = g;
+    return best;
+  };
+  const guardianInfo = (g: Guardian | undefined) => (g ? { online: true, id: g.deviceId, name: g.name, version: g.version, since: g.since, status: g.status } : { online: false });
+  /** Chaque navigateur du compte apprend l'état du gardien de son poste. */
+  const pushGuardian = (userId: string) => remotes.get(userId)?.forEach((c) => send(c.ws, { type: "guardian", ...guardianInfo(pickGuardian(userId, c.device)) }));
   const agentInfo = (a: Agent | undefined) => (a ? { online: true, id: a.deviceId, name: a.name, platform: a.platform, version: a.version, since: a.since } : { online: false });
   const viewersOf = (a: Agent) => [...(remotes.get(a.userId) ?? [])].filter((c) => pick(a.userId, c.device) === a).length;
   /** Message à chaque navigateur du compte qui pilote cet agent. */
@@ -233,6 +252,54 @@ export function createRemote(o: {
     });
   }
 
+  function handleGuardian(ws: WebSocket, authed: Guardian) {
+    ws.on("message", (raw) => {
+      let m: { type?: string; id?: string; ok?: boolean; result?: unknown; error?: string; status?: unknown; token?: unknown };
+      try {
+        m = JSON.parse(String(raw));
+      } catch {
+        return;
+      }
+      if (m.type === "res" && typeof m.id === "string") {
+        const p = pending.get(m.id);
+        if (!p || p.agent !== authed) return;
+        clearTimeout(p.timer);
+        pending.delete(m.id);
+        const ok = m.ok !== false;
+        finish(p, ok, ok ? undefined : "failed");
+        send(p.remote.ws, { type: "res", id: p.rid, ok, result: m.result, error: m.error });
+      } else if (m.type === "status" && m.status && typeof m.status === "object") {
+        // Seuls des booléens, des nombres et de courts textes sont relayés.
+        const clean: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(m.status as Record<string, unknown>).slice(0, 20)) if (/^\w{1,30}$/.test(k) && (typeof v === "boolean" || typeof v === "number" || (typeof v === "string" && v.length <= 80))) clean[k] = v;
+        authed.status = clean;
+        pushGuardian(authed.userId);
+      } else if (m.type === "reauth" && isDeviceToken(m.token)) {
+        void findDevice(m.token).then((dev) => {
+          if (!dev || dev.id !== authed.deviceId || !o.canUse(dev.user_id)) return ws.close(4003, "unauthorized");
+          armExpiry(authed, dev.token_expires_at ? Date.parse(dev.token_expires_at) : null);
+        });
+      }
+    });
+    ws.on("close", () => {
+      clearTimeout(authed.expiry);
+      const gm = guardians.get(authed.userId);
+      if (gm?.get(authed.deviceId) === authed) {
+        gm.delete(authed.deviceId);
+        if (gm.size === 0) guardians.delete(authed.userId);
+        pushGuardian(authed.userId);
+        o.log(`link ${authed.userId.slice(0, 8)} : gardien déconnecté`);
+      }
+      for (const [id, p] of pending) {
+        if (p.agent !== authed) continue;
+        clearTimeout(p.timer);
+        pending.delete(id);
+        finish(p, false, "guardian_offline");
+        send(p.remote.ws, { type: "res", id: p.rid, ok: false, error: "guardian_offline" });
+      }
+    });
+  }
+
   function handleRemote(ws: WebSocket, conn: Conn) {
     let bucket = { n: 0, since: now() };
     ws.on("message", async (raw) => {
@@ -246,6 +313,7 @@ export function createRemote(o: {
         // Changer de poste piloté.
         if (!conn.guest?.locked) conn.device = typeof m.device === "string" ? m.device : undefined;
         send(ws, { type: "agent", ...agentInfo(pick(conn.userId, conn.device)) });
+        if (guardians.has(conn.userId)) send(ws, { type: "guardian", ...guardianInfo(pickGuardian(conn.userId, conn.device)) });
         const a = [...(agents.get(conn.userId)?.values() ?? [])];
         a.forEach((x) => send(x.ws, { type: "viewers", n: viewersOf(x) }));
         return;
@@ -275,8 +343,9 @@ export function createRemote(o: {
         const acc = await o.account(conn.userId).catch(() => null);
         m.params = gateRegie(acc?.plan, m.params);
       }
-      const agent = pick(conn.userId, conn.device);
-      if (!agent) return send(ws, { type: "res", id: m.id, ok: false, error: "agent_offline" });
+      const toGuardian = m.method.startsWith("guardian.");
+      const agent: Agent | undefined = toGuardian ? pickGuardian(conn.userId, conn.device) : pick(conn.userId, conn.device);
+      if (!agent) return send(ws, { type: "res", id: m.id, ok: false, error: toGuardian ? "guardian_offline" : "agent_offline" });
       // Plafond d'actions par appareil, tous navigateurs confondus.
       if (!isRead(m.method)) {
         // Un fader qu'on glisse envoie des dizaines d'ordres : compteur à part, bien plus large, pour ne pas bloquer les autres actions.
@@ -321,7 +390,7 @@ export function createRemote(o: {
   }
 
   /** Premier message obligatoire : authentification (5 s), puis le canal devient celui de l'agent ou du navigateur. */
-  function accept(ws: WebSocket, kind: "agent" | "remote", ip: string) {
+  function accept(ws: WebSocket, kind: "agent" | "guardian" | "remote", ip: string) {
     const timer = setTimeout(() => ws.close(4001, "hello_timeout"), HELLO_TIMEOUT_MS);
     ws.once("message", async (raw) => {
       clearTimeout(timer);
@@ -333,7 +402,29 @@ export function createRemote(o: {
       }
       if (m.type !== "hello") return ws.close(4002, "bad_hello");
       const id = `c${++seq}`;
-      if (kind === "agent") {
+      if (kind === "guardian") {
+        const dev = isDeviceToken(m.token) ? await findDevice(m.token) : null;
+        if (!dev || !o.canUse(dev.user_id)) {
+          fail(ip);
+          return ws.close(4003, "unauthorized");
+        }
+        const gtext = (v: unknown, n: number, d = "") => String(v ?? d).replace(/[\u0000-\u001f]/g, "").trim().slice(0, n);
+        const gm = guardians.get(dev.user_id) ?? new Map<string, Guardian>();
+        const prev = gm.get(dev.id);
+        const g: Guardian = {
+          ws, id, userId: dev.user_id, deviceId: dev.id,
+          name: dev.name, platform: gtext(m.platform, 20, dev.platform), version: gtext(m.version, 20),
+          os: gtext(m.os, 40), host: gtext(m.host, 60), since: now(), expires: null, status: {},
+        };
+        gm.set(dev.id, g);
+        guardians.set(dev.user_id, gm);
+        prev?.ws.close(4000, "replaced");
+        armExpiry(g, dev.token_expires_at ? Date.parse(dev.token_expires_at) : null);
+        send(ws, { type: "ready" });
+        pushGuardian(dev.user_id);
+        o.log(`link ${dev.user_id.slice(0, 8)} : gardien « ${g.name} » connecté`);
+        handleGuardian(ws, g);
+      } else if (kind === "agent") {
         const dev = isDeviceToken(m.token) ? await findDevice(m.token) : null;
         if (!dev || !o.canUse(dev.user_id)) {
           fail(ip);
@@ -386,7 +477,7 @@ export function createRemote(o: {
         const set = remotes.get(userId) ?? new Set<Conn>();
         set.add(conn);
         remotes.set(userId, set);
-        send(ws, { type: "ready", agent: agentInfo(pick(userId, conn.device)), ...(guest ? { guest: { level: guest.level, label: guest.label } } : {}) });
+        send(ws, { type: "ready", agent: agentInfo(pick(userId, conn.device)), guardian: guardianInfo(pickGuardian(userId, conn.device)), ...(guest ? { guest: { level: guest.level, label: guest.label } } : {}) });
         send(ws, { type: "instances", online: [...(agents.get(userId)?.values() ?? [])].map((a) => ({ id: a.deviceId, name: a.name, platform: a.platform, version: a.version, since: a.since })) });
         for (const a of agents.get(userId)?.values() ?? []) send(a.ws, { type: "viewers", n: viewersOf(a) });
         setTimeout(() => ws.close(4004, "session_expired"), SESSION_MAX_MS).unref();
@@ -458,10 +549,10 @@ export function createRemote(o: {
     /** À brancher sur l'événement `upgrade` du serveur HTTP. Renvoie false si le chemin n'est pas le nôtre. */
     upgrade(req: IncomingMessage, socket: Duplex, head: Buffer): boolean {
       const path = (req.url ?? "").split("?")[0];
-      const kind = path === "/v1/link/agent" ? "agent" : path === "/v1/link/remote" ? "remote" : null;
+      const kind = path === "/v1/link/agent" ? "agent" : path === "/v1/link/guardian" ? "guardian" : path === "/v1/link/remote" ? "remote" : null;
       if (!kind) return false;
       const ip = String(req.headers["x-forwarded-for"] ?? req.socket.remoteAddress ?? "").split(",")[0].trim();
-      if (kind === "agent" && throttled(ip)) {
+      if (kind !== "remote" && throttled(ip)) {
         socket.write("HTTP/1.1 429 Too Many Requests\r\nConnection: close\r\n\r\n");
         socket.destroy();
         return true;
@@ -631,6 +722,7 @@ export function createRemote(o: {
         .is("revoked_at", null)
         .select("id");
       agents.get(userId)?.get(deviceId)?.ws.close(4005, "revoked");
+      guardians.get(userId)?.get(deviceId)?.ws.close(4005, "revoked");
       const ok = Array.isArray(data) && data.length > 0;
       if (ok) audit(userId, deviceId, "device.revoke", true);
       return ok;

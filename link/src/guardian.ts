@@ -1,5 +1,7 @@
 import { execFile, spawn, type ChildProcess } from "node:child_process";
-import { hostname } from "node:os";
+import { readdirSync, rmSync } from "node:fs";
+import { homedir, hostname } from "node:os";
+import { join } from "node:path";
 import { VERSION } from "./agent.ts";
 import { load } from "./config.ts";
 import { DEFAULT_SETTINGS, readSession, readSettings, readStreaming, writeResume, writeSettings, type GuardianSettings } from "./state.ts";
@@ -173,11 +175,32 @@ const findObsMac = () =>
     });
   });
 
-/** `--disable-shutdown-check` : pas de fenêtre « mode sans échec » après un plantage (personne n'est là pour cliquer). */
-const launchObsMac = () =>
-  new Promise<void>((resolve, reject) => {
-    execFile("open", ["-a", "OBS", "--args", "--disable-shutdown-check", "--disable-missing-files-check"], (err) => (err ? reject(new Error("OBS est introuvable sur ce Mac.")) : resolve()));
+/**
+ * OBS note chaque exécution par un fichier `run_<id>` dans `.sentinel` et le retire à la fermeture normale. Un fichier resté là au démarrage
+ * déclenche la fenêtre « OBS ne s'est pas arrêté correctement » (mode sans échec) : personne n'est là pour cliquer, donc on les retire avant la relance.
+ * À n'appeler que lorsqu'OBS est fermé.
+ */
+export function clearCrashSentinel(dir = join(homedir(), "Library", "Application Support", "obs-studio", ".sentinel")): number {
+  let n = 0;
+  try {
+    for (const f of readdirSync(dir)) {
+      if (!/^run_[0-9a-f-]+$/i.test(f)) continue;
+      rmSync(join(dir, f), { force: true });
+      n++;
+    }
+  } catch {
+    // pas de dossier : rien à nettoyer
+  }
+  return n;
+}
+
+const launchObsMac = async () => {
+  if ((await findObsMac()) !== null) throw new Error("OBS est déjà ouvert.");
+  clearCrashSentinel();
+  await new Promise<void>((resolve, reject) => {
+    execFile("open", ["-a", "OBS", "--args", "--disable-missing-files-check"], (err) => (err ? reject(new Error("OBS est introuvable sur ce Mac.")) : resolve()));
   });
+};
 
 export function startGuardian(opts: { log?: (m: string) => void } = {}) {
   const log = opts.log ?? (() => {});

@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { MAX_AUTO_RESTARTS, ObsWatch, RESTART_WINDOW_MS, type Deps } from "../src/guardian.ts";
+import { clearCrashSentinel, MAX_AUTO_RESTARTS, ObsWatch, RESTART_WINDOW_MS, type Deps } from "../src/guardian.ts";
 import { readJson, takeResume, writeJson, writeStreaming } from "../src/state.ts";
 import { guardianPlist } from "../src/launchd.ts";
 
@@ -151,4 +151,16 @@ test("LaunchAgent : relancé en continu, journal dans le dossier SYXTEE", () => 
   assert.match(p, /<key>KeepAlive<\/key><true\/>/);
   assert.match(p, /<string>\/x\/syxtee-link-helper<\/string><string>guardian<\/string>/);
   assert.match(p, /\/h\/guardian\.log/);
+});
+
+test("relance : les fichiers « run_ » d'OBS sont retirés (sinon fenêtre mode sans échec), rien d'autre", () => {
+  const d = mkdtempSync(join(tmpdir(), "sentinel-"));
+  mkdirSync(d, { recursive: true });
+  writeFileSync(join(d, "run_96897a8d-c018-418e-8ac4-ac6f6ad7ea41"), "");
+  writeFileSync(join(d, "run_f2d521b1-7a3c-4fc4-b7a0-ac8f50cf2b02"), "");
+  writeFileSync(join(d, "autre.txt"), "");
+  assert.equal(clearCrashSentinel(d), 2);
+  assert.equal(existsSync(join(d, "autre.txt")), true);
+  assert.equal(clearCrashSentinel(join(d, "absent")), 0);
+  rmSync(d, { recursive: true, force: true });
 });

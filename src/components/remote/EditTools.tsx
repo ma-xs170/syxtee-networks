@@ -36,7 +36,7 @@ type Tf = { positionX: number; positionY: number; scaleX: number; scaleY: number
 type Editable = { inputName: string; field: "text" | "url"; value: string };
 
 /** Panneau d'une source sélectionnée : texte ou lien, filtres, position, taille, rotation, médias. */
-export function SourceEditor({ call, sceneName, itemId, name, kind, canEdit }: { call: Call; sceneName: string; itemId: number; name: string; kind: string; canEdit: boolean }) {
+export function SourceEditor({ call, sceneName, itemId, name, kind, canEdit, only }: { call: Call; sceneName: string; itemId: number; name: string; kind: string; canEdit: boolean; /** Une seule section : « props » (texte, position, médias) ou « filters ». Sans valeur : tout. */ only?: "props" | "filters" }) {
   const [filters, setFilters] = useState<Filter[]>([]);
   const [tf, setTf] = useState<Tf | null>(null);
   const [editable, setEditable] = useState<Editable | null>(null);
@@ -86,7 +86,7 @@ export function SourceEditor({ call, sceneName, itemId, name, kind, canEdit }: {
   const arrow = "grid size-8 place-items-center rounded-lg border border-white/10 bg-white/[0.03] text-neutral-200 hover:bg-white/[0.08] disabled:opacity-40";
   return (
     <div className="mx-1 mb-1.5 space-y-3 rounded-lg border border-white/[0.08] bg-[#0f0f12] p-3 text-[13px]">
-      {editable && (
+      {only !== "filters" && editable && (
         <div>
           <label className="text-[12px] text-neutral-400" htmlFor={`ed-${itemId}`}>
             {editable.field === "text" ? "Texte" : "Adresse de la page (https://…)"}
@@ -104,7 +104,7 @@ export function SourceEditor({ call, sceneName, itemId, name, kind, canEdit }: {
         </div>
       )}
 
-      {tf && (
+      {only !== "filters" && tf && (
         <div>
           <p className="text-[12px] text-neutral-400">Position et taille</p>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -135,7 +135,7 @@ export function SourceEditor({ call, sceneName, itemId, name, kind, canEdit }: {
         </div>
       )}
 
-      {filters.length > 0 && (
+      {only !== "props" && filters.length > 0 && (
         <div>
           <p className="text-[12px] text-neutral-400">Filtres</p>
           <ul className="mt-1 space-y-1">
@@ -162,7 +162,7 @@ export function SourceEditor({ call, sceneName, itemId, name, kind, canEdit }: {
         </div>
       )}
 
-      {MEDIA.has(kind) && (
+      {only !== "filters" && MEDIA.has(kind) && (
         <div>
           <p className="text-[12px] text-neutral-400">Média</p>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -184,7 +184,7 @@ export function SourceEditor({ call, sceneName, itemId, name, kind, canEdit }: {
         </div>
       )}
 
-      {!editable && !tf && filters.length === 0 && !MEDIA.has(kind) && <p className="text-neutral-500">Rien à modifier sur cette source.</p>}
+      {(only === "filters" ? filters.length === 0 : only === "props" ? !editable && !tf && !MEDIA.has(kind) : !editable && !tf && filters.length === 0 && !MEDIA.has(kind)) && <p className="text-neutral-500">{only === "filters" ? "Aucun filtre sur cette source." : "Rien à modifier sur cette source."}</p>}
       {msg && (
         <p role="status" className="text-[12px] text-amber-200">
           {msg}

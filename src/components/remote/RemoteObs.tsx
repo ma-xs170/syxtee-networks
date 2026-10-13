@@ -73,6 +73,8 @@ const clock = (ms: number) => {
 const panel = "flex min-h-0 min-w-0 flex-col rounded-xl border border-white/[0.08] bg-[#0b0b0d] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]";
 const panelTitle = "flex items-baseline gap-2 border-b border-white/[0.08] px-3.5 py-2.5 text-[13px] font-semibold tracking-tight";
 const flat = "inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/[0.14] bg-[#16161a] text-[13px] text-neutral-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-colors hover:bg-[#1e1e23] disabled:opacity-40";
+/** Boutons du dock Commandes : pleine largeur, comme dans OBS. */
+const cmd = "inline-flex h-10 w-full items-center justify-center whitespace-nowrap rounded-lg border border-white/[0.14] bg-[#16161a] px-3 text-[13px] text-neutral-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-colors hover:bg-[#1e1e23] disabled:opacity-40";
 const field = "h-7 rounded-lg border border-white/10 bg-white/[0.03] px-2 text-[13px] text-neutral-100 disabled:opacity-40";
 
 /** Petit retour tactile (Android) sur les actions du direct. Silencieux ailleurs. */
@@ -132,7 +134,12 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
   const dialog = useRef<HTMLDialogElement>(null);
   const settingsDialog = useRef<HTMLDialogElement>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [editItem, setEditItem] = useState<number | null>(null);
+  /** Source sélectionnée (comme dans OBS) : la barre sous l'aperçu et ses boutons Propriétés / Filtres agissent dessus. */
+  const [selected, setSelected] = useState<{ scene: string; id: number } | null>(null);
+  const [edit, setEdit] = useState<"props" | "filters" | null>(null);
+  const editDialog = useRef<HTMLDialogElement>(null);
+  /** Onglet du dernier dock sur grand écran (Commandes ou Multistream, comme les onglets du bas d'OBS). */
+  const [dockTab, setDockTab] = useState<"controls" | "multi">("controls");
   const devicePanel = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -212,6 +219,12 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
     if (settingsOpen && !d.open) d.showModal();
     else if (!settingsOpen && d.open) d.close();
   }, [settingsOpen]);
+  useEffect(() => {
+    const d = editDialog.current;
+    if (!d) return;
+    if (edit && !d.open) d.showModal();
+    else if (!edit && d.open) d.close();
+  }, [edit]);
 
   const run = useCallback(
     async <T = Record<string, unknown>,>(method: string, params?: Record<string, unknown>) => {
@@ -599,9 +612,9 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
           <ul>
             {items.map((i) => (
               <Fragment key={i.id}>
-              <li className="flex min-h-9 items-center gap-2 rounded px-2 hover:bg-[#101010]">
+              <li className={`flex min-h-9 items-center gap-2 rounded px-2 ${selected?.scene === editing && selected.id === i.id ? "bg-white/[0.12]" : "hover:bg-[#101010]"}`}>
                 <KindIcon kind={i.kind} />
-                <button type="button" aria-expanded={editItem === i.id} aria-label={`Modifier ${i.name}`} onClick={() => setEditItem((c) => (c === i.id ? null : i.id))} className={`min-w-0 flex-1 truncate text-left text-[13px] ${i.on ? "text-neutral-100" : "text-neutral-500 line-through"}`}>
+                <button type="button" aria-pressed={selected?.scene === editing && selected.id === i.id} aria-label={`Sélectionner ${i.name}`} onClick={() => setSelected((c) => (c?.scene === editing && c.id === i.id ? null : { scene: editing, id: i.id }))} className={`min-w-0 flex-1 truncate text-left text-[13px] ${i.on ? "text-neutral-100" : "text-neutral-500 line-through"}`}>
                   {i.name}
                 </button>
                 <span className="shrink-0 text-[12px] text-neutral-500">{i.flux ? "Flux SYXTEE" : kindLabel(i.kind)}</span>
@@ -618,7 +631,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                   <Eye on={i.on} />
                 </button>
               </li>
-              {editItem === i.id && <li className="list-none"><SourceEditor call={call} sceneName={editing} itemId={i.id} name={i.name} kind={i.kind} canEdit={ready && canLive} /></li>}
+              {selected?.scene === editing && selected.id === i.id && <li className="list-none lg:hidden"><SourceEditor call={call} sceneName={editing} itemId={i.id} name={i.name} kind={i.kind} canEdit={ready && canLive} /></li>}
               </Fragment>
             ))}
           </ul>
@@ -629,7 +642,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
 
   const mixerPanel = (
     <section aria-label="Mélangeur audio" className={`${panel} ${tab === "mixer" ? "" : "max-lg:hidden"}`}>
-      <h2 className={panelTitle}>Mixer audio</h2>
+      <h2 className={panelTitle}>Mélangeur audio</h2>
       <div className="min-h-0 flex-1 overflow-x-auto p-1.5">
         {visibleMixer.length === 0 ? (
           <p className="px-2 py-2 text-[13px] text-neutral-500">{ready ? "Aucune source audio dans cette scène." : "En attente d'OBS…"}</p>
@@ -697,26 +710,34 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
   );
 
   const multiPanel = (
-    <div className={`min-h-0 min-w-0 ${tab === "multi" ? "grid" : "max-lg:hidden lg:grid"} grid-rows-1`}>
+    <div className={`min-h-0 min-w-0 lg:flex-1 ${tab === "multi" ? "grid" : "max-lg:hidden"} ${dockTab === "multi" ? "lg:grid" : "lg:hidden"} grid-rows-1`}>
       <MultistreamPanel state={ms} mainLive={streaming} call={call} ready={ready} canControl={canLive} canEdit={!guest} onChange={setMs} />
     </div>
   );
 
   const controlsPanel = (
-    <div className={`flex min-h-0 min-w-0 flex-col gap-2 overflow-y-auto overscroll-contain ${tab === "controls" ? "" : "max-lg:hidden"}`}>
+    <div className={`flex min-h-0 min-w-0 flex-col gap-2 overflow-y-auto overscroll-contain lg:flex-1 ${tab === "controls" ? "" : "max-lg:hidden"} ${dockTab === "controls" ? "" : "lg:hidden"}`}>
      <div className="flex shrink-0 flex-col gap-2">
-      <section aria-label="Contrôles" className={panel}>
-        <h2 className={panelTitle}>Contrôles</h2>
+      <section aria-label="Commandes" className={panel}>
+        <h2 className={`${panelTitle} lg:hidden`}>Commandes</h2>
         <div className="grid gap-1.5 p-2">
-          <button type="button" disabled={!ready || !canLive} onClick={() => setConfirm(streaming ? "stop" : "start")} className={`${flat} h-10 ${streaming ? "!border-red-700 !bg-red-700 !text-white" : ""}`}>
-            {streaming ? `Arrêter le direct · ${clock(stats?.streamMs ?? 0)}` : "Partir en direct"}
+          <button type="button" disabled={!ready || !canLive} onClick={() => setConfirm(streaming ? "stop" : "start")} className={`${cmd} ${streaming ? "!border-red-700 !bg-red-700 !text-white" : ""}`}>
+            {streaming ? `Arrêter le streaming · ${clock(stats?.streamMs ?? 0)}` : "Commencer le streaming"}
           </button>
-          <button type="button" disabled={!ready || !canLive} onClick={() => void run(recording ? "StopRecord" : "StartRecord")} className={`${flat} h-10 ${recording ? "!border-red-700 !bg-red-700 !text-white" : ""}`}>
+          <button type="button" disabled={!ready || !canLive} onClick={() => void run(recording ? "StopRecord" : "StartRecord")} className={`${cmd} ${recording ? "!border-red-700 !bg-red-700 !text-white" : ""}`}>
             {recording ? `Arrêter l'enregistrement · ${clock(stats?.recMs ?? 0)}` : "Démarrer l'enregistrement"}
           </button>
           {recording && (
-            <button type="button" onClick={() => run(paused ? "ResumeRecord" : "PauseRecord")} className={`${flat} h-8`}>
+            <button type="button" onClick={() => run(paused ? "ResumeRecord" : "PauseRecord")} className={`${cmd} !h-9`}>
               {paused ? "Reprendre l'enregistrement" : "Mettre en pause"}
+            </button>
+          )}
+          <button type="button" aria-pressed={studioMode} disabled={!ready} onClick={() => void run("SetStudioModeEnabled", { studioModeEnabled: !studioMode })} className={`${cmd} ${studioMode ? "!border-white/30 !bg-white/[0.14] !text-white" : ""}`}>
+            Mode studio
+          </button>
+          {owner && (
+            <button type="button" disabled={!ready} onClick={() => (window.matchMedia("(min-width: 1024px)").matches ? setSettingsOpen(true) : setTab("settings"))} className={cmd}>
+              Paramètres
             </button>
           )}
         </div>
@@ -1124,22 +1145,11 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
             </div>
           )}
         </div>
-        {owner && (
-          <button type="button" disabled={!ready} onClick={() => setSettingsOpen(true)} className={`${flat} ${chatDefaults ? "" : "ml-auto "}h-7 shrink-0 px-3.5 max-lg:hidden`}>
-            Paramètres
-          </button>
-        )}
         {chatDefaults && (
           <button type="button" aria-pressed={chatOn} onClick={toggleChat} className={`${flat} ml-auto h-7 shrink-0 px-3.5 max-lg:hidden ${chatOn ? "!border-white/30 !bg-white/[0.14] !text-white" : ""}`}>
             Chat
           </button>
         )}
-        <label className={`${chatDefaults ? "" : "ml-auto "}flex shrink-0 items-center gap-2 max-lg:hidden`}>
-          <span className="sr-only">Mode studio</span>
-          <button type="button" role="switch" aria-label="Mode studio" aria-checked={studioMode} disabled={!ready} onClick={() => void run("SetStudioModeEnabled", { studioModeEnabled: !studioMode })} className={`${flat} h-7 px-3.5 ${studioMode ? "!border-white/30 !bg-white/[0.14] !text-white" : ""}`}>
-            Mode studio
-          </button>
-        </label>
       </div>
 
       {(lost || (obsDown && !lost) || error || loadErrors.length > 0) && (
@@ -1170,7 +1180,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
             {roles.audioState === "backup" ? `Micro « ${roles.audioSource} » muet : scène de secours à l'antenne, retour sur Live quand le son repart.` : roles.audioState === "muted" ? `Micro « ${roles.audioSource} » coupé : personne ne t'entend.` : `Silence sur « ${roles.audioSource} » depuis plus de ${roles.audioSeconds ?? 10} s : vérifie ton micro.`}
           </p>
         )}
-        <section aria-label="Programme" className={`relative grid min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-xl border border-white/[0.08] bg-[#0b0b0d] ${tab === "chat" || tab === "settings" ? "max-lg:max-h-0 max-lg:overflow-hidden max-lg:border-0 max-lg:landscape:max-h-none" : tab === "scenes" || tab === "sources" || tab === "mixer" ? "max-lg:aspect-[16/12]" : "max-lg:aspect-[16/8]"} max-lg:h-auto max-lg:landscape:aspect-auto max-lg:landscape:h-full max-lg:landscape:w-[56%] max-lg:landscape:shrink-0 lg:h-[64%]`}>
+        <section aria-label="Programme" className={`relative grid min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-xl border border-white/[0.08] bg-[#0b0b0d] ${tab === "chat" || tab === "settings" ? "max-lg:max-h-0 max-lg:overflow-hidden max-lg:border-0 max-lg:landscape:max-h-none" : tab === "scenes" || tab === "sources" || tab === "mixer" ? "max-lg:aspect-[16/12]" : "max-lg:aspect-[16/8]"} max-lg:h-auto max-lg:landscape:aspect-auto max-lg:landscape:h-full max-lg:landscape:w-[56%] max-lg:landscape:shrink-0 lg:h-auto lg:min-h-0 lg:flex-1`}>
           <div className="flex min-w-0 items-center justify-between gap-2 px-3 py-2">
             {programLabel}
             <div className="flex shrink-0 gap-1.5">
@@ -1221,6 +1231,27 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
           </div>
         </section>
 
+        {/* Barre de la source sélectionnée, comme sous l'aperçu d'OBS (grand écran) */}
+        <div className="hidden h-11 shrink-0 items-center gap-2 rounded-xl border border-white/[0.08] bg-[#0b0b0d] px-3 lg:flex">
+          {(() => {
+            const sel = selected?.scene === editing ? items.find((i) => i.id === selected.id) : undefined;
+            return (
+              <>
+                <span className="flex min-w-0 flex-1 items-center gap-2 text-[13px]">
+                  {sel ? <KindIcon kind={sel.kind} /> : null}
+                  <span className={`truncate ${sel ? "text-neutral-100" : "text-neutral-500"}`}>{sel ? sel.name : "Aucune source sélectionnée"}</span>
+                </span>
+                <button type="button" disabled={!sel || !ready} onClick={() => setEdit("props")} className={`${flat} h-8 gap-1.5 px-4`}>
+                  Propriétés
+                </button>
+                <button type="button" disabled={!sel || !ready} onClick={() => setEdit("filters")} className={`${flat} h-8 gap-1.5 px-4`}>
+                  Filtres
+                </button>
+              </>
+            );
+          })()}
+        </div>
+
         {/* Mobile : panneaux en onglets (en paysage : à droite de l'aperçu) */}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 lg:contents">
         <nav role="tablist" aria-label="Panneaux" className={`grid shrink-0 ${{ 5: "grid-cols-5", 6: "grid-cols-6", 7: "grid-cols-7" }[5 + (chatDefaults ? 1 : 0) + (owner ? 1 : 0)]} border-[#262626] bg-black max-lg:order-last max-lg:-mx-2 max-lg:-mb-2 max-lg:border-t max-lg:px-1 max-lg:pt-1 lg:hidden`}>
@@ -1243,12 +1274,26 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
           ))}
         </nav>
 
-        <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 gap-2 max-lg:grid-cols-[minmax(0,1fr)] max-lg:grid-rows-1 lg:grid-cols-[minmax(9rem,1.1fr)_minmax(10rem,1.8fr)_minmax(12rem,2.2fr)_minmax(10rem,1fr)_minmax(13rem,1.5fr)]">
+        <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 gap-2 max-lg:grid-cols-[minmax(0,1fr)] max-lg:grid-rows-1 lg:h-64 lg:shrink-0 lg:flex-none xl:h-72 lg:grid-cols-[minmax(9rem,1fr)_minmax(10rem,1fr)_minmax(12rem,1.5fr)_minmax(12rem,1fr)]">
           {scenesPanel}
           {sourcesPanel}
           {mixerPanel}
-          {controlsPanel}
-          {multiPanel}
+          <div className="contents lg:flex lg:min-h-0 lg:min-w-0 lg:flex-col lg:gap-1">
+            {controlsPanel}
+            {multiPanel}
+            <div role="tablist" aria-label="Dock" className="hidden shrink-0 justify-end gap-1 lg:flex">
+              {(
+                [
+                  ["controls", "Commandes"],
+                  ["multi", "Multistream"],
+                ] as const
+              ).map(([id, text]) => (
+                <button key={id} type="button" role="tab" aria-selected={dockTab === id} onClick={() => setDockTab(id)} className={`h-7 rounded-md px-3 text-[12px] transition-colors ${dockTab === id ? "bg-white/[0.14] text-white" : "text-neutral-400 hover:bg-white/[0.06]"}`}>
+                  {text}
+                </button>
+              ))}
+            </div>
+          </div>
           {chatBox && tab === "chat" && <div className="min-h-0 min-w-0 lg:hidden">{chatBox}</div>}
           {owner && tab === "settings" && (
             <section aria-label="Paramètres d'OBS" className={`${panel} flex min-h-0 min-w-0 flex-col lg:hidden`}>
@@ -1260,6 +1305,47 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
       </main>
       {chatBox && chatOn && <aside aria-label="Chat" className="hidden min-h-0 w-[22rem] shrink-0 py-2 pr-2 lg:block xl:w-[26rem]">{chatBox}</aside>}
       </div>
+
+      {/* Barre d'état, comme en bas d'OBS (grand écran) */}
+      <footer aria-label="État d'OBS" className="hidden h-8 shrink-0 items-center justify-end gap-5 border-t border-[#262626] px-3.5 text-[12px] text-neutral-400 tabular-nums lg:flex">
+        <span title="Débit du direct">{streaming && stats?.kbps != null ? `${stats.kbps} kbit/s` : ""}</span>
+        <span className="inline-flex items-center gap-1.5">
+          <span aria-hidden="true" className={`size-2 rounded-full ${streaming ? "animate-pulse bg-red-500 motion-reduce:animate-none" : "bg-neutral-600"}`} />
+          {clock(streaming ? (stats?.streamMs ?? 0) : 0)}
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span aria-hidden="true" className={`size-2 rounded-full ${recording ? "bg-red-500" : "bg-neutral-600"}`} />
+          {clock(recording ? (stats?.recMs ?? 0) : 0)}
+        </span>
+        <span>CPU : {stats ? `${stats.cpu}%` : "—"}</span>
+        <span>{stats ? `${stats.fps.toFixed(2)} FPS` : "— FPS"}</span>
+      </footer>
+
+      <dialog
+        ref={editDialog}
+        onClose={() => setEdit(null)}
+        onClick={(e) => e.target === editDialog.current && setEdit(null)}
+        aria-label={edit === "filters" ? "Filtres de la source" : "Propriétés de la source"}
+        className="m-auto max-h-[calc(100dvh-2rem)] w-[min(32rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-[#333] bg-black p-0 text-neutral-100 backdrop:bg-black/70"
+      >
+        {edit &&
+          (() => {
+            const sel = selected?.scene === editing ? items.find((i) => i.id === selected.id) : undefined;
+            return (
+              <div className="p-3">
+                <div className="mb-2 flex items-center justify-between gap-2 px-1">
+                  <h2 className="min-w-0 truncate text-[14px] font-semibold">
+                    {edit === "filters" ? "Filtres" : "Propriétés"} · {sel?.name ?? "—"}
+                  </h2>
+                  <button type="button" onClick={() => setEdit(null)} className={`${flat} h-8 px-4`}>
+                    Fermer
+                  </button>
+                </div>
+                {sel && <SourceEditor call={call} sceneName={editing} itemId={sel.id} name={sel.name} kind={sel.kind} canEdit={ready && canLive} only={edit} />}
+              </div>
+            );
+          })()}
+      </dialog>
 
       {owner && (
         <dialog

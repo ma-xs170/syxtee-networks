@@ -23,6 +23,12 @@ export const ALLOWED = new Set([
   // OBS : actions
   "SetCurrentProgramScene", "SetCurrentPreviewScene", "SetStudioModeEnabled", "TriggerStudioModeTransition", "SetSceneItemEnabled",
   "SetInputMute", "SetInputVolume", "SetInputAudioMonitorType", "SetCurrentProfile", "SetCurrentSceneCollection", "SetCurrentSceneTransition", "StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord",
+  // Édition : filtres, position, médias, replay, textes et liens, débit du direct
+  "GetSourceFilterList", "SetSourceFilterEnabled", "GetSceneItemTransform", "SetSceneItemTransform", "TriggerMediaInputAction",
+  "GetReplayBufferStatus", "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer",
+  "link.listEditable", "link.setText", "link.setUrl", "link.getBitrate", "link.setBitrate",
+  // Paramètres d'OBS (liste blanche côté plugin) : réservés au propriétaire du compte, jamais aux invités
+  "link.settingsGet", "link.settingsSet",
   // SYXTEE Link : bascule automatique sur une scène de secours, état de l'agent
   "link.multistreamList", "link.multistreamSave", "link.multistreamRemove", "link.multistreamStart", "link.multistreamStop", "link.fixFlux", "link.getBackup", "link.setBackup", "link.getPreview", "link.setPreview", "link.getInfo", "link.preview", "link.collections", "link.backupNow", "link.restore",
   // Gardien SYXTEE (processus séparé d'OBS, sur le même poste) : état, relance d'OBS, surveillance
@@ -53,9 +59,10 @@ const GUEST_SCENES = new Set([
   "SetCurrentProgramScene", "SetCurrentPreviewScene", "SetStudioModeEnabled", "TriggerStudioModeTransition", "SetSceneItemEnabled",
   "SetInputMute", "SetInputVolume", "SetInputAudioMonitorType", "SetCurrentSceneTransition",
 ]);
-const GUEST_FULL = new Set(["link.multistreamStart", "link.multistreamStop", "StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord", "SetCurrentProfile", "SetCurrentSceneCollection"]);
+const GUEST_FULL = new Set([
+  "SetSourceFilterEnabled", "SetSceneItemTransform", "TriggerMediaInputAction", "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "link.setText", "link.setUrl", "link.setBitrate","link.multistreamStart", "link.multistreamStop", "StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord", "SetCurrentProfile", "SetCurrentSceneCollection"]);
 /** Lectures permises à un invité : tout `Get…` d'OBS, plus l'état de l'aperçu et des rôles. Jamais les sauvegardes. */
-const GUEST_LINK_READS = new Set(["link.multistreamList", "link.getPreview", "link.getInfo", "link.getBackup", "link.preview"]);
+const GUEST_LINK_READS = new Set(["link.listEditable", "link.getBitrate", "link.multistreamList", "link.getPreview", "link.getInfo", "link.getBackup", "link.preview"]);
 export function guestAllows(level: InviteLevel, method: string): boolean {
   if (method.startsWith("link.")) return GUEST_LINK_READS.has(method) || (level === "full" && GUEST_FULL.has(method));
   if (method.startsWith("Get")) return true;
@@ -67,9 +74,9 @@ export function guestAllows(level: InviteLevel, method: string): boolean {
 /** Permissions montrées à l'utilisateur à l'appairage, enregistrées avec l'appareil. */
 export const LINK_SCOPES = ["profile", "email", "offline", "obs.control", "backups"] as const;
 /** Lectures : jamais écrites au journal d'audit (elles tournent en boucle). */
-const isRead = (m: string) => /^(Get|link\.(get|preview|collections|multistreamList)|guardian\.status)/.test(m);
+const isRead = (m: string) => /^(Get|link\.(get|preview|collections|multistreamList|listEditable|settingsGet)|guardian\.status)/.test(m);
 /** Seuls ces paramètres (noms de scène, de source…) sont gardés dans le journal. Jamais de clé, de mot de passe ou de réglage. */
-const AUDIT_PARAMS = ["sceneName", "inputName", "sourceName", "transitionName", "sceneItemEnabled", "inputMuted"];
+const AUDIT_PARAMS = ["sceneName", "inputName", "sourceName", "transitionName", "sceneItemEnabled", "inputMuted", "filterName", "filterEnabled", "mediaAction"];
 
 export const newPairCode = () => Array.from(randomBytes(8), (b) => CODE_ALPHABET[b % CODE_ALPHABET.length]).join("");
 export const newDeviceToken = () => `slk_${randomBytes(24).toString("hex")}`;
@@ -349,8 +356,9 @@ export function createRemote(o: {
       // Plafond d'actions par appareil, tous navigateurs confondus.
       if (!isRead(m.method)) {
         // Un fader qu'on glisse envoie des dizaines d'ordres : compteur à part, bien plus large, pour ne pas bloquer les autres actions.
-        const key = m.method === "SetInputVolume" ? `${agent.deviceId}:volume` : agent.deviceId;
-        const limit = m.method === "SetInputVolume" ? VOLUME_LIMIT : ACTION_LIMIT;
+        const fast = m.method === "SetInputVolume" || m.method === "SetSceneItemTransform"; // glisser un fader ou une source : des dizaines d'ordres
+        const key = fast ? `${agent.deviceId}:volume` : agent.deviceId;
+        const limit = fast ? VOLUME_LIMIT : ACTION_LIMIT;
         let b = buckets.get(key);
         if (!b || now() - b.since > 10_000) buckets.set(key, (b = { n: 0, since: now() }));
         if (++b.n > limit) {

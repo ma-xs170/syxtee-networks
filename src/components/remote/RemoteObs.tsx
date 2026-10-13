@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { coreFetch } from "../dashboard/coreClient";
 import MultiChat, { type ChatDefaults } from "../dashboard/MultiChat";
 import MultistreamPanel, { type MsState } from "./MultistreamPanel";
 import ProgramPreview, { type FrameSink } from "./ProgramPreview";
 import ProgramVideo, { type Watch } from "./ProgramVideo";
 import { GuardianBar } from "./GuardianBar";
+import { LiveExtras, SourceEditor } from "./EditTools";
+import SettingsPanel from "./SettingsPanel";
 import { useRemote, type LinkEvent } from "./useRemote";
 
 // Contrôle à distance : l'interface d'OBS dans un onglet. Chaque bouton agit sur le VRAI OBS du poste (par le plugin SYXTEE), et ce
@@ -21,7 +23,7 @@ type Trigger = "cut" | "cut_lowbitrate" | "sensitive";
 type Roles = { enabled: boolean; source: string; scene: string; freezeSeconds: number; recoverSeconds: number; trigger: Trigger; liveScene: string; state?: string; autoEnabled?: boolean; droneScene?: string; droneSource?: string; autoRules?: { source: string; scene: string }[]; audioEnabled?: boolean; audioSource?: string; audioSeconds?: number; audioUnmute?: boolean; audioBackup?: boolean; directorEnabled?: boolean; directorKeySet?: boolean; directorKey?: string; directorClearKey?: boolean; directorCams?: { source: string; scene: string; label: string }[]; directorRules?: string; directorInterval?: number; directorHold?: number; directorState?: string; directorCam?: number; directorReason?: string; directorWorkspaceId?: string; directorProvider?: "none" | "mistral" | "anthropic" | "local"; directorModel?: string; directorEco?: boolean; lowLatency?: boolean; audioState?: string };
 type Stats = { cpu: number; fps: number; kbps: number | null; dropped: number; total: number; encoder: string; congestion: number; streamMs: number; recMs: number };
 type Named = { current: string; list: string[] };
-type Tab = "scenes" | "sources" | "mixer" | "controls" | "multi" | "chat";
+type Tab = "scenes" | "sources" | "mixer" | "controls" | "multi" | "chat" | "settings";
 
 const KINDS: Record<string, string> = {
   ffmpeg_source: "Média",
@@ -128,6 +130,9 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
   const levelFrame = useRef(0);
   const volumeSend = useRef<Record<string, { at: number; timer?: ReturnType<typeof setTimeout> }>>({});
   const dialog = useRef<HTMLDialogElement>(null);
+  const settingsDialog = useRef<HTMLDialogElement>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [editItem, setEditItem] = useState<number | null>(null);
   const devicePanel = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -199,6 +204,14 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
   );
   const { link, agent, guardian, call, latency, guest } = useRemote(coreUrl, onEvent, deviceId, demoToken, invite);
   const canLive = !guest || guest.level === "full";
+  /** Propriétaire du compte (ni invité ni lien d'invitation) : seul à voir les paramètres d'OBS. */
+  const owner = !guest && !invite;
+  useEffect(() => {
+    const d = settingsDialog.current;
+    if (!d) return;
+    if (settingsOpen && !d.open) d.showModal();
+    else if (!settingsOpen && d.open) d.close();
+  }, [settingsOpen]);
 
   const run = useCallback(
     async <T = Record<string, unknown>,>(method: string, params?: Record<string, unknown>) => {
@@ -585,9 +598,12 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
         ) : (
           <ul>
             {items.map((i) => (
-              <li key={i.id} className="flex min-h-9 items-center gap-2 rounded px-2 hover:bg-[#101010]">
+              <Fragment key={i.id}>
+              <li className="flex min-h-9 items-center gap-2 rounded px-2 hover:bg-[#101010]">
                 <KindIcon kind={i.kind} />
-                <span className={`min-w-0 flex-1 truncate text-[13px] ${i.on ? "text-neutral-100" : "text-neutral-500 line-through"}`}>{i.name}</span>
+                <button type="button" aria-expanded={editItem === i.id} aria-label={`Modifier ${i.name}`} onClick={() => setEditItem((c) => (c === i.id ? null : i.id))} className={`min-w-0 flex-1 truncate text-left text-[13px] ${i.on ? "text-neutral-100" : "text-neutral-500 line-through"}`}>
+                  {i.name}
+                </button>
                 <span className="shrink-0 text-[12px] text-neutral-500">{i.flux ? "Flux SYXTEE" : kindLabel(i.kind)}</span>
                 <button
                   type="button"
@@ -602,6 +618,8 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
                   <Eye on={i.on} />
                 </button>
               </li>
+              {editItem === i.id && <li className="list-none"><SourceEditor call={call} sceneName={editing} itemId={i.id} name={i.name} kind={i.kind} canEdit={ready && canLive} /></li>}
+              </Fragment>
             ))}
           </ul>
         )}
@@ -712,6 +730,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
         </div>
         {streaming && stats && stats.congestion > 0.3 && <p className="px-3 pb-2 text-[12px] text-amber-400">Réseau du PC saturé.</p>}
       </section>
+      {ready && <LiveExtras call={call} streaming={streaming} canEdit={canLive} />}
      </div>
     </div>
   );
@@ -1105,6 +1124,11 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
             </div>
           )}
         </div>
+        {owner && (
+          <button type="button" disabled={!ready} onClick={() => setSettingsOpen(true)} className={`${flat} ${chatDefaults ? "" : "ml-auto "}h-7 shrink-0 px-3.5 max-lg:hidden`}>
+            Paramètres
+          </button>
+        )}
         {chatDefaults && (
           <button type="button" aria-pressed={chatOn} onClick={toggleChat} className={`${flat} ml-auto h-7 shrink-0 px-3.5 max-lg:hidden ${chatOn ? "!border-white/30 !bg-white/[0.14] !text-white" : ""}`}>
             Chat
@@ -1146,7 +1170,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
             {roles.audioState === "backup" ? `Micro « ${roles.audioSource} » muet : scène de secours à l'antenne, retour sur Live quand le son repart.` : roles.audioState === "muted" ? `Micro « ${roles.audioSource} » coupé : personne ne t'entend.` : `Silence sur « ${roles.audioSource} » depuis plus de ${roles.audioSeconds ?? 10} s : vérifie ton micro.`}
           </p>
         )}
-        <section aria-label="Programme" className={`relative grid min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-xl border border-white/[0.08] bg-[#0b0b0d] ${tab === "chat" ? "max-lg:max-h-0 max-lg:overflow-hidden max-lg:border-0 max-lg:landscape:max-h-none" : tab === "scenes" || tab === "sources" || tab === "mixer" ? "max-lg:aspect-[16/12]" : "max-lg:aspect-[16/8]"} max-lg:h-auto max-lg:landscape:aspect-auto max-lg:landscape:h-full max-lg:landscape:w-[56%] max-lg:landscape:shrink-0 lg:h-[64%]`}>
+        <section aria-label="Programme" className={`relative grid min-h-0 shrink-0 grid-rows-[auto_1fr] rounded-xl border border-white/[0.08] bg-[#0b0b0d] ${tab === "chat" || tab === "settings" ? "max-lg:max-h-0 max-lg:overflow-hidden max-lg:border-0 max-lg:landscape:max-h-none" : tab === "scenes" || tab === "sources" || tab === "mixer" ? "max-lg:aspect-[16/12]" : "max-lg:aspect-[16/8]"} max-lg:h-auto max-lg:landscape:aspect-auto max-lg:landscape:h-full max-lg:landscape:w-[56%] max-lg:landscape:shrink-0 lg:h-[64%]`}>
           <div className="flex min-w-0 items-center justify-between gap-2 px-3 py-2">
             {programLabel}
             <div className="flex shrink-0 gap-1.5">
@@ -1199,7 +1223,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
 
         {/* Mobile : panneaux en onglets (en paysage : à droite de l'aperçu) */}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 lg:contents">
-        <nav role="tablist" aria-label="Panneaux" className={`grid shrink-0 ${chatDefaults ? "grid-cols-6" : "grid-cols-5"} border-[#262626] bg-black max-lg:order-last max-lg:-mx-2 max-lg:-mb-2 max-lg:border-t max-lg:px-1 max-lg:pt-1 lg:hidden`}>
+        <nav role="tablist" aria-label="Panneaux" className={`grid shrink-0 ${{ 5: "grid-cols-5", 6: "grid-cols-6", 7: "grid-cols-7" }[5 + (chatDefaults ? 1 : 0) + (owner ? 1 : 0)]} border-[#262626] bg-black max-lg:order-last max-lg:-mx-2 max-lg:-mb-2 max-lg:border-t max-lg:px-1 max-lg:pt-1 lg:hidden`}>
           {(
             [
               ["scenes", "Scènes"],
@@ -1208,6 +1232,7 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
               ["controls", "Direct"],
               ["multi", "Multi"],
               ...(chatDefaults ? ([["chat", "Chat"]] as const) : []),
+              ...(owner ? ([["settings", "Réglages"]] as const) : []),
             ] as const
           ).map(([id, text]) => (
             <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={`relative flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-[11px] transition-colors active:scale-[0.97] ${tab === id ? "text-white" : "text-neutral-500"}`}>
@@ -1225,11 +1250,28 @@ export default function RemoteObs({ coreUrl, deviceId, demoToken, invite, chatDe
           {controlsPanel}
           {multiPanel}
           {chatBox && tab === "chat" && <div className="min-h-0 min-w-0 lg:hidden">{chatBox}</div>}
+          {owner && tab === "settings" && (
+            <section aria-label="Paramètres d'OBS" className={`${panel} flex min-h-0 min-w-0 flex-col lg:hidden`}>
+              <SettingsPanel call={call} streaming={streaming} canRestart={guardian.online} onRestart={() => void run("guardian.restartObs")} />
+            </section>
+          )}
         </div>
         </div>
       </main>
       {chatBox && chatOn && <aside aria-label="Chat" className="hidden min-h-0 w-[22rem] shrink-0 py-2 pr-2 lg:block xl:w-[26rem]">{chatBox}</aside>}
       </div>
+
+      {owner && (
+        <dialog
+          ref={settingsDialog}
+          onClose={() => setSettingsOpen(false)}
+          onClick={(e) => e.target === settingsDialog.current && setSettingsOpen(false)}
+          aria-label="Paramètres d'OBS"
+          className="m-auto h-[min(40rem,calc(100dvh-2rem))] w-[min(56rem,calc(100vw-2rem))] rounded-xl border border-[#333] bg-black p-0 text-neutral-100 backdrop:bg-black/70 open:flex open:flex-col"
+        >
+          {settingsOpen && <SettingsPanel call={call} streaming={streaming} canRestart={guardian.online} onRestart={() => void run("guardian.restartObs")} onClose={() => setSettingsOpen(false)} />}
+        </dialog>
+      )}
 
       <dialog
         ref={dialog}
@@ -1326,6 +1368,11 @@ function TabIcon({ id }: { id: Tab }) {
         <>
           <circle cx="12" cy="12" r="2" fill="currentColor" />
           <path d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7M5.5 5.5a9 9 0 0 0 0 13M18.5 5.5a9 9 0 0 1 0 13" />
+        </>
+      ) : id === "settings" ? (
+        <>
+          <circle cx="12" cy="12" r="3" />
+          <path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8" />
         </>
       ) : id === "chat" ? (
         <path d="M4 5h16v11H9l-5 4V5Z" />

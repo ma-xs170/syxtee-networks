@@ -601,3 +601,22 @@ test("gardien : jeton inconnu refusé, invités sans accès", async () => {
   for (const level of ["view", "scenes", "full"] as const) for (const m of ["guardian.launchObs", "guardian.status", "guardian.setWatch"]) assert.equal(guestAllows(level, m), false, `${level} ${m}`);
   stop();
 });
+
+test("édition à distance : méthodes autorisées, invités limités, texte jamais écrit au journal", async () => {
+  for (const m of ["SetSourceFilterEnabled", "SetSceneItemTransform", "TriggerMediaInputAction", "SaveReplayBuffer", "link.setText", "link.setUrl", "link.setBitrate", "link.listEditable", "GetSourceFilterList"]) assert.ok(ALLOWED.has(m), m);
+  // Toujours pas de suppression, de création ni de réglage libre d'une source.
+  for (const m of ["RemoveInput", "RemoveScene", "CreateInput", "SetInputSettings", "SetStreamServiceSettings", "SetVideoSettings"]) assert.ok(!ALLOWED.has(m), m);
+  for (const m of ["SetSourceFilterEnabled", "SetSceneItemTransform", "TriggerMediaInputAction", "SaveReplayBuffer", "link.setText", "link.setUrl", "link.setBitrate"]) {
+    assert.equal(guestAllows("view", m), false, `view ${m}`);
+    assert.equal(guestAllows("scenes", m), false, `scenes ${m}`);
+    assert.equal(guestAllows("full", m), true, `full ${m}`);
+  }
+  // Lectures permises à tous les invités.
+  for (const level of ["view", "scenes", "full"] as const) for (const m of ["GetSourceFilterList", "GetSceneItemTransform", "GetReplayBufferStatus", "link.listEditable", "link.getBitrate"]) assert.equal(guestAllows(level, m), true, `${level} ${m}`);
+});
+
+test("paramètres d'OBS : réservés au propriétaire, jamais aux invités, aucune méthode de clé de stream", () => {
+  assert.ok(ALLOWED.has("link.settingsGet") && ALLOWED.has("link.settingsSet"));
+  for (const level of ["view", "scenes", "full"] as const) for (const m of ["link.settingsGet", "link.settingsSet"]) assert.equal(guestAllows(level, m), false, `${level} ${m}`);
+  for (const m of ALLOWED) assert.ok(!/key|password|secret|token/i.test(m), m);
+});

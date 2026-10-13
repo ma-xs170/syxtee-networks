@@ -1,4 +1,7 @@
 {
+  "0.9.0": [
+    "Contrôle à distance : onglet Paramètres comme OBS (sortie, vidéo, audio, avancé), édition d'une source (texte, lien, filtres, position, taille, rotation, médias), débit du direct à chaud et tampon de relecture"
+  ],
   "0.8.2": [
     "Gardien : la mise à jour du plugin relance correctement le Gardien (il n'est plus laissé arrêté après une réinstallation)"
   ],

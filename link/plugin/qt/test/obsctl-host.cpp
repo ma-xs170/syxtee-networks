@@ -27,6 +27,12 @@ int main(int argc, char **argv)
 	obs_source_t *mic = stub_input("Micro", "coreaudio_input_capture", OBS_SOURCE_AUDIO);
 	obs_source_t *cam = stub_input("Flux › IPHONE 16", "ffmpeg_source", OBS_SOURCE_VIDEO | OBS_SOURCE_AUDIO);
 	obs_source_t *txt = stub_input("Texte", "text_ft2_source", OBS_SOURCE_VIDEO);
+	obs_source_t *web = stub_input("Overlay", "browser_source", OBS_SOURCE_VIDEO);
+	obs_source_t *clip = stub_input("Clip", "ffmpeg_source", OBS_SOURCE_VIDEO | OBS_SOURCE_CONTROLLABLE_MEDIA);
+	stub_add_filter(cam, "Noir et blanc", "color_filter_v2", false);
+	stub_add_filter(cam, "Masque", "mask_filter_v2", true);
+	(void)web;
+	(void)clip;
 	stub_add_item(live, cam);
 	stub_add_item(live, mic);
 	stub_add_item(live, txt);
@@ -65,6 +71,10 @@ int main(int argc, char **argv)
 			else if (c == "wizardset") stub_wizard_set(line.section(' ', 1, -2).trimmed().toUtf8().constData(), a.last() == "1");
 			else if (c == "wizardclick") printf("CLICK %d\n", stub_wizard_click(rest.constData()) ? 1 : 0);
 			else if (c == "dump") printf("DUMP %s ALIVE %d\n", stub_dump().c_str(), stub_wizard_alive() ? 1 : 0);
+			else if (c == "cfg") printf("CFG %s\n", stub_cfg(a.value(1) == "user", a1.size() ? a.value(2).toUtf8().constData() : "", a.value(3).toUtf8().constData()).c_str());
+			else if (c == "cfgset") stub_cfg_set(a.value(1) == "user", a.value(2).toUtf8().constData(), a.value(3).toUtf8().constData(), a.value(4).toUtf8().constData());
+			else if (c == "cfgsaves") printf("SAVES %d\n", stub_cfg_saves(a.value(1) == "user"));
+			else if (c == "bitrate") stub_set_bitrate(a.value(1).toLongLong());
 			else if (c == "nowhip") stub_whip_available(false);
 			else if (c == "whipfail") stub_whip_fails(true);
 			else if (c == "whipdrop") stub_whip_drop("réseau coupé");
@@ -82,6 +92,13 @@ int main(int argc, char **argv)
 				o["liveItems"] = stub_item_count("🔴 › EN DIRECT");
 				o["liveItem1"] = stub_item_visible("🔴 › EN DIRECT", 1);
 				o["liveItem3"] = stub_item_visible("🔴 › EN DIRECT", 3);
+				o["filterBw"] = stub_filter_enabled("Flux › IPHONE 16", "Noir et blanc");
+				o["mediaLast"] = QString::fromStdString(stub_media_last());
+				o["replay"] = stub_replay_active();
+				o["replaySaves"] = stub_replay_saves();
+				o["bitrate"] = double(stub_bitrate());
+				o["text"] = QString::fromStdString(stub_setting("Texte", "text"));
+				o["url"] = QString::fromStdString(stub_setting("Overlay", "url"));
 				printf("STATE %s\n", QJsonDocument(o).toJson(QJsonDocument::Compact).constData());
 				fflush(stdout);
 			} else if (c == "quit") {

@@ -4,6 +4,7 @@
 #include <obs-module.h>
 #include <obs-audio-controls.h>
 #include <util/platform.h>
+#include <util/config-file.h>
 
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -39,11 +40,15 @@ struct obs_source {
 	std::vector<struct obs_scene_item *> items;
 	QJsonObject settings;
 	bool enabled = true;
+	std::vector<obs_source *> filters;
 };
 struct obs_scene_item {
 	int64_t id;
 	obs_source *src;
 	bool vis = true;
+	vec2 pos{0, 0}, scale{1, 1};
+	float rot = 0;
+	obs_sceneitem_crop crop{0, 0, 0, 0};
 };
 struct obs_volmeter {
 	obs_source *src = nullptr;
@@ -82,6 +87,9 @@ std::vector<obs_volmeter *> meters;
 obs_output streamOut, recOut;
 obs_encoder enc;
 int64_t nextItemId = 1;
+std::string mediaLast;
+bool replayActive = false;
+int replaySaves = 0;
 bool whipAvailable = true, whipFails = false;
 QJsonObject whipLog;
 obs_output *whipOut = nullptr;
@@ -234,6 +242,29 @@ int stub_item_count(const char *scene)
 		if (s->name == scene) return int(s->items.size());
 	return -1;
 }
+obs_source_t *stub_add_filter(obs_source_t *src, const char *name, const char *id, bool enabled)
+{
+	auto *f = new obs_source;
+	f->name = name;
+	f->id = id;
+	f->type = OBS_SOURCE_TYPE_FILTER;
+	f->enabled = enabled;
+	src->filters.push_back(f);
+	return f;
+}
+bool stub_filter_enabled(const char *src, const char *name)
+{
+	for (auto *s : all)
+		if (s->name == src)
+			for (auto *f : s->filters)
+				if (f->name == name) return f->enabled;
+	return false;
+}
+std::string stub_media_last() { return mediaLast; }
+bool stub_replay_active() { return replayActive; }
+int stub_replay_saves() { return replaySaves; }
+long long stub_bitrate() { return static_cast<long long>(enc.settings.value("bitrate").toDouble()); }
+void stub_set_bitrate(long long k) { enc.settings["bitrate"] = double(k); }
 std::string stub_setting(const char *input, const char *key)
 {
 	for (auto *s : all)
@@ -383,6 +414,41 @@ uint32_t obs_source_get_base_height(obs_source_t *) { return 1080; }
 void obs_source_inc_showing(obs_source_t *) {}
 void obs_source_dec_showing(obs_source_t *) {}
 void obs_source_video_render(obs_source_t *) {}
+void obs_source_enum_filters(obs_source_t *s, obs_source_enum_proc_t cb, void *param)
+{
+	for (auto *f : s->filters) cb(s, f, param);
+}
+obs_source_t *obs_source_get_filter_by_name(obs_source_t *s, const char *name)
+{
+	for (auto *f : s->filters)
+		if (f->name == name) {
+			f->refs++;
+			return f;
+		}
+	return nullptr;
+}
+bool obs_source_enabled(const obs_source_t *s) { return s->enabled; }
+void obs_source_media_play_pause(obs_source_t *, bool pause) { mediaLast = pause ? "PAUSE" : "PLAY"; }
+void obs_source_media_restart(obs_source_t *) { mediaLast = "RESTART"; }
+void obs_source_media_stop(obs_source_t *) { mediaLast = "STOP"; }
+void obs_source_media_next(obs_source_t *) { mediaLast = "NEXT"; }
+void obs_source_media_previous(obs_source_t *) { mediaLast = "PREVIOUS"; }
+void obs_sceneitem_set_pos(obs_sceneitem_t *i, const vec2 *p) { i->pos = *p; }
+void obs_sceneitem_get_pos(const obs_sceneitem_t *i, vec2 *p) { *p = i->pos; }
+void obs_sceneitem_set_scale(obs_sceneitem_t *i, const vec2 *p) { i->scale = *p; }
+void obs_sceneitem_get_scale(const obs_sceneitem_t *i, vec2 *p) { *p = i->scale; }
+void obs_sceneitem_set_rot(obs_sceneitem_t *i, float r) { i->rot = r; }
+float obs_sceneitem_get_rot(const obs_sceneitem_t *i) { return i->rot; }
+void obs_sceneitem_set_crop(obs_sceneitem_t *i, const obs_sceneitem_crop *c) { i->crop = *c; }
+void obs_sceneitem_get_crop(const obs_sceneitem_t *i, obs_sceneitem_crop *c) { *c = i->crop; }
+void obs_frontend_replay_buffer_start(void) { replayActive = true; }
+void obs_frontend_replay_buffer_stop(void) { replayActive = false; }
+void obs_frontend_replay_buffer_save(void) { replaySaves++; }
+bool obs_frontend_replay_buffer_active(void) { return replayActive; }
+void obs_encoder_update(obs_encoder_t *e, obs_data_t *d)
+{
+	for (auto it = d->j.begin(); it != d->j.end(); ++it) e->settings[it.key()] = it.value();
+}
 enum obs_media_state obs_source_media_get_state(obs_source_t *) { return OBS_MEDIA_STATE_PLAYING; }
 int64_t obs_source_media_get_duration(obs_source_t *) { return 60000; }
 int64_t obs_source_media_get_time(obs_source_t *) { return 1500; }
@@ -501,10 +567,10 @@ void obs_output_release(obs_output_t *o)
 }
 const char *obs_encoder_get_id(const obs_encoder_t *) { return "stub_encoder"; }
 const char *obs_encoder_get_display_name(const char *) { return "Encodeur matériel (stub)"; }
-obs_data_t *obs_encoder_get_settings(const obs_encoder_t *)
+obs_data_t *obs_encoder_get_settings(const obs_encoder_t *e)
 {
 	auto *d = new obs_data;
-	d->j["bitrate"] = 6000;
+	d->j["bitrate"] = e->settings.contains("bitrate") ? e->settings.value("bitrate") : QJsonValue(6000);
 	return d;
 }
 
@@ -883,3 +949,75 @@ std::string stub_dump()
 	}
 	return QJsonDocument(QJsonObject{{"sources", sources}, {"scenes", scenes}}).toJson(QJsonDocument::Compact).toStdString();
 }
+
+// ───── Multistream et configuration (symboles appelés par obsctl.cpp ; sans effet dans le faux OBS) ─────
+static obs_service stubService{"rtmp_common", QJsonObject()};
+obs_service_t *obs_frontend_get_streaming_service(void) { return &stubService; }
+obs_data_t *obs_service_get_settings(const obs_service_t *s)
+{
+	auto *d = new obs_data;
+	d->j = s->settings;
+	return d;
+}
+void obs_output_force_stop(obs_output_t *o) { o->active = false; }
+obs_encoder_t *obs_output_get_audio_encoder(const obs_output_t *, size_t) { return &enc; }
+const char *obs_source_get_unversioned_id(const obs_source_t *s) { return s->id.c_str(); }
+char *os_get_config_path_ptr(const char *name) { return strdup((std::string("/tmp/obsctl-stub-config/") + name).c_str()); }
+int os_mkdirs(const char *) { return 0; }
+
+// ───── Configuration d'OBS (profil et utilisateur) en mémoire ─────
+struct config_data {
+	std::map<std::string, std::string> v;
+	int saves = 0;
+};
+static config_data profileCfg, userCfg;
+static void seedConfigs()
+{
+	static bool done = false;
+	if (done) return;
+	done = true;
+	auto &p = profileCfg.v;
+	p["Output|Mode"] = "Simple";
+	p["SimpleOutput|VBitrate"] = "6000";
+	p["SimpleOutput|ABitrate"] = "160";
+	p["SimpleOutput|RecRB"] = "true";
+	p["SimpleOutput|RecRBTime"] = "20";
+	p["AdvOut|Track1Bitrate"] = "192";
+	p["AdvOut|RecRBTime"] = "30";
+	p["Output|Reconnect"] = "true";
+	p["Output|RetryDelay"] = "2";
+	p["Output|MaxRetries"] = "20";
+	p["Output|DelaySec"] = "20";
+	p["Video|BaseCX"] = "1920";
+	p["Video|BaseCY"] = "1080";
+	p["Video|OutputCX"] = "1920";
+	p["Video|OutputCY"] = "1080";
+	p["Video|FPSCommon"] = "60";
+	p["Audio|SampleRate"] = "48000";
+	p["Audio|ChannelSetup"] = "Stereo";
+	userCfg.v["BasicWindow|RecordWhenStreaming"] = "false";
+}
+static std::string ck(const char *sec, const char *name) { return std::string(sec) + "|" + name; }
+config_t *obs_frontend_get_profile_config(void) { seedConfigs(); return &profileCfg; }
+config_t *obs_frontend_get_user_config(void) { seedConfigs(); return &userCfg; }
+const char *config_get_string(config_t *c, const char *sec, const char *name)
+{
+	auto it = c->v.find(ck(sec, name));
+	return it == c->v.end() ? "" : it->second.c_str();
+}
+uint64_t config_get_uint(config_t *c, const char *sec, const char *name) { return std::strtoull(config_get_string(c, sec, name), nullptr, 10); }
+int64_t config_get_int(config_t *c, const char *sec, const char *name) { return std::strtoll(config_get_string(c, sec, name), nullptr, 10); }
+bool config_get_bool(config_t *c, const char *sec, const char *name) { return std::string(config_get_string(c, sec, name)) == "true"; }
+void config_set_string(config_t *c, const char *sec, const char *name, const char *v) { c->v[ck(sec, name)] = v; }
+void config_set_uint(config_t *c, const char *sec, const char *name, uint64_t v) { c->v[ck(sec, name)] = std::to_string(v); }
+void config_set_int(config_t *c, const char *sec, const char *name, int64_t v) { c->v[ck(sec, name)] = std::to_string(v); }
+void config_set_bool(config_t *c, const char *sec, const char *name, bool v) { c->v[ck(sec, name)] = v ? "true" : "false"; }
+int config_save_safe(config_t *c, const char *, const char *)
+{
+	c->saves++;
+	return 0;
+}
+char *obs_frontend_get_current_profile_path(void) { return strdup("/tmp/obsctl-stub-profile"); }
+std::string stub_cfg(bool user, const char *sec, const char *name) { return config_get_string(user ? &userCfg : (seedConfigs(), &profileCfg), sec, name); }
+void stub_cfg_set(bool user, const char *sec, const char *name, const char *v) { config_set_string(user ? &userCfg : (seedConfigs(), &profileCfg), sec, name, v); }
+int stub_cfg_saves(bool user) { return (user ? userCfg : profileCfg).saves; }

@@ -19,7 +19,7 @@ import { fixLiveScene, fluxName } from "./livescene.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
 import { takeResume, writeStreaming } from "./state.ts";
 
-export const VERSION = "0.8.2";
+export const VERSION = "0.9.0";
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
 export const OBS_METHODS = new Set([
@@ -28,10 +28,14 @@ export const OBS_METHODS = new Set([
   "GetSceneTransitionList", "GetCurrentSceneTransition", "GetVideoSettings",
   "SetCurrentProgramScene", "SetCurrentSceneTransition", "SetCurrentPreviewScene", "SetStudioModeEnabled", "TriggerStudioModeTransition", "SetSceneItemEnabled",
   "GetProfileList", "SetCurrentProfile", "GetSceneCollectionList", "SetCurrentSceneCollection", "GetInputAudioMonitorType", "SetInputAudioMonitorType", "GetOutputStats",
+  "GetSourceFilterList", "SetSourceFilterEnabled", "GetSceneItemTransform", "SetSceneItemTransform", "TriggerMediaInputAction",
+  "GetReplayBufferStatus", "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer",
   "SetInputMute", "SetInputVolume", "StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord",
 ]);
 
 /** Sorties multistream gérées par le plugin (liste, ajout, retrait, démarrage, arrêt). */
+/** Édition à distance gérée par le plugin : textes et liens, débit du direct. */
+export const EDIT_METHODS = new Set(["link.listEditable", "link.setText", "link.setUrl", "link.getBitrate", "link.setBitrate", "link.settingsGet", "link.settingsSet"]);
 export const MULTISTREAM_METHODS = new Set(["link.multistreamList", "link.multistreamSave", "link.multistreamRemove", "link.multistreamStart", "link.multistreamStop"]);
 
 /** Événements OBS relayés vers le navigateur (les niveaux audio sont limités à 20 images par seconde). */
@@ -781,6 +785,7 @@ export class Agent {
       }
       if (method === "link.preview") return reply(true, {});
       // Multistream : les sorties (adresse + clé) vivent dans le plugin, sur le PC.
+      if (EDIT_METHODS.has(method)) return reply(true, await this.obs.request(method, params));
       if (MULTISTREAM_METHODS.has(method)) return reply(true, await this.obs.request(method, params));
       if (!OBS_METHODS.has(method)) return reply(false, undefined, "method_not_allowed");
       reply(true, await this.obs.request(method, params));

@@ -11,6 +11,7 @@
 #include <obs-module.h>
 #include <obs-audio-controls.h>
 #include <util/platform.h>
+#include <util/config-file.h>
 
 #include <QBuffer>
 #include <QByteArray>
@@ -28,8 +29,10 @@
 #include <QLocalSocket>
 #include <QMutex>
 #include <QPointer>
+#include <QSaveFile>
 #include <QSet>
 #include <QTimer>
+#include <algorithm>
 #include <cmath>
 #include <functional>
 #include <map>
@@ -1181,6 +1184,289 @@ QString req(const Json &d, const char *k) { return d.value(k).toString(); }
 
 Json okEmpty() { return Json(); }
 
+// ───── Édition à distance : textes, filtres, position, médias, replay, débit ─────
+// Chaque demande est étroite et bornée : pas de réglage libre d'une source, pas de suppression.
+bool isTextKind(const QString &k) { return k.startsWith("text_ft2_source") || k.startsWith("text_gdiplus"); }
+bool isBrowserKind(const QString &k) { return k == "browser_source"; }
+
+struct FilterCtx {
+	QJsonArray arr;
+	int idx = 0;
+};
+void enumFilter(obs_source_t *, obs_source_t *f, void *param)
+{
+	auto *c = static_cast<FilterCtx *>(param);
+	Json j;
+	j["filterName"] = q(obs_source_get_name(f));
+	j["filterKind"] = q(obs_source_get_id(f));
+	j["filterEnabled"] = obs_source_enabled(f);
+	j["filterIndex"] = c->idx++;
+	c->arr.append(j);
+}
+
+/** Nombre fini dans [lo, hi], sinon erreur claire. */
+double boundedNum(const Json &d, const char *k, double cur, double lo, double hi)
+{
+	if (!d.contains(k)) return cur;
+	const double v = d.value(k).toDouble(qQNaN());
+	if (!std::isfinite(v)) throw Fail{QString("Valeur « %1 » invalide.").arg(k)};
+	return std::min(hi, std::max(lo, v));
+}
+
+Json transformJson(obs_sceneitem_t *it)
+{
+	vec2 pos, scale;
+	obs_sceneitem_crop crop;
+	obs_sceneitem_get_pos(it, &pos);
+	obs_sceneitem_get_scale(it, &scale);
+	obs_sceneitem_get_crop(it, &crop);
+	Json t;
+	t["positionX"] = double(pos.x);
+	t["positionY"] = double(pos.y);
+	t["scaleX"] = double(scale.x);
+	t["scaleY"] = double(scale.y);
+	t["rotation"] = double(obs_sceneitem_get_rot(it));
+	t["cropLeft"] = crop.left;
+	t["cropTop"] = crop.top;
+	t["cropRight"] = crop.right;
+	t["cropBottom"] = crop.bottom;
+	return t;
+}
+
+obs_sceneitem_t *itemOf(const Json &d)
+{
+	Src s(req(d, "sceneName"));
+	obs_sceneitem_t *it = obs_scene_find_sceneitem_by_id(sceneNamed(s), int64_t(d.value("sceneItemId").toDouble()));
+	if (!it) throw Fail{"Élément de scène introuvable."};
+	return it;
+}
+
+/** Débit vidéo du direct (kbit/s) : lecture, et changement à chaud (non enregistré dans le profil), borné. */
+Json videoBitrate(int setKbps)
+{
+	obs_output_t *o = obs_frontend_get_streaming_output();
+	if (!o) throw Fail{"Le direct n'est pas démarré."};
+	Json r;
+	obs_encoder_t *enc = obs_output_get_video_encoder(o);
+	if (enc) {
+		if (setKbps > 0) {
+			obs_data_t *u = dataFrom(Json{{"bitrate", setKbps}});
+			obs_encoder_update(enc, u);
+			obs_data_release(u);
+		}
+		obs_data_t *st = obs_encoder_get_settings(enc);
+		r["bitrate"] = int(obs_data_get_int(st, "bitrate"));
+		obs_data_release(st);
+	}
+	obs_output_release(o);
+	return r;
+}
+
+// ───── Paramètres d'OBS à distance (liste blanche) ─────
+// Seuls les réglages ci-dessous sont lisibles et modifiables, avec leurs bornes. Jamais de clé de stream, de chemin, d'encodeur libre ni de script.
+// Les clés viennent de la configuration d'OBS (profil : basic.ini ; utilisateur : user.ini) comme dans la fenêtre Paramètres d'OBS.
+struct SettingDef {
+	const char *id, *group, *label, *kind; // kind : bool, int, enum, ro
+	bool user;                              // true : user.ini (BasicWindow…), sinon basic.ini du profil
+	const char *section, *name;
+	const char *advSection;                 // section utilisée à la place si le mode de sortie est « Avancé » (même nom), sinon nullptr
+	int lo, hi;
+	std::vector<QString> opts;
+	bool numeric;                           // énumération stockée comme nombre
+	bool lockLive;                          // refusé pendant le direct
+	const char *applies;                    // now, next_stream, restart
+};
+
+const std::vector<SettingDef> &settingDefs()
+{
+	static const std::vector<SettingDef> d = {
+		{"output_mode", "output", "Mode de sortie", "ro", false, "Output", "Mode", nullptr, 0, 0, {}, false, false, "now"},
+		{"video_bitrate", "output", "Débit vidéo (kbit/s)", "int", false, "", "", nullptr, 500, 20000, {}, false, false, "next_stream"},
+		{"audio_bitrate", "output", "Débit audio (kbit/s)", "enum", false, "SimpleOutput", "ABitrate", nullptr, 0, 0, {"64", "96", "128", "160", "192", "256", "320"}, true, false, "next_stream"},
+		{"record_when_streaming", "output", "Enregistrer automatiquement lors d'un stream", "bool", true, "BasicWindow", "RecordWhenStreaming", nullptr, 0, 0, {}, false, false, "next_stream"},
+		{"keep_recording", "output", "Continuer à enregistrer lorsque le stream s'arrête", "bool", true, "BasicWindow", "KeepRecordingWhenStreamStops", nullptr, 0, 0, {}, false, false, "now"},
+		{"replay_enabled", "output", "Tampon de relecture activé", "bool", false, "SimpleOutput", "RecRB", "AdvOut", 0, 0, {}, false, false, "next_stream"},
+		{"replay_seconds", "output", "Durée du tampon de relecture (s)", "int", false, "SimpleOutput", "RecRBTime", "AdvOut", 5, 1200, {}, false, false, "next_stream"},
+		{"replay_while_streaming", "output", "Démarrer le tampon de relecture avec le stream", "bool", true, "BasicWindow", "ReplayBufferWhileStreaming", nullptr, 0, 0, {}, false, false, "next_stream"},
+		{"keep_replay", "output", "Garder le tampon actif à l'arrêt du stream", "bool", true, "BasicWindow", "KeepReplayBufferStreamStops", nullptr, 0, 0, {}, false, false, "now"},
+		{"warn_start_stream", "output", "Confirmation au démarrage d'un stream", "bool", true, "BasicWindow", "WarnBeforeStartingStream", nullptr, 0, 0, {}, false, false, "now"},
+		{"warn_stop_stream", "output", "Confirmation à l'arrêt d'un stream", "bool", true, "BasicWindow", "WarnBeforeStoppingStream", nullptr, 0, 0, {}, false, false, "now"},
+		{"warn_stop_record", "output", "Confirmation avant d'arrêter un enregistrement", "bool", true, "BasicWindow", "WarnBeforeStoppingRecord", nullptr, 0, 0, {}, false, false, "now"},
+		{"base_resolution", "video", "Résolution de base (canevas)", "ro", false, "", "", nullptr, 0, 0, {}, false, false, "now"},
+		{"resolution", "video", "Résolution de sortie", "enum", false, "", "", nullptr, 0, 0, {"640x360", "854x480", "1280x720", "1920x1080", "2560x1440", "3840x2160"}, false, true, "restart"},
+		{"fps", "video", "Images par seconde", "enum", false, "Video", "FPSCommon", nullptr, 0, 0, {"24", "25", "30", "48", "50", "60"}, false, true, "restart"},
+		{"sample_rate", "audio", "Fréquence d'échantillonnage (Hz)", "enum", false, "Audio", "SampleRate", nullptr, 0, 0, {"44100", "48000"}, true, true, "restart"},
+		{"channels", "audio", "Canaux", "enum", false, "Audio", "ChannelSetup", nullptr, 0, 0, {"Mono", "Stereo"}, false, true, "restart"},
+		{"reconnect", "network", "Reconnexion automatique", "bool", false, "Output", "Reconnect", nullptr, 0, 0, {}, false, false, "next_stream"},
+		{"retry_delay", "network", "Délai avant nouvel essai (s)", "int", false, "Output", "RetryDelay", nullptr, 1, 300, {}, false, false, "next_stream"},
+		{"max_retries", "network", "Nombre maximal d'essais", "int", false, "Output", "MaxRetries", nullptr, 1, 100, {}, false, false, "next_stream"},
+		{"delay_enable", "network", "Délai du stream", "bool", false, "Output", "DelayEnable", nullptr, 0, 0, {}, false, false, "next_stream"},
+		{"delay_seconds", "network", "Durée du délai (s)", "int", false, "Output", "DelaySec", nullptr, 0, 900, {}, false, false, "next_stream"},
+		{"delay_preserve", "network", "Préserver le point de coupure (reconnexion)", "bool", false, "Output", "DelayPreserve", nullptr, 0, 0, {}, false, false, "next_stream"},
+	};
+	return d;
+}
+
+config_t *cfgOf(const SettingDef &d) { return d.user ? obs_frontend_get_user_config() : obs_frontend_get_profile_config(); }
+bool advancedOutput()
+{
+	config_t *c = obs_frontend_get_profile_config();
+	return c && QString::fromUtf8(config_get_string(c, "Output", "Mode")) == "Advanced";
+}
+const char *sectionOf(const SettingDef &d) { return d.advSection && advancedOutput() ? d.advSection : d.section; }
+
+/** Dossier du profil courant (streamEncoder.json y vit en mode Avancé). */
+QString profileDir()
+{
+	char *p = obs_frontend_get_current_profile_path();
+	const QString s = p ? QString::fromUtf8(p) : QString();
+	if (p) bfree(p);
+	return s;
+}
+
+/** Débit vidéo : mode Simple, basic.ini ; mode Avancé, streamEncoder.json du profil (comme la fenêtre Paramètres d'OBS). */
+int videoBitrateGet()
+{
+	if (!advancedOutput()) return int(config_get_uint(obs_frontend_get_profile_config(), "SimpleOutput", "VBitrate"));
+	QFile f(profileDir() + "/streamEncoder.json");
+	if (!f.open(QIODevice::ReadOnly)) return 0;
+	return QJsonDocument::fromJson(f.readAll()).object().value("bitrate").toInt(0);
+}
+void videoBitrateSet(int kbps)
+{
+	if (!advancedOutput()) {
+		config_set_uint(obs_frontend_get_profile_config(), "SimpleOutput", "VBitrate", uint64_t(kbps));
+		return;
+	}
+	const QString path = profileDir() + "/streamEncoder.json";
+	Json o;
+	QFile f(path);
+	if (f.open(QIODevice::ReadOnly)) {
+		o = QJsonDocument::fromJson(f.readAll()).object();
+		f.close();
+	}
+	o["bitrate"] = kbps;
+	QSaveFile out(path);
+	if (!out.open(QIODevice::WriteOnly)) throw Fail{"Impossible d'écrire le débit du profil."};
+	out.write(QJsonDocument(o).toJson(QJsonDocument::Compact));
+	if (!out.commit()) throw Fail{"Impossible d'écrire le débit du profil."};
+}
+
+QJsonValue settingValue(const SettingDef &d)
+{
+	const QString id = d.id;
+	config_t *pc = obs_frontend_get_profile_config();
+	if (id == "video_bitrate") return videoBitrateGet();
+	if (id == "base_resolution") return QString("%1x%2").arg(config_get_uint(pc, "Video", "BaseCX")).arg(config_get_uint(pc, "Video", "BaseCY"));
+	if (id == "resolution") return QString("%1x%2").arg(config_get_uint(pc, "Video", "OutputCX")).arg(config_get_uint(pc, "Video", "OutputCY"));
+	if (id == "audio_bitrate") return QString::number(config_get_uint(pc, advancedOutput() ? "AdvOut" : "SimpleOutput", advancedOutput() ? "Track1Bitrate" : "ABitrate"));
+	config_t *c = cfgOf(d);
+	if (!c) return QJsonValue();
+	const QString k = d.kind;
+	if (k == "bool") return config_get_bool(c, sectionOf(d), d.name);
+	if (k == "int") return int(config_get_uint(c, sectionOf(d), d.name));
+	if (d.numeric) return QString::number(config_get_uint(c, sectionOf(d), d.name));
+	return q(config_get_string(c, sectionOf(d), d.name));
+}
+
+Json settingsList()
+{
+	QJsonArray arr;
+	for (const auto &d : settingDefs()) {
+		Json j;
+		j["id"] = d.id;
+		j["group"] = d.group;
+		j["label"] = d.label;
+		j["kind"] = d.kind;
+		j["value"] = settingValue(d);
+		j["applies"] = d.applies;
+		j["lockLive"] = d.lockLive;
+		if (QString(d.kind) == "int") {
+			j["min"] = d.lo;
+			j["max"] = d.hi;
+		}
+		if (QString(d.kind) == "enum") {
+			QJsonArray o;
+			for (const auto &v : d.opts) o.append(v);
+			j["options"] = o;
+		}
+		arr.append(j);
+	}
+	obs_output_t *so = obs_frontend_get_streaming_output();
+	Json r;
+	r["settings"] = arr;
+	r["streaming"] = so && obs_output_active(so);
+	if (so) obs_output_release(so);
+	return r;
+}
+
+/** Applique des changements { id: valeur }. Tout est validé avant la première écriture : un refus ne modifie rien. */
+Json settingsApply(const Json &changes)
+{
+	obs_output_t *so = obs_frontend_get_streaming_output();
+	const bool live = so && obs_output_active(so);
+	if (so) obs_output_release(so);
+	struct Pending {
+		const SettingDef *d;
+		QJsonValue v;
+	};
+	std::vector<Pending> todo;
+	for (auto it = changes.begin(); it != changes.end(); ++it) {
+		const SettingDef *def = nullptr;
+		for (const auto &d : settingDefs())
+			if (it.key() == d.id) def = &d;
+		if (!def || QString(def->kind) == "ro") throw Fail{QString("Réglage « %1 » inconnu ou non modifiable.").arg(it.key())};
+		if (live && def->lockLive) throw Fail{QString("« %1 » ne peut pas être changé pendant le direct.").arg(def->label)};
+		const QJsonValue v = it.value();
+		const QString k = def->kind;
+		if (k == "bool" && !v.isBool()) throw Fail{QString("« %1 » : oui ou non attendu.").arg(def->label)};
+		if (k == "int" || QString(def->id) == "video_bitrate") {
+			const double n = v.toDouble(qQNaN());
+			if (!std::isfinite(n) || n != std::floor(n) || n < def->lo || n > def->hi) throw Fail{QString("« %1 » : entre %2 et %3.").arg(def->label).arg(def->lo).arg(def->hi)};
+		}
+		if (k == "enum") {
+			const QString sv = v.isString() ? v.toString() : QString();
+			if (std::find(def->opts.begin(), def->opts.end(), sv) == def->opts.end()) throw Fail{QString("« %1 » : valeur non permise.").arg(def->label)};
+		}
+		todo.push_back({def, v});
+	}
+	bool profileDirty = false, userDirty = false;
+	for (const auto &p : todo) {
+		const SettingDef &d = *p.d;
+		const QString id = d.id, k = d.kind;
+		config_t *pc = obs_frontend_get_profile_config();
+		if (id == "video_bitrate") videoBitrateSet(p.v.toInt());
+		else if (id == "resolution") {
+			const QStringList wh = p.v.toString().split('x');
+			config_set_uint(pc, "Video", "OutputCX", wh[0].toUInt());
+			config_set_uint(pc, "Video", "OutputCY", wh[1].toUInt());
+			profileDirty = true;
+		} else if (id == "fps") {
+			config_set_uint(pc, "Video", "FPSType", 0); // 0 : valeurs usuelles
+			config_set_string(pc, "Video", "FPSCommon", p.v.toString().toUtf8().constData());
+			profileDirty = true;
+		} else if (id == "audio_bitrate") {
+			config_set_uint(pc, advancedOutput() ? "AdvOut" : "SimpleOutput", advancedOutput() ? "Track1Bitrate" : "ABitrate", p.v.toString().toUInt());
+			profileDirty = true;
+		} else if (k == "bool") {
+			config_set_bool(cfgOf(d), sectionOf(d), d.name, p.v.toBool());
+			(d.user ? userDirty : profileDirty) = true;
+		} else if (k == "int") {
+			config_set_uint(cfgOf(d), sectionOf(d), d.name, uint64_t(p.v.toInt()));
+			(d.user ? userDirty : profileDirty) = true;
+		} else if (d.numeric) {
+			config_set_uint(cfgOf(d), sectionOf(d), d.name, p.v.toString().toULongLong());
+			(d.user ? userDirty : profileDirty) = true;
+		} else {
+			config_set_string(cfgOf(d), sectionOf(d), d.name, p.v.toString().toUtf8().constData());
+			(d.user ? userDirty : profileDirty) = true;
+		}
+	}
+	if (profileDirty) config_save_safe(obs_frontend_get_profile_config(), "tmp", nullptr);
+	if (userDirty) config_save_safe(obs_frontend_get_user_config(), "tmp", nullptr);
+	return settingsList();
+}
+
 std::map<QString, Handler> &handlers()
 {
 	static std::map<QString, Handler> h = [] {
@@ -1421,6 +1707,149 @@ std::map<QString, Handler> &handlers()
 			Json r;
 			r["imageData"] = QString::fromLatin1(jpg.toBase64());
 			return r;
+		};
+
+		// Textes et liens : seuls les champs « text » (sources texte) et « url » (sources navigateur, http ou https) sont modifiables.
+		m["link.listEditable"] = [](const Json &) {
+			struct Ctx { QJsonArray arr; } ctx;
+			obs_enum_sources(
+				[](void *p, obs_source_t *src) {
+					auto *c = static_cast<Ctx *>(p);
+					if (obs_source_get_type(src) != OBS_SOURCE_TYPE_INPUT || c->arr.size() >= 100) return true;
+					const QString kind = q(obs_source_get_id(src));
+					const bool text = isTextKind(kind);
+					if (!text && !isBrowserKind(kind)) return true;
+					obs_data_t *st = obs_source_get_settings(src);
+					Json j;
+					j["inputName"] = q(obs_source_get_name(src));
+					j["inputKind"] = kind;
+					j["field"] = text ? "text" : "url";
+					j["value"] = q(obs_data_get_string(st, text ? "text" : "url"));
+					obs_data_release(st);
+					c->arr.append(j);
+					return true;
+				},
+				&ctx);
+			Json r;
+			r["inputs"] = ctx.arr;
+			return r;
+		};
+		m["link.setText"] = [](const Json &d) {
+			Src s(req(d, "inputName"));
+			obs_source_t *src = s.need("Entrée");
+			if (!isTextKind(q(obs_source_get_id(src)))) throw Fail{"Cette source n'est pas un texte."};
+			const QString t = req(d, "text");
+			if (t.size() > 2000) throw Fail{"Texte trop long (2000 caractères au plus)."};
+			obs_data_t *u = dataFrom(Json{{"text", t}});
+			obs_source_update(src, u);
+			obs_data_release(u);
+			return okEmpty();
+		};
+		m["link.setUrl"] = [](const Json &d) {
+			Src s(req(d, "inputName"));
+			obs_source_t *src = s.need("Entrée");
+			if (!isBrowserKind(q(obs_source_get_id(src)))) throw Fail{"Cette source n'est pas une page web."};
+			const QString url = req(d, "url").trimmed();
+			if (url.size() > 2000 || !(url.startsWith("https://") || url.startsWith("http://"))) throw Fail{"Adresse invalide : elle doit commencer par https:// ou http://."};
+			obs_data_t *u = dataFrom(Json{{"url", url}});
+			obs_source_update(src, u);
+			obs_data_release(u);
+			return okEmpty();
+		};
+
+		// Filtres : liste et activation seulement (jamais d'ajout, de retrait ni de réglage).
+		m["GetSourceFilterList"] = [](const Json &d) {
+			Src s(req(d, "sourceName"));
+			FilterCtx c;
+			obs_source_enum_filters(s.need(), enumFilter, &c);
+			Json r;
+			r["filters"] = c.arr;
+			return r;
+		};
+		m["SetSourceFilterEnabled"] = [](const Json &d) {
+			Src s(req(d, "sourceName"));
+			obs_source_t *f = obs_source_get_filter_by_name(s.need(), req(d, "filterName").toUtf8().constData());
+			if (!f) throw Fail{"Filtre introuvable."};
+			obs_source_set_enabled(f, d.value("filterEnabled").toBool());
+			obs_source_release(f);
+			return okEmpty();
+		};
+
+		// Position, taille, rotation, recadrage d'une source dans une scène (valeurs bornées).
+		m["GetSceneItemTransform"] = [](const Json &d) {
+			Json r;
+			r["sceneItemTransform"] = transformJson(itemOf(d));
+			return r;
+		};
+		m["SetSceneItemTransform"] = [](const Json &d) {
+			obs_sceneitem_t *it = itemOf(d);
+			const Json t = d.value("sceneItemTransform").toObject();
+			vec2 pos, scale;
+			obs_sceneitem_crop crop;
+			obs_sceneitem_get_pos(it, &pos);
+			obs_sceneitem_get_scale(it, &scale);
+			obs_sceneitem_get_crop(it, &crop);
+			pos.x = float(boundedNum(t, "positionX", pos.x, -20000, 20000));
+			pos.y = float(boundedNum(t, "positionY", pos.y, -20000, 20000));
+			scale.x = float(boundedNum(t, "scaleX", scale.x, 0.01, 50));
+			scale.y = float(boundedNum(t, "scaleY", scale.y, 0.01, 50));
+			const float rot = float(boundedNum(t, "rotation", obs_sceneitem_get_rot(it), -360, 360));
+			crop.left = int(boundedNum(t, "cropLeft", crop.left, 0, 10000));
+			crop.top = int(boundedNum(t, "cropTop", crop.top, 0, 10000));
+			crop.right = int(boundedNum(t, "cropRight", crop.right, 0, 10000));
+			crop.bottom = int(boundedNum(t, "cropBottom", crop.bottom, 0, 10000));
+			obs_sceneitem_set_pos(it, &pos);
+			obs_sceneitem_set_scale(it, &scale);
+			obs_sceneitem_set_rot(it, rot);
+			obs_sceneitem_set_crop(it, &crop);
+			return okEmpty();
+		};
+
+		// Médias (vidéo, diaporama, musique) : lecture, pause, arrêt, relance, suivant, précédent.
+		m["TriggerMediaInputAction"] = [](const Json &d) {
+			Src s(req(d, "inputName"));
+			obs_source_t *src = s.need("Entrée");
+			if (!(obs_source_get_output_flags(src) & OBS_SOURCE_CONTROLLABLE_MEDIA)) throw Fail{"Cette source n'est pas un média."};
+			const QString a = req(d, "mediaAction").remove("OBS_WEBSOCKET_MEDIA_INPUT_ACTION_");
+			if (a == "PLAY") obs_source_media_play_pause(src, false);
+			else if (a == "PAUSE") obs_source_media_play_pause(src, true);
+			else if (a == "STOP") obs_source_media_stop(src);
+			else if (a == "RESTART") obs_source_media_restart(src);
+			else if (a == "NEXT") obs_source_media_next(src);
+			else if (a == "PREVIOUS") obs_source_media_previous(src);
+			else throw Fail{"Action média inconnue."};
+			return okEmpty();
+		};
+
+		// Tampon de replay (à régler une fois dans OBS : Paramètres, Sortie).
+		m["GetReplayBufferStatus"] = [](const Json &) {
+			Json r;
+			r["outputActive"] = obs_frontend_replay_buffer_active();
+			return r;
+		};
+		m["StartReplayBuffer"] = [](const Json &) {
+			if (!obs_frontend_replay_buffer_active()) obs_frontend_replay_buffer_start();
+			return okEmpty();
+		};
+		m["StopReplayBuffer"] = [](const Json &) {
+			if (obs_frontend_replay_buffer_active()) obs_frontend_replay_buffer_stop();
+			return okEmpty();
+		};
+		m["SaveReplayBuffer"] = [](const Json &) {
+			if (!obs_frontend_replay_buffer_active()) throw Fail{"Le tampon de replay n'est pas démarré."};
+			obs_frontend_replay_buffer_save();
+			return okEmpty();
+		};
+
+		m["link.settingsGet"] = [](const Json &) { return settingsList(); };
+		m["link.settingsSet"] = [](const Json &d) { return settingsApply(d.value("changes").toObject()); };
+
+		// Débit du direct (kbit/s), à chaud, entre 500 et 20 000.
+		m["link.getBitrate"] = [](const Json &) { return videoBitrate(0); };
+		m["link.setBitrate"] = [](const Json &d) {
+			const int k = d.value("kbps").toInt(0);
+			if (k < 500 || k > 20000) throw Fail{"Débit hors limites (500 à 20 000 kbit/s)."};
+			return videoBitrate(k);
 		};
 
 		// Transitions

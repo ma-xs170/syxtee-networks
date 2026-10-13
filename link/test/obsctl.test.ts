@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
-import { existsSync, mkdtempSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -543,6 +543,167 @@ run("agent : les flux du compte vont au plugin (sources), le déclenchement du f
     agent?.stop();
     delete process.env.SYXTEE_LINK_OBS_IPC;
     core.close();
+    h.child.kill();
+  }
+});
+
+run("plugin : édition à distance (texte, lien, filtres, position, médias, replay, débit), toujours bornée", async () => {
+  const h = start();
+  try {
+    await h.expect(/READY/);
+    const obs = new ObsIpc(h.sock);
+    await obs.connect();
+    const ready = nextEvent(obs, "link.ready");
+    h.cmd("loaded");
+    await ready;
+
+    // Textes et liens : seules les sources texte et navigateur, champ « text » ou « url » seulement.
+    const list = (await obs.request<any>("link.listEditable")).inputs;
+    assert.deepEqual(list.map((i: any) => [i.inputName, i.field]).sort(), [["Overlay", "url"], ["Texte", "text"]]);
+    await obs.request("link.setText", { inputName: "Texte", text: "Score : 3 - 2" });
+    await obs.request("link.setUrl", { inputName: "Overlay", url: "https://exemple.fr/overlay" });
+    let st = await h.state();
+    assert.equal(st.text, "Score : 3 - 2");
+    assert.equal(st.url, "https://exemple.fr/overlay");
+    await assert.rejects(obs.request("link.setText", { inputName: "Micro", text: "x" }), /pas un texte/);
+    await assert.rejects(obs.request("link.setText", { inputName: "Texte", text: "x".repeat(2001) }), /trop long/);
+    await assert.rejects(obs.request("link.setUrl", { inputName: "Texte", url: "https://a.fr" }), /pas une page web/);
+    await assert.rejects(obs.request("link.setUrl", { inputName: "Overlay", url: "javascript:alert(1)" }), /invalide/);
+    await assert.rejects(obs.request("link.setUrl", { inputName: "Overlay", url: "file:///etc/passwd" }), /invalide/);
+
+    // Filtres : liste, activation.
+    const fl = (await obs.request<any>("GetSourceFilterList", { sourceName: "Flux › IPHONE 16" })).filters;
+    assert.deepEqual(fl.map((f: any) => [f.filterName, f.filterEnabled]), [["Noir et blanc", false], ["Masque", true]]);
+    await obs.request("SetSourceFilterEnabled", { sourceName: "Flux › IPHONE 16", filterName: "Noir et blanc", filterEnabled: true });
+    assert.equal((await h.state()).filterBw, true);
+    await assert.rejects(obs.request("SetSourceFilterEnabled", { sourceName: "Flux › IPHONE 16", filterName: "Inconnu", filterEnabled: true }), /introuvable/);
+
+    // Position : valeurs bornées, champs absents conservés, valeurs absurdes refusées.
+    const at = { sceneName: "🔴 › EN DIRECT", sceneItemId: 1 };
+    await obs.request("SetSceneItemTransform", { ...at, sceneItemTransform: { positionX: 120.5, positionY: -40, scaleX: 0.5, scaleY: 0.5, rotation: 15, cropLeft: 10 } });
+    let t = (await obs.request<any>("GetSceneItemTransform", at)).sceneItemTransform;
+    assert.deepEqual([t.positionX, t.positionY, t.scaleX, t.rotation, t.cropLeft, t.cropTop], [120.5, -40, 0.5, 15, 10, 0]);
+    await obs.request("SetSceneItemTransform", { ...at, sceneItemTransform: { positionX: 9e9, scaleX: 1000, scaleY: 0, rotation: 9999, cropTop: -5 } });
+    t = (await obs.request<any>("GetSceneItemTransform", at)).sceneItemTransform;
+    assert.deepEqual([t.positionX, t.positionY, t.scaleX, Math.round(t.scaleY * 100) / 100, t.rotation, t.cropTop], [20000, -40, 50, 0.01, 360, 0]);
+    await assert.rejects(obs.request("SetSceneItemTransform", { ...at, sceneItemTransform: { positionX: "abc" } }), /invalide/);
+    await assert.rejects(obs.request("GetSceneItemTransform", { ...at, sceneItemId: 99 }), /introuvable/);
+
+    // Médias : seulement les sources lisibles.
+    await obs.request("TriggerMediaInputAction", { inputName: "Clip", mediaAction: "OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE" });
+    assert.equal((await h.state()).mediaLast, "PAUSE");
+    await obs.request("TriggerMediaInputAction", { inputName: "Clip", mediaAction: "NEXT" });
+    assert.equal((await h.state()).mediaLast, "NEXT");
+    await assert.rejects(obs.request("TriggerMediaInputAction", { inputName: "Texte", mediaAction: "PLAY" }), /pas un média/);
+    await assert.rejects(obs.request("TriggerMediaInputAction", { inputName: "Clip", mediaAction: "DELETE" }), /inconnue/);
+
+    // Replay : démarrer, enregistrer (refusé s'il n'est pas démarré), arrêter.
+    await assert.rejects(obs.request("SaveReplayBuffer"), /pas démarré/);
+    await obs.request("StartReplayBuffer");
+    assert.equal((await obs.request<any>("GetReplayBufferStatus")).outputActive, true);
+    await obs.request("SaveReplayBuffer");
+    st = await h.state();
+    assert.equal(st.replaySaves, 1);
+    await obs.request("StopReplayBuffer");
+    assert.equal((await h.state()).replay, false);
+
+    // Débit : seulement en direct, entre 500 et 20 000 kbit/s.
+    await assert.rejects(obs.request("link.setBitrate", { kbps: 4000 }), /pas démarré/);
+    h.cmd("stream on");
+    await new Promise((r) => setTimeout(r, 200));
+    await assert.rejects(obs.request("link.setBitrate", { kbps: 100 }), /hors limites/);
+    await assert.rejects(obs.request("link.setBitrate", { kbps: 50000 }), /hors limites/);
+    assert.equal((await obs.request<any>("link.setBitrate", { kbps: 4500 })).bitrate, 4500);
+    assert.equal((await h.state()).bitrate, 4500);
+    assert.equal((await obs.request<any>("link.getBitrate")).bitrate, 4500);
+    obs.close();
+  } finally {
+    h.child.kill();
+  }
+});
+
+run("plugin : paramètres d'OBS à distance (liste blanche, bornes, tout ou rien, rien pendant le direct)", async () => {
+  const h = start();
+  try {
+    await h.expect(/READY/);
+    const obs = new ObsIpc(h.sock);
+    await obs.connect();
+    const ready = nextEvent(obs, "link.ready");
+    h.cmd("loaded");
+    await ready;
+    const value = (r: any, id: string) => r.settings.find((x: any) => x.id === id)?.value;
+
+    // Lecture : mode Simple, valeurs de basic.ini.
+    let r = await obs.request<any>("link.settingsGet");
+    assert.equal(r.streaming, false);
+    assert.equal(value(r, "output_mode"), "Simple");
+    assert.equal(value(r, "video_bitrate"), 6000);
+    assert.equal(value(r, "audio_bitrate"), "160");
+    assert.equal(value(r, "resolution"), "1920x1080");
+    assert.equal(value(r, "base_resolution"), "1920x1080");
+    assert.equal(value(r, "fps"), "60");
+    assert.equal(value(r, "reconnect"), true);
+    assert.equal(value(r, "replay_seconds"), 20);
+    assert.equal(value(r, "record_when_streaming"), false);
+    // Jamais de clé de stream, de chemin ni d'encodeur dans la liste.
+    assert.ok(!r.settings.some((x: any) => /key|path|file|encoder|server|url/i.test(x.id)));
+
+    // Écriture : profil et fichier utilisateur enregistrés, chacun une fois.
+    r = await obs.request<any>("link.settingsSet", { changes: { video_bitrate: 4500, audio_bitrate: "128", retry_delay: 5, record_when_streaming: true, resolution: "1280x720", fps: "30" } });
+    assert.equal(value(r, "video_bitrate"), 4500);
+    assert.equal((await h.grab("cfg profile SimpleOutput VBitrate", "CFG")).trim(), "4500");
+    assert.equal((await h.grab("cfg profile SimpleOutput ABitrate", "CFG")).trim(), "128");
+    assert.equal((await h.grab("cfg profile Video OutputCX", "CFG")).trim(), "1280");
+    assert.equal((await h.grab("cfg profile Video OutputCY", "CFG")).trim(), "720");
+    assert.equal((await h.grab("cfg profile Video FPSCommon", "CFG")).trim(), "30");
+    assert.equal((await h.grab("cfg user BasicWindow RecordWhenStreaming", "CFG")).trim(), "true");
+    assert.equal((await h.grab("cfgsaves profile", "SAVES")).trim(), "1");
+    assert.equal((await h.grab("cfgsaves user", "SAVES")).trim(), "1");
+
+    // Mode Avancé : débit audio et tampon de relecture dans AdvOut.
+    h.cmd("cfgset profile Output Mode Advanced");
+    r = await obs.request<any>("link.settingsGet");
+    assert.equal(value(r, "audio_bitrate"), "192");
+    assert.equal(value(r, "replay_seconds"), 30);
+    await obs.request("link.settingsSet", { changes: { replay_seconds: 60 } });
+    assert.equal((await h.grab("cfg profile AdvOut RecRBTime", "CFG")).trim(), "60");
+    assert.equal((await h.grab("cfg profile SimpleOutput RecRBTime", "CFG")).trim(), "20");
+    // Mode Avancé : le débit vidéo vit dans streamEncoder.json du profil (les autres réglages de l'encodeur sont conservés).
+    mkdirSync("/tmp/obsctl-stub-profile", { recursive: true });
+    writeFileSync("/tmp/obsctl-stub-profile/streamEncoder.json", JSON.stringify({ bitrate: 6000, rate_control: "CBR" }));
+    assert.equal(value(await obs.request<any>("link.settingsGet"), "video_bitrate"), 6000);
+    await obs.request("link.settingsSet", { changes: { video_bitrate: 5200 } });
+    assert.deepEqual(JSON.parse(readFileSync("/tmp/obsctl-stub-profile/streamEncoder.json", "utf8")), { bitrate: 5200, rate_control: "CBR" });
+    h.cmd("cfgset profile Output Mode Simple");
+
+    // Refus : inconnu, lecture seule, bornes, valeur hors liste, mauvais type. Tout ou rien.
+    const before = (await h.grab("cfg profile SimpleOutput VBitrate", "CFG")).trim();
+    for (const [changes, re] of [
+      [{ stream_key: "x" }, /inconnu/],
+      [{ output_mode: "Advanced" }, /non modifiable/],
+      [{ video_bitrate: 100 }, /entre 500/],
+      [{ video_bitrate: 99999 }, /entre 500/],
+      [{ video_bitrate: 4000.5 }, /entre 500/],
+      [{ video_bitrate: "8000" }, /entre 500/],
+      [{ resolution: "99999x99999" }, /non permise/],
+      [{ fps: "999" }, /non permise/],
+      [{ sample_rate: "12345" }, /non permise/],
+      [{ reconnect: "oui" }, /oui ou non/],
+      [{ video_bitrate: 7000, resolution: "pas-valable" }, /non permise/],
+    ] as const) await assert.rejects(obs.request("link.settingsSet", { changes }), re, JSON.stringify(changes));
+    assert.equal((await h.grab("cfg profile SimpleOutput VBitrate", "CFG")).trim(), before); // le 7000 du dernier essai n'a pas été écrit
+
+    // Pendant le direct : vidéo, audio et fréquence sont verrouillés, le reste passe.
+    h.cmd("stream on");
+    await new Promise((x) => setTimeout(x, 200));
+    assert.equal((await obs.request<any>("link.settingsGet")).streaming, true);
+    await assert.rejects(obs.request("link.settingsSet", { changes: { resolution: "1920x1080" } }), /pendant le direct/);
+    await assert.rejects(obs.request("link.settingsSet", { changes: { fps: "60" } }), /pendant le direct/);
+    await assert.rejects(obs.request("link.settingsSet", { changes: { sample_rate: "44100" } }), /pendant le direct/);
+    await obs.request("link.settingsSet", { changes: { retry_delay: 8 } });
+    assert.equal((await h.grab("cfg profile Output RetryDelay", "CFG")).trim(), "8");
+    obs.close();
+  } finally {
     h.child.kill();
   }
 });

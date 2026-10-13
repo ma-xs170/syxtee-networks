@@ -71,6 +71,12 @@ const TILES: Tile[] = [
   { title: "Multistream", text: "Diffuse sur Twitch, YouTube et Kick en même temps, et lance ou coupe chaque sortie d'un toucher depuis ton téléphone.", platforms: true, className: "lg:col-span-2", href: "/multistream", cta: "Découvrir le multistream" },
 ];
 
+const GUARDIAN: { tag: string; title: string; text: string }[] = [
+  { tag: "Relance", title: "OBS plante, il revient.", text: "Le Gardien SYXTEE rouvre OBS en quelques secondes, sans fenêtre à valider, et remet tes scènes comme avant." },
+  { tag: "Direct", title: "Ton direct repart.", text: "Si tu étais en direct au moment du plantage, il reprend dès qu'OBS est de retour. Tu n'as rien à faire." },
+  { tag: "À distance", title: "Un bouton, où que tu sois.", text: "OBS gelé ou fermé à 40 km de ton ordinateur ? « Relancer OBS » depuis ton téléphone, même écran verrouillé." },
+];
+
 /** Logos en couleur des plateformes du multistream, puis « +50 » : il y en a plus de cinquante. */
 function PlatformLogos() {
   const list = [siYoutube, siTwitch, siKick];
@@ -167,7 +173,30 @@ export default function ControlePage() {
         </Container>
       </section>
 
-      {/* 5. Appel final */}
+      {/* 5. Gardien : OBS plante, il redémarre */}
+      <section aria-labelledby="gardien" className="border-t border-line py-24 sm:py-32">
+        <Container>
+          <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted">Gardien SYXTEE</p>
+          <h2 id="gardien" className="h-section mt-4 max-w-3xl">
+            Ton OBS plante en plein stream ? <Highlight>Il redémarre tout seul.</Highlight>
+          </h2>
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">
+            Un petit gardien veille sur ton ordinateur, indépendamment d&apos;OBS, et garde le Mac éveillé même écran verrouillé. Le direct est interrompu le temps du redémarrage, pas toute la soirée.
+          </p>
+          <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-3">
+            {GUARDIAN.map((g) => (
+              <article key={g.tag} className="tile flex flex-col p-6 sm:p-7">
+                <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">{g.tag}</span>
+                <h3 className="mt-5 text-lg font-semibold tracking-tight">{g.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{g.text}</p>
+              </article>
+            ))}
+          </div>
+          <p className="mt-6 text-sm text-muted">Disponible sur Mac. Après trois plantages en quinze minutes, le Gardien s&apos;arrête et te prévient au lieu de boucler.</p>
+        </Container>
+      </section>
+
+      {/* 6. Appel final */}
       <section data-theme="dark" className="relative overflow-hidden bg-background py-28 text-foreground sm:py-36">
         <CloudBackdrop flip />
         <Container className="relative">

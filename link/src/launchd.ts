@@ -28,7 +28,8 @@ export function guardianPlist(execPath: string, script: string | null, logFile: 
 `;
 }
 
-const launchctl = (args: string[]) => new Promise<string>((resolve) => execFile("launchctl", args, (err, out, errOut) => resolve(err ? String(errOut || err.message) : String(out))));
+const launchctl = (args: string[]) => new Promise<{ ok: boolean; out: string }>((resolve) => execFile("launchctl", args, (err, out, errOut) => resolve({ ok: !err, out: String(err ? errOut || err.message : out).trim() })));
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export async function installGuardian(): Promise<string> {
   if (process.platform !== "darwin") return "Le Gardien n'est disponible que sur macOS pour l'instant.";
@@ -45,9 +46,22 @@ export async function installGuardian(): Promise<string> {
   writeFileSync(plistPath(), guardianPlist(process.execPath, isNode ? process.argv[1] : null, logFile), { mode: 0o644 });
   chmodSync(plistPath(), 0o644);
   const domain = `gui/${process.getuid!()}`;
+  // Mise à jour : l'ancien Gardien s'arrête (bootout), puis le nouveau est enregistré. launchd met un instant à libérer le service :
+  // un bootstrap immédiat échoue (« Input/output error »), donc on réessaie.
   await launchctl(["bootout", `${domain}/${LABEL}`]);
-  const out = await launchctl(["bootstrap", domain, plistPath()]);
-  return out.trim() ? `Gardien enregistré (${out.trim()})` : "Gardien enregistré : il démarre avec ta session.";
+  let last = "";
+  for (let i = 0; i < 6; i++) {
+    await sleep(i === 0 ? 1500 : 2000);
+    const r = await launchctl(["bootstrap", domain, plistPath()]);
+    if (r.ok) return "Gardien enregistré : il démarre avec ta session.";
+    last = r.out;
+    // Déjà chargé (le bootout n'avait rien à retirer) : relance propre.
+    if ((await launchctl(["print", `${domain}/${LABEL}`])).ok) {
+      await launchctl(["kickstart", "-k", `${domain}/${LABEL}`]);
+      return "Gardien enregistré : il démarre avec ta session.";
+    }
+  }
+  return `Gardien non enregistré (${last}). Il démarrera à ta prochaine ouverture de session.`;
 }
 
 export async function uninstallGuardian(): Promise<string> {

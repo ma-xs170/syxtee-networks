@@ -1,4 +1,7 @@
 {
+  "0.8.2": [
+    "Gardien : la mise à jour du plugin relance correctement le Gardien (il n'est plus laissé arrêté après une réinstallation)"
+  ],
   "0.8.1": [
     "Gardien : après un plantage, OBS est rouvert sans la fenêtre « OBS ne s'est pas arrêté correctement » (plus aucun clic nécessaire)"
   ],

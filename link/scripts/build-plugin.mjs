@@ -16,7 +16,7 @@ if (process.platform !== "darwin") {
 
 const root = resolve(fileURLToPath(import.meta.url), "../..");
 const out = resolve((process.env.PLUGIN_OUT || "~/syxtee-link-plugin").replace(/^~(?=$|\/)/, homedir()));
-const VERSION = "0.8.1";
+const VERSION = "0.8.2";
 const OBS_TAG = "32.0.0"; // en-têtes de l'API d'OBS : seule l'interface (stable) est utilisée, le plugin se lie à OBS au chargement
 const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { stdio: "inherit", ...opts });
 
@@ -154,9 +154,9 @@ H=$(dscl . -read "/Users/$U" NFSHomeDirectory 2>/dev/null | awk '{print $2}')
 BIN="$H/Library/Application Support/obs-studio/plugins/syxtee-link.plugin/Contents/Resources/syxtee-link-helper"
 [ -x "$BIN" ] || exit 0
 if [ "$(id -u)" = "0" ]; then
-  sudo -u "$U" env HOME="$H" "$BIN" install-guardian >/dev/null 2>&1
+  sudo -u "$U" env HOME="$H" "$BIN" install-guardian >>/tmp/syxtee-guardian-install.log 2>&1
 else
-  "$BIN" install-guardian >/dev/null 2>&1
+  "$BIN" install-guardian >>/tmp/syxtee-guardian-install.log 2>&1
 fi
 exit 0
 `,

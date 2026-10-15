@@ -512,7 +512,8 @@ html[data-stream-mode="on"] [data-sensitive] {
   font-weight: 500;
   /* Apple : le retour est amorti (relâché), l'appui est instantané (réponse sur pointer-down). */
   transition: background-color 0.15s, border-color 0.15s, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  &:active { transform: scale(0.97); transition-duration: 0.15s, 0.15s, 0.08s; }
+  &:active:not(:disabled, [aria-disabled="true"]) { transform: scale(0.97); transition-duration: 0.15s, 0.15s, 0.08s; }
+  &:disabled, &[aria-disabled="true"] { cursor: not-allowed; opacity: 0.5; }
   &:focus-visible { outline: 2px solid var(--foreground); outline-offset: 3px; }
 }
 @utility btn-primary {
@@ -520,12 +521,12 @@ html[data-stream-mode="on"] [data-sensitive] {
   background: color-mix(in srgb, var(--foreground) 7%, var(--surface));
   color: var(--foreground);
   border: 1px solid var(--line-strong);
-  &:hover { background: color-mix(in srgb, var(--foreground) 12%, var(--surface)); }
+  @media (hover: hover) and (pointer: fine) { &:hover { background: color-mix(in srgb, var(--foreground) 12%, var(--surface)); } }
 }
 @utility btn-secondary {
   border: 1px solid var(--line-strong);
   color: var(--foreground);
-  &:hover { background: color-mix(in srgb, var(--foreground) 6%, transparent); }
+  @media (hover: hover) and (pointer: fine) { &:hover { background: color-mix(in srgb, var(--foreground) 6%, transparent); } }
 }
 @utility btn-sm { padding: 0 1rem; height: 2.25rem; }
 @utility label-mono {
@@ -742,9 +743,12 @@ body::before {
   .btn-primary::after {
     content: ""; position: absolute; inset: 0; transform: translateX(-120%);
     background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--foreground) 12%, transparent) 50%, transparent 70%);
-    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none;
+    pointer-events: none;
   }
-  .btn-primary:hover::after { transform: translateX(120%); }
+  /* Le reflet traverse une fois à l'entrée du pointeur, revient sans balayage inverse. */
+  @media (hover: hover) and (pointer: fine) {
+    .btn-primary:hover::after { transform: translateX(120%); transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
+  }
   .float-slow { animation: float-slow 7s ease-in-out infinite alternate; }
   .float-slow:nth-child(even) { animation-duration: 9s; animation-delay: -3s; }
   /* Logo de chargement : respiration douce (échelle + opacité), pour dire « ça arrive ». */
@@ -1071,8 +1075,8 @@ select,
 @media (prefers-reduced-motion: no-preference) {
   .pill-dot { animation: pill-pulse 2s ease-in-out infinite; }
   .glass-float { animation: glass-float 6s ease-in-out infinite; }
-  .btn-shine::after { content: ""; position: absolute; inset: 0; transform: translateX(-120%); background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.55) 50%, transparent 70%); transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); pointer-events: none; }
-  .btn-shine:hover::after { transform: translateX(120%); }
+  .btn-shine::after { content: ""; position: absolute; inset: 0; transform: translateX(-120%); background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.55) 50%, transparent 70%); pointer-events: none; }
+  @media (hover: hover) and (pointer: fine) { .btn-shine:hover::after { transform: translateX(120%); transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1); } }
   .caret { animation: caret 1s steps(1) infinite; }
   .check-draw { stroke-dasharray: 16; stroke-dashoffset: 16; animation: check-draw 0.35s ease-out forwards; }
 }

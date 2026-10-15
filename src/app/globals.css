@@ -729,8 +729,15 @@ body::before {
   }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .panel, .panel-lg { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s; }
-  .panel:hover, .panel-lg:hover { transform: translateY(-4px); }
+  /* Panneaux : transition nommée (pas de all), ease-out fort sous 300 ms. Le soulèvement ne vit que sous un vrai survol
+     (le tactile déclenche de faux :hover) ; les grands cadres (panel-lg) ne bougent pas, seul leur filet s'éclaire. */
+  .panel, .panel-lg { transition: transform 0.25s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.2s ease; }
+  a.panel:active, button.panel:active { transform: scale(0.985); transition-duration: 0.1s; }
+  @media (hover: hover) and (pointer: fine) {
+    .panel:hover { transform: translateY(-2px); }
+    .panel-lg:hover { border-color: color-mix(in srgb, var(--foreground) 32%, transparent); }
+    a.panel:active, button.panel:active { transform: scale(0.985); }
+  }
   .btn-primary { position: relative; overflow: hidden; }
   .btn-primary::after {
     content: ""; position: absolute; inset: 0; transform: translateX(-120%);

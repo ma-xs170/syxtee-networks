@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Échelle de z-index : une seule source pour les couches fixes. */
+:root {
+  --z-toast: 60;
+  --z-grain: 70;
+  --z-skip: 80;
+}
+
 :root,
 [data-theme="dark"] {
   color-scheme: dark;

@@ -208,7 +208,7 @@ export default function AdminShell({ support, pendingAccess, newQuotes = 0, name
           {roleChip}
         </header>
 
-        <div className="relative pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0">{children}</div>
+        <main id="contenu" className="relative pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0">{children}</main>
       </div>
 
       {/* Téléphone : tiroir et barre d'onglets */}

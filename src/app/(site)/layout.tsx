@@ -9,7 +9,7 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
     <>
       <SiteCursor />
       <Nav />
-      <main className="flex-1">{children}</main>
+      <main id="contenu" className="flex-1">{children}</main>
       <Footer />
       <MobileCta />
       <div aria-hidden="true" className="h-20 sm:hidden" />

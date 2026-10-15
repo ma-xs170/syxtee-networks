@@ -47,7 +47,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
           </nav>
         </header>
         <Heartbeat />
-        <main>{children}</main>
+        <main id="contenu">{children}</main>
       </div>
     );
   }
@@ -58,7 +58,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
       {/* Prénom/nom manquants : modale hors live, bandeau pendant un live (en haut, sous la barre). */}
       {!hasNames(profile) && <NamesModal />}
       <Heartbeat />
-      <main className="flex-1">{children}</main>
+      <main id="contenu" className="flex-1">{children}</main>
       </DashboardShell>
       </TimezoneProvider>
     </LiveStatusProvider>

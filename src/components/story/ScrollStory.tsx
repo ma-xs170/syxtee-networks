@@ -113,7 +113,7 @@ function AnimatedStory({
   return (
     <StoryActiveContext.Provider value={active}>
       <div ref={ref} className="relative" style={{ height }}>
-        <div ref={sticky} className="sticky top-16 h-[calc(100svh-4rem)] overflow-hidden lg:h-[calc(100vh-4rem)]">
+        <div ref={sticky} className="sticky top-16 h-[calc(100svh-4rem)] overflow-hidden lg:h-[calc(100dvh-4rem)]">
           {backdrop?.(p)}
 
           <div className="relative mx-auto flex h-full max-w-6xl flex-col px-4 pt-2 sm:px-6 lg:grid lg:pt-0 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-10">

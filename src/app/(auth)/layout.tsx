@@ -12,7 +12,7 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
           <span aria-hidden="true">‹</span> Accueil
         </Link>
       </header>
-      <main className="relative z-10 flex flex-1 items-center justify-center px-5 py-12 sm:py-16">{children}</main>
+      <main id="contenu" className="relative z-10 flex flex-1 items-center justify-center px-5 py-12 sm:py-16">{children}</main>
     </div>
   );
 }

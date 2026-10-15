@@ -18,7 +18,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={show}>
       {children}
-      <div aria-live="polite" className="pointer-events-none fixed bottom-20 right-4 z-[60] lg:bottom-14">
+      <div aria-live="polite" className="pointer-events-none fixed bottom-20 right-4 z-(--z-toast) lg:bottom-14">
         {toast && (
           <p key={toast.n} role="status" className={`rise pointer-events-auto flex items-center gap-2.5 rounded-xl border bg-surface-2 px-4 py-3 text-sm shadow-lg ${toast.tone === "error" ? "border-bad/40 text-bad" : "border-line-strong text-foreground"}`}>
             <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${toast.tone === "error" ? "bg-bad" : "bg-ok"}`} />

@@ -1211,3 +1211,19 @@ dialog[open]::backdrop { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
   dialog, dialog[open] { transform: none; transition: opacity 0.15s ease, display 0.15s allow-discrete, overlay 0.15s allow-discrete; }
 }
+
+/* Navigation mobile (animate) : le panneau descend de son bouton (origine en haut, même axe que l'icône), 200 ms ease-out.
+   Ouverture occasionnelle, donc animée ; reduced-motion : fondu seul. */
+.menu-glyph { transform-box: fill-box; transform-origin: center; transition: opacity 0.15s ease, transform 0.25s cubic-bezier(0.23, 1, 0.32, 1); }
+.menu-glyph[data-on="false"] { opacity: 0; transform: rotate(-45deg) scale(0.6); }
+.menu-btn { transition: transform 0.25s cubic-bezier(0.23, 1, 0.32, 1); }
+.menu-btn:active { transform: scale(0.92); transition-duration: 0.08s; }
+@keyframes menu-in { from { opacity: 0; transform: translateY(-8px); } }
+@keyframes menu-fade { from { opacity: 0; } }
+.menu-in { transform-origin: top; animation: menu-in 0.2s cubic-bezier(0.23, 1, 0.32, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .menu-glyph, .menu-btn { transition: opacity 0.1s ease; }
+  .menu-glyph[data-on="false"] { transform: none; }
+  .menu-btn:active { transform: none; }
+  .menu-in { animation: menu-fade 0.15s ease both; }
+}

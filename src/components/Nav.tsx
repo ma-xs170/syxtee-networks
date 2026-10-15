@@ -102,19 +102,21 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="rounded-md p-2 text-foreground"
+            className="menu-btn inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-foreground"
             aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
             aria-expanded={open}
           >
+            {/* Les deux glyphes restent montés et se croisent (rotation + fondu) : l'icône suit l'état au lieu de sauter. */}
             <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.5">
-              {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+              <path className="menu-glyph" data-on={!open} d="M4 7h16M4 12h16M4 17h16" />
+              <path className="menu-glyph" data-on={open} d="M6 6l12 12M18 6L6 18" />
             </svg>
           </button>
         </div>
       </div>
 
       {open && (
-        <div className={`stagger max-h-[calc(100dvh-5.5rem)] overflow-y-auto bg-background px-4 pb-6 pt-2 lg:hidden border-t border-line`}>
+        <div className={`stagger menu-in max-h-[calc(100dvh-5.5rem)] overflow-y-auto bg-background px-4 pb-6 pt-2 lg:hidden border-t border-line`}>
           <nav aria-label="Navigation principale" className="stagger flex flex-col">
             {items.map((item) =>
               "children" in item ? (

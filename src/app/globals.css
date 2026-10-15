@@ -510,8 +510,9 @@ html[data-stream-mode="on"] [data-sensitive] {
   font-size: 0.875rem;
   line-height: 1.25rem;
   font-weight: 500;
-  transition: background-color 0.15s, border-color 0.15s, transform 0.15s;
-  &:active { transform: scale(0.98); }
+  /* Apple : le retour est amorti (relâché), l'appui est instantané (réponse sur pointer-down). */
+  transition: background-color 0.15s, border-color 0.15s, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  &:active { transform: scale(0.97); transition-duration: 0.15s, 0.15s, 0.08s; }
   &:focus-visible { outline: 2px solid var(--foreground); outline-offset: 3px; }
 }
 @utility btn-primary {
@@ -1172,3 +1173,14 @@ html.has-site-cursor, html.has-site-cursor *:not(input, textarea, select, [conte
 .site-cursor[data-state="link"][data-down="true"] { width: 30px; height: 30px; margin: -15px 0 0 -15px; }
 @media (prefers-reduced-motion: reduce) { .site-cursor { transition: none; } }
 
+
+/* Matières translucides (apple-design §12, §14) : barres flottantes, avec repli solide. */
+.glass-bar { -webkit-backdrop-filter: blur(20px) saturate(160%); backdrop-filter: blur(20px) saturate(160%); }
+@media (prefers-reduced-transparency: reduce) {
+  .glass-bar { background-color: var(--background); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@media (prefers-contrast: more) {
+  .glass-bar { background-color: var(--background); -webkit-backdrop-filter: none; backdrop-filter: none; border-color: var(--line-strong); }
+  .btn-secondary, .btn-primary { border-color: var(--foreground); }
+  .panel { border-color: var(--line-strong); }
+}

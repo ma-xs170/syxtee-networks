@@ -155,19 +155,19 @@ export default function RemoteObs({
         <div className="flex min-h-0 flex-1">
           <main className="flex min-h-0 min-w-0 flex-1 flex-col">
             {advanced && <DirectBar o={o} onLive={onLive} onSettings={() => setSettingsOpen(true)} setAsk={setAsk} />}
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-              <AudioAlert o={o} />
-              {advanced ? (
-                <>
-                  <DirectDesk o={o} onEdit={setEdit} onLive={onLive} onSettings={() => setSettingsOpen(true)} />
-                  <p className="pb-6 text-center text-[13px] text-muted">
-                    <button type="button" onClick={() => setAdvanced(false)} className="underline underline-offset-4 hover:text-foreground">Vue simple</button>
-                  </p>
-                </>
-              ) : (
-                <DirectSimple o={o} onLive={onLive} onAdvanced={() => setAdvanced(true)} />
-              )}
-            </div>
+            <AudioAlert o={o} />
+            {advanced ? (
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                <DirectDesk o={o} onEdit={setEdit} onLive={onLive} onSettings={() => setSettingsOpen(true)} />
+                <p className="pb-6 text-center text-[13px] text-muted">
+                  <button type="button" onClick={() => setAdvanced(false)} className="underline underline-offset-4 hover:text-foreground">Vue simple</button>
+                </p>
+              </div>
+            ) : (
+              <div className="min-h-0 flex-1">
+                <DirectSimple o={o} onLive={onLive} onAdvanced={() => setAdvanced(true)} onSettings={() => setSettingsOpen(true)} />
+              </div>
+            )}
           </main>
           {chatBox && chatOn && (
             <aside aria-label="Chat" className="min-h-0 w-[22rem] shrink-0 py-2 pr-2 xl:w-[26rem]">

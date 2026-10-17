@@ -126,7 +126,9 @@ export function createSecurity(o: {
       user_id: null, // un refus n'est pas montré au propriétaire (sauf 2e appareil)
       detail: { key: keyHint(p.key), role: p.role ?? null, reason: p.reason ?? "unknown_key" },
     });
-    if (internal(p.ip)) return;
+    // Clé valide (SLS pas encore réaligné, réessais d'OBS) ou IP interne : pas de la force brute. Évite aussi qu'une IP
+    // partagée (VPN) soit bannie par les réessais d'un vrai client.
+    if (internal(p.ip) || relay) return;
     const t = now();
     const list = (fails.get(p.ip) ?? []).filter((x) => x > t - windowMs);
     list.push(t);

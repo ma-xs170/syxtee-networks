@@ -1,12 +1,12 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { Provider, Rights, Roles, Trigger } from "./types";
-import { btn, btnPrimary, cx, Disclosure, Draft, field, Row, Select, Sheet, Switch } from "./ui";
+import { btn, btnPrimary, Confirm, cx, Disclosure, Draft, field, Row, Select, Sheet, Switch, type ConfirmAsk } from "./ui";
 import type { Obs } from "./useObs";
 
 // Régie automatique : SYXTEE change de scène pour toi. Deux étapes : 1) choisir sa scène Live ; 2) activer ce que l'on veut
-// (secours si la connexion coupe, drone et autres caméras, alerte micro, régie IA). Chaque bloc affiche son état : Actif, À compléter, Éteint.
+// (secours si la connexion coupe, drone et autres caméras, alerte micro, régie IA, plantage et démarrage d'OBS à distance par le Gardien). Chaque bloc affiche son état : Actif, À compléter, Éteint.
 // Tout est enregistré dans le plugin, sur le PC d'OBS, à chaque changement.
 
 const TRIGGERS: { id: Trigger; title: string; text: string }[] = [
@@ -37,6 +37,85 @@ function Upsell({ what, tier }: { what: string; tier: string }) {
         Voir les formules
       </a>
     </p>
+  );
+}
+
+/** Gardien SYXTEE (processus du Mac, séparé d'OBS) : relance OBS après un plantage, démarre ou redémarre OBS à distance, reprend le direct. */
+function GuardianBlock({ o }: { o: Obs }) {
+  const g = o.guardian;
+  const s = g.status ?? {};
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [ask, setAsk] = useState<ConfirmAsk>(null);
+  const obsOpen = s.obs === true;
+  const launching = s.launching === true;
+
+  async function act(method: string, params?: Record<string, unknown>) {
+    setBusy(true);
+    setError("");
+    try {
+      await o.call(method, params);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const state = !g.online
+    ? "Gardien absent de ce Mac."
+    : launching
+      ? "Relance d'OBS en cours…"
+      : s.gaveUp === true
+        ? "OBS a planté 3 fois en 15 minutes : la relance automatique est suspendue."
+        : obsOpen
+          ? "OBS est ouvert."
+          : "OBS est fermé sur ce Mac.";
+
+  return (
+    <Disclosure title="2e. Plantage d'OBS et démarrage à distance" summary="Relance OBS s'il plante, et l'ouvre ou le redémarre depuis le site." status={<Status on={g.online && s.watch === true} todo={!g.online} />}>
+      <Stack>
+        {!g.online ? (
+          <Note tone="warn">Le Gardien SYXTEE n&apos;est pas en ligne sur ce Mac. Mets à jour SYXTEE Link (0.8.0 ou plus), puis ouvre-le : le Gardien reste actif même quand OBS est fermé ou planté.</Note>
+        ) : (
+          <>
+            <p role="status" className={cx("rounded-lg border px-3 py-2 text-[13px]", s.gaveUp === true ? "border-warn/50 bg-warn/10 text-warn" : "border-line text-muted")}>
+              {state}
+              {s.awake === true && !launching && s.gaveUp !== true ? " Le Mac reste éveillé." : ""}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {!obsOpen ? (
+                <button type="button" disabled={busy || launching || !o.owner} onClick={() => void act("guardian.launchObs")} className={btnPrimary()}>
+                  Démarrer OBS
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={busy || !o.owner}
+                  onClick={() => setAsk({ title: "Redémarrer OBS ?", text: "OBS se ferme puis se rouvre. Le direct est repris s'il était actif et que la reprise est activée.", ok: "Redémarrer OBS", danger: true, run: () => void act("guardian.restartObs") })}
+                  className={btn()}
+                >
+                  Redémarrer OBS
+                </button>
+              )}
+            </div>
+            <Row title="Relancer OBS tout seul s'il plante" text={s.watch === true ? "Actif : si OBS se ferme sans que tu l'aies demandé, le Gardien le rouvre (3 relances maximum en 15 minutes)." : "Éteint : après un plantage, OBS reste fermé jusqu'à ce que tu le démarres ici."}>
+              <Switch label="Relancer OBS tout seul s'il plante" on={s.watch === true} disabled={busy || !o.owner} onClick={() => void act("guardian.setWatch", { enabled: s.watch !== true })} />
+            </Row>
+            <Row title="Reprendre le direct après la relance" text={s.resume === true ? "Actif : si le direct était en cours au moment du plantage, il redémarre dès qu'OBS est rouvert." : "Éteint : OBS revient sans relancer le direct."}>
+              <Switch label="Reprendre le direct après la relance" on={s.resume === true} disabled={busy || !o.owner} onClick={() => void act("guardian.setResume", { enabled: s.resume !== true })} />
+            </Row>
+            {!o.owner && <Note>Seul le propriétaire du compte peut démarrer ou redémarrer OBS.</Note>}
+          </>
+        )}
+        {error && (
+          <p role="alert" className="rounded-lg border border-warn/50 bg-warn/10 px-3 py-2 text-[13px] text-warn">
+            {error}
+          </p>
+        )}
+        <Confirm ask={ask} onClose={() => setAsk(null)} />
+      </Stack>
+    </Disclosure>
   );
 }
 
@@ -287,6 +366,7 @@ export default function AutoSheet({ o, rights, open, onClose }: { o: Obs; rights
               {readyCams.length < 2 && <Note>Il faut ta scène Live et au moins 2 caméras complètes (source et scène).</Note>}
             </Stack>
           </Disclosure>
+          <GuardianBlock o={o} />
         </div>
       )}
     </Sheet>

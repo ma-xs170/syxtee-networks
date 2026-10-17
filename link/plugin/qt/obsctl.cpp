@@ -34,6 +34,7 @@
 #include <QTimer>
 #include <algorithm>
 #include <iterator>
+#include <chrono>
 #include <cmath>
 #include <functional>
 #include <map>
@@ -393,16 +394,45 @@ QString pickVideoEncoder()
 	return bestId;
 }
 
-void stopWhip()
+void whipSignalCb(void *param, calldata_t *cd);
+
+/**
+ * Arrête l'aperçu. `obs_output_stop` est asynchrone : libérer les encodeurs tout de suite les détruisait pendant que le fil d'encodage
+ * s'en servait encore (VideoToolbox / Opus, plantages d'OBS du 2026-10-17). On détache les rappels, puis un fil à part attend l'arrêt
+ * réel de la sortie (arrêt forcé au bout de 5 s) avant de libérer sortie, encodeurs et service, dans cet ordre.
+ * `wait` : à la fermeture d'OBS, on attend sur place car le processus s'arrête juste après.
+ */
+void stopWhip(bool wait = false)
 {
-	if (whip.out) {
-		obs_output_stop(whip.out);
-		obs_output_release(whip.out);
-	}
-	if (whip.video) obs_encoder_release(whip.video);
-	if (whip.audio) obs_encoder_release(whip.audio);
-	if (whip.service) obs_service_release(whip.service);
+	Whip w = whip;
 	whip = Whip();
+	if (!w.out && !w.video && !w.audio && !w.service) return;
+	if (w.out) {
+		signal_handler_t *sh = obs_output_get_signal_handler(w.out);
+		signal_handler_disconnect(sh, "start", whipSignalCb, reinterpret_cast<void *>(1));
+		signal_handler_disconnect(sh, "stop", whipSignalCb, nullptr);
+	}
+	auto teardown = [w] {
+		if (w.out) {
+			obs_output_stop(w.out);
+			for (int i = 0; i < 50 && obs_output_active(w.out); i++) std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			if (obs_output_active(w.out)) {
+				obs_output_force_stop(w.out);
+				for (int i = 0; i < 50 && obs_output_active(w.out); i++) std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			}
+			// Encore actif après 10 s : on garde les objets plutôt que de risquer un plantage (fuite, mais OBS reste debout).
+			if (obs_output_active(w.out)) {
+				blog(LOG_WARNING, "[syxtee-link] sortie d'aperçu impossible à arrêter, objets conservés");
+				return;
+			}
+			obs_output_release(w.out);
+		}
+		if (w.video) obs_encoder_release(w.video);
+		if (w.audio) obs_encoder_release(w.audio);
+		if (w.service) obs_service_release(w.service);
+	};
+	if (wait) teardown();
+	else std::thread(teardown).detach();
 }
 
 void whipSignalCb(void *param, calldata_t *cd)
@@ -2434,7 +2464,7 @@ bool syxtee_obsctl_start(const char *path)
 void syxtee_obsctl_stop()
 {
 	if (!server) return;
-	stopWhip();
+	stopWhip(true);
 	msShutdown();
 	obs_frontend_remove_event_callback(frontendEvent, nullptr);
 	signal_handler_t *g = obs_get_signal_handler();

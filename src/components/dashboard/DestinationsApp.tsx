@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { readSelection, writeSelection } from "../remote/destinationSelection";
 import { Card, DkButton, ListRow, StatusBadge, Toggle } from "./kit";
 import { useLinkDevices } from "./useLinkDevices";
 import { OutputDialog, PlatformLogo, PRESETS, type MsOutput } from "../remote/MultistreamPanel";
 import type { Rights } from "../remote/types";
 import { useObs } from "../remote/useObs";
 
-// Destinations : une ligne par plateforme, un interrupteur chacune. Sans sortie réglée, « Configurer » ouvre le formulaire (adresse + clé).
+// Destinations : une ligne par plateforme, un interrupteur chacune = sélection pour le prochain direct (rien ne démarre ici). Sans sortie réglée, « Configurer » ouvre le formulaire (adresse + clé).
 // La clé reste dans le plugin, sur le PC d'OBS : elle n'est jamais renvoyée au site.
 
 const MAIN = ["twitch", "kick", "youtube", "instagram", "tiktok", "x"] as const;
@@ -45,22 +46,14 @@ export default function DestinationsApp({ coreUrl, rights }: { coreUrl: string; 
 function Outputs({ coreUrl, deviceId, rights }: { coreUrl: string; deviceId: string; rights: Rights }) {
   const o = useObs({ coreUrl, deviceId, rights });
   const [dialog, setDialog] = useState<null | { step: "pick" | "form"; editing?: MsOutput; service: string }>(null);
-  const [busy, setBusy] = useState<string | null>(null);
-  const [error, setError] = useState("");
+  const [picked, setPicked] = useState<string[]>(() => readSelection(deviceId));
   const outputs = o.ms?.outputs ?? [];
   const extras = outputs.filter((x) => !(MAIN as readonly string[]).includes(x.service));
 
-  async function toggle(out: MsOutput) {
-    setBusy(out.id);
-    setError("");
-    try {
-      const r = await o.call<NonNullable<typeof o.ms>>(out.active || out.starting ? "link.multistreamStop" : "link.multistreamStart", { id: out.id });
-      if (r) o.setMs(r);
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(null);
-    }
+  function toggle(out: MsOutput) {
+    const next = picked.includes(out.id) ? picked.filter((x) => x !== out.id) : [...picked, out.id];
+    setPicked(next);
+    writeSelection(deviceId, next);
   }
 
   const row = (out: MsOutput | undefined, id: string, label: string) => (
@@ -68,7 +61,7 @@ function Outputs({ coreUrl, deviceId, rights }: { coreUrl: string; deviceId: str
       key={out?.id ?? id}
       lead={<PlatformLogo id={id} size={32} />}
       title={out?.name ?? label}
-      sub={!out ? "Non configurée" : out.error ? out.error : out.starting ? "Connexion…" : out.active ? "En direct" : "Prête"}
+      sub={!out ? "Non configurée" : out.error ? out.error : out.starting ? "Connexion…" : out.active ? "En direct" : !out.hasKey ? "Clé manquante" : picked.includes(out.id) ? "Sélectionnée pour le direct" : "Prête"}
       trailing={
         out ? (
           <span className="flex items-center gap-3">
@@ -76,7 +69,7 @@ function Outputs({ coreUrl, deviceId, rights }: { coreUrl: string; deviceId: str
             {!out.active && !out.starting && !o.guest && (
               <DkButton onClick={() => setDialog({ step: "form", editing: out, service: out.service })} className="!h-8">Modifier</DkButton>
             )}
-            <Toggle label={`${out.name} : ${out.active ? "arrêter" : "lancer"}`} checked={out.active || out.starting} disabled={!o.ready || !o.canLive || busy === out.id || (!out.active && !out.starting && !out.hasKey)} onChange={() => void toggle(out)} />
+            <Toggle label={`${out.name} : ${picked.includes(out.id) ? "retirer du direct" : "sélectionner pour le direct"}`} checked={picked.includes(out.id)} disabled={out.active || out.starting || !out.hasKey} onChange={() => toggle(out)} />
           </span>
         ) : (
           !o.guest && <DkButton onClick={() => setDialog({ step: "form", service: id })}>Configurer</DkButton>
@@ -96,8 +89,7 @@ function Outputs({ coreUrl, deviceId, rights }: { coreUrl: string; deviceId: str
           <DkButton onClick={() => setDialog({ step: "pick", service: "" })}>Ajouter une autre destination</DkButton>
         </div>
       )}
-      <p className="text-[13px] text-muted">Lancer une destination démarre aussi le direct d&apos;OBS ; il s&apos;arrête avec la dernière.</p>
-      {error && <p role="alert" className="text-[14px] text-[var(--dk-amber)]">{error}</p>}
+      <p className="text-[13px] text-muted">Cocher une destination la sélectionne : rien ne démarre ici. Le direct part sur les destinations cochées quand tu lances le stream depuis Contrôle à distance.</p>
       {dialog && <OutputDialog dialog={dialog} setDialog={setDialog} call={o.call} onChange={o.setMs} />}
     </>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { readSelection } from "./destinationSelection";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { coreFetch } from "../dashboard/coreClient";
 import type { MsState } from "./MultistreamPanel";
@@ -420,8 +421,21 @@ export function useObs({ coreUrl, deviceId, demoToken, invite, rights }: UseObsA
   const startStream = useCallback(() => {
     buzz(30);
     hold_("stream", setStreamBusy);
-    void run("StartStream").then((r) => r === null && release("stream", setStreamBusy));
-  }, [run, hold_, release]);
+    // Sorties cochées dans Destinations : la première lance le direct d'OBS, les autres s'y rattachent. Aucune cochée : direct d'OBS seul.
+    const picked = new Set(readSelection(deviceId));
+    const ids = (ms?.outputs ?? []).filter((x) => picked.has(x.id) && x.hasKey && !x.active && !x.starting).map((x) => x.id);
+    if (!ids.length) {
+      void run("StartStream").then((r) => r === null && release("stream", setStreamBusy));
+      return;
+    }
+    void (async () => {
+      for (const id of ids) {
+        const r = await run<MsState>("link.multistreamStart", { id });
+        if (r) setMs(r);
+        else if (id === ids[0]) return release("stream", setStreamBusy);
+      }
+    })();
+  }, [run, hold_, release, ms, deviceId]);
   const stopStream = useCallback(() => {
     buzz(30);
     hold_("stream", setStreamBusy);

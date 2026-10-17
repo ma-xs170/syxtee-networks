@@ -73,7 +73,7 @@
   --color-line-strong: var(--line-strong);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-instrument);
+  --font-serif: var(--font-geist-sans);
 }
 
 html {
@@ -242,7 +242,7 @@ html[data-stream-mode="on"] [data-sensitive] {
   font-size: clamp(2.75rem, 7vw, 4.75rem);
   line-height: 1.02;
   font-weight: 700;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.045em;
   text-wrap: balance;
   & em { font-style: normal; }
 }
@@ -251,7 +251,7 @@ html[data-stream-mode="on"] [data-sensitive] {
   font-size: clamp(2rem, 4.6vw, 3.25rem);
   line-height: 1.08;
   font-weight: 700;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.045em;
   text-wrap: balance;
   & em { font-style: normal; }
 }
@@ -262,7 +262,7 @@ html[data-stream-mode="on"] [data-sensitive] {
   line-height: 1.1;
   padding-bottom: 0.15em;
   font-weight: 700;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.045em;
   & em { font-style: normal; }
 }
 @utility panel {
@@ -608,7 +608,7 @@ select,
   font-family: var(--font-serif), system-ui, sans-serif;
   font-weight: 700;
   line-height: 1.02;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.045em;
   color: var(--foreground);
   text-wrap: balance;
   & em { font-style: normal; }

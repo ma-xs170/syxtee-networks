@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
@@ -9,13 +8,7 @@ import SubmitLock from "@/components/SubmitLock";
 import JsonLd from "@/components/seo/JsonLd";
 
 
-// Trois familles, toutes hébergées en local (woff2, sous-ensemble latin, aucun appel à Google Fonts) : Plus Jakarta Sans (titres, variable 500-800), Geist Sans (interface et texte), Geist Mono (code, valeurs, petits labels).
-// La variable garde le nom --font-instrument (utilisée dans les feuilles de style) ; --font-serif la reprend.
-const serif = localFont({
-  src: [{ path: "./fonts/plus-jakarta-sans-latin.woff2", weight: "500 800", style: "normal" }],
-  variable: "--font-instrument",
-  display: "swap",
-});
+// Deux familles (paquet geist, hébergées avec le site, aucun appel à Google Fonts) : Geist Sans (titres en gras serré, interface et texte) et Geist Mono (code, valeurs, petits labels).
 
 // Icône d'onglet sans fond, assortie à l'onglet (logo noir sur barre claire, blanc sur barre sombre).
 // Écran d'accueil iPhone : apple-touch-icon opaque (iOS refuse la transparence) et mode application plein écran.
@@ -57,7 +50,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} ${serif.variable} h-full antialiased`}>
+    <html lang="fr" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <a href="#contenu" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-(--z-skip) focus:rounded-full focus:bg-accent focus:px-5 focus:py-2.5 focus:text-sm focus:font-medium focus:text-on-accent">Aller au contenu</a>
         <JsonLd

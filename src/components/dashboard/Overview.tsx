@@ -7,16 +7,31 @@ import { pluginState } from "@/lib/plugin";
 import { DailyBars } from "./charts";
 import { useLiveClock, useLiveStatus } from "./LiveStatus";
 import { apiFetch } from "./apiFetch";
-import { Card, Column, DkLink, DkTabButtons, ListRow, PageTitle, StatusBadge } from "./kit";
+import { Card, Column, DkButton, DkLink, DkTabButtons, ListRow, PageTitle, StatusBadge } from "./kit";
 import { useLinkDevices, type DevicesDemo } from "./useLinkDevices";
 import { PlatformLogo } from "../remote/MultistreamPanel";
+import { sendOnce } from "../remote/callDevice";
 
 // Tableau de bord : une colonne, dans l'ordre : état du direct, 4 chiffres, alertes (s'il y en a), graphique, appareils + formule.
 // Tout ce qui ne sert pas à décider ou agir vite est ailleurs (Statistiques, Serveurs, Direct).
 // Données : /api/dashboard/overview (une requête).
 
-function StatusCard({ data, platforms }: { data: OverviewData; platforms: string[] }) {
+function StatusCard({ data, platforms, coreUrl, deviceIds }: { data: OverviewData; platforms: string[]; coreUrl: string; deviceIds: string[] }) {
   const { state, link } = useLiveStatus();
+  const [stop, setStop] = useState<"idle" | "confirm" | "busy">("idle");
+  const [stopError, setStopError] = useState("");
+
+  /** Envoie StopStream aux postes en ligne (celui qui ne diffuse pas refuse, ce n'est pas une erreur) ; le statut repasse « Hors ligne » par le flux du Core. */
+  async function endStream() {
+    setStop("busy");
+    setStopError("");
+    const results = await Promise.allSettled(deviceIds.map((id) => sendOnce(coreUrl, id, "StopStream")));
+    if (deviceIds.length === 0 || results.every((r) => r.status === "rejected")) {
+      const first = results.find((r): r is PromiseRejectedResult => r.status === "rejected");
+      setStopError(first ? (first.reason as Error).message : "Aucun poste OBS en ligne.");
+    }
+    setStop("idle");
+  }
   const clock = useLiveClock();
   const reconnecting = !!state?.reconnecting;
   const on = !!state?.live || reconnecting;
@@ -48,13 +63,16 @@ function StatusCard({ data, platforms }: { data: OverviewData; platforms: string
           {on ? (
             <>
               <DkLink href="/dashboard/direct">Ouvrir le direct</DkLink>
-              <DkLink href="/dashboard/direct" tone="danger">Terminer le stream</DkLink>
+              <DkButton tone="danger" disabled={stop === "busy"} onClick={() => (stop === "confirm" ? void endStream() : setStop("confirm"))} onBlur={() => stop === "confirm" && setStop("idle")}>
+                {stop === "busy" ? "Arrêt…" : stop === "confirm" ? "Confirmer l'arrêt" : "Terminer le stream"}
+              </DkButton>
             </>
           ) : (
             <DkLink href="/dashboard/direct" tone="primary">Lancer un direct</DkLink>
           )}
         </div>
       </div>
+      {stopError && <p role="alert" className="mt-4 text-[14px]" style={{ color: "var(--dk-red)" }}>{stopError}</p>}
     </Card>
   );
 }
@@ -129,7 +147,7 @@ export default function Overview({ initial, coreUrl = "", demo, platforms = [] }
     <Column>
       <PageTitle title="Tableau de bord" sub="L'état de ton direct et l'activité de tes serveurs." />
       <div className="grid gap-6">
-        <StatusCard data={data} platforms={platforms} />
+        <StatusCard data={data} platforms={platforms} coreUrl={coreUrl} deviceIds={online.map((d) => d.id)} />
 
         <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {stats.map((k) => (

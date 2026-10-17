@@ -9,12 +9,10 @@ import SubmitLock from "@/components/SubmitLock";
 import JsonLd from "@/components/seo/JsonLd";
 
 
-// Trois familles, toutes hébergées en local (woff2, sous-ensemble latin, aucun appel à Google Fonts) : Instrument Serif (titres), Geist Sans (interface et texte), Geist Mono (code, valeurs, petits labels).
+// Trois familles, toutes hébergées en local (woff2, sous-ensemble latin, aucun appel à Google Fonts) : Plus Jakarta Sans (titres, variable 500-800), Geist Sans (interface et texte), Geist Mono (code, valeurs, petits labels).
+// La variable garde le nom --font-instrument (utilisée dans les feuilles de style) ; --font-serif la reprend.
 const serif = localFont({
-  src: [
-    { path: "./fonts/instrument-serif-latin.woff2", weight: "400", style: "normal" },
-    { path: "./fonts/instrument-serif-latin-italic.woff2", weight: "400", style: "italic" },
-  ],
+  src: [{ path: "./fonts/plus-jakarta-sans-latin.woff2", weight: "500 800", style: "normal" }],
   variable: "--font-instrument",
   display: "swap",
 });

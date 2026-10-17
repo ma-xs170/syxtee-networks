@@ -238,32 +238,32 @@ html[data-stream-mode="on"] [data-sensitive] {
   color: var(--muted);
 }
 @utility h-hero {
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-serif), system-ui, sans-serif;
   font-size: clamp(2.75rem, 7vw, 4.75rem);
   line-height: 1.02;
-  font-weight: 400;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  letter-spacing: -0.035em;
   text-wrap: balance;
-  & em { font-style: italic; }
+  & em { font-style: normal; }
 }
 @utility h-section {
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-serif), system-ui, sans-serif;
   font-size: clamp(2rem, 4.6vw, 3.25rem);
   line-height: 1.08;
-  font-weight: 400;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  letter-spacing: -0.035em;
   text-wrap: balance;
-  & em { font-style: italic; }
+  & em { font-style: normal; }
 }
-/* Titre de page du dashboard et de l'admin : serif, mot clé en italique (même famille). */
+/* Titre de page du dashboard et de l'admin : sans grasse. */
 @utility h-page {
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-serif), system-ui, sans-serif;
   font-size: clamp(2rem, 4vw, 3rem);
   line-height: 1.1;
   padding-bottom: 0.15em;
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  & em { font-style: italic; }
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  & em { font-style: normal; }
 }
 @utility panel {
   border: 1px solid var(--line);
@@ -605,13 +605,13 @@ select,
 
 /* ───── DA : serif display, pastille de statut, icônes verre, éclat des boutons ───── */
 @utility h-serif {
-  font-family: var(--font-serif), Georgia, serif;
-  font-weight: 400;
+  font-family: var(--font-serif), system-ui, sans-serif;
+  font-weight: 700;
   line-height: 1.02;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.035em;
   color: var(--foreground);
   text-wrap: balance;
-  & em { font-style: italic; }
+  & em { font-style: normal; }
 }
 
 .pill-dot { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c, var(--ok)) 35%, transparent); }

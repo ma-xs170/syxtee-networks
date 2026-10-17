@@ -29,7 +29,7 @@ export function LogoTile() {
 
 /** Mot-clé d'un titre : italique serif, comme les titres du site. */
 function Mark({ children }: { children: ReactNode }) {
-  return <em className="italic">{children}</em>;
+  return <em className="not-italic">{children}</em>;
 }
 
 function Shell({ title, sub, children }: { title: ReactNode; sub?: ReactNode; children: ReactNode }) {

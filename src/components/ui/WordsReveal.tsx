@@ -4,7 +4,7 @@ export default function WordsReveal({ text, em = [], className = "" }: { text: s
   return (
     <span className={className}>
       {words.map((w, i) => (
-        <span key={i} className={em.includes(w) ? "italic text-muted" : undefined}>
+        <span key={i} className={em.includes(w) ? "text-muted" : undefined}>
           {w}
           {i < words.length - 1 ? " " : ""}
         </span>

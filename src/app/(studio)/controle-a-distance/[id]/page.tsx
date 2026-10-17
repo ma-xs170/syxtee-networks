@@ -16,5 +16,5 @@ export default async function RemoteObsPage({ params }: { params: Promise<{ id: 
   const plan = effectivePlan(profile);
   // Contrôle à distance : Signature et au-dessus. En dessous, retour à l'abonnement.
   if (!can(plan, "remote")) redirect("/dashboard/abonnement");
-  return <RemoteObs coreUrl={publicCoreUrl} deviceId={id} rights={{ prises: plan.regiePrises, cams: plan.regieCams }} chatDefaults={{ twitch: profile?.twitch_login || profile?.twitch || "", kick: profile?.kick ?? "", youtube: "" }} />;
+  return <RemoteObs coreUrl={publicCoreUrl} deviceId={id} rights={{ prises: plan.regiePrises, cams: plan.regieCams }} />;
 }

@@ -2,14 +2,11 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
-import MultiChat, { type ChatDefaults } from "../dashboard/MultiChat";
 import AutoSheet from "./AutoSheet";
 import DirectSimple from "./DirectSimple";
 import { SourceEditor } from "./EditTools";
-import { GuardianBar } from "./GuardianBar";
 import LivePanel from "./LivePanel";
 import MixerPanel from "./MixerPanel";
-import MultistreamPanel from "./MultistreamPanel";
 import ProgramView from "./ProgramView";
 import ScenesPanel from "./ScenesPanel";
 import SettingsPanel from "./SettingsPanel";
@@ -63,7 +60,6 @@ export default function RemoteObs({
   deviceId,
   demoToken,
   invite,
-  chatDefaults,
   rights = demoDefaults,
 }: {
   coreUrl: string;
@@ -72,7 +68,6 @@ export default function RemoteObs({
   rights?: Rights;
   demoToken?: string;
   /** Chaînes du propriétaire pour le chat (absent pour un invité). */
-  chatDefaults?: ChatDefaults;
   /** Secret d'un lien d'invitation : l'invité pilote sans compte, avec les droits de son invitation. */
   invite?: string;
 }) {
@@ -93,16 +88,13 @@ export default function RemoteObs({
     );
   }, [o.streaming, o.agent.name, o.stats?.streamMs, o.program, o.stopStream, o.startStream]);
 
-  const showChat = !!chatDefaults;
+  // Mêmes pages que sur ordinateur : ni multistream ni chat sur téléphone.
   const tabs: [Tab, string, IconName][] = [
     ["scenes", "Scènes", "scenes"],
     ["sources", "Sources", "sources"],
     ["mixer", "Audio", "mixer"],
     ["live", "Direct", "live"],
-    ["multi", "Multi", "multi"],
-    ...(showChat ? ([["chat", "Chat", "chat"]] as [Tab, string, IconName][]) : []),
   ];
-  // Un onglet qui n'existe plus (chat retiré) ramène aux scènes.
   const activeTab: Tab = tabs.some(([id]) => id === tab) ? tab : "scenes";
   const onTabKey = (e: KeyboardEvent) => {
     const i = tabs.findIndex(([id]) => id === activeTab);
@@ -114,18 +106,11 @@ export default function RemoteObs({
     document.getElementById(`rtab-${t}`)?.focus();
   };
 
-  const chatBox = chatDefaults ? (
-    <div className="h-full min-h-0 overflow-hidden rounded-xl border border-line bg-surface">
-      <MultiChat defaults={chatDefaults} height="h-full" compact />
-    </div>
-  ) : null;
-
   return (
     <div className="flex h-dvh w-full min-w-0 max-w-[100vw] flex-col overflow-hidden overscroll-none bg-background pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] text-sm text-foreground [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [touch-action:manipulation] max-lg:pb-[env(safe-area-inset-bottom)]">
       <TopBar o={o} desktop={desktop} onAuto={() => setAutoOpen(true)} invited={!!invite} />
       {!desktop && <StatusStrip o={o} desktop={desktop} />}
       <Alerts o={o} invited={!!invite} />
-      {!desktop && o.link === "on" && o.owner && <GuardianBar guardian={o.guardian} agentOnline={o.agent.online} call={o.call} />}
 
       {desktop ? (
         <div className="flex min-h-0 flex-1">
@@ -137,21 +122,19 @@ export default function RemoteObs({
           </main>
         </div>
       ) : (
-        <main className="flex min-h-0 flex-1 flex-col gap-2 p-2 landscape:flex-row">
+        <main className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain p-2 landscape:flex-row landscape:overflow-hidden">
           <div className="flex min-h-0 shrink-0 flex-col gap-2 landscape:w-[52%]">
             <AudioAlert o={o} />
             <ProgramView o={o} ratio={!landscape} className="landscape:flex-1" />
           </div>
           <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
-            <div role="tabpanel" id={`rpanel-${activeTab}`} aria-labelledby={`rtab-${activeTab}`} className="flex min-h-0 flex-1 flex-col">
+            <div role="tabpanel" id={`rpanel-${activeTab}`} aria-labelledby={`rtab-${activeTab}`} className="flex min-h-[15rem] flex-1 flex-col landscape:min-h-0">
               {activeTab === "scenes" && <ScenesPanel o={o} className="flex-1" />}
               {activeTab === "sources" && <SourcesPanel o={o} onEdit={setEdit} className="flex-1" />}
               {activeTab === "mixer" && <MixerPanel o={o} className="flex-1" />}
               {activeTab === "live" && <LivePanel o={o} onLive={onLive} onSettings={() => setSettingsOpen(true)} className="flex-1" />}
-              {activeTab === "multi" && <MultistreamPanel state={o.ms} mainLive={o.streaming} call={o.call} ready={o.ready} canControl={o.canLive} canEdit={!o.guest} onChange={o.setMs} />}
-              {activeTab === "chat" && chatBox}
             </div>
-            <nav role="tablist" aria-label="Panneaux" onKeyDown={onTabKey} className={cx("grid shrink-0 rounded-xl border border-line bg-surface p-1", tabs.length === 6 ? "grid-cols-6" : "grid-cols-5")}>
+            <nav role="tablist" aria-label="Panneaux" onKeyDown={onTabKey} className={cx("grid shrink-0 rounded-xl border border-line bg-surface p-1", "grid-cols-4")}>
               {tabs.map(([id, text, icon]) => {
                 const on = id === activeTab;
                 return (

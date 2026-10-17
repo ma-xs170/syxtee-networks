@@ -16,7 +16,7 @@ export default function ProgramView({ o, className, ratio }: { o: Obs; className
   // Un ancien plugin ne connaît pas la commande : on l'ignore sans bruit (l'aperçu garde sa qualité fixe).
   const { call } = o;
   const quality = useCallback((level: PreviewLevel) => void call("link.setPreviewQuality", { level }).catch(() => {}), [call]);
-  const box = ratio ? "aspect-video w-full" : "h-full";
+  const box = ratio ? "mx-auto aspect-video h-[22dvh] max-w-full" : "h-full";
   return (
     <section aria-label="Programme" className={cx("grid min-h-0 grid-rows-[auto_minmax(0,1fr)] rounded-xl border border-line bg-surface", className)}>
       <div className="flex min-w-0 items-center justify-between gap-2 px-3 py-2">

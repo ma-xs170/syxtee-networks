@@ -413,7 +413,7 @@ export function Confirm({ ask, onClose }: { ask: ConfirmAsk; onClose: () => void
               onClose();
               a?.run();
             }}
-            className={a?.danger ? btnLive() : btnPrimary()}
+            className={a?.danger ? `${btnLive()} !border-[var(--dk-red)] !bg-[var(--dk-red)]/10 !text-[var(--dk-red)] hover:!bg-[var(--dk-red)]/20` : btnPrimary()}
           >
             {a?.ok}
           </button>

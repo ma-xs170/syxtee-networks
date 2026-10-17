@@ -72,7 +72,7 @@ export function LivePill({ compact = false }: { compact?: boolean }) {
   const { state, link } = useLiveStatus();
   const clock = useLiveClock();
   const live = !!state?.live;
-  const label = live ? "En live" : state?.reconnecting ? "Reconnexion" : link === "error" ? "Relais injoignable" : "Hors ligne";
+  const label = live ? "Source en ligne" : state?.reconnecting ? "Reconnexion" : link === "error" ? "Relais injoignable" : "Hors ligne";
   return (
     <span
       role="status"

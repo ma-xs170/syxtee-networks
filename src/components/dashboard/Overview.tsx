@@ -48,7 +48,7 @@ function StatusCard({ data, platforms, coreUrl, deviceIds }: { data: OverviewDat
         <div className="min-w-0" aria-live="polite">
           {on ? (
             <p className="flex flex-wrap items-center gap-3">
-              <StatusBadge tone={reconnecting ? "warn" : "ok"}>{reconnecting ? "Reconnexion" : "En direct"}</StatusBadge>
+              <StatusBadge tone={reconnecting ? "warn" : "ok"}>{reconnecting ? "Reconnexion" : "Source en ligne"}</StatusBadge>
               <span className="dk-mono text-[20px] text-foreground">{clock ?? "00:00:00"}</span>
               {state?.kbps != null && <span className="dk-mono text-[14px] text-muted">{fmtInt(state.kbps)} kbit/s</span>}
             </p>
@@ -70,6 +70,7 @@ function StatusCard({ data, platforms, coreUrl, deviceIds }: { data: OverviewDat
           {on ? (
             <>
               <DkLink href="/dashboard/direct">Ouvrir le direct</DkLink>
+              <DkButton disabled={busy || deviceIds.length === 0} onClick={confirmStart}>Commencer le stream</DkButton>
               <DkButton tone="danger" disabled={busy} onClick={confirmStop}>{busy ? "Arrêt…" : "Terminer le stream"}</DkButton>
             </>
           ) : (

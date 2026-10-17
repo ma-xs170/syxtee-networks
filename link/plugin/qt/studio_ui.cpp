@@ -300,10 +300,10 @@ protected:
 		switch (kind_) {
 		case IcLive: // point et ondes
 			p.drawEllipse(QPointF(8, 8), 1.6, 1.6);
-			p.drawArc(QRectF(3.5, 3.5, 9, 9), 40 * 16, 100 * 16);
-			p.drawArc(QRectF(3.5, 3.5, 9, 9), 220 * 16, 100 * 16);
-			p.drawArc(QRectF(0.5, 0.5, 15, 15), 40 * 16, 100 * 16);
-			p.drawArc(QRectF(0.5, 0.5, 15, 15), 220 * 16, 100 * 16);
+			p.drawArc(QRectF(3.5, 3.5, 9, 9), -50 * 16, 100 * 16);
+			p.drawArc(QRectF(3.5, 3.5, 9, 9), 130 * 16, 100 * 16);
+			p.drawArc(QRectF(0.5, 0.5, 15, 15), -50 * 16, 100 * 16);
+			p.drawArc(QRectF(0.5, 0.5, 15, 15), 130 * 16, 100 * 16);
 			break;
 		case IcSource: // flux : trois barres de signal
 			p.drawLine(QPointF(2, 13), QPointF(2, 10));
@@ -486,7 +486,7 @@ QWidget *row(const QString &title, const QString &sub, QWidget *right, int icon 
 	auto *h = new QHBoxLayout(w);
 	h->setContentsMargins(0, 12, 0, 12);
 	h->setSpacing(16);
-	if (icon >= 0) h->addWidget(new Icon(IconKind(icon)), 0, Qt::AlignTop); // aligné sur le titre, pas au milieu de la description
+	if (icon >= 0) h->addWidget(new Icon(IconKind(icon)), 0, Qt::AlignVCenter);
 	auto *left = new QVBoxLayout;
 	left->setSpacing(3);
 	left->addWidget(label(title, "name"));

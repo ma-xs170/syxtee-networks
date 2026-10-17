@@ -282,9 +282,11 @@ export class BackupWatcher {
     const imageMoves = shot !== "" && shot !== this.last;
     if (imageMoves) this.seenMoving = true;
     // Hors antenne (secours en cours), la vignette de la source ne bouge pas : le serveur dit si le flux est revenu.
-    const offAir = this.state === "backup";
-    const relayDown = this.relayLive === false;
-    const frozen = offAir && this.relayLive === true ? false : !imageMoves || low || relayDown;
+    // Le serveur est le juge : s'il reçoit bien le flux (en ligne, débit au-dessus du seuil bas), on ne bascule jamais sur la seule foi des vignettes.
+    // Une prise fixe (Osmo posé, plan immobile) donne des vignettes identiques à l'octet près sans que rien ne soit coupé : c'était la cause des bascules
+    // à tort sur le secours alors que la caméra émettait. Les vignettes ne servent que si le serveur est injoignable (état inconnu).
+    const relayOk = this.relayLive === true && !low;
+    const frozen = this.relayLive === false ? true : relayOk ? false : !imageMoves || low;
     this.last = shot;
     if (frozen) {
       this.still++;

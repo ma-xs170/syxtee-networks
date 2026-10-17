@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import ProgramPreview from "./ProgramPreview";
-import ProgramVideo from "./ProgramVideo";
+import ProgramVideo, { type PreviewLevel } from "./ProgramVideo";
 import { btn, cx, Icon } from "./ui";
 import type { Obs } from "./useObs";
 
@@ -13,6 +13,9 @@ export default function ProgramView({ o, className, ratio }: { o: Obs; className
   const [muted, setMuted] = useState(true);
   const [volume, setVolume] = useState(0.8);
   const video = o.pmode.mode === "video";
+  // Un ancien plugin ne connaît pas la commande : on l'ignore sans bruit (l'aperçu garde sa qualité fixe).
+  const { call } = o;
+  const quality = useCallback((level: PreviewLevel) => void call("link.setPreviewQuality", { level }).catch(() => {}), [call]);
   const box = ratio ? "aspect-video w-full" : "h-full";
   return (
     <section aria-label="Programme" className={cx("grid min-h-0 grid-rows-[auto_minmax(0,1fr)] rounded-xl border border-line bg-surface", className)}>
@@ -65,7 +68,7 @@ export default function ProgramView({ o, className, ratio }: { o: Obs; className
               </p>
             </>
           ) : o.previewOn ? (
-            <ProgramVideo watch={o.watch} program={o.program} muted={muted} volume={volume} />
+            <ProgramVideo watch={o.watch} program={o.program} muted={muted} volume={volume} onQuality={quality} />
           ) : (
             <div className="grid h-full place-items-center p-4 text-center">
               <div>

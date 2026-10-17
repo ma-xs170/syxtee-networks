@@ -10,7 +10,6 @@ import type { Mix } from "./types";
 // Direct, grand écran : la disposition d'OBS Studio sur une page, sans défilement.
 // Barre d'état (profil, collection, flux), aperçu du programme au centre, puis quatre docks en bas :
 // Scènes, Sources, Mixer audio (colonnes verticales), Contrôles + Flux. Tout agit sur le vrai OBS du poste.
-// La vue complète (destinations, enregistrement détaillé, menu ⋯) reste en « Vue avancée ».
 // Raccourcis : 1 à 9 changent de scène, M coupe le micro.
 
 const fmtDb = (db: number) => (Number.isFinite(db) && db > -100 ? db.toFixed(1).replace(".", ",") : "-inf");
@@ -74,7 +73,7 @@ function Strip({ o, m }: { o: Obs; m: Mix }) {
   );
 }
 
-export default function DirectSimple({ o, onLive, onAdvanced, onSettings }: { o: Obs; onLive: () => void; onAdvanced: () => void; onSettings: () => void }) {
+export default function DirectSimple({ o, onLive }: { o: Obs; onLive: () => void }) {
   const off = !o.ready || !o.canLive;
   const s = o.stats;
   const loss = s && s.total > 0 ? (s.dropped / s.total) * 100 : 0;
@@ -128,11 +127,9 @@ export default function DirectSimple({ o, onLive, onAdvanced, onSettings }: { o:
           {o.noFluxSource && !o.guest && <DkButton className="!h-7 !px-3 !text-[13px]" disabled={o.fixing} onClick={() => void o.fixFlux()}>{o.fixing ? "Correction…" : "Corriger"}</DkButton>}
         </span>
         <span className="ml-auto flex items-center gap-2">
-          {o.owner && <DkButton className="!h-8 !px-3 !text-[13px]" disabled={!o.ready} onClick={onSettings}>Paramètres OBS</DkButton>}
           <DkButton className="!h-8 !px-3 !text-[13px]" aria-pressed={o.studioMode} disabled={off} onClick={o.toggleStudio} style={o.studioMode ? { borderColor: "var(--dk-blue)", background: "color-mix(in srgb, var(--dk-blue) 14%, transparent)" } : undefined}>
             Mode Studio
           </DkButton>
-          <DkButton className="!h-8 !px-3 !text-[13px]" onClick={onAdvanced}>Vue avancée</DkButton>
         </span>
       </div>
 

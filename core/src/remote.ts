@@ -30,7 +30,7 @@ export const ALLOWED = new Set([
   // Paramètres d'OBS (liste blanche côté plugin) : réservés au propriétaire du compte, jamais aux invités
   "link.settingsGet", "link.settingsSet",
   // SYXTEE Link : bascule automatique sur une scène de secours, état de l'agent
-  "link.multistreamList", "link.multistreamSave", "link.multistreamRemove", "link.multistreamStart", "link.multistreamStop", "link.fixFlux", "link.getBackup", "link.setBackup", "link.getPreview", "link.setPreview", "link.getInfo", "link.preview", "link.collections", "link.backupNow", "link.restore",
+  "link.multistreamList", "link.multistreamSave", "link.multistreamRemove", "link.multistreamStart", "link.multistreamStop", "link.fixFlux", "link.getBackup", "link.setBackup", "link.getPreview", "link.setPreview", "link.setPreviewQuality", "link.getInfo", "link.preview", "link.collections", "link.backupNow", "link.restore",
   // Gardien SYXTEE (processus séparé d'OBS, sur le même poste) : état, relance d'OBS, surveillance
   "guardian.status", "guardian.launchObs", "guardian.restartObs", "guardian.setWatch", "guardian.setResume",
 ]);
@@ -62,7 +62,7 @@ const GUEST_SCENES = new Set([
 const GUEST_FULL = new Set([
   "SetSourceFilterEnabled", "SetSceneItemTransform", "TriggerMediaInputAction", "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "link.setText", "link.setUrl", "link.setBitrate","link.multistreamStart", "link.multistreamStop", "StartStream", "StopStream", "ToggleStream", "StartRecord", "StopRecord", "ToggleRecord", "PauseRecord", "ResumeRecord", "SetCurrentProfile", "SetCurrentSceneCollection"]);
 /** Lectures permises à un invité : tout `Get…` d'OBS, plus l'état de l'aperçu et des rôles. Jamais les sauvegardes. */
-const GUEST_LINK_READS = new Set(["link.listEditable", "link.getBitrate", "link.multistreamList", "link.getPreview", "link.getInfo", "link.getBackup", "link.preview"]);
+const GUEST_LINK_READS = new Set(["link.listEditable", "link.getBitrate", "link.multistreamList", "link.getPreview", "link.setPreviewQuality", "link.getInfo", "link.getBackup", "link.preview"]);
 export function guestAllows(level: InviteLevel, method: string): boolean {
   if (method.startsWith("link.")) return GUEST_LINK_READS.has(method) || (level === "full" && GUEST_FULL.has(method));
   if (method.startsWith("Get")) return true;
@@ -74,7 +74,7 @@ export function guestAllows(level: InviteLevel, method: string): boolean {
 /** Permissions montrées à l'utilisateur à l'appairage, enregistrées avec l'appareil. */
 export const LINK_SCOPES = ["profile", "email", "offline", "obs.control", "backups"] as const;
 /** Lectures : jamais écrites au journal d'audit (elles tournent en boucle). */
-const isRead = (m: string) => /^(Get|link\.(get|preview|collections|multistreamList|listEditable|settingsGet)|guardian\.status)/.test(m);
+const isRead = (m: string) => /^(Get|link\.(get|preview|setPreviewQuality|collections|multistreamList|listEditable|settingsGet)|guardian\.status)/.test(m);
 /** Seuls ces paramètres (noms de scène, de source…) sont gardés dans le journal. Jamais de clé, de mot de passe ou de réglage. */
 const AUDIT_PARAMS = ["sceneName", "inputName", "sourceName", "transitionName", "sceneItemEnabled", "inputMuted", "filterName", "filterEnabled", "mediaAction"];
 

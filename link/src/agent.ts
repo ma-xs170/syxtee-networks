@@ -19,6 +19,13 @@ import { fixLiveScene, fluxName } from "./livescene.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
 import { takeResume, writeStreaming } from "./state.ts";
 
+/** Niveaux de l'aperçu vidéo : du plus léger (connexion faible) au plus net. Le plugin accepte 300 à 3 000 kbit/s et 270 à 720 px de hauteur. */
+const PREVIEW_LEVELS = [
+  { kbps: 500, height: 360 },
+  { kbps: 1200, height: 540 },
+  { kbps: 2500, height: 720 },
+] as const;
+
 export const VERSION = "0.9.0";
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
@@ -84,6 +91,8 @@ export class Agent {
   private relaysAt = 0;
   /** Aperçu vidéo (WHIP). `mode` : « video » (image + son), « jpeg » (repli, images sans son), « idle » (personne ne regarde). */
   private whip: { active: boolean; starting: boolean; failedAt: number; reason: string; touchedAt: number } = { active: false, starting: false, failedAt: 0, reason: "", touchedAt: 0 };
+  /** Niveau de qualité de l'aperçu demandé par le navigateur (0 : 360p, 1 : 540p, 2 : 720p), appliqué au prochain envoi WHIP. */
+  private previewLevel = 1;
   get whipReason() {
     return this.whip.reason;
   }
@@ -425,7 +434,8 @@ export class Agent {
       const r = await coreCall(this.cfg, "POST", "/v1/link/preview/start", {});
       const url = r.ok ? String(r.json.whip_url ?? "") : "";
       if (!url) throw new Error(r.status === 0 ? "Serveur SYXTEE injoignable." : "Le serveur n'accepte pas l'aperçu vidéo.");
-      await this.obs.request("link.whipStart", { server: url });
+      const q = PREVIEW_LEVELS[this.previewLevel] ?? PREVIEW_LEVELS[1];
+      await this.obs.request("link.whipStart", { server: url, kbps: q.kbps, height: q.height });
       if (!this.whip.starting) {
         // Plus de spectateur pendant le démarrage : on referme tout de suite.
         void this.obs.request("link.whipStop").catch(() => {});
@@ -750,6 +760,15 @@ export class Agent {
       if (method === "link.setPreview") {
         this.setPreviewEnabled(params.enabled !== false);
         return reply(true, { enabled: this.cfg.previewEnabled, mode: this.previewMode, reason: this.whip.reason });
+      }
+      if (method === "link.setPreviewQuality") {
+        const level = Math.max(0, Math.min(PREVIEW_LEVELS.length - 1, Math.round(Number(params.level) || 0)));
+        if (level !== this.previewLevel) {
+          this.previewLevel = level;
+          // L'envoi en cours est relancé au nouveau débit (une à deux secondes de coupure ; le navigateur se reconnecte seul).
+          if (this.whip.active) void this.stopWhip().then(() => this.managePreview());
+        }
+        return reply(true, { level: this.previewLevel, ...PREVIEW_LEVELS[this.previewLevel] });
       }
       if (method === "link.collections") {
         const names = listCollections();

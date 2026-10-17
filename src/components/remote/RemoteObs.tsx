@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useState, useSyncExternalStore, type KeyboardEvent } from "react";
 import MultiChat, { type ChatDefaults } from "../dashboard/MultiChat";
 import AutoSheet from "./AutoSheet";
-import DirectDesk, { DirectBar } from "./DirectDesk";
 import DirectSimple from "./DirectSimple";
 import { SourceEditor } from "./EditTools";
 import { GuardianBar } from "./GuardianBar";
@@ -86,7 +85,6 @@ export default function RemoteObs({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [edit, setEdit] = useState<"props" | "filters" | null>(null);
   const [ask, setAsk] = useState<ConfirmAsk>(null);
-  const [advanced, setAdvanced] = useState(false);
 
   // Chat : affiché ou non, choix gardé dans ce navigateur.
   useEffect(() => {
@@ -154,20 +152,10 @@ export default function RemoteObs({
       {desktop ? (
         <div className="flex min-h-0 flex-1">
           <main className="flex min-h-0 min-w-0 flex-1 flex-col">
-            {advanced && <DirectBar o={o} onLive={onLive} onSettings={() => setSettingsOpen(true)} setAsk={setAsk} />}
             <AudioAlert o={o} />
-            {advanced ? (
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-                <DirectDesk o={o} onEdit={setEdit} onLive={onLive} onSettings={() => setSettingsOpen(true)} />
-                <p className="pb-6 text-center text-[13px] text-muted">
-                  <button type="button" onClick={() => setAdvanced(false)} className="underline underline-offset-4 hover:text-foreground">Vue simple</button>
-                </p>
-              </div>
-            ) : (
-              <div className="min-h-0 flex-1">
-                <DirectSimple o={o} onLive={onLive} onAdvanced={() => setAdvanced(true)} onSettings={() => setSettingsOpen(true)} />
-              </div>
-            )}
+            <div className="min-h-0 flex-1">
+              <DirectSimple o={o} onLive={onLive} />
+            </div>
           </main>
           {chatBox && chatOn && (
             <aside aria-label="Chat" className="min-h-0 w-[22rem] shrink-0 py-2 pr-2 xl:w-[26rem]">

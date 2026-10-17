@@ -178,7 +178,7 @@ export default function MultistreamPanel({ state, call, ready, canControl, canEd
   );
 }
 
-function OutputDialog({ dialog, setDialog, call, onChange }: { dialog: { step: "pick" | "form"; editing?: MsOutput; service: string }; setDialog: (d: null | { step: "pick" | "form"; editing?: MsOutput; service: string }) => void; call: Call; onChange: (s: MsState) => void }) {
+export function OutputDialog({ dialog, setDialog, call, onChange }: { dialog: { step: "pick" | "form"; editing?: MsOutput; service: string }; setDialog: (d: null | { step: "pick" | "form"; editing?: MsOutput; service: string }) => void; call: Call; onChange: (s: MsState) => void }) {
   const ref = useRef<HTMLDialogElement>(null);
   const p = preset(dialog.service);
   const e = dialog.editing;

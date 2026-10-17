@@ -114,15 +114,6 @@ QToolTip { background: #101010; color: #ffffff; border: 1px solid rgba(255,255,2
 
 const QColor kOk("#4ade80"), kWarn("#fbbf24"), kBad("#f87171"), kFaint("#737373"), kInfo("#3b82f6");
 
-// Tailles en unités binaires affichées « Go / Mo / Ko » (le quota de 5 Go est 5 × 1024³ octets).
-QString fmtSize(double n)
-{
-	const double go = 1024.0 * 1024 * 1024, mo = 1024.0 * 1024;
-	if (n >= go) return QString::number(n / go, 'f', n >= 10 * go || qFuzzyCompare(n / go, qRound(n / go) + 0.0) ? 0 : 1) + " Go";
-	if (n >= mo) return QString::number(n / mo, 'f', 0) + " Mo";
-	return QString::number(qMax(1.0, n / 1024.0), 'f', 0) + " Ko";
-}
-
 // Inter et Geist Mono sont ceux du site mais ne sont pas installés sur la machine : on les charge depuis le plugin.
 void loadAssets()
 {
@@ -315,7 +306,7 @@ private:
 };
 
 // Pictogrammes au trait (comme ceux de la liste de sources du site) : encre grise, jamais d'emoji en couleur.
-enum IconKind { IcLive, IcSource, IcShield, IcCamera, IcDrone, IcFrame };
+enum IconKind { IcLive, IcSource, IcShield, IcCamera, IcDrone, IcFrame, IcEye, IcMonitor };
 class Icon : public QWidget {
 public:
 	explicit Icon(IconKind k, QWidget *parent = nullptr) : QWidget(parent), kind_(k) { setFixedSize(18, 18); }
@@ -355,6 +346,15 @@ protected:
 			p.drawLine(QPointF(9.5, 9.5), QPointF(12.5, 12.5));
 			p.drawLine(QPointF(6.5, 9.5), QPointF(3.5, 12.5));
 			for (const QPointF c : {QPointF(13.5, 2.5), QPointF(2.5, 2.5), QPointF(13.5, 13.5), QPointF(2.5, 13.5)}) p.drawEllipse(c, 2, 2);
+			break;
+		case IcEye:
+			p.drawPath([] { QPainterPath q; q.moveTo(0.8, 8); q.quadTo(8, -1.5, 15.2, 8); q.quadTo(8, 17.5, 0.8, 8); return q; }());
+			p.drawEllipse(QPointF(8, 8), 2.4, 2.4);
+			break;
+		case IcMonitor:
+			p.drawRoundedRect(QRectF(0.8, 1.5, 14.4, 9.5), 2, 2);
+			p.drawLine(QPointF(5, 14.5), QPointF(11, 14.5));
+			p.drawLine(QPointF(8, 11), QPointF(8, 14.5));
 			break;
 		case IcFrame:
 			p.drawRoundedRect(QRectF(0.8, 2, 14.4, 12), 2.5, 2.5);
@@ -471,9 +471,7 @@ private:
 	QTimer *timer_ = nullptr, *toastTimer_ = nullptr;
 	qint64 lastData_ = 0;
 	bool paired_ = false, built_ = false, obsOn_ = false;
-	QString jobDone_;
-	QJsonObject state_, cloud_, optionsCache_;
-	QJsonArray cols_;
+	QJsonObject state_, optionsCache_;
 	// dernier diagnostic de /api/live et flux choisi
 	bool liveKnown_ = false, liveHasSource_ = false;
 	QString destName_;
@@ -481,7 +479,7 @@ private:
 	QLabel *badge_ = nullptr, *version_ = nullptr, *toast_ = nullptr;
 	Dot *badgeDot_ = nullptr;
 	QStackedWidget *root_ = nullptr, *tabs_ = nullptr;
-	QPushButton *tabBtn_[4] = {};
+	QPushButton *tabBtn_[3] = {};
 	// connexion
 	QLabel *loginText_ = nullptr, *loginCode_ = nullptr, *loginErr_ = nullptr, *loginWait_ = nullptr;
 	QWidget *loginCodeBox_ = nullptr, *loginSteps_ = nullptr;
@@ -493,13 +491,6 @@ private:
 	Segments *heroBar_ = nullptr;
 	QPushButton *heroBtn_ = nullptr;
 	int heroAct_ = 0;
-	// collections
-	QVBoxLayout *localBox_ = nullptr, *cloudBox_ = nullptr;
-	QLabel *quota_ = nullptr, *quotaOf_ = nullptr;
-	QFrame *jobCard_ = nullptr;
-	QLabel *job_ = nullptr;
-	Dot *jobDot_ = nullptr;
-	QProgressBar *bar_ = nullptr;
 	// régie et diffusion
 	QComboBox *secScene_ = nullptr, *secSource_ = nullptr, *liveScene_ = nullptr, *dest_ = nullptr;
 	QWidget *destEmpty_ = nullptr, *liveAlert_ = nullptr;
@@ -613,7 +604,7 @@ private:
 		toastTimer_->setSingleShot(true);
 		QObject::connect(toastTimer_, &QTimer::timeout, toast_, &QWidget::hide);
 
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 3; i++) {
 			auto *sc = new QShortcut(QKeySequence(QString("Ctrl+%1").arg(i + 1)), this);
 			QObject::connect(sc, &QShortcut::activated, this, [this, i] { if (paired_) showTab(i); });
 		}
@@ -720,9 +711,9 @@ private:
 		v->setSpacing(0);
 		auto *bar = new QHBoxLayout;
 		bar->setSpacing(0);
-		const char *names[4] = {"DIRECT", "COLLECTIONS", "RÉGIE", "POSTE"};
+		const char *names[3] = {"DIRECT", "RÉGIE", "POSTE"};
 		tabs_ = new QStackedWidget;
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 3; i++) {
 			auto *b = button(names[i], "tab");
 			b->setFont(monoFont(11, 1.8));
 			b->setCheckable(true);
@@ -736,7 +727,6 @@ private:
 		v->addLayout(bar);
 		v->addWidget(sep());
 		tabs_->addWidget(scroll(buildDirect()));
-		tabs_->addWidget(scroll(buildCollections()));
 		tabs_->addWidget(scroll(buildRegie()));
 		tabs_->addWidget(scroll(buildPoste()));
 		v->addWidget(tabs_, 1);
@@ -746,7 +736,7 @@ private:
 
 	void showTab(int i)
 	{
-		for (int k = 0; k < 4; k++) tabBtn_[k]->setChecked(k == i);
+		for (int k = 0; k < 3; k++) tabBtn_[k]->setChecked(k == i);
 		tabs_->setCurrentIndex(i);
 		lastData_ = 0;
 		if (i > 0) refreshData();
@@ -823,8 +813,8 @@ private:
 		dh->addWidget(create);
 		previewSw_ = new Switch;
 		previewHint_ = label("", "hint");
-		addRow(d, row("Flux de destination", "Lu par la source « Flux › NOM » de ta scène de direct", destBox), true);
-		addRow(d, row("Aperçu programme", "Image et son sur le site, seulement quand la page est ouverte.", previewSw_));
+		addRow(d, row("Flux de destination", "Lu par la source « Flux › NOM » de ta scène de direct", destBox, IcSource), true);
+		addRow(d, row("Aperçu programme", "Image et son sur le site, seulement quand la page est ouverte.", previewSw_, IcEye));
 		auto *hintBox = new QWidget;
 		auto *hb = new QVBoxLayout(hintBox);
 		hb->setContentsMargins(0, 0, 0, 12);
@@ -852,69 +842,13 @@ private:
 					QDesktopServices::openUrl(QUrl(QString("%1/dashboard/relais").arg(kSite)));
 				}
 			} else if (heroAct_ == 2) {
-				showTab(2);
+				showTab(1);
 				liveScene_->setFocus();
 				liveScene_->showPopup();
 			} else if (heroAct_ == 3) {
 				doFix();
 			}
 		});
-		v->addStretch(1);
-		return w;
-	}
-
-	QWidget *buildCollections()
-	{
-		QVBoxLayout *v;
-		auto *w = page(&v);
-
-		// Travail en cours (sauvegarde ou import) : visible seulement quand il y en a un.
-		jobCard_ = new QFrame;
-		jobCard_->setObjectName("card");
-		auto *jh = new QHBoxLayout(jobCard_);
-		jh->setContentsMargins(16, 12, 16, 12);
-		jh->setSpacing(10);
-		jobDot_ = new Dot;
-		jobDot_->set(kWarn, false, true);
-		job_ = label("", "muted");
-		jh->addWidget(jobDot_);
-		jh->addWidget(job_, 1);
-		jobCard_->hide();
-		v->addWidget(jobCard_);
-
-		v->addWidget(sectionHead("SUR CE POSTE", "Les scènes, sources, filtres et médias partent ensemble. Les scripts Lua et Python sont exclus."));
-		auto *c = card();
-		localBox_ = new QVBoxLayout;
-		localBox_->setSpacing(0);
-		static_cast<QVBoxLayout *>(c->layout())->addLayout(localBox_);
-		v->addWidget(c);
-
-		v->addWidget(sectionHead("SUR SYXTEE", "Importer ajoute la collection à cet OBS, avec ses médias, sans toucher à la collection ouverte."));
-		auto *q = new QFrame;
-		q->setObjectName("card");
-		auto *qv = new QVBoxLayout(q);
-		qv->setContentsMargins(18, 16, 18, 16);
-		qv->setSpacing(10);
-		auto *qt = new QHBoxLayout;
-		qt->setSpacing(8);
-		quota_ = label("—", "big");
-		quota_->setWordWrap(false);
-		quotaOf_ = label("", "meta");
-		quotaOf_->setWordWrap(false);
-		qt->addWidget(quota_, 0, Qt::AlignBottom);
-		qt->addWidget(quotaOf_, 0, Qt::AlignBottom);
-		qt->addStretch(1);
-		bar_ = new QProgressBar;
-		bar_->setRange(0, 1000);
-		bar_->setTextVisible(false);
-		qv->addLayout(qt);
-		qv->addWidget(bar_);
-		v->addWidget(q);
-		auto *cc = card();
-		cloudBox_ = new QVBoxLayout;
-		cloudBox_->setSpacing(0);
-		static_cast<QVBoxLayout *>(cc->layout())->addLayout(cloudBox_);
-		v->addWidget(cc);
 		v->addStretch(1);
 		return w;
 	}
@@ -1126,8 +1060,8 @@ private:
 		ph->setSpacing(10);
 		ph->addWidget(pingOut_);
 		ph->addWidget(ping);
-		addRow(m, row("Nom du poste", "Affiché sur le site, dans Mes OBS et Contrôle à distance", hw), true);
-		addRow(m, row("Test de connexion", "Latence vers les serveurs SYXTEE", pw));
+		addRow(m, row("Nom du poste", "Affiché sur le site, dans Mes OBS et Contrôle à distance", hw, IcMonitor), true);
+		addRow(m, row("Test de connexion", "Latence vers les serveurs SYXTEE", pw, IcSource));
 		v->addWidget(m);
 
 		// COMPTE
@@ -1159,7 +1093,7 @@ private:
 		auto linkRow = [this](const QString &title, const QString &sub, const QString &url) {
 			auto *b = button("Ouvrir ↗", "small");
 			QObject::connect(b, &QPushButton::clicked, this, [url] { QDesktopServices::openUrl(QUrl(url)); });
-			return row(title, sub, b);
+			return row(title, sub, b, IcFrame);
 		};
 		addRow(l, linkRow("Tableau de bord", "Relais, abonnement, contrôle à distance", QString("%1/dashboard").arg(kSite)), true);
 		addRow(l, linkRow("Page de réglages", "La même fenêtre, dans ton navigateur", QString("http://127.0.0.1:%1/").arg(47831)));
@@ -1183,14 +1117,6 @@ private:
 	{
 		lastData_ = QDateTime::currentMSecsSinceEpoch();
 		if (!paired_) return;
-		get("/api/collections", [this](const QJsonObject &o) {
-			cols_ = o.value("collections").toArray();
-			renderCollections();
-		});
-		get("/api/cloud", [this](const QJsonObject &o) {
-			cloud_ = o;
-			renderCollections();
-		});
 		get("/api/options", [this](const QJsonObject &o) { fillSettings(o); });
 		get("/api/streams", [this](const QJsonObject &o) { fillStreams(o); });
 		get("/api/account", [this](const QJsonObject &o) { fillAccount(o); });
@@ -1228,7 +1154,7 @@ private:
 		for (const auto &sv : arr) {
 			const QJsonObject st = sv.toObject();
 			if (st.value("id").toString() == sel) destName_ = st.value("name").toString() + " · " + st.value("protocol").toString().toUpper();
-			dest_->addItem(st.value("name").toString() + " · " + st.value("protocol").toString().toUpper() + (st.value("live").toBool() ? " · en direct" : ""), st.value("id").toString());
+			dest_->addItem(st.value("name").toString() + " · " + st.value("protocol").toString().toUpper() + (st.value("live").toBool() ? " · live" : ""), st.value("id").toString());
 		}
 		const int idx = dest_->findData(sel);
 		dest_->setCurrentIndex(idx >= 0 ? idx : 0);
@@ -1373,18 +1299,6 @@ private:
 		if (obsNow && !obsOn_) lastData_ = 0;
 		obsOn_ = obsNow;
 
-		const QJsonObject job = st.value("job").toObject();
-		if (!job.isEmpty() && job.value("state").toString() != "idle") {
-			job_->setText(job.value("message").toString());
-			const bool running = job.value("state").toString() == "running";
-			jobDot_->set(running ? kWarn : job.value("state").toString() == "error" ? kBad : kOk, false, running);
-			jobCard_->show();
-			if (job.value("state").toString() == "done" && jobDone_ != job.value("message").toString()) {
-				jobDone_ = job.value("message").toString();
-				lastData_ = 0;
-				refreshData();
-			}
-		} else jobCard_->hide();
 		updateOverview();
 		updateRegieSummary();
 	}
@@ -1476,94 +1390,6 @@ private:
 		setChip(chip2_, "SECOURS À L'ANTENNE", "warn");
 		chip3_->setVisible(ds == "drone");
 		setChip(chip3_, "DRONE À L'ANTENNE", "ok");
-	}
-
-	void renderCollections()
-	{
-		if (!localBox_) return;
-		const QJsonArray backups = cloud_.value("backups").toArray();
-		const bool running = state_.value("status").toObject().value("job").toObject().value("state").toString() == "running";
-		clear(localBox_);
-		if (cols_.isEmpty()) localBox_->addWidget(row("Aucune collection trouvée", "Ouvre OBS pour créer une collection de scènes.", nullptr));
-		bool first = true;
-		for (const auto &cv : cols_) {
-			const QJsonObject c = cv.toObject();
-			const QString name = c.value("name").toString();
-			// Dernière sauvegarde : la plus récente entre celle de ce poste (gardée dans sa config) et celles de l'espace SYXTEE.
-			QDateTime best = QDateTime::fromString(state_.value("lastBackup").toObject().value(name).toString(), Qt::ISODate);
-			for (const auto &bv : backups) {
-				const QJsonObject b = bv.toObject();
-				if (b.value("collection").toString() != name) continue;
-				const QDateTime t = QDateTime::fromString(b.value("created_at").toString(), Qt::ISODate);
-				if (!best.isValid() || t > best) best = t;
-			}
-			const QString last = best.isValid() ? best.toLocalTime().toString("dd/MM HH:mm") : QString();
-			auto *btn = button("Sauvegarder", "small");
-			btn->setEnabled(!running);
-			QObject::connect(btn, &QPushButton::clicked, this, [this, name] {
-				QJsonObject b;
-				b["collection"] = name;
-				post("/api/backup", b, [this](const QJsonObject &) { poll(); });
-			});
-			auto *sw = new Switch;
-			sw->setChecked(state_.value("autoBackup").toObject().value(name).toBool());
-			sw->setToolTip("Sauvegarde automatique à chaque modification de la collection");
-			QObject::connect(sw, &QAbstractButton::toggled, this, [this, name](bool on) {
-				QJsonObject b;
-				b["collection"] = name;
-				b["enabled"] = on;
-				post("/api/auto", b);
-			});
-			auto *ctl = new QWidget;
-			auto *ch = new QHBoxLayout(ctl);
-			ch->setContentsMargins(0, 0, 0, 0);
-			ch->setSpacing(10);
-			auto *auto_ = label("AUTO", "section");
-			auto_->setWordWrap(false);
-			ch->addWidget(auto_);
-			ch->addWidget(sw);
-			ch->addSpacing(4);
-			ch->addWidget(btn);
-			const QString sub = (last.isEmpty() ? QString("Jamais sauvegardée") : "Sauvegardée le " + last) + " · " + QString::number(c.value("media").toInt()) + " médias · " + fmtSize(c.value("bytes").toDouble());
-			if (!first) localBox_->addWidget(sep());
-			localBox_->addWidget(row(name, sub, ctl));
-			first = false;
-		}
-
-		clear(cloudBox_);
-		if (cloud_.contains("error")) {
-			quota_->setText("—");
-			quotaOf_->setText(cloud_.value("error").toString());
-			bar_->setValue(0);
-		} else {
-			const double used = cloud_.value("used").toDouble(), quota = cloud_.value("quota").toDouble(5.0 * 1024 * 1024 * 1024);
-			const double ratio = qMin(1.0, used / quota);
-			quota_->setText(fmtSize(used));
-			quotaOf_->setText("sur " + fmtSize(quota) + QString("  ·  %1 %").arg(qRound(ratio * 100)));
-			bar_->setValue(int(ratio * 1000));
-			bar_->setProperty("tone", ratio >= 0.95 ? "bad" : ratio >= 0.8 ? "warn" : "");
-			bar_->style()->unpolish(bar_);
-			bar_->style()->polish(bar_);
-		}
-		if (backups.isEmpty()) cloudBox_->addWidget(row("Aucune sauvegarde", "Sauvegarde une collection pour la retrouver ici.", nullptr));
-		first = true;
-		for (const auto &bv : backups) {
-			const QJsonObject b = bv.toObject();
-			const QString id = b.value("id").toString();
-			auto *btn = button("Importer", "small");
-			btn->setEnabled(!running);
-			QObject::connect(btn, &QPushButton::clicked, this, [this, id] {
-				QJsonObject o;
-				o["id"] = id;
-				post("/api/restore", o, [this](const QJsonObject &) { poll(); });
-			});
-			const QString date = QDateTime::fromString(b.value("created_at").toString(), Qt::ISODate).toLocalTime().toString("dd/MM HH:mm");
-			QString sub = date + " · " + fmtSize(b.value("size").toDouble()) + " · v" + QString::number(b.value("version").toInt(1));
-			if (!b.value("host").toString().isEmpty()) sub += " · " + b.value("host").toString();
-			if (!first) cloudBox_->addWidget(sep());
-			cloudBox_->addWidget(row(b.value("collection").toString().isEmpty() ? b.value("name").toString() : b.value("collection").toString(), sub, btn));
-			first = false;
-		}
 	}
 
 	void fillSettings(const QJsonObject &o)

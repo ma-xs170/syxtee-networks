@@ -21,8 +21,8 @@ int main(int argc, char **argv)
 	const QString out = argv[3];
 	w->grab().save(out + "/00-initial.png");
 	auto tabs = w->findChildren<QPushButton *>("tab");
-	const char *names[] = {"direct", "collections", "regie", "poste"};
-	for (int i = 0; i < tabs.size() && i < 4; i++) {
+	const char *names[] = {"direct", "regie", "poste"};
+	for (int i = 0; i < tabs.size() && i < 3; i++) {
 		tabs[i]->click();
 		wait(3000);
 		w->grab().save(out + "/0" + QString::number(i + 1) + "-" + names[i] + ".png");

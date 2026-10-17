@@ -12,7 +12,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export type SupportState = { error?: string };
 
-const subject = z.string().trim().min(3, "Sujet : 3 caractères au moins.").max(120, "Sujet : 120 caractères au plus.");
 const body = z.string().trim().max(4000, "Message : 4000 caractères au plus.");
 const hasPhotos = (form: FormData) => form.getAll("photos").some((f) => f instanceof File && f.size > 0);
 

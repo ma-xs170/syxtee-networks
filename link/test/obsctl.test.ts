@@ -263,14 +263,14 @@ run("aperçu vidéo : sortie WHIP native d'OBS, encodeur matériel, vidéo rédu
     const started = nextEvent(obs, "link.whip");
     const r = await obs.request<any>("link.whipStart", { server: "https://cam.example/obs_abc/whip" });
     assert.equal((await started).active, true);
-    // Encodeur matériel Apple choisi (pas x264, pas HEVC), 960×540 (16:9), 1200 kbit/s, une image sur deux (OBS à 60 i/s), Opus
-    assert.equal(r.encoder, "com.apple.videotoolbox.videoencoder.ave.avc");
+    // Sur Mac : x264 (VideoToolbox écarté, il plante OBS à la libération), pas HEVC, 960×540 (16:9), 1200 kbit/s, une image sur deux (OBS à 60 i/s), Opus
+    assert.equal(r.encoder, "obs_x264");
     assert.deepEqual([r.width, r.height, r.kbps], [960, 540, 1200]);
     const info = await h.whip();
     assert.equal(info.serviceKind, "whip_custom");
     assert.equal(info.outputKind, "whip_output");
     assert.equal(info.server, "https://cam.example/obs_abc/whip");
-    assert.equal(info.videoEncoder, "com.apple.videotoolbox.videoencoder.ave.avc");
+    assert.equal(info.videoEncoder, "obs_x264");
     assert.equal(info.audioEncoder, "ffmpeg_opus");
     assert.equal(info.divisor, 2);
     assert.equal(info.videoSettings.bf, 0); // pas d'image B : exigé par WebRTC

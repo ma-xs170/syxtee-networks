@@ -366,7 +366,7 @@ struct Whip {
 	QString encoder;
 } whip;
 
-/** Meilleur encodeur H.264 disponible : matériel d'abord (VideoToolbox, NVENC, AMF, Quick Sync), logiciel en dernier recours. */
+/** Meilleur encodeur H.264 disponible : matériel d'abord (NVENC, AMF, Quick Sync ; pas VideoToolbox sur Mac, voir plus bas), logiciel en dernier recours. */
 QString pickVideoEncoder()
 {
 	const char *id = nullptr;

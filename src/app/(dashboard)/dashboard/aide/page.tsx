@@ -29,11 +29,12 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
         </span>
       </header>
 
-      <Link href="/dashboard/aide/nouveau" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors">
-        <span aria-hidden="true">+</span> Nouvelle demande
-      </Link>
-
-      <h2 className="mb-4 mt-10 text-sm font-semibold">Mes demandes</h2>
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <h2 className="text-sm font-semibold">Mes demandes</h2>
+        <Link href="/dashboard/aide/nouveau" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors">
+          <span aria-hidden="true">+</span> Nouvelle demande
+        </Link>
+      </div>
 
       <nav aria-label="Filtrer les demandes" className="mb-6 flex w-max gap-1 rounded-full border border-line bg-surface p-1">
         {TABS.map((t) => (

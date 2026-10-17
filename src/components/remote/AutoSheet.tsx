@@ -5,20 +5,23 @@ import type { Provider, Rights, Roles, Trigger } from "./types";
 import { btn, btnPrimary, cx, Disclosure, Draft, field, Row, Select, Sheet, Switch } from "./ui";
 import type { Obs } from "./useObs";
 
-// Régie automatique : SYXTEE change de scène pour toi (secours si la connexion coupe, drone et autres prises, garde du micro, régie IA).
+// Régie automatique : SYXTEE change de scène pour toi. Deux étapes : 1) choisir sa scène Live ; 2) activer ce que l'on veut
+// (secours si la connexion coupe, drone et autres caméras, alerte micro, régie IA). Chaque bloc affiche son état : Actif, À compléter, Éteint.
 // Tout est enregistré dans le plugin, sur le PC d'OBS, à chaque changement.
 
 const TRIGGERS: { id: Trigger; title: string; text: string }[] = [
-  { id: "cut", title: "Coupure seulement", text: "Bascule sur la scène de secours quand l'image se fige ou que le flux est coupé." },
-  { id: "cut_lowbitrate", title: "Coupure et débit très bas", text: "Bascule aussi quand le débit du flux tombe sous 300 kbit/s, avant que l'image ne se fige." },
-  { id: "sensitive", title: "Sensible", text: "Réagit aux micro-coupures : bascule dès 2 secondes d'image figée ou sous 800 kbit/s. Peut basculer un peu trop souvent." },
+  { id: "cut", title: "Normale (conseillé)", text: "Passe sur le secours quand l'image se fige ou que le flux est coupé." },
+  { id: "cut_lowbitrate", title: "Anticipée", text: "Passe aussi sur le secours quand le débit tombe sous 300 kbit/s, avant que l'image ne se fige." },
+  { id: "sensitive", title: "Très réactive", text: "Réagit dès 2 secondes d'image figée ou sous 800 kbit/s. Peut déclencher un peu trop souvent." },
 ];
 
-function Status({ on }: { on: boolean }) {
+/** État d'un bloc : « Actif » (vert), « À compléter » (ambre : il manque une scène ou une source), « Éteint ». */
+function Status({ on, todo }: { on: boolean; todo?: boolean }) {
+  const state = on ? "Actif" : todo ? "À compléter" : "Éteint";
   return (
-    <span className="flex shrink-0 items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-muted">
-      <span aria-hidden="true" className={cx("size-2 rounded-full", on ? "bg-ok" : "border border-faint")} />
-      {on ? "Actif" : "Éteint"}
+    <span className={cx("flex shrink-0 items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider", todo && !on ? "text-warn" : "text-muted")}>
+      <span aria-hidden="true" className={cx("size-2 rounded-full", on ? "bg-ok" : todo ? "bg-warn" : "border border-faint")} />
+      {state}
     </span>
   );
 }
@@ -45,6 +48,9 @@ export default function AutoSheet({ o, rights, open, onClose }: { o: Obs; rights
   const autoOn = !!r && (r.enabled || !!r.autoEnabled);
   const autoIncomplete = !!r && !r.enabled && !r.autoEnabled && !(r.liveScene && r.scene && r.source) && !(r.droneSource && r.droneScene && r.liveScene);
   const provider: Provider = r?.directorProvider ?? "none";
+  const secoursReady = !!(r?.source && r?.scene && r?.liveScene);
+  const droneReady = !!(r?.droneSource && r?.droneScene && r?.liveScene);
+  const audioReady = !!(r?.audioSource && r?.liveScene);
   const readyCams = (r?.directorCams ?? []).filter((c) => c.source && c.scene);
   const setCam = (i: number, patch: Partial<NonNullable<Roles["directorCams"]>[number]>) => saveRoles({ directorCams: (r?.directorCams ?? []).map((x, j) => (j === i ? { ...x, ...patch } : x)) });
   const setRule = (i: number, patch: Partial<NonNullable<Roles["autoRules"]>[number]>) => saveRoles({ autoRules: (r?.autoRules ?? []).map((x, j) => (j === i ? { ...x, ...patch } : x)) });
@@ -57,14 +63,15 @@ export default function AutoSheet({ o, rights, open, onClose }: { o: Obs; rights
         <div className="grid gap-3">
           <div className="flex items-center justify-between gap-3 rounded-xl border border-line bg-foreground/[0.04] p-3.5">
             <div className="min-w-0">
-              <p className="text-sm font-semibold">{autoOn ? "Régie auto activée" : "Régie auto éteinte"}</p>
-              <p className="mt-0.5 text-[13px] text-muted">{autoOn ? "Secours et drone gérés tout seuls." : "Un clic : on choisit les scènes évidentes pour toi."}</p>
+              <p className="text-sm font-semibold">{autoOn ? "Régie automatique activée" : "Régie automatique éteinte"}</p>
+              <p className="mt-0.5 text-[13px] text-muted">{autoOn ? "SYXTEE surveille ton direct : secours et drone se gèrent tout seuls." : "Un clic : SYXTEE repère tes scènes (Live, secours, drone) et s'occupe du reste."}</p>
             </div>
             <button type="button" onClick={() => (autoOn ? saveRoles({ enabled: false, autoEnabled: false }) : o.enableAuto())} className={autoOn ? btn() : btnPrimary()}>
-              {autoOn ? "Désactiver" : "Activer"}
+              {autoOn ? "Désactiver" : "Activer en un clic"}
             </button>
           </div>
-          {autoIncomplete && <Note tone="warn">On n&apos;a pas tout trouvé : choisis les scènes ci-dessous, puis réactive.</Note>}
+          <Note>La régie change de scène à ta place quand il le faut, mais seulement quand ta scène Live est à l&apos;antenne. Étape 1 : choisis ta scène Live. Étape 2 : active ce que tu veux ci-dessous.</Note>
+          {autoIncomplete && <Note tone="warn">On n&apos;a pas tout trouvé : choisis les scènes ci-dessous (elles sont marquées « À compléter »), puis réactive.</Note>}
           {oldAgent && (
             <p role="alert" className="rounded-lg border border-warn/50 bg-warn/10 px-3 py-2 text-[13px] text-warn">
               Ton SYXTEE Link est en version {o.agent.version}. « Autres prises », « Garde audio » et « Régie IA » demandent la version 0.7.0 : mets-le à jour pour les utiliser.
@@ -74,27 +81,27 @@ export default function AutoSheet({ o, rights, open, onClose }: { o: Obs; rights
           {r.state === "backup" && <p className="rounded-lg border border-warn/50 bg-warn/10 px-3 py-2 text-[13px] text-warn">En ce moment : scène de secours à l&apos;antenne (connexion coupée).</p>}
 
           <section className="rounded-xl border border-line px-4 py-3.5">
-            <h3 className="text-sm font-semibold">Ta scène Live</h3>
+            <h3 className="text-sm font-semibold">1. Ta scène Live</h3>
             <p className="mb-3 mt-0.5 text-[13px] leading-relaxed text-muted">
-              SYXTEE change de scène pour toi, mais seulement quand cette scène est à l&apos;antenne : rien ne bouge tant que tu ne l&apos;as pas mise en direct.
+              C&apos;est la scène que tu mets à l&apos;antenne pour diffuser. Tant qu&apos;elle n&apos;est pas en direct, la régie ne touche à rien.
             </p>
             <Select label="La scène que tu mets en direct" value={r.liveScene} options={scenes} onChange={(v) => saveRoles({ liveScene: v })} />
             <div className="mt-1 border-t border-line">
-              <Row title="Faible latence des flux" text="Tampon de 1 Mo et reconnexion en 1 s. Les flux restent ouverts : aucune coupure dans le Multiview d'OBS quand tu changes de scène.">
+              <Row title="Faible latence des flux (avancé)" text="Reconnexion en 1 s et petit tampon : les flux restent ouverts, sans coupure dans le Multiview d'OBS quand tu changes de scène.">
                 <Switch label="Faible latence des flux" on={r.lowLatency !== false} disabled={oldAgent} onClick={() => saveRoles({ lowLatency: r.lowLatency === false })} />
               </Row>
             </div>
           </section>
 
-          <Disclosure title="Secours si ta connexion coupe" summary="Affiche une scène de secours quand l'image se fige." status={<Status on={r.enabled} />}>
+          <Disclosure title="2a. Secours si ta connexion coupe" summary="Si l'image se fige, SYXTEE passe sur ta scène de secours, puis revient seul." status={<Status on={r.enabled} todo={!secoursReady} />}>
             <Stack>
               <Select label="Scène de secours" value={r.scene} options={scenes} onChange={(v) => saveRoles({ scene: v })} />
-              <Row title="Passer sur le secours" text="Affiche le secours quand l'image se fige, puis revient seul quand elle repart.">
-                <Switch label="Passer sur le secours" on={r.enabled} disabled={!r.source || !r.scene || !r.liveScene} onClick={() => saveRoles({ enabled: !r.enabled })} />
+              <Row title="Activer le secours automatique" text={r.enabled ? "Actif : le secours s'affiche si l'image se fige, puis tu reviens sur Live quand elle repart." : "Éteint."}>
+                <Switch label="Activer le secours automatique" on={r.enabled} disabled={!r.source || !r.scene || !r.liveScene} onClick={() => saveRoles({ enabled: !r.enabled })} />
               </Row>
-              {(!r.source || !r.scene || !r.liveScene) && <Note>Choisis la scène Live et la scène de secours. Si le flux n&apos;est pas dans OBS, touche « Corriger » dans la barre du haut.</Note>}
+              {!secoursReady && <Note tone="warn">Il manque {[!r.liveScene && "ta scène Live", !r.scene && "ta scène de secours", !r.source && "le flux (touche « Corriger » dans la barre du haut)"].filter(Boolean).join(", ")}.</Note>}
               <fieldset>
-                <legend className="mb-2 text-sm font-medium">Sensibilité</legend>
+                <legend className="mb-2 text-sm font-medium">Quand passer sur le secours ?</legend>
                 <div className="grid gap-2">
                   {TRIGGERS.map((t) => (
                     <label key={t.id} className={cx("flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors", r.trigger === t.id ? "border-foreground/50 bg-foreground/[0.05]" : "border-line hover:border-line-strong")}>
@@ -110,17 +117,17 @@ export default function AutoSheet({ o, rights, open, onClose }: { o: Obs; rights
             </Stack>
           </Disclosure>
 
-          <Disclosure title="Drone et autres prises" summary="Passe seul sur une caméra qui envoie une belle image." status={<Status on={!!r.autoEnabled} />}>
+          <Disclosure title="2b. Drone et autres caméras" summary="Quand une caméra envoie une belle image, SYXTEE passe dessus tout seul." status={<Status on={!!r.autoEnabled} todo={!droneReady} />}>
             <Stack>
-              <Note>Quand la caméra drone envoie une belle image (qui bouge, pas noire), SYXTEE passe dessus tout seul, puis revient sur ta scène Live quand la prise s&apos;arrête. Si tu changes de scène à la main, elle se met en pause 30 secondes.</Note>
+              <Note>Dès que le drone envoie une belle image (qui bouge, pas noire), SYXTEE passe dessus, puis revient sur ta scène Live quand la prise s&apos;arrête. Si tu changes de scène à la main, la régie attend 30 secondes avant de reprendre.</Note>
               <Select label="Source du drone" value={r.droneSource ?? ""} options={inputNames} onChange={(v) => saveRoles({ droneSource: v })} />
               <Select label="Scène du drone" value={r.droneScene ?? ""} options={scenes} onChange={(v) => saveRoles({ droneScene: v })} />
-              <Row title="Auto-gérance" text={r.autoEnabled ? "Active : elle surveille le drone." : "Éteinte."}>
-                <Switch label="Auto-gérance" on={!!r.autoEnabled} disabled={noPrises || !r.droneSource || !r.droneScene || !r.liveScene} onClick={() => saveRoles({ autoEnabled: !r.autoEnabled })} />
+              <Row title="Passer sur le drone automatiquement" text={r.autoEnabled ? "Actif : SYXTEE surveille le drone." : "Éteint."}>
+                <Switch label="Passer sur le drone automatiquement" on={!!r.autoEnabled} disabled={noPrises || !r.droneSource || !r.droneScene || !r.liveScene} onClick={() => saveRoles({ autoEnabled: !r.autoEnabled })} />
               </Row>
               {noPrises && <Upsell what="L'auto-gérance du drone et les autres prises" tier="Signature" />}
-              <h4 className="mt-1 text-sm font-semibold">Autres prises</h4>
-              <Note>Même principe pour une autre caméra, un écran ou un invité. Le drone passe en premier, puis la liste dans l&apos;ordre.</Note>
+              <h4 className="mt-1 text-sm font-semibold">Autres caméras</h4>
+              <Note>Même principe pour une autre caméra, un écran ou un invité. Le drone est prioritaire, puis la liste dans l&apos;ordre.</Note>
               {(r.autoRules ?? []).map((x, i) => (
                 <div key={i} className="grid gap-2.5 rounded-lg border border-line p-3">
                   <Select label={`Source ${i + 1}`} value={x.source} options={inputNames} onChange={(v) => setRule(i, { source: v })} />
@@ -130,20 +137,20 @@ export default function AutoSheet({ o, rights, open, onClose }: { o: Obs; rights
                   </button>
                 </div>
               ))}
-              {(r.autoRules ?? []).some((x) => !x.source || !x.scene) && <Note tone="warn">Une prise sans source ou sans scène est ignorée.</Note>}
+              {(r.autoRules ?? []).some((x) => !x.source || !x.scene) && <Note tone="warn">Une caméra sans source ou sans scène est ignorée.</Note>}
               {(r.autoRules ?? []).length < 8 && (
                 <button type="button" disabled={oldAgent || noPrises} onClick={() => saveRoles({ autoRules: [...(r.autoRules ?? []), { source: "", scene: "" }] })} className={cx(btn(), "justify-self-start")}>
-                  Ajouter une prise
+                  Ajouter une caméra
                 </button>
               )}
             </Stack>
           </Disclosure>
 
-          <Disclosure title="Garde audio" summary="Te prévient si ton micro se tait ou se coupe." status={<Status on={!!r.audioEnabled} />}>
+          <Disclosure title="2c. Alerte micro" summary="Si ton micro se tait ou est coupé, tu es prévenu (et il peut être remis tout seul)." status={<Status on={!!r.audioEnabled} todo={!audioReady} />}>
             <Stack>
               <Select label="Micro à surveiller" value={r.audioSource ?? ""} options={inputNames} onChange={(v) => saveRoles({ audioSource: v })} />
-              <Row title="Alerte silence" text={r.audioEnabled ? `Active : alerte après ${r.audioSeconds ?? 10} s sans son.` : "Éteinte."}>
-                <Switch label="Alerte silence" on={!!r.audioEnabled} disabled={oldAgent || !r.audioSource || !r.liveScene} onClick={() => saveRoles({ audioEnabled: !r.audioEnabled })} />
+              <Row title="Me prévenir quand le micro se tait" text={r.audioEnabled ? `Actif : alerte après ${r.audioSeconds ?? 10} s sans son.` : "Éteint."}>
+                <Switch label="Me prévenir quand le micro se tait" on={!!r.audioEnabled} disabled={oldAgent || !r.audioSource || !r.liveScene} onClick={() => saveRoles({ audioEnabled: !r.audioEnabled })} />
               </Row>
               <label className="flex items-center justify-between gap-3 text-sm">
                 <span>Délai avant l&apos;alerte</span>
@@ -158,19 +165,19 @@ export default function AutoSheet({ o, rights, open, onClose }: { o: Obs; rights
               <Row title="Remettre le micro tout seul" text="S'il est coupé par erreur pendant ta scène Live.">
                 <Switch label="Remettre le micro" on={!!r.audioUnmute} disabled={oldAgent || !r.audioSource} onClick={() => saveRoles({ audioUnmute: !r.audioUnmute })} />
               </Row>
-              <Row title="Passer sur le secours" text="Affiche ta scène de secours tant que le micro est muet, puis revient sur Live quand le son repart.">
-                <Switch label="Secours si micro muet" on={!!r.audioBackup} disabled={oldAgent || !r.audioSource || !r.scene} onClick={() => saveRoles({ audioBackup: !r.audioBackup })} />
+              <Row title="Secours quand le micro est muet" text="Affiche ta scène de secours tant que le micro est muet, puis revient sur Live quand le son repart.">
+                <Switch label="Secours quand le micro est muet" on={!!r.audioBackup} disabled={oldAgent || !r.audioSource || !r.scene} onClick={() => saveRoles({ audioBackup: !r.audioBackup })} />
               </Row>
               {!r.scene && <Note>Choisis d&apos;abord ta scène de secours.</Note>}
             </Stack>
           </Disclosure>
 
-          <Disclosure title="Régie IA (plusieurs caméras)" summary="Met au programme la caméra où il se passe quelque chose." status={<Status on={!!r.directorEnabled} />}>
+          <Disclosure title="2d. Régie IA (plusieurs caméras)" summary="Une IA choisit la caméra où il se passe quelque chose." status={<Status on={!!r.directorEnabled} todo={readyCams.length < 2 || !r.liveScene} />}>
             <Stack>
               {noIa && <Upsell what="La régie IA" tier="Signature" />}
               {!noIa && rights.cams < 6 && <Note>Ta formule permet jusqu&apos;à {rights.cams} caméras (6 avec Prestige).</Note>}
               <Note>
-                Pour 2 caméras ou plus (Osmo, iPhone, drone, téléphones en SRTLA) : toutes les quelques secondes, une IA regarde chaque caméra et met au programme celle où il se passe quelque chose, selon tes consignes. Une caméra coupée ou figée n&apos;est jamais choisie. Chaque caméra a besoin de sa propre scène OBS : choisis la source, puis « Créer la scène » si elle n&apos;existe pas encore.
+                Pour 2 caméras ou plus (Osmo, iPhone, drone, téléphones en SRTLA). Toutes les quelques secondes, une IA regarde chaque caméra et met au programme celle où il se passe quelque chose, selon tes consignes. Une caméra coupée ou figée n&apos;est jamais choisie. Chaque caméra a sa propre scène OBS : choisis la source, puis « Créer la scène » si elle n&apos;existe pas encore.
               </Note>
               {(r.directorCams ?? []).map((c, i) => (
                 <div key={i} className="grid gap-2.5 rounded-lg border border-line p-3">

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState, useSyncExternalStore, type KeyboardEvent } from "react";
+import { useCallback, useState, useSyncExternalStore, type KeyboardEvent } from "react";
 import MultiChat, { type ChatDefaults } from "../dashboard/MultiChat";
 import AutoSheet from "./AutoSheet";
 import DirectSimple from "./DirectSimple";
@@ -80,32 +80,10 @@ export default function RemoteObs({
   const desktop = useDesktop();
   const landscape = useLandscape();
   const [tab, setTab] = useState<Tab>("scenes");
-  const [chatOn, setChatOn] = useState(true);
   const [autoOpen, setAutoOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [edit, setEdit] = useState<"props" | "filters" | null>(null);
   const [ask, setAsk] = useState<ConfirmAsk>(null);
-
-  // Chat : affiché ou non, choix gardé dans ce navigateur.
-  useEffect(() => {
-    const t = setTimeout(() => {
-      try {
-        if (localStorage.getItem("syxtee-remote-chat") === "off") setChatOn(false);
-      } catch {
-        // stockage indisponible
-      }
-    }, 0);
-    return () => clearTimeout(t);
-  }, []);
-  const toggleChat = () =>
-    setChatOn((on) => {
-      try {
-        localStorage.setItem("syxtee-remote-chat", on ? "off" : "on");
-      } catch {
-        // stockage indisponible
-      }
-      return !on;
-    });
 
   const onLive = useCallback(() => {
     setAsk(
@@ -144,7 +122,7 @@ export default function RemoteObs({
 
   return (
     <div className="flex h-dvh w-full min-w-0 max-w-[100vw] flex-col overflow-hidden overscroll-none bg-background pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] text-sm text-foreground [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [touch-action:manipulation] max-lg:pb-[env(safe-area-inset-bottom)]">
-      <TopBar o={o} desktop={desktop} chatOn={chatOn} showChat={showChat} onChat={toggleChat} onAuto={() => setAutoOpen(true)} invited={!!invite} />
+      <TopBar o={o} desktop={desktop} onAuto={() => setAutoOpen(true)} invited={!!invite} />
       {!desktop && <StatusStrip o={o} desktop={desktop} />}
       <Alerts o={o} invited={!!invite} />
       {!desktop && o.link === "on" && o.owner && <GuardianBar guardian={o.guardian} agentOnline={o.agent.online} call={o.call} />}
@@ -157,11 +135,6 @@ export default function RemoteObs({
               <DirectSimple o={o} onLive={onLive} />
             </div>
           </main>
-          {chatBox && chatOn && (
-            <aside aria-label="Chat" className="min-h-0 w-[22rem] shrink-0 py-2 pr-2 xl:w-[26rem]">
-              {chatBox}
-            </aside>
-          )}
         </div>
       ) : (
         <main className="flex min-h-0 flex-1 flex-col gap-2 p-2 landscape:flex-row">
@@ -220,7 +193,7 @@ export default function RemoteObs({
 
 // ── Barre du haut ────────────────────────────────────────────────────────────────────────────────────────────────────
 
-function TopBar({ o, desktop, chatOn, showChat, onChat, onAuto, invited }: { o: Obs; desktop: boolean; chatOn: boolean; showChat: boolean; onChat: () => void; onAuto: () => void; invited: boolean }) {
+function TopBar({ o, desktop, onAuto, invited }: { o: Obs; desktop: boolean; onAuto: () => void; invited: boolean }) {
   const autoOn = !!o.roles && (o.roles.enabled || !!o.roles.autoEnabled);
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b border-line px-3 lg:h-12 lg:px-3.5">
@@ -282,12 +255,6 @@ function TopBar({ o, desktop, chatOn, showChat, onChat, onAuto, invited }: { o: 
             <span aria-hidden="true" className={cx("size-2 rounded-full", autoOn ? "bg-ok" : "border border-faint")} />
             <span className="sm:hidden">Régie</span>
             <span className="max-sm:hidden">Régie auto</span>
-          </button>
-        )}
-        {desktop && showChat && (
-          <button type="button" aria-pressed={chatOn} onClick={onChat} className={cx(btn("sm"), chatOn && "!border-foreground/40 !bg-foreground/15")}>
-            <Icon name="chat" className="size-4" />
-            Chat
           </button>
         )}
       </div>

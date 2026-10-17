@@ -15,6 +15,11 @@ import type { Mix } from "./types";
 /** Jauge : dégradé vert, orange puis rouge vers le haut. Rien n'est coloré tant que la source ne fait pas de bruit ; la gamme reste visible en teinte sombre. */
 const METER = "linear-gradient(to top, var(--dk-green) 0%, var(--dk-green) 55%, var(--dk-amber) 80%, var(--dk-red) 100%)";
 
+/** Fader d'OBS : position = racine cubique de l'amplitude, soit dB = 60 × log10(position). -60 dB est à 10 % de la hauteur (pas tout en bas), 0 dB tout en haut, -inf en bas. */
+const FADER_MAX = 1000;
+const dbToFader = (db: number) => (!Number.isFinite(db) || db <= -100 ? 0 : Math.round(Math.min(1, Math.pow(10, db / 60)) * FADER_MAX));
+const faderToDb = (pos: number) => (pos <= 0 ? -100 : Math.round(60 * Math.log10(pos / FADER_MAX) * 10) / 10);
+
 /** Une barre de niveau (un canal). */
 function Bar({ db, muted, label }: { db: number; muted: boolean; label: string }) {
   return (
@@ -43,7 +48,7 @@ function Dock({ title, aside, className, children }: { title: string; aside?: Re
 function Strip({ o, m }: { o: Obs; m: Mix }) {
   const mono = o.levels[m.name] ?? -100;
   const [left, right] = o.levelsLR[m.name] ?? [mono, mono];
-  const value = Number.isFinite(m.db) ? Math.max(-60, Math.min(0, m.db)) : -60;
+  const value = dbToFader(m.db);
   const edit = o.ready && o.canScenes;
   const listening = m.mon !== MON_OFF;
   return (
@@ -56,24 +61,24 @@ function Strip({ o, m }: { o: Obs; m: Mix }) {
         </div>
         <input
           type="range"
-          min={-60}
-          max={0}
-          step={0.5}
+          min={0}
+          max={FADER_MAX}
+          step={1}
           value={value}
           disabled={!edit}
           aria-label={`Volume ${m.name}`}
           aria-valuetext={`${fmtDb(m.db)} décibels`}
-          onChange={(e) => o.setVolume(m.name, Number(e.target.value))}
+          onChange={(e) => o.setVolume(m.name, faderToDb(Number(e.target.value)))}
           onPointerDown={() => o.dragVolume(m.name, true)}
           onPointerUp={() => o.dragVolume(m.name, false)}
           onPointerCancel={() => o.dragVolume(m.name, false)}
           onBlur={() => o.dragVolume(m.name, false)}
           onDoubleClick={() => o.setVolume(m.name, 0)}
           className="mx-fader h-full"
-          style={{ ["--fill" as string]: `${((value + 60) / 60) * 100}%` }}
+          style={{ ["--fill" as string]: `${(value / FADER_MAX) * 100}%` }}
         />
       </div>
-      <span className="dk-mono text-[12px] text-muted">{m.muted ? "Muet" : fmtDb(m.db)}</span>
+      <span className="dk-mono text-[12px] text-muted">{fmtDb(m.db)}</span>
       <div className="flex items-center gap-1.5">
         <button
           type="button"

@@ -20,7 +20,7 @@ type Row = { sceneItemId: number; sourceName: string; sceneItemEnabled: boolean;
 
 export type UseObsArgs = { coreUrl: string; deviceId: string; demoToken?: string; invite?: string; rights: Rights };
 
-export function useObs({ coreUrl, deviceId, demoToken, invite, rights }: UseObsArgs) {
+export function useObs({ coreUrl, deviceId, demoToken, invite }: UseObsArgs) {
   const [scenes, setScenes] = useState<string[]>([]);
   const [program, setProgram] = useState("");
   const [preview, setPreview] = useState("");
@@ -583,7 +583,7 @@ export function useObs({ coreUrl, deviceId, demoToken, invite, rights }: UseObsA
     later();
   }
 
-  /** Active la régie automatique en un clic : choisit les scènes et sources évidentes (nom « direct », « perdue », « drone », source « Flux »). */
+  /** Active la régie automatique en un clic : choisit les scènes et sources évidentes (nom « direct », « perdue », source « Flux »). */
   function enableAuto() {
     const roles = rolesRef.current;
     if (!roles) return;
@@ -591,11 +591,8 @@ export function useObs({ coreUrl, deviceId, demoToken, invite, rights }: UseObsA
     const liveScene = roles.liveScene || find(/direct|live/i) || program;
     const scene = roles.scene || find(/perdue|secours|brb|pause|coupure/i);
     const source = roles.source || fluxName || inputNames.find((n) => n.startsWith("Flux")) || "";
-    const droneScene = roles.droneScene || find(/drone/i);
-    const droneSource = roles.droneSource || inputNames.find((n) => /drone/i.test(n)) || "";
     const backupOk = !!(source && scene && liveScene);
-    const droneOk = rights.prises && !!(droneSource && droneScene && liveScene);
-    saveRoles({ liveScene, scene, source, droneScene, droneSource, enabled: backupOk, autoEnabled: droneOk });
+    saveRoles({ liveScene, scene, source, enabled: backupOk, autoEnabled: false, directorEnabled: false, audioEnabled: false, audioBackup: false });
   }
 
   /** Adresse de lecture de l'aperçu vidéo : demandée au Core avec la session du compte (jamais en clair dans la page). */

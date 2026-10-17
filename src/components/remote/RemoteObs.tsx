@@ -178,7 +178,7 @@ export default function RemoteObs({
       )}
 
 
-      <AutoSheet o={o} rights={rights} open={autoOpen} onClose={() => setAutoOpen(false)} />
+      <AutoSheet o={o} open={autoOpen} onClose={() => setAutoOpen(false)} />
       <Sheet open={settingsOpen && o.owner} onClose={() => setSettingsOpen(false)} title="Paramètres d'OBS" size="lg">
         {settingsOpen && <SettingsPanel call={o.call} streaming={o.streaming} canRestart={o.guardian.online} onRestart={() => void o.run("guardian.restartObs")} onClose={() => setSettingsOpen(false)} />}
       </Sheet>

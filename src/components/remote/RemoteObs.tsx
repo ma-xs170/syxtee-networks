@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useState, useSyncExternalStore, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
 import MultiChat, { type ChatDefaults } from "../dashboard/MultiChat";
 import AutoSheet from "./AutoSheet";
 import DirectSimple from "./DirectSimple";
@@ -191,6 +191,65 @@ export default function RemoteObs({
   );
 }
 
+/** Collection de scènes : texte + flèche vers le bas ; la liste s'ouvre en dessous (pas la liste native du système, qui s'ouvre par-dessus). */
+function CollectionMenu({ o }: { o: Obs }) {
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  const disabled = !o.ready || !o.canLive || o.collections.list.length === 0;
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: globalThis.MouseEvent) => {
+      if (!box.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+  return (
+    <div ref={box} className="relative shrink-0">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={`Collection de scènes : ${o.collections.current}`}
+        disabled={disabled}
+        onClick={() => setOpen((v) => !v)}
+        className="flex h-8 items-center gap-1.5 rounded-md px-2 text-[13px] hover:bg-foreground/[0.06] disabled:opacity-40"
+      >
+        <span className="text-muted max-xl:hidden">Collection de scènes</span>
+        <span className="max-w-[10rem] truncate text-foreground">{o.collections.current || "-"}</span>
+        <Icon name="chevron" className={cx("size-4 text-muted", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div role="menu" aria-label="Collection de scènes" className="absolute left-0 top-full z-30 mt-1 max-h-72 min-w-full w-max max-w-xs overflow-y-auto rounded-xl border border-line bg-background py-1 shadow-[0_18px_40px_rgba(0,0,0,0.6)]">
+          {o.collections.list.map((c) => (
+            <button
+              key={c}
+              type="button"
+              role="menuitemradio"
+              aria-checked={c === o.collections.current}
+              onClick={() => {
+                setOpen(false);
+                if (c !== o.collections.current) o.setCollection(c);
+              }}
+              className="flex w-full items-center justify-between gap-6 px-3.5 py-2 text-left text-[13px] hover:bg-foreground/[0.06]"
+            >
+              <span className="truncate">{c}</span>
+              {c === o.collections.current && <Icon name="check" className="size-4 shrink-0" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Barre du haut ────────────────────────────────────────────────────────────────────────────────────────────────────
 
 function TopBar({ o, desktop, onAuto, invited }: { o: Obs; desktop: boolean; onAuto: () => void; invited: boolean }) {
@@ -213,21 +272,7 @@ function TopBar({ o, desktop, onAuto, invited }: { o: Obs; desktop: boolean; onA
       {desktop && !o.guest && (
         <div className="ml-3 flex min-w-0 items-center gap-3">
           <span aria-hidden="true" className="h-5 w-px shrink-0 bg-line" />
-          <label className="relative flex shrink-0 items-center gap-1.5 text-[13px] text-muted">
-            <span className="max-xl:sr-only">Collection de scènes</span>
-            <select
-              aria-label="Collection de scènes"
-              className="h-8 max-w-[11rem] cursor-pointer appearance-none truncate rounded-md border-0 bg-transparent py-0 pl-1 pr-5 text-[13px] text-foreground hover:bg-foreground/[0.06] focus-visible:outline-2 focus-visible:outline-foreground disabled:opacity-40"
-              disabled={!o.ready || !o.canLive || o.collections.list.length === 0}
-              value={o.collections.current}
-              onChange={(e) => o.setCollection(e.target.value)}
-            >
-              {o.collections.list.map((c) => (
-                <option key={c} className="bg-background">{c}</option>
-              ))}
-            </select>
-            <Icon name="chevron" className="pointer-events-none absolute right-0.5 size-4 text-muted" />
-          </label>
+          <CollectionMenu o={o} />
         </div>
       )}
       <div className="ml-auto flex min-w-0 items-center gap-3">

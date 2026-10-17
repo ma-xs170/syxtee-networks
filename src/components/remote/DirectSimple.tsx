@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { DkButton } from "../dashboard/kit";
 import ProgramView from "./ProgramView";
 import { cx, dbToPct, Icon, KindIcon, kindLabel } from "./ui";
@@ -15,20 +15,6 @@ import type { Mix } from "./types";
 const fmtDb = (db: number) => (Number.isFinite(db) && db > -100 ? db.toFixed(1).replace(".", ",") : "-inf");
 const fmtInt = (n: number) => n.toLocaleString("fr-FR").replace(/[\u202f\u00a0]/g, " ");
 
-/** Courbe du débit (blanc), sur un fond légèrement plus clair, comme la carte Flux d'OBS. */
-function Spark({ points }: { points: number[] }) {
-  const w = 300;
-  const h = 56;
-  const max = Math.max(...points, 1) * 1.1;
-  const d = points.length > 1 ? points.map((v, i) => `${i ? "L" : "M"}${((i / (points.length - 1)) * w).toFixed(1)},${(h - (v / max) * h).toFixed(1)}`).join(" ") : "";
-  return (
-    <div className="mx-2 my-3 rounded-xl bg-foreground/[0.05] p-2">
-      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" role="img" aria-label="Débit en kbit/s" className="block h-14 w-full">
-        {d && <path d={d} fill="none" stroke="var(--foreground)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" strokeLinejoin="round" opacity="0.85" />}
-      </svg>
-    </div>
-  );
-}
 const select = "h-8 max-w-[11rem] truncate rounded-lg border border-line bg-transparent px-2.5 text-[13px] text-foreground disabled:opacity-50";
 
 function Dock({ title, aside, className, children }: { title: string; aside?: ReactNode; className?: string; children: ReactNode }) {
@@ -93,15 +79,6 @@ export default function DirectSimple({ o, onLive }: { o: Obs; onLive: () => void
   const off = !o.ready || !o.canLive;
   const s = o.stats;
   const received = o.fluxName !== "";
-  const [history, setHistory] = useState<number[]>([]);
-  const kbps = o.streaming ? (s?.kbps ?? null) : null;
-  useEffect(() => {
-    if (kbps == null) return;
-    const t = setTimeout(() => setHistory((h) => [...h.slice(-119), kbps]), 0);
-    return () => clearTimeout(t);
-  }, [kbps, s?.streamMs]);
-  const avg = history.length ? Math.round(history.reduce((a, b) => a + b, 0) / history.length) : null;
-
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
@@ -216,11 +193,7 @@ export default function DirectSimple({ o, onLive }: { o: Obs; onLive: () => void
             </div>
           </Dock>
           <Dock title="Flux">
-            <p className="flex items-baseline justify-between gap-3 px-2 pt-1">
-              <span className="dk-mono text-[22px] text-foreground">{o.streaming && s?.kbps != null ? `${fmtInt(s.kbps)} kbit/s` : "-"}</span>
-              {avg != null && <span className="dk-mono text-[12px] text-muted">moy. {fmtInt(avg)} kbit/s</span>}
-            </p>
-            <Spark points={history} />
+            <p className="dk-mono px-2 pt-1 text-[22px] text-foreground">{o.streaming && s?.kbps != null ? `${fmtInt(s.kbps)} kbit/s` : "-"}</p>
           </Dock>
         </div>
       </div>

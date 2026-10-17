@@ -71,9 +71,9 @@
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-line-strong: var(--line-strong);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-figtree);
   --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-geist-sans);
+  --font-serif: var(--font-figtree);
 }
 
 html {
@@ -91,7 +91,7 @@ li strong {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-figtree), system-ui, sans-serif;
 }
 
 ::selection {
@@ -242,7 +242,7 @@ html[data-stream-mode="on"] [data-sensitive] {
   font-size: clamp(2.75rem, 7vw, 4.75rem);
   line-height: 1.02;
   font-weight: 700;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.025em;
   text-wrap: balance;
   & em { font-style: normal; }
 }
@@ -251,7 +251,7 @@ html[data-stream-mode="on"] [data-sensitive] {
   font-size: clamp(2rem, 4.6vw, 3.25rem);
   line-height: 1.08;
   font-weight: 700;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.025em;
   text-wrap: balance;
   & em { font-style: normal; }
 }
@@ -262,7 +262,7 @@ html[data-stream-mode="on"] [data-sensitive] {
   line-height: 1.1;
   padding-bottom: 0.15em;
   font-weight: 700;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.025em;
   & em { font-style: normal; }
 }
 @utility panel {
@@ -608,7 +608,7 @@ select,
   font-family: var(--font-serif), system-ui, sans-serif;
   font-weight: 700;
   line-height: 1.02;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.025em;
   color: var(--foreground);
   text-wrap: balance;
   & em { font-style: normal; }

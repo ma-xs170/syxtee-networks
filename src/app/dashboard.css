@@ -29,7 +29,7 @@
 }
 
 .dk-card { border: 1px solid var(--line); border-radius: var(--dk-radius); background: var(--surface); padding: 1.5rem; }
-.dk-h1 { font-family: var(--font-geist-sans), system-ui, sans-serif; font-weight: 600; font-size: var(--dk-t-28); line-height: 1.15; letter-spacing: -0.03em; }
+.dk-h1 { font-family: var(--font-figtree), system-ui, sans-serif; font-weight: 600; font-size: var(--dk-t-28); line-height: 1.15; letter-spacing: -0.02em; }
 @media (min-width: 640px) { .dk-h1 { font-size: 2.25rem; } }
 .dk-mono { font-family: var(--font-geist-mono), monospace; font-variant-numeric: tabular-nums; }
 .dk-label { font-size: var(--dk-t-13); color: var(--muted); }
@@ -73,11 +73,11 @@
 
 /* Titres de page de tout l'espace client : une seule voix (sans grasse, 28 puis 36 px, couleur pleine, sans dégradé ni italique). */
 html .dash-surface :is(.h-page, .h-serif) {
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-figtree), system-ui, sans-serif;
   font-weight: 600;
   font-size: var(--dk-t-28);
   line-height: 1.15;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: var(--foreground);
   background: none;
   -webkit-background-clip: border-box;

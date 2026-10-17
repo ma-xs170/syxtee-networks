@@ -32,8 +32,8 @@ export default function MeshBag({ className = "" }: { className?: string }) {
       <path d="M96 112 L112 150" stroke="#fff" strokeOpacity="0.2" />
       {/* rabat brodé */}
       <path d="M118 152 H324 V252 Q324 266 310 266 H132 Q118 266 118 252 Z" fill="#1d1e21" stroke="#fff" strokeOpacity="0.16" />
-      <text x="221" y="205" textAnchor="middle" fill="#fff" fillOpacity="0.8" fontSize="22" fontWeight="700" letterSpacing="4" fontFamily="var(--font-geist-sans), system-ui, sans-serif">SYXTEE</text>
-      <text x="221" y="228" textAnchor="middle" fill="#fff" fillOpacity="0.45" fontSize="11" letterSpacing="6" fontFamily="var(--font-geist-sans), system-ui, sans-serif">NETWORKS</text>
+      <text x="221" y="205" textAnchor="middle" fill="#fff" fillOpacity="0.8" fontSize="22" fontWeight="700" letterSpacing="4" fontFamily="var(--font-figtree), system-ui, sans-serif">SYXTEE</text>
+      <text x="221" y="228" textAnchor="middle" fill="#fff" fillOpacity="0.45" fontSize="11" letterSpacing="6" fontFamily="var(--font-figtree), system-ui, sans-serif">NETWORKS</text>
       <path d="M130 244 H312" stroke="#fff" strokeOpacity="0.12" strokeDasharray="3 4" />
       {/* poche mesh ventilée */}
       <rect x="128" y="282" width="186" height="104" rx="16" fill="#0b0b0c" stroke="#fff" strokeOpacity="0.14" />

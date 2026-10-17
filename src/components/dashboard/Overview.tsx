@@ -32,7 +32,7 @@ function StatusCard({ data, coreUrl, deviceIds }: { data: OverviewData; coreUrl:
     setBusy(false);
   }
   const confirmStart = () =>
-    setAsk({ title: "Commencer le stream ?", text: "OBS commence à diffuser vers tes destinations avec la scène en cours.", ok: "Commencer le stream", run: () => void start() });
+    setAsk({ title: "Êtes-vous sûr(e) ?", yesNo: true, text: "OBS commence à diffuser vers tes destinations avec la scène en cours.", ok: "Commencer le stream", run: () => void start() });
   return (
     <Card>
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">

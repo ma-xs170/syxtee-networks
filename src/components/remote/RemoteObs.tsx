@@ -112,8 +112,8 @@ export default function RemoteObs({
   const onLive = useCallback(() => {
     setAsk(
       o.streaming
-        ? { title: "Arrêter le direct ?", text: `Le direct de ${o.agent.name ?? "ce poste"} s'arrête tout de suite pour tes spectateurs (${clock(o.stats?.streamMs ?? 0)} de direct).`, ok: "Arrêter le direct", danger: true, run: o.stopStream }
-        : { title: "Partir en direct ?", text: `OBS sur ${o.agent.name ?? "ce poste"} commence à diffuser vers ta plateforme avec la scène « ${o.program} ».`, ok: "Partir en direct", run: o.startStream },
+        ? { title: "Êtes-vous sûr(e) ?", yesNo: true, text: `Le direct de ${o.agent.name ?? "ce poste"} s'arrête tout de suite pour tes spectateurs (${clock(o.stats?.streamMs ?? 0)} de direct).`, ok: "Arrêter le direct", danger: true, run: o.stopStream }
+        : { title: "Êtes-vous sûr(e) ?", yesNo: true, text: `OBS sur ${o.agent.name ?? "ce poste"} commence à diffuser vers ta plateforme avec la scène « ${o.program} ».`, ok: "Partir en direct", run: o.startStream },
     );
   }, [o.streaming, o.agent.name, o.stats?.streamMs, o.program, o.stopStream, o.startStream]);
 

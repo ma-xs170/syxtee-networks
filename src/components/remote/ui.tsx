@@ -388,7 +388,7 @@ export function Sheet({ open, onClose, title, children, footer, size = "md", hid
   );
 }
 
-export type ConfirmAsk = { title: string; text: ReactNode; ok: string; danger?: boolean; run: () => void } | null;
+export type ConfirmAsk = { title: string; text: ReactNode; ok: string; danger?: boolean; /** Boutons courts « Oui 📡 » / « Non ✕ » au lieu du libellé de l'action. */ yesNo?: boolean; run: () => void } | null;
 
 export function Confirm({ ask, onClose }: { ask: ConfirmAsk; onClose: () => void }) {
   // La dernière demande reste affichée pendant la fermeture (sinon le texte disparaît avant la fin).
@@ -404,7 +404,7 @@ export function Confirm({ ask, onClose }: { ask: ConfirmAsk; onClose: () => void
       footer={
         <>
           <button type="button" onClick={onClose} className={btn()}>
-            Annuler
+            {a?.yesNo ? "Non ✕" : "Annuler"}
           </button>
           <button
             type="button"
@@ -415,7 +415,7 @@ export function Confirm({ ask, onClose }: { ask: ConfirmAsk; onClose: () => void
             }}
             className={a?.danger ? `${btnLive()} !border-[var(--dk-red)] !bg-[var(--dk-red)]/10 !text-[var(--dk-red)] hover:!bg-[var(--dk-red)]/20` : btnPrimary()}
           >
-            {a?.ok}
+            {a?.yesNo ? "Oui 📡" : a?.ok}
           </button>
         </>
       }

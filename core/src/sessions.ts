@@ -32,6 +32,7 @@ export type SessionDb = {
 
 type Open = {
   id: Promise<string | null>;
+  userId: string;
   startedAt: number;
   lastLiveAt: number;
   offlineSince: number | null;
@@ -52,12 +53,22 @@ export function downsample(points: number[], n = SERIES_POINTS) {
   return out;
 }
 
-export function createSessionTracker(opts: { db: SessionDb; relay: string; now?: () => number; log?: (m: string) => void }) {
+/** Début et fin d'un direct, pour les webhooks (erreurs ignorées : un webhook en panne ne gêne jamais le suivi). */
+export type SessionEvent = { type: "live.started" | "live.ended"; userId: string; relayId: string; sessionId: string; startedAt: string; endedAt?: string; durationS?: number; avgKbps?: number; peakKbps?: number; reconnects?: number };
+
+export function createSessionTracker(opts: { db: SessionDb; relay: string; now?: () => number; log?: (m: string) => void; onEvent?: (e: SessionEvent) => void }) {
   const { db, relay } = opts;
   const now = opts.now ?? Date.now;
   const log = opts.log ?? (() => {});
   const open = new Map<string, Open>(); // par id de relais
   const queue = new Map<string, Promise<unknown>>(); // écritures en série par relais
+  const emit = (e: SessionEvent) => {
+    try {
+      opts.onEvent?.(e);
+    } catch (err) {
+      log(`webhook : ${(err as Error).message}`);
+    }
+  };
 
   const serial = (relayId: string, job: () => Promise<unknown>) => {
     const next = (queue.get(relayId) ?? Promise.resolve()).then(job).catch((e) => log(`session ${relayId.slice(0, 8)} : ${(e as Error).message}`));
@@ -81,7 +92,10 @@ export function createSessionTracker(opts: { db: SessionDb; relay: string; now?:
     s.lastFlush = now();
     return serial(relayId, async () => {
       const id = await s.id;
-      if (id) await db.update(id, patch);
+      if (!id) return;
+      await db.update(id, patch);
+      if (ended)
+        emit({ type: "live.ended", userId: s.userId, relayId, sessionId: id, startedAt: new Date(s.startedAt).toISOString(), endedAt: patch.ended_at ?? undefined, durationS: patch.duration_s, avgKbps: patch.avg_kbps, peakKbps: patch.peak_kbps, reconnects: patch.reconnects });
     });
   }
 
@@ -122,10 +136,12 @@ export function createSessionTracker(opts: { db: SessionDb; relay: string; now?:
       };
       let resolve!: (id: string | null) => void;
       const id = new Promise<string | null>((r) => (resolve = r));
-      open.set(relayId, { id, startedAt: t, lastLiveAt: t, offlineSince: null, reconnects: 0, points: [], lastFlush: t });
+      open.set(relayId, { id, userId, startedAt: t, lastLiveAt: t, offlineSince: null, reconnects: 0, points: [], lastFlush: t });
       serial(relayId, async () => {
         try {
-          resolve(await db.insert(row));
+          const sid = await db.insert(row);
+          resolve(sid);
+          emit({ type: "live.started", userId, relayId, sessionId: sid, startedAt: row.started_at });
         } catch (e) {
           resolve(null);
           throw e;

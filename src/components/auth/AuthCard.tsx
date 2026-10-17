@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useActionState, useEffect, useId, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
-import { motion, type Variants } from "motion/react";
 import { siDiscord, siGoogle, siTwitch } from "@/lib/brand-icons";
 import { completeFirstLogin, requestPasswordReset, signInWithProvider, resendVerification, resetPassword, signIn, signUp, type AuthState } from "@/app/(auth)/actions";
 import { PASSWORD_MIN, passwordStrength, STRENGTH_LABEL } from "@/lib/auth/password";
@@ -16,17 +15,15 @@ const RESEND_DELAY = 60;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const IDLE: AuthState = { status: "idle" };
 
-const list: Variants = { show: { transition: { staggerChildren: 0.05 } } };
-const item: Variants = { hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } } };
 
 export const fieldCls =
   "h-12 w-full rounded-xl border border-line bg-input px-4 text-[15px] text-foreground placeholder:text-muted/70 transition-[border-color,box-shadow] focus:border-foreground/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20";
 
 export function LogoTile() {
   return (
-    <motion.div variants={item} className="glass-icon mx-auto flex h-14 w-14 items-center justify-center rounded-[22%]">
+    <div className="glass-icon mx-auto flex h-14 w-14 items-center justify-center rounded-[22%]">
       <Image src="/logo-400.png" alt="SYXTEE" width={18} height={25} priority />
-    </motion.div>
+    </div>
   );
 }
 
@@ -37,18 +34,18 @@ function Mark({ children }: { children: ReactNode }) {
 
 function Shell({ title, sub, children }: { title: ReactNode; sub?: ReactNode; children: ReactNode }) {
   return (
-    <motion.div initial="hidden" animate="show" variants={list} className="w-full max-w-[420px]">
+    <div className="w-full max-w-[420px]">
       <LogoTile />
-      <motion.h1 variants={item} className="h-serif mt-8 text-center text-[2.75rem]">
+      <h1 className="h-serif mt-8 text-center text-[2.75rem]">
         {title}
-      </motion.h1>
+      </h1>
       {sub && (
-        <motion.p variants={item} className="mt-3 text-center text-sm leading-relaxed text-muted">
+        <p className="mt-3 text-center text-sm leading-relaxed text-muted">
           {sub}
-        </motion.p>
+        </p>
       )}
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -88,7 +85,7 @@ const PROVIDERS = [
 /** Boutons Google / Twitch / Discord, sous le formulaire email. Formulaire distinct : l'email reste un choix à part entière. */
 function OAuthButtons({ next, solo = false }: { next: string; solo?: boolean }) {
   return (
-    <motion.div variants={item} className={solo ? "mt-10" : "mt-8"}>
+    <div className={solo ? "mt-10" : "mt-8"}>
       {!solo && (
         <div className="flex items-center gap-4 text-xs text-foreground/50" role="separator">
           <span className="h-px flex-1 bg-foreground/15" />
@@ -130,7 +127,7 @@ function OAuthButtons({ next, solo = false }: { next: string; solo?: boolean }) 
           ),
         )}
       </form>
-    </motion.div>
+    </div>
   );
 }
 
@@ -244,10 +241,10 @@ function CheckMail({ email, at, lead, resend, next, onBack }: { email: string; a
   const sentAt = state.status === "sent" ? state.at : at;
   return (
     <Shell title={<>Vérifie ta <Mark>boîte mail</Mark></>} sub={lead}>
-      <motion.p variants={item} className="mt-2 text-center text-sm text-foreground/60">
+      <p className="mt-2 text-center text-sm text-foreground/60">
         <span className="font-medium text-foreground">{email}</span>
-      </motion.p>
-      <motion.ol variants={item} className="mt-8 space-y-3 rounded-xl border border-line-strong bg-surface-2 p-4 text-sm text-foreground/80">
+      </p>
+      <ol className="mt-8 space-y-3 rounded-xl border border-line-strong bg-surface-2 p-4 text-sm text-foreground/80">
         {(resend
           ? ["Ouvre l'email « Confirme ton adresse » reçu à l'instant.", "Clique sur le bouton de confirmation.", "Tu arrives directement dans ton dashboard."]
           : ["Ouvre l'email reçu à l'instant.", "Clique sur le lien.", "Choisis ton nouveau mot de passe."]
@@ -257,40 +254,40 @@ function CheckMail({ email, at, lead, resend, next, onBack }: { email: string; a
             <span>{t}</span>
           </li>
         ))}
-      </motion.ol>
+      </ol>
       {mailbox(email) && (
-        <motion.a variants={item} href={mailbox(email)!.url} target="_blank" rel="noopener noreferrer" className="mt-4 flex h-12 w-full items-center justify-center rounded-xl btn-tonal text-sm font-medium transition-colors">
+        <a href={mailbox(email)!.url} target="_blank" rel="noopener noreferrer" className="mt-4 flex h-12 w-full items-center justify-center rounded-xl btn-tonal text-sm font-medium transition-colors">
           Ouvrir {mailbox(email)!.name}
-        </motion.a>
+        </a>
       )}
-      <motion.p variants={item} className="mt-4 text-center text-xs leading-relaxed text-foreground/60">
+      <p className="mt-4 text-center text-xs leading-relaxed text-foreground/60">
         Rien reçu ? Regarde dans les spams, ou renvoie l&apos;email. Le lien marche sur n&apos;importe quel appareil.
-      </motion.p>
+      </p>
       {resend && (
-        <motion.form variants={item} action={action} className="mt-8">
+        <form action={action} className="mt-8">
           <input type="hidden" name="email" value={email} />
           <input type="hidden" name="next" value={next ?? ""} />
           <ResendButton key={sentAt} at={sentAt} />
-        </motion.form>
+        </form>
       )}
       {state.status === "error" && (
-        <motion.div variants={item} className="mt-4">
+        <div className="mt-4">
           <ErrorText>{state.message}</ErrorText>
-        </motion.div>
+        </div>
       )}
       {resend && (
-        <motion.p variants={item} className="mt-6 text-center text-sm text-foreground/70">
+        <p className="mt-6 text-center text-sm text-foreground/70">
           Adresse déjà confirmée ?{" "}
           <Link href={`/connexion?email=${encodeURIComponent(email)}${next ? `&next=${encodeURIComponent(next)}` : ""}`} className="font-medium text-foreground underline underline-offset-4">
             Connecte-toi
           </Link>
-        </motion.p>
+        </p>
       )}
-      <motion.div variants={item} className="mt-4 text-center">
+      <div className="mt-4 text-center">
         <button type="button" onClick={onBack} className="text-sm text-foreground/60 underline-offset-4 transition-colors hover:text-foreground hover:underline">
           Changer d&apos;email
         </button>
-      </motion.div>
+      </div>
     </Shell>
   );
 }
@@ -337,7 +334,7 @@ export function SignInCard({ next = "", error, email: prefill = "" }: { next?: s
         </>
       }
     >
-      <motion.form variants={item} action={action} className="mt-10 space-y-5">
+      <form action={action} className="mt-10 space-y-5">
         <input type="hidden" name="next" value={next} />
         <Field id="email" label="Email ou identifiant">
           <input id="email" name="email" type="text" inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="toi@exemple.com" className={fieldCls} />
@@ -358,32 +355,32 @@ export function SignInCard({ next = "", error, email: prefill = "" }: { next?: s
         <div className="pt-1">
           <Submit idle="Se connecter" busy="Connexion…" disabled={!EMAIL_RE.test(email.trim()) || !password} />
         </div>
-      </motion.form>
+      </form>
 
       <OAuthButtons next={next} />
 
       {message && (
-        <motion.div variants={item} className="mt-4">
+        <div className="mt-4">
           <ErrorText>{message}</ErrorText>
-        </motion.div>
+        </div>
       )}
       {unverified && (
-        <motion.form variants={item} action={resendAction} className="mt-3">
+        <form action={resendAction} className="mt-3">
           <input type="hidden" name="email" value={email.trim()} />
           <input type="hidden" name="next" value={next} />
           <button type="submit" className="h-11 w-full rounded-xl border border-line-strong bg-surface-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/[0.14]">
             Renvoyer l&apos;email de confirmation
           </button>
-        </motion.form>
+        </form>
       )}
 
-      <motion.p variants={item} className="mt-10 rounded-xl border border-line-strong bg-surface-2 p-4 text-center text-xs leading-relaxed text-foreground/55">
+      <p className="mt-10 rounded-xl border border-line-strong bg-surface-2 p-4 text-center text-xs leading-relaxed text-foreground/55">
         Compte créé avec un lien par email ?{" "}
         <Link href={`/mot-de-passe-oublie${email ? `?email=${encodeURIComponent(email)}` : ""}`} className="font-medium text-foreground hover:underline">
           Définis ton mot de passe
         </Link>{" "}
         avec la même adresse : tu retrouves tout ton compte.
-      </motion.p>
+      </p>
     </Shell>
   );
 }
@@ -425,10 +422,10 @@ export function SignUpCard({ next = "", error, email: prefill = "" }: { next?: s
         </>
       }
     >
-      <motion.p variants={item} className="mt-8 rounded-xl border border-line-strong bg-surface-2 p-4 text-center text-xs leading-relaxed text-foreground/60">
+      <p className="mt-8 rounded-xl border border-line-strong bg-surface-2 p-4 text-center text-xs leading-relaxed text-foreground/60">
         Le compte est gratuit. Les services ne sont pas encore ouverts : tu as accès à la documentation et au support pour demander un accès.
-      </motion.p>
-      <motion.form variants={item} action={action} className="mt-6 space-y-5">
+      </p>
+      <form action={action} className="mt-6 space-y-5">
         <input type="hidden" name="next" value={next} />
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <Field id="first_name" label="Prénom">
@@ -455,14 +452,14 @@ export function SignUpCard({ next = "", error, email: prefill = "" }: { next?: s
         <div className="pt-1">
           <Submit idle="Créer mon compte" busy="Création…" disabled={mismatch || passwordStrength(password) === 0} />
         </div>
-      </motion.form>
+      </form>
 
       <OAuthButtons next={next} />
 
       {(state.status === "error" || error) && (
-        <motion.div variants={item} className="mt-4">
+        <div className="mt-4">
           <ErrorText>{state.status === "error" ? state.message : error}</ErrorText>
-        </motion.div>
+        </div>
       )}
     </Shell>
   );
@@ -487,22 +484,22 @@ export function ForgotCard({ email: initial = "", error }: { email?: string; err
   }
   return (
     <Shell title={<>Mot de passe <Mark>oublié</Mark></>} sub="Indique ton adresse : on t'envoie un lien pour en choisir un nouveau.">
-      <motion.form variants={item} action={action} className="mt-10 space-y-5">
+      <form action={action} className="mt-10 space-y-5">
         <Field id="email" label="Email">
           <input id="email" name="email" type="email" inputMode="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="toi@exemple.com" className={fieldCls} />
         </Field>
         <Submit idle="Envoyer le lien" busy="Envoi…" disabled={!EMAIL_RE.test(email.trim())} />
-      </motion.form>
+      </form>
       {(state.status === "error" || error) && (
-        <motion.div variants={item} className="mt-4">
+        <div className="mt-4">
           <ErrorText>{state.status === "error" ? state.message : error}</ErrorText>
-        </motion.div>
+        </div>
       )}
-      <motion.p variants={item} className="mt-8 text-center text-sm">
+      <p className="mt-8 text-center text-sm">
         <Link href="/connexion" className="text-foreground/60 hover:text-foreground hover:underline">
           Retour à la connexion
         </Link>
-      </motion.p>
+      </p>
     </Shell>
   );
 }
@@ -516,7 +513,7 @@ export function ResetCard({ email }: { email: string }) {
   const mismatch = confirm.length > 0 && confirm !== password;
   return (
     <Shell title={<>Nouveau <Mark>mot de passe</Mark></>} sub={<>Pour le compte <span className="font-medium text-foreground">{email}</span>.</>}>
-      <motion.form variants={item} action={action} className="mt-10 space-y-5">
+      <form action={action} className="mt-10 space-y-5">
         {/* Aide les gestionnaires de mots de passe à associer le nouveau mot de passe au bon compte. */}
         <input type="email" name="username" autoComplete="username" value={email} readOnly hidden />
         <PasswordInput id="password" name="password" label="Nouveau mot de passe" autoComplete="new-password" value={password} onChange={setPassword} gauge />
@@ -525,11 +522,11 @@ export function ResetCard({ email }: { email: string }) {
           {mismatch && <p className="text-xs text-bad">Les deux mots de passe ne correspondent pas.</p>}
         </div>
         <Submit idle="Enregistrer" busy="Enregistrement…" disabled={mismatch || passwordStrength(password) === 0} />
-      </motion.form>
+      </form>
       {state.status === "error" && (
-        <motion.div variants={item} className="mt-4">
+        <div className="mt-4">
           <ErrorText>{state.message}</ErrorText>
-        </motion.div>
+        </div>
       )}
     </Shell>
   );
@@ -545,7 +542,7 @@ export function FirstLoginCard({ login, first, last }: { login: string; first: s
   const fields = state.status === "error" ? state.fields : undefined;
   return (
     <Shell title={<>Bienvenue sur <Mark>SYXTEE</Mark></>} sub={<>Compte <span className="font-medium text-foreground">{login}</span> : choisis ton mot de passe et renseigne ton adresse e-mail pour continuer.</>}>
-      <motion.form variants={item} action={action} className="mt-10 space-y-5">
+      <form action={action} className="mt-10 space-y-5">
         <input type="text" name="username" autoComplete="username" value={login} readOnly hidden />
         <div className="grid gap-5 sm:grid-cols-2">
           <Field id="first_name" label="Prénom">
@@ -564,11 +561,11 @@ export function FirstLoginCard({ login, first, last }: { login: string; first: s
           {mismatch && <p className="text-xs text-bad">Les deux mots de passe ne correspondent pas.</p>}
         </div>
         <Submit idle="Continuer" busy="Enregistrement…" disabled={mismatch || passwordStrength(password) === 0} />
-      </motion.form>
+      </form>
       {state.status === "error" && (
-        <motion.div variants={item} className="mt-4">
+        <div className="mt-4">
           <ErrorText>{state.message}</ErrorText>
-        </motion.div>
+        </div>
       )}
     </Shell>
   );

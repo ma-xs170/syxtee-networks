@@ -25,6 +25,7 @@ import { createRemote } from "./remote.ts";
 import { createBackups } from "./backups.ts";
 import { createRecordings } from "./recordings.ts";
 import { createSessionTracker, supabaseSessionDb } from "./sessions.ts";
+import { createWebhooks } from "./webhooks.ts";
 import { createSls } from "./sls.ts";
 import { createSealer, parseSecret } from "./keys.ts";
 import { planOf, publisherVerdict } from "./plans.ts";
@@ -89,7 +90,8 @@ const prefixes = createPrefixes(
   log,
 );
 const sessionDb = supabaseSessionDb(supabase);
-const sessions = createSessionTracker({ db: sessionDb, relay: config.RELAY_NAME, log });
+const webhooks = createWebhooks({ db: supabase, log });
+const sessions = createSessionTracker({ db: sessionDb, relay: config.RELAY_NAME, log, onEvent: (e) => void webhooks.emit(e) });
 
 const previews = config.PREVIEW_ENABLED
   ? createPreviews({ dir: join(config.DATA_DIR, "previews"), host: config.SLS_SRT_HOST, port: config.SRT_PLAY_PORT, intervalS: config.PREVIEW_INTERVAL_S, log })

@@ -9,6 +9,7 @@ import LinkDevices from "@/components/dashboard/LinkDevices";
 import LowDataToggle from "@/components/dashboard/LowDataToggle";
 import StreamModeToggle from "@/components/dashboard/StreamModeToggle";
 import { Column, DkTabs, ListRow, PageTitle, Section, StatusBadge } from "@/components/dashboard/kit";
+import { ApiKeys, Webhooks, type HookRow, type KeyRow } from "@/components/dashboard/DevTools";
 import { ToastProvider } from "@/components/ui/Toast";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { authErrorMessage } from "@/lib/auth/errors";
@@ -17,6 +18,7 @@ import { publicCoreUrl } from "@/lib/core";
 import { LOW_DATA_COOKIE } from "@/lib/low-data";
 import { FEATURES } from "@/lib/plans";
 import { initials } from "@/lib/names";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import ManageButton from "../parametres/facturation/ManageButton";
 import EquipeTab from "../parametres/equipe/page";
@@ -33,6 +35,7 @@ const TABS = [
   { id: "formule", label: "Formule et facturation" },
   { id: "equipe", label: "Équipe et accès" },
   { id: "preferences", label: "Préférences" },
+  { id: "developpeurs", label: "Développeurs" },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
@@ -54,6 +57,7 @@ export default async function ComptePage({ searchParams }: PageProps<"/dashboard
         {tab === "formule" && <Formule />}
         {tab === "equipe" && <EquipeTab />}
         {tab === "preferences" && <Preferences />}
+        {tab === "developpeurs" && <Developpeurs />}
       </Column>
     </ToastProvider>
   );
@@ -162,6 +166,31 @@ async function Preferences() {
           <ListRow href="/dashboard/parametres/documents" title="Documents" />
           <ListRow href="/dashboard/parametres/labs" title="Labs" />
         </ul>
+      </Section>
+    </>
+  );
+}
+
+async function Developpeurs() {
+  const user = await requireUser("/dashboard/compte");
+  const db = createAdminClient();
+  const [{ data: keys }, { data: hooks }] = await Promise.all([
+    db.from("api_keys").select("id, name, prefix, created_at, last_used_at").eq("user_id", user.id).is("revoked_at", null).order("created_at", { ascending: false }),
+    db.from("webhooks").select("id, url, secret, active, last_at, last_status").eq("user_id", user.id).order("created_at", { ascending: false }),
+  ]);
+  return (
+    <>
+      <Section title="Clés d'API" text="Lecture seule, 60 requêtes par minute. Envoie la clé dans l'en-tête Authorization: Bearer sx_… ">
+        <ApiKeys keys={(keys ?? []) as KeyRow[]} />
+        <pre className="dk-mono mt-6 overflow-x-auto rounded-[10px] border border-line p-4 text-[13px] text-muted">{`curl https://www.syxtee-networks.fr/api/v1/lives?limit=5 \\
+  -H "Authorization: Bearer sx_…"`}</pre>
+        <p className="mt-2 text-[13px] text-muted">Routes : <span className="dk-mono">GET /api/v1/me</span>, <span className="dk-mono">GET /api/v1/lives</span>.</p>
+      </Section>
+      <Section title="Webhooks" text="Un POST JSON signé part à chaque début (live.started) et fin (live.ended) de direct. https obligatoire.">
+        <Webhooks hooks={(hooks ?? []) as HookRow[]} />
+        <p className="mt-6 text-[13px] leading-relaxed text-muted">
+          Signature : en-tête <span className="dk-mono">X-Syxtee-Signature: t=…,v1=…</span>, où v1 est le HMAC-SHA256 hexadécimal de « t.corps » avec le secret du webhook. Rejette les requêtes dont t a plus de 5 minutes.
+        </p>
       </Section>
     </>
   );

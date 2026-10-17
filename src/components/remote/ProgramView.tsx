@@ -28,9 +28,7 @@ export default function ProgramView({ o, className, ratio }: { o: Obs; className
               <span aria-hidden="true" className="live-dot" />
               En direct
             </span>
-          ) : (
-            <span className="shrink-0 font-mono text-xs uppercase tracking-wider text-muted max-sm:hidden">Hors direct</span>
-          )}
+          ) : null}
         </p>
         <div className="flex shrink-0 items-center gap-1.5">
           {!muted && video && <input type="range" min={0} max={1} step={0.05} value={volume} onChange={(e) => setVolume(Number(e.target.value))} aria-label="Volume de l'aperçu" className="rm-range w-24 max-sm:hidden" />}

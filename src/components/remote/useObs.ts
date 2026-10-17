@@ -63,6 +63,8 @@ export function useObs({ coreUrl, deviceId, demoToken, invite, rights }: UseObsA
   const refreshTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const levelsRef = useRef<Record<string, number>>({});
   const levelsLRRef = useRef<Record<string, [number, number]>>({});
+  /** Depuis quand une entrée est figée à 0 dB : un ancien plugin envoie 0 dB pour une source qui n'a encore rien émis (jauge pleine à tort). */
+  const pinnedSince = useRef<Record<string, number>>({});
   const hold = useRef(false);
   const levelFrame = useRef(0);
   const volumeSend = useRef<Record<string, { at: number; timer?: ReturnType<typeof setTimeout> }>>({});
@@ -133,8 +135,23 @@ export function useObs({ coreUrl, deviceId, demoToken, invite, rights }: UseObsA
           levelFrame.current = requestAnimationFrame(() => {
             levelFrame.current = 0;
             if (!hold.current) {
-              setLevels(levelsRef.current);
-              setLevelsLR(levelsLRRef.current);
+              // Un vrai son bouge ; 0 dB immobile plus de 1,5 s = source muette, comptée comme silence.
+              const now = Date.now();
+              const lv = { ...levelsRef.current };
+              const lr = { ...levelsLRRef.current };
+              for (const k of Object.keys(lv)) {
+                if (lv[k] < -0.5) {
+                  delete pinnedSince.current[k];
+                  continue;
+                }
+                const since = (pinnedSince.current[k] ??= now);
+                if (now - since > 1500) {
+                  lv[k] = -100;
+                  lr[k] = [-100, -100];
+                }
+              }
+              setLevels(lv);
+              setLevelsLR(lr);
             }
           });
         }

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/dal";
 import { addMessage, deleteTicket, getThread, savePhotos, WAITING_AGENT_TEXT } from "@/lib/support";
-import { CATEGORY_FORMS, isCategory } from "@/lib/support-categories";
+import { isCategory } from "@/lib/support-categories";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // Support côté client : ouvrir un ticket, écrire dans son fil (écrire dans un ticket résolu le rouvre), le clore.
@@ -18,27 +18,18 @@ const hasPhotos = (form: FormData) => form.getAll("photos").some((f) => f instan
 
 export async function createTicketAction(_prev: SupportState, form: FormData): Promise<SupportState> {
   const user = await requireUser("/dashboard/aide");
-  const parsed = z.object({ subject, body }).safeParse({ subject: form.get("subject"), body: form.get("body") });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide." };
-  const category = form.get("category");
-  if (!isCategory(category)) return { error: "Choisis une catégorie." };
-  // Champs propres à la catégorie : validés contre la liste, puis ajoutés en tête du message.
-  const details: string[] = [];
-  for (const f of CATEGORY_FORMS[category].fields) {
-    const v = String(form.get(`f_${f.name}`) ?? "").trim().slice(0, 200);
-    if (!v) {
-      if (f.required) return { error: `${f.label} : obligatoire.` };
-      continue;
-    }
-    if (f.type === "select" && !(f.options ?? []).includes(v)) return { error: `${f.label} : choix invalide.` };
-    details.push(`${f.label} : ${v}`);
-  }
-  const fullBody = [details.join("\n"), parsed.data.body].filter(Boolean).join("\n\n").slice(0, 4000);
-  if (!parsed.data.body && !hasPhotos(form)) return { error: "Écris ton message ou ajoute une photo." };
+  const parsed = body.safeParse(form.get("body"));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Message invalide." };
+  if (!parsed.data && !hasPhotos(form)) return { error: "Écris ton message ou ajoute une photo." };
+  const raw = form.get("category");
+  const category = isCategory(raw) ? raw : "autre";
+  // Pas de champ « sujet » : le titre de la demande est la première ligne du message.
+  const title = parsed.data.split("\n")[0].trim().slice(0, 80) || "Demande avec photo";
+  const fullBody = parsed.data;
   const db = createAdminClient();
   const open = await db.from("support_tickets").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "open");
   if ((open.count ?? 0) >= 5) return { error: "Tu as déjà 5 demandes en cours. Attends une réponse ou clos-en une." };
-  const { data: ticket, error } = await db.from("support_tickets").insert({ user_id: user.id, subject: parsed.data.subject, category }).select("id").single();
+  const { data: ticket, error } = await db.from("support_tickets").insert({ user_id: user.id, subject: title, category }).select("id").single();
   if (error || !ticket) {
     console.error("support_tickets", error?.message);
     return { error: "Envoi impossible pour le moment (migration 0026 appliquée ?)." };

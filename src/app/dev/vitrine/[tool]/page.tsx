@@ -207,7 +207,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           </div>
         </div>
       )}
-      {tool === "demande" && <NewTicketForm person={{ name: "Mathis Custos", email: "mathis@exemple.fr", supportId: "SYX-K7QX-2MPA", plan: "Signature", country: "Guadeloupe" }} />}
+      {tool === "demande" && <NewTicketForm />}
       {tool === "ticket" && (
         <TicketChat
           viewer="user"

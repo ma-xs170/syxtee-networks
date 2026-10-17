@@ -453,3 +453,5 @@
   .menu-btn:active { transform: none; }
   .menu-in { animation: menu-fade 0.15s ease both; }
 }
+/* Défilement du bandeau de cartes : statique. */
+.marquee, .marquee.marquee-l, .marquee.marquee-r { animation: none !important; }

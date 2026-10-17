@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Instrument_Serif } from "next/font/google";
+import localFont from "next/font/local";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
@@ -9,8 +9,15 @@ import SubmitLock from "@/components/SubmitLock";
 import JsonLd from "@/components/seo/JsonLd";
 
 
-// Trois familles : Instrument Serif (titres), Geist Sans (interface et texte), Geist Mono (code, valeurs, petits labels).
-const serif = Instrument_Serif({ subsets: ["latin", "latin-ext"], weight: "400", style: ["normal", "italic"], variable: "--font-instrument", display: "swap" });
+// Trois familles, toutes hébergées en local (woff2, sous-ensemble latin, aucun appel à Google Fonts) : Instrument Serif (titres), Geist Sans (interface et texte), Geist Mono (code, valeurs, petits labels).
+const serif = localFont({
+  src: [
+    { path: "./fonts/instrument-serif-latin.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/instrument-serif-latin-italic.woff2", weight: "400", style: "italic" },
+  ],
+  variable: "--font-instrument",
+  display: "swap",
+});
 
 // Icône d'onglet sans fond, assortie à l'onglet (logo noir sur barre claire, blanc sur barre sombre).
 // Écran d'accueil iPhone : apple-touch-icon opaque (iOS refuse la transparence) et mode application plein écran.

@@ -92,7 +92,7 @@ async function Securite() {
   const user = await requireUser("/dashboard/compte");
   return (
     <>
-      <Section title="Mot de passe" text="Compte créé avec Google, Twitch ou Discord ? Il n'a pas de mot de passe : utilise « Mot de passe oublié » à la connexion pour en définir un.">
+      <Section title="Mot de passe">
         <PasswordForm email={user.email ?? ""} />
       </Section>
       <Section title="Postes reliés" text="Les ordinateurs reliés à ton compte avec SYXTEE Link. Révoquer un poste coupe sa connexion tout de suite.">

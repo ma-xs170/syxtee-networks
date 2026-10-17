@@ -18,7 +18,7 @@ import { clearRecovery, hasRecovery } from "@/lib/auth/recovery";
 import { hasSupabase } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
-// Connexion par email + mot de passe (Supabase Auth). Twitch ne sert plus qu'à lier sa chaîne (Profil).
+// Connexion par e-mail ou identifiant + mot de passe (Supabase Auth). Aucun fournisseur externe.
 // Aucun message ne révèle si une adresse a un compte : inscription et « mot de passe oublié » répondent pareil.
 
 async function origin() {
@@ -195,36 +195,6 @@ export async function completeFirstLogin(_prev: AuthState, f: FormData): Promise
   await admin.from("admin_audit").insert({ admin_email: "compte géré", action: "managed.first_login", target_user: user.id, before: null, after: { login: managed.login } });
   sendPasswordChanged(email.data);
   redirect(await afterLogin({ ...user, email: email.data }, "/dashboard"));
-}
-
-/** Lier un Twitch vérifié à un compte existant (liaison manuelle activée dans Supabase). */
-export async function linkTwitch(formData: FormData) {
-  const next = safeNext(String(formData.get("next") ?? ""), "/compte");
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.linkIdentity({
-    provider: "twitch",
-    options: { redirectTo: `${await origin()}/auth/callback?next=${encodeURIComponent(next)}` },
-  });
-  if (error || !data.url) redirect(`${next}?erreur=${mapSupabaseError(error?.code)}`);
-  redirect(data.url);
-}
-
-// Google : bientôt (bouton désactivé dans AuthCard).
-const OAUTH_PROVIDERS = ["twitch", "discord"] as const;
-
-/** Connexion ou inscription avec Twitch ou Discord. Le retour passe par /auth/callback (afterLogin, puis /bienvenue si profil incomplet). */
-export async function signInWithProvider(formData: FormData) {
-  const provider = OAUTH_PROVIDERS.find((p) => p === formData.get("provider"));
-  const next = safeNext(String(formData.get("next") ?? ""), "");
-  if (!provider || !hasSupabase) redirect(`/connexion?erreur=${provider ? "indisponible" : "oauth"}`);
-  if (!(await allow(`oauth:ip:${await clientIp()}`, 30, 3600))) redirect("/connexion?erreur=limite");
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider,
-    options: { redirectTo: `${await origin()}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}` },
-  });
-  if (error || !data.url) redirect(`/connexion?erreur=${mapSupabaseError(error?.code)}`);
-  redirect(data.url);
 }
 
 export async function signOut() {

@@ -7,6 +7,8 @@ import { LOW_DATA_COOKIE, LOW_DATA_PAGE } from "@/lib/low-data";
 import Heartbeat from "@/components/dashboard/Heartbeat";
 import { LiveStatusProvider } from "@/components/dashboard/LiveStatus";
 import NamesModal from "@/components/auth/NamesModal";
+import TermsModal from "@/components/auth/TermsModal";
+import { needsTerms, TERMS_VERSION } from "@/lib/terms";
 import DashboardShell from "@/components/dashboard/Sidebar";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { getPersonalPlan, getPlan } from "@/lib/auth/plan";
@@ -27,7 +29,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
   const [user, profile] = await Promise.all([requireUser("/dashboard"), getProfile()]);
   if (!profile?.onboarded_at) redirect("/bienvenue");
   // Espaces partagés : liste, espace actif, espaces encore créables, droits de l'espace actif (affichage ; le serveur et le Core revérifient).
-  const [workspaces, activeWs, personal, affiliate] = await Promise.all([listWorkspaces(), getActiveWorkspace(), getPersonalPlan(), getMyAffiliate()]);
+  const [workspaces, activeWs, personal, affiliate, termsDue] = await Promise.all([listWorkspaces(), getActiveWorkspace(), getPersonalPlan(), getMyAffiliate(), needsTerms(user.id)]);
   const created = workspaces.filter((w) => w.created_by === user.id).length;
   const workspace = {
     workspaces: workspaces.map((w) => ({ id: w.id, name: w.name, color: w.color, role: w.role })),
@@ -56,7 +58,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
       <TimezoneProvider timezone={accountTimezone(profile)}>
       <DashboardShell admin={isAdminEmail(user.email)} workspace={workspace} affiliate={affiliate ? { isNew: !affiliate.seen_at } : null}>
       {/* Prénom/nom manquants : modale hors live, bandeau pendant un live (en haut, sous la barre). */}
-      {!hasNames(profile) && <NamesModal />}
+      {termsDue ? <TermsModal version={TERMS_VERSION} /> : !hasNames(profile) && <NamesModal />}
       <Heartbeat />
       <main id="contenu" className="flex-1">{children}</main>
       </DashboardShell>

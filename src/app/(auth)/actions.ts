@@ -11,6 +11,7 @@ import { passwordProblem } from "@/lib/auth/password";
 import { personName } from "@/lib/auth/profileSchema";
 import { isPwned } from "@/lib/auth/pwned";
 import { isApprovedEmail } from "@/lib/access";
+import { recordTerms } from "@/lib/terms";
 import { isManagedEmail, LOGIN_RE, loginToEmail, managedOf } from "@/lib/managed";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { allow, clientIp } from "@/lib/auth/rateLimit";
@@ -68,11 +69,13 @@ export async function signUp(_prev: AuthState, f: FormData): Promise<AuthState> 
   if (await isPwned(password)) return fail(AUTH_ERRORS["mdp-fuite"], fields);
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data: created, error } = await supabase.auth.signUp({
     email: email.data,
     password,
     options: { emailRedirectTo: await confirmUrl(safeNext(str(f, "next"), "")), data: { first_name: first.data, last_name: last.data } },
   });
+  // Les conditions viennent d'être acceptées (case cochée) : on garde la version, la fenêtre ne s'affichera pas à la première visite.
+  if (!error && created.user?.identities?.length) await recordTerms(created.user.id).catch(() => {});
   // Adresse déjà inscrite : Supabase répond comme pour une nouvelle (pas de fuite), on fait de même.
   if (error && error.code !== "user_already_exists" && error.code !== "email_exists") {
     console.error("signUp", error.code, error.message);

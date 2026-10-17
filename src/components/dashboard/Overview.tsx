@@ -11,6 +11,7 @@ import { Card, Column, DkButton, DkLink, DkTabButtons, ListRow, PageTitle, Statu
 import { useLinkDevices, type DevicesDemo } from "./useLinkDevices";
 import { PlatformLogo } from "../remote/MultistreamPanel";
 import { sendOnce } from "../remote/callDevice";
+import { Confirm, type ConfirmAsk } from "../remote/ui";
 
 // Tableau de bord : une colonne, dans l'ordre : état du direct, 4 chiffres, alertes (s'il y en a), graphique, appareils + formule.
 // Tout ce qui ne sert pas à décider ou agir vite est ailleurs (Statistiques, Serveurs, Direct).
@@ -18,20 +19,26 @@ import { sendOnce } from "../remote/callDevice";
 
 function StatusCard({ data, platforms, coreUrl, deviceIds }: { data: OverviewData; platforms: string[]; coreUrl: string; deviceIds: string[] }) {
   const { state, link } = useLiveStatus();
-  const [stop, setStop] = useState<"idle" | "confirm" | "busy">("idle");
-  const [stopError, setStopError] = useState("");
+  const [ask, setAsk] = useState<ConfirmAsk>(null);
+  const [busy, setBusy] = useState(false);
+  const [orderError, setOrderError] = useState("");
 
-  /** Envoie StopStream aux postes en ligne (celui qui ne diffuse pas refuse, ce n'est pas une erreur) ; le statut repasse « Hors ligne » par le flux du Core. */
-  async function endStream() {
-    setStop("busy");
-    setStopError("");
-    const results = await Promise.allSettled(deviceIds.map((id) => sendOnce(coreUrl, id, "StopStream")));
+  /** Envoie l'ordre aux postes en ligne (celui qui ne peut pas l'exécuter refuse, ce n'est pas une erreur tant qu'un autre accepte) ; le statut suit par le flux du Core. */
+  async function order(method: "StartStream" | "StopStream") {
+    setBusy(true);
+    setOrderError("");
+    const targets = method === "StartStream" ? deviceIds.slice(0, 1) : deviceIds; // un seul poste démarre, tous ceux qui diffusent s'arrêtent
+    const results = await Promise.allSettled(targets.map((id) => sendOnce(coreUrl, id, method)));
     if (deviceIds.length === 0 || results.every((r) => r.status === "rejected")) {
       const first = results.find((r): r is PromiseRejectedResult => r.status === "rejected");
-      setStopError(first ? (first.reason as Error).message : "Aucun poste OBS en ligne.");
+      setOrderError(first ? (first.reason as Error).message : "Aucun poste OBS en ligne.");
     }
-    setStop("idle");
+    setBusy(false);
   }
+  const confirmStop = () =>
+    setAsk({ title: "Terminer le stream ?", text: "Le direct s'arrête tout de suite pour tes spectateurs.", ok: "Terminer le stream", danger: true, run: () => void order("StopStream") });
+  const confirmStart = () =>
+    setAsk({ title: "Commencer le stream ?", text: "OBS commence à diffuser vers tes destinations avec la scène en cours.", ok: "Commencer le stream", run: () => void order("StartStream") });
   const clock = useLiveClock();
   const reconnecting = !!state?.reconnecting;
   const on = !!state?.live || reconnecting;
@@ -63,16 +70,15 @@ function StatusCard({ data, platforms, coreUrl, deviceIds }: { data: OverviewDat
           {on ? (
             <>
               <DkLink href="/dashboard/direct">Ouvrir le direct</DkLink>
-              <DkButton tone="danger" disabled={stop === "busy"} onClick={() => (stop === "confirm" ? void endStream() : setStop("confirm"))} onBlur={() => stop === "confirm" && setStop("idle")}>
-                {stop === "busy" ? "Arrêt…" : stop === "confirm" ? "Confirmer l'arrêt" : "Terminer le stream"}
-              </DkButton>
+              <DkButton tone="danger" disabled={busy} onClick={confirmStop}>{busy ? "Arrêt…" : "Terminer le stream"}</DkButton>
             </>
           ) : (
-            <DkLink href="/dashboard/direct" tone="primary">Lancer un direct</DkLink>
+            <DkButton tone="primary" disabled={busy || deviceIds.length === 0} onClick={confirmStart}>{busy ? "Démarrage…" : "Commencer le stream"}</DkButton>
           )}
         </div>
       </div>
-      {stopError && <p role="alert" className="mt-4 text-[14px]" style={{ color: "var(--dk-red)" }}>{stopError}</p>}
+      {orderError && <p role="alert" className="mt-4 text-[14px]" style={{ color: "var(--dk-red)" }}>{orderError}</p>}
+      <Confirm ask={ask} onClose={() => setAsk(null)} />
     </Card>
   );
 }

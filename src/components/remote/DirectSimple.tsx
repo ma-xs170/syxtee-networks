@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { DkButton } from "../dashboard/kit";
 import ProgramView from "./ProgramView";
 import { cx, dbToPct, Icon, KindIcon, kindLabel } from "./ui";
@@ -32,6 +32,47 @@ function Bar({ db, muted, label }: { db: number; muted: boolean; label: string }
 const fmtDb = (db: number) => (Number.isFinite(db) && db > -100 ? db.toFixed(1).replace(".", ",") : "-inf");
 const fmtInt = (n: number) => n.toLocaleString("fr-FR").replace(/[\u202f\u00a0]/g, " ");
 
+
+const HIST = 90;
+
+/** Débit de sortie : valeur en direct, moyenne et courbe des dernières mesures (une par seconde environ). */
+function Throughput({ kbps }: { kbps: number | null }) {
+  const [hist, setHist] = useState<number[]>([]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- l'historique suit la mesure reçue d'OBS
+    setHist((h) => (kbps == null ? (h.length ? [] : h) : [...h, kbps].slice(-HIST)));
+  }, [kbps]);
+  const W = 300;
+  const H = 64;
+  const max = Math.max(1000, ...hist) * 1.15;
+  const avg = hist.length ? hist.reduce((a, b) => a + b, 0) / hist.length : 0;
+  const y = (v: number) => H - 2 - (v / max) * (H - 6);
+  const pts = hist.map((v, i) => `${i ? "L" : "M"}${((i / (HIST - 1)) * W + W - (hist.length - 1) * (W / (HIST - 1))).toFixed(1)} ${y(v).toFixed(1)}`).join("");
+  const x0 = W - (hist.length - 1) * (W / (HIST - 1));
+  return (
+    <div className="flex h-full min-h-0 flex-col px-2 pt-1">
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="dk-mono text-[22px] leading-none text-foreground">{kbps != null ? `${fmtInt(kbps)} kbit/s` : "-"}</p>
+        {kbps != null && hist.length > 3 && <p className="dk-mono shrink-0 text-[11px] text-muted">moy. {fmtInt(Math.round(avg))} kbit/s</p>}
+      </div>
+      <div className="mt-2 min-h-10 flex-1 overflow-hidden rounded-lg border border-line">
+        {hist.length > 1 ? (
+          <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="size-full text-foreground" role="img" aria-label="Débit des dernières secondes">
+            <defs>
+              <linearGradient id="dk-flux-fade" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stopColor="currentColor" stopOpacity="0.2" />
+                <stop offset="1" stopColor="currentColor" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path d={`M0 ${y(avg)}H${W}`} stroke="currentColor" strokeOpacity="0.3" strokeDasharray="3 4" vectorEffect="non-scaling-stroke" />
+            <path d={`${pts}L${W} ${H}L${x0.toFixed(1)} ${H}Z`} fill="url(#dk-flux-fade)" />
+            <path d={pts} fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          </svg>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 
 function Dock({ title, aside, className, children }: { title: string; aside?: ReactNode; className?: string; children: ReactNode }) {
   return (
@@ -197,7 +238,7 @@ export default function DirectSimple({ o, onLive }: { o: Obs; onLive: () => void
             </div>
           </Dock>
           <Dock title="Flux">
-            <p className="dk-mono px-2 pt-1 text-[22px] text-foreground">{o.streaming && s?.kbps != null ? `${fmtInt(s.kbps)} kbit/s` : "-"}</p>
+            <Throughput kbps={o.streaming ? (s?.kbps ?? null) : null} />
           </Dock>
         </div>
       </div>

@@ -4,8 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useActionState, useEffect, useId, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
-import { siDiscord, siGoogle, siTwitch } from "@/lib/brand-icons";
-import { completeFirstLogin, requestPasswordReset, signInWithProvider, resendVerification, resetPassword, signIn, signUp, type AuthState } from "@/app/(auth)/actions";
+import { completeFirstLogin, requestPasswordReset, resendVerification, resetPassword, signIn, signUp, type AuthState } from "@/app/(auth)/actions";
 import { PASSWORD_MIN, passwordStrength, STRENGTH_LABEL } from "@/lib/auth/password";
 
 // Cartes d'authentification (email + mot de passe) : connexion, inscription, mot de passe oublié, nouveau mot de passe.
@@ -73,61 +72,6 @@ function Submit({ idle, busy, disabled = false }: { idle: string; busy: string; 
     >
       {pending ? busy : idle}
     </button>
-  );
-}
-
-const PROVIDERS = [
-  { id: "google", label: "Google", icon: siGoogle },
-  { id: "twitch", label: "Twitch", icon: siTwitch },
-  { id: "discord", label: "Discord", icon: siDiscord },
-] as const;
-
-/** Boutons Google / Twitch / Discord, sous le formulaire email. Formulaire distinct : l'email reste un choix à part entière. */
-function OAuthButtons({ next, solo = false }: { next: string; solo?: boolean }) {
-  return (
-    <div className={solo ? "mt-10" : "mt-8"}>
-      {!solo && (
-        <div className="flex items-center gap-4 text-xs text-foreground/50" role="separator">
-          <span className="h-px flex-1 bg-foreground/15" />
-          ou continue avec
-          <span className="h-px flex-1 bg-foreground/15" />
-        </div>
-      )}
-      <form action={signInWithProvider} className={solo ? "space-y-3" : "mt-5 grid grid-cols-3 gap-3"}>
-        <input type="hidden" name="next" value={next} />
-        {PROVIDERS.map((p) =>
-          p.id === "google" ? (
-            // Google : bientôt. Bouton désactivé (le serveur refuse aussi ce fournisseur).
-            <button
-              key={p.id}
-              type="button"
-              disabled
-              aria-label="Google : bientôt disponible"
-              className={`flex cursor-not-allowed items-center justify-center gap-2.5 rounded-xl border border-foreground/15 bg-foreground/[0.04] font-medium text-foreground/45 ${solo ? "h-12 w-full text-sm" : "h-12 text-sm"}`}
-            >
-              <span>{p.label}</span>
-              <span className="rounded border border-foreground/20 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em]">Bientôt</span>
-            </button>
-          ) : (
-          <button
-            key={p.id}
-            type="submit"
-            name="provider"
-            value={p.id}
-            aria-label={`Continuer avec ${p.label}`}
-            className={`flex items-center justify-center gap-2.5 rounded-xl border border-line-strong bg-surface-2 font-medium text-foreground transition-colors hover:bg-foreground/[0.14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.99] ${solo ? "h-12 w-full text-sm" : "h-12 text-sm"}`}
-          >
-            {p.id === "twitch" && (
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-                <path d={p.icon.path} />
-              </svg>
-            )}
-            {solo ? `Continuer avec ${p.label}` : <span>{p.label}</span>}
-          </button>
-          ),
-        )}
-      </form>
-    </div>
   );
 }
 
@@ -357,8 +301,6 @@ export function SignInCard({ next = "", error, email: prefill = "" }: { next?: s
         </div>
       </form>
 
-      <OAuthButtons next={next} />
-
       {message && (
         <div className="mt-4">
           <ErrorText>{message}</ErrorText>
@@ -453,8 +395,6 @@ export function SignUpCard({ next = "", error, email: prefill = "" }: { next?: s
           <Submit idle="Créer mon compte" busy="Création…" disabled={mismatch || passwordStrength(password) === 0} />
         </div>
       </form>
-
-      <OAuthButtons next={next} />
 
       {(state.status === "error" || error) && (
         <div className="mt-4">

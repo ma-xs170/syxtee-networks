@@ -4,7 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { DkButton } from "../dashboard/kit";
 import ProgramView from "./ProgramView";
 import { cx, dbToPct, Icon, KindIcon, kindLabel } from "./ui";
-import type { Obs } from "./useObs";
+import { MON_OFF, type Obs } from "./useObs";
 import type { Mix } from "./types";
 
 // Direct, grand écran : la disposition d'OBS Studio sur une page, sans défilement.
@@ -12,6 +12,8 @@ import type { Mix } from "./types";
 // Scènes, Sources, Mixer audio (colonnes verticales), Contrôles + Flux. Tout agit sur le vrai OBS du poste.
 // Raccourcis : 1 à 9 changent de scène, M coupe le micro.
 
+/** Jauge d'OBS : vert jusqu'à -20 dB, orange jusqu'à -9 dB, rouge au-delà. Rien n'est coloré tant que la source ne fait pas de bruit. */
+const METER = "linear-gradient(to top, var(--dk-green) 0 66%, var(--dk-amber) 66% 85%, var(--dk-red) 85% 100%)";
 const fmtDb = (db: number) => (Number.isFinite(db) && db > -100 ? db.toFixed(1).replace(".", ",") : "-inf");
 const fmtInt = (n: number) => n.toLocaleString("fr-FR").replace(/[\u202f\u00a0]/g, " ");
 
@@ -32,12 +34,14 @@ function Strip({ o, m }: { o: Obs; m: Mix }) {
   const level = o.levels[m.name] ?? -100;
   const value = Number.isFinite(m.db) ? Math.max(-60, Math.min(0, m.db)) : -60;
   const edit = o.ready && o.canScenes;
+  const listening = m.mon !== MON_OFF;
   return (
-    <li className="flex h-full w-[5.5rem] shrink-0 flex-col items-center gap-2 rounded-xl border border-line px-2 py-3">
+    <li className="flex h-full w-[6.25rem] shrink-0 flex-col items-center gap-2 rounded-xl border border-line px-2 py-3">
       <span className="w-full truncate text-center text-[12px] font-medium" title={m.name}>{m.name}</span>
       <div className="flex min-h-0 flex-1 items-stretch gap-2">
-        <div role="meter" aria-label={`Niveau ${m.name}`} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={Math.round(Math.max(-60, level))} className="relative w-1.5 overflow-hidden rounded-full bg-foreground/15">
-          <div className="absolute inset-x-0 bottom-0 rounded-full" style={{ height: `${m.muted ? 0 : dbToPct(level)}%`, background: "linear-gradient(to top, var(--dk-green) 75%, var(--dk-amber))" }} />
+        <div role="meter" aria-label={`Niveau ${m.name}`} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={Math.round(Math.max(-60, level))} className="relative w-1.5 overflow-hidden rounded-full">
+          <div className="absolute inset-0 opacity-20" style={{ background: METER }} />
+          <div className="absolute inset-0" style={{ background: METER, clipPath: `inset(${100 - (m.muted ? 0 : dbToPct(level))}% 0 0 0)` }} />
         </div>
         <input
           type="range"
@@ -59,17 +63,32 @@ function Strip({ o, m }: { o: Obs; m: Mix }) {
         />
       </div>
       <span className="dk-mono text-[12px] text-muted">{m.muted ? "Muet" : fmtDb(m.db)}</span>
-      <button
-        type="button"
-        disabled={!edit}
-        aria-pressed={m.muted}
-        aria-label={`${m.muted ? "Réactiver" : "Couper"} ${m.name}`}
-        onClick={() => o.toggleMute(m.name)}
-        className="grid size-9 place-items-center rounded-lg border disabled:opacity-40"
-        style={m.muted ? { borderColor: "var(--dk-red)", background: "color-mix(in srgb, var(--dk-red) 14%, transparent)", color: "var(--dk-red)" } : { borderColor: "var(--line-strong)" }}
-      >
-        <Icon name={m.muted ? "mic-off" : "mic"} />
-      </button>
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          disabled={!edit}
+          aria-pressed={m.muted}
+          aria-label={`${m.muted ? "Réactiver" : "Couper"} ${m.name}`}
+          title={m.muted ? "Réactiver le son" : "Couper le son"}
+          onClick={() => o.toggleMute(m.name)}
+          className="grid size-9 place-items-center rounded-lg border disabled:opacity-40"
+          style={m.muted ? { borderColor: "var(--dk-red)", background: "color-mix(in srgb, var(--dk-red) 14%, transparent)", color: "var(--dk-red)" } : { borderColor: "var(--line-strong)" }}
+        >
+          <Icon name={m.muted ? "mic-off" : "mic"} />
+        </button>
+        <button
+          type="button"
+          disabled={!edit}
+          aria-pressed={listening}
+          aria-label={`Pré-écoute de ${m.name}`}
+          title={listening ? "Arrêter la pré-écoute sur le PC" : "Pré-écoute : entendre cette piste sur le PC"}
+          onClick={() => o.toggleMonitor(m.name)}
+          className="grid size-9 place-items-center rounded-lg border disabled:opacity-40"
+          style={listening ? { borderColor: "var(--foreground)", background: "color-mix(in srgb, var(--foreground) 14%, transparent)" } : { borderColor: "var(--line-strong)" }}
+        >
+          <Icon name={listening ? "headphones" : "headphones-off"} />
+        </button>
+      </div>
     </li>
   );
 }

@@ -33,6 +33,7 @@
 #include <QSet>
 #include <QTimer>
 #include <algorithm>
+#include <iterator>
 #include <cmath>
 #include <functional>
 #include <map>
@@ -2105,8 +2106,10 @@ void onMain(std::function<void()> fn)
 struct Meter {
 	std::string name;
 	obs_volmeter_t *vm = nullptr;
-	float mag[MAX_AUDIO_CHANNELS]{}, peak[MAX_AUDIO_CHANNELS]{}, inpeak[MAX_AUDIO_CHANNELS]{};
+	// -200 dB au départ (silence) : à zéro, une source qui n'a encore rien émis serait envoyée à 0 dB, jauge pleine.
+	float mag[MAX_AUDIO_CHANNELS], peak[MAX_AUDIO_CHANNELS], inpeak[MAX_AUDIO_CHANNELS];
 	int channels = 0;
+	Meter() { std::fill(std::begin(mag), std::end(mag), -200.0f), std::fill(std::begin(peak), std::end(peak), -200.0f), std::fill(std::begin(inpeak), std::end(inpeak), -200.0f); }
 };
 QMutex meterLock, wiredLock;
 std::map<obs_source_t *, std::unique_ptr<Meter>> meters;

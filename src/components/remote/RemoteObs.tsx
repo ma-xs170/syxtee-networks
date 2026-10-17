@@ -237,26 +237,30 @@ function TopBar({ o, desktop, chatOn, showChat, onChat, onAuto, invited }: { o: 
           <span className="tabular-nums">{clock(o.stats?.streamMs ?? 0)}</span>
         </span>
       )}
+      {desktop && !o.guest && (
+        <div className="ml-3 flex min-w-0 items-center gap-3">
+          <span aria-hidden="true" className="h-5 w-px shrink-0 bg-line" />
+          <label className="flex shrink-0 items-center gap-2 text-[12px] text-muted">
+            <span className="max-xl:sr-only">Profil</span>
+            <select aria-label="Profil OBS" className={cx(field, "!h-7 !w-auto max-w-[9rem] !rounded-lg !px-2 !text-[12px]")} disabled={!o.ready || !o.canLive || o.profiles.list.length === 0} value={o.profiles.current} onChange={(e) => o.setProfile(e.target.value)}>
+              {o.profiles.list.map((p) => (
+                <option key={p}>{p}</option>
+              ))}
+            </select>
+          </label>
+          <label className="flex shrink-0 items-center gap-2 text-[12px] text-muted">
+            <span className="max-xl:sr-only">Collection</span>
+            <select aria-label="Collection de scènes" className={cx(field, "!h-7 !w-auto max-w-[9rem] !rounded-lg !px-2 !text-[12px]")} disabled={!o.ready || !o.canLive || o.collections.list.length === 0} value={o.collections.current} onChange={(e) => o.setCollection(e.target.value)}>
+              {o.collections.list.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+      )}
       <div className="ml-auto flex min-w-0 items-center gap-3">
         {desktop && !o.guest && (
           <>
-            <label className="flex shrink-0 items-center gap-2 text-[13px] text-muted">
-              <span className="max-2xl:sr-only">Profil</span>
-              <select aria-label="Profil OBS" className={cx(field, "!h-8 !w-auto max-w-[10rem]")} disabled={!o.ready || !o.canLive || o.profiles.list.length === 0} value={o.profiles.current} onChange={(e) => o.setProfile(e.target.value)}>
-                {o.profiles.list.map((p) => (
-                  <option key={p}>{p}</option>
-                ))}
-              </select>
-            </label>
-            <label className="flex shrink-0 items-center gap-2 text-[13px] text-muted">
-              <span className="max-2xl:sr-only">Collection</span>
-              <select aria-label="Collection de scènes" className={cx(field, "!h-8 !w-auto max-w-[10rem]")} disabled={!o.ready || !o.canLive || o.collections.list.length === 0} value={o.collections.current} onChange={(e) => o.setCollection(e.target.value)}>
-                {o.collections.list.map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
-              </select>
-            </label>
-            <span aria-hidden="true" className="h-5 w-px shrink-0 bg-line" />
             <span role="status" title={o.fluxName !== "" ? `Flux reçu : ${o.fluxName}` : undefined} className={cx("flex h-8 min-w-0 shrink items-center gap-2 rounded-full border border-line px-3 text-[13px]", o.fluxName === "" && "border-warn/50 text-warn")}>
               <span aria-hidden="true" className={cx("size-2 shrink-0 rounded-full", o.fluxName !== "" ? "bg-ok" : "bg-warn")} />
               <span className="truncate">{o.fluxName !== "" ? o.fluxName.replace(/^Flux\s*[›>]\s*/, "") : o.noFluxSource ? "Aucun flux dans OBS" : "Aucun flux reçu"}</span>

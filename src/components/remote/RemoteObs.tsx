@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState, useSyncExternalStore, type KeyboardEv
 import MultiChat, { type ChatDefaults } from "../dashboard/MultiChat";
 import AutoSheet from "./AutoSheet";
 import DirectDesk, { DirectBar } from "./DirectDesk";
+import DirectSimple from "./DirectSimple";
 import { SourceEditor } from "./EditTools";
 import { GuardianBar } from "./GuardianBar";
 import LivePanel from "./LivePanel";
@@ -85,6 +86,7 @@ export default function RemoteObs({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [edit, setEdit] = useState<"props" | "filters" | null>(null);
   const [ask, setAsk] = useState<ConfirmAsk>(null);
+  const [advanced, setAdvanced] = useState(false);
 
   // Chat : affiché ou non, choix gardé dans ce navigateur.
   useEffect(() => {
@@ -152,10 +154,19 @@ export default function RemoteObs({
       {desktop ? (
         <div className="flex min-h-0 flex-1">
           <main className="flex min-h-0 min-w-0 flex-1 flex-col">
-            <DirectBar o={o} onLive={onLive} onSettings={() => setSettingsOpen(true)} setAsk={setAsk} />
+            {advanced && <DirectBar o={o} onLive={onLive} onSettings={() => setSettingsOpen(true)} setAsk={setAsk} />}
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
               <AudioAlert o={o} />
-              <DirectDesk o={o} onEdit={setEdit} onLive={onLive} onSettings={() => setSettingsOpen(true)} />
+              {advanced ? (
+                <>
+                  <DirectDesk o={o} onEdit={setEdit} onLive={onLive} onSettings={() => setSettingsOpen(true)} />
+                  <p className="pb-6 text-center text-[13px] text-muted">
+                    <button type="button" onClick={() => setAdvanced(false)} className="underline underline-offset-4 hover:text-foreground">Vue simple</button>
+                  </p>
+                </>
+              ) : (
+                <DirectSimple o={o} onLive={onLive} onAdvanced={() => setAdvanced(true)} />
+              )}
             </div>
           </main>
           {chatBox && chatOn && (

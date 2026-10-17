@@ -42,10 +42,13 @@ const nextConfig: NextConfig = {
     const APP_PAGES = ["/dashboard", "/admin", "/bienvenue", "/cam"];
     const to = (base: string, sources: string[], from: string[]) =>
       from.flatMap((h) => sources.flatMap((src) => [{ source: src, has: host(h), destination: `${base}${src}`, permanent: true }, ...(src === "/cam" || src === "/bienvenue" || AUTH_PAGES.includes(src) ? [] : [{ source: `${src}/:path*`, has: host(h), destination: `${base}${src}/:path*`, permanent: true }])]));
+    // SUBDOMAINS=1 (Vercel, Production) : à activer seulement quand app. et auth. répondent (DNS + domaines ajoutés au projet).
+    const on = process.env.SUBDOMAINS === "1";
     const hostRoutes = [
       // Jamais de *.vercel.app en production : tout passe par le domaine (sauf les tâches planifiées de Vercel).
       ...(process.env.VERCEL_ENV === "production" ? [{ source: "/:path((?!api/cron).*)", has: host("(.+)\\.vercel\\.app"), destination: `${WWW}/:path`, permanent: true }] : []),
       { source: "/:path*", has: host(ROOT), destination: `${WWW}/:path*`, permanent: true },
+      ...(!on ? [] : [
       // Espace client et administration : toujours sur app.
       ...to(APP, APP_PAGES, [`www.${ROOT}`, `auth.${ROOT}`]),
       { source: "/controle-a-distance/:id([0-9a-f-]{36})", has: host(`www.${ROOT}`), destination: `${APP}/controle-a-distance/:id`, permanent: true },
@@ -53,6 +56,7 @@ const nextConfig: NextConfig = {
       ...to(AUTH, AUTH_PAGES, [`www.${ROOT}`, `app.${ROOT}`]),
       { source: "/", has: host(`app.${ROOT}`), destination: "/dashboard", permanent: false },
       { source: "/", has: host(`auth.${ROOT}`), destination: "/connexion", permanent: false },
+      ]),
     ];
     return [
       ...hostRoutes,

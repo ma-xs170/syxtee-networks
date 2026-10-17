@@ -1,0 +1,48 @@
+import type { Call } from "./useRemote";
+
+export type Item = { id: number; name: string; kind: string; on: boolean };
+export type Mix = { name: string; muted: boolean; db: number; mon: string; global: boolean };
+export type Trigger = "cut" | "cut_lowbitrate" | "sensitive";
+export type Provider = "none" | "mistral" | "anthropic" | "local";
+export type DirectorCam = { source: string; scene: string; label: string };
+/** Régie automatique du poste (secours, drone et autres prises, garde audio, régie IA). Les champs d'état sont envoyés par le plugin. */
+export type Roles = {
+  enabled: boolean;
+  source: string;
+  scene: string;
+  freezeSeconds: number;
+  recoverSeconds: number;
+  trigger: Trigger;
+  liveScene: string;
+  state?: string;
+  autoEnabled?: boolean;
+  droneScene?: string;
+  droneSource?: string;
+  autoRules?: { source: string; scene: string }[];
+  audioEnabled?: boolean;
+  audioSource?: string;
+  audioSeconds?: number;
+  audioUnmute?: boolean;
+  audioBackup?: boolean;
+  directorEnabled?: boolean;
+  directorKeySet?: boolean;
+  directorKey?: string;
+  directorClearKey?: boolean;
+  directorCams?: DirectorCam[];
+  directorRules?: string;
+  directorInterval?: number;
+  directorHold?: number;
+  directorState?: string;
+  directorCam?: number;
+  directorReason?: string;
+  directorWorkspaceId?: string;
+  directorProvider?: Provider;
+  directorModel?: string;
+  directorEco?: boolean;
+  lowLatency?: boolean;
+  audioState?: string;
+};
+export type Stats = { cpu: number; fps: number; kbps: number | null; dropped: number; total: number; encoder: string; congestion: number; streamMs: number; recMs: number };
+export type Named = { current: string; list: string[] };
+export type Rights = { prises: boolean; cams: number };
+export type { Call };

@@ -173,19 +173,19 @@ export default function ProgramVideo({
   return (
     <div className="relative h-full w-full">
       <video ref={video} autoPlay playsInline muted aria-label={`Programme : ${program}`} className={`absolute inset-0 h-full w-full object-contain ${phase === "playing" ? "opacity-100" : "opacity-0"}`} />
-      {phase === "connecting" && <div className="absolute inset-0 grid place-items-center text-[13px] text-neutral-400">Connexion à l&apos;aperçu…</div>}
+      {phase === "connecting" && <div className="absolute inset-0 grid place-items-center text-sm text-muted">Connexion à l&apos;aperçu…</div>}
       {phase === "failed" && (
-        <div role="alert" className="absolute inset-0 grid place-items-center text-center text-[13px] text-neutral-300">
+        <div role="alert" className="absolute inset-0 grid place-items-center text-center text-sm text-foreground/80">
           <div>
             <p>Aperçu indisponible{why ? ` (${why})` : ""}.</p>
-            <button type="button" onClick={retryNow} className="mt-3 h-8 rounded border border-neutral-600 px-4 hover:bg-neutral-800">
+            <button type="button" onClick={retryNow} className="mt-3 h-10 rounded-full btn-tonal px-5 text-sm">
               Réessayer
             </button>
           </div>
         </div>
       )}
       {showLatency && phase === "playing" && latency != null && (
-        <button type="button" title="Latence estimée (cliquer pour masquer)" onClick={() => setShowMs((s) => !s)} className="absolute bottom-2 right-2 rounded bg-black/60 px-1.5 py-0.5 text-[11px] tabular-nums text-neutral-400">
+        <button type="button" title="Latence estimée (cliquer pour masquer)" onClick={() => setShowMs((s) => !s)} className="absolute bottom-2 right-2 rounded bg-background/70 px-1.5 py-0.5 font-mono text-[11px] tabular-nums text-muted">
           {showMs ? `${latency} ms` : "ms"}
         </button>
       )}

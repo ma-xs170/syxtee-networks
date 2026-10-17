@@ -1,14 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { btnFlat as flat, field, Switch } from "./ui";
 
 // Édition à distance : tout passe par des demandes étroites du plugin (texte, lien, filtres, position, médias, replay, débit).
 // Rien ici ne crée ni ne supprime : les bornes sont aussi appliquées côté plugin.
 
-type Call = <T = Record<string, unknown>>(method: string, params?: Record<string, unknown>) => Promise<T>;
+import type { Call } from "./useRemote";
 
-const flat = "inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/[0.14] bg-[#16161a] text-[13px] text-neutral-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-colors hover:bg-[#1e1e23] disabled:opacity-40";
-const field = "h-8 rounded-lg border border-white/10 bg-white/[0.03] px-2 text-[13px] text-neutral-100 disabled:opacity-40";
 const MEDIA = new Set(["ffmpeg_source", "vlc_source", "slideshow", "slideshow_v2"]);
 
 /** Un ordre au plus toutes les 150 ms pendant un glissement, le dernier toujours envoyé (le Core limite les ordres par seconde). */
@@ -83,17 +82,17 @@ export function SourceEditor({ call, sceneName, itemId, name, kind, canEdit, onl
     }
   }
 
-  const arrow = "grid size-8 place-items-center rounded-lg border border-white/10 bg-white/[0.03] text-neutral-200 hover:bg-white/[0.08] disabled:opacity-40";
+  const arrow = "grid size-11 place-items-center rounded-lg border border-line bg-foreground/[0.04] text-foreground/80 transition-colors hover:bg-foreground/10 active:bg-foreground/15 disabled:opacity-40 sm:size-9";
   return (
-    <div className="mx-1 mb-1.5 space-y-3 rounded-lg border border-white/[0.08] bg-[#0f0f12] p-3 text-[13px]">
+    <div className="space-y-5 text-sm">
       {only !== "filters" && editable && (
         <div>
-          <label className="text-[12px] text-neutral-400" htmlFor={`ed-${itemId}`}>
+          <label className="text-[12px] text-muted" htmlFor={`ed-${itemId}`}>
             {editable.field === "text" ? "Texte" : "Adresse de la page (https://…)"}
           </label>
           <div className="mt-1 flex gap-2">
             {editable.field === "text" ? (
-              <textarea id={`ed-${itemId}`} rows={2} maxLength={2000} disabled={!canEdit} value={draft} onChange={(e) => setDraft(e.target.value)} className={`${field} h-auto min-h-16 flex-1 py-1.5`} />
+              <textarea id={`ed-${itemId}`} rows={2} maxLength={2000} disabled={!canEdit} value={draft} onChange={(e) => setDraft(e.target.value)} className={`${field} !h-auto min-h-16 flex-1 py-1.5`} />
             ) : (
               <input id={`ed-${itemId}`} type="url" inputMode="url" maxLength={2000} disabled={!canEdit} value={draft} onChange={(e) => setDraft(e.target.value)} className={`${field} min-w-0 flex-1`} />
             )}
@@ -106,7 +105,7 @@ export function SourceEditor({ call, sceneName, itemId, name, kind, canEdit, onl
 
       {only !== "filters" && tf && (
         <div>
-          <p className="text-[12px] text-neutral-400">Position et taille</p>
+          <p className="text-[12px] text-muted">Position et taille</p>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-2">
             <div className="grid grid-cols-3 gap-1" role="group" aria-label="Déplacer la source">
               <span />
@@ -120,15 +119,15 @@ export function SourceEditor({ call, sceneName, itemId, name, kind, canEdit, onl
               <span />
             </div>
             <div className="grid min-w-40 flex-1 gap-2">
-              <label className="flex items-center gap-2 text-[12px] text-neutral-400">
+              <label className="flex items-center gap-2 text-[12px] text-muted">
                 <span className="w-14 shrink-0">Taille</span>
-                <input type="range" min={10} max={300} step={1} disabled={!canEdit} value={Math.round(tf.scaleX * 100)} onChange={(e) => sendTf({ scaleX: Number(e.target.value) / 100, scaleY: Number(e.target.value) / 100 })} className="min-w-0 flex-1 accent-white" />
-                <span className="w-10 text-right tabular-nums text-neutral-300">{Math.round(tf.scaleX * 100)}%</span>
+                <input type="range" min={10} max={300} step={1} disabled={!canEdit} value={Math.round(tf.scaleX * 100)} onChange={(e) => sendTf({ scaleX: Number(e.target.value) / 100, scaleY: Number(e.target.value) / 100 })} className="min-w-0 flex-1 rm-range" />
+                <span className="w-10 text-right tabular-nums text-foreground/80">{Math.round(tf.scaleX * 100)}%</span>
               </label>
-              <label className="flex items-center gap-2 text-[12px] text-neutral-400">
+              <label className="flex items-center gap-2 text-[12px] text-muted">
                 <span className="w-14 shrink-0">Rotation</span>
-                <input type="range" min={-180} max={180} step={1} disabled={!canEdit} value={Math.round(tf.rotation)} onChange={(e) => sendTf({ rotation: Number(e.target.value) })} className="min-w-0 flex-1 accent-white" />
-                <span className="w-10 text-right tabular-nums text-neutral-300">{Math.round(tf.rotation)}°</span>
+                <input type="range" min={-180} max={180} step={1} disabled={!canEdit} value={Math.round(tf.rotation)} onChange={(e) => sendTf({ rotation: Number(e.target.value) })} className="min-w-0 flex-1 rm-range" />
+                <span className="w-10 text-right tabular-nums text-foreground/80">{Math.round(tf.rotation)}°</span>
               </label>
             </div>
           </div>
@@ -137,25 +136,15 @@ export function SourceEditor({ call, sceneName, itemId, name, kind, canEdit, onl
 
       {only !== "props" && filters.length > 0 && (
         <div>
-          <p className="text-[12px] text-neutral-400">Filtres</p>
+          <p className="text-[12px] text-muted">Filtres</p>
           <ul className="mt-1 space-y-1">
             {filters.map((f) => (
               <li key={f.filterName} className="flex items-center justify-between gap-2">
-                <span className={`min-w-0 truncate ${f.filterEnabled ? "text-neutral-100" : "text-neutral-500"}`}>{f.filterName}</span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={f.filterEnabled}
-                  aria-label={`Filtre ${f.filterName}`}
-                  disabled={!canEdit}
-                  onClick={() => {
+                <span className={`min-w-0 truncate ${f.filterEnabled ? "text-foreground" : "text-muted"}`}>{f.filterName}</span>
+                <Switch label={`Filtre ${f.filterName}`} on={f.filterEnabled} disabled={!canEdit} onClick={() => {
                     setFilters((l) => l.map((x) => (x.filterName === f.filterName ? { ...x, filterEnabled: !x.filterEnabled } : x)));
                     void call("SetSourceFilterEnabled", { sourceName: name, filterName: f.filterName, filterEnabled: !f.filterEnabled }).catch(fail);
-                  }}
-                  className={`relative h-6 w-11 shrink-0 rounded-full border transition-colors disabled:opacity-40 ${f.filterEnabled ? "border-[#3157d6] bg-[#2548b8]" : "border-white/15 bg-white/[0.06]"}`}
-                >
-                  <span aria-hidden="true" className={`absolute top-0.5 size-4.5 rounded-full bg-white transition-[left] ${f.filterEnabled ? "left-[1.4rem]" : "left-0.5"}`} />
-                </button>
+                  }} />
               </li>
             ))}
           </ul>
@@ -164,7 +153,7 @@ export function SourceEditor({ call, sceneName, itemId, name, kind, canEdit, onl
 
       {only !== "filters" && MEDIA.has(kind) && (
         <div>
-          <p className="text-[12px] text-neutral-400">Média</p>
+          <p className="text-[12px] text-muted">Média</p>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             {(
               [
@@ -184,9 +173,9 @@ export function SourceEditor({ call, sceneName, itemId, name, kind, canEdit, onl
         </div>
       )}
 
-      {(only === "filters" ? filters.length === 0 : only === "props" ? !editable && !tf && !MEDIA.has(kind) : !editable && !tf && filters.length === 0 && !MEDIA.has(kind)) && <p className="text-neutral-500">{only === "filters" ? "Aucun filtre sur cette source." : "Rien à modifier sur cette source."}</p>}
+      {(only === "filters" ? filters.length === 0 : only === "props" ? !editable && !tf && !MEDIA.has(kind) : !editable && !tf && filters.length === 0 && !MEDIA.has(kind)) && <p className="text-muted">{only === "filters" ? "Aucun filtre sur cette source." : "Rien à modifier sur cette source."}</p>}
       {msg && (
-        <p role="status" className="text-[12px] text-amber-200">
+        <p role="status" className="text-[13px] text-muted">
           {msg}
         </p>
       )}
@@ -224,12 +213,12 @@ export function LiveExtras({ call, streaming, canEdit }: { call: Call; streaming
 
   if (replay === null && !streaming) return null;
   return (
-    <section aria-label="Débit et replay" className="flex shrink-0 flex-col gap-2.5 rounded-xl border border-white/[0.08] bg-[#0b0b0d] p-3 text-[13px]">
+    <section aria-label="Débit et replay" className="flex shrink-0 flex-col gap-2.5 rounded-xl border border-line bg-surface p-3 text-[13px]">
       {streaming && kbps !== null && (
-        <label className="grid gap-1 text-neutral-300">
+        <label className="grid gap-1 text-foreground/80">
           <span className="flex items-baseline justify-between">
             <span>Débit vidéo du direct</span>
-            <span className="tabular-nums text-neutral-100">{kbps} kbit/s</span>
+            <span className="tabular-nums text-foreground">{kbps} kbit/s</span>
           </span>
           <input
             type="range"
@@ -243,14 +232,14 @@ export function LiveExtras({ call, streaming, canEdit }: { call: Call; streaming
               setKbps(v);
               throttle(() => void call("link.setBitrate", { kbps: v }).catch(fail));
             }}
-            className="accent-white"
+            className="rm-range"
           />
-          <span className="text-[11px] text-neutral-500">Appliqué tout de suite, jusqu&apos;à la fin du direct. Le réglage permanent est dans Paramètres.</span>
+          <span className="text-[11px] text-muted">Appliqué tout de suite, jusqu&apos;à la fin du direct. Le réglage permanent est dans Paramètres.</span>
         </label>
       )}
       {replay !== null && (
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="mr-auto text-neutral-300">Replay {replay ? "actif" : "arrêté"}</span>
+          <span className="mr-auto text-foreground/80">Replay {replay ? "actif" : "arrêté"}</span>
           <button type="button" disabled={!canEdit} onClick={() => void replayAct(replay ? "StopReplayBuffer" : "StartReplayBuffer")} className={`${flat} h-8 px-3.5`}>
             {replay ? "Arrêter" : "Démarrer"}
           </button>
@@ -260,7 +249,7 @@ export function LiveExtras({ call, streaming, canEdit }: { call: Call; streaming
         </div>
       )}
       {msg && (
-        <p role="status" className="text-[12px] text-amber-200">
+        <p role="status" className="text-[13px] text-muted">
           {msg}
         </p>
       )}

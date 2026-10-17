@@ -4,6 +4,7 @@ import { chromium } from "playwright";
 // Faux Core : même protocole que le vrai (hello / req / res / event) et mêmes formes de réponse que le plugin (voir obsctl.cpp).
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
 const out = process.argv[2] ?? "/tmp";
+const mixerTick = setInterval(() => {}, 1 << 30);
 
 const uiOrder = ["⏳ › ON COMMENCE BIENTÔT", "🔴 › EN DIRECT", "🎥 › DRONE", "📶 › CONNEXION PERDUE", "🔚 › FIN DE STREAM"];
 const st = { program: uiOrder[0], preview: uiOrder[1], studio: false, streaming: false, rec: false, paused: false, startedAt: 0, previewOn: true, profile: "Sans titre", collection: "SYXTEE" };
@@ -57,7 +58,7 @@ function handle(ws, m) {
 }
 
 const browser = await chromium.launch();
-const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: "dark", reducedMotion: "reduce" });
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: process.env.SCHEME ?? "dark", reducedMotion: "reduce" });
 const page = await ctx.newPage();
 page.on("pageerror", (e) => console.log("pageerror", e.message));
 page.on("console", (m) => m.type() === "error" && console.log("console.error", m.text().slice(0, 200)));
@@ -75,109 +76,124 @@ await page.routeWebSocket(/\/v1\/link\/remote/, (ws) => {
   });
 });
 
-const check = (name, cond) => console.log(cond ? "✔" : "✖", name);
+const check = (name, cond) => {
+  console.log(cond ? "✔" : "✖", name);
+  if (!cond) process.exitCode = 1;
+};
 await page.goto(`${BASE}/dev/vitrine/controle-obs`, { waitUntil: "load" });
-await page.waitForSelector("text=ON COMMENCE BIENTÔT", { timeout: 15000 });
+await page.waitForSelector("text=ON COMMENCE BIENTÔT", { timeout: 20000 });
 await page.waitForTimeout(1500);
 await page.screenshot({ path: `${out}/remote-1-desktop.png` });
-check("scènes réelles (emoji inclus)", (await page.locator('section[aria-label="Scènes"] button').allTextContents()).length === 5);
+check("scènes réelles (emoji inclus)", (await page.locator('section[aria-label="Scènes"] ul button').count()) === 5);
 check("profil et collection chargés", (await page.locator('select[aria-label="Profil OBS"]').inputValue()) === "Sans titre" && (await page.locator('select[aria-label="Collection de scènes"]').inputValue()) === "SYXTEE");
 check("état du flux : flux reçu avec son nom", (await page.getByText("Flux › IPHONE 16").count()) >= 1);
 
-// clic site → OBS
 await page.locator('section[aria-label="Scènes"] button', { hasText: "DRONE" }).click();
 await page.waitForTimeout(400);
 check("clic scène → OBS suit (appel)", calls.some((c) => c.startsWith("SetCurrentProgramScene") && c.includes("DRONE")));
 check("événement → programme mis à jour", (await page.locator('section[aria-label="Programme"] p').first().textContent())?.includes("DRONE"));
-// OBS → site
 socket.send(JSON.stringify({ type: "event", name: "CurrentProgramSceneChanged", data: { sceneName: "🔴 › EN DIRECT" } }));
 await page.waitForTimeout(500);
 check("changement dans OBS → le site suit", (await page.locator('section[aria-label="Programme"] p').first().textContent())?.includes("EN DIRECT"));
-await page.waitForTimeout(500);
-check("sources de la scène active", (await page.locator('section[aria-label="Sources de la scène"] li').count()) === 3);
+await page.waitForTimeout(600);
+check("sources de la scène active", (await page.locator('section[aria-label="Sources de la scène"] ul li').count()) === 3);
 check("type de source en français", (await page.locator('section[aria-label="Sources de la scène"]').textContent())?.includes("Média"));
 
-// œil
 await page.locator('button[aria-label="Masquer Titre"]').click();
 await page.waitForTimeout(300);
 check("œil → SetSceneItemEnabled", calls.some((c) => c.startsWith("SetSceneItemEnabled") && c.includes('"sceneItemEnabled":false')));
-// mixeur
-check("mixeur : 2 pistes audio (pas le texte)", (await page.locator('section[aria-label="Mélangeur audio"] li').count()) === 2);
+check("mixeur : 2 pistes audio (pas le texte)", (await page.locator('section[aria-label="Mélangeur audio"] ul li').count()) === 2);
 await page.getByRole("button", { name: "Couper Micro" }).click();
 await page.waitForTimeout(300);
-check("mute → SetInputMute + événement", (await page.getByRole("button", { name: "Réactiver Micro" }).count()) === 1);
+check("mute → bouton « Réactiver »", (await page.getByRole("button", { name: "Réactiver Micro" }).count()) === 1);
+// volume : un seul ordre toutes les 200 ms, le dernier toujours envoyé
+const before = calls.filter((c) => c.startsWith("SetInputVolume")).length;
+const fader = page.getByRole("slider", { name: "Volume Micro" });
+for (const v of ["-30", "-25", "-20", "-12"]) await fader.fill(v);
+await page.waitForTimeout(500);
+const vols = calls.filter((c) => c.startsWith("SetInputVolume")).slice(before);
+check("volume : ordres limités, le dernier envoyé", vols.length >= 1 && vols.length <= 3 && vols.at(-1).includes("-12"));
 
-// direct avec confirmation
-await page.getByRole("button", { name: "Partir en direct" }).first().click();
+await page.getByRole("button", { name: "Passer en direct" }).first().click();
 check("confirmation avant de partir en direct", await page.getByRole("heading", { name: "Partir en direct ?" }).isVisible());
 await page.screenshot({ path: `${out}/remote-2-confirm.png` });
 await page.locator("dialog button", { hasText: "Partir en direct" }).click();
 await page.waitForTimeout(1800);
 check("StartStream envoyé", calls.includes("StartStream"));
 check("état retour : en direct + durée", (await page.getByRole("button", { name: /Arrêter le direct · \d\d:\d\d:\d\d/ }).count()) === 1);
-check("panneau Flux : débit 5120 kbit/s", (await page.locator('section[aria-label="Flux"]').textContent())?.includes("5120 kbit/s"));
+check("mesures : débit 5120 kbit/s", (await page.locator('section[aria-label="Mesures du poste"]').textContent())?.includes("5120 kbit/s"));
 await page.screenshot({ path: `${out}/remote-3-live.png` });
-// profil refusé pendant le direct
 await page.locator('select[aria-label="Profil OBS"]').selectOption("Mobile 4G");
-await page.waitForTimeout(400);
-check("profil refusé pendant le direct : message d'OBS", (await page.getByRole("alert").first().textContent())?.includes("pendant un direct"));
-// arrêt avec confirmation
+await page.waitForTimeout(500);
+check("profil refusé pendant le direct : message d'OBS", (await page.getByText("pendant un direct").count()) >= 1);
 await page.getByRole("button", { name: /Arrêter le direct ·/ }).click();
 check("confirmation avant d'arrêter", await page.getByRole("heading", { name: "Arrêter le direct ?" }).isVisible());
 await page.locator("dialog button", { hasText: "Arrêter le direct" }).click();
 await page.waitForTimeout(500);
 check("StopStream envoyé", calls.includes("StopStream"));
-// enregistrement
-await page.getByRole("button", { name: "Démarrer l'enregistrement" }).click();
+await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
 await page.waitForTimeout(400);
 check("StartRecord envoyé", calls.includes("StartRecord"));
-// profil / collection
 await page.locator('select[aria-label="Collection de scènes"]').selectOption("LAWCY_TV");
 await page.waitForTimeout(500);
 check("collection → SetCurrentSceneCollection", calls.some((c) => c.startsWith("SetCurrentSceneCollection") && c.includes("LAWCY_TV")));
-// mode studio
-await page.getByRole("switch", { name: "Mode studio" }).click();
+await page.getByRole("switch", { name: "Mode Studio" }).click();
 await page.waitForTimeout(600);
 check("mode studio : aperçu + transition", (await page.getByRole("button", { name: "Transition" }).count()) === 1);
-await page.getByRole("switch", { name: "Mode studio" }).click();
-// Appareil
-await page.getByRole("button", { name: "Appareil" }).click();
+await page.screenshot({ path: `${out}/remote-4-studio.png` });
+await page.getByRole("switch", { name: "Mode Studio" }).click();
+// Régie
+await page.getByRole("button", { name: "Régie automatique" }).click();
 await page.waitForTimeout(300);
-await page.screenshot({ path: `${out}/remote-4-appareil.png` });
-check("popover Appareil : rôles, bascule, 3 déclenchements", (await page.getByText("Coupure et débit très bas").count()) === 1 && (await page.getByText("Sensible").count()) >= 1 && (await page.getByText("Scène Bug").count()) >= 1);
+await page.getByRole("button", { name: /Secours si ta connexion coupe/ }).click();
+await page.screenshot({ path: `${out}/remote-5-regie.png` });
+check("régie : sensibilité du secours", (await page.getByText("Coupure et débit très bas").count()) === 1);
 await page.getByLabel("Sensible", { exact: false }).first().check().catch(() => {});
 await page.keyboard.press("Escape");
-// couper l'aperçu
-await page.getByRole("button", { name: "Couper l'aperçu" }).click();
+await page.waitForTimeout(200);
+check("régie fermée avec Échap", (await page.locator("dialog[open]").count()) === 0);
+await page.getByRole("button", { name: "Couper l'aperçu" }).first().click();
 await page.waitForTimeout(400);
 check("Couper l'aperçu → link.setPreview", calls.some((c) => c.startsWith("link.setPreview") && c.includes("false")));
 check("aperçu coupé affiché", (await page.getByText("Aperçu coupé").count()) === 1);
-
-// perte de connexion explicite
+// OBS fermé puis rouvert
+socket.send(JSON.stringify({ type: "agent", online: false }));
+await page.waitForTimeout(400);
+check("OBS hors ligne : message + boutons désactivés", (await page.getByRole("alert").first().textContent())?.includes("plus en ligne") && (await page.getByRole("button", { name: "Passer en direct" }).first().isDisabled()));
+await page.screenshot({ path: `${out}/remote-6-offline.png` });
 await page.close();
+
 const mobile = await ctx.newPage();
+mobile.on("pageerror", (e) => console.log("pageerror", e.message));
 await mobile.setViewportSize({ width: 390, height: 844 });
 await mobile.routeWebSocket(/\/v1\/link\/remote/, (ws) => {
   ws.onMessage((raw) => {
     const m = JSON.parse(String(raw));
-    if (m.type === "hello") ws.send(JSON.stringify({ type: "ready", agent: { online: true, id: "d1", name: "OBS-DJ-SYXTEE.local", platform: "darwin", version: "0.4.0", since: Date.now() - 39000 } }));
+    if (m.type === "hello") ws.send(JSON.stringify({ type: "ready", agent: { online: true, id: "d1", name: "OBS-DJ-SYXTEE.local", platform: "darwin", version: "0.9.0", since: Date.now() - 39000 } }));
     else if (m.type === "req") handle(ws, m);
   });
+  setInterval(() => ws.send(JSON.stringify({ type: "event", name: "link.levels", data: { Micro: -14, "Flux › IPHONE 16": -30 } })), 300);
 });
 await mobile.goto(`${BASE}/dev/vitrine/controle-obs`, { waitUntil: "load" });
 await mobile.waitForSelector("text=ON COMMENCE");
 await mobile.waitForTimeout(1200);
-await mobile.screenshot({ path: `${out}/remote-5-mobile.png`, fullPage: true });
-await mobile.getByRole("button", { name: "Réglages" }).click();
-await mobile.waitForTimeout(300);
-await mobile.screenshot({ path: `${out}/remote-6-mobile-appareil.png` });
+await mobile.screenshot({ path: `${out}/remote-7-mobile-scenes.png` });
+for (const [tab, file] of [["Sources", "sources"], ["Audio", "audio"], ["Direct", "direct"], ["Multi", "multi"]]) {
+  await mobile.getByRole("tab", { name: tab }).click();
+  await mobile.waitForTimeout(350);
+  await mobile.screenshot({ path: `${out}/remote-8-mobile-${file}.png` });
+}
+await mobile.getByRole("button", { name: "Régie automatique" }).click();
+await mobile.waitForTimeout(400);
+await mobile.screenshot({ path: `${out}/remote-9-mobile-regie.png` });
 await mobile.keyboard.press("Escape");
-await mobile.getByRole("tab", { name: "Mixer" }).click();
-await mobile.waitForTimeout(300);
-await mobile.screenshot({ path: `${out}/remote-7-mobile-mixer.png` });
 await mobile.setViewportSize({ width: 844, height: 390 });
 await mobile.waitForTimeout(500);
-await mobile.screenshot({ path: `${out}/remote-8-mobile-paysage.png` });
+await mobile.screenshot({ path: `${out}/remote-10-mobile-paysage.png` });
 await mobile.setViewportSize({ width: 390, height: 844 });
 check("mobile : pas de défilement horizontal", await mobile.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
-process.exit(0);
+const small = await mobile.evaluate(() => [...document.querySelectorAll("button:not(:disabled), [role=tab], select, input")].filter((b) => b.getBoundingClientRect().width > 0 && b.getBoundingClientRect().height < 38 && !b.closest("[data-nextjs-dev-tools-button], nextjs-portal")).map((b) => `${b.tagName} ${b.getAttribute("aria-label") ?? b.textContent?.slice(0, 20)} ${Math.round(b.getBoundingClientRect().height)}`));
+if (small.length) console.log(small.join("\n"));
+check("mobile : cibles tactiles >= 38 px", small.length === 0);
+clearInterval(mixerTick);
+process.exit(process.exitCode ?? 0);

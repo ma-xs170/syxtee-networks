@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { btnFlat as flat, btnLive, btnPrimary } from "./ui";
 import { siFacebook, siInstagram, siKick, siTiktok, siTwitch, siX, siYoutube } from "simple-icons";
 
 // Multistream : envoyer le même direct vers d'autres plateformes, en un clic par logo (comme Aitum Multistream).
@@ -11,7 +12,7 @@ export type MsOutput = { id: string; name: string; service: string; server: stri
 /** Le service réglé dans OBS (Réglages, Stream) : sa clé ne quitte jamais le PC. */
 export type MsMain = { configured: boolean; service: string; server: string; active: boolean };
 export type MsState = { outputs: MsOutput[]; mainActive: boolean; main?: MsMain };
-type Call = <T = Record<string, unknown>>(method: string, params?: Record<string, unknown>) => Promise<T | null>;
+type Call = <T = Record<string, unknown>>(method: string, params?: Record<string, unknown>) => Promise<T>;
 
 type Preset = { id: string; label: string; server: string; /** L'adresse change selon le compte ou la région : à renseigner. */ custom?: boolean; hint: string; icon?: { hex: string; path: string }; letter?: string; color?: string };
 
@@ -53,8 +54,7 @@ export function PlatformLogo({ id, size = 28 }: { id: string; size?: number }) {
   );
 }
 
-const flat = "inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/[0.14] bg-[#16161a] text-[13px] text-neutral-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-colors hover:bg-[#1e1e23] disabled:opacity-40";
-const input = "h-9 w-full rounded border border-[#2e2e2e] bg-[#111] px-2.5 text-[13px] text-neutral-100 placeholder:text-neutral-600";
+const input = "h-11 w-full rounded-lg border border-line bg-input px-3 text-base text-foreground placeholder:text-faint focus-visible:border-foreground/50 focus-visible:outline-none sm:h-10 sm:text-sm";
 
 function Broadcast({ on }: { on: boolean }) {
   return (
@@ -88,8 +88,8 @@ export default function MultistreamPanel({ state, call, ready, canControl, canEd
   const mainId = main ? detectPlatform(main.service, main.server) : "other";
   const mainName = main ? (main.service && !/^(custom|personnalis)/i.test(main.service) ? main.service : preset(mainId).label) : "";
   return (
-    <section aria-label="Multistream" className="flex min-h-0 min-w-0 flex-col rounded-xl border border-white/[0.08] bg-[#0b0b0d]">
-      <div className="flex items-center justify-between gap-2 border-b border-[#262626] px-3 py-2">
+    <section aria-label="Multistream" className="flex min-h-0 min-w-0 flex-col rounded-xl border border-line bg-surface">
+      <div className="flex items-center justify-between gap-2 border-b border-line px-3 py-2">
         <h2 className="text-[13px] font-semibold">Multistream</h2>
         {canEdit && (
           <button type="button" disabled={!ready} onClick={() => setDialog({ step: "pick", service: "" })} className={`${flat} h-7 gap-1 px-3.5`}>
@@ -99,12 +99,12 @@ export default function MultistreamPanel({ state, call, ready, canControl, canEd
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
         {main && (
-          <div className="mb-1.5 rounded-md border border-[#262626] bg-[#0b0b0b] p-2">
+          <div className="mb-1.5 rounded-lg border border-line bg-surface-2 p-2.5">
             <div className="flex items-center gap-2.5">
               <PlatformLogo id={mainId} size={32} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[13px] font-medium">{mainName}</p>
-                <p className={`text-[12px] ${main.active ? "text-emerald-400" : "text-neutral-500"}`}>Direct d&apos;OBS · {main.active ? "En direct" : "Arrêté"}</p>
+                <p className={`text-[13px] ${main.active ? "text-ok" : "text-muted"}`}>Direct d&apos;OBS · {main.active ? "En direct" : "Arrêté"}</p>
               </div>
               <button
                 type="button"
@@ -123,7 +123,7 @@ export default function MultistreamPanel({ state, call, ready, canControl, canEd
                     setBusy(null);
                   }
                 }}
-                className={`grid h-9 w-12 place-items-center rounded border transition-colors disabled:opacity-40 ${main.active ? "border-red-700 bg-red-700 text-white" : "border-[#2e2e2e] bg-[#141414] text-neutral-200 hover:bg-[#1d1d1d]"}`}
+                className={`grid h-11 w-14 place-items-center rounded-lg border transition-colors disabled:opacity-40 ${main.active ? "border-live bg-live/10 text-live" : "border-line bg-surface-2 text-foreground/80 hover:bg-foreground/10"}`}
               >
                 <Broadcast on={main.active} />
               </button>
@@ -131,22 +131,22 @@ export default function MultistreamPanel({ state, call, ready, canControl, canEd
           </div>
         )}
         {outputs.length === 0 ? (
-          <div className="grid place-items-center px-3 py-6 text-center text-[13px] text-neutral-500">
+          <div className="grid place-items-center px-3 py-6 text-center text-[13px] text-muted">
             <p>{main ? "Aucune autre sortie." : "Aucune sortie."}</p>
-            <p className="mt-1 text-[12px]">{canEdit ? "Ajoute une autre plateforme : choisis son logo, colle ta clé de stream, c'est prêt." : "Le propriétaire n'a pas encore ajouté de plateforme."}</p>
+            <p className="mt-1 text-[13px]">{canEdit ? "Ajoute une autre plateforme : choisis son logo, colle ta clé de stream, c'est prêt." : "Le propriétaire n'a pas encore ajouté de plateforme."}</p>
           </div>
         ) : (
           <ul className="grid gap-1.5">
             {outputs.map((o) => (
-              <li key={o.id} className="rounded-md border border-[#262626] bg-[#0b0b0b] p-2">
+              <li key={o.id} className="rounded-lg border border-line bg-surface-2 p-2.5">
                 <div className="flex items-center gap-2.5">
                   <PlatformLogo id={o.service} size={32} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[13px] font-medium">{o.name}</p>
-                    <p className={`text-[12px] ${o.error ? "text-amber-300" : o.active ? "text-emerald-400" : "text-neutral-500"}`}>{o.error ? o.error : o.starting ? "Connexion…" : o.active ? "En direct" : "Arrêté"}{o.viaMain && !o.error ? " · direct d'OBS" : ""}</p>
+                    <p className={`text-[13px] ${o.error ? "text-warn" : o.active ? "text-ok" : "text-muted"}`}>{o.error ? o.error : o.starting ? "Connexion…" : o.active ? "En direct" : "Arrêté"}{o.viaMain && !o.error ? " · direct d'OBS" : ""}</p>
                   </div>
                   {canEdit && !o.active && !o.starting && (
-                    <button type="button" aria-label={`Modifier ${o.name}`} title="Modifier" onClick={() => setDialog({ step: "form", editing: o, service: o.service })} className="grid size-9 place-items-center rounded text-neutral-400 hover:bg-[#1d1d1d]">
+                    <button type="button" aria-label={`Modifier ${o.name}`} title="Modifier" onClick={() => setDialog({ step: "form", editing: o, service: o.service })} className="grid size-11 place-items-center rounded-lg text-muted hover:bg-foreground/10">
                       <span aria-hidden="true">⚙</span>
                     </button>
                   )}
@@ -157,7 +157,7 @@ export default function MultistreamPanel({ state, call, ready, canControl, canEd
                     aria-label={o.active || o.starting ? `Arrêter ${o.name}` : `Lancer ${o.name}`}
                     title={o.active || o.starting ? `Arrêter ${o.name}` : `Lancer ${o.name}`}
                     onClick={() => void act(o.active || o.starting ? "link.multistreamStop" : "link.multistreamStart", o.id)}
-                    className={`grid h-9 w-12 place-items-center rounded border transition-colors disabled:opacity-40 ${o.active ? "border-red-700 bg-red-700 text-white" : o.starting ? "border-amber-600 text-amber-300" : "border-[#2e2e2e] bg-[#141414] text-neutral-200 hover:bg-[#1d1d1d]"}`}
+                    className={`grid h-11 w-14 place-items-center rounded-lg border transition-colors disabled:opacity-40 ${o.active ? "border-live bg-live/10 text-live" : o.starting ? "border-warn/50 text-warn" : "border-line bg-surface-2 text-foreground/80 hover:bg-foreground/10"}`}
                   >
                     <Broadcast on={o.active} />
                   </button>
@@ -166,9 +166,9 @@ export default function MultistreamPanel({ state, call, ready, canControl, canEd
             ))}
           </ul>
         )}
-        {(outputs.length > 0 || main) && <p className="mt-2 px-1 text-[12px] text-neutral-500">{main ? "La plateforme réglée dans OBS est déjà ci-dessus : inutile de l'ajouter. " : ""}Lancer une autre sortie démarre aussi le direct d&apos;OBS ; il s&apos;arrête avec la dernière sortie.</p>}
+        {(outputs.length > 0 || main) && <p className="mt-2 px-1 text-[13px] text-muted">{main ? "La plateforme réglée dans OBS est déjà ci-dessus : inutile de l'ajouter. " : ""}Lancer une autre sortie démarre aussi le direct d&apos;OBS ; il s&apos;arrête avec la dernière sortie.</p>}
         {error && (
-          <p role="alert" className="mt-2 px-1 text-[12px] text-amber-300">
+          <p role="alert" className="mt-2 px-1 text-[13px] text-warn">
             {error}
           </p>
         )}
@@ -226,12 +226,12 @@ function OutputDialog({ dialog, setDialog, call, onChange }: { dialog: { step: "
   }
 
   return (
-    <dialog ref={ref} onClose={() => setDialog(null)} onClick={(ev) => ev.target === ref.current && setDialog(null)} aria-label="Sortie multistream" className="m-auto max-h-[92dvh] w-[min(34rem,calc(100vw-1.5rem))] overflow-y-auto rounded-md border border-[#333] bg-[#0b0b0b] p-0 text-neutral-100 backdrop:bg-black/70">
+    <dialog ref={ref} onClose={() => setDialog(null)} onClick={(ev) => ev.target === ref.current && setDialog(null)} aria-label="Sortie multistream" className="m-auto max-h-[92dvh] w-[min(34rem,calc(100vw-1.5rem))] overflow-y-auto rounded-2xl border border-line bg-background p-0 text-foreground backdrop:bg-background/70">
       <div className="p-4 sm:p-5">
         {dialog.step === "pick" ? (
           <>
             <h2 className="text-[15px] font-semibold">Ajouter une sortie</h2>
-            <p className="mt-1 text-[13px] text-neutral-400">Choisis la plateforme. Si elle n&apos;est pas dans la liste, prends « Autre service ».</p>
+            <p className="mt-1 text-[13px] text-muted">Choisis la plateforme. Si elle n&apos;est pas dans la liste, prends « Autre service ».</p>
             <ul className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {PRESETS.map((x) => (
                 <li key={x.id}>
@@ -243,7 +243,7 @@ function OutputDialog({ dialog, setDialog, call, onChange }: { dialog: { step: "
                       setServer(n.server);
                       setDialog({ step: "form", service: x.id });
                     }}
-                    className="flex min-h-[5.5rem] w-full flex-col items-center justify-center gap-2 rounded-md border border-[#262626] bg-[#141414] p-2 text-[13px] hover:border-[#444] hover:bg-[#1d1d1d]"
+                    className="flex min-h-[5.5rem] w-full flex-col items-center justify-center gap-2 rounded-lg border border-line bg-surface-2 p-2 text-[13px] hover:border-line-strong hover:bg-foreground/10"
                   >
                     <PlatformLogo id={x.id} size={36} />
                     <span className="max-w-full truncate">{x.label}</span>
@@ -252,7 +252,7 @@ function OutputDialog({ dialog, setDialog, call, onChange }: { dialog: { step: "
               ))}
             </ul>
             <div className="mt-4">
-              <button type="button" onClick={() => setDialog(null)} className={`${flat} h-9 px-4`}>
+              <button type="button" onClick={() => setDialog(null)} className={`${flat} h-10 px-4`}>
                 Annuler
               </button>
             </div>
@@ -268,46 +268,46 @@ function OutputDialog({ dialog, setDialog, call, onChange }: { dialog: { step: "
               <PlatformLogo id={dialog.service} size={36} />
               <h2 className="text-[15px] font-semibold">{e ? `Modifier ${e.name}` : p.label}</h2>
             </div>
-            <p className="mt-2 text-[12px] leading-relaxed text-neutral-400">{p.hint}</p>
+            <p className="mt-2 text-[13px] leading-relaxed text-muted">{p.hint}</p>
             <div className="mt-4 grid gap-3">
-              <label className="grid gap-1 text-[12px] text-neutral-400">
+              <label className="grid gap-1 text-[13px] text-muted">
                 Nom
                 <input value={name} onChange={(x) => setName(x.target.value)} maxLength={40} required className={input} />
               </label>
-              <label className="grid gap-1 text-[12px] text-neutral-400">
+              <label className="grid gap-1 text-[13px] text-muted">
                 Adresse du serveur {p.custom ? "" : "(déjà remplie)"}
-                <input value={server} onChange={(x) => setServer(x.target.value)} required placeholder="rtmp://…  ou  rtmps://…" inputMode="url" autoCapitalize="none" autoCorrect="off" spellCheck={false} className={`${input} font-mono text-[12px]`} />
+                <input value={server} onChange={(x) => setServer(x.target.value)} required placeholder="rtmp://…  ou  rtmps://…" inputMode="url" autoCapitalize="none" autoCorrect="off" spellCheck={false} className={`${input} font-mono text-[13px]`} />
               </label>
-              <label className="grid gap-1 text-[12px] text-neutral-400">
+              <label className="grid gap-1 text-[13px] text-muted">
                 Clé de stream {e?.hasKey ? "(laisse vide pour garder la clé actuelle)" : ""}
                 <span className="flex gap-2">
-                  <input value={key} onChange={(x) => setKey(x.target.value)} type={show ? "text" : "password"} required={!e?.hasKey} autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} className={`${input} font-mono text-[12px]`} />
+                  <input value={key} onChange={(x) => setKey(x.target.value)} type={show ? "text" : "password"} required={!e?.hasKey} autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} className={`${input} font-mono text-[13px]`} />
                   <button type="button" onClick={() => setShow((s) => !s)} className={`${flat} h-9 shrink-0 px-3`}>
                     {show ? "Masquer" : "Voir"}
                   </button>
                 </span>
               </label>
             </div>
-            <p className="mt-3 text-[12px] text-neutral-500">La clé reste sur ton ordinateur, dans OBS. Elle n&apos;est jamais renvoyée vers le site.</p>
+            <p className="mt-3 text-[13px] text-muted">La clé reste sur ton ordinateur, dans OBS. Elle n&apos;est jamais renvoyée vers le site.</p>
             {err && (
-              <p role="alert" className="mt-3 text-[13px] text-amber-300">
+              <p role="alert" className="mt-3 text-[13px] text-warn">
                 {err}
               </p>
             )}
             <div className="mt-5 flex flex-wrap items-center gap-2">
-              <button type="submit" disabled={pending} className={`${flat} h-9 px-4 !border-white/30 !bg-white/[0.14] !text-white`}>
+              <button type="submit" disabled={pending} className={btnPrimary()}>
                 {pending ? "Enregistrement…" : "Enregistrer"}
               </button>
               {!e && (
-                <button type="button" onClick={() => setDialog({ step: "pick", service: "" })} className={`${flat} h-9 px-4`}>
+                <button type="button" onClick={() => setDialog({ step: "pick", service: "" })} className={`${flat} h-10 px-4`}>
                   Retour
                 </button>
               )}
-              <button type="button" onClick={() => setDialog(null)} className={`${flat} h-9 px-4`}>
+              <button type="button" onClick={() => setDialog(null)} className={`${flat} h-10 px-4`}>
                 Annuler
               </button>
               {e && (
-                <button type="button" disabled={pending} onClick={() => void remove()} className={`${flat} ml-auto h-9 px-4 !text-red-300`}>
+                <button type="button" disabled={pending} onClick={() => void remove()} className={`${btnLive()} ml-auto`}>
                   Supprimer
                 </button>
               )}

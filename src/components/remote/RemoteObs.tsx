@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
 import AutoSheet from "./AutoSheet";
+import { GuardianBar } from "./GuardianBar";
 import DirectSimple from "./DirectSimple";
 import { SourceEditor } from "./EditTools";
 import LivePanel from "./LivePanel";
@@ -22,7 +23,7 @@ import { useObs, type Obs } from "./useObs";
 // Grand écran : aperçu, quatre docks (scènes, sources, mélangeur, commandes/multistream), chat à droite, barre d'état en bas.
 // Téléphone : aperçu fixe en haut, un panneau à la fois choisi dans la barre du bas ; en paysage, l'aperçu passe à gauche.
 
-type Tab = "scenes" | "sources" | "mixer" | "live" | "multi" | "chat";
+type Tab = "scenes" | "sources" | "mixer" | "live";
 
 const subscribe = (cb: () => void) => {
   const q = window.matchMedia("(min-width: 1024px)");
@@ -77,6 +78,7 @@ export default function RemoteObs({
   const [tab, setTab] = useState<Tab>("scenes");
   const [autoOpen, setAutoOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const [edit, setEdit] = useState<"props" | "filters" | null>(null);
   const [ask, setAsk] = useState<ConfirmAsk>(null);
 
@@ -108,7 +110,7 @@ export default function RemoteObs({
 
   return (
     <div className="flex h-dvh w-full min-w-0 max-w-[100vw] flex-col overflow-hidden overscroll-none bg-background pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] text-sm text-foreground [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [touch-action:manipulation] max-lg:pb-[env(safe-area-inset-bottom)]">
-      <TopBar o={o} desktop={desktop} onAuto={() => setAutoOpen(true)} invited={!!invite} />
+      <TopBar o={o} desktop={desktop} onAuto={() => setAutoOpen(true)} onOptions={() => setOptionsOpen(true)} invited={!!invite} />
       {!desktop && <StatusStrip o={o} desktop={desktop} />}
       <Alerts o={o} invited={!!invite} />
 
@@ -162,6 +164,33 @@ export default function RemoteObs({
 
 
       <AutoSheet o={o} open={autoOpen} onClose={() => setAutoOpen(false)} />
+      <Sheet open={optionsOpen && !desktop} onClose={() => setOptionsOpen(false)} title="Options" size="sm">
+        <div className="grid gap-2">
+          {!invite && (
+            <button type="button" disabled={!o.roles} onClick={() => { setOptionsOpen(false); setAutoOpen(true); }} className={cx(btn("md"), "!w-full justify-start")}>
+              <span aria-hidden="true" className={cx("size-2 rounded-full", o.roles && (o.roles.enabled || o.roles.autoEnabled) ? "bg-ok" : "border border-faint")} />
+              Régie automatique
+            </button>
+          )}
+          {o.owner && (
+            <button type="button" disabled={!o.ready} onClick={() => { setOptionsOpen(false); setSettingsOpen(true); }} className={cx(btn("md"), "!w-full justify-start")}>
+              <Icon name="settings" className="size-4" />
+              Paramètres d&apos;OBS
+            </button>
+          )}
+          {o.collections.list.length > 1 && (
+            <label className="grid gap-1 text-[13px] text-muted">
+              Collection de scènes
+              <select className={field} disabled={!o.ready || !o.canLive} value={o.collections.current} onChange={(e) => o.setCollection(e.target.value)}>
+                {o.collections.list.map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
+              </select>
+            </label>
+          )}
+          {o.link === "on" && o.owner && <div className="-mx-2 -mt-2"><GuardianBar guardian={o.guardian} agentOnline={o.agent.online} call={o.call} /></div>}
+        </div>
+      </Sheet>
       <Sheet open={settingsOpen && o.owner} onClose={() => setSettingsOpen(false)} title="Paramètres d'OBS" size="lg">
         {settingsOpen && <SettingsPanel call={o.call} streaming={o.streaming} canRestart={o.guardian.online} onRestart={() => void o.run("guardian.restartObs")} onClose={() => setSettingsOpen(false)} />}
       </Sheet>
@@ -234,7 +263,7 @@ function CollectionMenu({ o }: { o: Obs }) {
 
 // ── Barre du haut ────────────────────────────────────────────────────────────────────────────────────────────────────
 
-function TopBar({ o, desktop, onAuto, invited }: { o: Obs; desktop: boolean; onAuto: () => void; invited: boolean }) {
+function TopBar({ o, desktop, onAuto, onOptions, invited }: { o: Obs; desktop: boolean; onAuto: () => void; onOptions: () => void; invited: boolean }) {
   const autoOn = !!o.roles && (o.roles.enabled || !!o.roles.autoEnabled);
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b border-line px-3 lg:h-12 lg:px-3.5">
@@ -276,11 +305,16 @@ function TopBar({ o, desktop, onAuto, invited }: { o: Obs; desktop: boolean; onA
             Invité · {o.guest.label} · {o.guest.level === "view" ? "lecture seule" : o.guest.level === "scenes" ? "scènes et son" : "tous les droits"}
           </p>
         )}
-        {!o.guest && !invited && (
+        {!o.guest && !invited && desktop && (
           <button type="button" disabled={!o.roles} onClick={onAuto} aria-label="Régie automatique" className={btn("sm")}>
             <span aria-hidden="true" className={cx("size-2 rounded-full", autoOn ? "bg-ok" : "border border-faint")} />
-            <span className="sm:hidden">Régie</span>
-            <span className="max-sm:hidden">Régie auto</span>
+            Régie auto
+          </button>
+        )}
+        {!desktop && !o.guest && (
+          <button type="button" onClick={onOptions} aria-haspopup="dialog" className={btn("sm")}>
+            <Icon name="settings" className="size-4" />
+            Options
           </button>
         )}
       </div>
@@ -295,7 +329,7 @@ function StatusStrip({ o, desktop }: { o: Obs; desktop: boolean }) {
   const received = o.fluxName !== "";
   const ok = !status;
   return (
-    <div className="mx-2 mt-2 flex h-12 shrink-0 items-center gap-3 overflow-x-auto rounded-xl max-sm:h-auto max-sm:flex-wrap max-sm:gap-x-3 max-sm:gap-y-2 max-sm:overflow-visible max-sm:py-2.5 border border-line bg-surface px-3 no-scrollbar">
+    <div className="mx-2 mt-2 flex h-10 shrink-0 items-center gap-3 overflow-x-auto rounded-xl border border-line bg-surface px-3 text-[13px] no-scrollbar">
       <span role="status" className="flex shrink-0 items-center gap-2 whitespace-nowrap font-medium" title={o.latency != null ? `${o.latency} ms` : undefined}>
         <span aria-hidden="true" className={cx("size-2 rounded-full", ok ? "bg-ok" : o.link === "connecting" ? "bg-warn" : "bg-bad")} />
         {o.agent.name ?? "OBS"}

@@ -1,6 +1,6 @@
 {
-  "0.9.1": [
-    "Destinations : qualité par sortie (1080p, 720p ou 480p avec son propre encodeur), choisie depuis le site"
+  "0.9.2": [
+    "Destinations : format vertical 9:16 (bêta) en plus de la qualité par sortie, choisis depuis le site"
   ],
   "0.9.0": [
     "Contrôle à distance : onglet Paramètres comme OBS (sortie, vidéo, audio, avancé), édition d'une source (texte, lien, filtres, position, taille, rotation, médias), débit du direct à chaud et tampon de relecture"
@@ -121,5 +121,8 @@
     "Sauvegardes légères : un fichier n'est stocké qu'une fois, importable depuis le site",
     "Bascule automatique : déclenchement par flux (coupure, débit très bas, sensible)",
     "Renouvellement automatique de la connexion"
+  ],
+  "0.9.1": [
+    "Destinations : qualité par sortie (1080p, 720p ou 480p avec son propre encodeur), choisie depuis le site"
   ]
 }

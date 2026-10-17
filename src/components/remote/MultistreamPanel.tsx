@@ -8,7 +8,7 @@ import { siFacebook, siInstagram, siKick, siTiktok, siTwitch, siX, siYoutube } f
 // Les sorties vivent dans le plugin SYXTEE Link, sur le PC d'OBS ; la clé de stream y reste, elle n'est jamais renvoyée ici.
 // Chaque plateforme a son adresse de serveur toute prête ; on ne renseigne que la clé (et l'adresse pour celles qui en varient).
 
-export type MsOutput = { id: string; name: string; service: string; server: string; hasKey: boolean; /** "", "1080p", "720p" ou "480p" : vide = mêmes encodeurs que le direct. */ quality?: string; active: boolean; starting: boolean; error: string; /** Même clé que le service d'OBS : lancer cette sortie lance le direct d'OBS. */ viaMain?: boolean };
+export type MsOutput = { id: string; name: string; service: string; server: string; hasKey: boolean; /** "", "1080p", "720p" ou "480p" : vide = mêmes encodeurs que le direct. */ quality?: string; /** "vertical" : image 9:16 sur un canevas à part ; vide = horizontal 16:9. */ orientation?: string; active: boolean; starting: boolean; error: string; /** Même clé que le service d'OBS : lancer cette sortie lance le direct d'OBS. */ viaMain?: boolean };
 /** Le service réglé dans OBS (Réglages, Stream) : sa clé ne quitte jamais le PC. */
 export type MsMain = { configured: boolean; service: string; server: string; active: boolean };
 export type MsState = { outputs: MsOutput[]; mainActive: boolean; main?: MsMain };
@@ -186,6 +186,7 @@ export function OutputDialog({ dialog, setDialog, call, onChange }: { dialog: { 
   const [server, setServer] = useState(e?.server ?? p.server);
   const [key, setKey] = useState("");
   const [quality, setQuality] = useState(e?.quality ?? "");
+  const [vertical, setVertical] = useState(e?.orientation === "vertical");
   const [show, setShow] = useState(false);
   const [err, setErr] = useState("");
   const [pending, setPending] = useState(false);
@@ -199,7 +200,7 @@ export function OutputDialog({ dialog, setDialog, call, onChange }: { dialog: { 
     setPending(true);
     setErr("");
     try {
-      const r = await call<MsState>("link.multistreamSave", { id: e?.id, name, service: dialog.service, server, key, quality });
+      const r = await call<MsState>("link.multistreamSave", { id: e?.id, name, service: dialog.service, server, key, quality, orientation: vertical ? "vertical" : "horizontal" });
       if (r) {
         onChange(r);
         setDialog(null);
@@ -290,9 +291,13 @@ export function OutputDialog({ dialog, setDialog, call, onChange }: { dialog: { 
               </label>
               <fieldset className="grid gap-1.5 text-[13px] text-muted">
                 <legend className="mb-1.5">Format</legend>
-                <span className="flex flex-wrap gap-2">
-                  <span className="inline-flex h-10 items-center gap-2 rounded-lg border border-foreground/40 bg-surface-2 px-3 text-foreground">Horizontal (16:9) <span aria-hidden="true">✓</span></span>
-                  <span aria-disabled="true" className="inline-flex h-10 items-center gap-2 rounded-lg border border-line px-3 opacity-50">Vertical (9:16) <span className="rounded-md bg-foreground/10 px-1.5 py-0.5 font-mono text-[11px]">Bientôt</span></span>
+                <span className="flex flex-wrap gap-2" role="radiogroup" aria-label="Format">
+                  {([[false, "Horizontal (16:9)", ""], [true, "Vertical (9:16)", "Bêta"]] as const).map(([v, label, tag]) => (
+                    <button key={label} type="button" role="radio" aria-checked={vertical === v} onClick={() => setVertical(v)} className={`inline-flex h-10 items-center gap-2 rounded-lg border px-3 ${vertical === v ? "border-foreground/40 bg-surface-2 text-foreground" : "border-line hover:border-line-strong"}`}>
+                      {label} {vertical === v && <span aria-hidden="true">✓</span>}
+                      {tag && <span className="rounded-md bg-foreground/10 px-1.5 py-0.5 font-mono text-[11px]">{tag}</span>}
+                    </button>
+                  ))}
                 </span>
               </fieldset>
               <label className="grid gap-1 text-[13px] text-muted">

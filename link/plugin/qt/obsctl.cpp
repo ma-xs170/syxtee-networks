@@ -762,6 +762,10 @@ struct MsOut {
 	QString id, name, service, server, key;
 	// Qualité propre à cette sortie : "" = mêmes encodeurs que le direct principal, sinon "1080p", "720p" ou "480p" (encodeurs à elle).
 	QString quality;
+	// "horizontal" (défaut) ou "vertical" (9:16) : le vertical a son propre canevas, rempli avec les sources de la scène du direct, recadrées au centre.
+	QString orientation;
+	obs_canvas_t *canvas = nullptr;
+	obs_scene_t *vscene = nullptr;
 	obs_output_t *out = nullptr;
 	obs_service_t *svc = nullptr;
 	obs_encoder_t *video = nullptr, *audio = nullptr; // encodeurs à nous (null : ceux du direct principal)
@@ -818,7 +822,7 @@ MsOut *msFind(const QString &id)
 void msSave()
 {
 	QJsonArray arr;
-	for (auto &o : msOuts) arr.append(Json{{"id", o->id}, {"name", o->name}, {"service", o->service}, {"server", o->server}, {"key", o->key}, {"quality", o->quality}});
+	for (auto &o : msOuts) arr.append(Json{{"id", o->id}, {"name", o->name}, {"service", o->service}, {"server", o->server}, {"key", o->key}, {"quality", o->quality}, {"orientation", o->orientation}});
 	QFile f(msPath());
 	if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) return;
 	f.setPermissions(QFile::ReadOwner | QFile::WriteOwner);
@@ -840,6 +844,7 @@ void msLoad()
 		o->server = j.value("server").toString();
 		o->key = j.value("key").toString();
 		o->quality = j.value("quality").toString();
+		o->orientation = j.value("orientation").toString();
 		if (!o->id.isEmpty()) msOuts.push_back(std::move(o));
 	}
 }
@@ -876,9 +881,9 @@ Json msListJson()
 	const bool mainOn = mainOverride >= 0 ? mainOverride == 1 : (mainReady() || obs_frontend_streaming_active());
 	QJsonArray arr;
 	for (auto &o : msOuts) {
-		const bool same = !ms.key.isEmpty() && ms.key == o->key;
+		const bool same = !ms.key.isEmpty() && ms.key == o->key && o->orientation != "vertical";
 		const bool active = o->viaMain ? (o->active && mainOn) : o->active;
-		arr.append(Json{{"id", o->id}, {"name", o->name}, {"service", o->service}, {"server", o->server}, {"hasKey", !o->key.isEmpty()}, {"quality", o->quality}, {"active", active}, {"starting", o->starting}, {"error", o->error}, {"viaMain", same}});
+		arr.append(Json{{"id", o->id}, {"name", o->name}, {"service", o->service}, {"server", o->server}, {"hasKey", !o->key.isEmpty()}, {"quality", o->quality}, {"orientation", o->orientation}, {"active", active}, {"starting", o->starting}, {"error", o->error}, {"viaMain", same}});
 	}
 	return Json{{"outputs", arr}, {"mainActive", obs_frontend_streaming_active()}, {"main", Json{{"configured", ms.configured}, {"service", ms.service}, {"server", ms.server}, {"active", mainOn}}}};
 }
@@ -896,6 +901,10 @@ void msRelease(MsOut *o)
 	obs_output_t *out = o->out;
 	obs_encoder_t *video = o->video, *audio = o->audio;
 	obs_service_t *svc = o->svc;
+	obs_canvas_t *canvas = o->canvas;
+	obs_scene_t *vscene = o->vscene;
+	o->canvas = nullptr;
+	o->vscene = nullptr;
 	o->out = nullptr;
 	o->video = o->audio = nullptr;
 	o->svc = nullptr;
@@ -905,8 +914,8 @@ void msRelease(MsOut *o)
 		signal_handler_disconnect(sh, "start", msStartedCb, o);
 		signal_handler_disconnect(sh, "stop", msStoppedCb, o);
 	}
-	if (!out && !video && !audio && !svc) return;
-	std::thread([out, video, audio, svc] {
+	if (!out && !video && !audio && !svc && !canvas) return;
+	std::thread([out, video, audio, svc, canvas, vscene] {
 		if (out) {
 			obs_output_force_stop(out);
 			obs_output_release(out);
@@ -914,6 +923,11 @@ void msRelease(MsOut *o)
 		if (video) obs_encoder_release(video);
 		if (audio) obs_encoder_release(audio);
 		if (svc) obs_service_release(svc);
+		if (canvas) {
+			if (vscene) obs_canvas_scene_remove(vscene);
+			obs_canvas_remove(canvas);
+			obs_canvas_release(canvas);
+		}
 	}).detach();
 }
 
@@ -953,6 +967,59 @@ void msStoppedCb(void *param, calldata_t *cd)
 	});
 }
 
+// ── Sortie verticale 9:16 : canevas privé dont la scène reprend les sources du programme, agrandies pour remplir la hauteur et recadrées au centre.
+struct VertCtx {
+	obs_scene_t *dst;
+	float s, offX;
+};
+
+bool vertCopyItem(obs_scene_t *, obs_sceneitem_t *it, void *p)
+{
+	auto *c = static_cast<VertCtx *>(p);
+	if (!obs_sceneitem_visible(it)) return true;
+	obs_sceneitem_t *n = obs_scene_add(c->dst, obs_sceneitem_get_source(it));
+	if (!n) return true;
+	obs_transform_info ti;
+	obs_sceneitem_get_info2(it, &ti);
+	ti.pos.x = ti.pos.x * c->s - c->offX;
+	ti.pos.y *= c->s;
+	ti.scale.x *= c->s;
+	ti.scale.y *= c->s;
+	ti.bounds.x *= c->s;
+	ti.bounds.y *= c->s;
+	obs_sceneitem_set_info2(n, &ti);
+	obs_sceneitem_crop cr;
+	obs_sceneitem_get_crop(it, &cr);
+	obs_sceneitem_set_crop(n, &cr);
+	return true;
+}
+
+bool vertCollect(obs_scene_t *, obs_sceneitem_t *it, void *p)
+{
+	static_cast<std::vector<obs_sceneitem_t *> *>(p)->push_back(it);
+	return true;
+}
+
+/** Recopie la scène du direct dans le canevas vertical (au démarrage et à chaque changement de scène). */
+void msVertSync(MsOut *o)
+{
+	if (!o->canvas || !o->vscene) return;
+	obs_video_info main;
+	obs_video_info cv;
+	if (!obs_get_video_info(&main) || !obs_canvas_get_video_info(o->canvas, &cv) || main.base_height == 0) return;
+	std::vector<obs_sceneitem_t *> old;
+	obs_scene_enum_items(o->vscene, vertCollect, &old);
+	for (obs_sceneitem_t *it : old) obs_sceneitem_remove(it);
+	obs_source_t *cur = obs_frontend_get_current_scene();
+	if (!cur) return;
+	if (obs_scene_t *sc = obs_scene_from_source(cur)) {
+		const float s = static_cast<float>(cv.base_height) / static_cast<float>(main.base_height);
+		VertCtx c{o->vscene, s, (static_cast<float>(main.base_width) * s - static_cast<float>(cv.base_width)) / 2.0f};
+		obs_scene_enum_items(sc, vertCopyItem, &c);
+	}
+	obs_source_release(cur);
+}
+
 /** Démarre la sortie (le direct principal tourne). Lève Fail en cas d'échec. */
 void msStartNow(MsOut *o)
 {
@@ -980,7 +1047,8 @@ void msStartNow(MsOut *o)
 		}
 		obs_output_release(main);
 	}
-	if (mainVideo && mainAudio && o->quality.isEmpty()) {
+	const bool vertical = o->orientation == "vertical";
+	if (mainVideo && mainAudio && o->quality.isEmpty() && !vertical) {
 		obs_output_set_video_encoder(o->out, mainVideo);
 		obs_output_set_audio_encoder(o->out, mainAudio, 0);
 	} else {
@@ -991,7 +1059,7 @@ void msStartNow(MsOut *o)
 		}
 		obs_data_t *vs = obs_data_create();
 		// Qualité choisie : hauteur de l'image et débit vidéo ; sinon 6000 kbit/s à la taille du canevas.
-		const int qh = o->quality == "1080p" ? 1080 : o->quality == "720p" ? 720 : o->quality == "480p" ? 480 : 0;
+		const int qh = o->quality == "1080p" ? 1080 : o->quality == "720p" ? 720 : o->quality == "480p" ? 480 : vertical ? 1080 : 0;
 		obs_data_set_int(vs, "bitrate", qh == 1080 ? 6000 : qh == 720 ? 3500 : qh == 480 ? 1500 : 6000);
 		obs_data_set_string(vs, "rate_control", "CBR");
 		obs_data_set_int(vs, "keyint_sec", 2);
@@ -1006,9 +1074,29 @@ void msStartNow(MsOut *o)
 			msRelease(o);
 			throw Fail{"L'encodeur n'a pas démarré."};
 		}
-		obs_encoder_set_video(o->video, obs_get_video());
 		obs_encoder_set_audio(o->audio, obs_get_audio());
-		if (qh > 0) {
+		if (vertical) {
+			// Canevas privé 9:16 (largeur = qh, hauteur = qh × 16/9), même cadence que le principal.
+			obs_video_info vi;
+			if (!obs_get_video_info(&vi)) {
+				msRelease(o);
+				throw Fail{"Impossible de lire la vidéo d'OBS."};
+			}
+			vi.base_width = vi.output_width = static_cast<uint32_t>(qh);
+			vi.base_height = vi.output_height = static_cast<uint32_t>(qh * 16 / 9) & ~1u;
+			o->canvas = obs_canvas_create_private((std::string("syxtee_ms_cv_") + o->id.toStdString()).c_str(), &vi, 0);
+			if (!o->canvas) {
+				msRelease(o);
+				throw Fail{"OBS ne peut pas créer le canevas vertical (OBS 31 ou plus requis)."};
+			}
+			o->vscene = obs_canvas_scene_create(o->canvas, "vertical");
+			if (o->vscene) obs_canvas_set_channel(o->canvas, 0, obs_scene_get_source(o->vscene));
+			msVertSync(o);
+			obs_encoder_set_video(o->video, obs_canvas_get_video(o->canvas));
+		} else {
+			obs_encoder_set_video(o->video, obs_get_video());
+		}
+		if (qh > 0 && !vertical) {
 			obs_video_info vi;
 			if (obs_get_video_info(&vi) && vi.base_height > 0) {
 				const uint32_t w = (static_cast<uint32_t>(qh) * vi.base_width / vi.base_height) & ~1u;
@@ -1044,7 +1132,7 @@ Json msStart(const QString &id)
 	// Même clé que le direct d'OBS : on ne rouvre pas une seconde connexion (Twitch la refuse), on lance simplement le direct d'OBS.
 	{
 		const MainService ms = mainService();
-		if (!ms.key.isEmpty() && ms.key == o->key) {
+		if (!ms.key.isEmpty() && ms.key == o->key && o->orientation != "vertical") {
 			o->viaMain = true;
 			if (mainReady()) {
 				o->active = true;
@@ -1174,6 +1262,7 @@ Json msSaveOutput(const Json &d)
 	o->server = server;
 	const QString quality = d.value("quality").toString();
 	o->quality = (quality == "1080p" || quality == "720p" || quality == "480p") ? quality : QString();
+	o->orientation = d.value("orientation").toString() == "vertical" ? QString("vertical") : QString();
 	if (!key.isEmpty()) o->key = key.left(512); // vide : on garde la clé déjà enregistrée
 	msSave();
 	return msListJson();
@@ -2195,6 +2284,10 @@ void frontendEvent(enum obs_frontend_event e, void *)
 		emitEvent("CurrentProfileChanged", Json{{"profileName", [] { char *c = obs_frontend_get_current_profile(); const QString s = q(c); bfree(c); return s; }()}});
 		break;
 	case OBS_FRONTEND_EVENT_SCENE_CHANGED:
+		onMain([] {
+			for (auto &o : msOuts)
+				if (o->canvas && (o->active || o->starting)) msVertSync(o.get());
+		});
 		emitEvent("CurrentProgramSceneChanged", Json{{"sceneName", currentSceneName(obs_frontend_get_current_scene)}});
 		break;
 	case OBS_FRONTEND_EVENT_PREVIEW_SCENE_CHANGED:

@@ -113,7 +113,7 @@ export function DailyBars({ days }: { days: Overview["daily"] }) {
                 aria-label={`${fmtDay(d.day)} : ${d.minutes ? fmtDuration(d.minutes * 60) : "pas de direct"}`}
               >
                 <span
-                  className={`block w-full rounded-t-[2px] transition-colors ${d.minutes ? (hover === i ? "bg-info/70" : "bg-info/45") : "bg-foreground/20"} group-focus-visible:ring-2 group-focus-visible:ring-foreground/50`}
+                  className={`block w-full rounded-t-[2px] transition-colors ${d.minutes ? (hover === i ? "bg-foreground/40" : "bg-foreground/20") : "bg-foreground/20"} group-focus-visible:ring-2 group-focus-visible:ring-foreground/50`}
                   style={{ height: d.minutes ? `${Math.max(2, (d.minutes / max) * 100)}%` : "2px" }}
                 />
               </button>

@@ -28,3 +28,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+
+## Polices intégrées au plugin OBS (link/plugin/qt/studio_assets.h)
+
+- Inter (Rasmus Andersson), SIL Open Font License 1.1.
+- Geist Mono (Vercel), SIL Open Font License 1.1.

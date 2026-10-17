@@ -72,7 +72,7 @@ export async function signUp(_prev: AuthState, f: FormData): Promise<AuthState> 
   const { data: created, error } = await supabase.auth.signUp({
     email: email.data,
     password,
-    options: { emailRedirectTo: await confirmUrl(safeNext(str(f, "next"), "")), data: { first_name: first.data, last_name: last.data } },
+    options: { emailRedirectTo: await confirmUrl(safeNext(str(f, "next"), "")), data: { first_name: first.data, last_name: last.data, ...(safeNext(str(f, "next"), "") ? { next: safeNext(str(f, "next"), "") } : {}) } },
   });
   // Les conditions viennent d'être acceptées (case cochée) : on garde la version, la fenêtre ne s'affichera pas à la première visite.
   if (!error && created.user?.identities?.length) await recordTerms(created.user.id).catch(() => {});

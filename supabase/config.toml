@@ -6,11 +6,14 @@ project_id = "syxtee-networks"
 
 [auth]
 # Domaine de production (à remplacer par le domaine final).
-site_url = "https://syxtee-networks.vercel.app"
+site_url = "https://www.syxtee-networks.fr"
 # Connexion par email + mot de passe : 10 caractères minimum (jauge et vérification des fuites côté site).
 minimum_password_length = 10
 # Retours autorisés après un lien reçu par email ou la liaison Twitch : production, previews Vercel, dev, tests e2e.
 additional_redirect_urls = [
+  "https://www.syxtee-networks.fr/auth/**",
+  "https://auth.syxtee-networks.fr/auth/**",
+  "https://app.syxtee-networks.fr/auth/**",
   "https://syxtee-networks.vercel.app/auth/**",
   "https://*-dj-syxtee.vercel.app/auth/**",
   "http://localhost:3000/auth/**",

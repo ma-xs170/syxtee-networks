@@ -9,7 +9,7 @@ import { site } from "@/lib/site";
 // Les liens pointent vers /auth/confirm avec token_hash : ils marchent dans n'importe quel navigateur.
 
 type Payload = {
-  user: { email: string; new_email?: string; user_metadata?: { first_name?: string } };
+  user: { email: string; new_email?: string; user_metadata?: { first_name?: string; next?: string } };
   email_data: {
     token: string;
     token_hash: string;
@@ -22,15 +22,24 @@ type Payload = {
 
 const fail = (status: number, message: string) => NextResponse.json({ error: { http_code: status, message } }, { status });
 
-/** Lien /auth/confirm : on garde le « next » demandé par le site (redirect_to, déjà validé par Supabase). */
-function confirmLink(d: Payload["email_data"], tokenHash: string, type: string) {
+/** Hôtes du site : un « redirect_to » ailleurs (ancien domaine, liste Supabase pas à jour) est ignoré. */
+const trusted = (u: URL) => /(^|\.)syxtee-networks\.fr$/.test(u.hostname) || u.hostname === "localhost";
+
+/**
+ * Lien /auth/confirm : on garde le « next » demandé par le site (redirect_to), sinon celui gardé dans le compte à l'inscription
+ * (user_metadata.next). Si Supabase a remplacé redirect_to par son site_url (adresse absente de sa liste), le lien reste sur notre domaine
+ * et l'invitation n'est pas perdue.
+ */
+function confirmLink(d: Payload["email_data"], tokenHash: string, type: string, savedNext?: string) {
   let url: URL;
   try {
     url = new URL(d.redirect_to);
+    if (!trusted(url)) throw new Error("hôte inconnu");
     if (url.pathname !== "/auth/confirm") url = new URL("/auth/confirm", url.origin);
   } catch {
-    url = new URL("/auth/confirm", d.site_url || site.url);
+    url = new URL("/auth/confirm", site.url);
   }
+  if (!url.searchParams.get("next") && savedNext && savedNext.startsWith("/") && !savedNext.startsWith("//") && !savedNext.startsWith("/\\")) url.searchParams.set("next", savedNext);
   url.searchParams.set("token_hash", tokenHash);
   url.searchParams.set("type", type);
   return url.toString();
@@ -52,7 +61,7 @@ export async function POST(request: NextRequest) {
   const out: [string, Email][] = [];
   switch (d.email_action_type) {
     case "signup":
-      out.push([user.email, verifyEmail({ url: confirmLink(d, d.token_hash, "signup"), firstName: first })]);
+      out.push([user.email, verifyEmail({ url: confirmLink(d, d.token_hash, "signup", user.user_metadata?.next), firstName: first })]);
       break;
     case "recovery":
       out.push([user.email, resetPassword({ url: confirmLink(d, d.token_hash, "recovery") })]);

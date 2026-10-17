@@ -81,3 +81,43 @@ export function sendOnce(coreUrl: string, deviceId: string, method: string, para
       .catch(() => end(() => reject(new Error("Session expirée : recharge la page."))));
   });
 }
+
+/** Suit l'état du stream d'un poste OBS (état actuel puis changements) ; `null` = poste injoignable. Renvoie la fonction d'arrêt. Sert au tableau de bord. */
+export function watchStream(coreUrl: string, deviceId: string, onState: (streaming: boolean | null) => void): () => void {
+  let ws: WebSocket | null = null;
+  let stopped = false;
+  let retry: ReturnType<typeof setTimeout> | undefined;
+  const open = () => {
+    coreToken()
+      .then((access) => {
+        if (stopped) return;
+        const w = new WebSocket(`${coreUrl.replace(/^http/, "ws")}/v1/link/remote`);
+        ws = w;
+        w.onopen = () => w.send(JSON.stringify({ type: "hello", access, device: deviceId, workspace: activeWorkspace() }));
+        w.onmessage = (ev) => {
+          const m = JSON.parse(String(ev.data));
+          if (m.type === "ready") {
+            if (!m.agent?.online || m.agent.id !== deviceId) return onState(null);
+            w.send(JSON.stringify({ type: "req", id: "s1", method: "GetStreamStatus", params: {} }));
+          } else if (m.type === "res" && m.id === "s1") onState(m.ok ? !!m.result?.outputActive : null);
+          else if (m.type === "event" && m.name === "StreamStateChanged") onState(!!m.data?.outputActive);
+          else if (m.type === "agent" && !m.online) onState(null);
+        };
+        w.onclose = () => {
+          if (stopped) return;
+          onState(null);
+          retry = setTimeout(open, 5000);
+        };
+        w.onerror = () => {};
+      })
+      .catch(() => {
+        if (!stopped) retry = setTimeout(open, 5000);
+      });
+  };
+  open();
+  return () => {
+    stopped = true;
+    clearTimeout(retry);
+    ws?.close();
+  };
+}

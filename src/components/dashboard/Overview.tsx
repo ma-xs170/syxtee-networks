@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { delta, fmtAgo, fmtDuration, fmtInt, type Overview as OverviewData, type Range } from "@/lib/dashboard-data";
 import { pluginState } from "@/lib/plugin";
 import { DailyBars } from "./charts";
 import { apiFetch } from "./apiFetch";
 import { Card, Column, DkButton, DkLink, DkTabButtons, ListRow, PageTitle, StatusBadge } from "./kit";
 import { useLinkDevices, type DevicesDemo } from "./useLinkDevices";
-import { sendOnce } from "../remote/callDevice";
+import { sendOnce, watchStream } from "../remote/callDevice";
 import { Confirm, type ConfirmAsk } from "../remote/ui";
 
 // Tableau de bord : une colonne, dans l'ordre : état du direct, 4 chiffres, alertes (s'il y en a), graphique, appareils + formule.
@@ -20,26 +20,37 @@ function StatusCard({ data, coreUrl, deviceIds }: { data: OverviewData; coreUrl:
   const [busy, setBusy] = useState(false);
   const [orderError, setOrderError] = useState("");
 
+  const device = deviceIds[0] ?? "";
+  /** État réel d'OBS (suivi en direct) : `null` tant qu'inconnu ou poste hors ligne. */
+  const [streaming, setStreaming] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!device) return;
+    return watchStream(coreUrl, device, setStreaming);
+  }, [coreUrl, device]);
+  const live = device ? streaming : null;
+
   /** Envoie l'ordre au premier poste OBS en ligne ; le vrai direct est celui d'OBS (une source qui émet vers le serveur n'est pas un direct). */
-  async function start() {
+  async function order(method: "StartStream" | "StopStream") {
     setBusy(true);
     setOrderError("");
-    const results = await Promise.allSettled(deviceIds.slice(0, 1).map((id) => sendOnce(coreUrl, id, "StartStream")));
-    if (deviceIds.length === 0 || results.every((r) => r.status === "rejected")) {
-      const first = results.find((r): r is PromiseRejectedResult => r.status === "rejected");
-      setOrderError(first ? (first.reason as Error).message : "Aucun poste OBS en ligne.");
+    try {
+      await sendOnce(coreUrl, device, method);
+    } catch (e) {
+      setOrderError(device ? (e as Error).message : "Aucun poste OBS en ligne.");
     }
     setBusy(false);
   }
-  const confirmStart = () =>
-    setAsk({ title: "Êtes-vous sûr(e) ?", yesNo: true, text: "OBS commence à diffuser vers tes destinations avec la scène en cours.", ok: "Commencer le stream", run: () => void start() });
+  const confirmOrder = () =>
+    live
+      ? setAsk({ title: "Êtes-vous sûr(e) ?", yesNo: true, text: "OBS arrête la diffusion vers toutes tes destinations.", ok: "Terminer le stream", run: () => void order("StopStream") })
+      : setAsk({ title: "Êtes-vous sûr(e) ?", yesNo: true, text: "OBS commence à diffuser vers tes destinations avec la scène en cours.", ok: "Commencer le stream", run: () => void order("StartStream") });
   return (
     <Card>
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
-        <p className="text-[14px] text-muted">{data.lastEndedAt ? `Dernier direct ${fmtAgo(data.lastEndedAt)}` : "Aucun direct pour le moment"}</p>
+        <p className="text-[14px] text-muted">{live ? "En direct" : data.lastEndedAt ? `Dernier direct ${fmtAgo(data.lastEndedAt)}` : "Aucun direct pour le moment"}</p>
         <div className="flex flex-wrap gap-3">
           <DkLink href="/dashboard/direct">Ouvrir le direct</DkLink>
-          <DkButton tone="primary" disabled={busy || deviceIds.length === 0} onClick={confirmStart}>{busy ? "Démarrage…" : "Commencer le stream"}</DkButton>
+          <DkButton tone={live ? "danger" : "primary"} disabled={busy || deviceIds.length === 0} onClick={confirmOrder}>{busy ? (live ? "Arrêt…" : "Démarrage…") : live ? "Terminer le stream" : "Commencer le stream"}</DkButton>
         </div>
       </div>
       {orderError && <p role="alert" className="mt-4 text-[14px]" style={{ color: "var(--dk-red)" }}>{orderError}</p>}

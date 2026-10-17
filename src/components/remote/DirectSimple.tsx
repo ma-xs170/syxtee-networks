@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { DkButton } from "../dashboard/kit";
 import ProgramView from "./ProgramView";
 import { cx, dbToPct, Icon, KindIcon, kindLabel } from "./ui";
@@ -13,6 +13,22 @@ import type { Mix } from "./types";
 // Raccourcis : 1 à 9 changent de scène, M coupe le micro.
 
 const fmtDb = (db: number) => (Number.isFinite(db) && db > -100 ? db.toFixed(1).replace(".", ",") : "-inf");
+const fmtInt = (n: number) => n.toLocaleString("fr-FR").replace(/[\u202f\u00a0]/g, " ");
+
+/** Courbe du débit (blanc), sur un fond légèrement plus clair, comme la carte Flux d'OBS. */
+function Spark({ points }: { points: number[] }) {
+  const w = 300;
+  const h = 56;
+  const max = Math.max(...points, 1) * 1.1;
+  const d = points.length > 1 ? points.map((v, i) => `${i ? "L" : "M"}${((i / (points.length - 1)) * w).toFixed(1)},${(h - (v / max) * h).toFixed(1)}`).join(" ") : "";
+  return (
+    <div className="mx-2 my-3 rounded-xl bg-foreground/[0.05] p-2">
+      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" role="img" aria-label="Débit en kbit/s" className="block h-14 w-full">
+        {d && <path d={d} fill="none" stroke="var(--foreground)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" strokeLinejoin="round" opacity="0.85" />}
+      </svg>
+    </div>
+  );
+}
 const select = "h-8 max-w-[11rem] truncate rounded-lg border border-line bg-transparent px-2.5 text-[13px] text-foreground disabled:opacity-50";
 
 function Dock({ title, aside, className, children }: { title: string; aside?: ReactNode; className?: string; children: ReactNode }) {
@@ -78,6 +94,14 @@ export default function DirectSimple({ o, onLive }: { o: Obs; onLive: () => void
   const s = o.stats;
   const loss = s && s.total > 0 ? (s.dropped / s.total) * 100 : 0;
   const received = o.fluxName !== "";
+  const [history, setHistory] = useState<number[]>([]);
+  const kbps = o.streaming ? (s?.kbps ?? null) : null;
+  useEffect(() => {
+    if (kbps == null) return;
+    const t = setTimeout(() => setHistory((h) => [...h.slice(-119), kbps]), 0);
+    return () => clearTimeout(t);
+  }, [kbps, s?.streamMs]);
+  const avg = history.length ? Math.round(history.reduce((a, b) => a + b, 0) / history.length) : null;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -187,23 +211,32 @@ export default function DirectSimple({ o, onLive }: { o: Obs; onLive: () => void
           )}
         </Dock>
 
-        <Dock title="Contrôles" aside={o.streaming ? "En direct" : "Prêt"}>
-          <div className="grid gap-2">
-            <DkButton tone={o.streaming ? "danger" : "primary"} className="!h-10 !w-full" disabled={off || o.streamBusy} onClick={onLive}>
-              {o.streamBusy ? (o.streaming ? "Arrêt…" : "Démarrage…") : o.streaming ? "Terminer le stream" : "Commencer le streaming"}
-            </DkButton>
-            <DkButton className="!h-10 !w-full" aria-pressed={o.recording} disabled={off || o.recBusy} onClick={o.toggleRecord} style={o.recording ? { borderColor: "var(--dk-red)", background: "color-mix(in srgb, var(--dk-red) 14%, transparent)", color: "var(--dk-red)" } : undefined}>
-              <span aria-hidden="true" className="size-2 rounded-full" style={{ background: o.recording ? "var(--dk-red)" : "var(--faint)" }} />
-              {o.recording ? "Arrêter l'enregistrement" : "Démarrer l'enregistrement"}
-            </DkButton>
-          </div>
-          <dl className="mt-3 border-t border-line pt-2">
-            {stat("Débit", o.streaming && s?.kbps != null ? `${s.kbps} kbit/s` : "-")}
-            {stat("Latence", o.latency != null ? `${o.latency} ms` : "-")}
-            {stat("Images perdues", o.streaming && s ? `${loss.toFixed(1)} %` : "-", loss > 2)}
-            {stat("FPS · CPU", s ? `${Math.round(s.fps)} · ${s.cpu.toFixed(1).replace(".", ",")} %` : "-")}
-          </dl>
-        </Dock>
+        <div className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-3">
+          <Dock title="Contrôles" aside={o.streaming ? "En direct" : "Prêt"}>
+            <div className="grid gap-2">
+              <DkButton tone={o.streaming ? "danger" : "primary"} className="!h-10 !w-full" disabled={off || o.streamBusy} onClick={onLive}>
+                {o.streamBusy ? (o.streaming ? "Arrêt…" : "Démarrage…") : o.streaming ? "Terminer le stream" : "Commencer le streaming"}
+              </DkButton>
+              <DkButton className="!h-10 !w-full" aria-pressed={o.recording} disabled={off || o.recBusy} onClick={o.toggleRecord} style={o.recording ? { borderColor: "var(--dk-red)", background: "color-mix(in srgb, var(--dk-red) 14%, transparent)", color: "var(--dk-red)" } : undefined}>
+                <span aria-hidden="true" className="size-2 rounded-full" style={{ background: o.recording ? "var(--dk-red)" : "var(--faint)" }} />
+                {o.recording ? "Arrêter l'enregistrement" : "Démarrer l'enregistrement"}
+              </DkButton>
+            </div>
+          </Dock>
+          <Dock title="Flux">
+            <p className="flex items-baseline justify-between gap-3 px-2 pt-1">
+              <span className="dk-mono text-[22px] text-foreground">{o.streaming && s?.kbps != null ? `${fmtInt(s.kbps)} kbit/s` : "-"}</span>
+              {avg != null && <span className="dk-mono text-[12px] text-muted">moy. {fmtInt(avg)} kbit/s</span>}
+            </p>
+            <Spark points={history} />
+            <dl className="px-2">
+              {stat("Encodeur", s?.encoder || "-")}
+              {stat("Congestion", o.streaming && s ? `${Math.round(s.congestion * 100)} %` : "-", !!s && s.congestion > 0.1)}
+              {stat("Frames perdues", o.streaming && s ? String(s.dropped) : "-", loss > 2)}
+              {stat("FPS · CPU", s ? `${Math.round(s.fps)} · ${s.cpu.toFixed(1).replace(".", ",")} %` : "-")}
+            </dl>
+          </Dock>
+        </div>
       </div>
     </div>
   );

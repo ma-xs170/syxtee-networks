@@ -213,13 +213,20 @@ function TopBar({ o, desktop, onAuto, invited }: { o: Obs; desktop: boolean; onA
       {desktop && !o.guest && (
         <div className="ml-3 flex min-w-0 items-center gap-3">
           <span aria-hidden="true" className="h-5 w-px shrink-0 bg-line" />
-          <label className="flex shrink-0 items-center gap-2 text-[12px] text-muted">
+          <label className="relative flex shrink-0 items-center gap-1.5 text-[13px] text-muted">
             <span className="max-xl:sr-only">Collection de scènes</span>
-            <select aria-label="Collection de scènes" className={cx(field, "!h-7 !w-auto max-w-[9rem] !rounded-lg !px-2 !text-[12px]")} disabled={!o.ready || !o.canLive || o.collections.list.length === 0} value={o.collections.current} onChange={(e) => o.setCollection(e.target.value)}>
+            <select
+              aria-label="Collection de scènes"
+              className="h-8 max-w-[11rem] cursor-pointer appearance-none truncate rounded-md border-0 bg-transparent py-0 pl-1 pr-5 text-[13px] text-foreground hover:bg-foreground/[0.06] focus-visible:outline-2 focus-visible:outline-foreground disabled:opacity-40"
+              disabled={!o.ready || !o.canLive || o.collections.list.length === 0}
+              value={o.collections.current}
+              onChange={(e) => o.setCollection(e.target.value)}
+            >
               {o.collections.list.map((c) => (
-                <option key={c}>{c}</option>
+                <option key={c} className="bg-background">{c}</option>
               ))}
             </select>
+            <Icon name="chevron" className="pointer-events-none absolute right-0.5 size-4 text-muted" />
           </label>
         </div>
       )}

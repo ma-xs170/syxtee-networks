@@ -5,11 +5,9 @@ import { useRef, useState } from "react";
 import { delta, fmtAgo, fmtDuration, fmtInt, type Overview as OverviewData, type Range } from "@/lib/dashboard-data";
 import { pluginState } from "@/lib/plugin";
 import { DailyBars } from "./charts";
-import { useLiveClock, useLiveStatus } from "./LiveStatus";
 import { apiFetch } from "./apiFetch";
 import { Card, Column, DkButton, DkLink, DkTabButtons, ListRow, PageTitle, StatusBadge } from "./kit";
 import { useLinkDevices, type DevicesDemo } from "./useLinkDevices";
-import { PlatformLogo } from "../remote/MultistreamPanel";
 import { sendOnce } from "../remote/callDevice";
 import { Confirm, type ConfirmAsk } from "../remote/ui";
 
@@ -17,65 +15,31 @@ import { Confirm, type ConfirmAsk } from "../remote/ui";
 // Tout ce qui ne sert pas à décider ou agir vite est ailleurs (Statistiques, Serveurs, Direct).
 // Données : /api/dashboard/overview (une requête).
 
-function StatusCard({ data, platforms, coreUrl, deviceIds }: { data: OverviewData; platforms: string[]; coreUrl: string; deviceIds: string[] }) {
-  const { state, link } = useLiveStatus();
+function StatusCard({ data, coreUrl, deviceIds }: { data: OverviewData; coreUrl: string; deviceIds: string[] }) {
   const [ask, setAsk] = useState<ConfirmAsk>(null);
   const [busy, setBusy] = useState(false);
   const [orderError, setOrderError] = useState("");
 
-  /** Envoie l'ordre aux postes en ligne (celui qui ne peut pas l'exécuter refuse, ce n'est pas une erreur tant qu'un autre accepte) ; le statut suit par le flux du Core. */
-  async function order(method: "StartStream" | "StopStream") {
+  /** Envoie l'ordre au premier poste OBS en ligne ; le vrai direct est celui d'OBS (une source qui émet vers le serveur n'est pas un direct). */
+  async function start() {
     setBusy(true);
     setOrderError("");
-    const targets = method === "StartStream" ? deviceIds.slice(0, 1) : deviceIds; // un seul poste démarre, tous ceux qui diffusent s'arrêtent
-    const results = await Promise.allSettled(targets.map((id) => sendOnce(coreUrl, id, method)));
+    const results = await Promise.allSettled(deviceIds.slice(0, 1).map((id) => sendOnce(coreUrl, id, "StartStream")));
     if (deviceIds.length === 0 || results.every((r) => r.status === "rejected")) {
       const first = results.find((r): r is PromiseRejectedResult => r.status === "rejected");
       setOrderError(first ? (first.reason as Error).message : "Aucun poste OBS en ligne.");
     }
     setBusy(false);
   }
-  const confirmStop = () =>
-    setAsk({ title: "Terminer le stream ?", text: "Le direct s'arrête tout de suite pour tes spectateurs.", ok: "Terminer le stream", danger: true, run: () => void order("StopStream") });
   const confirmStart = () =>
-    setAsk({ title: "Commencer le stream ?", text: "OBS commence à diffuser vers tes destinations avec la scène en cours.", ok: "Commencer le stream", run: () => void order("StartStream") });
-  const clock = useLiveClock();
-  const reconnecting = !!state?.reconnecting;
-  const on = !!state?.live || reconnecting;
+    setAsk({ title: "Commencer le stream ?", text: "OBS commence à diffuser vers tes destinations avec la scène en cours.", ok: "Commencer le stream", run: () => void start() });
   return (
     <Card>
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
-        <div className="min-w-0" aria-live="polite">
-          {on ? (
-            <p className="flex flex-wrap items-center gap-3">
-              <StatusBadge tone={reconnecting ? "warn" : "ok"}>{reconnecting ? "Reconnexion" : "Source en ligne"}</StatusBadge>
-              <span className="dk-mono text-[20px] text-foreground">{clock ?? "00:00:00"}</span>
-              {state?.kbps != null && <span className="dk-mono text-[14px] text-muted">{fmtInt(state.kbps)} kbit/s</span>}
-            </p>
-          ) : (
-            <p className="flex flex-wrap items-center gap-3">
-              <StatusBadge tone={link === "error" ? "bad" : "neutral"}>{link === "error" ? "Serveur injoignable" : "Hors ligne"}</StatusBadge>
-              <span className="text-[14px] text-muted">{data.lastEndedAt ? `Dernier direct ${fmtAgo(data.lastEndedAt)}` : "Aucun direct pour le moment"}</span>
-            </p>
-          )}
-          {on && platforms.length > 0 && (
-            <ul className="mt-4 flex gap-2" aria-label="Chaînes liées">
-              {platforms.map((p) => (
-                <li key={p}><PlatformLogo id={p} size={28} /></li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <p className="text-[14px] text-muted">{data.lastEndedAt ? `Dernier direct ${fmtAgo(data.lastEndedAt)}` : "Aucun direct pour le moment"}</p>
         <div className="flex flex-wrap gap-3">
-          {on ? (
-            <>
-              <DkLink href="/dashboard/direct">Ouvrir le direct</DkLink>
-              <DkButton disabled={busy || deviceIds.length === 0} onClick={confirmStart}>Commencer le stream</DkButton>
-              <DkButton tone="danger" disabled={busy} onClick={confirmStop}>{busy ? "Arrêt…" : "Terminer le stream"}</DkButton>
-            </>
-          ) : (
-            <DkButton tone="primary" disabled={busy || deviceIds.length === 0} onClick={confirmStart}>{busy ? "Démarrage…" : "Commencer le stream"}</DkButton>
-          )}
+          <DkLink href="/dashboard/direct">Ouvrir le direct</DkLink>
+          <DkButton tone="primary" disabled={busy || deviceIds.length === 0} onClick={confirmStart}>{busy ? "Démarrage…" : "Commencer le stream"}</DkButton>
         </div>
       </div>
       {orderError && <p role="alert" className="mt-4 text-[14px]" style={{ color: "var(--dk-red)" }}>{orderError}</p>}
@@ -114,7 +78,7 @@ function Alerts({ alerts }: { alerts: OverviewData["alerts"] }) {
   );
 }
 
-export default function Overview({ initial, coreUrl = "", demo, platforms = [] }: { initial: OverviewData; coreUrl?: string; demo?: DevicesDemo; platforms?: string[] }) {
+export default function Overview({ initial, coreUrl = "", demo }: { initial: OverviewData; coreUrl?: string; demo?: DevicesDemo }) {
   const [range, setRange] = useState<Range>(initial.range);
   const [data, setData] = useState(initial);
   const [error, setError] = useState(false);
@@ -154,7 +118,7 @@ export default function Overview({ initial, coreUrl = "", demo, platforms = [] }
     <Column>
       <PageTitle title="Tableau de bord" sub="L'état de ton direct et l'activité de tes serveurs." />
       <div className="grid gap-6">
-        <StatusCard data={data} platforms={platforms} coreUrl={coreUrl} deviceIds={online.map((d) => d.id)} />
+        <StatusCard data={data} coreUrl={coreUrl} deviceIds={online.map((d) => d.id)} />
 
         <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {stats.map((k) => (

@@ -14,7 +14,6 @@ export default async function DashboardPage() {
   // Utilisateur, profil et formule en parallèle (une seule requête chacun, partagée), puis l'aperçu.
   const [user, profileRow, plan] = await Promise.all([requireOwner("/dashboard"), getProfile(), getPlan()]);
   const initial = await getOverview(user.id, profileRow!, "7d", plan);
-  const platforms = [profileRow?.twitch_login || profileRow?.twitch ? "twitch" : "", profileRow?.kick ? "kick" : "", profileRow?.youtube ? "youtube" : ""].filter(Boolean);
   return (
     <>
       {plan.id === "free" && (
@@ -28,7 +27,7 @@ export default async function DashboardPage() {
           </div>
         </div></div>
       )}
-      <Overview initial={initial} coreUrl={publicCoreUrl} platforms={platforms} />
+      <Overview initial={initial} coreUrl={publicCoreUrl} />
     </>
   );
 }

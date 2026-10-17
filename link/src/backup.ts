@@ -114,6 +114,21 @@ export class BackupWatcher {
   static lowBitrate(t: Trigger): number {
     return t === "sensitive" ? 800 : t === "cut_lowbitrate" ? 300 : 0;
   }
+  /** Source réellement à l'antenne (« Flux › … » visible dans la scène Live), choisie par l'agent : prioritaire sur `cfg.source`. Vide : on prend `cfg.source`. */
+  private activeSource = "";
+  setActiveSource(name: string) {
+    if (name !== this.activeSource) {
+      this.activeSource = name;
+      // Autre caméra à l'antenne : on repart de zéro (la vignette précédente est celle d'une autre image).
+      this.last = "";
+      this.still = 0;
+      this.moving = 0;
+      this.seenMoving = false;
+    }
+  }
+  private get source() {
+    return this.activeSource || this.cfg.source;
+  }
   private last = "";
   private still = 0;
   private moving = 0;
@@ -140,7 +155,7 @@ export class BackupWatcher {
 
   set(cfg: BackupConfig) {
     this.cfg = cfg;
-    if (!cfg.enabled || !cfg.source || !cfg.scene) this.reset();
+    if (!cfg.enabled || !cfg.scene) this.reset();
   }
 
   setAuto(a: AutoConfig) {
@@ -186,7 +201,8 @@ export class BackupWatcher {
 
   async tick(): Promise<void> {
     const c = this.cfg;
-    const watching = c.enabled && !!c.source && !!c.scene;
+    // La source à surveiller se choisit seule (la caméra à l'antenne) ; `cfg.source` n'est plus qu'un repli.
+    const watching = c.enabled && !!c.scene;
     const targets = this.targets();
     const piloting = targets.length > 0;
     if (!watching && !piloting) return;
@@ -275,7 +291,7 @@ export class BackupWatcher {
     if (!watching) return;
 
     // ───── Secours : le flux surveillé se fige ou coupe ─────
-    const shot = await this.shot(c.source);
+    const shot = this.source ? await this.shot(this.source) : "";
     // Débit très bas (déclenchements « débit » et « sensible ») : compte comme une image figée, avant même que l'image ne se fige.
     const threshold = BackupWatcher.lowBitrate(c.trigger);
     const low = threshold > 0 && this.bitrate !== null && this.bitrate < threshold;
@@ -301,7 +317,7 @@ export class BackupWatcher {
       const needed = c.trigger === "sensitive" ? Math.min(c.freezeSeconds, 2) : c.freezeSeconds;
       // À la mise à l'antenne de la scène Live, on laisse au flux le temps d'arriver avant de crier à la coupure.
       const graced = this.seenMoving || this.armedTicks > GRACE_TICKS;
-      if (this.still >= needed && graced && !(this.defer?.(c.source) && this.still < needed * 2)) await this.engage(cur);
+      if (this.still >= needed && graced && !(this.defer?.(this.source) && this.still < needed * 2)) await this.engage(cur);
       else this.setState(this.still > 0 && graced ? "frozen" : "ok");
     } else if (this.moving >= c.recoverSeconds) {
       await this.back("backup", "image revenue");
@@ -314,7 +330,7 @@ export class BackupWatcher {
       if (cur === c.scene) return;
       this.returnTo = cur;
       await this.req("SetCurrentProgramScene", { sceneName: c.scene });
-      this.log(`backup : « ${c.source} » figée, bascule sur « ${c.scene} »`);
+      this.log(`backup : « ${this.source || "flux"} » figée, bascule sur « ${c.scene} »`);
       this.setState("backup");
     } catch (e) {
       this.log(`backup : bascule impossible (${(e as Error).message})`);

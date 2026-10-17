@@ -389,27 +389,51 @@ export class Agent {
     for (const rel of this.relays) if (live.has(rel.id)) rel.live = live.get(rel.id)!;
   }
 
-  /** État du flux, une fois toutes les 2 s. Le secours ne juge pas une seule caméra : tant qu'UN flux du compte est en ligne côté serveur (Osmo, iPhone, drone…), il n'y a pas de coupure. */
+  /** Flux (identifiants de relais) visibles dans la scène Live : la caméra à l'antenne. Gardés tels quels quand une autre scène (secours, choix manuel) est à l'antenne. */
+  private activeRelays: string[] = [];
+  private async refreshActive() {
+    const live = this.cfg.liveScene;
+    if (!live || !this.obs.connected) return;
+    const cur = String((await this.obs.request("GetCurrentProgramScene")).currentProgramSceneName ?? "");
+    if (cur !== live) return;
+    const names = new Set<string>();
+    const walk = async (scene: string, depth: number) => {
+      const r = (await this.obs.request("GetSceneItemList", { sceneName: scene })) as { sceneItems?: { sourceName: string; sourceType?: string; sceneItemEnabled?: boolean }[] };
+      for (const it of r.sceneItems ?? []) {
+        if (!it.sceneItemEnabled) continue;
+        names.add(it.sourceName);
+        if (it.sourceType === "OBS_SOURCE_TYPE_SCENE" && depth < 2) await walk(it.sourceName, depth + 1);
+      }
+    };
+    await walk(live, 0);
+    const rel = this.relays.filter((x) => names.has(fluxName(x.name)));
+    this.activeRelays = rel.map((x) => x.id);
+    // Source surveillée = la caméra à l'antenne ; plusieurs flux visibles : le premier qui est en ligne (sinon le premier).
+    const pick = rel.find((x) => x.live) ?? rel[0];
+    this.watcher.setActiveSource(pick ? fluxName(pick.name) : "");
+  }
+
+  /** État du flux, une fois toutes les 2 s. Le secours juge la caméra à l'antenne, pas une caméra fixe : une autre caméra hors ligne n'est pas une coupure. */
   private async pollBitrate() {
     const c = this.cfg.backup;
-    // Le flux jugé en priorité est celui de la source surveillée (« Flux › NOM »), pas forcément la destination : sinon un autre flux à l'arrêt (0 kb/s) déclenche le secours en boucle.
-    const watched = this.relays.find((x) => fluxName(x.name) === c.source)?.id ?? this.cfg.destination;
-    if (this.stopped || !c.enabled || !watched) {
+    if (this.stopped || !c.enabled) {
       this.watcher.setRelayLive(null);
       return this.watcher.setBitrate(null);
     }
+    await this.refreshActive().catch(() => {});
     const list = await coreCall(this.cfg, "GET", "/v1/link/streams");
     if (!list.ok) {
       this.watcher.setRelayLive(null);
       return this.watcher.setBitrate(null);
     }
-    const live = ((list.json.streams as { id: string; live: boolean }[]) ?? []).filter((s) => !!s.live);
+    const all = ((list.json.streams as { id: string; live: boolean }[]) ?? []);
+    // Caméra(s) à l'antenne connue(s) : seules elles comptent. Sinon (aucune détectée) : n'importe quel flux en ligne.
+    const pool = this.activeRelays.length > 0 ? all.filter((s) => this.activeRelays.includes(s.id)) : all;
+    const live = pool.filter((s) => !!s.live);
     this.watcher.setRelayLive(live.length > 0);
     if (c.trigger === "cut") return this.watcher.setBitrate(null);
     if (live.length === 0) return this.watcher.setBitrate(0);
-    // Débit du flux surveillé s'il est en ligne, sinon celui du premier flux en ligne : une autre caméra qui émet bien n'est pas une coupure.
-    const id = live.find((s) => s.id === watched)?.id ?? live[0].id;
-    const r = await coreCall(this.cfg, "GET", `/v1/link/streams/${encodeURIComponent(id)}/status`);
+    const r = await coreCall(this.cfg, "GET", `/v1/link/streams/${encodeURIComponent(live[0].id)}/status`);
     this.watcher.setBitrate(r.ok ? (r.json.live ? Number(r.json.kbps) || 0 : 0) : null);
   }
 

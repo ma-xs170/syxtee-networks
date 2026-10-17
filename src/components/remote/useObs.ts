@@ -599,7 +599,8 @@ export function useObs({ coreUrl, deviceId, demoToken, invite }: UseObsArgs) {
     const liveScene = roles.liveScene || find(/direct|live/i) || program;
     const scene = roles.scene || find(/perdue|secours|brb|pause|coupure/i);
     const source = roles.source || fluxName || inputNames.find((n) => n.startsWith("Flux")) || "";
-    const backupOk = !!(source && scene && liveScene);
+    // La source surveillée se choisit seule (caméra à l'antenne) : seules les deux scènes sont nécessaires.
+    const backupOk = !!(scene && liveScene);
     saveRoles({ liveScene, scene, source, enabled: backupOk, autoEnabled: false, directorEnabled: false, audioEnabled: false, audioBackup: false });
   }
 

@@ -95,9 +95,8 @@ function GuardianBlock({ o }: { o: Obs }) {
 export default function AutoSheet({ o, open, onClose }: { o: Obs; open: boolean; onClose: () => void }) {
   const r = o.roles;
   const { scenes, saveRoles } = o;
-  const ready = !!(r?.source && r?.scene && r?.liveScene);
+  const ready = !!(r?.scene && r?.liveScene);
   const on = !!r?.enabled;
-  const missing = r ? [!r.liveScene && "ta scène Live", !r.scene && "ta scène de secours", !r.source && "le flux (touche « Corriger » dans la barre du haut)"].filter(Boolean) : [];
 
   function toggle() {
     if (!r) return;
@@ -133,8 +132,7 @@ export default function AutoSheet({ o, open, onClose }: { o: Obs; open: boolean;
               <Select label="Ta scène Live" value={r.liveScene} options={scenes} onChange={(v) => saveRoles({ liveScene: v })} />
               <Select label="Scène de secours" value={r.scene} options={scenes} onChange={(v) => saveRoles({ scene: v })} />
             </div>
-            <p className="mt-2 text-[13px] leading-relaxed text-muted">La régie ne touche à rien tant que ta scène Live n&apos;est pas à l&apos;antenne.</p>
-            {missing.length > 0 && !r.source && <p className="mt-2 text-[13px] text-warn">Il manque {missing.join(", ")}.</p>}
+            <p className="mt-2 text-[13px] leading-relaxed text-muted">La source surveillée se choisit toute seule : c&apos;est la caméra à l&apos;antenne dans ta scène Live. La régie ne touche à rien tant que ta scène Live n&apos;est pas à l&apos;antenne.</p>
           </section>
 
           <section aria-label="Sensibilité">

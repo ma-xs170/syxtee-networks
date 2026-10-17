@@ -80,3 +80,15 @@ test("serveur injoignable (état inconnu) : les vignettes figées déclenchent t
   for (let i = 0; i < 7; i++) await w.tick();
   assert.equal(o.scene, "BRB");
 });
+
+test("source active automatique : sans source réglée, la caméra à l'antenne est jugée", async () => {
+  const { o, w } = rig();
+  w.set({ enabled: true, source: "", scene: "BRB", freezeSeconds: 4, recoverSeconds: 2, trigger: "cut" });
+  w.setActiveSource("Flux › Osmo");
+  for (let i = 1; i <= 3; i++) {
+    o.img = beau(i);
+    await w.tick();
+  }
+  for (let i = 0; i < 7; i++) await w.tick(); // vignette figée, serveur inconnu
+  assert.equal(o.scene, "BRB");
+});

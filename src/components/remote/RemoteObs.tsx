@@ -237,7 +237,39 @@ function TopBar({ o, desktop, chatOn, showChat, onChat, onAuto, invited }: { o: 
           <span className="tabular-nums">{clock(o.stats?.streamMs ?? 0)}</span>
         </span>
       )}
-      <div className="ml-auto flex shrink-0 items-center gap-2">
+      <div className="ml-auto flex min-w-0 items-center gap-2 overflow-x-auto no-scrollbar">
+        {desktop && !o.guest && (
+          <>
+            <label className="flex shrink-0 items-center gap-2 text-[13px] text-muted">
+              Profil
+              <select aria-label="Profil OBS" className={cx(field, "!h-8 !w-auto max-w-[11rem]")} disabled={!o.ready || !o.canLive || o.profiles.list.length === 0} value={o.profiles.current} onChange={(e) => o.setProfile(e.target.value)}>
+                {o.profiles.list.map((p) => (
+                  <option key={p}>{p}</option>
+                ))}
+              </select>
+            </label>
+            <label className="flex shrink-0 items-center gap-2 text-[13px] text-muted">
+              Collection
+              <select aria-label="Collection de scènes" className={cx(field, "!h-8 !w-auto max-w-[11rem]")} disabled={!o.ready || !o.canLive || o.collections.list.length === 0} value={o.collections.current} onChange={(e) => o.setCollection(e.target.value)}>
+                {o.collections.list.map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
+              </select>
+            </label>
+            <span role="status" className={cx("flex shrink-0 items-center gap-2 whitespace-nowrap text-[13px]", o.fluxName !== "" ? "text-foreground" : "text-warn")}>
+              <span aria-hidden="true" className={cx("size-2 rounded-full", o.fluxName !== "" ? "bg-ok" : "bg-warn")} />
+              {o.fluxName !== "" ? <>Flux reçu <span className="font-mono text-muted">{o.fluxName}</span></> : o.noFluxSource ? "Aucun flux dans OBS" : "Aucun flux reçu"}
+            </span>
+            {o.noFluxSource && (
+              <button type="button" disabled={o.fixing} onClick={() => void o.fixFlux()} className={cx(btn("sm"), "shrink-0 !border-warn/60 !text-warn")}>
+                {o.fixing ? "Correction…" : "Corriger"}
+              </button>
+            )}
+            <button type="button" aria-pressed={o.studioMode} disabled={!o.ready || !o.canLive} onClick={o.toggleStudio} className={cx(btn("sm"), "shrink-0")} style={o.studioMode ? { borderColor: "var(--dk-blue)", background: "color-mix(in srgb, var(--dk-blue) 14%, transparent)" } : undefined}>
+              Mode Studio
+            </button>
+          </>
+        )}
         {o.guest && (
           <p className="max-w-[40vw] truncate text-[13px] text-muted" title="Tu pilotes cet OBS avec un lien d'invitation">
             Invité · {o.guest.label} · {o.guest.level === "view" ? "lecture seule" : o.guest.level === "scenes" ? "scènes et son" : "tous les droits"}

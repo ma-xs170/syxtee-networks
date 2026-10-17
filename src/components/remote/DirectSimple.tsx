@@ -8,14 +8,13 @@ import type { Obs } from "./useObs";
 import type { Mix } from "./types";
 
 // Direct, grand écran : la disposition d'OBS Studio sur une page, sans défilement.
-// Barre d'état (profil, collection, flux), aperçu du programme au centre, puis quatre docks en bas :
+// Aperçu du programme (profil, collection, flux et Mode Studio sont dans la barre du haut), puis quatre docks en bas :
 // Scènes, Sources, Mixer audio (colonnes verticales), Contrôles + Flux. Tout agit sur le vrai OBS du poste.
 // Raccourcis : 1 à 9 changent de scène, M coupe le micro.
 
 const fmtDb = (db: number) => (Number.isFinite(db) && db > -100 ? db.toFixed(1).replace(".", ",") : "-inf");
 const fmtInt = (n: number) => n.toLocaleString("fr-FR").replace(/[\u202f\u00a0]/g, " ");
 
-const select = "h-8 max-w-[11rem] truncate rounded-lg border border-line bg-transparent px-2.5 text-[13px] text-foreground disabled:opacity-50";
 
 function Dock({ title, aside, className, children }: { title: string; aside?: ReactNode; className?: string; children: ReactNode }) {
   return (
@@ -78,7 +77,6 @@ function Strip({ o, m }: { o: Obs; m: Mix }) {
 export default function DirectSimple({ o, onLive }: { o: Obs; onLive: () => void }) {
   const off = !o.ready || !o.canLive;
   const s = o.stats;
-  const received = o.fluxName !== "";
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
@@ -96,36 +94,7 @@ export default function DirectSimple({ o, onLive }: { o: Obs; onLive: () => void
   }, [o]);
 
   return (
-    <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_minmax(20rem,42%)] gap-3 p-3">
-      <div className="dk-card flex flex-wrap items-center gap-x-4 gap-y-2 !px-4 !py-2.5 text-[13px]">
-        {!o.guest && (
-          <>
-            <label className="flex items-center gap-2 text-muted">
-              Profil
-              <select aria-label="Profil OBS" className={select} value={o.profiles.current} disabled={!o.ready || !o.canLive || o.profiles.list.length === 0} onChange={(e) => o.setProfile(e.target.value)}>
-                {o.profiles.list.map((p) => <option key={p} className="bg-background">{p}</option>)}
-              </select>
-            </label>
-            <label className="flex items-center gap-2 text-muted">
-              Collection
-              <select aria-label="Collection de scènes" className={select} value={o.collections.current} disabled={!o.ready || !o.canLive || o.collections.list.length === 0} onChange={(e) => o.setCollection(e.target.value)}>
-                {o.collections.list.map((c) => <option key={c} className="bg-background">{c}</option>)}
-              </select>
-            </label>
-          </>
-        )}
-        <span className="flex items-center gap-2">
-          <span aria-hidden="true" className="size-2 rounded-full" style={{ background: received && o.ready ? "var(--dk-green)" : "var(--dk-amber)" }} />
-          {received ? <>Flux reçu <span className="dk-mono text-muted">{o.fluxName}</span></> : o.noFluxSource ? "Aucun flux dans OBS" : "Aucun flux reçu"}
-          {o.noFluxSource && !o.guest && <DkButton className="!h-7 !px-3 !text-[13px]" disabled={o.fixing} onClick={() => void o.fixFlux()}>{o.fixing ? "Correction…" : "Corriger"}</DkButton>}
-        </span>
-        <span className="ml-auto flex items-center gap-2">
-          <DkButton className="!h-8 !px-3 !text-[13px]" aria-pressed={o.studioMode} disabled={off} onClick={o.toggleStudio} style={o.studioMode ? { borderColor: "var(--dk-blue)", background: "color-mix(in srgb, var(--dk-blue) 14%, transparent)" } : undefined}>
-            Mode Studio
-          </DkButton>
-        </span>
-      </div>
-
+    <div className="grid h-full min-h-0 grid-rows-[minmax(0,1fr)_minmax(20rem,42%)] gap-3 p-3">
       <ProgramView o={o} className="!rounded-2xl" />
 
       <div className="grid min-h-0 gap-3 [grid-template-columns:minmax(11rem,0.9fr)_minmax(0,1.5fr)_minmax(0,2fr)_minmax(14rem,1.1fr)]">

@@ -8,7 +8,7 @@ import RelayActions from "@/components/relais/RelayActions";
 import RelayAnalysis from "@/components/relais/RelayAnalysis";
 import RelayConnections from "@/components/relais/RelayConnections";
 import RelayUrls from "@/components/relais/RelayUrls";
-import { ActionButton, Card, Fact, Pill, Setting, TabsNav } from "@/components/dashboard/panel";
+import { ActionButton, Card, Fact, Pill, RowMenu, Setting, TabsNav } from "@/components/dashboard/panel";
 import ProtocolBadge from "@/components/relais/ProtocolBadge";
 import { getRelay, publicCoreUrl } from "@/lib/core";
 import { getProfile } from "@/lib/auth/dal";
@@ -95,19 +95,42 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
           <span aria-hidden="true">←</span> Retour à la liste des serveurs
         </Link>
 
-        <header className="mb-8 mt-5 flex flex-wrap items-start justify-between gap-5">
-          <div className="min-w-0">
-            <h1 className="h-page break-words">{relay.name}</h1>
-            <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted">
-              {relay.live ? <span className="inline-flex items-center gap-2 text-live"><span className="live-dot" />En direct</span> : <span>{stateText}</span>}
-              <ProtocolBadge protocol={relay.protocol} />
-              {server && <span>{flag(server.cc)} {server.city}, {server.country}</span>}
-            </p>
+        <header className="mb-10 mt-6 flex flex-wrap items-center justify-between gap-5">
+          <div className="flex min-w-0 items-center gap-5">
+            <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-2xl border border-line-strong bg-surface-2">
+              <svg viewBox="0 0 32 32" className="size-8 text-foreground" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="5" y="6" width="22" height="8" rx="2" /><rect x="5" y="18" width="22" height="8" rx="2" />
+                <path d="M10 10h.01M10 22h.01M15 10h7M15 22h7" />
+              </svg>
+            </span>
+            <div className="min-w-0">
+              <p className="text-sm text-muted">Serveur</p>
+              <h1 className="break-words text-3xl font-semibold tracking-tight sm:text-4xl">{relay.name}</h1>
+            </div>
           </div>
+          <RowMenu label="Actions du serveur" items={[
+            act("Renommer", "rename"),
+            act("Changer d'emplacement", "server"),
+            ...(relay.archived ? [] : [act("Régénérer la clé", "rotate")]),
+            act(relay.archived ? "Réactiver" : "Archiver", "archive"),
+            act("Supprimer", "delete", true),
+          ]} />
         </header>
+
+        <dl className="mb-8 grid grid-cols-2 gap-x-6 gap-y-6 lg:grid-cols-4">
+          <div><dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted">Créé</dt><dd className="mt-2.5 text-[17px]">{fmtAgo(relay.created_at)}</dd></div>
+          <div><dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted">Statut</dt><dd className="mt-2"><Pill tone={relay.archived ? "idle" : relay.live ? "live" : "ok"}>{relay.archived ? "Archivé" : relay.live ? "En direct" : "Prêt"}</Pill></dd></div>
+          <div><dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted">Protocole</dt><dd className="mt-2"><ProtocolBadge protocol={relay.protocol} /></dd></div>
+          <div><dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted">Région</dt><dd className="mt-2.5 text-[17px]">{server ? <>{flag(server.cc)} {server.city} <span className="text-muted">({server.country})</span></> : relay.server}</dd></div>
+        </dl>
+
+        <p className={`mb-8 flex items-center gap-3 rounded-2xl border px-5 py-4 text-[15px] ${relay.archived || !serverOk ? "border-line bg-surface" : "border-ok/30 bg-ok/5"}`}>
+          <span aria-hidden="true" className={`size-2 shrink-0 rounded-full ${relay.live ? "bg-live" : relay.archived || !serverOk ? "bg-muted" : "bg-ok"}`} />
+          <span><span className="font-medium">{relay.archived ? "Serveur archivé" : relay.live ? "Direct en cours" : serverOk ? "Serveur opérationnel" : server?.maintenance ? "Serveur en maintenance" : "Serveur bientôt disponible"} : </span><span className="text-muted">{relay.archived ? "adresses désactivées." : relay.live ? "ton flux arrive." : serverOk ? "prêt à recevoir ton flux." : "réessaie plus tard."}</span></span>
+        </p>
         <RelayActions relay={relay} bare />
 
-        <TabsNav tabs={TABS.map((t) => ({ id: t.id, label: t.label, href: href(t.id) }))} current={tab} label="Sections du serveur" />
+        <TabsNav pill tabs={TABS.map((t) => ({ id: t.id, label: t.label, href: href(t.id) }))} current={tab} label="Sections du serveur" />
 
         {relay.archived && tab !== "info" && tab !== "parametres" ? (
           <p className="rounded-2xl border border-line bg-surface p-6 text-sm text-muted">Ce serveur est archivé : ses adresses ne marchent plus. Réactive-le depuis le menu « Plus » pour diffuser de nouveau.</p>

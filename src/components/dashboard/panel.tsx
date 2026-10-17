@@ -6,7 +6,18 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 // Briques d'une page de service, façon console d'hébergeur, dans le thème SYXTEE : onglets soulignés, cartes à rubriques titrées,
 // lignes « libellé, valeur, menu ⋮ », pastilles d'état. Les pages s'en servent pour tout ranger sur une seule page par onglet.
 
-export function TabsNav({ tabs, current, label = "Sections" }: { tabs: { id: string; label: string; href: string }[]; current: string; label?: string }) {
+export function TabsNav({ tabs, current, label = "Sections", pill = false }: { tabs: { id: string; label: string; href: string }[]; current: string; label?: string; /** Onglets en pastilles (fiche d'un serveur) au lieu du soulignement. */ pill?: boolean }) {
+  if (pill) {
+    return (
+      <nav aria-label={label} className="mb-8 flex gap-1.5 overflow-x-auto">
+        {tabs.map((t) => (
+          <Link key={t.id} href={t.href} aria-current={t.id === current ? "page" : undefined} className={`whitespace-nowrap rounded-xl px-4 py-2.5 text-[15px] transition-colors ${t.id === current ? "bg-surface-2 font-medium text-foreground" : "text-muted hover:text-foreground"}`}>
+            {t.label}
+          </Link>
+        ))}
+      </nav>
+    );
+  }
   return (
     <nav aria-label={label} className="mb-8 flex gap-8 overflow-x-auto border-b border-line">
       {tabs.map((t) => (

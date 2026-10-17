@@ -389,18 +389,28 @@ export class Agent {
     for (const rel of this.relays) if (live.has(rel.id)) rel.live = live.get(rel.id)!;
   }
 
-  /** Débit du flux de destination, une fois toutes les 2 s, seulement si un déclenchement au débit est choisi. */
+  /** État du flux, une fois toutes les 2 s. Le secours ne juge pas une seule caméra : tant qu'UN flux du compte est en ligne côté serveur (Osmo, iPhone, drone…), il n'y a pas de coupure. */
   private async pollBitrate() {
     const c = this.cfg.backup;
-    // Le flux jugé est celui de la source surveillée (« Flux › NOM »), pas forcément la destination : sinon un autre flux à l'arrêt (0 kb/s) déclenche le secours en boucle.
+    // Le flux jugé en priorité est celui de la source surveillée (« Flux › NOM »), pas forcément la destination : sinon un autre flux à l'arrêt (0 kb/s) déclenche le secours en boucle.
     const watched = this.relays.find((x) => fluxName(x.name) === c.source)?.id ?? this.cfg.destination;
     if (this.stopped || !c.enabled || !watched) {
       this.watcher.setRelayLive(null);
       return this.watcher.setBitrate(null);
     }
-    const r = await coreCall(this.cfg, "GET", `/v1/link/streams/${encodeURIComponent(watched)}/status`);
-    this.watcher.setRelayLive(r.ok ? !!r.json.live : null);
-    this.watcher.setBitrate(c.trigger === "cut" ? null : r.ok ? (r.json.live ? Number(r.json.kbps) || 0 : 0) : null);
+    const list = await coreCall(this.cfg, "GET", "/v1/link/streams");
+    if (!list.ok) {
+      this.watcher.setRelayLive(null);
+      return this.watcher.setBitrate(null);
+    }
+    const live = ((list.json.streams as { id: string; live: boolean }[]) ?? []).filter((s) => !!s.live);
+    this.watcher.setRelayLive(live.length > 0);
+    if (c.trigger === "cut") return this.watcher.setBitrate(null);
+    if (live.length === 0) return this.watcher.setBitrate(0);
+    // Débit du flux surveillé s'il est en ligne, sinon celui du premier flux en ligne : une autre caméra qui émet bien n'est pas une coupure.
+    const id = live.find((s) => s.id === watched)?.id ?? live[0].id;
+    const r = await coreCall(this.cfg, "GET", `/v1/link/streams/${encodeURIComponent(id)}/status`);
+    this.watcher.setBitrate(r.ok ? (r.json.live ? Number(r.json.kbps) || 0 : 0) : null);
   }
 
   /** Change le déclenchement : sur le flux de destination (compte) et ici. Renvoie le déclenchement retenu. */

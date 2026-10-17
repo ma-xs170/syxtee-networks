@@ -273,7 +273,15 @@ export function useObs({ coreUrl, deviceId, demoToken, invite }: UseObsArgs) {
       setTransitions((tl.transitions ?? []).map((t) => t.transitionName));
       setTransition(tl.currentSceneTransitionName ?? "");
     }
-    if (bk) setRoles(bk);
+    if (bk) {
+      setRoles(bk);
+      // Drone, autres caméras, garde audio et régie IA n'existent plus dans la régie : un ancien réglage encore actif ne doit pas changer
+      // la scène d'OBS en cachette (prise « belle image » qui bascule, régie IA qui cherche une scène disparue). On les coupe une fois.
+      if (!guest && (bk.autoEnabled || bk.directorEnabled || bk.audioEnabled || bk.audioBackup)) {
+        const off = { ...bk, autoEnabled: false, directorEnabled: false, audioEnabled: false, audioBackup: false };
+        void call<Roles>("link.setBackup", off).then((r) => setRoles(r ?? off)).catch(() => {});
+      }
+    }
     if (pl) setProfiles({ current: pl.currentProfileName ?? "", list: pl.profiles ?? [] });
     if (cl) setCollections({ current: cl.currentSceneCollectionName ?? "", list: cl.sceneCollections ?? [] });
     if (pv) {
@@ -292,7 +300,7 @@ export function useObs({ coreUrl, deviceId, demoToken, invite }: UseObsArgs) {
       );
     }
     setLoaded(true);
-  }, [read, setRoles]);
+  }, [read, setRoles, call, guest]);
 
   useEffect(() => {
     if (link !== "on" || !agent.online) return;

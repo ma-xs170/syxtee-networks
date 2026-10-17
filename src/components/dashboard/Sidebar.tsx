@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import CommandPalette, { type Command } from "./CommandPalette";
 import { createContext, useContext, useEffect, useRef, useState, useTransition, type ComponentType } from "react";
 import {
   Archive,
@@ -374,6 +375,15 @@ function MobileTabs({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolea
 }
 
 /** Mise en page : barre latérale fixe en desktop, barre du haut et tiroir en mobile. */
+const EXTRA_COMMANDS: Command[] = [
+  { label: "Paramètres", href: "/dashboard/parametres", hint: "Compte" },
+  { label: "Abonnement", href: "/dashboard/abonnement", hint: "Compte" },
+  { label: "Profil", href: "/dashboard/profil", hint: "Compte" },
+  { label: "Multichat", href: "/dashboard/multichat", hint: "Outils" },
+  { label: "Lives passés", href: "/dashboard/lives", hint: "Suivi" },
+  { label: "Nouvelle demande d'assistance", href: "/dashboard/support/nouveau", hint: "Aide" },
+];
+
 export default function DashboardShell({ admin, children, workspace, affiliate = null }: { admin: boolean; children: React.ReactNode; workspace?: WorkspaceInfo; affiliate?: AffiliateInfo }) {
   // Cookie d'espace périmé (espace supprimé, membre retiré) : on l'efface, sinon le Core refuserait chaque appel.
   useEffect(() => {
@@ -413,6 +423,7 @@ export default function DashboardShell({ admin, children, workspace, affiliate =
     <WsCtx.Provider value={workspace ?? { workspaces: [], activeId: null, left: 0, features: null }}>
     <AffCtx.Provider value={affiliate}>
     <div className="dash-surface min-h-dvh lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
+      <CommandPalette commands={[...GROUPS, { items: HELP }].flatMap((g) => g.items).filter((i) => !i.external && !i.soon).map((i) => ({ label: i.label, href: i.href })).concat(EXTRA_COMMANDS)} />
       <aside className="sticky top-0 z-40 hidden h-dvh border-r border-line bg-surface lg:block">
         <Content admin={admin} onNavigate={() => {}} />
       </aside>

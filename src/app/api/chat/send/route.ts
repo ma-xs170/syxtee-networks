@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { getUser } from "@/lib/auth/dal";
+import { readJson } from "@/lib/auth/app-api";
 import { allow } from "@/lib/auth/rateLimit";
 import { ChatError, isPlatform, sendMessage } from "@/lib/chat/providers";
 
@@ -8,7 +9,7 @@ import { ChatError, isPlatform, sendMessage } from "@/lib/chat/providers";
 export async function POST(request: NextRequest) {
   const user = await getUser();
   if (!user) return Response.json({ error: "unauthorized" }, { status: 401 });
-  const body = (await request.json().catch(() => null)) as { platform?: string; channel?: string; text?: string } | null;
+  const body = (await readJson(request)) as { platform?: string; channel?: string; text?: string } | null;
   const { platform, channel, text } = body ?? {};
   if (!platform || !isPlatform(platform) || typeof channel !== "string" || typeof text !== "string") return Response.json({ error: "bad_request" }, { status: 400 });
   if (!/^[\w-]{3,40}$/.test(channel)) return Response.json({ error: "bad_channel" }, { status: 400 });

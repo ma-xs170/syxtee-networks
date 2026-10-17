@@ -56,11 +56,15 @@ export const getUser = cache(async () => {
   return data.user;
 });
 
+// Colonnes lues à chaque page privée : seulement celles du type Profile (jamais les colonnes internes de la table).
+const PROFILE_COLUMNS =
+  "id, username, first_name, last_name, show_first_name, avatar_url, bio, country, timezone, twitch_id, twitch_login, twitch, twitch_display_name, kick, youtube, tiktok, instagram, x, show_on_site, coverage_consent, mobile_operator, onboarded_at, support_id, plan, plan_until, suspended_at, stripe_customer_id, billing_interval, billing_status, cancel_at_period_end, billing_period_end";
+
 export const getProfile = cache(async (): Promise<Profile | null> => {
   const user = await getUser();
   if (!user) return null;
   const supabase = await createClient();
-  const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  const { data } = await supabase.from("profiles").select(PROFILE_COLUMNS).eq("id", user.id).single();
   return (data as Profile | null) ?? null;
 });
 

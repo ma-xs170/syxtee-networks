@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashPage } from "@/components/dashboard/ui";
+import Pager, { pageOf, pageParam } from "@/components/dashboard/Pager";
 import { requireAdmin } from "@/lib/admin";
 import { listRequests, TRASH_DAYS, type AccessRequest } from "@/lib/access";
 import { fmtAgo } from "@/lib/dashboard-data";
@@ -31,13 +32,13 @@ function Row({ k, v }: { k: string; v: string }) {
   );
 }
 
-export default async function AdminAccessPage({ searchParams }: { searchParams: Promise<{ etat?: string; mail?: string; to?: string; r?: string }> }) {
+export default async function AdminAccessPage({ searchParams }: { searchParams: Promise<{ etat?: string; mail?: string; to?: string; r?: string; p?: string }> }) {
   await requireAdmin("access");
-  const { etat, mail, to, r: why } = await searchParams;
+  const { etat, mail, to, r: why, p: pageQuery } = await searchParams;
   const tab = TABS.find((t) => t.id === etat) ?? TABS[0];
   const trash = tab.id === "corbeille";
   const [all, trashed] = await Promise.all([listRequests(), listRequests(undefined, true)]);
-  const rows = trash ? trashed : all.filter((r) => r.status === tab.status);
+  const { rows, page, pages, total } = pageOf(trash ? trashed : all.filter((r) => r.status === tab.status), pageParam(pageQuery), 10);
   const purgeOn = (d: string | null) => new Date(Date.parse(d ?? "") + TRASH_DAYS * 86_400_000).toLocaleDateString("fr-FR");
 
   return (
@@ -164,6 +165,7 @@ export default async function AdminAccessPage({ searchParams }: { searchParams: 
           ))}
         </ul>
       )}
+      <Pager page={page} pages={pages} total={total} href={(n) => `/admin/acces?etat=${tab.id}&p=${n}`} />
     </DashPage>
   );
 }

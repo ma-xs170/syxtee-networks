@@ -17,6 +17,7 @@ async function appToken(force = false) {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, grant_type: "client_credentials" }),
     cache: "no-store",
+    signal: AbortSignal.timeout(6000),
   });
   if (!res.ok) throw new Error(`Twitch token ${res.status}`);
   const json = (await res.json()) as { access_token: string; expires_in: number };
@@ -28,6 +29,7 @@ async function helix<T>(path: string, revalidate: number, retry = true): Promise
   const res = await fetch(`${API}${path}`, {
     headers: { "Client-Id": clientId, Authorization: `Bearer ${await appToken(!retry)}` },
     next: { revalidate },
+    signal: AbortSignal.timeout(6000),
   });
   if (res.status === 401 && retry) return helix(path, revalidate, false);
   if (!res.ok) throw new Error(`Twitch ${path.split("?")[0]} ${res.status}`);

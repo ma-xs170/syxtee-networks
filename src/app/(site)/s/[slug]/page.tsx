@@ -6,7 +6,7 @@ import StreamerDesk from "@/components/illustrations/StreamerDesk";
 import Reveal from "@/components/ui/Reveal";
 import Highlight from "@/components/ui/Highlight";
 import { Container } from "@/components/ui";
-import { buttonClass } from "@/components/ui/Button";
+import { buttonClass } from "@/components/ui/button-styles";
 import { getPublicAffiliate } from "@/lib/affiliates";
 import { CATALOG, TIERS } from "@/lib/billing";
 import { getTwitchUsersByLogin, hasTwitch } from "@/lib/twitch";

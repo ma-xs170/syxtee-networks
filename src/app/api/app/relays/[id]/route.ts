@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { appUser, privateJson } from "@/lib/auth/app-api";
+import { appUser, privateJson, readJson } from "@/lib/auth/app-api";
 import {
   archiveRelayAction,
   changeModeAction,
@@ -20,7 +20,7 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
   const u = await appUser();
   if (u instanceof Response) return u;
   const { id } = await params;
-  const b = (await request.json().catch(() => null)) as Record<string, unknown> | null;
+  const b = (await readJson(request)) as Record<string, unknown> | null;
   if (!b) return privateJson({ error: "Corps invalide." }, { status: 400 });
   if (typeof b.name === "string") return result(await renameRelayAction(id, b.name));
   if (typeof b.switch_trigger === "string") return result(await setSwitchTriggerAction(id, b.switch_trigger as "cut" | "cut_lowbitrate" | "sensitive"));

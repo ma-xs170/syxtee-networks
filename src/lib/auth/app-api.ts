@@ -1,5 +1,6 @@
 import "server-only";
 import { getProfile, getUser, type Profile } from "@/lib/auth/dal";
+import { limitOr429 } from "@/lib/guard";
 
 /** Réponse JSON privée : jamais mise en cache partagée. */
 export const privateJson = (data: unknown, init: ResponseInit = {}) =>
@@ -12,6 +13,9 @@ export async function appUser(): Promise<{ id: string; email: string | null; pro
   const profile = await getProfile();
   if (!profile) return privateJson({ error: "no_profile" }, { status: 403 });
   if (profile.suspended_at) return privateJson({ error: "suspended" }, { status: 403 });
+  // App iOS et dashboard : 120 requêtes par minute et par compte (une app qui boucle ne peut pas saturer le serveur).
+  const limited = await limitOr429(`app:${user.id}`, 120, 60);
+  if (limited) return limited;
   return { id: user.id, email: user.email ?? null, profile };
 }
 
@@ -26,5 +30,18 @@ export async function redirectTarget<T>(job: () => Promise<T>): Promise<{ result
       if (target) return { redirect: target };
     }
     throw e;
+  }
+}
+
+/** Corps JSON d'une requête, limité à 32 Ko (aucune de ces routes n'a besoin de plus) ; null si trop gros ou invalide. */
+export async function readJson(request: Request, maxBytes = 32_000): Promise<unknown> {
+  const declared = Number(request.headers.get("content-length"));
+  if (declared > maxBytes) return null;
+  const text = await request.text();
+  if (text.length > maxBytes) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
   }
 }

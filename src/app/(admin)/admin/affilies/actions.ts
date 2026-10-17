@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { affiliateInvite } from "@/emails/templates";
 import { requireAdmin } from "@/lib/admin";
-import { affiliateUrl, displayNameSchema, freeSlug, kitUrl, slugify, slugSchema, type Affiliate } from "@/lib/affiliates";
+import { AFFILIATE_COLUMNS, affiliateUrl, displayNameSchema, freeSlug, kitUrl, slugify, slugSchema, type Affiliate } from "@/lib/affiliates";
 import { sendEmailResult } from "@/lib/email/send";
 import { isManagedEmail, loginToEmail } from "@/lib/managed";
 import { audit } from "@/lib/plan-admin";
@@ -47,7 +47,7 @@ export async function inviteAffiliateAction(_prev: AffiliateState, form: FormDat
     slug = await freeSlug(slugify(pseudoRaw) || slugify(email.data.split("@")[0]));
   }
   const db = createAdminClient();
-  const { data, error } = await db.from("affiliates").insert({ email: email.data, slug, display_name: pseudo.data, invited_by: admin.email, user_id: userId }).select("*").single<Affiliate>();
+  const { data, error } = await db.from("affiliates").insert({ email: email.data, slug, display_name: pseudo.data, invited_by: admin.email, user_id: userId }).select(AFFILIATE_COLUMNS).single<Affiliate>();
   if (error || !data) {
     if (error?.code === "23505") return { error: /slug/.test(error.message) ? "Ce nom d'URL est déjà pris." : "Ce compte est déjà invité." };
     return { error: `Invitation impossible (${error?.message ?? "erreur"}). Migration 0053 appliquée ?` };
@@ -63,7 +63,7 @@ export async function resendAffiliateAction(form: FormData) {
   const admin = await requireAdmin("partners");
   const id = z.uuid().safeParse(form.get("id"));
   if (!id.success) return;
-  const { data } = await createAdminClient().from("affiliates").select("*").eq("id", id.data).maybeSingle<Affiliate>();
+  const { data } = await createAdminClient().from("affiliates").select(AFFILIATE_COLUMNS).eq("id", id.data).maybeSingle<Affiliate>();
   if (!data) return;
   if (isManagedEmail(data.email)) return;
   await sendEmailResult(data.email, mail(data));

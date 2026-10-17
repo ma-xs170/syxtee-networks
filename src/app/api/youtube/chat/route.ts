@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { getUser } from "@/lib/auth/dal";
 import { youtubeToken } from "@/lib/chat/providers";
+import { budget, limitOr429 } from "@/lib/guard";
 
 // GET /api/youtube/chat?v=<identifiant de la vidéo>&after=<jeton de page> : messages du chat d'un direct YouTube (Multichat).
 // YouTube n'a pas de connexion en direct côté navigateur : on interroge l'API Data à la cadence qu'elle demande
@@ -22,6 +23,8 @@ export async function GET(request: NextRequest) {
   const after = request.nextUrl.searchParams.get("after") ?? "";
   if (!/^[\w-]{11}$/.test(v) || after.length > 300) return Response.json({ error: "bad_request" }, { status: 400 });
 
+  const limited = await limitOr429(`yt-chat:${user.id}`, 40, 60);
+  if (limited) return limited;
   const token = KEY ? null : await youtubeToken(user.id);
   if (!KEY && !token) return Response.json({ error: "youtube_unavailable" }, { status: 503 });
   const call = (path: string) => fetch(`${API}${path}${KEY ? `&key=${KEY}` : ""}`, { headers: token ? { Authorization: `Bearer ${token}` } : {}, cache: "no-store", signal: AbortSignal.timeout(8000) });
@@ -40,6 +43,8 @@ export async function GET(request: NextRequest) {
     const key = `${chat.id}|${after}`;
     const hit = polls.get(key);
     if (hit && Date.now() - hit.at < 4000) return Response.json(hit.body);
+    // Plafond du jour : 5 unités par lecture sur 10 000 unités. On s'arrête à 1 500 lectures (7 500 unités), le reste sert aux autres appels.
+    if (!(await budget("youtube-chat", 1500))) return Response.json({ error: "youtube_unavailable" }, { status: 503, headers: { "Retry-After": "600" } });
 
     const r = await call(`/liveChat/messages?liveChatId=${encodeURIComponent(chat.id)}&part=snippet,authorDetails&maxResults=200${after ? `&pageToken=${encodeURIComponent(after)}` : ""}`);
     if (r.status === 403 || r.status === 404) {

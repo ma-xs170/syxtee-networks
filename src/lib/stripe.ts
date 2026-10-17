@@ -24,6 +24,6 @@ export function tierOfPrice(id: string | null | undefined): { tier: Tier; interv
 
 let client: Stripe | null = null;
 export function stripe() {
-  client ??= new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2026-08-26.dahlia" });
+  client ??= new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2026-08-26.dahlia", timeout: 15_000, maxNetworkRetries: 2 });
   return client;
 }

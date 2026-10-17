@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { contactAction, type ContactState } from "@/app/(site)/contact/actions";
-import { buttonClass } from "@/components/ui/Button";
+import { buttonClass } from "@/components/ui/button-styles";
 
 // Formulaire de demande de devis : événement, lieu, date, durée, besoins, description. Champ piège et horodatage antispam.
 const field =

@@ -1,0 +1,33 @@
+name: Surveillance du site
+
+# Sonde externe (hors du VPS, donc elle voit aussi une panne du serveur) : toutes les 5 minutes, GitHub appelle /api/health.
+# En cas d'échec 2 fois de suite, le job échoue : GitHub envoie un e-mail au propriétaire du dépôt.
+# Option : secret DISCORD_ALERT_WEBHOOK (URL de webhook d'un salon) pour être prévenu aussi sur Discord.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Appeler /api/health
+        id: probe
+        run: |
+          for i in 1 2; do
+            code=$(curl -s -o health.json -w "%{http_code}" --max-time 20 https://www.syxtee-networks.fr/api/health || echo 000)
+            echo "essai $i : HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 20
+          done
+          echo "Réponse :"; cat health.json 2>/dev/null || true
+          exit 1
+      - name: Prévenir Discord
+        if: failure() && env.WEBHOOK != ''
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_ALERT_WEBHOOK }}
+        run: |
+          curl -s -X POST -H "Content-Type: application/json" \
+            -d "{\"content\":\"🔴 syxtee-networks.fr ne répond pas (ou un service est en panne) : $(cat health.json 2>/dev/null | head -c 300)\"}" "$WEBHOOK"

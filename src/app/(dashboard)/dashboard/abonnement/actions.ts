@@ -41,6 +41,13 @@ export async function startCheckout(tier: Tier, interval: Interval): Promise<Bil
   try {
     const name = [profile.first_name, profile.last_name].filter(Boolean).join(" ") || null;
     const customer = await customerFor(user, name, profile.stripe_customer_id);
+    // Le webhook peut ne pas être arrivé : on regarde chez Stripe si un abonnement existe déjà avant d'en ouvrir un second.
+    const existing = await stripe().subscriptions.list({ customer, status: "all", limit: 5 });
+    if (existing.data.some((s) => ["active", "trialing", "past_due", "unpaid"].includes(s.status))) {
+      return { error: "Un abonnement est déjà en cours sur ton compte. Ouvre « Gérer l'abonnement » pour le modifier." };
+    }
+    // Double clic ou deux onglets : même clé d'idempotence pendant 30 min, Stripe renvoie alors la même session au lieu d'en créer une autre.
+    const idempotencyKey = `checkout-${user.id}-${tier}-${interval}-${Math.floor(Date.now() / 1_800_000)}`;
     const session = await stripe().checkout.sessions.create({
       mode: "subscription",
       customer,
@@ -57,7 +64,7 @@ export async function startCheckout(tier: Tier, interval: Interval): Promise<Bil
       success_url: `${base}/dashboard/abonnement?paiement=ok`,
       cancel_url: `${base}/dashboard/abonnement`,
       integration_identifier: "syxtee-abonnement-qvmtrkzh",
-    });
+    }, { idempotencyKey });
     url = session.url;
   } catch (e) {
     console.error("startCheckout", e instanceof Error ? e.message : e);

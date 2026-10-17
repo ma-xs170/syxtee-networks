@@ -2,6 +2,8 @@ import "server-only";
 import { render } from "@react-email/components";
 import { Resend } from "resend";
 import type { Email } from "@/emails/templates";
+import { allow } from "@/lib/auth/rateLimit";
+import { budget } from "@/lib/guard";
 
 // Envoi via Resend. Expéditeur : EMAIL_FROM (ex. « SYXTEE <connexion@syxtee.fr> » une fois le domaine vérifié).
 // Sans domaine, l'expéditeur de test de Resend ne livre qu'à l'adresse du compte Resend.
@@ -35,8 +37,15 @@ export async function sendEmailResult(to: string, email: Email): Promise<SendRes
       console.info(`[email non envoyé : RESEND_API_KEY absente] ${to} · ${subject}`);
       return { ok: false, reason: `RESEND_API_KEY absente sur Vercel - ${envDiagnostic()}` };
     }
+    // Plafonds : 8 e-mails par heure et par destinataire, 2 000 par jour au total (protège le quota Resend et la réputation du domaine).
+    if (!(await allow(`mail:${to.toLowerCase()}`, 8, 3600))) return { ok: false, reason: "trop d'e-mails envoyés à cette adresse (8 par heure)" };
+    if (!(await budget("resend", 2000))) return { ok: false, reason: "plafond de 2 000 e-mails par jour atteint" };
     client ??= new Resend(process.env.RESEND_API_KEY);
-    const { error } = await client.emails.send({ from: FROM, to, subject, html, text });
+    // Resend n'a pas de délai propre : sans cette limite, une panne chez eux bloquerait l'action (inscription, contact) indéfiniment.
+    const { error } = await Promise.race([
+      client.emails.send({ from: FROM, to, subject, html, text }),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Resend : délai de 10 s dépassé")), 10_000)),
+    ]);
     if (error) {
       console.error("Resend", error.name, error.message);
       const testSender = /own email|verify a domain|testing emails/i.test(error.message);

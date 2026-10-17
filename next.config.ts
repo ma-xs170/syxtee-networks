@@ -8,13 +8,28 @@ const nextConfig: NextConfig = {
   // Les actions serveur (revalidatePath) vident ce cache, donc les listes modifiées se rafraîchissent quand même.
   experimental: { staleTimes: { dynamic: 30, static: 180 }, serverActions: { bodySizeLimit: "20mb" } },
   distDir: process.env.NEXT_DIST_DIR || ".next",
+  // Réponses compressées (gzip sur l'image Docker ; Vercel ajoute brotli) et pas d'en-tête X-Powered-By.
+  compress: true,
+  poweredByHeader: false,
   images: {
+    // Formats modernes, plus légers que le JPEG/PNG d'origine ; une image optimisée reste 1 jour en cache.
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 86_400,
     remotePatterns: [
       { protocol: "https", hostname: "static-cdn.jtvnw.net" }, // avatars Twitch
       { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" }, // avatars envoyés
       { protocol: "https", hostname: "cdn.discordapp.com" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
     ],
+  },
+  // Fichiers de /public qui ne changent pas : gardés 1 jour par le navigateur et le CDN, puis relus en douceur pendant 7 jours.
+  // (Les fichiers de _next/static sont déjà « immutable » ; sw.js et les manifestes restent toujours frais.)
+  async headers() {
+    const stable = "public, max-age=86400, stale-while-revalidate=604800";
+    return ["images", "visuals", "devices", "glass-icons", "icons", "videos", "kit"].map((dir) => ({
+      source: `/${dir}/:path*`,
+      headers: [{ key: "Cache-Control", value: stable }],
+    }));
   },
   async redirects() {
     return [

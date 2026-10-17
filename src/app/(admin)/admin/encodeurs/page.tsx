@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
+import Pager, { pageOf, pageParam } from "@/components/dashboard/Pager";
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 import CodesForm from "./CodesUI";
@@ -10,14 +11,15 @@ type Row = { code: string; months: number; created_at: string; order_ref: string
 const day = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Paris" });
 
 // Codes d'activation de l'Encodeur : un code = un compte, une seule fois. Les achats en boutique créent leur code tout seuls (webhook).
-export default async function AdminEncodeursPage() {
+export default async function AdminEncodeursPage({ searchParams }: { searchParams: Promise<{ p?: string }> }) {
   await requireAdmin("accounts");
   const { data } = hasAdmin ? await createAdminClient().from("encoder_activation_codes").select("code, months, created_at, order_ref, buyer_id, used_by, used_at").order("created_at", { ascending: false }).limit(300) : { data: [] };
-  const rows = (data ?? []) as Row[];
-  const used = rows.filter((r) => r.used_by).length;
+  const every = (data ?? []) as Row[];
+  const used = every.filter((r) => r.used_by).length;
+  const { rows, page, pages, total } = pageOf(every, pageParam((await searchParams).p));
   return (
     <DashPage>
-      <DashHeader lead="Codes" hl="d'activation" sub={`${rows.length} code${rows.length > 1 ? "s" : ""}, dont ${used} utilisé${used > 1 ? "s" : ""}.`} />
+      <DashHeader lead="Codes" hl="d'activation" sub={`${total} code${total > 1 ? "s" : ""}, dont ${used} utilisé${used > 1 ? "s" : ""}.`} />
       <div className="grid gap-4">
         <Tile>
           <TileLabel>Générer des codes</TileLabel>
@@ -45,6 +47,7 @@ export default async function AdminEncodeursPage() {
               </table>
             </div>
           )}
+          <Pager page={page} pages={pages} total={total} href={(n) => `/admin/encodeurs?p=${n}`} />
         </Tile>
       </div>
     </DashPage>

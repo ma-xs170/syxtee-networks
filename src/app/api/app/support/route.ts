@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { appUser, privateJson, redirectTarget } from "@/lib/auth/app-api";
+import { appUser, privateJson, redirectTarget, readJson } from "@/lib/auth/app-api";
 import { listTickets, ticketCounts } from "@/lib/support";
 import { categoryLabel } from "@/lib/support-categories";
 import { createTicketAction } from "@/app/(dashboard)/dashboard/support/actions";
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const u = await appUser();
   if (u instanceof Response) return u;
-  const b = (await request.json().catch(() => null)) as { category?: string; subject?: string; body?: string; fields?: Record<string, string> } | null;
+  const b = (await readJson(request)) as { category?: string; subject?: string; body?: string; fields?: Record<string, string> } | null;
   if (!b) return privateJson({ error: "Corps invalide." }, { status: 400 });
   const form = new FormData();
   form.set("category", b.category ?? "");

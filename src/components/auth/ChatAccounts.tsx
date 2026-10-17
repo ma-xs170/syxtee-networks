@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { siKick, siTwitch, siYoutube } from "simple-icons";
+import { apiFetch } from "@/components/dashboard/apiFetch";
 
 // Comptes Twitch, Kick et YouTube reliés pour lire et écrire dans le Multichat (Mon compte). Les jetons restent côté serveur :
 // on ne reçoit que le nom de chaque compte. Une plateforme non configurée sur le serveur n'est pas proposée.
@@ -20,7 +21,7 @@ export default function ChatAccounts() {
 
   const load = useCallback(async () => {
     try {
-      const r = await fetch("/api/chat/connections", { cache: "no-store" });
+      const r = await apiFetch("/api/chat/connections", { cache: "no-store" });
       if (!r.ok) throw new Error(String(r.status));
       setS((await r.json()) as State);
     } catch {
@@ -53,7 +54,7 @@ export default function ChatAccounts() {
               <button
                 type="button"
                 onClick={async () => {
-                  await fetch(`/api/chat/connections?platform=${p.id}`, { method: "DELETE" });
+                  await apiFetch(`/api/chat/connections?platform=${p.id}`, { method: "DELETE" }).catch(() => null);
                   await load();
                 }}
                 className="h-9 rounded-lg border border-line px-3.5 text-sm text-muted transition-colors hover:bg-foreground/10 hover:text-foreground"

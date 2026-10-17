@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { siKick, siTwitch, siYoutube } from "simple-icons";
 import { Gear } from "@/components/icons";
+import { apiFetch } from "./apiFetch";
 
 // Multichat : Twitch et Kick dans un seul fil (lecture seule, connexion anonyme directement depuis le navigateur),
 // YouTube dans un onglet à part (son chat n'est lisible que dans son propre lecteur).
@@ -119,7 +120,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
   // Comptes reliés pour écrire (jetons côté serveur : on ne reçoit que les noms).
   const loadAccounts = useCallback(async () => {
     try {
-      const r = await fetch("/api/chat/connections", { cache: "no-store" });
+      const r = await apiFetch("/api/chat/connections", { cache: "no-store" });
       if (!r.ok) return;
       const a = (await r.json()) as Accounts;
       setAcc(a);
@@ -177,7 +178,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
   useEffect(() => {
     if (!kickOk) return;
     let stopped = false;
-    fetch(`/api/kick/chatroom?slug=${encodeURIComponent(kick)}`)
+    apiFetch(`/api/kick/chatroom?slug=${encodeURIComponent(kick)}`)
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((d: { id: number }) => !stopped && setRoom({ slug: kick, id: d.id }))
       .catch(() => !stopped && setRoom({ slug: kick, failed: true }));
@@ -211,7 +212,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
     const look = async () => {
       let next = 45_000;
       try {
-        const r = await fetch("/api/youtube/live", { cache: "no-store" });
+        const r = await apiFetch("/api/youtube/live", { cache: "no-store" }, { retries: 0 });
         if (r.ok) {
           const j = (await r.json()) as { videoId: string | null };
           if (!stopped) setYtDetected(j.videoId ?? "");
@@ -236,7 +237,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
     const tick = async () => {
       let wait = 12_000;
       try {
-        const r = await fetch(`/api/youtube/chat?v=${ytVideo}${after ? `&after=${encodeURIComponent(after)}` : ""}`, { cache: "no-store" });
+        const r = await apiFetch(`/api/youtube/chat?v=${ytVideo}${after ? `&after=${encodeURIComponent(after)}` : ""}`, { cache: "no-store" }, { retries: 0 });
         if (!r.ok) throw new Error(String(r.status));
         const j = (await r.json()) as { messages: { id: string; user: string; text: string }[]; next: string; interval: number };
         if (stopped) return;
@@ -270,7 +271,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
     const results = await Promise.all(
       to.map(async (p) => {
         try {
-          const r = await fetch("/api/chat/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ platform: p, channel: channelOf[p], text }) });
+          const r = await apiFetch("/api/chat/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ platform: p, channel: channelOf[p], text }) });
           if (r.ok) return null;
           const j = (await r.json().catch(() => ({}))) as { error?: string };
           return `${PLATFORM[p].label} : ${SEND_ERRORS[j.error ?? ""] ?? "envoi impossible."}`;
@@ -286,7 +287,7 @@ export default function MultiChat({ defaults, height = "h-[34rem]", compact = fa
   }
 
   async function disconnect(p: P) {
-    await fetch(`/api/chat/connections?platform=${p}`, { method: "DELETE" });
+    await apiFetch(`/api/chat/connections?platform=${p}`, { method: "DELETE" }).catch(() => null);
     await loadAccounts();
   }
   const available: Record<P, boolean> = { twitch: !!twitch, kick: !!kick, youtube: !!ytId };

@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient as createJsClient } from "@supabase/supabase-js";
 import { cookies, headers } from "next/headers";
 import { supabaseKey, supabaseUrl } from "./env";
+import { timedFetch } from "./fetch";
 
 /** Jeton de session Supabase envoyé par une app native (Authorization: Bearer …), sinon null (navigateur : cookies). */
 export async function bearerToken(): Promise<string | null> {
@@ -18,11 +19,12 @@ export async function createClient() {
   if (token) {
     return createJsClient(supabaseUrl, supabaseKey, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-      global: { headers: { Authorization: `Bearer ${token}` } },
+      global: { headers: { Authorization: `Bearer ${token}` }, fetch: timedFetch(15_000) },
     });
   }
   const cookieStore = await cookies();
   return createServerClient(supabaseUrl, supabaseKey, {
+    global: { fetch: timedFetch(15_000) },
     cookies: {
       getAll() {
         return cookieStore.getAll();

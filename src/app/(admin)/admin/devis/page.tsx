@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashPage } from "@/components/dashboard/ui";
+import Pager, { pageOf, pageParam } from "@/components/dashboard/Pager";
 import { requireAdmin } from "@/lib/admin";
 import { fmtAgo } from "@/lib/dashboard-data";
 import { listQuotes, type QuoteStatus } from "@/lib/quotes";
@@ -31,12 +32,12 @@ function Fact({ k, v }: { k: string; v: string }) {
 
 const href = (u: string) => (/^https?:\/\//i.test(u) ? u : `https://${u}`);
 
-export default async function AdminQuotesPage({ searchParams }: { searchParams: Promise<{ etat?: string }> }) {
+export default async function AdminQuotesPage({ searchParams }: { searchParams: Promise<{ etat?: string; p?: string }> }) {
   await requireAdmin("access");
-  const { etat } = await searchParams;
+  const { etat, p: pageQuery } = await searchParams;
   const tab = TABS.find((t) => t.id === etat) ?? TABS[0];
   const all = await listQuotes();
-  const rows = all.filter((q) => q.status === tab.status);
+  const { rows, page, pages, total } = pageOf(all.filter((q) => q.status === tab.status), pageParam(pageQuery), 10);
 
   return (
     <DashPage>
@@ -135,6 +136,7 @@ export default async function AdminQuotesPage({ searchParams }: { searchParams: 
           ))}
         </ul>
       )}
+      <Pager page={page} pages={pages} total={total} href={(n) => `/admin/devis?etat=${tab.id}&p=${n}`} />
     </DashPage>
   );
 }

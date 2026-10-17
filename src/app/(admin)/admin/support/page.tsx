@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashPage } from "@/components/dashboard/ui";
+import Pager, { pageOf, pageParam } from "@/components/dashboard/Pager";
 import { requireStaff } from "@/lib/admin";
 import { staffCards } from "@/lib/staff-data";
 import { fmtAgo } from "@/lib/dashboard-data";
@@ -17,9 +18,9 @@ const TABS = [
   { id: "resolus", label: "Résolues" },
 ] as const;
 
-export default async function AdminSupportPage({ searchParams }: { searchParams: Promise<{ etat?: string; categorie?: string }> }) {
+export default async function AdminSupportPage({ searchParams }: { searchParams: Promise<{ etat?: string; categorie?: string; p?: string }> }) {
   const { user: me } = await requireStaff("support");
-  const { etat, categorie } = await searchParams;
+  const { etat, categorie, p: pageQuery } = await searchParams;
   const tab = TABS.find((t) => t.id === etat) ?? TABS[0];
   const cat = isCategory(categorie) ? categorie : null;
   // Une catégorie à la fois (menu de gauche) : « Tous » les regroupe, chaque catégorie reste séparée.
@@ -28,7 +29,7 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
   const waiting = (c: string | null) => every.filter((t) => (!c || t.category === c) && t.status === "open" && t.last_from === "user").length;
   const catHref = (c: string | null) => `/admin/support${[c ? `categorie=${c}` : "", tab.id !== "attente" ? `etat=${tab.id}` : ""].filter(Boolean).length ? `?${[c ? `categorie=${c}` : "", tab.id !== "attente" ? `etat=${tab.id}` : ""].filter(Boolean).join("&")}` : ""}`;
   const qs = (e: string) => `?${[cat ? `categorie=${cat}` : "", e ? `etat=${e}` : ""].filter(Boolean).join("&")}`;
-  const rows = all.filter((t) => (tab.id === "resolus" ? t.status === "resolved" : tab.id === "ouverts" ? t.status === "open" : t.status === "open" && t.last_from === "user"));
+  const { rows, page, pages, total } = pageOf(all.filter((t) => (tab.id === "resolus" ? t.status === "resolved" : tab.id === "ouverts" ? t.status === "open" : t.status === "open" && t.last_from === "user")), pageParam(pageQuery), 20);
   const [names, agents] = await Promise.all([whoIs(rows.map((t) => t.user_id)), staffCards(rows.map((t) => t.assigned_to).filter((x): x is string => !!x))]);
   const count = (id: (typeof TABS)[number]["id"]) => all.filter((t) => (id === "resolus" ? t.status === "resolved" : id === "ouverts" ? t.status === "open" : t.status === "open" && t.last_from === "user")).length;
 
@@ -79,6 +80,7 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
           ))}
         </ul>
       )}
+      <Pager page={page} pages={pages} total={total} href={(n) => `/admin/support${qs(tab.id === "attente" ? "" : tab.id)}${qs(tab.id === "attente" ? "" : tab.id) ? "&" : "?"}p=${n}`} />
     </DashPage>
   );
 }

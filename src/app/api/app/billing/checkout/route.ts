@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { appUser, privateJson, redirectTarget } from "@/lib/auth/app-api";
+import { appUser, privateJson, redirectTarget, readJson } from "@/lib/auth/app-api";
 import { isTier } from "@/lib/billing";
 import { startCheckout } from "@/app/(dashboard)/dashboard/abonnement/actions";
 
@@ -7,7 +7,7 @@ import { startCheckout } from "@/app/(dashboard)/dashboard/abonnement/actions";
 export async function POST(request: NextRequest) {
   const u = await appUser();
   if (u instanceof Response) return u;
-  const b = (await request.json().catch(() => null)) as { tier?: string; interval?: string } | null;
+  const b = (await readJson(request)) as { tier?: string; interval?: string } | null;
   if (!isTier(b?.tier) || (b?.interval !== "month" && b?.interval !== "year")) return privateJson({ error: "Formule inconnue." }, { status: 400 });
   const out = await redirectTarget(() => startCheckout(b.tier as "basic" | "paid" | "extra", b.interval as "month" | "year"));
   if ("redirect" in out) return privateJson({ url: out.redirect });

@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { appUser, privateJson, redirectTarget } from "@/lib/auth/app-api";
+import { appUser, privateJson, redirectTarget, readJson } from "@/lib/auth/app-api";
 import { getThread } from "@/lib/support";
 import { categoryLabel } from "@/lib/support-categories";
 import { deleteTicketAction, replyAction } from "@/app/(dashboard)/dashboard/support/actions";
@@ -19,7 +19,7 @@ export async function GET(_r: NextRequest, { params }: Ctx) {
 export async function POST(request: NextRequest, { params }: Ctx) {
   const u = await appUser();
   if (u instanceof Response) return u;
-  const b = (await request.json().catch(() => null)) as { body?: string } | null;
+  const b = (await readJson(request)) as { body?: string } | null;
   const form = new FormData();
   form.set("body", b?.body ?? "");
   const r = await replyAction((await params).id, {}, form);

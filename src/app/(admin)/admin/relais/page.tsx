@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashHeader, DashPage, Tile } from "@/components/dashboard/ui";
+import Pager, { pageOf, pageParam } from "@/components/dashboard/Pager";
 import { requireAdmin } from "@/lib/admin";
 import { liveNow } from "@/lib/admin-data";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
@@ -13,23 +14,24 @@ export const metadata: Metadata = { title: "Admin · Relais", robots: { index: f
 type Row = { id: string; user_id: string; name: string; protocol: string; server: string; mode: string; archived: boolean; last_live_at: string | null };
 const day = (iso: string | null) => (iso ? new Date(iso).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Paris" }) : "jamais");
 
-export default async function AdminRelaisPage({ searchParams }: { searchParams: Promise<{ archives?: string }> }) {
+export default async function AdminRelaisPage({ searchParams }: { searchParams: Promise<{ archives?: string; p?: string }> }) {
   await requireAdmin("relays");
-  const { archives } = await searchParams;
+  const { archives, p: pageQuery } = await searchParams;
   if (!hasAdmin) return <DashPage>Clé secrète Supabase absente.</DashPage>;
   const db = createAdminClient();
   let q = db.from("relays").select("id, user_id, name, protocol, server, mode, archived, last_live_at").order("last_live_at", { ascending: false, nullsFirst: false }).limit(1000);
   if (archives !== "1") q = q.eq("archived", false);
   const [{ data }, live] = await Promise.all([q, liveNow()]);
-  const rows = (data ?? []) as Row[];
+  const every = (data ?? []) as Row[];
+  const liveMap = new Map(live.map((l) => [l.relay_id, l]));
+  every.sort((a, b) => Number(liveMap.has(b.id)) - Number(liveMap.has(a.id)));
+  const { rows, page, pages, total } = pageOf(every, pageParam(pageQuery));
   const { data: people } = rows.length ? await db.from("profiles").select("id, first_name, last_name, support_id").in("id", [...new Set(rows.map((r) => r.user_id))]) : { data: [] };
   const who = new Map((people ?? []).map((p) => [p.id as string, p]));
-  const liveMap = new Map(live.map((l) => [l.relay_id, l]));
-  rows.sort((a, b) => Number(liveMap.has(b.id)) - Number(liveMap.has(a.id)));
 
   return (
     <DashPage>
-      <DashHeader lead="Tous les" hl="relais" sub={`${rows.length} relais · ${live.length} en direct`}>
+      <DashHeader lead="Tous les" hl="relais" sub={`${total} relais · ${live.length} en direct`}>
         <Link href={archives === "1" ? "/admin/relais" : "/admin/relais?archives=1"} className="text-sm underline-offset-4 hover:underline">
           {archives === "1" ? "Masquer les archivés" : "Afficher les archivés"}
         </Link>
@@ -64,6 +66,7 @@ export default async function AdminRelaisPage({ searchParams }: { searchParams: 
             })}
           </ul>
         )}
+        <Pager page={page} pages={pages} total={total} href={(n) => `/admin/relais?${archives === "1" ? "archives=1&" : ""}p=${n}`} />
       </Tile>
     </DashPage>
   );

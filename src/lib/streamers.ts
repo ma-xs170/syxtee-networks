@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { hasSupabase, supabaseKey, supabaseUrl } from "@/lib/supabase/env";
+import { timedFetch } from "@/lib/supabase/fetch";
 import { getLiveStreams, getTwitchUsersByLogin } from "@/lib/twitch";
 
 export type Channel = { platform: "twitch" | "kick" | "youtube"; handle: string; url: string };
@@ -58,7 +59,7 @@ async function getFeatured(supabase: SupabaseClient): Promise<HomeStreamer[]> {
 /** Streamers de l'accueil : comptes consentants (Twitch vérifié) puis chaînes ajoutées par l'équipe ; live d'abord. Ne lève jamais. */
 export async function getHomeStreamers(): Promise<HomeStreamer[]> {
   if (!hasSupabase) return [];
-  const supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } });
+  const supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false }, global: { fetch: timedFetch(8_000) } });
   const { data, error } = await supabase.from("public_streamers").select("*").limit(300);
   if (error || !data) {
     if (error) console.error("public_streamers", error.message);

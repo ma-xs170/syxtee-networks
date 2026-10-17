@@ -17,6 +17,7 @@ import { DailyBars } from "./charts";
 import { useLiveClock, useLiveStatus } from "./LiveStatus";
 import MesObs from "./MesObs";
 import type { DevicesDemo } from "./useLinkDevices";
+import { apiFetch } from "./apiFetch";
 import { ArrowLink } from "./ui";
 import { Card, Fact, Pill } from "./panel";
 
@@ -175,7 +176,7 @@ export default function Overview({ initial, coreUrl = "", demo }: { initial: Ove
     setPending(true);
     setError(false);
     try {
-      const res = await fetch(`/api/dashboard/overview?range=${r}`);
+      const res = await apiFetch(`/api/dashboard/overview?range=${r}`);
       if (!res.ok) throw new Error(String(res.status));
       const next = (await res.json()) as OverviewData;
       cache.current.set(r, next);

@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { appUser, privateJson } from "@/lib/auth/app-api";
+import { appUser, privateJson, readJson } from "@/lib/auth/app-api";
 import { saveNames, saveProfile } from "@/lib/auth/profileActions";
 
 const FIELDS = ["bio", "country", "timezone", "twitch", "kick", "youtube", "tiktok", "instagram", "x"] as const;
@@ -24,7 +24,7 @@ export async function GET() {
 export async function PATCH(request: NextRequest) {
   const u = await appUser();
   if (u instanceof Response) return u;
-  const b = (await request.json().catch(() => null)) as Record<string, unknown> | null;
+  const b = (await readJson(request)) as Record<string, unknown> | null;
   if (!b) return privateJson({ error: "Corps invalide." }, { status: 400 });
   if ("first_name" in b || "last_name" in b) {
     const f = new FormData();

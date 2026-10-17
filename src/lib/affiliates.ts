@@ -8,6 +8,9 @@ import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 // Programme affilié (migration 0053_affiliates.sql). L'équipe invite une adresse depuis /admin/affilies ; la personne retrouve son espace
 // « Affilié » dans le dashboard (lien public /s/<slug>, pseudo affiché, kit à télécharger). Tout passe par le serveur (clé secrète).
 
+/** Colonnes de la table affiliates, dans l'ordre du type Affiliate. */
+export const AFFILIATE_COLUMNS = "id, created_at, user_id, email, slug, display_name, active, invited_by, seen_at, clicks";
+
 export type Affiliate = {
   id: string;
   created_at: string;
@@ -64,12 +67,12 @@ export const getMyAffiliate = cache(async (): Promise<Affiliate | null> => {
   const user = await getUser();
   if (!user || !hasAdmin) return null;
   const db = createAdminClient();
-  const { data } = await db.from("affiliates").select("*").eq("user_id", user.id).maybeSingle<Affiliate>();
+  const { data } = await db.from("affiliates").select(AFFILIATE_COLUMNS).eq("user_id", user.id).maybeSingle<Affiliate>();
   if (data) return data.active ? data : null;
   if (!user.email || !user.email_confirmed_at) return null;
-  const { data: byMail } = await db.from("affiliates").select("*").eq("email", user.email.toLowerCase()).is("user_id", null).eq("active", true).maybeSingle<Affiliate>();
+  const { data: byMail } = await db.from("affiliates").select(AFFILIATE_COLUMNS).eq("email", user.email.toLowerCase()).is("user_id", null).eq("active", true).maybeSingle<Affiliate>();
   if (!byMail) return null;
-  const { data: claimed } = await db.from("affiliates").update({ user_id: user.id }).eq("id", byMail.id).is("user_id", null).select("*").maybeSingle<Affiliate>();
+  const { data: claimed } = await db.from("affiliates").update({ user_id: user.id }).eq("id", byMail.id).is("user_id", null).select(AFFILIATE_COLUMNS).maybeSingle<Affiliate>();
   return claimed ?? null;
 });
 

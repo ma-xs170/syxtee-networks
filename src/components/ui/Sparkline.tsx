@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from "motion/react";
 /** Courbe qui se dessine au scroll (pathLength). */
 export function Sparkline({ data, color = "var(--ok)", className = "h-16 w-full" }: { data: number[]; color?: string; className?: string }) {
   const reduce = useReducedMotion();
+  if (data.length < 2) return <div className={className} aria-hidden="true" />;
   const max = Math.max(...data, 1);
   const w = 200;
   const h = 48;

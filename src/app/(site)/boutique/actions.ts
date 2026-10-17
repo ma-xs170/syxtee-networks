@@ -36,6 +36,8 @@ export async function startProductCheckout(productId: string, quantity = 1): Pro
       await createAdminClient().from("profiles").update({ stripe_customer_id: created.id }).eq("id", user.id).is("stripe_customer_id", null);
       customer = created.id;
     }
+    // Double clic : même clé pendant 30 min pour le même article et la même quantité, donc une seule session de paiement.
+    const idempotencyKey = `shop-${user.id}-${productId}-${qty}-${Math.floor(Date.now() / 1_800_000)}`;
     const session = await stripe().checkout.sessions.create({
       mode: "payment",
       customer,
@@ -48,7 +50,7 @@ export async function startProductCheckout(productId: string, quantity = 1): Pro
       metadata: { product: productId === "encoder" ? "encoder" : "accessory", item: productId, quantity: String(qty) },
       success_url: `${base}/boutique?commande=ok`,
       cancel_url: `${base}/boutique#${productId === "encoder" ? "encodeur" : "sac-mesh"}`,
-    });
+    }, { idempotencyKey });
     url = session.url;
   } catch (e) {
     console.error("startProductCheckout", e instanceof Error ? e.message : e);

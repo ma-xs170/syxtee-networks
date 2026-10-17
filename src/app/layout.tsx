@@ -6,6 +6,7 @@ import "./globals.css";
 import { site } from "@/lib/site";
 import { THEME_SCRIPT } from "@/components/ThemeToggle";
 import PwaRegister from "@/components/pwa/PwaRegister";
+import SubmitLock from "@/components/SubmitLock";
 import JsonLd from "@/components/seo/JsonLd";
 import GrainOverlay from "@/components/ui/GrainOverlay";
 
@@ -74,6 +75,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {children}
         <GrainOverlay />
         <PwaRegister />
+        <SubmitLock />
       </body>
     </html>
   );

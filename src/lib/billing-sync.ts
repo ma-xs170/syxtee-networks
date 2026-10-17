@@ -78,36 +78,44 @@ async function linkCheckout(s: Stripe.Checkout.Session) {
 async function fulfillProduct(s: Stripe.Checkout.Session) {
   if (s.mode !== "payment" || s.metadata?.product !== "encoder" || !s.client_reference_id || s.payment_status !== "paid") return;
   const qty = Math.max(1, Math.min(10, Number(s.metadata?.quantity ?? 1) || 1));
+  // Sécurité en plus de la réservation de l'événement : jamais deux séries de codes pour la même commande.
+  const { count } = await createAdminClient().from("encoder_activation_codes").select("code", { count: "exact", head: true }).eq("order_ref", s.id);
+  if ((count ?? 0) > 0) return;
   await createCodes(qty, { orderRef: s.id, buyerId: s.client_reference_id, months: 4 });
 }
 
 /** Traite un événement vérifié. false : déjà traité (doublon). */
 export async function handleStripeEvent(event: Stripe.Event) {
   const db = createAdminClient();
-  const { data: seen, error: readError } = await db.from("stripe_events").select("id").eq("id", event.id).maybeSingle();
-  if (readError) throw new Error(`stripe_events : ${readError.message}`);
-  if (seen) return false;
-
-  switch (event.type) {
-    case "checkout.session.completed":
-      await linkCheckout(event.data.object);
-      await fulfillProduct(event.data.object);
-      break;
-    case "customer.subscription.created":
-    case "customer.subscription.updated":
-    case "customer.subscription.deleted":
-      await syncSubscription(event.data.object);
-      break;
-    case "invoice.paid":
-      await recordPayment(event.data.object);
-      break;
-    case "invoice.payment_failed":
-      await notifyFailure(event.data.object);
-      break;
+  // L'événement est réservé AVANT le traitement (clé primaire) : deux livraisons simultanées ne peuvent pas le traiter deux fois.
+  const { error: claimError } = await db.from("stripe_events").insert({ id: event.id, type: event.type });
+  if (claimError) {
+    if (claimError.code === "23505") return false;
+    throw new Error(`stripe_events : ${claimError.message}`);
   }
 
-  // Marqué traité seulement après succès : en cas d'erreur, Stripe renvoie l'événement et on recommence.
-  const { error } = await db.from("stripe_events").insert({ id: event.id, type: event.type });
-  if (error && error.code !== "23505") throw new Error(`stripe_events : ${error.message}`);
+  try {
+    switch (event.type) {
+      case "checkout.session.completed":
+        await linkCheckout(event.data.object);
+        await fulfillProduct(event.data.object);
+        break;
+      case "customer.subscription.created":
+      case "customer.subscription.updated":
+      case "customer.subscription.deleted":
+        await syncSubscription(event.data.object);
+        break;
+      case "invoice.paid":
+        await recordPayment(event.data.object);
+        break;
+      case "invoice.payment_failed":
+        await notifyFailure(event.data.object);
+        break;
+    }
+  } catch (e) {
+    // Échec : la réservation est levée pour que Stripe puisse renvoyer l'événement et qu'on recommence.
+    await db.from("stripe_events").delete().eq("id", event.id);
+    throw e;
+  }
   return true;
 }

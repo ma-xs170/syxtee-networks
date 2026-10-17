@@ -68,6 +68,7 @@ async function tokenRequest(p: Platform, params: Record<string, string>): Promis
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ client_id: d.id, client_secret: d.secret, ...params }),
     cache: "no-store",
+    signal: AbortSignal.timeout(8000),
   });
   if (!res.ok) throw new Error(`${p} jeton ${res.status}`);
   return (await res.json()) as Tokens;
@@ -77,7 +78,7 @@ export const exchangeCode = (p: Platform, code: string, redirectUri: string, ver
   tokenRequest(p, { grant_type: "authorization_code", code, redirect_uri: redirectUri, ...(verifier ? { code_verifier: verifier } : {}) });
 
 async function getJson<T>(url: string, token: string, headers: Record<string, string> = {}): Promise<T> {
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json", ...headers }, cache: "no-store" });
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json", ...headers }, cache: "no-store", signal: AbortSignal.timeout(8000) });
   if (!res.ok) throw new Error(`${new URL(url).host} ${res.status}`);
   return (await res.json()) as T;
 }
@@ -161,7 +162,7 @@ export class ChatError extends Error {
 }
 
 async function post(url: string, token: string, body: unknown, headers: Record<string, string> = {}) {
-  const res = await fetch(url, { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", ...headers }, body: JSON.stringify(body), cache: "no-store" });
+  const res = await fetch(url, { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", ...headers }, body: JSON.stringify(body), cache: "no-store", signal: AbortSignal.timeout(8000) });
   if (res.status === 401) throw new ChatError("expired", 401);
   if (res.status === 403) throw new ChatError("forbidden", 403);
   if (!res.ok) throw new ChatError("send_failed", 502);

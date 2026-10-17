@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
 import { requireAdmin } from "@/lib/admin";
 import { isManagedEmail } from "@/lib/managed";
-import { affiliateUrl, type Affiliate } from "@/lib/affiliates";
+import { AFFILIATE_COLUMNS, affiliateUrl, type Affiliate } from "@/lib/affiliates";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 import InviteAffiliate from "./InviteAffiliate";
 import { removeAffiliateAction, resendAffiliateAction, toggleAffiliateAction } from "./actions";
@@ -15,7 +15,7 @@ const day = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { day: "2
 
 export default async function AdminAffiliesPage() {
   await requireAdmin("partners");
-  const { data } = hasAdmin ? await createAdminClient().from("affiliates").select("*").order("created_at", { ascending: false }).limit(300) : { data: [] };
+  const { data } = hasAdmin ? await createAdminClient().from("affiliates").select(AFFILIATE_COLUMNS).order("created_at", { ascending: false }).limit(300) : { data: [] };
   const rows = (data ?? []) as Affiliate[];
   return (
     <DashPage>

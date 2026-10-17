@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { signOut } from "@/app/(auth)/actions";
-import { Bell, ChartLineUp, ClockCounterClockwise, Globe, Key, Lifebuoy, List, MapTrifold, Radio, Robot, ShareNetwork, ShieldWarning, SquaresFour, Tag, Users, UsersThree, X, type IconProps } from "@/components/icons";
+import { Bell, Bug, ChartLineUp, ClockCounterClockwise, Globe, Key, Lifebuoy, List, MapTrifold, Radio, Robot, ShareNetwork, ShieldWarning, SquaresFour, Tag, Users, UsersThree, X, type IconProps } from "@/components/icons";
 import ThemeToggle from "@/components/ThemeToggle";
 import GlidePill from "@/components/ui/GlidePill";
 import { ROLE_META, roleStyle, type AnyRole, type Permission } from "@/lib/staff";
@@ -62,6 +62,7 @@ function groups(support: SupportBadges, pending: number, quotes: number): Group[
       title: "Sécurité",
       items: [
         { icon: ShieldWarning, label: "Alertes", href: "/admin/securite", need: "security" },
+        { icon: Bug, label: "Erreurs", href: "/admin/erreurs", need: "security" },
         { icon: ClockCounterClockwise, label: "Journal", href: "/admin/journal", need: "journal" },
       ],
     },

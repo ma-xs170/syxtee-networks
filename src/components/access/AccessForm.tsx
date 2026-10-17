@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { siKick, siTwitch, siYoutube } from "simple-icons";
 import { requestAccessAction, type AccessState } from "@/app/(site)/acces/actions";
-import { buttonClass } from "@/components/ui/Button";
+import { buttonClass } from "@/components/ui/button-styles";
 import GlassIconView from "@/components/ui/GlassIconView";
 
 // Formulaire de demande d'accès. Noms des champs, action serveur et champ piège inchangés (seul le rendu change).

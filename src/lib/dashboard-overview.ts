@@ -72,7 +72,7 @@ export function buildAlerts(o: { month: LiveSession[]; profile: Profile; relays:
     alerts.push({
       id: "reconnects",
       text: `${reconnects} coupures sur 30 jours. Vérifie tes connexions dans Moblin.`,
-      href: "/dashboard/apercu",
+      href: "/dashboard/direct",
       cta: "Ouvrir l'aperçu",
     });
   const short = o.month.filter((s) => s.ended_at && s.duration_s < 60).length;

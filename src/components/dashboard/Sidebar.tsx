@@ -21,6 +21,7 @@ import {
   SignOut,
   SlidersHorizontal,
   SquaresFour,
+  Tag,
   X,
   type IconProps,
 } from "@/components/icons";
@@ -63,6 +64,7 @@ const GROUPS: Group[] = [
     items: [
       { label: "Scènes", href: "/dashboard/backups", icon: Archive, feature: "relais" },
       { label: "Équipe", href: "/dashboard/invitations", icon: UsersThree, feature: "relais" },
+      { label: "Sponsors", href: "/dashboard/sponsors", icon: Tag },
     ],
   },
   {

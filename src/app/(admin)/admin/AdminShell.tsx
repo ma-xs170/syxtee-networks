@@ -43,6 +43,7 @@ function groups(support: SupportBadges, pending: number, quotes: number): Group[
         { icon: UsersThree, label: "Comptes gérés", href: "/admin/comptes-geres", need: "accounts" },
         { icon: UsersThree, label: "Partenaires", href: "/admin/partenaires", need: "partners" },
         { icon: Radio, label: "Chaînes accueil", href: "/admin/chaines", need: "partners" },
+        { icon: Tag, label: "Sponsors", href: "/admin/sponsors", need: "partners" },
         { icon: ShareNetwork, label: "Affiliés", href: "/admin/affilies", need: "partners" },
         { icon: Key, label: "Codes Encodeur", href: "/admin/encodeurs", need: "accounts" },
       ],

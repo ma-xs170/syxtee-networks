@@ -1,4 +1,7 @@
 {
+  "0.9.3": [
+    "Stabilité : l'aperçu du programme ne fait plus planter OBS en s'arrêtant (encodeurs libérés seulement après l'arrêt réel)"
+  ],
   "0.9.2": [
     "Destinations : format vertical 9:16 (bêta) en plus de la qualité par sortie, choisis depuis le site"
   ],

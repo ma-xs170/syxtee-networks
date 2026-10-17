@@ -1,4 +1,7 @@
 {
+  "0.9.1": [
+    "Destinations : qualité par sortie (1080p, 720p ou 480p avec son propre encodeur), choisie depuis le site"
+  ],
   "0.9.0": [
     "Contrôle à distance : onglet Paramètres comme OBS (sortie, vidéo, audio, avancé), édition d'une source (texte, lien, filtres, position, taille, rotation, médias), débit du direct à chaud et tampon de relecture"
   ],

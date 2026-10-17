@@ -1,72 +1,88 @@
-# Héberger le site sur le VPS OVH (bhs1)
+# Héberger le site sur le VPS OVH (bhs1), sans Vercel
 
-Le site Next.js tourne dans un conteneur `web` à côté du Core, derrière le Caddy déjà en place (HTTPS automatique). Vercel reste en secours : rien n'y change tant que le DNS n'est pas basculé.
+Le site Next.js tourne dans un conteneur `web` à côté du Core, derrière le Caddy déjà en place (HTTPS automatique). Trois hôtes pour un seul conteneur :
 
-Limite : le site partage les 6 vCPU avec les relais. Le conteneur est plafonné à 3 Go de mémoire. Le premier build (`next build`) prend plusieurs minutes et charge le CPU : le lancer hors d'un live.
+| Hôte | Rôle |
+|---|---|
+| `www.syxtee-networks.fr` | site public (l'apex `syxtee-networks.fr` redirige ici) |
+| `app.syxtee-networks.fr` | espace client, administration, Direct |
+| `auth.syxtee-networks.fr` | connexion, inscription, mot de passe |
 
-## 1. DNS (chez le registrar du domaine)
+Le site partage les 6 vCPU avec les relais. Le conteneur est plafonné à 3 Go. Le build (`next build`) charge le CPU plusieurs minutes : le lancer hors d'un live.
 
-- [ ] Baisser le TTL du domaine à 300 s la veille.
-- [ ] Créer `staging.syxtee-networks.fr` : enregistrement A vers `15.235.25.77`, pour tester avant la bascule.
+## 1. DNS (OVH, zone `syxtee-networks.fr`)
 
-## 2. Récupérer le code complet sur le VPS
+- [ ] Veille de la bascule : TTL à 300 s sur les enregistrements `@`, `www`, `app`, `auth`.
+- [ ] Pour tester avant : `staging` en A vers `15.235.25.77`.
+
+## 2. Code sur le VPS
 
 ```bash
-cd /opt/syxtee/repo
-git sparse-checkout disable
-git pull
-cp core/deploy/docker-compose.yml core/deploy/Caddyfile /opt/syxtee/
+cd /opt/syxtee/repo && sudo git sparse-checkout disable && sudo git pull
+sudo cp core/deploy/docker-compose.yml core/deploy/Caddyfile /opt/syxtee/
 ```
 
 ## 3. Variables
 
-- [ ] Dans `/opt/syxtee/.env` (lu par Caddy et au build), ajouter :
-  - `SITE_DOMAIN=staging.syxtee-networks.fr` (puis `syxtee-networks.fr` à la bascule)
-  - `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (valeurs de Vercel, publiques)
-  - `CORS_ORIGINS` : ajouter l'URL du site (Core)
-- [ ] Créer `/opt/syxtee/.env.web` (`chmod 600`) avec les variables serveur de Vercel (voir `.env.example`) :
-  `NEXT_PUBLIC_SUPABASE_*`, `SUPABASE_SECRET_KEY`, `TWITCH_*`, `CORE_URL=https://15-235-25-77.sslip.io`, `CORE_API_TOKEN`, `RESEND_API_KEY`, `EMAIL_FROM`, `SEND_EMAIL_HOOK_SECRET`, `ADMIN_EMAILS`, `STRIPE_*`, `CHAT_TOKEN_KEY`, `KICK_*`, `GOOGLE_*`, `YOUTUBE_API_KEY`, `FEATURE_*`, et `CRON_SECRET` (chaîne au hasard).
-  Garder les mêmes valeurs que Vercel (surtout `CHAT_TOKEN_KEY`), sinon les jetons chiffrés ne se lisent plus.
+`/opt/syxtee/.env` (lu par Caddy et au build) :
+
+```
+SITE_DOMAINS=staging.syxtee-networks.fr
+NEXT_PUBLIC_SUPABASE_URL=…
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=…
+NEXT_PUBLIC_COOKIE_DOMAIN=.syxtee-networks.fr
+CORS_ORIGINS=https://www.syxtee-networks.fr,https://app.syxtee-networks.fr,https://auth.syxtee-networks.fr,https://staging.syxtee-networks.fr,http://localhost:3000
+```
+
+`/opt/syxtee/.env.web` (`chmod 600`, variables serveur, mêmes valeurs qu'aujourd'hui, surtout `CHAT_TOKEN_KEY`) :
+`SUPABASE_SECRET_KEY`, `CORE_URL=https://15-235-25-77.sslip.io`, `CORE_API_TOKEN`, `TWITCH_CLIENT_ID/SECRET`, `KICK_CLIENT_ID/SECRET`, `GOOGLE_CLIENT_ID/SECRET`, `YOUTUBE_API_KEY`, `CHAT_TOKEN_KEY`, `RESEND_API_KEY`, `EMAIL_FROM`, `SEND_EMAIL_HOOK_SECRET`, `ADMIN_EMAILS`, `OWNER_EMAIL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_*`, `FEATURE_*`, `SIGNUP_RESTRICTED`, `CRON_SECRET` (chaîne au hasard).
 
 ## 4. Lancement
 
-80 et 443 sont déjà ouverts. Le site écoute seulement sur 127.0.0.1:3100.
-
 ```bash
 cd /opt/syxtee
-docker compose up -d --build web caddy
-docker compose logs --tail 50 web
+sudo docker compose up -d --build web caddy
+sudo docker compose logs --tail 50 web
 curl -I https://staging.syxtee-networks.fr
 ```
 
-## 5. Tâches planifiées (remplacent les crons Vercel)
+## 5. Tâche planifiée (remplace le cron Vercel)
 
-`crontab -e` :
+`sudo crontab -e` :
 
 ```
-30 7 * * * curl -fsS -H "Authorization: Bearer $(grep ^CRON_SECRET= /opt/syxtee/.env.web | cut -d= -f2-)" http://127.0.0.1:3100/api/cron/antennes >/dev/null
-0 6 * * *  curl -fsS -H "Authorization: Bearer $(grep ^CRON_SECRET= /opt/syxtee/.env.web | cut -d= -f2-)" http://127.0.0.1:3100/api/cron/formules >/dev/null
+0 6 * * * curl -fsS -H "Authorization: Bearer $(grep ^CRON_SECRET= /opt/syxtee/.env.web | cut -d= -f2-)" http://127.0.0.1:3100/api/cron/formules >/dev/null
 ```
 
-## 6. Tester sur `staging.syxtee-networks.fr`
+## 6. Tester sur staging
 
-- [ ] Accueil, connexion, dashboard, un relais, images (avatars Twitch), `/api/cron/antennes` en `curl` (401 sans jeton, 200 avec).
-- [ ] Supabase, Authentication, URL Configuration : ajouter `https://staging.syxtee-networks.fr/**` aux Redirect URLs.
+Accueil, connexion, dashboard, un relais, avatars Twitch, `/api/cron/formules` (401 sans jeton, 200 avec).
+Sur staging les redirections entre `www`, `app` et `auth` ne s'appliquent pas (hôte inconnu) : tout reste sur une seule adresse.
 
 ## 7. Bascule
 
-- [ ] `.env` : `SITE_DOMAIN=syxtee-networks.fr`, puis `docker compose up -d caddy`. Enregistrement A du domaine vers `15.235.25.77` (retirer l'ancien CNAME Vercel).
-- [ ] Mettre à jour avec le domaine final : Supabase (Site URL, Redirect URLs), Stripe (webhook `/api/stripe/webhook`), redirections OAuth Twitch / Kick / Google (`/api/chat/callback/*`), liens Discord, `CORS_ORIGINS` du Core (puis `docker compose up -d core`).
+- [ ] `.env` : `SITE_DOMAINS=syxtee-networks.fr, www.syxtee-networks.fr, app.syxtee-networks.fr, auth.syxtee-networks.fr`, puis `sudo docker compose up -d caddy`.
+- [ ] DNS OVH : `@`, `www`, `app`, `auth` en **A vers `15.235.25.77`** (supprimer les CNAME Vercel).
+- [ ] Supabase, Authentication, URL Configuration : Site URL `https://www.syxtee-networks.fr`, Redirect URLs `app.`, `auth.`, `www.` (`/**`).
+- [ ] Stripe : webhook `https://www.syxtee-networks.fr/api/stripe/webhook`.
+- [ ] OAuth Twitch / Kick / Google (liaison du multichat) : URI de retour `https://app.syxtee-networks.fr/api/chat/callback/twitch` (idem `kick`, `youtube`).
+- [ ] Bot Discord : `SITE_URL=https://www.syxtee-networks.fr`.
 - [ ] Vérifier une connexion, un paiement test Stripe et le multichat.
+- [ ] Supprimer le projet Vercel (et `vercel.json`) quand tout est validé.
 
-## Retour arrière
+## Retour arrière (avant la suppression de Vercel)
 
-Remettre l'ancien enregistrement DNS vers Vercel (TTL 300 s : quelques minutes). Vercel garde son déploiement et ses variables.
+Remettre les anciens enregistrements DNS vers Vercel (TTL 300 s : quelques minutes).
 
 ## Mises à jour
 
 ```bash
-cd /opt/syxtee/repo && git pull && cd .. && docker compose up -d --build web
+cd /opt/syxtee/repo && sudo git pull && cd .. && sudo docker compose up -d --build web
 ```
 
-Pas de déploiement automatique au `git push` pour OVH. Vercel continue d'en faire tant qu'il est lié au dépôt.
+Pas de déploiement automatique au `git push` : c'est une commande à lancer sur le VPS.
+
+## Ce qui change par rapport à Vercel
+
+- Pas de géolocalisation par IP dans les en-têtes : la ville et le pays disparaissent de l'e-mail « nouvel appareil ».
+- Pas de CDN mondial : les images et pages statiques sortent du VPS (Canada). Caddy compresse en zstd et gzip.

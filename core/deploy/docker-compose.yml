@@ -80,8 +80,8 @@ services:
     restart: unless-stopped
     logging: { driver: json-file, options: { max-size: 10m, max-file: "3" } }
 
-  # SYXTEE Web : le site Next.js (image standalone). Écoute sur 127.0.0.1:3100, Caddy le publie sur SITE_DOMAIN.
-  # Variables serveur dans .env.web ; les 2 NEXT_PUBLIC_SUPABASE_* (publiques) sont lues dans .env au build.
+  # SYXTEE Web : le site Next.js (image standalone). Écoute sur 127.0.0.1:3100, Caddy le publie sur SITE_DOMAINS (www, app, auth, apex).
+  # Variables serveur dans .env.web ; les NEXT_PUBLIC_* (publiques) sont lues dans .env au build.
   web:
     build:
       context: ./repo
@@ -89,6 +89,7 @@ services:
       args:
         NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
         NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
+        NEXT_PUBLIC_COOKIE_DOMAIN: ${NEXT_PUBLIC_COOKIE_DOMAIN}
     network_mode: host
     env_file: .env.web
     environment:

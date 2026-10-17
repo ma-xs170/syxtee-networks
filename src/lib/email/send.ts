@@ -14,7 +14,7 @@ export const hasEmail = !!process.env.RESEND_API_KEY;
 /** Pour l'admin : ce que le serveur voit réellement (jamais la valeur de la clé). */
 function envDiagnostic() {
   const names = Object.keys(process.env).filter((k) => /resend|email_from/i.test(k));
-  return `environnement ${process.env.VERCEL_ENV ?? "local"}, variables vues : ${names.length ? names.map((k) => `${k} (${(process.env[k] ?? "").length} car.)`).join(", ") : "aucune"}`;
+  return `environnement ${process.env.NODE_ENV}, variables vues : ${names.length ? names.map((k) => `${k} (${(process.env[k] ?? "").length} car.)`).join(", ") : "aucune"}`;
 }
 const FROM = process.env.EMAIL_FROM || "SYXTEE <onboarding@resend.dev>";
 /** Expéditeur réellement utilisé (pour le diagnostic de l'admin). */

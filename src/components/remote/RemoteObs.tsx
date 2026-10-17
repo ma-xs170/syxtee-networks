@@ -222,8 +222,7 @@ function CollectionMenu({ o }: { o: Obs }) {
         onClick={() => setOpen((v) => !v)}
         className="flex h-8 items-center gap-1.5 rounded-md px-2 text-[13px] hover:bg-foreground/[0.06] disabled:opacity-40"
       >
-        <span className="text-muted max-xl:hidden">Collection de scènes</span>
-        <span className="max-w-[10rem] truncate text-foreground">{o.collections.current || "-"}</span>
+        <span className="text-foreground">Collection</span>
         <Icon name="chevron" className={cx("size-4 text-muted", open && "rotate-180")} />
       </button>
       {open && (

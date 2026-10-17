@@ -84,3 +84,19 @@
 .dk-table { width: 100%; border-collapse: collapse; font-size: var(--dk-t-14); }
 .dk-table th { padding: 0 0.75rem 0.75rem 0; text-align: left; font-weight: 400; font-size: var(--dk-t-13); color: var(--muted); }
 .dk-table td { padding: 0.75rem 0.75rem 0.75rem 0; border-top: 1px solid var(--line); }
+
+/* Titres de page de tout l'espace client : une seule voix (serif, 28 puis 36 px, couleur pleine, sans dégradé ni italique). */
+html .dash-surface :is(.h-page, .h-serif) {
+  font-family: var(--font-instrument), serif;
+  font-weight: 400;
+  font-size: var(--dk-t-28);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  padding-bottom: 0;
+}
+@media (min-width: 640px) { html .dash-surface :is(.h-page, .h-serif) { font-size: 2.25rem; } }
+html .dash-surface :is(.h-page, .h-serif) em { font-style: normal; color: inherit; }

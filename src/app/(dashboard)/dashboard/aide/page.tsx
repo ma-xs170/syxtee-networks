@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DashPage } from "@/components/dashboard/ui";
+import DocsIndex from "@/components/docs/DocsIndex";
+import { Column, DkTabs, PageTitle } from "@/components/dashboard/kit";
 import { SupportId } from "@/components/SupportId";
 import { site } from "@/lib/site";
 import { getProfile, requireUser } from "@/lib/auth/dal";
@@ -8,7 +9,7 @@ import { fmtAgo } from "@/lib/dashboard-data";
 import { listTickets, ticketCounts } from "@/lib/support";
 import { categoryLabel } from "@/lib/support-categories";
 
-export const metadata: Metadata = { title: "Assistance", robots: { index: false } };
+export const metadata: Metadata = { title: "Aide", robots: { index: false } };
 
 const TABS = [
   { id: "en-cours", label: "En cours", state: "open" as const },
@@ -16,15 +17,31 @@ const TABS = [
   { id: "tous", label: "Tous", state: "all" as const },
 ];
 
-export default async function SupportPage({ searchParams }: { searchParams: Promise<{ etat?: string }> }) {
-  const [user, { etat }] = await Promise.all([requireUser("/dashboard/aide"), searchParams]);
+export default async function SupportPage({ searchParams }: { searchParams: Promise<{ etat?: string; onglet?: string }> }) {
+  const [user, { etat, onglet }] = await Promise.all([requireUser("/dashboard/aide"), searchParams]);
   const tab = TABS.find((t) => t.id === etat) ?? TABS[0];
   const [profile, tickets, counts] = await Promise.all([getProfile(), listTickets({ userId: user.id, state: tab.state }), ticketCounts(user.id)]);
 
+  const docsTab = onglet === "documentation";
+  const head = (
+    <>
+      <PageTitle title="Aide" sub="Lis la documentation, puis écris-nous : on te répond dans ton espace." />
+      <div className="mb-8">
+        <DkTabs label="Aide" current={docsTab ? "/dashboard/aide?onglet=documentation" : "/dashboard/aide"} tabs={[{ label: "Assistance", href: "/dashboard/aide" }, { label: "Documentation", href: "/dashboard/aide?onglet=documentation" }]} />
+      </div>
+    </>
+  );
+  if (docsTab)
+    return (
+      <Column>
+        {head}
+        <DocsIndex />
+      </Column>
+    );
+
   return (
-    <DashPage>
-      <h1 className="h-page">Assis<em>tance</em></h1>
-      <p className="mt-2 max-w-[65ch] text-sm text-muted">C&apos;est ici qu&apos;on règle tes soucis. Lis d&apos;abord la <Link href="/docs" className="text-foreground underline underline-offset-4">documentation</Link>, puis écris-nous : on te répond dans ton espace.</p>
+    <Column>
+      {head}
 
       <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <section aria-labelledby="canal-chat" className="bento-cell flex flex-col p-6 sm:p-8">
@@ -116,6 +133,6 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
           ))}
         </ul>
       )}
-    </DashPage>
+    </Column>
   );
 }

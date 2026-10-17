@@ -42,6 +42,7 @@ const nextConfig: NextConfig = {
       { source: "/dashboard/invitations", destination: "/dashboard/equipe", permanent: true },
       { source: "/dashboard/stats", destination: "/dashboard/statistiques", permanent: true },
       { source: "/dashboard/affilie", destination: "/dashboard/affiliation", permanent: true },
+      { source: "/dashboard/documentation", destination: "/dashboard/aide?onglet=documentation", permanent: true },
       { source: "/dashboard/support", destination: "/dashboard/aide", permanent: true },
       { source: "/dashboard/parametres", destination: "/dashboard/compte?onglet=preferences", permanent: true },
       { source: "/dashboard/profil", destination: "/dashboard/compte?onglet=profil", permanent: true },

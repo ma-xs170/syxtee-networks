@@ -8,7 +8,7 @@ import type { DashIcon, SectionTab } from "@/lib/dashboard-nav";
 // Briques communes des pages du dashboard : en-tête de page, tuile, libellé mono, page « bientôt ».
 
 export function DashPage({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`mx-auto w-full max-w-7xl px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-12 ${className}`}>{children}</div>;
+  return <div className={`mx-auto w-full max-w-[1200px] px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-12 ${className}`}>{children}</div>;
 }
 
 /** Onglets d'une section (Statistiques, Scanner) : une page par onglet, adresse inchangée. */

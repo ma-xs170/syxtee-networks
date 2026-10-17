@@ -102,6 +102,8 @@ export class Agent {
   }
   private lastMeters = 0;
   private meterPeak = new Map<string, number>();
+  /** Pic par canal (gauche, droite) entre deux envois : la jauge du site est stéréo. */
+  private meterLR = new Map<string, [number, number]>();
   /** Dernières mesures du poste (CPU, images, débit du direct), poussées par le plugin chaque seconde. */
   lastStats: Record<string, unknown> = {};
   private obsBusy = false;
@@ -627,6 +629,10 @@ export class Agent {
     for (const i of inputs) {
       const peak = Math.max(0, ...i.inputLevelsMul.map((ch) => ch[1] ?? 0));
       this.meterPeak.set(i.inputName, Math.max(this.meterPeak.get(i.inputName) ?? 0, peak));
+      const l = i.inputLevelsMul[0]?.[1] ?? 0;
+      const r = i.inputLevelsMul[1]?.[1] ?? l;
+      const prev = this.meterLR.get(i.inputName) ?? [0, 0];
+      this.meterLR.set(i.inputName, [Math.max(prev[0], l), Math.max(prev[1], r)]);
       this.audio.feed(i.inputName, peak);
     }
     const t = Date.now();
@@ -636,6 +642,11 @@ export class Agent {
     for (const [name, peak] of this.meterPeak) levels[name] = peak > 0 ? Math.round(20 * Math.log10(peak)) : -100;
     this.meterPeak.clear();
     this.send({ type: "event", name: "link.levels", data: levels });
+    const db = (v: number) => (v > 0 ? Math.round(20 * Math.log10(v)) : -100);
+    const lr: Record<string, [number, number]> = {};
+    for (const [name, [l, r]] of this.meterLR) lr[name] = [db(l), db(r)];
+    this.meterLR.clear();
+    this.send({ type: "event", name: "link.levelsLR", data: lr });
   }
 
   // ───── Core ─────

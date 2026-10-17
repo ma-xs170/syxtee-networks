@@ -29,6 +29,8 @@ export function useObs({ coreUrl, deviceId, demoToken, invite, rights }: UseObsA
   const [sceneAudio, setSceneAudio] = useState<Set<string>>(new Set());
   const [mixer, setMixer] = useState<Mix[]>([]);
   const [levels, setLevels] = useState<Record<string, number>>({});
+  /** Niveaux par canal [gauche, droite], en dB (plugin récent) ; absent : on retombe sur `levels` pour les deux. */
+  const [levelsLR, setLevelsLR] = useState<Record<string, [number, number]>>({});
   const [meterHold, setMeterHold] = useState(false);
   const [transitions, setTransitions] = useState<string[]>([]);
   const [transition, setTransition] = useState("");
@@ -60,6 +62,7 @@ export function useObs({ coreUrl, deviceId, demoToken, invite, rights }: UseObsA
   const previewSink: FrameSink = useRef(null);
   const refreshTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const levelsRef = useRef<Record<string, number>>({});
+  const levelsLRRef = useRef<Record<string, [number, number]>>({});
   const hold = useRef(false);
   const levelFrame = useRef(0);
   const volumeSend = useRef<Record<string, { at: number; timer?: ReturnType<typeof setTimeout> }>>({});
@@ -129,10 +132,14 @@ export function useObs({ coreUrl, deviceId, demoToken, invite, rights }: UseObsA
         if (!hold.current && !levelFrame.current) {
           levelFrame.current = requestAnimationFrame(() => {
             levelFrame.current = 0;
-            if (!hold.current) setLevels(levelsRef.current);
+            if (!hold.current) {
+              setLevels(levelsRef.current);
+              setLevelsLR(levelsLRRef.current);
+            }
           });
         }
-      } else if (name === "link.preview") frameSink.current?.(String(d.image));
+      } else if (name === "link.levelsLR") levelsLRRef.current = d as Record<string, [number, number]>;
+      else if (name === "link.preview") frameSink.current?.(String(d.image));
       else if (name === "link.studioPreview") previewSink.current?.(String(d.image));
       else if (name === "link.previewState") setPreviewOn(!!d.enabled);
       else if (name === "link.previewMode") setPmode({ mode: d.mode as "video" | "jpeg" | "idle", reason: String(d.reason ?? "") });
@@ -593,7 +600,7 @@ export function useObs({ coreUrl, deviceId, demoToken, invite, rights }: UseObsA
     // liaison
     link, agent, guardian, latency, guest, reconnect, call, run, ready, lost, canLive, canScenes, owner, obsDown, loaded, loadErrors, retry: () => setSync((n) => n + 1), oldAgent,
     // OBS
-    scenes, program, preview, studioMode, items, mixer, visibleMixer, levels, meterHold, setMeterHold, transitions, transition, profiles, collections,
+    scenes, program, preview, studioMode, items, mixer, visibleMixer, levels, levelsLR, meterHold, setMeterHold, transitions, transition, profiles, collections,
     streaming, recording, paused, streamBusy, recBusy, stats, roles, inputNames, fluxName, fixing, previewOn, pmode, ms, setMs, editing, selected, setSelected, selectedItem, noFluxSource,
     // sinks
     frameSink, previewSink,

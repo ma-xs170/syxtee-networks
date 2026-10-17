@@ -463,10 +463,15 @@ export class Agent {
     this.send({ type: "event", name: "link.previewMode", data: { mode: this.previewMode, reason } });
   }
 
+  /** Arrêt côté serveur en cours : `preview/stop` révoque les accès du compte, un démarrage ne doit pas partir avant qu'il soit fini (sinon 401). */
+  private serverStop: Promise<unknown> = Promise.resolve();
+
   private async startWhip() {
     const w = this.whip;
     w.starting = true;
     try {
+      await this.serverStop;
+      if (!w.starting) return;
       const r = await coreCall(this.cfg, "POST", "/v1/link/preview/start", {});
       const url = r.ok ? String(r.json.whip_url ?? "") : "";
       if (!url) throw new Error(r.status === 0 ? "Serveur SYXTEE injoignable." : "Le serveur n'accepte pas l'aperçu vidéo.");
@@ -500,7 +505,8 @@ export class Agent {
     w.active = false;
     if (!was) return;
     await this.obs.request("link.whipStop").catch(() => {});
-    void coreCall(this.cfg, "POST", "/v1/link/preview/stop", {});
+    this.serverStop = coreCall(this.cfg, "POST", "/v1/link/preview/stop", {}).catch(() => {});
+    await this.serverStop;
     this.log("aperçu vidéo arrêté");
     this.setMode();
   }

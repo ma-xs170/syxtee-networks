@@ -307,7 +307,7 @@ export function OutputDialog({ dialog, setDialog, call, onChange }: { dialog: { 
                 Annuler
               </button>
               {e && (
-                <button type="button" disabled={pending} onClick={() => void remove()} className={`${btnLive()} ml-auto`}>
+                <button type="button" disabled={pending} onClick={() => void remove()} className={`${btnLive()} ml-auto !border-[var(--dk-red)] !bg-[var(--dk-red)]/10 !text-[var(--dk-red)] hover:!bg-[var(--dk-red)]/20`}>
                   Supprimer
                 </button>
               )}

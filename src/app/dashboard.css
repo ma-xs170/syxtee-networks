@@ -1,7 +1,8 @@
 /* Espace client : variables uniques (couleurs, rayons, échelle de texte) et briques `.dk-*`.
    Noir et blanc ; la couleur n'apparaît que si elle a un sens :
    rouge = terminer / erreur / destructif, vert = OK / en direct, bleu = toggle actif + débit, ambre = alerte. */
-.dash-surface {
+/* Sur :root : la page Contrôle à distance est plein écran, hors de .dash-surface, et utilise les mêmes briques. */
+:root {
   --dk-red: #dc2626;
   --dk-green: #4ade80;
   --dk-blue: #3b82f6;

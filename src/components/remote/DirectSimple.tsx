@@ -18,7 +18,7 @@ function Strip({ o, m }: { o: Obs; m: Mix }) {
   const value = Number.isFinite(m.db) ? Math.max(-60, Math.min(0, m.db)) : -60;
   const edit = o.ready && o.canScenes;
   return (
-    <li className="flex w-16 flex-col items-center gap-3">
+    <li className="flex w-20 flex-col items-center gap-3">
       <span className="dk-mono text-[12px] text-muted">{m.muted ? "Muet" : fmtDb(m.db)}</span>
       <div className="flex h-40 items-stretch gap-2">
         <div role="meter" aria-label={`Niveau ${m.name}`} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={Math.round(Math.max(-60, level))} className="relative w-1.5 overflow-hidden rounded-full bg-foreground/15">
@@ -79,8 +79,8 @@ export default function DirectSimple({ o, onLive, onAdvanced }: { o: Obs; onLive
   }, [o]);
 
   return (
-    <div className="mx-auto grid w-full max-w-[1200px] gap-6 p-4 pb-10">
-      <div className="mx-auto w-full max-w-[720px]">
+    <div className="mx-auto grid w-full max-w-[1480px] gap-8 px-6 py-8">
+      <div className="mx-auto w-full max-w-[880px]">
         <ProgramView o={o} ratio className="!rounded-2xl" />
         <p className="mt-3 flex items-center justify-between gap-4 text-[14px] text-muted">
           <span>Scène active : <span className="text-foreground">{o.program || "-"}</span></span>
@@ -88,8 +88,8 @@ export default function DirectSimple({ o, onLive, onAdvanced }: { o: Obs; onLive
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card>
+      <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <Card className="min-h-[26rem]">
           <h2 className="dk-label mb-4">Scènes</h2>
           {o.scenes.length === 0 ? (
             <p className="text-[14px] text-muted">{o.ready ? "Aucune scène." : "En attente d'OBS…"}</p>
@@ -110,7 +110,7 @@ export default function DirectSimple({ o, onLive, onAdvanced }: { o: Obs; onLive
           )}
         </Card>
 
-        <Card>
+        <Card className="min-h-[26rem]">
           <h2 className="dk-label mb-4">Sources</h2>
           {o.items.length === 0 ? (
             <p className="text-[14px] text-muted">{o.ready ? "Aucune source dans cette scène." : "En attente d'OBS…"}</p>
@@ -128,12 +128,12 @@ export default function DirectSimple({ o, onLive, onAdvanced }: { o: Obs; onLive
           )}
         </Card>
 
-        <Card>
+        <Card className="min-h-[26rem]">
           <h2 className="dk-label mb-4">Mixage</h2>
           {o.visibleMixer.length === 0 ? (
             <p className="text-[14px] text-muted">{o.ready ? "Aucune source audio." : "En attente d'OBS…"}</p>
           ) : (
-            <ul className="flex flex-wrap justify-center gap-4">
+            <ul className="flex flex-wrap justify-center gap-x-6 gap-y-8">
               {o.visibleMixer.map((m) => (
                 <Strip key={m.name} o={o} m={m} />
               ))}
@@ -141,20 +141,20 @@ export default function DirectSimple({ o, onLive, onAdvanced }: { o: Obs; onLive
           )}
         </Card>
 
-        <Card>
+        <Card className="min-h-[26rem]">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="dk-label">Outils</h2>
             <span className="dk-mono text-[12px]" style={{ color: o.streaming ? "var(--dk-red)" : undefined }}>{o.streaming ? "En direct" : "Prêt"}</span>
           </div>
-          <div className="grid justify-items-center gap-3">
-            <DkButton tone={o.streaming ? "danger" : "primary"} className="!rounded-full !px-6 font-semibold" disabled={off || o.streamBusy} onClick={onLive}>
+          <div className="grid justify-items-center gap-3 py-2">
+            <DkButton tone={o.streaming ? "danger" : "primary"} className="!h-11 !w-full max-w-[17rem] !rounded-full !px-6 font-semibold" disabled={off || o.streamBusy} onClick={onLive}>
               {o.streamBusy ? (o.streaming ? "Arrêt…" : "Démarrage…") : o.streaming ? "Terminer le stream" : "Commencer le streaming"}
             </DkButton>
-            <DkButton className="!rounded-full !px-6" disabled={off || o.recBusy} onClick={o.toggleRecord}>
+            <DkButton className="!h-11 !w-full max-w-[17rem] !rounded-full !px-6" disabled={off || o.recBusy} onClick={o.toggleRecord}>
               <span aria-hidden="true" className="size-2 rounded-full" style={{ background: o.recording ? "var(--dk-red)" : "var(--faint)" }} />
               {o.recording ? "Arrêter l'enregistrement" : "Démarrer l'enregistrement"}
             </DkButton>
-            <DkButton className="!rounded-full !px-6" aria-pressed={o.studioMode} disabled={off} onClick={o.toggleStudio} style={o.studioMode ? { borderColor: "var(--dk-blue)", background: "color-mix(in srgb, var(--dk-blue) 14%, transparent)" } : undefined}>
+            <DkButton className="!h-11 !w-full max-w-[17rem] !rounded-full !px-6" aria-pressed={o.studioMode} disabled={off} onClick={o.toggleStudio} style={o.studioMode ? { borderColor: "var(--dk-blue)", background: "color-mix(in srgb, var(--dk-blue) 14%, transparent)" } : undefined}>
               Mode Studio
             </DkButton>
           </div>

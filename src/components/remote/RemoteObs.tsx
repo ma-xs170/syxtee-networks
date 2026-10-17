@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState, useSyncExternalStore, type KeyboardEvent } from "react";
 import MultiChat, { type ChatDefaults } from "../dashboard/MultiChat";
 import AutoSheet from "./AutoSheet";
+import DirectDesk, { DirectBar } from "./DirectDesk";
 import { SourceEditor } from "./EditTools";
 import { GuardianBar } from "./GuardianBar";
 import LivePanel from "./LivePanel";
@@ -79,7 +80,6 @@ export default function RemoteObs({
   const desktop = useDesktop();
   const landscape = useLandscape();
   const [tab, setTab] = useState<Tab>("scenes");
-  const [dock, setDock] = useState<"live" | "multi">("live");
   const [chatOn, setChatOn] = useState(true);
   const [autoOpen, setAutoOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -145,40 +145,17 @@ export default function RemoteObs({
   return (
     <div className="flex h-dvh w-full min-w-0 max-w-[100vw] flex-col overflow-hidden overscroll-none bg-background pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] text-sm text-foreground [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [touch-action:manipulation] max-lg:pb-[env(safe-area-inset-bottom)]">
       <TopBar o={o} desktop={desktop} chatOn={chatOn} showChat={showChat} onChat={toggleChat} onAuto={() => setAutoOpen(true)} invited={!!invite} />
-      <StatusStrip o={o} desktop={desktop} />
+      {!desktop && <StatusStrip o={o} desktop={desktop} />}
       <Alerts o={o} invited={!!invite} />
-      {o.link === "on" && o.owner && <GuardianBar guardian={o.guardian} agentOnline={o.agent.online} call={o.call} />}
+      {!desktop && o.link === "on" && o.owner && <GuardianBar guardian={o.guardian} agentOnline={o.agent.online} call={o.call} />}
 
       {desktop ? (
         <div className="flex min-h-0 flex-1">
-          <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 p-2">
-            <AudioAlert o={o} />
-            <ProgramView o={o} className="min-h-0 flex-1" />
-            <div className="grid h-64 shrink-0 grid-cols-[minmax(9rem,1fr)_minmax(10rem,1fr)_minmax(14rem,1.5fr)_minmax(13rem,1fr)] gap-2 xl:h-72">
-              <ScenesPanel o={o} />
-              <SourcesPanel o={o} onEdit={setEdit} />
-              <MixerPanel o={o} />
-              <div className="flex min-h-0 min-w-0 flex-col gap-1">
-                <div className="min-h-0 flex-1">
-                  {dock === "live" ? (
-                    <LivePanel o={o} onLive={onLive} onSettings={() => setSettingsOpen(true)} className="h-full" />
-                  ) : (
-                    <MultistreamPanel state={o.ms} mainLive={o.streaming} call={o.call} ready={o.ready} canControl={o.canLive} canEdit={!o.guest} onChange={o.setMs} />
-                  )}
-                </div>
-                <div role="tablist" aria-label="Dock" className="flex shrink-0 justify-end gap-1">
-                  {(
-                    [
-                      ["live", "Commandes"],
-                      ["multi", "Multistream"],
-                    ] as const
-                  ).map(([id, text]) => (
-                    <button key={id} type="button" role="tab" aria-selected={dock === id} onClick={() => setDock(id)} className={cx("h-7 rounded-md px-3 text-xs transition-colors", dock === id ? "bg-foreground/15 text-foreground" : "text-muted hover:bg-foreground/[0.07] hover:text-foreground")}>
-                      {text}
-                    </button>
-                  ))}
-                </div>
-              </div>
+          <main className="flex min-h-0 min-w-0 flex-1 flex-col">
+            <DirectBar o={o} onLive={onLive} onSettings={() => setSettingsOpen(true)} setAsk={setAsk} />
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+              <AudioAlert o={o} />
+              <DirectDesk o={o} onEdit={setEdit} onLive={onLive} onSettings={() => setSettingsOpen(true)} />
             </div>
           </main>
           {chatBox && chatOn && (
@@ -228,7 +205,6 @@ export default function RemoteObs({
         </main>
       )}
 
-      {desktop && <StatusBar o={o} />}
 
       <AutoSheet o={o} rights={rights} open={autoOpen} onClose={() => setAutoOpen(false)} />
       <Sheet open={settingsOpen && o.owner} onClose={() => setSettingsOpen(false)} title="Paramètres d'OBS" size="lg">
@@ -254,7 +230,7 @@ function TopBar({ o, desktop, chatOn, showChat, onChat, onAuto, invited }: { o: 
           <Icon name="back" className="size-5" />
         </Link>
       )}
-      <h1 className="min-w-0 truncate text-[15px] font-semibold tracking-tight">Contrôle à distance</h1>
+      <h1 className="min-w-0 truncate text-[15px] font-semibold tracking-tight">{desktop && o.agent.name ? o.agent.name : "Direct"}</h1>
       {o.streaming && (
         <span role="status" className="inline-flex shrink-0 items-center gap-2 rounded-full border border-live/50 bg-live/10 px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-wider text-live">
           <span aria-hidden="true" className="live-dot" />
@@ -370,26 +346,5 @@ function AudioAlert({ o }: { o: Obs }) {
     <p role="alert" className="shrink-0 rounded-xl border border-warn/50 bg-warn/10 px-3.5 py-2.5 text-sm text-warn">
       {r.audioState === "backup" ? `Micro « ${r.audioSource} » muet : scène de secours à l'antenne, retour sur Live quand le son repart.` : r.audioState === "muted" ? `Micro « ${r.audioSource} » coupé : personne ne t'entend.` : `Silence sur « ${r.audioSource} » depuis plus de ${r.audioSeconds ?? 10} s : vérifie ton micro.`}
     </p>
-  );
-}
-
-// ── Barre d'état, comme en bas d'OBS (grand écran) ───────────────────────────────────────────────────────────────────
-
-function StatusBar({ o }: { o: Obs }) {
-  const s = o.stats;
-  return (
-    <footer aria-label="État d'OBS" className="flex h-8 shrink-0 items-center justify-end gap-5 border-t border-line px-3.5 font-mono text-xs tabular-nums text-muted">
-      <span title="Débit du direct">{o.streaming && s?.kbps != null ? `${s.kbps} kbit/s` : ""}</span>
-      <span className="inline-flex items-center gap-1.5" title="Durée du direct">
-        <span aria-hidden="true" className={cx("size-2 rounded-full", o.streaming ? "bg-live" : "border border-faint")} />
-        {clock(o.streaming ? (s?.streamMs ?? 0) : 0)}
-      </span>
-      <span className="inline-flex items-center gap-1.5" title="Durée de l'enregistrement">
-        <span aria-hidden="true" className={cx("size-2 rounded-full", o.recording ? "bg-bad" : "border border-faint")} />
-        {clock(o.recording ? (s?.recMs ?? 0) : 0)}
-      </span>
-      <span>CPU : {s ? `${s.cpu} %` : "—"}</span>
-      <span>{s ? `${s.fps} FPS` : "— FPS"}</span>
-    </footer>
   );
 }

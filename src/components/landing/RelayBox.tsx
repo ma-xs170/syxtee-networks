@@ -46,8 +46,8 @@ export default function RelayBox({ leds, live = true, className = "" }: { leds?:
         <rect x="0" y="0" width="34" height="34" rx="9" />
         <path d="M22 11c-3-2-12-2-12 3 0 6 14 3 14 9 0 5-10 5-14 2" strokeWidth="2.2" strokeLinecap="round" />
       </g>
-      <text x="142" y="146" fill="#fff" fillOpacity="0.7" fontSize="15" fontWeight="600" letterSpacing="3" fontFamily="var(--font-figtree), system-ui, sans-serif">SYXTEE</text>
-      <text x="142" y="164" fill="#fff" fillOpacity="0.38" fontSize="9" letterSpacing="4" fontFamily="var(--font-figtree), system-ui, sans-serif">NETWORKS</text>
+      <text x="142" y="146" fill="#fff" fillOpacity="0.7" fontSize="15" fontWeight="600" letterSpacing="3" fontFamily="var(--font-ui), system-ui, sans-serif">SYXTEE</text>
+      <text x="142" y="164" fill="#fff" fillOpacity="0.38" fontSize="9" letterSpacing="4" fontFamily="var(--font-ui), system-ui, sans-serif">NETWORKS</text>
       {/* LED d'état */}
       <g transform="translate(528 124)">
         <circle r="7" fill={live ? "var(--ok)" : COLOR.off} className={live ? "live-led" : ""} />

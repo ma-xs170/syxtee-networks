@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { GeistMono } from "geist/font/mono";
-import { Figtree } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/site";
 import PwaRegister from "@/components/pwa/PwaRegister";
@@ -8,8 +8,8 @@ import SubmitLock from "@/components/SubmitLock";
 import JsonLd from "@/components/seo/JsonLd";
 
 
-// Deux familles : Figtree (géométrique arrondie, titres, interface et texte ; auto-hébergée par next/font) et Geist Mono (code, valeurs, petits labels).
-const figtree = Figtree({ subsets: ["latin", "latin-ext"], variable: "--font-figtree", display: "swap" });
+// Deux familles : Inter (sans neutre et épurée, titres, interface et texte ; auto-hébergée par next/font) et Geist Mono (code, valeurs, petits labels).
+const inter = Inter({ subsets: ["latin", "latin-ext"], variable: "--font-ui", display: "swap" });
 
 // Icône d'onglet sans fond, assortie à l'onglet (logo noir sur barre claire, blanc sur barre sombre).
 // Écran d'accueil iPhone : apple-touch-icon opaque (iOS refuse la transparence) et mode application plein écran.
@@ -51,7 +51,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" suppressHydrationWarning className={`${figtree.variable} ${GeistMono.variable} h-full antialiased`}>
+    <html lang="fr" suppressHydrationWarning className={`${inter.variable} ${GeistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <a href="#contenu" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-(--z-skip) focus:rounded-full focus:bg-accent focus:px-5 focus:py-2.5 focus:text-sm focus:font-medium focus:text-on-accent">Aller au contenu</a>
         <JsonLd

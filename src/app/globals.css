@@ -71,9 +71,9 @@
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-line-strong: var(--line-strong);
-  --font-sans: var(--font-figtree);
+  --font-sans: var(--font-ui);
   --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-figtree);
+  --font-serif: var(--font-ui);
 }
 
 html {
@@ -91,7 +91,7 @@ li strong {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-figtree), system-ui, sans-serif;
+  font-family: var(--font-ui), system-ui, sans-serif;
 }
 
 ::selection {

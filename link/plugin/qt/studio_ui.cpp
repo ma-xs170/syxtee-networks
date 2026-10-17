@@ -461,11 +461,10 @@ private:
 	QLabel *liveAlertText_ = nullptr, *fixOut_ = nullptr, *hostOut_ = nullptr;
 	QPushButton *fixBtn_ = nullptr;
 	Switch *auto_ = nullptr;
-	QLabel *chip1_ = nullptr, *chip2_ = nullptr, *chip3_ = nullptr;
-	Dot *regieDot_ = nullptr;
+	QLabel *chip2_ = nullptr, *chip3_ = nullptr;
+	QWidget *protBody_ = nullptr, *droneBody_ = nullptr;
 	QComboBox *droneScene_ = nullptr, *droneSource_ = nullptr;
 	Switch *pilot_ = nullptr;
-	QLabel *directorOut_ = nullptr;
 	// poste
 	QLineEdit *hostEdit_ = nullptr;
 	QLabel *pingOut_ = nullptr, *accName_ = nullptr, *accMail_ = nullptr, *avatar_ = nullptr, *diagOut_ = nullptr;
@@ -950,23 +949,35 @@ private:
 		return w;
 	}
 
-	// En-tête d'une étape de la régie : numéro mono, titre, état.
-	QWidget *stepHead(const QString &idx, const QString &title, QLabel **chip)
+	// Carte à interrupteur : titre (avec emoji) et état à gauche, interrupteur à droite dans l'en-tête ; le contenu se déplie quand c'est actif.
+	QFrame *switchCard(const QString &title, Switch *sw, QLabel **chip, QWidget **body)
 	{
-		auto *w = new QWidget;
-		auto *h = new QHBoxLayout(w);
-		h->setContentsMargins(0, 14, 0, 4);
-		h->setSpacing(12);
-		auto *n = label(idx, "section");
-		n->setWordWrap(false);
+		auto *f = new QFrame;
+		f->setObjectName("card");
+		auto *v = new QVBoxLayout(f);
+		v->setContentsMargins(18, 0, 18, 0);
+		v->setSpacing(0);
+		auto *h = new QWidget;
+		auto *hl = new QHBoxLayout(h);
+		hl->setContentsMargins(0, 14, 0, 14);
+		hl->setSpacing(10);
 		auto *t = label(title, "name");
 		t->setStyleSheet("font-size: 14px; font-weight: 600;");
+		t->setWordWrap(false);
 		*chip = label("", "chip");
 		(*chip)->setWordWrap(false);
-		h->addWidget(n);
-		h->addWidget(t, 1);
-		h->addWidget(*chip);
-		return w;
+		(*chip)->hide();
+		hl->addWidget(t);
+		hl->addWidget(*chip);
+		hl->addStretch(1);
+		hl->addWidget(sw);
+		v->addWidget(h);
+		*body = new QWidget;
+		auto *bl = new QVBoxLayout(*body);
+		bl->setContentsMargins(0, 0, 0, 0);
+		bl->setSpacing(0);
+		v->addWidget(*body);
+		return f;
 	}
 
 	QWidget *buildRegie()
@@ -982,31 +993,19 @@ private:
 		droneSource_ = new Combo;
 		pilot_ = new Switch;
 
-		// Résumé : ce que fait la régie en ce moment.
-		auto *sum = new QFrame;
-		sum->setObjectName("hero");
-		auto *sh = new QHBoxLayout(sum);
-		sh->setContentsMargins(18, 16, 18, 16);
-		sh->setSpacing(12);
-		regieDot_ = new Dot;
-		regieDot_->set(kFaint, true);
-		auto *st = new QVBoxLayout;
-		st->setSpacing(3);
-		st->addWidget(label("Régie automatique", "name"));
-		directorOut_ = label("", "muted");
-		st->addWidget(directorOut_);
-		sh->addWidget(regieDot_, 0, Qt::AlignTop);
-		sh->addLayout(st, 1);
-		v->addWidget(sum);
-		v->addWidget(label("SYXTEE surveille ton direct et change de scène pour toi. Tout part de ta scène de direct : rien ne bouge tant que tu n'as pas cliqué dessus dans OBS.", "hint"));
-
-		// 1 · Scène de direct
-		auto *s = card();
-		addRow(s, stepHead("01", "Ta scène de direct", &chip1_), true);
-		addRow(s, row("Scène de direct", "La scène que tu mets à l'antenne pour streamer. La régie ne démarre que lorsque tu cliques dessus.", liveScene_));
+		// Protection des déconnexions : la scène de direct est le point de départ, le reste apparaît quand l'interrupteur est activé.
+		QWidget *pbody, *dbody;
+		auto *prot = switchCard("Protection des déconnexions", auto_, &chip2_, &pbody);
+		auto *pl = static_cast<QVBoxLayout *>(pbody->layout());
+		protBody_ = new QWidget;
+		auto *pbl = new QVBoxLayout(protBody_);
+		pbl->setContentsMargins(0, 0, 0, 0);
+		pbl->setSpacing(0);
+		pl->addWidget(sep());
+		pl->addWidget(row("💜 Scène de direct", "", liveScene_));
 		liveAlert_ = new QWidget;
 		auto *la = new QVBoxLayout(liveAlert_);
-		la->setContentsMargins(0, 2, 0, 12);
+		la->setContentsMargins(0, 0, 0, 12);
 		auto *box = new QFrame;
 		box->setObjectName("notice");
 		auto *bh = new QHBoxLayout(box);
@@ -1019,28 +1018,33 @@ private:
 		bh->addWidget(fixBtn_, 0, Qt::AlignVCenter);
 		la->addWidget(box);
 		liveAlert_->hide();
-		static_cast<QVBoxLayout *>(s->layout())->addWidget(liveAlert_);
+		pl->addWidget(liveAlert_);
 		fixOut_ = label("", "ok");
 		fixOut_->hide();
-		static_cast<QVBoxLayout *>(s->layout())->addWidget(fixOut_);
-		v->addWidget(s);
+		pl->addWidget(fixOut_);
+		pbl->addWidget(sep());
+		pbl->addWidget(row("📡 Source surveillée", "", secSource_));
+		pbl->addWidget(sep());
+		pbl->addWidget(row("📶 Scène de secours", "", secScene_));
+		pl->addWidget(protBody_);
+		v->addWidget(prot);
 
-		// 2 · Si la connexion coupe
-		auto *sc = card();
-		addRow(sc, stepHead("02", "Si ta connexion coupe", &chip2_), true);
-		addRow(sc, row("Passer sur la scène de secours", "Quand l'image de ton flux se fige ou coupe, SYXTEE affiche la scène de secours, puis revient sur ta scène de direct dès que l'image repart.", auto_));
-		addRow(sc, row("Ce que SYXTEE surveille", "La source de ton flux (« Flux › NOM »). Elle est choisie toute seule quand tu cliques sur Corriger.", secSource_));
-		addRow(sc, row("Scène de secours", "Par exemple « Connexion perdue ».", secScene_));
-		v->addWidget(sc);
-
-		// 3 · Auto-gérance
-		auto *dc = card();
-		addRow(dc, stepHead("03", "Auto-gérance (drone)", &chip3_), true);
-		addRow(dc, row("Activer l'auto-gérance", "Quand ta caméra drone envoie une belle image (qui bouge, pas noire), SYXTEE passe dessus tout seul, puis revient sur ta scène de direct quand la prise s'arrête. Si tu changes de scène à la main, elle se met en pause 30 secondes.", pilot_));
-		addRow(dc, row("Source du drone", "L'entrée OBS qui reçoit l'image du drone.", droneSource_));
-		addRow(dc, row("Scène du drone", "N'importe quelle scène : pas besoin qu'elle s'appelle « Drone ».", droneScene_));
-		v->addWidget(dc);
+		// Auto-gérance (drone) : même principe.
+		auto *drone = switchCard("Auto-gérance drone", pilot_, &chip3_, &dbody);
+		auto *dl = static_cast<QVBoxLayout *>(dbody->layout());
+		droneBody_ = new QWidget;
+		auto *dbl = new QVBoxLayout(droneBody_);
+		dbl->setContentsMargins(0, 0, 0, 0);
+		dbl->setSpacing(0);
+		dbl->addWidget(sep());
+		dbl->addWidget(row("🛰️ Source du drone", "", droneSource_));
+		dbl->addWidget(sep());
+		dbl->addWidget(row("🚁 Scène du drone", "", droneScene_));
+		dl->addWidget(droneBody_);
+		v->addWidget(drone);
 		v->addStretch(1);
+		protBody_->hide();
+		droneBody_->hide();
 
 		QObject::connect(liveScene_, &QComboBox::activated, this, [this] {
 			QJsonObject b;
@@ -1520,20 +1524,16 @@ private:
 
 	void updateRegieSummary()
 	{
-		if (!directorOut_ || state_.isEmpty()) return;
+		if (!protBody_ || state_.isEmpty()) return;
 		const QJsonObject bk = state_.value("backup").toObject(), au = state_.value("auto").toObject();
 		const QString ds = state_.value("status").toObject().value("backup").toString();
-		const bool armed = !state_.value("liveScene").toString().isEmpty();
 		const bool b = bk.value("enabled").toBool(), p = au.value("enabled").toBool();
-		directorOut_->setText(!armed ? "Choisis d'abord ta scène de direct (étape 1)."
-			: ds == "drone" ? "En ce moment : belle prise du drone à l'antenne."
-			: ds == "backup" ? "En ce moment : scène de secours à l'antenne (connexion coupée)."
-			: (b || p) ? "Régie prête : elle s'active dès que tu mets ta scène de direct à l'antenne."
-			: "Régie éteinte : active le secours (2) ou l'auto-gérance (3).");
-		regieDot_->set(ds == "backup" ? kWarn : ds == "drone" ? kOk : (b || p) && armed ? kOk : kFaint, !(ds == "backup" || ds == "drone" || ((b || p) && armed)), ds == "drone" || ds == "backup");
-		setChip(chip1_, armed ? "OK" : "À CHOISIR", armed ? "ok" : "");
-		setChip(chip2_, b ? "ACTIF" : "ÉTEINT", b ? "ok" : "");
-		setChip(chip3_, p ? "ACTIF" : "ÉTEINT", p ? "ok" : "");
+		protBody_->setVisible(b);
+		droneBody_->setVisible(p);
+		chip2_->setVisible(ds == "backup");
+		setChip(chip2_, "SECOURS À L'ANTENNE", "warn");
+		chip3_->setVisible(ds == "drone");
+		setChip(chip3_, "DRONE À L'ANTENNE", "ok");
 	}
 
 	void renderCollections()

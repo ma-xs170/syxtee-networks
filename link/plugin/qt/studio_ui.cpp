@@ -406,7 +406,7 @@ QWidget *row(const QString &title, const QString &sub, QWidget *right, int icon 
 	auto *h = new QHBoxLayout(w);
 	h->setContentsMargins(0, 12, 0, 12);
 	h->setSpacing(16);
-	if (icon >= 0) h->addWidget(new Icon(IconKind(icon)), 0, Qt::AlignTop);
+	if (icon >= 0) h->addWidget(new Icon(IconKind(icon)), 0, Qt::AlignVCenter);
 	auto *left = new QVBoxLayout;
 	left->setSpacing(3);
 	left->addWidget(label(title, "name"));

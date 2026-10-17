@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { hasSupabase, supabaseKey, supabaseUrl } from "./env";
+import { cookieDomain, hasSupabase, supabaseKey, supabaseUrl } from "./env";
 import { timedFetch } from "./fetch";
 
 const PRIVATE = ["/dashboard", "/compte", "/bienvenue"];
@@ -13,6 +13,7 @@ export async function updateSession(request: NextRequest) {
   if (!hasSupabase) return response;
 
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    cookieOptions: { domain: cookieDomain },
     global: { fetch: timedFetch(8_000) },
     cookies: {
       getAll() {

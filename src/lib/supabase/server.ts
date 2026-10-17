@@ -2,7 +2,7 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createJsClient } from "@supabase/supabase-js";
 import { cookies, headers } from "next/headers";
-import { supabaseKey, supabaseUrl } from "./env";
+import { cookieDomain, supabaseKey, supabaseUrl } from "./env";
 import { timedFetch } from "./fetch";
 
 /** Jeton de session Supabase envoyé par une app native (Authorization: Bearer …), sinon null (navigateur : cookies). */
@@ -24,6 +24,7 @@ export async function createClient() {
   }
   const cookieStore = await cookies();
   return createServerClient(supabaseUrl, supabaseKey, {
+    cookieOptions: { domain: cookieDomain },
     global: { fetch: timedFetch(15_000) },
     cookies: {
       getAll() {

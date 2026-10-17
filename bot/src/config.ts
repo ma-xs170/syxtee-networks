@@ -12,7 +12,7 @@ const schema = z.object({
   // Serveur Discord : les commandes y apparaissent tout de suite (les commandes globales mettent jusqu'à 1 h).
   DISCORD_GUILD_ID: z.string().regex(/^\d+$/).optional(),
 
-  SITE_URL: z.url().default("https://syxtee-networks.vercel.app"),
+  SITE_URL: z.url().default("https://www.syxtee-networks.fr"),
   // API du Core (Caddy ou localhost). Le jeton sert aux routes /v1/admin/* (CPU, flux en direct).
   CORE_URL: z.url().default("http://127.0.0.1:8787"),
   CORE_API_TOKEN: z.string().optional(),

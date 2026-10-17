@@ -32,7 +32,30 @@ const nextConfig: NextConfig = {
     }));
   },
   async redirects() {
+    // Sous-domaines : www = site, app = espace client, auth = connexion. Le même projet sert les trois ; ces règles renvoient chaque page sur son hôte.
+    const ROOT = "syxtee-networks.fr";
+    const WWW = `https://www.${ROOT}`;
+    const APP = `https://app.${ROOT}`;
+    const AUTH = `https://auth.${ROOT}`;
+    const host = (value: string) => [{ type: "host" as const, value }];
+    const AUTH_PAGES = ["/connexion", "/inscription", "/mot-de-passe-oublie", "/reinitialiser", "/premiere-connexion"];
+    const APP_PAGES = ["/dashboard", "/admin", "/bienvenue", "/cam"];
+    const to = (base: string, sources: string[], from: string[]) =>
+      from.flatMap((h) => sources.flatMap((src) => [{ source: src, has: host(h), destination: `${base}${src}`, permanent: true }, ...(src === "/cam" || src === "/bienvenue" || AUTH_PAGES.includes(src) ? [] : [{ source: `${src}/:path*`, has: host(h), destination: `${base}${src}/:path*`, permanent: true }])]));
+    const hostRoutes = [
+      // Jamais de *.vercel.app en production : tout passe par le domaine (sauf les tâches planifiées de Vercel).
+      ...(process.env.VERCEL_ENV === "production" ? [{ source: "/:path((?!api/cron).*)", has: host("(.+)\\.vercel\\.app"), destination: `${WWW}/:path`, permanent: true }] : []),
+      { source: "/:path*", has: host(ROOT), destination: `${WWW}/:path*`, permanent: true },
+      // Espace client et administration : toujours sur app.
+      ...to(APP, APP_PAGES, [`www.${ROOT}`, `auth.${ROOT}`]),
+      { source: "/controle-a-distance/:id([0-9a-f-]{36})", has: host(`www.${ROOT}`), destination: `${APP}/controle-a-distance/:id`, permanent: true },
+      // Connexion, inscription, mot de passe : toujours sur auth.
+      ...to(AUTH, AUTH_PAGES, [`www.${ROOT}`, `app.${ROOT}`]),
+      { source: "/", has: host(`app.${ROOT}`), destination: "/dashboard", permanent: false },
+      { source: "/", has: host(`auth.${ROOT}`), destination: "/connexion", permanent: false },
+    ];
     return [
+      ...hostRoutes,
       // Menu refait (2026-10) : anciennes adresses de l'espace client → nouvelles (301).
       { source: "/dashboard/controle-a-distance", destination: "/dashboard/direct", permanent: true },
       { source: "/dashboard/relais", destination: "/dashboard/serveurs", permanent: true },

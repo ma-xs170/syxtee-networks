@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import EncoderViewer from "@/components/encoder/EncoderViewer";
-import type { LedState, ViewName } from "@/components/syxtee-encoder";
+import type { LedState, ViewName } from "@/components/encoder/EncoderViewer";
 
 // « De plus près » : trois pastilles (les sous-choix suivent l'ordre réel sur le boîtier, de gauche à droite) (Vue d'ensemble, Modes, Connectivité). Modes et Connectivité ont des sous-choix ;
 // la caméra du vrai Encodeur 3D tourne vers la partie choisie, le voyant change de couleur selon le mode.

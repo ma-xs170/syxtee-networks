@@ -8,7 +8,6 @@ import { THEME_SCRIPT } from "@/components/ThemeToggle";
 import PwaRegister from "@/components/pwa/PwaRegister";
 import SubmitLock from "@/components/SubmitLock";
 import JsonLd from "@/components/seo/JsonLd";
-import GrainOverlay from "@/components/ui/GrainOverlay";
 
 
 // Trois familles : Instrument Serif (titres), Geist Sans (interface et texte), Geist Mono (code, valeurs, petits labels).
@@ -73,7 +72,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           }}
         />
         {children}
-        <GrainOverlay />
         <PwaRegister />
         <SubmitLock />
       </body>

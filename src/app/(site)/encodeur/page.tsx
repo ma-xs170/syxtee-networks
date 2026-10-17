@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import CloserLook from "@/components/encoder/CloserLook";
 import EncoderViewer from "@/components/encoder/EncoderViewer";
 import MadeToOrder from "@/components/encoder/MadeToOrder";
-import Scenes from "@/components/encoder/Scenes";
 import Strengths from "@/components/encoder/Strengths";
 import Glow from "@/components/landing/Glow";
 import { Container } from "@/components/ui";
@@ -65,7 +64,6 @@ export default function EncodeurPage() {
       <section id="partout" className="scroll-mt-20 border-t border-line py-24 sm:py-32">
         <Container>
           <SectionHeader icon="health" title={<>Il marche <em>n&apos;importe où.</em></>} subtitle="Le boîtier diffuse dès qu'il capte un réseau mobile ou un ciel dégagé pour le satellite. Pas besoin de Wi-Fi, ni de câble, ni d'installation." />
-          <Scenes />
           <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-muted">Sur un bateau ou dans un hélicoptère, branche un terminal satellite en Ethernet : l&apos;Encodeur prend le relais quand la 4G et la 5G s&apos;arrêtent.</p>
           <div id="fabrication" className="mt-16 scroll-mt-20"><MadeToOrder /></div>
         </Container>

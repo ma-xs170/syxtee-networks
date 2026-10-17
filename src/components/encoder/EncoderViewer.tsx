@@ -1,16 +1,14 @@
-"use client";
+import BackpackEncoder from "@/components/illustrations/BackpackEncoder";
+import type { ReactNode } from "react";
 
-import dynamic from "next/dynamic";
-import type { LedState, ViewName } from "@/components/syxtee-encoder";
+export type ViewName = string;
+export type LedState = string;
 
-// three.js n'est chargé que dans le navigateur, après le premier affichage de la page.
-const SyxteeEncoder = dynamic(() => import("@/components/syxtee-encoder").then((m) => m.SyxteeEncoder), { ssr: false });
-
-/** Le vrai Encodeur en 3D. Pas d'interaction (ni glisser ni molette) : la page défile normalement par-dessus. Le conteneur donne la hauteur. */
-export default function EncoderViewer({ view = "q", led = "pret", zoom, focusX, className = "h-[320px] sm:h-[420px]" }: { view?: ViewName; led?: LedState; zoom?: number; focusX?: number; className?: string }) {
+/** Illustration statique de l'Encodeur (SVG), sans WebGL. Le conteneur donne la hauteur. Les props de vue sont gardées pour les appelants. */
+export default function EncoderViewer({ className = "h-[320px] sm:h-[420px]" }: { view?: ViewName; led?: LedState; zoom?: number; focusX?: number; className?: string; children?: ReactNode }) {
   return (
-    <div className={`w-full [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)] ${className}`}>
-      <SyxteeEncoder finish="noir" led={led} theme="dark" view={view} zoom={zoom} focusX={focusX} interactive={false} />
+    <div className={`flex w-full items-center justify-center ${className}`}>
+      <BackpackEncoder animated={false} className="h-full w-auto max-w-full" />
     </div>
   );
 }

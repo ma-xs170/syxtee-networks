@@ -162,7 +162,7 @@ export default function MesObs({ coreUrl, demo }: { coreUrl: string; demo?: Devi
   const pushing = (live.state?.relays ?? []).filter((r) => r.live).map((r) => r.name).filter(Boolean);
 
   return (
-    <Card title="Mes OBS" action={<ArrowLink href="/dashboard/controle-a-distance">Ouvrir</ArrowLink>}>
+    <Card title="Mes OBS" action={<ArrowLink href="/dashboard/direct">Ouvrir</ArrowLink>}>
       {error && !devices ? (
         <p className="py-5 text-sm text-muted">{error}</p>
       ) : !devices ? (

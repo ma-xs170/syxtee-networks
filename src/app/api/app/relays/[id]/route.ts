@@ -9,7 +9,7 @@ import {
   setRecordAction,
   setRecordFormatAction,
   setSwitchTriggerAction,
-} from "@/app/(dashboard)/dashboard/relais/actions";
+} from "@/app/(dashboard)/dashboard/serveurs/actions";
 
 type Ctx = { params: Promise<{ id: string }> };
 const result = (r: { error?: string }) => (r.error ? privateJson({ error: r.error }, { status: 400 }) : privateJson({ ok: true }));

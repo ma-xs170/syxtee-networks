@@ -90,7 +90,7 @@ export default async function ParametresPage({ searchParams }: PageProps<"/dashb
               <SupportId id={profile.support_id} />
             </div>
             <div className="mt-5">
-              <Link href="/dashboard/support/nouveau" className="btn btn-primary">Nouvelle demande d'assistance</Link>
+              <Link href="/dashboard/aide/nouveau" className="btn btn-primary">Nouvelle demande d'assistance</Link>
             </div>
           </Tile>
         )}

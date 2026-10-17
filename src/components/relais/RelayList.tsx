@@ -24,7 +24,7 @@ type Props = {
   max: number;
   coreUrl: string;
   geo: { lat: number; lon: number } | null;
-  /** Ouvre l'assistant au chargement (lien « Créer mon relais » de l'accueil : /dashboard/relais?nouveau=1). */
+  /** Ouvre l'assistant au chargement (lien « Créer mon relais » de l'accueil : /dashboard/serveurs?nouveau=1). */
   autoOpen?: boolean;
 };
 
@@ -61,7 +61,7 @@ function Row({ relay }: { relay: RelayRow }) {
     <li className={`group relative grid grid-cols-1 gap-x-4 gap-y-3 px-4 py-4 transition-colors hover:bg-foreground/[0.04] sm:px-5 lg:items-center ${COLS}`}>
       <div className="flex min-w-0 items-center gap-3">
         {g === "live" ? <span className="live-dot shrink-0" aria-label="En direct" /> : <span aria-hidden="true" className={`size-2 shrink-0 rounded-full ${st.dot}`} />}
-        <Link href={`/dashboard/relais/${relay.id}`} className="truncate text-left text-sm font-medium after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:ring-1 focus-visible:after:ring-foreground/30">
+        <Link href={`/dashboard/serveurs/${relay.id}`} className="truncate text-left text-sm font-medium after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:ring-1 focus-visible:after:ring-foreground/30">
           {relay.name}
         </Link>
         <span className={`shrink-0 text-xs lg:hidden ${st.text}`}>{st.label}</span>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { createTicketAction, type SupportState } from "@/app/(dashboard)/dashboard/support/actions";
+import { createTicketAction, type SupportState } from "@/app/(dashboard)/dashboard/aide/actions";
 import { CATEGORY_FORMS, SUPPORT_CATEGORIES, isCategory, type SupportCategory } from "@/lib/support-categories";
 import PhotoPicker from "./PhotoPicker";
 

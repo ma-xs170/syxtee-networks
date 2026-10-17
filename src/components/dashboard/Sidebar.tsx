@@ -48,35 +48,35 @@ const AffCtx = createContext<AffiliateInfo>(null);
 type Item = { sharedOnly?: boolean; label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean; wordmark?: string; /** « À venir » : pas encore ouvert (l'admin y accède quand même). */ soon?: boolean; /** Pastille de nouveauté à droite du libellé. */ fresh?: boolean };
 type Group = { title?: string; items: Item[] };
 
-// Barre minimale (comme un espace client de service) : Accueil, trois groupes, puis aide, thème et compte en bas.
+// Menu : Tableau de bord, trois groupes (Diffuser, Studio, Croissance), Aide en bas. Le profil (en haut) ouvre Compte, espaces, thème, déconnexion.
 const GROUPS: Group[] = [
-  { items: [{ label: "Accueil", href: "/dashboard", icon: SquaresFour }] },
+  { items: [{ label: "Tableau de bord", href: "/dashboard", icon: SquaresFour }] },
   {
-    title: "Diffusion",
+    title: "Diffuser",
     items: [
-      { label: "Serveurs", href: "/dashboard/relais", icon: Radio, feature: "relais" },
-      { label: "Encodeurs", href: "/dashboard/encodeurs", icon: HardDrives },
-      { label: "Contrôle", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais" },
+      { label: "Direct", href: "/dashboard/direct", icon: SlidersHorizontal, feature: "relais" },
+      { label: "Destinations", href: "/dashboard/destinations", icon: ShareNetwork },
+      { label: "Serveurs", href: "/dashboard/serveurs", icon: Radio, feature: "relais" },
     ],
   },
   {
-    title: "Production",
+    title: "Studio",
     items: [
-      { label: "Scènes", href: "/dashboard/backups", icon: Archive, feature: "relais" },
-      { label: "Équipe", href: "/dashboard/invitations", icon: UsersThree, feature: "relais" },
+      { label: "Appareils", href: "/dashboard/appareils", icon: HardDrives },
+      { label: "Scènes", href: "/dashboard/scenes", icon: Archive, feature: "relais" },
+      { label: "Équipe", href: "/dashboard/equipe", icon: UsersThree, feature: "relais" },
+    ],
+  },
+  {
+    title: "Croissance",
+    items: [
+      { label: "Statistiques", href: "/dashboard/statistiques", icon: ChartBar },
       { label: "Sponsors", href: "/dashboard/sponsors", icon: Tag },
     ],
   },
-  {
-    title: "Suivi",
-    items: [{ label: "Statistiques", href: "/dashboard/stats", icon: ChartBar }],
-  },
 ];
 
-const HELP: Item[] = [
-  { label: "Assistance", href: "/dashboard/support", icon: Lifebuoy },
-  { label: "Documentation", href: "/docs", icon: Question },
-];
+const HELP: Item[] = [{ label: "Aide", href: "/dashboard/aide", icon: Lifebuoy }];
 
 function NavLink({ item, active, locked, soon, onNavigate, hovered, onHover }: { item: Item; active: boolean; locked?: boolean; soon?: boolean; onNavigate: () => void; hovered?: boolean; onHover?: () => void }) {
   const Icon = item.icon;
@@ -208,7 +208,7 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
         </button>
         {open && (
           <div role="menu" className="absolute left-0 top-full z-50 mt-2 w-[calc(100%+3rem)] overflow-hidden rounded-2xl border border-line bg-background py-1 shadow-[0_18px_40px_rgba(0,0,0,0.6)]">
-            <p className="px-4 pb-1 pt-2.5 text-[13px] text-muted">Espace de travail</p>
+            <p className="px-4 pb-1 pt-2.5 text-[13px] text-muted">Changer de compte</p>
             <button type="button" role="menuitemradio" aria-checked={!active} onClick={() => go(null)} className={row}>
               <span aria-hidden="true" className="grid size-2 shrink-0 place-items-center"><span className={`size-1.5 rounded-full ${active ? "" : "bg-foreground"}`} /></span>
               <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full bg-[#40c090]" />
@@ -229,21 +229,16 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
               <span className="shrink-0 text-[13px] text-muted">{ws.left === null ? "illimité" : ws.left > 0 ? `${ws.left} restante${ws.left > 1 ? "s" : ""}` : "non inclus"}</span>
             </button>
             {active && active.role !== "member" && (
-              <Link role="menuitem" href="/dashboard/invitations#ws-settings" onClick={() => { setOpen(false); onNavigate(); }} className={row}>
+              <Link role="menuitem" href="/dashboard/equipe#ws-settings" onClick={() => { setOpen(false); onNavigate(); }} className={row}>
                 <span aria-hidden="true" className="grid size-2 shrink-0 place-items-center text-muted">⚙</span>
                 <span className="min-w-0 flex-1 truncate">Renommer ou supprimer « {active.name} »</span>
               </Link>
             )}
             <div className="mt-1 border-t border-line">
-              <Link role="menuitem" href="/compte" onClick={() => { setOpen(false); onNavigate(); }} className={item}>
-                Mon compte
-              </Link>
               <Link role="menuitem" href="/dashboard/parametres" onClick={() => { setOpen(false); onNavigate(); }} className={item}>
-                Paramètres
+                Compte
               </Link>
-              <Link role="menuitem" href="/dashboard/abonnement" onClick={() => { setOpen(false); onNavigate(); }} className={item}>
-                Abonnement
-              </Link>
+              <ThemeRow className={`${item} flex items-center gap-2`} />
               {admin && (
                 <Link role="menuitem" href="/admin" onClick={() => { setOpen(false); onNavigate(); }} className={item}>
                   Administration
@@ -253,7 +248,7 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
             <form action={signOut} className="border-t border-line">
               <button type="submit" role="menuitem" className={`${item} flex items-center gap-2 text-red-400`}>
                 <SignOut size={16} aria-hidden="true" />
-                Se déconnecter
+                Déconnexion
               </button>
             </form>
           </div>
@@ -300,7 +295,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
   const locked = (i: Item) => !!i.feature && !!account && !(ws.features ?? account.features).includes(i.feature);
   const [hover, setHover] = useState<string | null>(null);
   const aff = useContext(AffCtx);
-  const groups: Group[] = aff ? [...GROUPS, { title: "Programme", items: [{ label: "Affilié", href: "/dashboard/affilie", icon: ShareNetwork, fresh: aff.isNew }] }] : GROUPS;
+  const groups: Group[] = aff ? GROUPS.map((g) => (g.title === "Croissance" ? { ...g, items: [...g.items, { label: "Affiliation", href: "/dashboard/affiliation", icon: ShareNetwork, fresh: aff.isNew }] } : g)) : GROUPS;
 
   return (
     <div className="flex h-full flex-col">
@@ -325,10 +320,6 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
         {HELP.map((it) => (
           <NavLink key={it.href} item={it} active={isActive(it.href)} onNavigate={onNavigate} hovered={hover === it.href} onHover={() => setHover(it.href)} />
         ))}
-        <ThemeRow
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:text-foreground lg:py-1.5"
-          icon={<Moon size={20} className="shrink-0" aria-hidden="true" />}
-        />
       </div>
     </div>
   );
@@ -337,9 +328,9 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
 // Barre d'onglets du bas (mobile), dans cet ordre : Accueil, Flux, OBS, Menu (le tiroir). Chaque onglet reste actif sur les pages de sa famille :
 // Flux = tes flux (SRTLA, RTMP) ; OBS = liste des postes, plugin, et l'interface d'un OBS (/controle-a-distance/<poste>).
 const TABS: (Item & { also?: string[] })[] = [
-  { label: "Accueil", href: "/dashboard", icon: SquaresFour },
-  { label: "Serveurs", href: "/dashboard/relais", icon: Radio, feature: "relais" },
-  { label: "Contrôle", href: "/dashboard/controle-a-distance", icon: SlidersHorizontal, feature: "relais", also: ["/dashboard/obs", "/dashboard/plugin", "/controle-a-distance"] },
+  { label: "Tableau", href: "/dashboard", icon: SquaresFour },
+  { label: "Serveurs", href: "/dashboard/serveurs", icon: Radio, feature: "relais" },
+  { label: "Direct", href: "/dashboard/direct", icon: SlidersHorizontal, feature: "relais", also: ["/dashboard/obs", "/dashboard/plugin", "/controle-a-distance"] },
 ];
 
 function MobileTabs({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolean }) {
@@ -378,12 +369,12 @@ function MobileTabs({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolea
 
 /** Mise en page : barre latérale fixe en desktop, barre du haut et tiroir en mobile. */
 const EXTRA_COMMANDS: Command[] = [
-  { label: "Paramètres", href: "/dashboard/parametres", hint: "Compte" },
+  { label: "Compte", href: "/dashboard/parametres", hint: "Compte" },
   { label: "Abonnement", href: "/dashboard/abonnement", hint: "Compte" },
   { label: "Profil", href: "/dashboard/profil", hint: "Compte" },
   { label: "Multichat", href: "/dashboard/multichat", hint: "Outils" },
   { label: "Lives passés", href: "/dashboard/lives", hint: "Suivi" },
-  { label: "Nouvelle demande d'assistance", href: "/dashboard/support/nouveau", hint: "Aide" },
+  { label: "Nouvelle demande d'assistance", href: "/dashboard/aide/nouveau", hint: "Aide" },
 ];
 
 export default function DashboardShell({ admin, children, workspace, affiliate = null }: { admin: boolean; children: React.ReactNode; workspace?: WorkspaceInfo; affiliate?: AffiliateInfo }) {

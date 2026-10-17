@@ -24,7 +24,7 @@ export default async function DashboardPage() {
           <p className="mt-1 max-w-[62ch] text-sm leading-relaxed text-muted">Les services ne sont pas encore ouverts à tous. Tu peux lire la documentation et écrire au support pour demander un accès.</p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Link href="/tarifs" className="btn btn-primary">Voir les forfaits</Link>
-            <Link href="/dashboard/support" className="btn btn-secondary">Demander un accès</Link>
+            <Link href="/dashboard/aide" className="btn btn-secondary">Demander un accès</Link>
             <Link href="/docs" className="btn btn-secondary">Documentation</Link>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { appUser, privateJson } from "@/lib/auth/app-api";
-import { revokeInviteAction } from "@/app/(dashboard)/dashboard/invitations/actions";
+import { revokeInviteAction } from "@/app/(dashboard)/dashboard/equipe/actions";
 
 // DELETE /api/app/invites/:id : retire l'invité (son lien cesse de marcher).
 export async function DELETE(_r: NextRequest, { params }: { params: Promise<{ id: string }> }) {

@@ -161,7 +161,7 @@ export default function TeamSettings({ workspace, admin, owner, meId, members, i
           <Card title="Exports">
             <p className="text-sm text-muted">Tous les exports CSV disponibles pour ton équipe sont listés ici.</p>
             <div className="mt-5">
-              <ButtonLink href="/dashboard/stats">Aller à la page</ButtonLink>
+              <ButtonLink href="/dashboard/statistiques">Aller à la page</ButtonLink>
             </div>
           </Card>
           {owner && (

@@ -26,7 +26,7 @@ type Session = { id: string; started_at: string; duration_s: number; avg_kbps: n
 export default async function RelayPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ onglet?: string }> }) {
   const { id } = await params;
   const { onglet } = await searchParams;
-  const user = await requireOwner(`/dashboard/relais/${id}`);
+  const user = await requireOwner(`/dashboard/serveurs/${id}`);
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   // Un seul serveur demandé au Core (pas toute la liste), en parallèle de l'historique des directs et de la position du visiteur.
   const { db, ownerId } = await dataClient();
@@ -36,7 +36,7 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
   if (!relay) {
     return (
       <DashPage>
-        <Link href="/dashboard/relais" className="text-sm text-muted transition-colors hover:text-foreground">← Retour à la liste des serveurs</Link>
+        <Link href="/dashboard/serveurs" className="text-sm text-muted transition-colors hover:text-foreground">← Retour à la liste des serveurs</Link>
         <p className="mt-6 text-sm text-muted">Ce serveur est introuvable, ou le service ne répond pas pour le moment. Réessaie dans quelques minutes.</p>
       </DashPage>
     );
@@ -81,7 +81,7 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
     { id: "parametres", label: "Paramètres" },
   ] as const;
   const tab = TABS.find((t) => t.id === onglet)?.id ?? "info";
-  const href = (t: string) => `/dashboard/relais/${relay.id}${t === "info" ? "" : `?onglet=${t}`}`;
+  const href = (t: string) => `/dashboard/serveurs/${relay.id}${t === "info" ? "" : `?onglet=${t}`}`;
   const goto = (label: string, t: string) => ({ label, href: href(t) });
   const act = (label: string, action: string, danger = false) => ({ label, action: { id: relay.id, action }, danger });
   const sinceKey = relay.rotated_at ? fmtAgo(relay.rotated_at) : "Jamais régénérée";
@@ -91,7 +91,7 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
   return (
     <DashPage>
       <PlanGate feature="relais">
-        <Link href="/dashboard/relais" className="inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground">
+        <Link href="/dashboard/serveurs" className="inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground">
           <span aria-hidden="true">←</span> Retour à la liste des serveurs
         </Link>
 

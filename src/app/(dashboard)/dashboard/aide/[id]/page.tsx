@@ -16,7 +16,7 @@ const day = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { dateSty
 
 export default async function TicketPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const user = await requireUser(`/dashboard/support/${id}`);
+  const user = await requireUser(`/dashboard/aide/${id}`);
   const thread = await getThread(id, user.id);
   if (!thread) notFound();
   const { ticket, messages } = thread;
@@ -26,7 +26,7 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
 
   return (
     <DashPage>
-      <Link href="/dashboard/support" className="text-sm text-muted transition-colors hover:text-foreground">
+      <Link href="/dashboard/aide" className="text-sm text-muted transition-colors hover:text-foreground">
         ← Support
       </Link>
       <div className="mb-8 mt-4 flex flex-wrap items-start justify-between gap-4">

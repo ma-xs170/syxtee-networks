@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Affilié", robots: { index: false } 
 
 // Espace Affilié : réservé aux comptes invités par l'équipe (404 sinon). Lien à partager, kit, pseudo et nom d'URL.
 export default async function AffiliatePage() {
-  await requireUser("/dashboard/affilie");
+  await requireUser("/dashboard/affiliation");
   const me = await getMyAffiliate();
   if (!me) notFound();
   return (

@@ -22,7 +22,7 @@ export default async function IntegrationsPage() {
           <p className="text-sm text-muted">{it.value ? `Compte : ${it.value}. ` : ""}{it.text}</p>
           <div className="mt-5 flex flex-wrap gap-3">
             <ButtonLink href="/dashboard/profil" variant="secondary">Gérer dans le profil</ButtonLink>
-            <ButtonLink href="/dashboard/controle-a-distance" variant="ghost">Destinations de stream</ButtonLink>
+            <ButtonLink href="/dashboard/direct" variant="ghost">Destinations de stream</ButtonLink>
           </div>
         </Card>
       ))}

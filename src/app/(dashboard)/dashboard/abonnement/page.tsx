@@ -55,7 +55,7 @@ export default async function AccesPage() {
           <p className="mt-4 text-sm leading-relaxed text-muted">
             {plan.id === "free" ? "Écris-nous depuis la messagerie du support, nous te répondons rapidement." : "Plus de flux ou plus de directs simultanés : demande-le depuis la messagerie du support."}
           </p>
-          <Link href="/dashboard/support" className="btn btn-primary mt-5 w-full">
+          <Link href="/dashboard/aide" className="btn btn-primary mt-5 w-full">
             Écrire au support
           </Link>
           <Link href="/tarifs" className="btn btn-secondary mt-2 w-full">

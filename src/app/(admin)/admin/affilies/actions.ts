@@ -15,7 +15,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export type AffiliateState = { ok?: string; error?: string };
 
 const refresh = () => revalidatePath("/admin/affilies");
-const mail = (a: Pick<Affiliate, "display_name" | "slug">) => affiliateInvite({ displayName: a.display_name, shareUrl: affiliateUrl(a.slug), dashboardUrl: `${site.url}/dashboard/affilie`, kitUrl });
+const mail = (a: Pick<Affiliate, "display_name" | "slug">) => affiliateInvite({ displayName: a.display_name, shareUrl: affiliateUrl(a.slug), dashboardUrl: `${site.url}/dashboard/affiliation`, kitUrl });
 
 export async function inviteAffiliateAction(_prev: AffiliateState, form: FormData): Promise<AffiliateState> {
   const admin = await requireAdmin("partners");

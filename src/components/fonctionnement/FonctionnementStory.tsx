@@ -122,7 +122,7 @@ export default function FonctionnementStory() {
       paragraphs: ["Tout ce trajet prend quelques secondes.", "Toi, tu profites de ton live."],
       footer: (
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Link href="/dashboard/support" className="inline-flex items-center justify-center gap-2 rounded-full border border-line-strong px-5 py-3 text-sm font-medium transition-colors hover:bg-foreground/[0.08]">Besoin d&apos;aide ? Assistance</Link>
+          <Link href="/dashboard/aide" className="inline-flex items-center justify-center gap-2 rounded-full border border-line-strong px-5 py-3 text-sm font-medium transition-colors hover:bg-foreground/[0.08]">Besoin d&apos;aide ? Assistance</Link>
           <Link
             href="/relais"
             className="inline-flex items-center justify-center gap-2 rounded-full border border-line px-5 py-3 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"

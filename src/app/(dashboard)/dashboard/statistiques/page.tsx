@@ -22,8 +22,8 @@ function Figure({ label, value, sub }: { label: string; value: string; sub?: str
   );
 }
 
-export default async function StatsPage({ searchParams }: PageProps<"/dashboard/stats">) {
-  const [, profile, { range: r }] = await Promise.all([requireOwner("/dashboard/stats"), getProfile(), searchParams]);
+export default async function StatsPage({ searchParams }: PageProps<"/dashboard/statistiques">) {
+  const [, profile, { range: r }] = await Promise.all([requireOwner("/dashboard/statistiques"), getProfile(), searchParams]);
   const timezone = accountTimezone(profile);
   const range = isRange(r) ? r : "7d";
   const { days, any, kpis: k, previous: p, longest, reconnects, short, daily } = await getStats(range, timezone);
@@ -31,14 +31,14 @@ export default async function StatsPage({ searchParams }: PageProps<"/dashboard/
 
   return (
     <DashPage>
-      <SectionTabs tabs={statsTabs} current="/dashboard/stats" label="Statistiques" />
+      <SectionTabs tabs={statsTabs} current="/dashboard/statistiques" label="Statistiques" />
       <PlanGate feature="stats">
       <DashHeader lead="Ton" hl="analytique" sub={`Tes directs sur les ${days} derniers jours, comparés aux ${days} jours d'avant. Jours et heures en fuseau ${timezone.replace(/_/g, " ")}.`}>
         <div role="radiogroup" aria-label="Période" className="inline-flex rounded-full border border-line p-0.5">
           {(["7d", "30d"] as const).map((x) => (
             <Link
               key={x}
-              href={`/dashboard/stats?range=${x}`}
+              href={`/dashboard/statistiques?range=${x}`}
               role="radio"
               aria-checked={range === x}
               className={`flex h-8 items-center rounded-full px-4 font-mono text-xs transition-colors ${range === x ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}
@@ -53,7 +53,7 @@ export default async function StatsPage({ searchParams }: PageProps<"/dashboard/
         <Tile>
           <p className="text-sm text-muted">Pas encore de direct enregistré. Tes chiffres apparaissent ici après ton premier live.</p>
           <div className="mt-4">
-            <ArrowLink href="/dashboard/relais">Mes serveurs</ArrowLink>
+            <ArrowLink href="/dashboard/serveurs">Mes serveurs</ArrowLink>
           </div>
         </Tile>
       ) : (

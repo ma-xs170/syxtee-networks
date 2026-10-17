@@ -65,8 +65,8 @@ export function dailyMinutes(sessions: LiveSession[], now: number, days = 30, ti
 export function buildAlerts(o: { month: LiveSession[]; profile: Profile; relays: RelayView[]; coreOk: boolean; hasEverStreamed: boolean }): Alert[] {
   const alerts: Alert[] = [];
   const active = o.relays.filter((r) => !r.archived);
-  if (!o.coreOk) alerts.push({ id: "core", text: "Le relais ne répond pas pour le moment. Tes directs peuvent être impossibles.", href: "/dashboard/relais", cta: "Mes relais" });
-  else if (!active.length) alerts.push({ id: "norelay", text: "Tu n'as pas encore de relais : sans lui, impossible de lancer un direct.", href: "/dashboard/relais", cta: "Créer un relais" });
+  if (!o.coreOk) alerts.push({ id: "core", text: "Le relais ne répond pas pour le moment. Tes directs peuvent être impossibles.", href: "/dashboard/serveurs", cta: "Mes relais" });
+  else if (!active.length) alerts.push({ id: "norelay", text: "Tu n'as pas encore de relais : sans lui, impossible de lancer un direct.", href: "/dashboard/serveurs", cta: "Créer un relais" });
   const reconnects = o.month.reduce((a, s) => a + s.reconnects, 0);
   if (reconnects >= 10)
     alerts.push({

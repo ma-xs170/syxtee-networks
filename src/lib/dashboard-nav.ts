@@ -17,28 +17,28 @@ export const dashboardNav: DashItem[] = [
   {
     label: "Diffusion",
     children: [
-      { label: "Serveurs", href: "/dashboard/relais", desc: "SRTLA, RTMP, tes adresses et clés", icon: "relays", feature: "relais" },
-      { label: "Contrôle", href: "/dashboard/controle-a-distance", desc: "Pilote ton OBS depuis un onglet", icon: "control", feature: "remote" },
+      { label: "Serveurs", href: "/dashboard/serveurs", desc: "SRTLA, RTMP, tes adresses et clés", icon: "relays", feature: "relais" },
+      { label: "Contrôle", href: "/dashboard/direct", desc: "Pilote ton OBS depuis un onglet", icon: "control", feature: "remote" },
     ],
   },
   {
     label: "Production",
-    children: [{ label: "Scènes", href: "/dashboard/backups", desc: "Tes collections de scènes sauvegardées", icon: "plan", feature: "remote" }],
+    children: [{ label: "Scènes", href: "/dashboard/scenes", desc: "Tes collections de scènes sauvegardées", icon: "plan", feature: "remote" }],
   },
-  { label: "Statistiques", href: "/dashboard/stats" },
+  { label: "Statistiques", href: "/dashboard/statistiques" },
 ];
 
 export type SectionTab = { label: string; href: string };
 
 /** Onglets de la section Statistiques. */
 export const statsTabs: SectionTab[] = [
-  { label: "Vue globale", href: "/dashboard/stats" },
+  { label: "Vue globale", href: "/dashboard/statistiques" },
   { label: "Historique", href: "/dashboard/lives" },
 ];
 
 /** Un lien de la barre reste actif sur toutes les pages de sa section. */
 export const activeAlso: Record<string, string[]> = {
-  "/dashboard/stats": statsTabs.map((t) => t.href),
+  "/dashboard/statistiques": statsTabs.map((t) => t.href),
 };
 
 /** Entrées verrouillées (cadenas) pour la formule donnée. */

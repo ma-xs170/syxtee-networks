@@ -3,7 +3,7 @@ import { appUser, privateJson, readJson } from "@/lib/auth/app-api";
 import { getPlan } from "@/lib/auth/plan";
 import { relayLimit } from "@/lib/plans";
 import { loadRelays } from "@/lib/relays";
-import { createRelayAction } from "@/app/(dashboard)/dashboard/relais/actions";
+import { createRelayAction } from "@/app/(dashboard)/dashboard/serveurs/actions";
 
 // GET /api/app/relays : serveurs (relais) du compte, avec leurs URLs, pour l'app iOS.
 export async function GET() {

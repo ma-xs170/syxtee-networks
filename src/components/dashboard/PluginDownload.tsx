@@ -39,7 +39,7 @@ export default function PluginDownload({ coreUrl, latest: initial, demo }: { cor
             <span className="text-foreground">{online[0].name}</span>
             {online[0].plugin_version ? ` (plugin ${online[0].plugin_version})` : ""} est connecté à ton compte.
           </p>
-          <Link href="/dashboard/controle-a-distance" className={`${primary} mt-4 sm:w-fit`}>
+          <Link href="/dashboard/direct" className={`${primary} mt-4 sm:w-fit`}>
             Ouvrir le contrôle à distance <span aria-hidden="true">→</span>
           </Link>
         </section>

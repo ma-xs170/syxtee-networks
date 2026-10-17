@@ -3,13 +3,13 @@ import { appUser, privateJson, readJson } from "@/lib/auth/app-api";
 import { getPlan } from "@/lib/auth/plan";
 import { listInvites } from "@/lib/core";
 import { requireOwner } from "@/lib/workspace";
-import { createInviteAction } from "@/app/(dashboard)/dashboard/invitations/actions";
+import { createInviteAction } from "@/app/(dashboard)/dashboard/equipe/actions";
 
 // GET /api/app/invites : invités au contrôle à distance.
 export async function GET() {
   const u = await appUser();
   if (u instanceof Response) return u;
-  const owner = await requireOwner("/dashboard/invitations");
+  const owner = await requireOwner("/dashboard/equipe");
   const [invites, plan] = await Promise.all([listInvites(owner.id).catch(() => null), getPlan()]);
   return privateJson({ invites: invites ?? [], max: Number.isFinite(plan.maxInvites) ? plan.maxInvites : null, plan: plan.name });
 }

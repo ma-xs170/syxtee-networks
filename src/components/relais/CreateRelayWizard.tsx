@@ -4,7 +4,7 @@ import RelayGlobe from "@/components/globe/RelayGlobe";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { createRelayAction } from "@/app/(dashboard)/dashboard/relais/actions";
+import { createRelayAction } from "@/app/(dashboard)/dashboard/serveurs/actions";
 import type { RelayProtocol, RelayView } from "@/lib/core";
 import { RELAY_SERVERS, distanceKm, estimateRtt, flag, latencyTone, type LatencyTone } from "@/lib/relay-servers";
 import RelayUrls from "./RelayUrls";

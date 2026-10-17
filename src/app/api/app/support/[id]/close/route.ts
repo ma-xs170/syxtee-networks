@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { appUser, privateJson } from "@/lib/auth/app-api";
-import { closeTicketAction } from "@/app/(dashboard)/dashboard/support/actions";
+import { closeTicketAction } from "@/app/(dashboard)/dashboard/aide/actions";
 
 // POST /api/app/support/:id/close : marque la demande comme résolue.
 export async function POST(_r: NextRequest, { params }: { params: Promise<{ id: string }> }) {

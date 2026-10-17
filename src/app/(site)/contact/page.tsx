@@ -31,7 +31,7 @@ export default function ContactPage() {
               <p className="mt-2 text-sm leading-relaxed text-muted">Marathon, manifestation publique, festival, reportage… Décris ton projet et reçois une estimation personnalisée, sans engagement.</p>
             </div>
             <p className="px-1 text-sm text-muted">
-              Un souci avec ton compte ? <Link href="/dashboard/support" className="text-foreground underline underline-offset-4">Assistance</Link>, ou la <Link href="/faq" className="text-foreground underline underline-offset-4">FAQ</Link>.
+              Un souci avec ton compte ? <Link href="/dashboard/aide" className="text-foreground underline underline-offset-4">Assistance</Link>, ou la <Link href="/faq" className="text-foreground underline underline-offset-4">FAQ</Link>.
             </p>
           </aside>
         </Container>

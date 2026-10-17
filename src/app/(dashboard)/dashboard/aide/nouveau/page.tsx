@@ -9,13 +9,13 @@ export const metadata: Metadata = { title: "Nouvelle demande", robots: { index: 
 
 // Demande d'assistance en deux pages : sujet et informations du compte (préremplies), puis les détails propres au sujet.
 export default async function NewTicketPage() {
-  const user = await requireUser("/dashboard/support/nouveau");
+  const user = await requireUser("/dashboard/aide/nouveau");
   const [profile, plan] = await Promise.all([getProfile(), getPlan()]);
   const country = profile?.country ? (new Intl.DisplayNames(["fr"], { type: "region" }).of(profile.country) ?? profile.country) : "";
   const name = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || profile?.twitch_display_name || "";
   return (
     <DashPage>
-      <Link href="/dashboard/support" className="text-sm text-muted transition-colors hover:text-foreground">
+      <Link href="/dashboard/aide" className="text-sm text-muted transition-colors hover:text-foreground">
         ← Assistance
       </Link>
       <h1 className="h-page mb-2 mt-4">Nouvelle <em>demande</em></h1>

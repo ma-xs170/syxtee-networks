@@ -350,7 +350,7 @@ export async function sendMessageAction(_prev: PlanState, form: FormData): Promi
   await db.from("support_tickets").update({ assigned_to: admin.id, assigned_at: now }).eq("id", ticketId);
   await db.from("notifications").insert({ user_id: userId.data, title: "Nouveau message de l'équipe", body: subject });
   await audit(admin.email!, "account.message", userId.data, null, { ticket: ticketId, subject });
-  const sent = await sendEmailResult(email, staffMessage({ firstName: p?.first_name ?? null, subject, from: first || "L'équipe SYXTEE", url: `${site.url}/dashboard/support/${ticketId}` }));
+  const sent = await sendEmailResult(email, staffMessage({ firstName: p?.first_name ?? null, subject, from: first || "L'équipe SYXTEE", url: `${site.url}/dashboard/aide/${ticketId}` }));
   revalidatePath("/admin/support");
   return sent.ok ? { ok: `Message envoyé dans l'espace Assistance de ${email}. Un e-mail le prévient.` } : { ok: "Message envoyé dans son espace Assistance. L'e-mail de prévenance n'est pas parti." };
 }

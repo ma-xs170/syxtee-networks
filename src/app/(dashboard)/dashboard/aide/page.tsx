@@ -17,7 +17,7 @@ const TABS = [
 ];
 
 export default async function SupportPage({ searchParams }: { searchParams: Promise<{ etat?: string }> }) {
-  const [user, { etat }] = await Promise.all([requireUser("/dashboard/support"), searchParams]);
+  const [user, { etat }] = await Promise.all([requireUser("/dashboard/aide"), searchParams]);
   const tab = TABS.find((t) => t.id === etat) ?? TABS[0];
   const [profile, tickets, counts] = await Promise.all([getProfile(), listTickets({ userId: user.id, state: tab.state }), ticketCounts(user.id)]);
 
@@ -46,7 +46,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
             ))}
           </ul>
           <div className="mt-auto pt-6">
-            <Link href="/dashboard/support/nouveau" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors">
+            <Link href="/dashboard/aide/nouveau" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors">
               <span aria-hidden="true">+</span> Nouvelle demande
             </Link>
           </div>
@@ -77,7 +77,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
         {TABS.map((t) => (
           <Link
             key={t.id}
-            href={t.id === "en-cours" ? "/dashboard/support" : `/dashboard/support?etat=${t.id}`}
+            href={t.id === "en-cours" ? "/dashboard/aide" : `/dashboard/aide?etat=${t.id}`}
             aria-current={t.id === tab.id ? "page" : undefined}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${t.id === tab.id ? "bg-surface-2 text-foreground" : "text-muted hover:text-foreground"}`}
           >
@@ -103,7 +103,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
         <ul className="divide-y divide-line overflow-hidden tile !p-0">
           {tickets.map((t) => (
             <li key={t.id}>
-              <Link href={`/dashboard/support/${t.id}`} className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-foreground/[0.04]">
+              <Link href={`/dashboard/aide/${t.id}`} className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-foreground/[0.04]">
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{t.subject}</span>
                   <span className="mt-1 block text-xs text-muted">

@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Scènes", robots: { index: false } }
 
 // Backups de scènes : tes collections OBS sauvegardées (scènes, sources, filtres et médias), versions, quota.
 export default async function BackupsPage() {
-  await requireUser("/dashboard/backups");
+  await requireUser("/dashboard/scenes");
   return (
     <DashPage>
       <DashHeader lead="Scènes" hl="sauvegardées" sub="Tes collections de scènes OBS, avec leurs médias. Les scripts Lua et Python ne sont pas sauvegardés." />

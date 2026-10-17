@@ -31,7 +31,7 @@ export function UpgradeCard({ feature }: { feature?: string }) {
         <Link href="/tarifs" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors">
           Voir les forfaits
         </Link>
-        <Link href="/dashboard/support" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-line-strong px-5 text-sm font-medium transition-colors hover:bg-fill-hover">
+        <Link href="/dashboard/aide" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-line-strong px-5 text-sm font-medium transition-colors hover:bg-fill-hover">
           Demander un accès
         </Link>
       </div>

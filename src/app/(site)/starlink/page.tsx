@@ -176,7 +176,7 @@ export default function StarlinkPage() {
                 >
                   Voir les forfaits Starlink <span aria-hidden="true">↗</span>
                 </a>
-                <Link href="/dashboard/support" className="inline-flex items-center justify-center gap-2 rounded-full border border-line-strong px-5 py-3 text-sm font-medium transition-colors hover:bg-foreground/[0.08]">Une question ? Assistance</Link>
+                <Link href="/dashboard/aide" className="inline-flex items-center justify-center gap-2 rounded-full border border-line-strong px-5 py-3 text-sm font-medium transition-colors hover:bg-foreground/[0.08]">Une question ? Assistance</Link>
               </div>
             </div>
           </div>

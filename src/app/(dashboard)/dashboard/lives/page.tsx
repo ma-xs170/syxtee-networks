@@ -38,7 +38,7 @@ export default async function LivesPage({ searchParams }: PageProps<"/dashboard/
           <>
             <p className="text-sm text-muted">Aucun direct enregistré pour l&apos;instant.</p>
             <div className="mt-4">
-              <ArrowLink href="/dashboard/relais">Mes serveurs</ArrowLink>
+              <ArrowLink href="/dashboard/serveurs">Mes serveurs</ArrowLink>
             </div>
           </>
         )}

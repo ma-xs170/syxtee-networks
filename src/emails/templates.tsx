@@ -190,7 +190,7 @@ export function freeMonth(o: { until: Date }): Email {
       <Layout preview={`Relais offert jusqu'au ${day(o.until)}.`} reason="Merci pour tes mesures.">
         <Title lead="1 mois de relais" hl="offert." />
         <Text style={p}>Jusqu&apos;au {day(o.until)}.</Text>
-        <Cta href={`${site.url}/dashboard/relais`}>Ouvrir mes relais</Cta>
+        <Cta href={`${site.url}/dashboard/serveurs`}>Ouvrir mes relais</Cta>
       </Layout>
     ),
   };

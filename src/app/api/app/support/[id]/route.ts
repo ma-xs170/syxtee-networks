@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { appUser, privateJson, redirectTarget, readJson } from "@/lib/auth/app-api";
 import { getThread } from "@/lib/support";
 import { categoryLabel } from "@/lib/support-categories";
-import { deleteTicketAction, replyAction } from "@/app/(dashboard)/dashboard/support/actions";
+import { deleteTicketAction, replyAction } from "@/app/(dashboard)/dashboard/aide/actions";
 
 type Ctx = { params: Promise<{ id: string }> };
 

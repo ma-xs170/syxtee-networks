@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { appUser, privateJson, redirectTarget, readJson } from "@/lib/auth/app-api";
 import { listTickets, ticketCounts } from "@/lib/support";
 import { categoryLabel } from "@/lib/support-categories";
-import { createTicketAction } from "@/app/(dashboard)/dashboard/support/actions";
+import { createTicketAction } from "@/app/(dashboard)/dashboard/aide/actions";
 
 // GET /api/app/support?state=open|resolved|all : demandes du compte.
 export async function GET(request: NextRequest) {

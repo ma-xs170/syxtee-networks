@@ -17,8 +17,8 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#050505",
     lang: "fr",
     shortcuts: [
-      { name: "Contrôle à distance", short_name: "OBS", description: "Pilote ton OBS depuis ton téléphone", url: "/dashboard/controle-a-distance", icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }] },
-      { name: "Mes relais", short_name: "Relais", description: "Tes URLs et clés de relais", url: "/dashboard/relais", icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }] },
+      { name: "Contrôle à distance", short_name: "OBS", description: "Pilote ton OBS depuis ton téléphone", url: "/dashboard/direct", icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }] },
+      { name: "Mes relais", short_name: "Relais", description: "Tes URLs et clés de relais", url: "/dashboard/serveurs", icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }] },
     ],
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },

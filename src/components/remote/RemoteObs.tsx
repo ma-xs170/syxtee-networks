@@ -250,7 +250,7 @@ function TopBar({ o, desktop, chatOn, showChat, onChat, onAuto, invited }: { o: 
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b border-line px-3 lg:h-12 lg:px-3.5">
       {!o.guest && !invited && (
-        <Link href="/dashboard/controle-a-distance" aria-label="Retour au tableau de bord" className="-ml-1 grid size-11 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-foreground/10 hover:text-foreground">
+        <Link href="/dashboard/direct" aria-label="Retour au tableau de bord" className="-ml-1 grid size-11 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-foreground/10 hover:text-foreground">
           <Icon name="back" className="size-5" />
         </Link>
       )}

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { archiveRelayAction, changeServerAction, deleteRelayAction, renameRelayAction, rotateRelayAction, setSwitchTriggerAction, type RelayActionState } from "@/app/(dashboard)/dashboard/relais/actions";
+import { archiveRelayAction, changeServerAction, deleteRelayAction, renameRelayAction, rotateRelayAction, setSwitchTriggerAction, type RelayActionState } from "@/app/(dashboard)/dashboard/serveurs/actions";
 import type { RelayView, SwitchTrigger } from "@/lib/core";
 import { flag, RELAY_SERVERS } from "@/lib/relay-servers";
 
@@ -99,7 +99,7 @@ export default function RelayActions({ relay, showView = true, onView, bare = fa
       if (r.error) return setError(r.error);
       const wasDelete = ask === "delete";
       setAsk(null);
-      if (wasDelete) router.push("/dashboard/relais");
+      if (wasDelete) router.push("/dashboard/serveurs");
       else router.refresh();
     });
   }

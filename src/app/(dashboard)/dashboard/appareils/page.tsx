@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Encodeurs", robots: { index: false }
 // Encodeurs : appairage par code, liste des boîtiers et tableau de bord de chacun.
 // Formule Gratuit : interface visible mais grisée. Les postes OBS se gèrent dans Contrôle à distance.
 export default async function EncodeursPage() {
-  const [, plan] = await Promise.all([requireUser("/dashboard/encodeurs"), getPlan()]);
+  const [, plan] = await Promise.all([requireUser("/dashboard/appareils"), getPlan()]);
   return (
     <DashPage>
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">

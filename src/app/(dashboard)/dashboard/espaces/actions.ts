@@ -86,7 +86,7 @@ const hashToken = (t: string) => createHash("sha256").update(t).digest("hex");
 
 /** Espace actif, et droit de le gérer (propriétaire ou administrateur). */
 async function managedWorkspace() {
-  const user = await requireUser("/dashboard/invitations");
+  const user = await requireUser("/dashboard/equipe");
   const ws = await getActiveWorkspace();
   if (!ws) return { error: "Choisis d'abord un espace partagé." as const };
   if (ws.role === "member") return { error: "Seuls les administrateurs de l'espace peuvent gérer les membres." as const };
@@ -118,7 +118,7 @@ export async function inviteMemberAction(raw: { email: string; role: "admin" | "
   const profile = await getProfile();
   const ownerName = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || profile?.twitch_display_name || "Un streamer";
   const sent = await remoteWorkspaceInvite(email.data, { ownerName, workspace: m.ws.name, role: raw.role, token, expires });
-  revalidatePath("/dashboard/invitations");
+  revalidatePath("/dashboard/equipe");
   return sent ? {} : { error: "L'invitation est créée mais l'email n'a pas pu partir. Retire-la et réessaie plus tard." };
 }
 
@@ -127,7 +127,7 @@ export async function revokeMemberInviteAction(inviteId: string): Promise<Worksp
   if ("error" in m) return { error: m.error };
   if (!z.uuid().safeParse(inviteId).success || !hasAdmin) return { error: "Invitation introuvable." };
   await createAdminClient().from("workspace_invites").update({ revoked_at: new Date().toISOString() }).eq("id", inviteId).eq("workspace_id", m.ws.id);
-  revalidatePath("/dashboard/invitations");
+  revalidatePath("/dashboard/equipe");
   return {};
 }
 
@@ -142,7 +142,7 @@ export async function removeMemberAction(userId: string): Promise<WorkspaceState
   if (target.role === "owner") return { error: "Le propriétaire ne peut pas être retiré." };
   if (target.role === "admin" && m.ws.role !== "owner") return { error: "Seul le propriétaire retire un administrateur." };
   await db.from("workspace_members").delete().eq("workspace_id", m.ws.id).eq("user_id", userId);
-  revalidatePath("/dashboard/invitations");
+  revalidatePath("/dashboard/equipe");
   return {};
 }
 
@@ -153,7 +153,7 @@ export async function setMemberRoleAction(userId: string, role: "admin" | "membe
   if (m.ws.role !== "owner") return { error: "Seul le propriétaire change les rôles." };
   if (!z.uuid().safeParse(userId).success || (role !== "admin" && role !== "member") || !hasAdmin) return { error: "Demande invalide." };
   await createAdminClient().from("workspace_members").update({ role }).eq("workspace_id", m.ws.id).eq("user_id", userId).neq("role", "owner");
-  revalidatePath("/dashboard/invitations");
+  revalidatePath("/dashboard/equipe");
   return {};
 }
 
@@ -171,7 +171,7 @@ export async function leaveWorkspaceAction(): Promise<WorkspaceState> {
 
 /** Renomme un espace (propriétaire ou administrateur de cet espace). */
 export async function renameWorkspaceAction(raw: { id: string; name: string }): Promise<WorkspaceState> {
-  await requireUser("/dashboard/invitations");
+  await requireUser("/dashboard/equipe");
   const ws = (await listWorkspaces()).find((w) => w.id === raw.id);
   if (!ws) return { error: "Cet espace n'existe plus ou tu n'en fais plus partie." };
   if (ws.role === "member") return { error: "Seuls le propriétaire et les administrateurs renomment l'espace." };
@@ -194,7 +194,7 @@ export async function renameWorkspaceAction(raw: { id: string; name: string }): 
  * ses invitations, ses flux, ses OBS reliés et ses sauvegardes partent avec lui (cascade). Les membres retrouvent leur espace personnel.
  */
 export async function deleteWorkspaceAction(raw: { id: string; confirm: string }): Promise<WorkspaceState> {
-  const user = await requireUser("/dashboard/invitations");
+  const user = await requireUser("/dashboard/equipe");
   const ws = (await listWorkspaces()).find((w) => w.id === raw.id);
   if (!ws) return { error: "Cet espace n'existe plus ou tu n'en fais plus partie." };
   if (ws.role !== "owner") return { error: "Seul le propriétaire supprime l'espace." };

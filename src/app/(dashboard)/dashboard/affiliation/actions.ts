@@ -16,7 +16,7 @@ export async function saveAffiliateAction(_prev: AffiliateSettingsState, form: F
   if (!slug.success) return { error: slug.error.issues[0]?.message ?? "Nom d'URL invalide." };
   const { error } = await createAdminClient().from("affiliates").update({ display_name: pseudo.data, slug: slug.data }).eq("id", me.id);
   if (error) return { error: error.code === "23505" ? "Ce nom d'URL est déjà pris." : "Enregistrement impossible. Réessaie." };
-  revalidatePath("/dashboard/affilie");
+  revalidatePath("/dashboard/affiliation");
   revalidatePath(`/s/${me.slug}`);
   revalidatePath(`/s/${slug.data}`);
   return { ok: "Enregistré." };

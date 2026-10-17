@@ -59,7 +59,7 @@ function StatusLine({ data }: { data: OverviewData }) {
           Ouvrir l&apos;aperçu <span aria-hidden="true">→</span>
         </Link>
       ) : (
-        <Link href="/dashboard/controle-a-distance" className={btnPrimary}>
+        <Link href="/dashboard/direct" className={btnPrimary}>
           Lancer un direct <span aria-hidden="true">→</span>
         </Link>
       )}
@@ -140,7 +140,7 @@ function Plan({ data }: { data: OverviewData }) {
 const shortcuts = [
   { label: "Aperçu du direct", href: "/dashboard/apercu" },
   { label: "Scanner réseau", href: "/dashboard/scanner" },
-  { label: "Assistance", href: "/dashboard/support" },
+  { label: "Assistance", href: "/dashboard/aide" },
 ];
 
 function Shortcuts() {
@@ -237,7 +237,7 @@ export default function Overview({ initial, coreUrl = "", demo }: { initial: Ove
                 <div className="grid place-items-center py-8 text-center">
                   <p className="text-sm font-medium">Aucun direct pour le moment</p>
                   <p className="mt-1 max-w-[44ch] text-sm text-muted">Tes chiffres apparaissent ici après ton premier direct.</p>
-                  <Link href="/dashboard/controle-a-distance" className={`${btnPrimary} mt-5`}>
+                  <Link href="/dashboard/direct" className={`${btnPrimary} mt-5`}>
                     Lancer un direct <span aria-hidden="true">→</span>
                   </Link>
                 </div>

@@ -27,7 +27,7 @@ const input = z.object({
 });
 
 export async function createInviteAction(raw: z.input<typeof input>): Promise<InviteState> {
-  const user = await requireOwner("/dashboard/invitations");
+  const user = await requireOwner("/dashboard/equipe");
   if (!canManage(user.workspace)) return { error: "Seuls les administrateurs de l'espace peuvent inviter." };
   const parsed = input.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Champs invalides." };
@@ -47,7 +47,7 @@ export async function createInviteAction(raw: z.input<typeof input>): Promise<In
     return { error: "Le serveur ne répond pas. Réessaie dans un instant." };
   }
   if (!r) return { error: "Le serveur n'est pas encore à jour pour les invitations. Réessaie après sa mise à jour." };
-  revalidatePath("/dashboard/invitations");
+  revalidatePath("/dashboard/equipe");
   const url = `${site.url}/invitation/${r.token}?o=${user.id}&i=${r.id}`;
   const profile = await getProfile();
   const ownerName = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || profile?.twitch_display_name || "Un streamer";
@@ -56,7 +56,7 @@ export async function createInviteAction(raw: z.input<typeof input>): Promise<In
 }
 
 export async function revokeInviteAction(inviteId: string): Promise<{ error?: string }> {
-  const user = await requireOwner("/dashboard/invitations");
+  const user = await requireOwner("/dashboard/equipe");
   if (!canManage(user.workspace)) return { error: "Seuls les administrateurs de l'espace peuvent retirer un invité." };
   if (!z.uuid().safeParse(inviteId).success) return { error: "Invitation introuvable." };
   try {
@@ -65,6 +65,6 @@ export async function revokeInviteAction(inviteId: string): Promise<{ error?: st
     console.error("revokeInvite", e);
     return { error: "Le serveur ne répond pas. Réessaie dans un instant." };
   }
-  revalidatePath("/dashboard/invitations");
+  revalidatePath("/dashboard/equipe");
   return {};
 }

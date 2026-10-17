@@ -38,8 +38,8 @@ const refusal = (e: unknown) =>
 
 function done(userId: string, relayId?: string) {
   forgetOverview(userId);
-  revalidatePath("/dashboard/relais");
-  if (relayId) revalidatePath(`/dashboard/relais/${relayId}`);
+  revalidatePath("/dashboard/serveurs");
+  if (relayId) revalidatePath(`/dashboard/serveurs/${relayId}`);
 }
 
 const createInput = z.object({
@@ -49,7 +49,7 @@ const createInput = z.object({
 });
 
 export async function createRelayAction(input: z.input<typeof createInput>): Promise<RelayActionState> {
-  const user = await requireOwner("/dashboard/relais");
+  const user = await requireOwner("/dashboard/serveurs");
   if (!canManage(user.workspace)) return { error: "Seuls les administrateurs de l'espace peuvent créer des flux." };
   const parsed = createInput.safeParse(input);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Champs invalides." };
@@ -71,7 +71,7 @@ export async function createRelayAction(input: z.input<typeof createInput>): Pro
 const id = z.uuid();
 
 async function run(relayId: string, key: string, max: number, job: (userId: string) => Promise<unknown>, feature: Feature | null = "relais"): Promise<RelayActionState> {
-  const user = await requireOwner("/dashboard/relais");
+  const user = await requireOwner("/dashboard/serveurs");
   if (!canManage(user.workspace)) return { error: "Seuls les administrateurs de l'espace peuvent modifier les flux." };
   if (!id.safeParse(relayId).success) return { error: "Relais introuvable." };
   if (feature && !can(await getPlan(), feature)) return { error: LOCKED_MESSAGE };
@@ -96,7 +96,7 @@ export async function renameRelayAction(relayId: string, name: string) {
 export async function setSwitchTriggerAction(relayId: string, switch_trigger: SwitchTrigger) {
   if (!["cut", "cut_lowbitrate", "sensitive"].includes(switch_trigger)) return { error: "Déclenchement inconnu." };
   const r = await run(relayId, "relay-edit", 60, (u) => updateRelay(u, relayId, { switch_trigger }));
-  revalidatePath("/dashboard/controle-a-distance");
+  revalidatePath("/dashboard/direct");
   return r;
 }
 

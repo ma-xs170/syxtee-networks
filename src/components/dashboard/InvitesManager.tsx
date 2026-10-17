@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { createInviteAction, revokeInviteAction, type InviteState } from "@/app/(dashboard)/dashboard/invitations/actions";
+import { createInviteAction, revokeInviteAction, type InviteState } from "@/app/(dashboard)/dashboard/equipe/actions";
 import { inviteMemberAction, leaveWorkspaceAction, removeMemberAction, revokeMemberInviteAction, setMemberRoleAction } from "@/app/(dashboard)/dashboard/espaces/actions";
 import type { Invite, InviteLevel } from "@/lib/core";
 import type { WorkspaceInviteRow, WorkspaceMember } from "@/lib/workspace";

@@ -38,7 +38,7 @@ export default function RemoteObsMock({ className = "" }: { className?: string }
     <div aria-hidden="true" className={`@container select-none overflow-hidden rounded-2xl border border-white/10 bg-[#050506] shadow-[0_40px_90px_-30px_rgba(0,0,0,0.95)] ${className}`}>
       <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
         {[0, 1, 2].map((i) => <span key={i} className="size-2.5 rounded-full bg-white/20" />)}
-        <span className="mx-auto rounded-md bg-white/[0.06] px-12 py-1 text-xs text-white/40">syxtee-networks.fr/dashboard/controle-a-distance</span>
+        <span className="mx-auto rounded-md bg-white/[0.06] px-12 py-1 text-xs text-white/40">syxtee-networks.fr/dashboard/direct</span>
       </div>
       <div className="space-y-3 p-3.5 text-white sm:p-4">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-lg border border-white/10 bg-[#0b0b0d] px-3.5 py-2.5 text-xs @lg:text-[13px]">

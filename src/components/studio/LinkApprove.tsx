@@ -74,7 +74,7 @@ export default function LinkApprove({ code: initial, coreUrl, email = "" }: { co
           <p className="mt-3 text-sm text-muted">
             Retourne dans OBS : le plugin se connecte automatiquement. Il te propose ensuite de <strong>sauvegarder tes scènes</strong> avant de commencer.
           </p>
-          <Link href="/dashboard/controle-a-distance" className={`${btn} mt-6 btn-tonal`}>
+          <Link href="/dashboard/direct" className={`${btn} mt-6 btn-tonal`}>
             Ouvrir le contrôle à distance
           </Link>
         </>

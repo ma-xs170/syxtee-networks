@@ -312,7 +312,7 @@ function StatusStrip({ o, desktop }: { o: Obs; desktop: boolean }) {
   const received = o.fluxName !== "";
   const ok = !status;
   return (
-    <div className="mx-2 mt-2 flex h-12 shrink-0 items-center gap-3 overflow-x-auto rounded-xl border border-line bg-surface px-3 no-scrollbar">
+    <div className="mx-2 mt-2 flex h-12 shrink-0 items-center gap-3 overflow-x-auto rounded-xl max-sm:h-auto max-sm:flex-wrap max-sm:gap-x-3 max-sm:gap-y-2 max-sm:overflow-visible max-sm:py-2.5 border border-line bg-surface px-3 no-scrollbar">
       <span role="status" className="flex shrink-0 items-center gap-2 whitespace-nowrap font-medium" title={o.latency != null ? `${o.latency} ms` : undefined}>
         <span aria-hidden="true" className={cx("size-2 rounded-full", ok ? "bg-ok" : o.link === "connecting" ? "bg-warn" : "bg-bad")} />
         {o.agent.name ?? "OBS"}

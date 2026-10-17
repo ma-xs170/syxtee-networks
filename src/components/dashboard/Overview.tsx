@@ -117,10 +117,10 @@ export default function Overview({ initial, coreUrl = "", demo }: { initial: Ove
   return (
     <Column>
       <PageTitle title="Tableau de bord" sub="L'état de ton direct et l'activité de tes serveurs." />
-      <div className="grid gap-6">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
         <StatusCard data={data} coreUrl={coreUrl} deviceIds={online.map((d) => d.id)} />
 
-        <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <dl className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-4 lg:grid-cols-4">
           {stats.map((k) => (
             <div key={k.label} className="dk-card !p-5">
               <dt className="dk-label">{k.label}</dt>
@@ -145,7 +145,7 @@ export default function Overview({ initial, coreUrl = "", demo }: { initial: Ove
           )}
         </Card>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-2">
           <Card>
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-[16px] text-foreground">Appareils</h2>

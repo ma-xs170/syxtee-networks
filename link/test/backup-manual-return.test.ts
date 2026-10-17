@@ -62,3 +62,21 @@ test("serveur : flux hors ligne = coupure détectée, flux en ligne = retour du 
   for (let i = 0; i < 3; i++) await w.tick();
   assert.equal(o.scene, "Live");
 });
+
+test("plan fixe : vignettes identiques mais le serveur reçoit le flux = jamais de bascule sur le secours", async () => {
+  const { o, w } = rig();
+  w.setRelayLive(true);
+  for (let i = 0; i < 40; i++) await w.tick(); // 40 s de vignette strictement identique
+  assert.equal(o.scene, "Live");
+  assert.equal(w.state, "ok");
+});
+
+test("serveur injoignable (état inconnu) : les vignettes figées déclenchent toujours le secours", async () => {
+  const { o, w } = rig();
+  for (let i = 1; i <= 3; i++) {
+    o.img = beau(i);
+    await w.tick();
+  }
+  for (let i = 0; i < 7; i++) await w.tick();
+  assert.equal(o.scene, "BRB");
+});

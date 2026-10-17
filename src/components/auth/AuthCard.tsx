@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useActionState, useEffect, useId, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { motion, type Variants } from "motion/react";
-import { siDiscord, siGoogle, siTwitch } from "simple-icons";
+import { siDiscord, siGoogle, siTwitch } from "@/lib/brand-icons";
 import { completeFirstLogin, requestPasswordReset, signInWithProvider, resendVerification, resetPassword, signIn, signUp, type AuthState } from "@/app/(auth)/actions";
 import { PASSWORD_MIN, passwordStrength, STRENGTH_LABEL } from "@/lib/auth/password";
 

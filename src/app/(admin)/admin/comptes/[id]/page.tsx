@@ -6,7 +6,7 @@ import { ArrowLink, DashHeader, DashPage, SectionTabs, Tile, TileLabel } from "@
 import { ticketCounts } from "@/lib/support";
 import AccountSheet from "../AccountSheet";
 import { flag } from "@/lib/regions";
-import { Badge } from "@/components/NavTools";
+import { Badge } from "@/components/ui/Tag";
 import { SupportId } from "@/components/SupportId";
 import { requireAdmin } from "@/lib/admin";
 import { liveNow } from "@/lib/admin-data";

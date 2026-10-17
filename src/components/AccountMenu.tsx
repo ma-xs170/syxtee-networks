@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { signOut } from "@/app/(auth)/actions";
-import { createClient } from "@/lib/supabase/client";
+import { supabaseClient } from "@/lib/supabase/lazy";
 import { initials, shortName } from "@/lib/names";
 import { effectivePlan, type Feature } from "@/lib/plans";
 import { hasSupabase } from "@/lib/supabase/env";
@@ -20,9 +20,9 @@ export function useAccount() {
   const [account, setAccount] = useState<Account | undefined>(hasSupabase ? undefined : null);
   useEffect(() => {
     if (!hasSupabase) return;
-    const supabase = createClient();
     let alive = true;
     const load = async () => {
+      const supabase = await supabaseClient();
       const { data } = await supabase.auth.getSession();
       const user = data.session?.user;
       if (!user) {
@@ -36,12 +36,10 @@ export function useAccount() {
       if (alive) setAccount({ name, initials: initials(p, name), avatar: p?.avatar_url ?? null, supportId: p?.support_id ?? null, planName: plan.name, features: plan.features });
     };
     load();
-    const { data: sub } = supabase.auth.onAuthStateChange(() => {
-      load();
-    });
+    const sub = supabaseClient().then((supabase) => supabase.auth.onAuthStateChange(() => { load(); }).data.subscription);
     return () => {
       alive = false;
-      sub.subscription.unsubscribe();
+      sub.then((s) => s.unsubscribe());
     };
   }, []);
   return account;

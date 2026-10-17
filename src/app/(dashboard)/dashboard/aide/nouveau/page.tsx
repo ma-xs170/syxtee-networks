@@ -16,7 +16,7 @@ export default async function NewTicketPage() {
   return (
     <DashPage>
       <Link href="/dashboard/aide" className="text-sm text-muted transition-colors hover:text-foreground">
-        ← Assistance
+        ← Support
       </Link>
       <h1 className="h-page mb-2 mt-4">Nouvelle <em>demande</em></h1>
       <p className="mb-8 max-w-[60ch] text-sm text-muted">Choisis le sujet : le formulaire s&apos;adapte pour qu&apos;on te réponde vite. Tu seras prévenu par une notification et par e-mail.</p>

@@ -2,7 +2,7 @@
 
 import { useActionState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
-import { siInstagram, siKick, siTiktok, siTwitch, siX, siYoutube, type SimpleIcon } from "simple-icons";
+import { siInstagram, siKick, siTiktok, siTwitch, siX, siYoutube, type SimpleIcon } from "@/lib/brand-icons";
 import type { Profile } from "@/lib/auth/dal";
 import { saveProfile, type FormState } from "@/lib/auth/profileActions";
 import RegionPicker from "@/components/auth/RegionPicker";

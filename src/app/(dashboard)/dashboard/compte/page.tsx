@@ -9,7 +9,6 @@ import LinkDevices from "@/components/dashboard/LinkDevices";
 import LowDataToggle from "@/components/dashboard/LowDataToggle";
 import StreamModeToggle from "@/components/dashboard/StreamModeToggle";
 import { Column, DkTabs, ListRow, PageTitle, Section, StatusBadge } from "@/components/dashboard/kit";
-import ThemeToggle from "@/components/ThemeToggle";
 import { ToastProvider } from "@/components/ui/Toast";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { authErrorMessage } from "@/lib/auth/errors";
@@ -145,9 +144,6 @@ async function Preferences() {
   ]);
   return (
     <>
-      <Section title="Thème" text="Auto suit le réglage de ton appareil.">
-        <ThemeToggle />
-      </Section>
       <Section title="Mode stream" text="Floute clés, URLs et e-mail pour montrer ton dashboard en live. Le réglage reste actif sur ce navigateur.">
         <StreamModeToggle withLabel />
       </Section>

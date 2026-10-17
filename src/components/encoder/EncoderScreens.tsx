@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, type ReactNode } from "react";
-import { siKick, siTwitch, siYoutube } from "simple-icons";
+import { siKick, siTwitch, siYoutube } from "@/lib/brand-icons";
 import AnimatedNumber from "../landing/AnimatedNumber";
 import RelayBox from "../landing/RelayBox";
 import {

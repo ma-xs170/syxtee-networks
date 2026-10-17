@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import GlidePill from "./ui/GlidePill";
+import { Badge } from "./ui/Tag";
 import GlassIconView from "./ui/GlassIconView";
 import DataCenter from "./illustrations/DataCenter";
 import DiscordChat from "./illustrations/DiscordChat";
@@ -90,9 +91,7 @@ function Chevron({ open }: { open: boolean }) {
   );
 }
 
-export function Badge({ children }: { children: string }) {
-  return <span className="whitespace-nowrap rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{children}</span>;
-}
+export { Badge } from "./ui/Tag";
 
 /** Point rouge de nouveauté (pas de badge texte dans la barre). */
 function NewDot() {

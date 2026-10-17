@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { site, type NavLink } from "@/lib/site";
 import StatusPill from "./ui/StatusPill";
-import ThemeToggle from "./ThemeToggle";
 
 // Pied de page : le logo, puis quatre colonnes (produit, ressources, société, légal). Le reste du plan du site vit dans la documentation.
 const columns: { title: string; links: NavLink[] }[] = [
@@ -75,7 +74,6 @@ export default function Footer() {
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>© {site.year} {site.name}. Tous droits réservés.</p>
-          <ThemeToggle />
           <div className="flex items-center gap-6">
             <a href="mailto:contact@syxtee-networks.fr" className="inline-flex min-h-11 items-center hover:text-foreground">contact@syxtee-networks.fr</a>
           </div>

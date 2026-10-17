@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { siKick, siTwitch, siYoutube } from "simple-icons";
+import { siKick, siTwitch, siYoutube } from "@/lib/brand-icons";
 import { requestAccessAction, type AccessState } from "@/app/(site)/acces/actions";
 import { buttonClass } from "@/components/ui/button-styles";
 import GlassIconView from "@/components/ui/GlassIconView";

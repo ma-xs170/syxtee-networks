@@ -1,15 +1,12 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
+import { supabaseClient } from "@/lib/supabase/lazy";
 
 // Appels du navigateur vers le SYXTEE Core, avec le jeton de session Supabase (renouvelé par supabase-js).
 
-let supabase: ReturnType<typeof createClient> | null = null;
-
 /** Jeton de session Supabase courant (pour les lecteurs qui ouvrent eux-mêmes la connexion, ex. mpegts.js). */
 export async function coreToken() {
-  supabase ??= createClient();
-  const { data } = await supabase.auth.getSession();
+  const { data } = await (await supabaseClient()).auth.getSession();
   const token = data.session?.access_token;
   if (!token) throw new Error("Session expirée");
   return token;

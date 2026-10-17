@@ -1,4 +1,4 @@
-import { siFacebook, siInstagram, siKick, siTiktok, siTwitch, siX, siYoutube } from "simple-icons";
+import { siFacebook, siInstagram, siKick, siTiktok, siTwitch, siX, siYoutube } from "@/lib/brand-icons";
 
 // Réseau : le logo SYXTEE à gauche, une branche courbe et fine vers chaque plateforme, un signal doux qui glisse sur chaque branche.
 // Traits en couleur d'encre (clair et sombre). prefers-reduced-motion : signal figé (voir globals.css, .cb-pulse).

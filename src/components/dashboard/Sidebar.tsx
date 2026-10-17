@@ -11,7 +11,6 @@ import {
   HardDrives,
   ChartBar,
   List,
-  Lifebuoy,
   Lock,
   Moon,
   Question,
@@ -30,7 +29,6 @@ import { createWorkspaceAction, switchWorkspaceAction } from "@/app/(dashboard)/
 import type { Feature } from "@/lib/plans";
 import { activeAlso } from "@/lib/dashboard-nav";
 import { Avatar, useAccount } from "../AccountMenu";
-import { ThemeRow } from "../ThemeToggle";
 import Wordmark from "../Wordmark";
 import GlidePill from "../ui/GlidePill";
 import NotificationsBell from "./NotificationsBell";
@@ -76,7 +74,6 @@ const GROUPS: Group[] = [
   },
 ];
 
-const HELP: Item[] = [{ label: "Aide", href: "/dashboard/aide", icon: Lifebuoy }];
 
 function NavLink({ item, active, locked, soon, onNavigate, hovered, onHover }: { item: Item; active: boolean; locked?: boolean; soon?: boolean; onNavigate: () => void; hovered?: boolean; onHover?: () => void }) {
   const Icon = item.icon;
@@ -238,7 +235,6 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
               <Link role="menuitem" href="/dashboard/compte" onClick={() => { setOpen(false); onNavigate(); }} className={item}>
                 Compte
               </Link>
-              <ThemeRow className={`${item} flex items-center gap-2`} />
               {admin && (
                 <Link role="menuitem" href="/admin" onClick={() => { setOpen(false); onNavigate(); }} className={item}>
                   Administration
@@ -316,11 +312,6 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
         ))}
       </nav>
 
-      <div className="space-y-0.5 border-t border-line p-3">
-        {HELP.map((it) => (
-          <NavLink key={it.href} item={it} active={isActive(it.href)} onNavigate={onNavigate} hovered={hover === it.href} onHover={() => setHover(it.href)} />
-        ))}
-      </div>
     </div>
   );
 }
@@ -374,7 +365,7 @@ const EXTRA_COMMANDS: Command[] = [
   { label: "Profil", href: "/dashboard/profil", hint: "Compte" },
   { label: "Multichat", href: "/dashboard/multichat", hint: "Outils" },
   { label: "Lives passés", href: "/dashboard/lives", hint: "Suivi" },
-  { label: "Nouvelle demande d'assistance", href: "/dashboard/aide/nouveau", hint: "Aide" },
+  { label: "Nouvelle demande d'assistance", href: "/dashboard/aide/nouveau", hint: "Support" },
 ];
 
 export default function DashboardShell({ admin, children, workspace, affiliate = null }: { admin: boolean; children: React.ReactNode; workspace?: WorkspaceInfo; affiliate?: AffiliateInfo }) {
@@ -393,7 +384,7 @@ export default function DashboardShell({ admin, children, workspace, affiliate =
   useEffect(() => {
     const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
     if (conn?.saveData || /(^|-)2g$|3g/.test(conn?.effectiveType ?? "")) return;
-    const hrefs = [...GROUPS, { items: HELP }].flatMap((g) => g.items).filter((i) => !i.external && !i.soon).map((i) => i.href);
+    const hrefs = GROUPS.flatMap((g) => g.items).filter((i) => !i.external && !i.soon).map((i) => i.href);
     const timers: ReturnType<typeof setTimeout>[] = [];
     const start = setTimeout(() => hrefs.forEach((h, i) => timers.push(setTimeout(() => router.prefetch(h), i * 250))), 1500);
     return () => {
@@ -416,7 +407,7 @@ export default function DashboardShell({ admin, children, workspace, affiliate =
     <WsCtx.Provider value={workspace ?? { workspaces: [], activeId: null, left: 0, features: null }}>
     <AffCtx.Provider value={affiliate}>
     <div className="dash-surface min-h-dvh lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
-      <CommandPalette commands={[...GROUPS, { items: HELP }].flatMap((g) => g.items).filter((i) => !i.external && !i.soon).map((i) => ({ label: i.label, href: i.href })).concat(EXTRA_COMMANDS)} />
+      <CommandPalette commands={GROUPS.flatMap((g) => g.items).filter((i) => !i.external && !i.soon).map((i) => ({ label: i.label, href: i.href })).concat(EXTRA_COMMANDS)} />
       <aside className="sticky top-0 z-40 hidden h-dvh border-r border-line bg-surface lg:block">
         <Content admin={admin} onNavigate={() => {}} />
       </aside>
@@ -446,9 +437,9 @@ export default function DashboardShell({ admin, children, workspace, affiliate =
         <Link href="/docs" className="inline-flex items-center gap-2 font-mono transition-colors hover:text-foreground">
           /docs
         </Link>
-        <a href="https://discord.gg/CD68F8yZuZ" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-          <span aria-hidden="true">+</span> Demander de l&apos;aide
-        </a>
+        <Link href="/dashboard/aide" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+          <span aria-hidden="true">+</span> Support
+        </Link>
       </div>
 
       <MobileTabs onMenu={() => setOpen(true)} menuOpen={open} />

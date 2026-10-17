@@ -1,4 +1,4 @@
-import { siKick, siTwitch, siYoutube } from "simple-icons";
+import { siKick, siTwitch, siYoutube } from "@/lib/brand-icons";
 
 // Bandeau « DIFFUSE SUR » : YouTube, Twitch, Kick puis « +50 » (plus de 50 plateformes), logos monochromes à 60 % (100 % au survol). Seules marques tierces du site public.
 const P = [

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Badge } from "../NavTools";
+import { Badge } from "../ui/Tag";
 import Highlight from "../ui/Highlight";
 import DashArt from "./DashArt";
 import type { DashIcon, SectionTab } from "@/lib/dashboard-nav";

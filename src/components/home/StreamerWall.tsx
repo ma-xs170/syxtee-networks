@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { siKick, siTwitch, siYoutube } from "simple-icons";
+import { siKick, siTwitch, siYoutube } from "@/lib/brand-icons";
 import type { HomeStreamer } from "@/lib/streamers";
 
 // Accueil : « Ils streament avec SYXTEE. » Deux rangées de cartes, une par chaîne (Twitch, Kick, YouTube : logo, avatar, @pseudo, lien) qui défilent

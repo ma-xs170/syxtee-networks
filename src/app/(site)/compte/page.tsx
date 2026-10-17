@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Key, LockKey, PlugsConnected, ShareNetwork, SignOut, Trash, UserCircle } from "@/components/icons";
 import { signOut } from "@/app/(auth)/actions";
 import InstallCard from "@/components/pwa/InstallApp";
-import { ThemeRow } from "@/components/ThemeToggle";
 import { listConnections } from "@/lib/chat/providers";
 import { authErrorMessage } from "@/lib/auth/errors";
 import { getProfile, requireUser } from "@/lib/auth/dal";
@@ -63,7 +62,6 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
               </li>
             ))}
           <li>
-            <ThemeRow className="flex min-h-14 w-full items-center gap-4 border-t border-line px-4 py-3 text-left text-[15px] font-medium transition-colors active:bg-foreground/10" />
           </li>
         </ul>
         <ul className="overflow-hidden tile">

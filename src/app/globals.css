@@ -8,121 +8,39 @@
   --z-skip: 80;
 }
 
-:root,
-[data-theme="dark"] {
+/* Une seule palette : noir et blanc, couleurs réservées aux états (rouge = terminer/erreur, vert = OK/en direct,
+   bleu = toggle actif/débit, ambre = alerte). Le dashboard réutilise les mêmes valeurs via dashboard.css. */
+:root {
   color-scheme: dark;
-  --background: #070708;
-  --foreground: #fafafa;
-  --muted: #8f949d;
-  --faint: #5b5f66;
-  --line: rgba(255, 255, 255, 0.085);
-  --line-strong: rgba(255, 255, 255, 0.17);
-  --surface: #0d0d10;
-  --surface-2: #141418;
-  --accent: #fafafa;
-  --accent-hover: #e4e4e7;
-  --on-accent: #0a0a0a;
-  --fill: #fafafa;
-  --fill-hover: #e4e4e7;
-  --input: #131316;
-  --ok: #3dd68c;
-  --warn: #f5a524;
-  --bad: #f2555a;
-  --live: #ff3b30;
+  --background: #050505;
+  --foreground: #ffffff;
+  --text-2: #d4d4d4;
+  --muted: #a3a3a3;
+  --faint: #737373;
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.2);
+  --surface: #0b0b0b;
+  --surface-2: #101010;
+  --accent: #ffffff;
+  --accent-hover: #e5e5e5;
+  --on-accent: #050505;
+  --fill: #ffffff;
+  --fill-hover: #e5e5e5;
+  --input: #101010;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --bad: #dc2626;
+  --info: #3b82f6;
+  --live: #4ade80;
   --img-filter: none;
   --img-filter-rev: invert(1);
   --shadow-pop: rgba(0, 0, 0, 0.9);
   --glow: rgba(255, 255, 255, 0.12);
+  --radius: 16px;
+  --radius-lg: 20px;
 }
 
-/* Clair : explicite, ou automatique quand le système est en clair et qu'aucun choix n'est mémorisé. */
-[data-theme="light"] {
-  color-scheme: light;
-  --background: #ffffff;
-  --foreground: #0a0a0a;
-  --muted: #5c5c61;
-  --line: rgba(10, 10, 10, 0.12);
-  --line-strong: rgba(10, 10, 10, 0.25);
-  --surface: #f4f4f5;
-  --surface-2: #e9e9eb;
-  --accent: #0a0a0a;
-  --accent-hover: #2b2b2e;
-  --on-accent: #ffffff;
-  --fill: #0a0a0a;
-  --fill-hover: #2b2b2e;
-  --input: #f4f4f5;
-  --ok: #16a34a;
-  --warn: #d97706;
-  --bad: #dc2626;
-  --live: #d92b20;
-  --img-filter: invert(1);
-  --img-filter-rev: none;
-  --shadow-pop: rgba(0, 0, 0, 0.18);
-  --glow: rgba(0, 0, 0, 0.1);
-}
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]) {
-    color-scheme: light;
-    --background: #ffffff;
-    --foreground: #0a0a0a;
-    --muted: #5c5c61;
-    --line: rgba(10, 10, 10, 0.12);
-    --line-strong: rgba(10, 10, 10, 0.25);
-    --surface: #f4f4f5;
-    --surface-2: #e9e9eb;
-    --accent: #0a0a0a;
-    --accent-hover: #2b2b2e;
-    --on-accent: #ffffff;
-  --fill: #0a0a0a;
-  --fill-hover: #2b2b2e;
-    --input: #f4f4f5;
-    --ok: #16a34a;
-    --warn: #d97706;
-    --bad: #dc2626;
-    --live: #d92b20;
-    --img-filter: invert(1);
-    --img-filter-rev: none;
-    --shadow-pop: rgba(0, 0, 0, 0.18);
-    --glow: rgba(0, 0, 0, 0.1);
-  }
-}
-
-/* Dashboard en thème sombre : un noir profond neutre (comme Semirprod, sans noir total), cartes un cran au-dessus.
-   Le thème clair garde ses tokens. S'applique à la coque du dashboard (classe dash-surface). */
 .dash-surface { background: var(--background); }
-[data-theme="dark"] .dash-surface {
-  --background: #000000;
-  --surface: #0a0a0b;
-  --surface-2: #111113;
-  --line: rgba(255, 255, 255, 0.1);
-  --line-strong: rgba(255, 255, 255, 0.2);
-  --foreground: #ffffff;
-  --muted: #c4c4c8;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .dash-surface {
-    --background: #000000;
-    --surface: #0a0a0b;
-    --surface-2: #111113;
-    --line: rgba(255, 255, 255, 0.1);
-    --line-strong: rgba(255, 255, 255, 0.2);
-    --foreground: #ffffff;
-    --muted: #c4c4c8;
-  }
-}
-
-/* Lisibilité du dashboard et de l'admin : textes courants plus clairs (thème sombre) ou plus foncés (thème clair),
-   titres et mots en gras toujours à la couleur principale, jamais en gris. */
-[data-theme="light"] .dash-surface {
-  --foreground: #050505;
-  --muted: #3f3f44;
-}
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]) .dash-surface {
-    --foreground: #050505;
-    --muted: #3f3f44;
-  }
-}
 .dash-surface :is(h1, h2, h3, h4, strong, b):not([class*="text-on-accent"]) {
   color: var(--foreground);
 }
@@ -131,7 +49,6 @@
   color: var(--foreground);
 }
 
-/* Pas d'aplat blanc en sombre : les fonds « accent » (boutons, pastilles, surlignage) prennent un gris profond ; le blanc reste pour les textes, traits et particules. */
 .bg-accent { background-color: var(--fill); }
 .bg-accent-hover, .hover\:bg-accent-hover:hover { background-color: var(--fill-hover); }
 
@@ -144,6 +61,8 @@
   --color-input: var(--input);
   --color-ok: var(--ok);
   --color-faint: var(--faint);
+  --color-info: var(--info);
+  --color-text-2: var(--text-2);
   --color-warn: var(--warn);
   --color-bad: var(--bad);
   --color-accent: var(--accent);
@@ -1067,17 +986,10 @@ select,
   font-weight: 400;
   line-height: 1.02;
   letter-spacing: -0.02em;
-  background: linear-gradient(180deg, #ffffff 30%, #9a9ea6 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--foreground);
   text-wrap: balance;
   & em { font-style: italic; }
 }
-[data-theme="light"] .h-serif { background: linear-gradient(180deg, #0a0a0a 30%, #5c5c61 100%); -webkit-background-clip: text; background-clip: text; }
-@media (prefers-color-scheme: light) { :root:not([data-theme]) .h-serif { background: linear-gradient(180deg, #0a0a0a 30%, #5c5c61 100%); -webkit-background-clip: text; background-clip: text; } }
-/* Section forcée en sombre (hero à volutes) : le titre garde son dégradé clair, même si le site est en thème clair. */
-[data-theme="dark"] .h-serif, :root:not([data-theme]) [data-theme="dark"] .h-serif { background: linear-gradient(180deg, #ffffff 30%, #9a9ea6 100%); -webkit-background-clip: text; background-clip: text; }
 
 .pill-dot { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c, var(--ok)) 35%, transparent); }
 @media (prefers-reduced-motion: no-preference) {
@@ -1276,3 +1188,21 @@ dialog[open]::backdrop { opacity: 1; }
 }
 .rm-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--foreground); }
 .rm-range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--foreground); }
+
+/* ───── Performance du dashboard et des pages de gestion ─────
+   Aucune animation, aucun flou. Seul le survol des boutons, liens et toggles garde une transition courte (120 ms).
+   Le petit indicateur de chargement (animate-spin) reste, c'est un état et non de la décoration. */
+.dash-surface *,
+.dash-surface *::before,
+.dash-surface *::after {
+  animation: none !important;
+  transition: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  scroll-behavior: auto !important;
+}
+.dash-surface .animate-spin { animation: spin 0.8s linear infinite !important; }
+.dash-surface :is(button, a, [role="switch"], [role="tab"], .btn, .dk-btn, .dk-toggle, .dk-tab, .dk-card) {
+  transition: background-color 0.12s, border-color 0.12s, color 0.12s, opacity 0.12s !important;
+}
+.dash-surface .dk-toggle::after { transition: transform 0.12s !important; }

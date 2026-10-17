@@ -6,7 +6,6 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { signOut } from "@/app/(auth)/actions";
 import { Bell, Bug, ChartLineUp, ClockCounterClockwise, Globe, Key, Lifebuoy, List, MapTrifold, Radio, Robot, ShareNetwork, ShieldWarning, SquaresFour, Tag, Users, UsersThree, X, type IconProps } from "@/components/icons";
-import ThemeToggle from "@/components/ThemeToggle";
 import GlidePill from "@/components/ui/GlidePill";
 import { ROLE_META, roleStyle, type AnyRole, type Permission } from "@/lib/staff";
 import { SUPPORT_CATEGORIES, type SupportCategory } from "@/lib/support-categories";
@@ -168,7 +167,6 @@ export default function AdminShell({ support, pendingAccess, newQuotes = 0, name
       <Link href="/dashboard" className="flex min-h-9 items-center text-sm text-muted transition-colors hover:text-foreground">
         ← Retour au dashboard
       </Link>
-      <ThemeToggle />
       <div className="flex items-center justify-between gap-3">
         <p className="min-w-0 truncate text-xs text-muted" data-sensitive>
           {name}

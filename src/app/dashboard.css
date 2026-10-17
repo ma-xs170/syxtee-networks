@@ -19,27 +19,13 @@
   --warn: var(--dk-amber);
   --bad: var(--dk-red);
 }
-[data-theme="dark"] .dash-surface {
+.dash-surface {
   --background: #050505;
   --surface: #0b0b0b;
   --surface-2: #101010;
   --dk-sidebar: #0a0a0a;
   --muted: #a3a3a3;
   --line: rgba(255, 255, 255, 0.1);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .dash-surface {
-    --background: #050505;
-    --surface: #0b0b0b;
-    --surface-2: #101010;
-    --dk-sidebar: #0a0a0a;
-    --muted: #a3a3a3;
-    --line: rgba(255, 255, 255, 0.1);
-  }
-}
-[data-theme="light"] .dash-surface { --dk-sidebar: #fafafa; --dk-green: #16a34a; --dk-amber: #b45309; }
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]) .dash-surface { --dk-sidebar: #fafafa; --dk-green: #16a34a; --dk-amber: #b45309; }
 }
 
 .dk-card { border: 1px solid var(--line); border-radius: var(--dk-radius); background: var(--surface); padding: 1.5rem; }

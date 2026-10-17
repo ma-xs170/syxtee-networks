@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { btnFlat as flat, btnLive, btnPrimary } from "./ui";
-import { siFacebook, siInstagram, siKick, siTiktok, siTwitch, siX, siYoutube } from "simple-icons";
+import { siFacebook, siInstagram, siKick, siTiktok, siTwitch, siX, siYoutube } from "@/lib/brand-icons";
 
 // Multistream : envoyer le même direct vers d'autres plateformes, en un clic par logo (comme Aitum Multistream).
 // Les sorties vivent dans le plugin SYXTEE Link, sur le PC d'OBS ; la clé de stream y reste, elle n'est jamais renvoyée ici.

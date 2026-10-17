@@ -1,5 +1,5 @@
 import { getCountry } from "countries-and-timezones";
-import { COUNTRIES } from "@/lib/auth/profileSchema";
+import { COUNTRIES } from "@/lib/countries";
 
 // Région du compte : pays (drapeau Apple via l'emoji) + fuseau horaire pour l'heure et le Bonjour du dashboard.
 

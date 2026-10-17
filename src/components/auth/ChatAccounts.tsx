@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { siKick, siTwitch, siYoutube } from "simple-icons";
+import { siKick, siTwitch, siYoutube } from "@/lib/brand-icons";
 import { apiFetch } from "@/components/dashboard/apiFetch";
 
 // Comptes Twitch, Kick et YouTube reliés pour lire et écrire dans le Multichat (Mon compte). Les jetons restent côté serveur :

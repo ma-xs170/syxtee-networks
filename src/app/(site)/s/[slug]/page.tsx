@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { siTwitch } from "simple-icons";
+import { siTwitch } from "@/lib/brand-icons";
 import StreamerDesk from "@/components/illustrations/StreamerDesk";
 import Reveal from "@/components/ui/Reveal";
 import Highlight from "@/components/ui/Highlight";

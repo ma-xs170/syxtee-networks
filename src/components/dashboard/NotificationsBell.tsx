@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell, X } from "@/components/icons";
-import { createClient } from "@/lib/supabase/client";
+import { supabaseClient } from "@/lib/supabase/lazy";
 import { fmtAgo } from "@/lib/dashboard-data";
 
 // Cloche du bas de la barre latérale : notifications envoyées par un admin (à tous ou à ce compte).
@@ -19,7 +19,7 @@ export default function NotificationsBell() {
 
   const load = useCallback(async () => {
     try {
-      const supabase = createClient();
+      const supabase = await supabaseClient();
       const [n, r, d] = await Promise.all([
         supabase.from("notifications").select("id, title, body, created_at").order("created_at", { ascending: false }).limit(20),
         supabase.from("notification_reads").select("notification_id"),
@@ -62,19 +62,19 @@ export default function NotificationsBell() {
   async function dismiss(ids: string[]) {
     if (!ids.length) return;
     setGone((s) => new Set([...s, ...ids]));
-    const { data } = await createClient().auth.getUser();
+    const { data } = await (await supabaseClient()).auth.getUser();
     if (!data.user) return;
-    await createClient().from("notification_dismissals").upsert(ids.map((id) => ({ user_id: data.user!.id, notification_id: id })), { ignoreDuplicates: true });
+    await (await supabaseClient()).from("notification_dismissals").upsert(ids.map((id) => ({ user_id: data.user!.id, notification_id: id })), { ignoreDuplicates: true });
   }
 
   async function toggle() {
     const next = !open;
     setOpen(next);
     if (!next || !unread.length) return;
-    const { data } = await createClient().auth.getUser();
+    const { data } = await (await supabaseClient()).auth.getUser();
     if (!data.user) return;
     const ids = unread.map((n) => n.id);
-    await createClient().from("notification_reads").upsert(ids.map((id) => ({ user_id: data.user!.id, notification_id: id })), { ignoreDuplicates: true });
+    await (await supabaseClient()).from("notification_reads").upsert(ids.map((id) => ({ user_id: data.user!.id, notification_id: id })), { ignoreDuplicates: true });
     // La pastille reste jusqu'à la fermeture : on garde « non lu » visible dans la liste ouverte.
     setTimeout(() => setRead((s) => new Set([...s, ...ids])), 0);
   }

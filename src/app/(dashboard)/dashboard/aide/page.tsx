@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import DocsIndex from "@/components/docs/DocsIndex";
-import { Column, DkTabs, PageTitle } from "@/components/dashboard/kit";
+import { Column, PageTitle } from "@/components/dashboard/kit";
 import { SupportId } from "@/components/SupportId";
-import { site } from "@/lib/site";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { fmtAgo } from "@/lib/dashboard-data";
 import { listTickets, ticketCounts } from "@/lib/support";
 import { categoryLabel } from "@/lib/support-categories";
 
-export const metadata: Metadata = { title: "Aide", robots: { index: false } };
+export const metadata: Metadata = { title: "Support", robots: { index: false } };
 
 const TABS = [
   { id: "en-cours", label: "En cours", state: "open" as const },
@@ -17,33 +15,18 @@ const TABS = [
   { id: "tous", label: "Tous", state: "all" as const },
 ];
 
-export default async function SupportPage({ searchParams }: { searchParams: Promise<{ etat?: string; onglet?: string }> }) {
-  const [user, { etat, onglet }] = await Promise.all([requireUser("/dashboard/aide"), searchParams]);
+export default async function SupportPage({ searchParams }: { searchParams: Promise<{ etat?: string }> }) {
+  const [user, { etat }] = await Promise.all([requireUser("/dashboard/aide"), searchParams]);
   const tab = TABS.find((t) => t.id === etat) ?? TABS[0];
   const [profile, tickets, counts] = await Promise.all([getProfile(), listTickets({ userId: user.id, state: tab.state }), ticketCounts(user.id)]);
 
-  const docsTab = onglet === "documentation";
-  const head = (
-    <>
-      <PageTitle title="Aide" sub="Lis la documentation, puis écris-nous : on te répond dans ton espace." />
-      <div className="mb-8">
-        <DkTabs label="Aide" current={docsTab ? "/dashboard/aide?onglet=documentation" : "/dashboard/aide"} tabs={[{ label: "Assistance", href: "/dashboard/aide" }, { label: "Documentation", href: "/dashboard/aide?onglet=documentation" }]} />
-      </div>
-    </>
-  );
-  if (docsTab)
-    return (
-      <Column>
-        {head}
-        <DocsIndex />
-      </Column>
-    );
+  const head = <PageTitle title="Support" sub="Écris-nous : on te répond ici, dans ta conversation." />;
 
   return (
     <Column>
       {head}
 
-      <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+      <div className="mt-8">
         <section aria-labelledby="canal-chat" className="bento-cell flex flex-col p-6 sm:p-8">
           <div className="flex flex-wrap items-center gap-3">
             <h2 id="canal-chat" className="text-xl font-semibold tracking-tight">
@@ -62,28 +45,16 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
               <li key={x} className="flex gap-2.5"><span aria-hidden="true" className="text-foreground">+</span>{x}</li>
             ))}
           </ul>
-          <div className="mt-auto pt-6">
-            <Link href="/dashboard/aide/nouveau" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors">
-              <span aria-hidden="true">+</span> Nouvelle demande
-            </Link>
-          </div>
-        </section>
-
-        <section aria-labelledby="canal-discord" className="bento-cell flex flex-col p-5 sm:p-6">
-          <h2 id="canal-discord" className="text-lg font-semibold tracking-tight">
-            Communauté
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-muted">Le Discord est le lieu de rencontre des streamers SYXTEE : échanger, partager ses astuces, suivre les nouveautés. Ce n&apos;est pas le support.</p>
           {profile?.support_id && (
             <div className="mt-5">
               <p className="mb-2 text-xs text-muted">Ton ID support, pour qu&apos;on retrouve ton compte</p>
               <SupportId id={profile.support_id} />
             </div>
           )}
-          <div className="mt-auto pt-5">
-            <a href={site.discord} target="_blank" rel="noopener noreferrer" className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-full border border-line-strong px-5 text-sm font-medium transition-colors hover:bg-foreground/[0.08]">
-              Rejoindre la communauté <span aria-hidden="true">↗</span>
-            </a>
+          <div className="mt-auto pt-6">
+            <Link href="/dashboard/aide/nouveau" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors">
+              <span aria-hidden="true">+</span> Nouvelle demande
+            </Link>
           </div>
         </section>
       </div>
@@ -109,11 +80,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
         <div className="rounded-3xl border border-dashed border-line-strong p-10 text-center">
           <p className="text-sm text-muted">{tab.state === "resolved" ? "Aucune demande résolue." : "Aucune demande en cours."}</p>
           <p className="mt-2 text-sm text-muted">
-            Une question ? Lis d&apos;abord la{" "}
-            <Link href="/docs" className="text-foreground underline underline-offset-4">
-              documentation
-            </Link>
-            , puis ouvre une demande si besoin.
+            Une question ? Ouvre une demande, on te répond dans ton espace.
           </p>
         </div>
       ) : (

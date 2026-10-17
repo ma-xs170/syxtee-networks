@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowLink } from "@/components/dashboard/ui";
-import { Badge } from "@/components/NavTools";
+import { Badge } from "@/components/ui/Tag";
 import MessageButton from "./MessageButton";
 import PlanEditor from "./PlanEditor";
 

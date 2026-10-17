@@ -1,4 +1,4 @@
-import { siFacebook, siKick, siTiktok, siTwitch, siX, siYoutube } from "simple-icons";
+import { siFacebook, siKick, siTiktok, siTwitch, siX, siYoutube } from "@/lib/brand-icons";
 
 // Accueil : le multistream. Un direct, toutes les plateformes : un logo, une clé de stream, un clic. Tourne dans OBS sur l'ordinateur
 // (plugin SYXTEE Link), commandé depuis le contrôle à distance. Logos en encre (jamais de couleur de marque : une seule couleur d'accent).

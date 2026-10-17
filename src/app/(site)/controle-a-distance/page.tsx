@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ComponentType, CSSProperties } from "react";
-import { siKick, siTwitch, siYoutube } from "simple-icons";
+import { siKick, siTwitch, siYoutube } from "@/lib/brand-icons";
 import { DeviceMobile, Faders, LockKey, Rows, ShieldCheck, type IconProps } from "@/components/icons";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import FloatingPhone from "@/components/remote-showcase/FloatingPhone";

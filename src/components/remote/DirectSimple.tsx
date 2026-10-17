@@ -150,7 +150,7 @@ export default function DirectSimple({ o, onLive, onAdvanced }: { o: Obs; onLive
             <DkButton tone={o.streaming ? "danger" : "primary"} className="!h-11 !w-full max-w-[17rem] !rounded-full !px-6 font-semibold" disabled={off || o.streamBusy} onClick={onLive}>
               {o.streamBusy ? (o.streaming ? "Arrêt…" : "Démarrage…") : o.streaming ? "Terminer le stream" : "Commencer le streaming"}
             </DkButton>
-            <DkButton className="!h-11 !w-full max-w-[17rem] !rounded-full !px-6" disabled={off || o.recBusy} onClick={o.toggleRecord}>
+            <DkButton className="!h-11 !w-full max-w-[17rem] !rounded-full !px-6" aria-pressed={o.recording} disabled={off || o.recBusy} onClick={o.toggleRecord} style={o.recording ? { borderColor: "var(--dk-red)", background: "color-mix(in srgb, var(--dk-red) 14%, transparent)", color: "var(--dk-red)" } : undefined}>
               <span aria-hidden="true" className="size-2 rounded-full" style={{ background: o.recording ? "var(--dk-red)" : "var(--faint)" }} />
               {o.recording ? "Arrêter l'enregistrement" : "Démarrer l'enregistrement"}
             </DkButton>

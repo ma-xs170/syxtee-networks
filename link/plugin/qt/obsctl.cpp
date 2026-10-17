@@ -760,6 +760,8 @@ void registerFluxSource()
 // l'utilisateur) : elle n'est jamais renvoyée au navigateur, seulement « hasKey ».
 struct MsOut {
 	QString id, name, service, server, key;
+	// Qualité propre à cette sortie : "" = mêmes encodeurs que le direct principal, sinon "1080p", "720p" ou "480p" (encodeurs à elle).
+	QString quality;
 	obs_output_t *out = nullptr;
 	obs_service_t *svc = nullptr;
 	obs_encoder_t *video = nullptr, *audio = nullptr; // encodeurs à nous (null : ceux du direct principal)
@@ -816,7 +818,7 @@ MsOut *msFind(const QString &id)
 void msSave()
 {
 	QJsonArray arr;
-	for (auto &o : msOuts) arr.append(Json{{"id", o->id}, {"name", o->name}, {"service", o->service}, {"server", o->server}, {"key", o->key}});
+	for (auto &o : msOuts) arr.append(Json{{"id", o->id}, {"name", o->name}, {"service", o->service}, {"server", o->server}, {"key", o->key}, {"quality", o->quality}});
 	QFile f(msPath());
 	if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) return;
 	f.setPermissions(QFile::ReadOwner | QFile::WriteOwner);
@@ -837,6 +839,7 @@ void msLoad()
 		o->service = j.value("service").toString();
 		o->server = j.value("server").toString();
 		o->key = j.value("key").toString();
+		o->quality = j.value("quality").toString();
 		if (!o->id.isEmpty()) msOuts.push_back(std::move(o));
 	}
 }
@@ -875,7 +878,7 @@ Json msListJson()
 	for (auto &o : msOuts) {
 		const bool same = !ms.key.isEmpty() && ms.key == o->key;
 		const bool active = o->viaMain ? (o->active && mainOn) : o->active;
-		arr.append(Json{{"id", o->id}, {"name", o->name}, {"service", o->service}, {"server", o->server}, {"hasKey", !o->key.isEmpty()}, {"active", active}, {"starting", o->starting}, {"error", o->error}, {"viaMain", same}});
+		arr.append(Json{{"id", o->id}, {"name", o->name}, {"service", o->service}, {"server", o->server}, {"hasKey", !o->key.isEmpty()}, {"quality", o->quality}, {"active", active}, {"starting", o->starting}, {"error", o->error}, {"viaMain", same}});
 	}
 	return Json{{"outputs", arr}, {"mainActive", obs_frontend_streaming_active()}, {"main", Json{{"configured", ms.configured}, {"service", ms.service}, {"server", ms.server}, {"active", mainOn}}}};
 }
@@ -977,7 +980,7 @@ void msStartNow(MsOut *o)
 		}
 		obs_output_release(main);
 	}
-	if (mainVideo && mainAudio) {
+	if (mainVideo && mainAudio && o->quality.isEmpty()) {
 		obs_output_set_video_encoder(o->out, mainVideo);
 		obs_output_set_audio_encoder(o->out, mainAudio, 0);
 	} else {
@@ -987,7 +990,9 @@ void msStartNow(MsOut *o)
 			throw Fail{"Aucun encodeur H.264 disponible dans OBS."};
 		}
 		obs_data_t *vs = obs_data_create();
-		obs_data_set_int(vs, "bitrate", 6000);
+		// Qualité choisie : hauteur de l'image et débit vidéo ; sinon 6000 kbit/s à la taille du canevas.
+		const int qh = o->quality == "1080p" ? 1080 : o->quality == "720p" ? 720 : o->quality == "480p" ? 480 : 0;
+		obs_data_set_int(vs, "bitrate", qh == 1080 ? 6000 : qh == 720 ? 3500 : qh == 480 ? 1500 : 6000);
 		obs_data_set_string(vs, "rate_control", "CBR");
 		obs_data_set_int(vs, "keyint_sec", 2);
 		obs_data_set_string(vs, "profile", "high");
@@ -1003,6 +1008,13 @@ void msStartNow(MsOut *o)
 		}
 		obs_encoder_set_video(o->video, obs_get_video());
 		obs_encoder_set_audio(o->audio, obs_get_audio());
+		if (qh > 0) {
+			obs_video_info vi;
+			if (obs_get_video_info(&vi) && vi.base_height > 0) {
+				const uint32_t w = (static_cast<uint32_t>(qh) * vi.base_width / vi.base_height) & ~1u;
+				if (static_cast<uint32_t>(qh) < vi.base_height) obs_encoder_set_scaled_size(o->video, w, static_cast<uint32_t>(qh));
+			}
+		}
 		obs_output_set_video_encoder(o->out, o->video);
 		obs_output_set_audio_encoder(o->out, o->audio, 0);
 	}
@@ -1160,6 +1172,8 @@ Json msSaveOutput(const Json &d)
 	o->name = name;
 	o->service = d.value("service").toString().left(24);
 	o->server = server;
+	const QString quality = d.value("quality").toString();
+	o->quality = (quality == "1080p" || quality == "720p" || quality == "480p") ? quality : QString();
 	if (!key.isEmpty()) o->key = key.left(512); // vide : on garde la clé déjà enregistrée
 	msSave();
 	return msListJson();

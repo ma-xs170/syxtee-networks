@@ -73,31 +73,10 @@ QFrame#notice QLabel { color: #fcd34d; font-size: 12px; }
 QFrame#pill { background: #0b0b0b; border: 1px solid rgba(255,255,255,0.1); border-radius: 11px; }
 QFrame#sep { background: rgba(255,255,255,0.1); max-height: 1px; min-height: 1px; border: none; }
 QFrame#rule { background: rgba(255,255,255,0.1); max-width: 1px; min-width: 1px; border: none; }
-QPushButton { background: transparent; color: #ffffff; border: 1px solid rgba(255,255,255,0.2); border-radius: 13px; padding: 7px 16px; font-size: 12px; font-weight: 500; }
-QPushButton:hover { background: rgba(255,255,255,0.08); }
-QPushButton:pressed { background: rgba(255,255,255,0.14); }
-QPushButton:focus { border-color: rgba(255,255,255,0.55); }
-QPushButton:disabled { color: #525252; border-color: rgba(255,255,255,0.08); }
-QPushButton#primary { background: #ffffff; color: #050505; border: 1px solid #ffffff; padding: 10px 24px; font-size: 13px; font-weight: 600; border-radius: 18px; }
-QPushButton#primary:hover { background: #e5e5e5; border-color: #e5e5e5; }
-QPushButton#primary:pressed { background: #d4d4d4; }
-QPushButton#primary:disabled { background: #262626; color: #737373; border-color: #262626; }
-QPushButton#small { padding: 5px 14px; border-radius: 11px; }
-QPushButton#danger:hover { color: #f87171; border-color: rgba(248,113,113,0.5); background: rgba(248,113,113,0.08); }
-QPushButton#link { border: none; background: transparent; color: #a3a3a3; padding: 4px 0; text-align: left; }
-QPushButton#link:hover { color: #ffffff; background: transparent; }
-QPushButton#tab { border: none; border-bottom: 2px solid transparent; border-radius: 0; padding: 10px 2px; margin-right: 22px; color: #737373; background: transparent; }
-QPushButton#tab:hover { background: transparent; color: #d4d4d4; }
-QPushButton#tab:checked { color: #ffffff; border-bottom: 2px solid #ffffff; }
-QComboBox { background: #101010; color: #ffffff; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 6px 30px 6px 12px; min-width: 150px; font-size: 12px; }
-QComboBox:hover { border-color: rgba(255,255,255,0.35); }
-QComboBox:focus { border-color: rgba(255,255,255,0.55); }
-QComboBox:disabled { color: #525252; border-color: rgba(255,255,255,0.08); }
-QComboBox::drop-down { border: none; width: 28px; }
+QComboBox { combobox-popup: 0; }
+QComboBox QAbstractItemView::item { min-height: 28px; padding-left: 8px; }
+QLineEdit { background: transparent; border: none; padding: 0 14px; color: #ffffff; font-size: 12px; selection-background-color: #3b82f6; }
 QComboBox QAbstractItemView { background: #101010; color: #ffffff; selection-background-color: #262626; selection-color: #ffffff; border: 1px solid rgba(255,255,255,0.2); outline: none; padding: 4px; }
-QLineEdit { background: #101010; color: #ffffff; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 7px 12px; min-width: 190px; font-size: 12px; selection-background-color: #3b82f6; }
-QLineEdit:hover { border-color: rgba(255,255,255,0.35); }
-QLineEdit:focus { border-color: rgba(255,255,255,0.55); }
 QProgressBar { background: rgba(255,255,255,0.1); border: none; border-radius: 3px; max-height: 6px; min-height: 6px; }
 QProgressBar::chunk { background: #ffffff; border-radius: 3px; }
 QProgressBar[tone="warn"]::chunk { background: #fbbf24; }
@@ -366,19 +345,120 @@ private:
 	IconKind kind_;
 };
 
-// Liste déroulante : le style de Qt supprime la flèche, on la redessine.
+// Boutons, listes et champs : peints à la main. Le style de Qt d'OBS (thème Yami) dessine ses propres coins, flèches et fonds sous une feuille
+// de style, ce qui laissait des artefacts ; ici rien n'est délégué au style, tout est opaque et identique partout.
+class Btn : public QPushButton {
+public:
+	Btn(const QString &text, const QString &kind) : QPushButton(text), kind_(kind)
+	{
+		setObjectName(kind);
+		setCursor(Qt::PointingHandCursor);
+		setAttribute(Qt::WA_Hover);
+		setFocusPolicy(Qt::TabFocus);
+		if (kind == "tab") setFont(monoFont(11, 1.8));
+		else setFont(sansFont(kind == "primary" ? 13 : 12, kind == "primary" ? 600 : 500));
+	}
+	QSize sizeHint() const override
+	{
+		const int w = QFontMetrics(font()).horizontalAdvance(text());
+		if (kind_ == "tab") return QSize(w + 4, 38);
+		if (kind_ == "primary") return QSize(w + 48, 38);
+		if (kind_ == "small") return QSize(w + 28, 28);
+		return QSize(w + 32, 32);
+	}
+	QSize minimumSizeHint() const override { return sizeHint(); }
+protected:
+	void paintEvent(QPaintEvent *) override
+	{
+		QPainter p(this);
+		p.setRenderHint(QPainter::Antialiasing);
+		const bool on = isEnabled(), hov = underMouse() && on, down = isDown() && on;
+		if (kind_ == "tab") {
+			const QColor c = !on ? QColor("#525252") : isChecked() ? QColor("#ffffff") : hov ? QColor("#d4d4d4") : QColor("#737373");
+			p.setPen(c);
+			p.setFont(font());
+			p.drawText(QRect(0, 0, width(), height() - 2), Qt::AlignCenter, text());
+			if (isChecked()) p.fillRect(QRect(0, height() - 2, width(), 2), QColor("#ffffff"));
+			return;
+		}
+		const QRectF r = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
+		const double rad = r.height() / 2.0;
+		QColor fill, border, fg;
+		if (kind_ == "primary") {
+			fill = !on ? QColor("#262626") : down ? QColor("#d4d4d4") : hov ? QColor("#e5e5e5") : QColor("#ffffff");
+			border = fill;
+			fg = on ? QColor("#050505") : QColor("#737373");
+		} else {
+			fill = down ? QColor("#222222") : hov ? QColor("#161616") : QColor("#0b0b0b");
+			border = !on ? QColor("#1c1c1c") : hov && kind_ == "danger" ? QColor("#7f3a3a") : hov ? QColor("#555555") : QColor("#333333");
+			fg = !on ? QColor("#525252") : hov && kind_ == "danger" ? QColor("#f87171") : QColor("#ffffff");
+		}
+		p.setBrush(fill);
+		p.setPen(QPen(border, 1));
+		p.drawRoundedRect(r, rad, rad);
+		if (hasFocus()) {
+			p.setBrush(Qt::NoBrush);
+			p.setPen(QPen(QColor(255, 255, 255, 140), 1.5));
+			p.drawRoundedRect(QRectF(rect()).adjusted(-0.5, -0.5, 0.5, 0.5), rad + 1, rad + 1);
+		}
+		p.setPen(fg);
+		p.setFont(font());
+		p.drawText(rect(), Qt::AlignCenter, text());
+	}
+private:
+	QString kind_;
+};
+
 class Combo : public QComboBox {
 public:
-	using QComboBox::QComboBox;
+	explicit Combo(QWidget *parent = nullptr) : QComboBox(parent)
+	{
+		setFont(sansFont(12, 500));
+		setFixedHeight(32);
+		setCursor(Qt::PointingHandCursor);
+		setAttribute(Qt::WA_Hover);
+	}
+protected:
+	void paintEvent(QPaintEvent *) override
+	{
+		QPainter p(this);
+		p.setRenderHint(QPainter::Antialiasing);
+		const bool on = isEnabled(), hov = underMouse() && on;
+		const QRectF r = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
+		p.setBrush(QColor(hov ? "#161616" : "#0b0b0b"));
+		p.setPen(QPen(!on ? QColor("#1c1c1c") : hasFocus() ? QColor("#777777") : hov ? QColor("#555555") : QColor("#333333"), 1));
+		p.drawRoundedRect(r, r.height() / 2, r.height() / 2);
+		p.setFont(font());
+		p.setPen(on ? QColor("#ffffff") : QColor("#525252"));
+		p.drawText(QRect(14, 0, width() - 44, height()), Qt::AlignVCenter | Qt::AlignLeft, QFontMetrics(font()).elidedText(currentText(), Qt::ElideRight, width() - 44));
+		p.setBrush(Qt::NoBrush);
+		p.setPen(QPen(on ? QColor("#a3a3a3") : QColor("#525252"), 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+		const double x = width() - 20, y = height() / 2.0;
+		p.drawPolyline(QPolygonF({QPointF(x - 3.5, y - 1.5), QPointF(x, y + 2), QPointF(x + 3.5, y - 1.5)}));
+	}
+};
+
+class Field : public QLineEdit {
+public:
+	explicit Field(QWidget *parent = nullptr) : QLineEdit(parent)
+	{
+		setFont(sansFont(12, 400));
+		setFixedHeight(32);
+		setMinimumWidth(190);
+		setAttribute(Qt::WA_Hover);
+	}
 protected:
 	void paintEvent(QPaintEvent *e) override
 	{
-		QComboBox::paintEvent(e);
-		QPainter p(this);
-		p.setRenderHint(QPainter::Antialiasing);
-		p.setPen(QPen(isEnabled() ? QColor("#a3a3a3") : QColor("#525252"), 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-		const double x = width() - 17, y = height() / 2.0;
-		p.drawPolyline(QPolygonF({QPointF(x - 3.5, y - 1.5), QPointF(x, y + 2), QPointF(x + 3.5, y - 1.5)}));
+		{
+			QPainter p(this);
+			p.setRenderHint(QPainter::Antialiasing);
+			const QRectF r = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
+			p.setBrush(QColor("#0b0b0b"));
+			p.setPen(QPen(hasFocus() ? QColor("#777777") : underMouse() ? QColor("#555555") : QColor("#333333"), 1));
+			p.drawRoundedRect(r, r.height() / 2, r.height() / 2);
+		}
+		QLineEdit::paintEvent(e);
 	}
 };
 
@@ -426,10 +506,7 @@ void addRow(QFrame *c, QWidget *r, bool first = false)
 
 QPushButton *button(const QString &text, const char *name = nullptr)
 {
-	auto *b = new QPushButton(text);
-	if (name) b->setObjectName(name);
-	b->setCursor(Qt::PointingHandCursor);
-	return b;
+	return new Btn(text, name ? name : "");
 }
 
 class Studio : public QDialog {
@@ -710,12 +787,11 @@ private:
 		v->setContentsMargins(0, 0, 0, 0);
 		v->setSpacing(0);
 		auto *bar = new QHBoxLayout;
-		bar->setSpacing(0);
+		bar->setSpacing(22);
 		const char *names[3] = {"DIRECT", "RÉGIE", "POSTE"};
 		tabs_ = new QStackedWidget;
 		for (int i = 0; i < 3; i++) {
 			auto *b = button(names[i], "tab");
-			b->setFont(monoFont(11, 1.8));
 			b->setCheckable(true);
 			b->setFocusPolicy(Qt::TabFocus);
 			b->setToolTip(QString("Ctrl+%1").arg(i + 1));
@@ -794,7 +870,6 @@ private:
 		heroBar_ = new Segments(4);
 		hv->addWidget(heroBar_);
 		heroBtn_ = button("", "primary");
-		heroBtn_->setStyleSheet("padding: 8px 20px; font-size: 12px;");
 		heroBtn_->hide();
 		hv->addWidget(heroBtn_, 0, Qt::AlignLeft);
 		v->addWidget(hero);
@@ -925,7 +1000,6 @@ private:
 		bh->setSpacing(12);
 		liveAlertText_ = label("");
 		fixBtn_ = button("Corriger", "primary");
-		fixBtn_->setStyleSheet("padding: 7px 18px; font-size: 12px;");
 		bh->addWidget(liveAlertText_, 1);
 		bh->addWidget(fixBtn_, 0, Qt::AlignVCenter);
 		la->addWidget(box);
@@ -1014,7 +1088,7 @@ private:
 		// CETTE MACHINE
 		v->addWidget(sectionHead("CETTE MACHINE"));
 		auto *m = card();
-		hostEdit_ = new QLineEdit;
+		hostEdit_ = new Field;
 		hostEdit_->setMaxLength(40);
 		hostOut_ = label("", "ok");
 		hostOut_->setWordWrap(false);

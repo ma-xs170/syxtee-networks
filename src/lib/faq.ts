@@ -16,11 +16,11 @@ export const faq: FaqItem[] = [
   },
   {
     q: "Comment avoir accès ?",
-    a: "Il n'y a pas d'abonnement : l'accès aux relais et à Mix en direct se fait sur invitation, comme le Partner Program. Demande la tienne sur le Discord.",
+    a: "L'ouverture au public arrive bientôt. En attendant, l'accès est ouvert aux partenaires : envoie ta demande depuis la page Demander l'accès. Une fois ton compte créé, tu choisis une formule parmi Essentiel, Signature et Prestige, à partir de 4,99 € par mois et sans engagement.",
   },
   {
     q: "Comment contacter le support ?",
-    a: "Uniquement sur Discord : ouvre un ticket dans le salon support et on te répond directement. Aucune demande n'est traitée par email.",
+    a: "Depuis ton espace client, dans Assistance : ouvre un ticket et l'équipe te répond. Tu peux aussi passer par le Discord de SYXTEE NETWORKS.",
   },
   {
     q: "Mon téléphone va chauffer et se vider vite ?",

@@ -1,3 +1,4 @@
+import "@/styles/fx.css";
 import Footer from "@/components/Footer";
 import MobileCta from "@/components/MobileCta";
 import Nav from "@/components/Nav";

@@ -1,3 +1,4 @@
+import "@/styles/fx.css";
 import Link from "next/link";
 import GridBackground from "@/components/ui/GridBackground";
 

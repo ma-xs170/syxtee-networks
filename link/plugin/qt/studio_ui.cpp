@@ -314,6 +314,58 @@ private:
 	QVariantAnimation *anim_ = nullptr;
 };
 
+// Pictogrammes au trait (comme ceux de la liste de sources du site) : encre grise, jamais d'emoji en couleur.
+enum IconKind { IcLive, IcSource, IcShield, IcCamera, IcDrone, IcFrame };
+class Icon : public QWidget {
+public:
+	explicit Icon(IconKind k, QWidget *parent = nullptr) : QWidget(parent), kind_(k) { setFixedSize(18, 18); }
+protected:
+	void paintEvent(QPaintEvent *) override
+	{
+		QPainter p(this);
+		p.setRenderHint(QPainter::Antialiasing);
+		p.setPen(QPen(QColor("#a3a3a3"), 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+		p.setBrush(Qt::NoBrush);
+		p.translate(1, 1);
+		switch (kind_) {
+		case IcLive: // point et ondes
+			p.drawEllipse(QPointF(8, 8), 1.6, 1.6);
+			p.drawArc(QRectF(3.5, 3.5, 9, 9), 40 * 16, 100 * 16);
+			p.drawArc(QRectF(3.5, 3.5, 9, 9), 220 * 16, 100 * 16);
+			p.drawArc(QRectF(0.5, 0.5, 15, 15), 40 * 16, 100 * 16);
+			p.drawArc(QRectF(0.5, 0.5, 15, 15), 220 * 16, 100 * 16);
+			break;
+		case IcSource: // flux : trois barres de signal
+			p.drawLine(QPointF(2, 13), QPointF(2, 10));
+			p.drawLine(QPointF(6, 13), QPointF(6, 7));
+			p.drawLine(QPointF(10, 13), QPointF(10, 4));
+			p.drawLine(QPointF(14, 13), QPointF(14, 1));
+			break;
+		case IcShield:
+			p.drawPath([] { QPainterPath q; q.moveTo(8, 0.8); q.lineTo(14.5, 3); q.lineTo(14.5, 8); q.quadTo(14.5, 12.8, 8, 15.2); q.quadTo(1.5, 12.8, 1.5, 8); q.lineTo(1.5, 3); q.closeSubpath(); return q; }());
+			break;
+		case IcCamera:
+			p.drawRoundedRect(QRectF(0.8, 3.5, 10, 9), 2, 2);
+			p.drawPolyline(QPolygonF({QPointF(10.8, 7), QPointF(15, 4.5), QPointF(15, 11.5), QPointF(10.8, 9)}));
+			break;
+		case IcDrone: // quatre hélices autour d'un corps
+			p.drawEllipse(QPointF(8, 8), 2, 2);
+			p.drawLine(QPointF(9.5, 6.5), QPointF(12.5, 3.5));
+			p.drawLine(QPointF(6.5, 6.5), QPointF(3.5, 3.5));
+			p.drawLine(QPointF(9.5, 9.5), QPointF(12.5, 12.5));
+			p.drawLine(QPointF(6.5, 9.5), QPointF(3.5, 12.5));
+			for (const QPointF c : {QPointF(13.5, 2.5), QPointF(2.5, 2.5), QPointF(13.5, 13.5), QPointF(2.5, 13.5)}) p.drawEllipse(c, 2, 2);
+			break;
+		case IcFrame:
+			p.drawRoundedRect(QRectF(0.8, 2, 14.4, 12), 2.5, 2.5);
+			p.drawLine(QPointF(0.8, 6), QPointF(15.2, 6));
+			break;
+		}
+	}
+private:
+	IconKind kind_;
+};
+
 // Liste déroulante : le style de Qt supprime la flèche, on la redessine.
 class Combo : public QComboBox {
 public:
@@ -348,12 +400,13 @@ QFrame *sep()
 }
 
 // Ligne de carte : libellé (et sous-libellé) à gauche, contrôle ou valeur à droite.
-QWidget *row(const QString &title, const QString &sub, QWidget *right, bool meta = false)
+QWidget *row(const QString &title, const QString &sub, QWidget *right, int icon = -1)
 {
 	auto *w = new QWidget;
 	auto *h = new QHBoxLayout(w);
 	h->setContentsMargins(0, 12, 0, 12);
 	h->setSpacing(16);
+	if (icon >= 0) h->addWidget(new Icon(IconKind(icon)), 0, Qt::AlignTop);
 	auto *left = new QVBoxLayout;
 	left->setSpacing(3);
 	left->addWidget(label(title, "name"));
@@ -412,12 +465,6 @@ protected:
 	}
 
 private:
-	struct Check {
-		Dot *dot = nullptr;
-		QLabel *title = nullptr, *sub = nullptr, *chip = nullptr;
-		QPushButton *btn = nullptr;
-	};
-
 	int port_;
 	QByteArray token_;
 	QNetworkAccessManager nam_;
@@ -444,8 +491,8 @@ private:
 	Dot *heroDot_ = nullptr;
 	QLabel *heroTitle_ = nullptr, *heroSub_ = nullptr, *heroCount_ = nullptr;
 	Segments *heroBar_ = nullptr;
-	Check chkAccount_, chkObs_, chkDest_, chkSource_, chkRegie_;
-	QLabel *tilePreview_ = nullptr, *tilePreviewSub_ = nullptr, *tileRemote_ = nullptr, *tileRemoteSub_ = nullptr, *tileRegie_ = nullptr, *tileRegieSub_ = nullptr;
+	QPushButton *heroBtn_ = nullptr;
+	int heroAct_ = 0;
 	// collections
 	QVBoxLayout *localBox_ = nullptr, *cloudBox_ = nullptr;
 	QLabel *quota_ = nullptr, *quotaOf_ = nullptr;
@@ -726,72 +773,12 @@ private:
 		return w;
 	}
 
-	// Ligne de la liste « Avant de diffuser » : pastille d'état, titre, détail, puis un bouton d'action (s'il y a quelque chose à faire).
-	QWidget *makeCheck(Check &c, const QString &title, const QString &btnText = QString())
-	{
-		auto *w = new QWidget;
-		auto *h = new QHBoxLayout(w);
-		h->setContentsMargins(0, 11, 0, 11);
-		h->setSpacing(12);
-		c.dot = new Dot;
-		c.dot->set(kFaint, true);
-		h->addWidget(c.dot, 0, Qt::AlignTop);
-		auto *left = new QVBoxLayout;
-		left->setSpacing(2);
-		c.title = label(title, "name");
-		c.sub = label("—", "muted");
-		left->addWidget(c.title);
-		left->addWidget(c.sub);
-		h->addLayout(left, 1);
-		c.chip = label("", "chip");
-		c.chip->setWordWrap(false);
-		c.chip->hide();
-		h->addWidget(c.chip, 0, Qt::AlignVCenter);
-		if (!btnText.isEmpty()) {
-			c.btn = button(btnText, "small");
-			c.btn->hide();
-			h->addWidget(c.btn, 0, Qt::AlignVCenter);
-		}
-		return w;
-	}
-
-	// state : 0 à faire (creux), 1 en ordre, 2 erreur, 3 à regarder.
-	void setCheck(Check &c, int state, const QString &sub, bool action = false, const QString &chip = QString())
-	{
-		const QColor col = state == 1 ? kOk : state == 2 ? kBad : state == 3 ? kWarn : kFaint;
-		c.dot->set(col, state == 0);
-		c.sub->setText(sub);
-		if (c.btn) c.btn->setVisible(action);
-		c.chip->setVisible(!chip.isEmpty());
-		c.chip->setText(chip);
-		setTone(c.chip, state == 1 ? "ok" : state == 2 ? "bad" : state == 3 ? "warn" : "");
-	}
-
-	QWidget *tile(const QString &title, QLabel **value, QLabel **sub)
-	{
-		auto *f = new QFrame;
-		f->setObjectName("tile");
-		auto *v = new QVBoxLayout(f);
-		v->setContentsMargins(16, 14, 16, 14);
-		v->setSpacing(4);
-		auto *t = label(title, "section");
-		t->setWordWrap(false);
-		*value = label("—", "value");
-		*sub = label("", "meta");
-		v->addWidget(t);
-		v->addSpacing(2);
-		v->addWidget(*value);
-		v->addWidget(*sub);
-		v->addStretch(1);
-		return f;
-	}
-
 	QWidget *buildDirect()
 	{
 		QVBoxLayout *v;
 		auto *w = page(&v);
 
-		// Bandeau d'état : la réponse à « puis-je lancer mon direct ? ».
+		// Bandeau d'état : la réponse à « puis-je lancer mon direct ? ». S'il manque quelque chose, le bouton fait la prochaine étape.
 		auto *hero = new QFrame;
 		hero->setObjectName("hero");
 		auto *hv = new QVBoxLayout(hero);
@@ -816,31 +803,16 @@ private:
 		hv->addLayout(top);
 		heroBar_ = new Segments(4);
 		hv->addWidget(heroBar_);
+		heroBtn_ = button("", "primary");
+		heroBtn_->setStyleSheet("padding: 8px 20px; font-size: 12px;");
+		heroBtn_->hide();
+		hv->addWidget(heroBtn_, 0, Qt::AlignLeft);
 		v->addWidget(hero);
-
-		v->addWidget(sectionHead("AVANT DE DIFFUSER"));
-		auto *c = card();
-		addRow(c, makeCheck(chkAccount_, "Compte SYXTEE"), true);
-		addRow(c, makeCheck(chkObs_, "OBS"));
-		addRow(c, makeCheck(chkDest_, "Flux de destination", "Choisir"));
-		addRow(c, makeCheck(chkSource_, "Source du flux dans ta scène de direct", "Corriger"));
-		addRow(c, makeCheck(chkRegie_, "Régie automatique"));
-		chkRegie_.title->setText("Régie automatique");
-		v->addWidget(c);
-		v->addWidget(label("Les quatre premières lignes sont nécessaires. La régie est facultative : elle change de scène à ta place.", "hint"));
-
-		// Trois repères d'un coup d'œil.
-		auto *tiles = new QHBoxLayout;
-		tiles->setSpacing(10);
-		tiles->addWidget(tile("APERÇU", &tilePreview_, &tilePreviewSub_), 1);
-		tiles->addWidget(tile("TÉLÉCOMMANDE", &tileRemote_, &tileRemoteSub_), 1);
-		tiles->addWidget(tile("RÉGIE", &tileRegie_, &tileRegieSub_), 1);
-		v->addSpacing(4);
-		v->addLayout(tiles);
 
 		v->addWidget(sectionHead("DIFFUSION"));
 		auto *d = card();
 		dest_ = new Combo;
+		dest_->setFixedWidth(285);
 		auto *create = button("Créer un relais", "small");
 		QObject::connect(create, &QPushButton::clicked, this, [] { QDesktopServices::openUrl(QUrl(QString("%1/dashboard/relais").arg(kSite))); });
 		auto *destBox = new QWidget;
@@ -851,8 +823,8 @@ private:
 		dh->addWidget(create);
 		previewSw_ = new Switch;
 		previewHint_ = label("", "hint");
-		addRow(d, row("Flux de destination", "Le flux que lit la source « Flux › NOM » de ta scène de direct", destBox), true);
-		addRow(d, row("Aperçu programme", "Montre l'image et le son de ton direct sur le site, seulement quand la page est ouverte. Coupe-le si ton ordinateur est chargé.", previewSw_));
+		addRow(d, row("Flux de destination", "Lu par la source « Flux › NOM » de ta scène de direct", destBox), true);
+		addRow(d, row("Aperçu programme", "Image et son sur le site, seulement quand la page est ouverte.", previewSw_));
 		auto *hintBox = new QWidget;
 		auto *hb = new QVBoxLayout(hintBox);
 		hb->setContentsMargins(0, 0, 0, 12);
@@ -871,21 +843,19 @@ private:
 			post("/api/destination", b, [this](const QJsonObject &) { lastData_ = 0; poll(); refreshData(); });
 		});
 
-		// Actions des lignes de la liste.
-		QObject::connect(chkDest_.btn, &QPushButton::clicked, this, [this] {
-			if (dest_->isVisible()) {
-				dest_->setFocus();
-				dest_->showPopup();
-			} else {
-				QDesktopServices::openUrl(QUrl(QString("%1/dashboard/relais").arg(kSite)));
-			}
-		});
-		QObject::connect(chkSource_.btn, &QPushButton::clicked, this, [this] {
-			if (state_.value("liveScene").toString().isEmpty()) {
+		QObject::connect(heroBtn_, &QPushButton::clicked, this, [this] {
+			if (heroAct_ == 1) {
+				if (dest_->isVisible()) {
+					dest_->setFocus();
+					dest_->showPopup();
+				} else {
+					QDesktopServices::openUrl(QUrl(QString("%1/dashboard/relais").arg(kSite)));
+				}
+			} else if (heroAct_ == 2) {
 				showTab(2);
 				liveScene_->setFocus();
 				liveScene_->showPopup();
-			} else {
+			} else if (heroAct_ == 3) {
 				doFix();
 			}
 		});
@@ -950,7 +920,7 @@ private:
 	}
 
 	// Carte à interrupteur : titre (avec emoji) et état à gauche, interrupteur à droite dans l'en-tête ; le contenu se déplie quand c'est actif.
-	QFrame *switchCard(const QString &title, Switch *sw, QLabel **chip, QWidget **body)
+	QFrame *switchCard(const QString &title, const QString &desc, Switch *sw, QLabel **chip, QWidget **body)
 	{
 		auto *f = new QFrame;
 		f->setObjectName("card");
@@ -967,10 +937,18 @@ private:
 		*chip = label("", "chip");
 		(*chip)->setWordWrap(false);
 		(*chip)->hide();
-		hl->addWidget(t);
-		hl->addWidget(*chip);
-		hl->addStretch(1);
-		hl->addWidget(sw);
+		auto *tl = new QVBoxLayout;
+		tl->setSpacing(3);
+		auto *tr = new QHBoxLayout;
+		tr->setSpacing(10);
+		tr->addWidget(t);
+		tr->addWidget(*chip);
+		tr->addStretch(1);
+		tl->addLayout(tr);
+		tl->addWidget(label(desc, "muted"));
+		hl->addLayout(tl, 1);
+		hl->addSpacing(12);
+		hl->addWidget(sw, 0, Qt::AlignTop);
 		v->addWidget(h);
 		*body = new QWidget;
 		auto *bl = new QVBoxLayout(*body);
@@ -995,14 +973,14 @@ private:
 
 		// Protection des déconnexions : la scène de direct est le point de départ, le reste apparaît quand l'interrupteur est activé.
 		QWidget *pbody, *dbody;
-		auto *prot = switchCard("Protection des déconnexions", auto_, &chip2_, &pbody);
+		auto *prot = switchCard("Protection des déconnexions", "Quand l'image de ton flux se fige ou coupe, SYXTEE affiche la scène de secours, puis revient sur ta scène de direct dès que l'image repart.", auto_, &chip2_, &pbody);
 		auto *pl = static_cast<QVBoxLayout *>(pbody->layout());
 		protBody_ = new QWidget;
 		auto *pbl = new QVBoxLayout(protBody_);
 		pbl->setContentsMargins(0, 0, 0, 0);
 		pbl->setSpacing(0);
 		pl->addWidget(sep());
-		pl->addWidget(row("💜 Scène de direct", "", liveScene_));
+		pl->addWidget(row("Scène de direct", "La scène que tu mets à l'antenne pour streamer. La protection ne démarre que lorsque tu cliques dessus.", liveScene_, IcLive));
 		liveAlert_ = new QWidget;
 		auto *la = new QVBoxLayout(liveAlert_);
 		la->setContentsMargins(0, 0, 0, 12);
@@ -1023,23 +1001,23 @@ private:
 		fixOut_->hide();
 		pl->addWidget(fixOut_);
 		pbl->addWidget(sep());
-		pbl->addWidget(row("📡 Source surveillée", "", secSource_));
+		pbl->addWidget(row("Source surveillée", "La source de ton flux (« Flux › NOM »). Elle est choisie toute seule quand tu cliques sur Corriger.", secSource_, IcSource));
 		pbl->addWidget(sep());
-		pbl->addWidget(row("📶 Scène de secours", "", secScene_));
+		pbl->addWidget(row("Scène de secours", "Affichée pendant la coupure, par exemple « Connexion perdue ».", secScene_, IcShield));
 		pl->addWidget(protBody_);
 		v->addWidget(prot);
 
 		// Auto-gérance (drone) : même principe.
-		auto *drone = switchCard("Auto-gérance drone", pilot_, &chip3_, &dbody);
+		auto *drone = switchCard("Auto-gérance drone", "Quand ta caméra drone envoie une belle image (qui bouge, pas noire), SYXTEE passe dessus tout seul, puis revient sur ta scène de direct quand la prise s'arrête. Si tu changes de scène à la main, elle se met en pause 30 secondes.", pilot_, &chip3_, &dbody);
 		auto *dl = static_cast<QVBoxLayout *>(dbody->layout());
 		droneBody_ = new QWidget;
 		auto *dbl = new QVBoxLayout(droneBody_);
 		dbl->setContentsMargins(0, 0, 0, 0);
 		dbl->setSpacing(0);
 		dbl->addWidget(sep());
-		dbl->addWidget(row("🛰️ Source du drone", "", droneSource_));
+		dbl->addWidget(row("Source du drone", "L'entrée OBS qui reçoit l'image du drone.", droneSource_, IcCamera));
 		dbl->addWidget(sep());
-		dbl->addWidget(row("🚁 Scène du drone", "", droneScene_));
+		dbl->addWidget(row("Scène du drone", "N'importe quelle scène : pas besoin qu'elle s'appelle « Drone ».", droneScene_, IcDrone));
 		dl->addWidget(droneBody_);
 		v->addWidget(drone);
 		v->addStretch(1);
@@ -1080,10 +1058,10 @@ private:
 	void doFix()
 	{
 		fixBtn_->setEnabled(false);
-		chkSource_.btn->setEnabled(false);
+		heroBtn_->setEnabled(false);
 		post("/api/fix", {}, [this](const QJsonObject &o) {
 			fixBtn_->setEnabled(true);
-			chkSource_.btn->setEnabled(true);
+			heroBtn_->setEnabled(true);
 			const bool err = o.value("_error").toBool();
 			const QString msg = o.value("message").toString(err ? "Agent injoignable." : "");
 			fixOut_->setText(msg);
@@ -1411,7 +1389,7 @@ private:
 		updateRegieSummary();
 	}
 
-	// Onglet Direct : liste des étapes, bandeau d'état et repères, recalculés à chaque nouvelle donnée.
+	// Onglet Direct : bandeau d'état, recalculé à chaque nouvelle donnée.
 	void updateOverview()
 	{
 		if (!heroTitle_ || state_.isEmpty()) return;
@@ -1424,48 +1402,20 @@ private:
 		const QJsonObject bk = state_.value("backup").toObject(), au = state_.value("auto").toObject();
 		const bool regieOn = bk.value("enabled").toBool() || au.value("enabled").toBool();
 		const QString live = st.value("backup").toString();
+		const bool srcOk = !scene.isEmpty() && dest && obsOn && liveKnown_ && liveHasSource_;
 
-		int done = 0;
-		// Compte
-		if (coreOn) {
-			setCheck(chkAccount_, 1, accountMail_.isEmpty() ? "Ce poste est relié à ton compte." : accountMail_);
-			done++;
-		} else setCheck(chkAccount_, paired && core == "connecting" ? 3 : 2, paired && core == "connecting" ? "Connexion aux serveurs SYXTEE…" : "Les serveurs SYXTEE ne répondent pas. Vérifie ta connexion.");
-		// OBS
-		if (obsOn) {
-			const QString ver = st.value("obsVersion").toString();
-			setCheck(chkObs_, 1, ver.isEmpty() ? "OBS répond." : "OBS " + ver);
-			done++;
-		} else setCheck(chkObs_, 2, "OBS ne répond pas. Rouvre-le si besoin.");
-		// Flux de destination
-		if (dest) {
-			setCheck(chkDest_, 1, destName_.isEmpty() ? "Flux choisi." : destName_);
-			done++;
-		} else setCheck(chkDest_, 0, "Aucun flux choisi : la source ne peut pas lire ton relais.", true);
-		if (chkDest_.btn) chkDest_.btn->setText(dest_ && dest_->isVisible() ? "Choisir" : "Créer un relais");
-		// Source dans la scène de direct
-		if (scene.isEmpty()) {
-			setCheck(chkSource_, 0, "Choisis d'abord ta scène de direct.", true);
-			chkSource_.btn->setText("Choisir la scène");
-		} else if (!dest) {
-			setCheck(chkSource_, 0, "Choisis d'abord un flux de destination.");
-		} else if (!obsOn || !liveKnown_) {
-			setCheck(chkSource_, 0, "En attente d'OBS…");
-		} else if (liveHasSource_) {
-			setCheck(chkSource_, 1, "« Flux › NOM » est dans la scène « " + scene + " ».");
-			done++;
-		} else {
-			setCheck(chkSource_, 2, "La scène « " + scene + " » n'a pas la source du flux.", true);
-			chkSource_.btn->setText("Corriger");
-		}
-		// Régie (facultative)
-		if (live == "backup") setCheck(chkRegie_, 3, "Connexion coupée : la scène de secours est à l'antenne.", false, "SECOURS");
-		else if (live == "drone") setCheck(chkRegie_, 1, "Belle prise du drone à l'antenne.", false, "DRONE");
-		else if (regieOn) setCheck(chkRegie_, 1, QString(bk.value("enabled").toBool() ? "Secours" : "") + (bk.value("enabled").toBool() && au.value("enabled").toBool() ? " et " : "") + (au.value("enabled").toBool() ? "auto-gérance" : "") + " actif.", false, "ACTIVE");
-		else setCheck(chkRegie_, 0, "Éteinte. Tu peux l'activer dans l'onglet Régie.", false, "FACULTATIVE");
-		if (regieOn || live == "backup" || live == "drone") chkRegie_.sub->setText(chkRegie_.sub->text().replace(0, 1, chkRegie_.sub->text().left(1).toUpper()));
+		// Quatre étapes : compte, OBS, flux, source du flux dans la scène de direct. La première qui manque donne le message et le bouton.
+		const int done = int(coreOn) + int(obsOn) + int(dest) + int(srcOk);
+		QString need;
+		QString btn;
+		heroAct_ = 0;
+		if (!coreOn) need = core == "connecting" ? "Liaison avec les serveurs SYXTEE en cours." : "SYXTEE ne joint pas ton compte. Vérifie ta connexion.";
+		else if (!obsOn) need = "OBS ne répond pas. Rouvre-le si besoin.";
+		else if (!dest) { need = "Choisis le flux de destination (relais) que ta scène doit lire."; btn = dest_ && dest_->isVisible() ? "Choisir un flux" : "Créer un relais"; heroAct_ = 1; }
+		else if (scene.isEmpty()) { need = "Choisis ta scène de direct."; btn = "Choisir la scène"; heroAct_ = 2; }
+		else if (!liveKnown_) need = "Vérification de la scène « " + scene + " »…";
+		else if (!liveHasSource_) { need = "La scène « " + scene + " » n'a pas la source du flux."; btn = "Corriger"; heroAct_ = 3; }
 
-		// Bandeau
 		QColor hc = kFaint;
 		bool pulse = false, hollow = false;
 		QString title, sub;
@@ -1473,7 +1423,7 @@ private:
 			hc = paired && core == "connecting" ? kWarn : kBad;
 			pulse = paired && core == "connecting";
 			title = pulse ? "Connexion…" : "Hors ligne";
-			sub = pulse ? "Liaison avec les serveurs SYXTEE en cours." : "SYXTEE ne joint pas ton compte. Vérifie ta connexion.";
+			sub = need;
 		} else if (live == "backup") {
 			hc = kWarn;
 			title = "Secours à l'antenne";
@@ -1491,24 +1441,16 @@ private:
 			hc = kWarn;
 			hollow = true;
 			title = "À finaliser";
-			sub = QString("Encore %1 étape%2 avant de diffuser.").arg(4 - done).arg(4 - done > 1 ? "s" : "");
+			sub = need;
 		}
 		heroDot_->set(hc, hollow, pulse);
 		heroTitle_->setText(title);
 		heroSub_->setText(sub);
 		heroCount_->setText(QString("%1/4").arg(done));
 		heroBar_->set(done, done == 4 ? kOk : kWarn);
-
-		// Repères
-		const QString pm = state_.value("previewMode").toString();
-		const bool pe = state_.value("previewEnabled").toBool(true);
-		tilePreview_->setText(!pe ? "Coupé" : pm == "video" ? "Vidéo et son" : pm == "jpeg" ? "Images seules" : "En attente");
-		tilePreviewSub_->setText(!pe ? "rien n'est envoyé" : pm == "idle" || pm.isEmpty() ? "page ouverte requise" : "envoyé au site");
-		const int viewers = st.value("viewers").toInt();
-		tileRemote_->setText(viewers > 0 ? QString::number(viewers) + (viewers > 1 ? " appareils" : " appareil") : "Aucun");
-		tileRemoteSub_->setText(viewers > 0 ? "sur Contrôle à distance" : "page fermée");
-		tileRegie_->setText(live == "backup" ? "Secours" : live == "drone" ? "Drone" : regieOn ? "Prête" : "Éteinte");
-		tileRegieSub_->setText(live == "backup" || live == "drone" ? "à l'antenne" : regieOn ? "attend ta scène" : "facultative");
+		heroBtn_->setVisible(heroAct_ != 0 && done < 4);
+		heroBtn_->setText(btn);
+		heroBtn_->setEnabled(true);
 
 		if (diagOut_) {
 			const QString obsv = st.value("obsVersion").toString();
@@ -1584,7 +1526,7 @@ private:
 			ch->addWidget(btn);
 			const QString sub = (last.isEmpty() ? QString("Jamais sauvegardée") : "Sauvegardée le " + last) + " · " + QString::number(c.value("media").toInt()) + " médias · " + fmtSize(c.value("bytes").toDouble());
 			if (!first) localBox_->addWidget(sep());
-			localBox_->addWidget(row(name, sub, ctl, true));
+			localBox_->addWidget(row(name, sub, ctl));
 			first = false;
 		}
 
@@ -1619,7 +1561,7 @@ private:
 			QString sub = date + " · " + fmtSize(b.value("size").toDouble()) + " · v" + QString::number(b.value("version").toInt(1));
 			if (!b.value("host").toString().isEmpty()) sub += " · " + b.value("host").toString();
 			if (!first) cloudBox_->addWidget(sep());
-			cloudBox_->addWidget(row(b.value("collection").toString().isEmpty() ? b.value("name").toString() : b.value("collection").toString(), sub, btn, true));
+			cloudBox_->addWidget(row(b.value("collection").toString().isEmpty() ? b.value("name").toString() : b.value("collection").toString(), sub, btn));
 			first = false;
 		}
 	}

@@ -403,6 +403,8 @@ const char *obs_source_get_id(const obs_source_t *s) { return s->id.c_str(); }
 enum obs_source_type obs_source_get_type(const obs_source_t *s) { return s->type; }
 uint32_t obs_source_get_output_flags(const obs_source_t *s) { return s->flags; }
 bool obs_source_muted(const obs_source_t *s) { return s->muted; }
+bool obs_source_audio_active(const obs_source_t *) { return true; }
+obs_data_t *obs_source_get_private_settings(obs_source_t *) { return new obs_data; }
 void obs_source_set_muted(obs_source_t *s, bool m) { stub_mute(s->name.c_str(), m); }
 float obs_source_get_volume(const obs_source_t *s) { return s->vol; }
 void obs_source_set_volume(obs_source_t *s, float v) { stub_vol(s->name.c_str(), double(v)); }

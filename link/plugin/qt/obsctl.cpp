@@ -213,6 +213,12 @@ bool enumInput(void *param, obs_source_t *s)
 		i["inputVolumeMul"] = double(obs_source_get_volume(s));
 		i["monitorType"] = monitorName(obs_source_get_monitoring_type(s));
 		i["global"] = globalAudio.contains(q(obs_source_get_name(s)));
+		// Le mélangeur d'OBS ne montre une piste que si la source produit vraiment du son (une source navigateur dont l'audio
+		// n'est pas pris en charge par OBS n'en a pas) et qu'elle n'est pas masquée (« 0 masqué » en bas du mélangeur).
+		i["audioActive"] = obs_source_audio_active(s);
+		obs_data_t *priv = obs_source_get_private_settings(s);
+		i["mixerHidden"] = priv && obs_data_get_bool(priv, "mixer_hidden");
+		if (priv) obs_data_release(priv);
 	}
 	arr->append(i);
 	return true;

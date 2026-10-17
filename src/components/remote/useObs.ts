@@ -246,7 +246,7 @@ export function useObs({ coreUrl, deviceId, demoToken, invite, rights }: UseObsA
     // Par petits groupes : OBS répond à une demande à la fois, des dizaines en même temps finissent en délai dépassé.
     const [sm, st, rc] = await Promise.all([read<{ studioModeEnabled: boolean }>("GetStudioModeEnabled", undefined, seq), read<{ outputActive: boolean }>("GetStreamStatus", undefined, seq), read<{ outputActive: boolean; outputPaused: boolean }>("GetRecordStatus", undefined, seq)]);
     const [il, pl, cl] = await Promise.all([
-      read<{ inputs: { inputName: string; inputKind?: string; hasAudio?: boolean; inputMuted?: boolean; inputVolumeMul?: number; monitorType?: string; global?: boolean }[] }>("GetInputList", undefined, seq),
+      read<{ inputs: { inputName: string; inputKind?: string; hasAudio?: boolean; audioActive?: boolean; mixerHidden?: boolean; inputMuted?: boolean; inputVolumeMul?: number; monitorType?: string; global?: boolean }[] }>("GetInputList", undefined, seq),
       read<{ profiles: string[]; currentProfileName: string }>("GetProfileList", undefined, seq),
       read<{ sceneCollections: string[]; currentSceneCollectionName: string }>("GetSceneCollectionList", undefined, seq),
     ]);
@@ -286,7 +286,8 @@ export function useObs({ coreUrl, deviceId, demoToken, invite, rights }: UseObsA
       // Toutes les entrées audio d'OBS (les sources sans son, comme un texte, n'ont pas de piste).
       setMixer(
         inputs
-          .filter((i) => i.hasAudio !== false)
+          // Comme le mélangeur d'OBS : pas de piste pour une source sans son réel ni pour une source masquée du mélangeur.
+          .filter((i) => i.hasAudio !== false && i.audioActive !== false && i.mixerHidden !== true)
           .map((i) => ({ name: i.inputName, muted: !!i.inputMuted, db: i.inputVolumeMul && i.inputVolumeMul > 0 ? 20 * Math.log10(i.inputVolumeMul) : -100, mon: i.monitorType ?? MON_OFF, global: !!i.global })),
       );
     }

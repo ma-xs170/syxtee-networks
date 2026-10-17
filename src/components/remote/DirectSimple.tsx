@@ -92,7 +92,6 @@ function Strip({ o, m }: { o: Obs; m: Mix }) {
 export default function DirectSimple({ o, onLive }: { o: Obs; onLive: () => void }) {
   const off = !o.ready || !o.canLive;
   const s = o.stats;
-  const loss = s && s.total > 0 ? (s.dropped / s.total) * 100 : 0;
   const received = o.fluxName !== "";
   const [history, setHistory] = useState<number[]>([]);
   const kbps = o.streaming ? (s?.kbps ?? null) : null;
@@ -118,13 +117,6 @@ export default function DirectSimple({ o, onLive }: { o: Obs; onLive: () => void
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [o]);
-
-  const stat = (label: string, value: string, warn?: boolean) => (
-    <div key={label} className="flex items-baseline justify-between gap-3 py-1 text-[13px]">
-      <dt className="text-muted">{label}</dt>
-      <dd className="dk-mono" style={{ color: warn ? "var(--dk-amber)" : undefined }}>{value}</dd>
-    </div>
-  );
 
   return (
     <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_minmax(20rem,42%)] gap-3 p-3">
@@ -229,12 +221,6 @@ export default function DirectSimple({ o, onLive }: { o: Obs; onLive: () => void
               {avg != null && <span className="dk-mono text-[12px] text-muted">moy. {fmtInt(avg)} kbit/s</span>}
             </p>
             <Spark points={history} />
-            <dl className="px-2">
-              {stat("Encodeur", s?.encoder || "-")}
-              {stat("Congestion", o.streaming && s ? `${Math.round(s.congestion * 100)} %` : "-", !!s && s.congestion > 0.1)}
-              {stat("Frames perdues", o.streaming && s ? String(s.dropped) : "-", loss > 2)}
-              {stat("FPS · CPU", s ? `${Math.round(s.fps)} · ${s.cpu.toFixed(1).replace(".", ",")} %` : "-")}
-            </dl>
           </Dock>
         </div>
       </div>

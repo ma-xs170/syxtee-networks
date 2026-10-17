@@ -127,7 +127,7 @@ export default function DirectSimple({ o, onLive }: { o: Obs; onLive: () => void
   );
 
   return (
-    <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_minmax(15rem,34%)] gap-3 p-3">
+    <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_minmax(20rem,42%)] gap-3 p-3">
       <div className="dk-card flex flex-wrap items-center gap-x-4 gap-y-2 !px-4 !py-2.5 text-[13px]">
         {!o.guest && (
           <>

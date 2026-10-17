@@ -266,10 +266,6 @@ function TopBar({ o, desktop, chatOn, showChat, onChat, onAuto, invited }: { o: 
                 {o.fixing ? "Correction…" : "Corriger"}
               </button>
             )}
-            <span aria-hidden="true" className="h-5 w-px shrink-0 bg-line" />
-            <button type="button" aria-pressed={o.studioMode} disabled={!o.ready || !o.canLive} onClick={o.toggleStudio} className={cx(btn("sm"), "shrink-0")} style={o.studioMode ? { borderColor: "var(--dk-blue)", background: "color-mix(in srgb, var(--dk-blue) 14%, transparent)" } : undefined}>
-              Mode Studio
-            </button>
           </>
         )}
         {o.guest && (

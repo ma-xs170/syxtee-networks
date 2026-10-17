@@ -5,7 +5,7 @@ import { useState } from "react";
 import { readSelection, writeSelection } from "../remote/destinationSelection";
 import { Card, DkButton, ListRow, StatusBadge, Toggle } from "./kit";
 import { useLinkDevices } from "./useLinkDevices";
-import { OutputDialog, PlatformLogo, type MsOutput } from "../remote/MultistreamPanel";
+import { detectPlatform, OutputDialog, PlatformLogo, PRESETS, type MsOutput } from "../remote/MultistreamPanel";
 import type { Rights } from "../remote/types";
 import { useObs } from "../remote/useObs";
 
@@ -71,9 +71,23 @@ function Outputs({ coreUrl, deviceId, rights }: { coreUrl: string; deviceId: str
     />
   );
 
+  // Le service réglé dans OBS (Réglages, Stream) est détecté : il part avec le direct, sans interrupteur. Masqué s'il est déjà une sortie de la liste.
+  const main = o.ms?.main?.configured ? o.ms.main : null;
+  const mainId = main ? detectPlatform(main.service, main.server) : "";
+  const mainListed = outputs.some((x) => x.viaMain || detectPlatform(x.service, x.server) === mainId);
+  const mainRow = main && !mainListed && (
+    <ListRow
+      key="obs-main"
+      lead={<PlatformLogo id={mainId} size={32} />}
+      title={PRESETS.find((p) => p.id === mainId)?.label ?? (main.service || "Service d'OBS")}
+      sub={main.active ? "En direct · réglée dans OBS" : "Réglée dans OBS · part avec le direct"}
+      trailing={main.active ? <StatusBadge tone="ok">En direct</StatusBadge> : <StatusBadge>Dans OBS</StatusBadge>}
+    />
+  );
+
   return (
     <>
-      {outputs.length > 0 && <Card>{outputs.map(row)}</Card>}
+      {(mainRow || outputs.length > 0) && <Card>{mainRow}{outputs.map(row)}</Card>}
       {!o.guest && (
         <div>
           <DkButton onClick={() => setDialog({ step: "pick", service: "" })}>Ajouter une sortie</DkButton>

@@ -366,8 +366,12 @@ struct Whip {
 	QString encoder;
 } whip;
 
-/** Meilleur encodeur H.264 disponible : matériel d'abord (NVENC, AMF, Quick Sync ; pas VideoToolbox sur Mac, voir plus bas), logiciel en dernier recours. */
-QString pickVideoEncoder()
+/**
+ * Meilleur encodeur H.264 disponible : matériel d'abord (VideoToolbox, NVENC, AMF, Quick Sync), logiciel en dernier recours.
+ * `safe` : écarte VideoToolbox sur Mac. Sa session plante OBS à la libération (CVBufferPool::finalize, plantages du 2026-10-17), ce qui se
+ * produit à chaque arrêt de l'aperçu ; x264 en 960×540 reste léger.
+ */
+QString pickVideoEncoder(bool safe = false)
 {
 	const char *id = nullptr;
 	int best = -1;
@@ -379,6 +383,9 @@ QString pickVideoEncoder()
 		if (!codec || strcmp(codec, "h264") != 0) continue;
 		const QString n = q(id).toLower();
 		if (n.contains("hevc") || n.contains("av1")) continue;
+#ifdef __APPLE__
+		if (safe && n.contains("videotoolbox")) continue;
+#endif
 		int score = 5;
 		if (n.contains("videotoolbox") || n.contains(".ave.")) score = 100;
 		else if (n.contains("nvenc")) score = 90;
@@ -460,7 +467,7 @@ Json startWhip(const Json &d)
 	obs_video_info ovi;
 	if (!obs_get_video_info(&ovi) || !ovi.base_width || !ovi.base_height) throw Fail{"Pas de vidéo."};
 	const int width = int(std::lround(double(height) * ovi.base_width / ovi.base_height / 2.0)) * 2;
-	const QString encId = pickVideoEncoder();
+	const QString encId = pickVideoEncoder(true);
 	if (encId.isEmpty()) throw Fail{"Aucun encodeur H.264 disponible dans OBS."};
 
 	obs_data_t *sdata = obs_data_create();

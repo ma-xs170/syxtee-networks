@@ -1,6 +1,8 @@
 {
+  "0.9.5": [
+    "Stabilité : l'aperçu du programme utilise l'encodeur logiciel x264 sur Mac (VideoToolbox faisait planter OBS à l'arrêt)"
+  ],
   "0.9.4": [
-    "Stabilité : l'aperçu du programme utilise l'encodeur logiciel x264 sur Mac (VideoToolbox faisait planter OBS à l'arrêt)",
     "Aperçu : un redémarrage rapide ne provoque plus d'erreur 401 (l'arrêt côté serveur est attendu avant le nouveau démarrage)"
   ],
   "0.9.3": [

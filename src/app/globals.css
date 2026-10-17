@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./dashboard.css";
 
 /* Échelle de z-index : une seule source pour les couches fixes. */
 :root {

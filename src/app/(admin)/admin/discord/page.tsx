@@ -21,7 +21,7 @@ const btn = "h-10 whitespace-nowrap rounded-full border border-line px-4 text-sm
 export default async function AdminDiscordPage() {
   await requireAdmin("discord");
   let status: BotStatus | null = null;
-  let problem = hasBot ? "" : "CORE_URL ou CORE_API_TOKEN manque sur Vercel.";
+  let problem = hasBot ? "" : "CORE_URL ou CORE_API_TOKEN manque sur le serveur.";
   if (hasBot) {
     try {
       status = await getBotStatus();

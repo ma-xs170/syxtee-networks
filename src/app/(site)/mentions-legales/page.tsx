@@ -31,7 +31,7 @@ export default function MentionsLegales() {
           <div>
             <h2 className="text-base font-semibold text-foreground">Hébergement</h2>
             <p className="mt-3">
-              Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis - vercel.com
+              OVH SAS, 2 rue Kellermann, 59100 Roubaix, France - ovhcloud.com. Serveurs situés à Beauharnois (Québec, Canada).
             </p>
           </div>
 

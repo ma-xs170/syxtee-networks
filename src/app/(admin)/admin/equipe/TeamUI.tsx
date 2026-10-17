@@ -333,7 +333,7 @@ function MemberRow({ m, canManage }: { m: MemberView; canManage: boolean }) {
             ) : (
               <>
                 <PasswordButton userId={m.userId} />
-                <span className="text-xs text-muted">Géré sur Vercel (ADMIN_EMAILS)</span>
+                <span className="text-xs text-muted">Géré sur le serveur (ADMIN_EMAILS)</span>
               </>
             )}
           </div>

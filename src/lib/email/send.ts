@@ -35,7 +35,7 @@ export async function sendEmailResult(to: string, email: Email): Promise<SendRes
     const { subject, html, text } = await renderEmail(email);
     if (!hasEmail) {
       console.info(`[email non envoyé : RESEND_API_KEY absente] ${to} · ${subject}`);
-      return { ok: false, reason: `RESEND_API_KEY absente sur Vercel - ${envDiagnostic()}` };
+      return { ok: false, reason: `RESEND_API_KEY absente du serveur - ${envDiagnostic()}` };
     }
     // Plafonds : 8 e-mails par heure et par destinataire, 2 000 par jour au total (protège le quota Resend et la réputation du domaine).
     if (!(await allow(`mail:${to.toLowerCase()}`, 8, 3600))) return { ok: false, reason: "trop d'e-mails envoyés à cette adresse (8 par heure)" };

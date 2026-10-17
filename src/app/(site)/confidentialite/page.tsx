@@ -96,15 +96,16 @@ export default function ConfidentialitePage() {
 
       <LegalBlock title="Sous-traitants">
         <p>
-          Supabase (base de données et authentification, hébergée en [À COMPLÉTER : région UE choisie]), Vercel (hébergement du site), Resend (envoi des
-          emails), Twitch (statut live, via son API publique). Selon ta méthode de connexion : Twitch, Discord ou Google.
+          OVHcloud (hébergement du site et des serveurs de relais, datacenter de Beauharnois, Québec, Canada), Supabase (base de données et authentification,
+          hébergée en [À COMPLÉTER : région UE choisie]), Resend (envoi des emails), Twitch (statut live, via son API publique). Tu te connectes avec ton
+          adresse email (ou ton identifiant) et ton mot de passe : aucun service tiers de connexion n&apos;est utilisé.
         </p>
       </LegalBlock>
 
       <LegalBlock title="Cookies">
         <p>
-          Uniquement des cookies nécessaires : la session de connexion. Le navigateur retient aussi ta dernière méthode de connexion (stockage local) pour
-          l&apos;afficher sur la page de connexion. Aucun cookie publicitaire ni de mesure d&apos;audience.
+          Uniquement des cookies nécessaires : la session de connexion, partagée entre les adresses du service (www, app et auth.syxtee-networks.fr) pour que tu
+          restes connecté d&apos;une page à l&apos;autre. Aucun cookie publicitaire ni de mesure d&apos;audience.
         </p>
       </LegalBlock>
 

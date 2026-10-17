@@ -50,7 +50,12 @@ const nextConfig: NextConfig = {
       { source: "/analyseur", destination: "/", permanent: true },
       { source: "/dashboard/commutateur", destination: "/dashboard/controle-a-distance", permanent: true },
       // Pages retirées : les anciens liens (signets, moteurs de recherche, e-mails) arrivent sur la page qui les remplace.
-      { source: "/pro", destination: "/encodeur", permanent: true },
+      { source: "/pro", destination: "/", permanent: true },
+      // Encodeur et boutique cachés pour l'instant (temporaire : on remet en ligne en retirant ces trois lignes).
+      { source: "/encodeur", destination: "/", permanent: false },
+      { source: "/encodeur/:path*", destination: "/", permanent: false },
+      { source: "/boutique/:path*", destination: "/", permanent: false },
+      { source: "/boutique", destination: "/", permanent: false },
       { source: "/syxtee-mix", destination: "/controle-a-distance", permanent: true },
       { source: "/commutateur", destination: "/dashboard/controle-a-distance", permanent: true },
       { source: "/mix", destination: "/dashboard/controle-a-distance", permanent: true },

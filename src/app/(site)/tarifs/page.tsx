@@ -5,7 +5,6 @@ import { Check, X } from "@/components/icons";
 import { Container } from "@/components/ui";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import JsonLd from "@/components/seo/JsonLd";
-import { product } from "@/config/product";
 import { CATALOG, TIERS } from "@/lib/billing";
 import { site } from "@/lib/site";
 
@@ -123,26 +122,6 @@ export default function TarifsPage() {
                 </ul>
               </article>
             ))}
-          </div>
-        </Container>
-      </section>
-
-      <section id="encodeur" className="scroll-mt-20 border-t border-line py-16 sm:py-20">
-        <Container className="max-w-4xl">
-          <div className="bento-cell flex flex-col items-start justify-between gap-6 p-7 sm:flex-row sm:items-center sm:p-9">
-            <div>
-              <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Encodeur · À venir</p>
-              <h2 className="h-section mt-3">Formule <em>Encodeur.</em></h2>
-              <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-muted">Le tarif de fonctionnement du boîtier, requis pour diffuser. Le boîtier lui-même se paie une seule fois : {product.priceLabel(product.price)}.</p>
-            </div>
-            <div className="shrink-0 sm:text-right">
-              <p className="flex items-baseline gap-1.5 sm:justify-end">
-                <span className="whitespace-nowrap text-4xl font-semibold tracking-tight">{product.priceLabel(product.subscription.perQuarter)}</span>
-                <span className="text-sm text-muted">tous les 3 mois</span>
-              </p>
-              <p className="mt-1 text-sm text-muted">soit {product.priceLabel(product.subscription.perMonth)} par mois</p>
-              <Link href="/boutique#encodeur" className="btn btn-primary mt-5 whitespace-nowrap">Accéder à l&apos;achat</Link>
-            </div>
           </div>
         </Container>
       </section>

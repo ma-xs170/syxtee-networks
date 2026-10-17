@@ -4,14 +4,17 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { DownloadSimple, AppleLogo } from "@/components/icons";
 import { fmtMo, pluginState, since, type PluginLatest } from "@/lib/plugin";
+import { sendOnce } from "../remote/callDevice";
+import { Confirm, type ConfirmAsk } from "../remote/ui";
 import { useLiveStatus } from "./LiveStatus";
 import { useLinkDevices, type DevicesDemo, type LinkDevice } from "./useLinkDevices";
 import { Tile } from "./ui";
+import { cx } from "../remote/ui";
 
-// Contrôle à distance, liste des postes : « En ligne (n) » et « Hors ligne (n) », une carte par poste avec « Piloter OBS ».
+// Contrôle à distance, liste des postes : « En ligne (n) » et « Hors ligne (n) », une carte par poste avec « Piloter OBS » (en ligne)
+// ou « Lancer OBS » (hors ligne : le Gardien du Mac rouvre OBS, après confirmation).
 
 const pilot = "inline-flex h-10 items-center justify-center whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors";
-const pilotOff = "inline-flex h-10 cursor-not-allowed items-center justify-center whitespace-nowrap rounded-full border border-line px-5 text-sm text-muted";
 
 /** Plugin pour macOS : toujours à portée, que l'on ait déjà un OBS relié ou non. Les étapes complètes sont sur la page Plugin OBS. */
 function PluginBar({ coreUrl, latest }: { coreUrl: string; latest: PluginLatest | null }) {
@@ -48,7 +51,25 @@ function PluginBar({ coreUrl, latest }: { coreUrl: string; latest: PluginLatest 
   );
 }
 
-function Card({ d, now, pushing, outdated }: { d: LinkDevice; now: number; pushing: string[]; outdated: boolean }) {
+function Card({ d, now, pushing, outdated, coreUrl }: { d: LinkDevice; now: number; pushing: string[]; outdated: boolean; coreUrl: string }) {
+  const [ask, setAsk] = useState<ConfirmAsk>(null);
+  const [state, setState] = useState<"idle" | "launching" | "sent">("idle");
+  const [error, setError] = useState("");
+
+  /** OBS fermé : le Gardien SYXTEE du Mac le rouvre. Le poste repasse « En ligne » tout seul dès que le plugin se reconnecte. */
+  async function launch() {
+    setState("launching");
+    setError("");
+    try {
+      await sendOnce(coreUrl, d.id, "guardian.launchObs", {}, 20_000);
+      setState("sent");
+    } catch (e) {
+      setError((e as Error).message);
+      setState("idle");
+    }
+  }
+  const launchAsk = () => setAsk({ title: "Lancer OBS ?", text: `Êtes-vous sûr de vouloir lancer OBS sur ${d.name} ? Il s'ouvre à distance, sur l'ordinateur.`, ok: "Oui, lancer OBS", run: () => void launch() });
+
   return (
     <li className="flex flex-col gap-4 tile p-5 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
@@ -68,10 +89,15 @@ function Card({ d, now, pushing, outdated }: { d: LinkDevice; now: number; pushi
           Piloter OBS
         </Link>
       ) : (
-        <span aria-disabled="true" className={pilotOff}>
-          Piloter OBS
-        </span>
+        <div className="flex flex-col items-start gap-2 sm:items-end">
+          <button type="button" disabled={state !== "idle"} onClick={launchAsk} className={cx(pilot, "disabled:opacity-60")}>
+            {state === "launching" ? "Envoi…" : state === "sent" ? "Lancement d'OBS…" : "Lancer OBS"}
+          </button>
+          {state === "sent" && <p role="status" className="text-[13px] text-muted">OBS s&apos;ouvre, le poste repasse en ligne dans un instant.</p>}
+          {error && <p role="alert" className="max-w-[28ch] text-[13px] text-warn sm:text-right">{error}</p>}
+        </div>
       )}
+      <Confirm ask={ask} onClose={() => setAsk(null)} />
     </li>
   );
 }
@@ -117,7 +143,7 @@ export default function RemoteList({ coreUrl, demo }: { coreUrl: string; demo?: 
           ) : (
             <ul className="grid gap-3">
               {(list as LinkDevice[]).map((d) => (
-                <Card key={d.id} d={d} now={now} pushing={pushing} outdated={pluginState(d.plugin_version, latest) === "outdated"} />
+                <Card key={d.id} d={d} now={now} pushing={pushing} outdated={pluginState(d.plugin_version, latest) === "outdated"} coreUrl={coreUrl} />
               ))}
             </ul>
           )}

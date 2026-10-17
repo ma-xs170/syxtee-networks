@@ -65,10 +65,12 @@ export function sendOnce(coreUrl: string, deviceId: string, method: string, para
         ws.onmessage = (ev) => {
           const m = JSON.parse(String(ev.data));
           if (m.type === "ready") {
-            if (!m.agent?.online || m.agent.id !== deviceId) return end(() => reject(new Error("Ce poste n'est pas en ligne.")));
+            // Les ordres du Gardien (démarrer OBS) passent même quand OBS est fermé : c'est le Gardien du poste qui doit être en ligne.
+            const guardian = method.startsWith("guardian.");
+            if (guardian ? !m.guardian?.online : !m.agent?.online || m.agent.id !== deviceId) return end(() => reject(new Error(guardian ? "Le Gardien SYXTEE n'est pas en ligne sur ce Mac. Ouvre SYXTEE Link sur l'ordinateur, puis réessaie." : "Ce poste n'est pas en ligne.")));
             ws!.send(JSON.stringify({ type: "req", id: "q1", method, params }));
           } else if (m.type === "res" && m.id === "q1") {
-            end(() => (m.ok ? resolve() : reject(new Error(String(m.error ?? "Commande refusée.")))));
+            end(() => (m.ok ? resolve() : reject(new Error(m.error === "guardian_offline" ? "Le Gardien SYXTEE n'est pas en ligne sur ce Mac." : String(m.error ?? "Commande refusée.")))));
           } else if (m.type === "agent" && !m.online) {
             end(() => reject(new Error("Le poste s'est déconnecté.")));
           }

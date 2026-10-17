@@ -123,7 +123,7 @@ export default function RemotePhoneScreen({ tab = "scenes", className = "" }: { 
         </div>
 
         <header className="flex h-12 items-center justify-between border-b border-[#262626] px-4">
-          <h1 className="text-[16px] font-medium">Contrôle à distance</h1>
+          <div className="text-[16px] font-medium">Contrôle à distance</div>
           <span className="rounded-full border border-white/[0.14] px-3 py-1.5 text-[13px] text-neutral-300">← Retour</span>
         </header>
 

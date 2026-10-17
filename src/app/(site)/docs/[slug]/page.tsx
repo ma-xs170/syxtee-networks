@@ -10,7 +10,7 @@ export const generateStaticParams = () => docs.map((d) => ({ slug: d.slug }));
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const d = docBySlug((await params).slug);
-  return d ? { title: `${d.title} · Documentation`, description: d.summary, alternates: { canonical: `/docs/${d.slug}` } } : {};
+  return d ? { title: `${d.title} · Doc`, description: d.summary, alternates: { canonical: `/docs/${d.slug}` } } : {};
 }
 
 function Block({ b }: { b: DocBlock }) {

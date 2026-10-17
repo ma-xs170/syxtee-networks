@@ -6,6 +6,7 @@ import "./globals.css";
 import { site } from "@/lib/site";
 import { THEME_SCRIPT } from "@/components/ThemeToggle";
 import PwaRegister from "@/components/pwa/PwaRegister";
+import JsonLd from "@/components/seo/JsonLd";
 import GrainOverlay from "@/components/ui/GrainOverlay";
 
 
@@ -61,6 +62,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-full flex flex-col">
         <a href="#contenu" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-(--z-skip) focus:rounded-full focus:bg-accent focus:px-5 focus:py-2.5 focus:text-sm focus:font-medium focus:text-on-accent">Aller au contenu</a>
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@graph": [
+              { "@type": "Organization", "@id": `${site.url}/#organization`, name: site.name, url: site.url, logo: `${site.url}/icons/apple-touch-icon.png`, sameAs: [site.discord, site.instagram] },
+              { "@type": "WebSite", "@id": `${site.url}/#website`, url: site.url, name: site.name, inLanguage: "fr-FR", publisher: { "@id": `${site.url}/#organization` } },
+            ],
+          }}
+        />
         {children}
         <GrainOverlay />
         <PwaRegister />

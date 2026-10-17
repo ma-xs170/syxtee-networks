@@ -11,7 +11,7 @@ import { creditFor } from "@/lib/credits";
 export const metadata: Metadata = {
   title: "Moblin",
   description:
-    "Moblin, l'app iPhone gratuite et open source qu'on recommande pour l'IRL : pourquoi elle, comment la configurer avec le relais SRTLA SYXTEE en 6 étapes, et les réglages conseillés.",
+    "Moblin, l'app iPhone gratuite et open source pour le live IRL : configure-la avec le relais SRTLA SYXTEE en 6 étapes, avec les réglages conseillés.",
   alternates: { canonical: "/moblin" },
 };
 

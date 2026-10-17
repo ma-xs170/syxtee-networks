@@ -14,7 +14,7 @@ import { ctaLabel, product } from "@/config/product";
 
 export const metadata: Metadata = {
   title: "Encodeur",
-  description: "SYXTEE Encodeur, à venir : un boîtier à petit prix où tu branches ta caméra en HDMI. Il diffuse ton direct en 4G, 5G et satellite, sur terre, en mer ou en hélicoptère.",
+  description: "SYXTEE Encodeur, à venir : le boîtier à petit prix où tu branches ta caméra en HDMI. Il diffuse ton direct en 4G, 5G et satellite, partout.",
   alternates: { canonical: "/encodeur" },
 };
 

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { site } from "@/lib/site";
 import { Container } from "@/components/ui";
 
-export const metadata: Metadata = { title: "Mentions légales" };
+export const metadata: Metadata = { title: "Mentions légales", description: "Éditeur, hébergeur et contact de SYXTEE NETWORKS, mentions légales du site.", alternates: { canonical: "/mentions-legales" } };
 
 export default function MentionsLegales() {
   return (

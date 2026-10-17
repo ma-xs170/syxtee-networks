@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalBlock, LegalPage } from "@/components/LegalPage";
 import { site } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Politique de confidentialité", alternates: { canonical: "/confidentialite" } };
+export const metadata: Metadata = { title: "Politique de confidentialité", description: "Quelles données SYXTEE NETWORKS collecte, pourquoi, combien de temps, et comment exercer tes droits (RGPD).", alternates: { canonical: "/confidentialite" } };
 
 const rows = [
   { d: "Email", f: "Connexion (lien envoyé par email), messages liés au compte", b: "Exécution du service" },

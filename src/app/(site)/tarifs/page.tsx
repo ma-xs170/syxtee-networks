@@ -4,11 +4,14 @@ import Glow from "@/components/landing/Glow";
 import { Check, X } from "@/components/icons";
 import { Container } from "@/components/ui";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
+import JsonLd from "@/components/seo/JsonLd";
 import { product } from "@/config/product";
+import { CATALOG, TIERS } from "@/lib/billing";
+import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Tarifs",
-  description: "Trois formules, à partir de 4,99 € par mois : serveur SRTLA et RTMP, contrôle à distance d'OBS dès Signature, multistream, équipes et régies. Sans engagement.",
+  description: "Trois formules dès 4,99 € par mois : serveur SRTLA et RTMP, contrôle à distance d'OBS dès Signature, multistream, équipes et régies. Sans engagement.",
   alternates: { canonical: "/tarifs" },
 };
 
@@ -48,6 +51,17 @@ const Slash = () => (
 export default function TarifsPage() {
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: site.name,
+          applicationCategory: "MultimediaApplication",
+          operatingSystem: "Web, iOS, Android",
+          url: `${site.url}/tarifs`,
+          offers: TIERS.map((t) => ({ "@type": "Offer", name: CATALOG[t].name, description: CATALOG[t].pitch, price: (CATALOG[t].prices.month.cents / 100).toFixed(2), priceCurrency: "EUR", url: `${site.url}/tarifs` })),
+        }}
+      />
       <Glow />
       <section data-theme="dark" className="relative bg-background text-foreground -mt-[4.0625rem] overflow-hidden border-b border-line pb-16 pt-[9rem] text-center sm:pb-24 sm:pt-[10.5rem]">
         <CloudBackdrop />

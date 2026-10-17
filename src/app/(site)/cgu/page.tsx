@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LegalBlock, LegalPage } from "@/components/LegalPage";
 import { site } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Conditions d'utilisation", alternates: { canonical: "/cgu" } };
+export const metadata: Metadata = { title: "Conditions d'utilisation", description: "Les règles d'utilisation du site, des relais et du contrôle à distance SYXTEE NETWORKS : compte, usages autorisés, responsabilités.", alternates: { canonical: "/cgu" } };
 
 // ⚠️ Complète les champs [À COMPLÉTER] avant l'ouverture publique des comptes.
 export default function CguPage() {

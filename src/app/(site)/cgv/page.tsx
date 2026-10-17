@@ -4,7 +4,7 @@ import { LegalBlock, LegalPage } from "@/components/LegalPage";
 import { CATALOG, TIERS } from "@/lib/billing";
 import { site } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Conditions générales de vente", alternates: { canonical: "/cgv" } };
+export const metadata: Metadata = { title: "Conditions générales de vente", description: "Conditions de vente de l'Encodeur et des abonnements SYXTEE NETWORKS : prix, paiement, livraison, rétractation, garanties.", alternates: { canonical: "/cgv" } };
 
 // ⚠️ Brouillon : complète les champs [À COMPLÉTER] et fais relire (association, vente d'abonnements aux particuliers)
 // avant d'ouvrir le paiement en mode live.

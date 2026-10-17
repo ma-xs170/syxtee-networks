@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
 import FaqList from "@/components/blocks/FaqList";
+import JsonLd from "@/components/seo/JsonLd";
 import { Container } from "@/components/ui";
 import { faq } from "@/lib/faq";
 
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
 export default function FaqPage() {
   return (
     <>
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) }} />
       <PageHero kicker="FAQ" title={<>Questions <em>fréquentes.</em></>} crumb="FAQ">
         Les questions qu&apos;on nous pose le plus, au même endroit. Ta question n&apos;y est pas ? Écris à l&apos;équipe depuis ton espace Assistance.
       </PageHero>

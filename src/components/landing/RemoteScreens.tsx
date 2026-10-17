@@ -198,7 +198,7 @@ export function MacUI({ c }: { c: Ctl }) {
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-[#070708] text-left text-[13px] text-neutral-100">
       <header className="flex h-11 shrink-0 items-center justify-between border-b border-[#262626] px-3.5">
-        <h1 className="flex items-center gap-2.5 text-[14px] font-medium">Contrôle à distance <LiveBadge c={c} /></h1>
+        <div className="flex items-center gap-2.5 text-[14px] font-medium">Contrôle à distance <LiveBadge c={c} /></div>
         <span className="inline-flex h-8 items-center gap-1.5 rounded-full border border-white/[0.14] bg-[#16161a] px-3.5 text-[13px] text-neutral-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"><span aria-hidden="true">←</span> Retour</span>
       </header>
       <div className="mx-2 mt-2 flex h-11 shrink-0 items-center gap-3 rounded-xl border border-white/[0.08] bg-[#0b0b0d] px-3">
@@ -253,7 +253,7 @@ export function PhoneUI({ c }: { c: Ctl }) {
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-black pt-[54px] text-left text-[13px] text-neutral-100">
       <header className="flex h-11 shrink-0 items-center justify-between border-b border-[#262626] px-3.5">
-        <h1 className="flex items-center gap-2 text-[14px] font-medium">Contrôle à distance</h1>
+        <div className="flex items-center gap-2 text-[14px] font-medium">Contrôle à distance</div>
         <span className="inline-flex h-9 items-center gap-1.5 rounded-full border border-white/[0.14] bg-[#16161a] px-3.5 text-[13px] text-neutral-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"><span aria-hidden="true">←</span> Retour</span>
       </header>
       <div className="mx-2 mt-2 flex h-11 shrink-0 items-center gap-3 rounded-xl border border-white/[0.08] bg-[#0b0b0d] px-3">

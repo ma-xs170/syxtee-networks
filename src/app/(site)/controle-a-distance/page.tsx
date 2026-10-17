@@ -11,7 +11,7 @@ import { Container } from "@/components/ui";
 import Highlight from "@/components/ui/Highlight";
 
 export const metadata: Metadata = {
-  title: "Contrôle à distance : le direct n'a plus de bureau",
+  title: "Contrôle à distance d'OBS depuis ton téléphone",
   description: "Pilote le vrai OBS de ton ordinateur depuis ton téléphone : scènes, sources, son, direct. Image et son du programme, où que tu sois.",
   alternates: { canonical: "/controle-a-distance" },
 };

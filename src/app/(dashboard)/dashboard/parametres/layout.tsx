@@ -1,16 +1,15 @@
-import { DashPage } from "@/components/dashboard/ui";
+import Link from "next/link";
+import { Column } from "@/components/dashboard/kit";
 import { ToastProvider } from "@/components/ui/Toast";
-import SettingsTabs from "./SettingsTabs";
 
-// Paramètres : titre, onglets (une route chacun), contenu en cartes empilées.
+// Pages secondaires du compte (Documents, Labs, Équipe, Usage) : le reste vit dans /dashboard/compte.
 export default function ParametresLayout({ children }: { children: React.ReactNode }) {
   return (
     <ToastProvider>
-      <DashPage>
-        <h1 className="h-page mb-6">Para<em>mètres</em></h1>
-        <SettingsTabs />
+      <Column>
+        <Link href="/dashboard/compte" className="mb-6 inline-block text-[14px] text-muted hover:text-foreground">← Compte</Link>
         <div className="grid gap-6">{children}</div>
-      </DashPage>
+      </Column>
     </ToastProvider>
   );
 }

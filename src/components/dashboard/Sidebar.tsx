@@ -235,7 +235,7 @@ function AccountFooter({ account, admin, onNavigate }: { account: NonNullable<Re
               </Link>
             )}
             <div className="mt-1 border-t border-line">
-              <Link role="menuitem" href="/dashboard/parametres" onClick={() => { setOpen(false); onNavigate(); }} className={item}>
+              <Link role="menuitem" href="/dashboard/compte" onClick={() => { setOpen(false); onNavigate(); }} className={item}>
                 Compte
               </Link>
               <ThemeRow className={`${item} flex items-center gap-2`} />
@@ -369,7 +369,7 @@ function MobileTabs({ onMenu, menuOpen }: { onMenu: () => void; menuOpen: boolea
 
 /** Mise en page : barre latérale fixe en desktop, barre du haut et tiroir en mobile. */
 const EXTRA_COMMANDS: Command[] = [
-  { label: "Compte", href: "/dashboard/parametres", hint: "Compte" },
+  { label: "Compte", href: "/dashboard/compte", hint: "Compte" },
   { label: "Abonnement", href: "/dashboard/abonnement", hint: "Compte" },
   { label: "Profil", href: "/dashboard/profil", hint: "Compte" },
   { label: "Multichat", href: "/dashboard/multichat", hint: "Outils" },

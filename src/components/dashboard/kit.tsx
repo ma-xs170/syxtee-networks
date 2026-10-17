@@ -119,3 +119,14 @@ export function DkTable({ head, children }: { head: string[]; children: ReactNod
 export function Column({ children, max = 1200 }: { children: ReactNode; max?: 720 | 1200 }) {
   return <div className="mx-auto w-full px-4 pb-20 pt-8 sm:px-6 sm:pt-12" style={{ maxWidth: max }}>{children}</div>;
 }
+
+/** Section d'une page de réglages : titre, phrase, contenu ; séparée de la précédente par un trait fin. `danger` : titre en rouge. */
+export function Section({ title, text, danger = false, children, id }: { title: string; text?: string; danger?: boolean; children: ReactNode; id?: string }) {
+  return (
+    <section id={id} className="border-t border-line py-8 first:border-t-0 first:pt-0">
+      <h2 className="text-[16px]" style={{ color: danger ? "var(--dk-red)" : undefined }}>{title}</h2>
+      {text && <p className="mt-1 max-w-[60ch] text-[14px] leading-relaxed text-muted">{text}</p>}
+      <div className="mt-5">{children}</div>
+    </section>
+  );
+}

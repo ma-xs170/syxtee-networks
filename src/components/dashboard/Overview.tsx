@@ -164,11 +164,7 @@ export default function Overview({ initial, coreUrl = "", demo }: { initial: Ove
                 ))
               )}
             </ul>
-            {devices && devices.length > 0 && (
-              <p className="mt-2 text-[13px] text-muted">
-                {online.length} en ligne sur {devices.length}.{outdated && latest ? <span style={{ color: "var(--dk-amber)" }}> Plugin à mettre à jour ({latest.version}).</span> : ""}
-              </p>
-            )}
+            {outdated && latest && <p className="mt-2 text-[13px]" style={{ color: "var(--dk-amber)" }}>Plugin à mettre à jour ({latest.version}).</p>}
           </Card>
 
           <Card>

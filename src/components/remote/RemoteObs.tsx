@@ -270,14 +270,6 @@ function StatusStrip({ o, desktop }: { o: Obs; desktop: boolean }) {
       {desktop && !o.guest && (
         <>
           <label className="flex shrink-0 items-center gap-2 text-muted">
-            Profil
-            <select aria-label="Profil OBS" className={cx(field, "!h-8 !w-auto max-w-[13rem]")} disabled={!o.ready || !o.canLive || o.profiles.list.length === 0} value={o.profiles.current} onChange={(e) => o.setProfile(e.target.value)}>
-              {o.profiles.list.map((p) => (
-                <option key={p}>{p}</option>
-              ))}
-            </select>
-          </label>
-          <label className="flex shrink-0 items-center gap-2 text-muted">
             Collection
             <select aria-label="Collection de scènes" className={cx(field, "!h-8 !w-auto max-w-[13rem]")} disabled={!o.ready || !o.canLive || o.collections.list.length === 0} value={o.collections.current} onChange={(e) => o.setCollection(e.target.value)}>
               {o.collections.list.map((c) => (

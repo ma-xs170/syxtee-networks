@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Column, PageTitle } from "@/components/dashboard/kit";
-import { SupportId } from "@/components/SupportId";
-import { getProfile, requireUser } from "@/lib/auth/dal";
+import { Column } from "@/components/dashboard/kit";
+import { requireUser } from "@/lib/auth/dal";
 import { fmtAgo } from "@/lib/dashboard-data";
 import { listTickets, ticketCounts } from "@/lib/support";
 import { categoryLabel } from "@/lib/support-categories";
@@ -18,48 +17,23 @@ const TABS = [
 export default async function SupportPage({ searchParams }: { searchParams: Promise<{ etat?: string }> }) {
   const [user, { etat }] = await Promise.all([requireUser("/dashboard/aide"), searchParams]);
   const tab = TABS.find((t) => t.id === etat) ?? TABS[0];
-  const [profile, tickets, counts] = await Promise.all([getProfile(), listTickets({ userId: user.id, state: tab.state }), ticketCounts(user.id)]);
-
-  const head = <PageTitle title="Support" sub="Écris-nous : on te répond ici, dans ta conversation." />;
+  const [tickets, counts] = await Promise.all([listTickets({ userId: user.id, state: tab.state }), ticketCounts(user.id)]);
 
   return (
     <Column>
-      {head}
+      <header className="mb-8 flex flex-wrap items-center gap-x-4 gap-y-3">
+        <h1 className="dk-h1">Support</h1>
+        <span className="inline-flex items-center gap-2 rounded-full border border-ok/30 bg-ok/10 px-3 py-1 text-xs font-medium text-ok">
+          <span aria-hidden="true" className="size-1.5 rounded-full bg-ok" />
+          Rapide (généralement sous 24 h)
+        </span>
+      </header>
 
-      <div className="mt-8">
-        <section aria-labelledby="canal-chat" className="bento-cell flex flex-col p-6 sm:p-8">
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 id="canal-chat" className="text-xl font-semibold tracking-tight">
-              Écrire à l&apos;équipe
-            </h2>
-            <span className="inline-flex items-center gap-2 rounded-full border border-ok/30 bg-ok/10 px-3 py-1 text-xs font-medium text-ok">
-              <span aria-hidden="true" className="size-1.5 rounded-full bg-ok" />
-              Rapide (généralement sous 24 h)
-            </span>
-          </div>
-          <p className="mt-4 max-w-[60ch] text-sm leading-relaxed text-muted">
-            Décris ton problème, ajoute une capture si besoin. Un agent prend ta demande en charge, et tu suis la conversation ici. Tu es prévenu par une notification et par e-mail à chaque réponse.
-          </p>
-          <ul className="mt-5 grid gap-2 text-sm text-muted sm:grid-cols-2">
-            {["Une demande par sujet", "Photos acceptées", "Réponse dans ton espace", "Historique conservé"].map((x) => (
-              <li key={x} className="flex gap-2.5"><span aria-hidden="true" className="text-foreground">+</span>{x}</li>
-            ))}
-          </ul>
-          {profile?.support_id && (
-            <div className="mt-5">
-              <p className="mb-2 text-xs text-muted">Ton ID support, pour qu&apos;on retrouve ton compte</p>
-              <SupportId id={profile.support_id} />
-            </div>
-          )}
-          <div className="mt-auto pt-6">
-            <Link href="/dashboard/aide/nouveau" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors">
-              <span aria-hidden="true">+</span> Nouvelle demande
-            </Link>
-          </div>
-        </section>
-      </div>
+      <Link href="/dashboard/aide/nouveau" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full btn-tonal px-6 text-sm font-medium transition-colors">
+        <span aria-hidden="true">+</span> Nouvelle demande
+      </Link>
 
-      <h2 className="mb-4 mt-12 text-sm font-semibold">Mes demandes</h2>
+      <h2 className="mb-4 mt-10 text-sm font-semibold">Mes demandes</h2>
 
       <nav aria-label="Filtrer les demandes" className="mb-6 flex w-max gap-1 rounded-full border border-line bg-surface p-1">
         {TABS.map((t) => (

@@ -38,8 +38,11 @@ const channelUrl = (login: string) => `https://twitch.tv/${login}`;
 
 /** Chaînes ajoutées à la main (approuvées), avec avatar et statut live pour Twitch. */
 async function getFeatured(supabase: SupabaseClient): Promise<HomeStreamer[]> {
-  const { data } = await supabase.from("featured_channels").select("platform, login").eq("platform", "twitch").order("created_at", { ascending: true }).limit(100);
-  const rows = (data ?? []) as { platform: Channel["platform"]; login: string }[];
+  // Colonne avatar_url (0059) : si la migration n'est pas encore passée, on relit sans elle.
+  const q = (cols: string) => supabase.from("featured_channels").select(cols).eq("platform", "twitch").order("created_at", { ascending: true }).limit(100);
+  let res = await q("platform, login, avatar_url");
+  if (res.error) res = await q("platform, login");
+  const rows = (res.data ?? []) as unknown as { platform: Channel["platform"]; login: string; avatar_url?: string | null }[];
   if (rows.length === 0) return [];
   let users = new Map<string, Awaited<ReturnType<typeof getTwitchUsersByLogin>> extends Map<string, infer U> ? U : never>();
   let live = new Map<string, { viewers: number }>();
@@ -52,7 +55,7 @@ async function getFeatured(supabase: SupabaseClient): Promise<HomeStreamer[]> {
   return rows.map((r) => {
     const u = r.platform === "twitch" ? users.get(r.login.toLowerCase()) : undefined;
     const handle = u?.display_name || r.login;
-    return { handle, firstName: null, partner: false, url: channelUrl(r.login), avatar: u?.profile_image_url ?? null, live: u && live.get(u.id) ? { viewers: live.get(u.id)!.viewers } : null, channels: [{ platform: "twitch" as const, handle, url: channelUrl(r.login) }] };
+    return { handle, firstName: null, partner: false, url: channelUrl(r.login), avatar: r.avatar_url || (u?.profile_image_url ?? null), live: u && live.get(u.id) ? { viewers: live.get(u.id)!.viewers } : null, channels: [{ platform: "twitch" as const, handle, url: channelUrl(r.login) }] };
   });
 }
 

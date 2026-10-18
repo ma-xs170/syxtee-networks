@@ -25,6 +25,29 @@ export async function addChannelAction(_prev: ChannelState, form: FormData): Pro
   return { ok: `Twitch · ${parsed.login} ajoutée à l'accueil.` };
 }
 
+const PHOTO_TYPES: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+
+/** Photo d'une chaîne ajoutée à la main : envoyée dans le bucket public « avatars » (dossier featured/), l'accueil ne dépend plus de l'API Twitch. */
+export async function setChannelPhotoAction(form: FormData) {
+  const admin = await requireAdmin("partners");
+  const id = String(form.get("id") ?? "");
+  const file = form.get("photo");
+  if (!/^[0-9a-f-]{36}$/.test(id) || !(file instanceof File) || file.size === 0) return;
+  const ext = PHOTO_TYPES[file.type];
+  if (!ext || file.size > 2 * 1024 * 1024) return;
+  const db = createAdminClient();
+  const bucket = db.storage.from("avatars");
+  const path = `featured/${id}-${Date.now()}.${ext}`;
+  const { error } = await bucket.upload(path, file, { contentType: file.type, upsert: false });
+  if (error) {
+    console.error("setChannelPhoto", error.message);
+    return;
+  }
+  await db.from("featured_channels").update({ avatar_url: bucket.getPublicUrl(path).data.publicUrl }).eq("id", id);
+  await audit(admin.email!, "channel.photo", null, null, { id });
+  refresh();
+}
+
 export async function toggleChannelAction(form: FormData) {
   const admin = await requireAdmin("partners");
   const id = String(form.get("id") ?? "");

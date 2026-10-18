@@ -12,11 +12,13 @@ let token: { value: string; expires: number } | null = null;
 
 async function appToken(force = false) {
   if (!force && token && token.expires > Date.now() + 60_000) return token.value;
-  const res = await fetch(`${AUTH}/token`, {
+  // Pas de `cache: "no-store"` : sur l'accueil (page statique régénérée), Next refuse un fetch non mis en cache
+  // (« Page changed from static to dynamic at runtime »). Le jeton vit ~60 jours : on le garde 55 min ; `force` change l'adresse pour en obtenir un neuf.
+  const res = await fetch(`${AUTH}/token${force ? `?r=${Date.now()}` : ""}`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, grant_type: "client_credentials" }),
-    cache: "no-store",
+    next: { revalidate: 3300 },
     signal: AbortSignal.timeout(6000),
   });
   if (!res.ok) throw new Error(`Twitch token ${res.status}`);

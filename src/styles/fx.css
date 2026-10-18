@@ -453,3 +453,9 @@
   .menu-btn:active { transform: none; }
   .menu-in { animation: menu-fade 0.15s ease both; }
 }
+
+/* Pile d'avatars du hero : chaque photo entre l'une après l'autre ; elles s'écartent au survol (transition de marge, voir StreamerStack). */
+@keyframes stack-in { from { opacity: 0; transform: translateY(8px) scale(0.85); } }
+@media (prefers-reduced-motion: no-preference) {
+  .stack-av { animation: stack-in 0.5s cubic-bezier(0.23, 1, 0.32, 1) both; animation-delay: calc(var(--i, 0) * 80ms + 150ms); }
+}

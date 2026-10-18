@@ -136,6 +136,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           id="00000000-0000-4000-8000-000000000001"
           name="Sloane EUXIN"
           email="sl.euxin@comptes.syxtee-networks.fr"
+          emailVerified
           avatarUrl={null}
           supportId="K7QX2M"
           managed

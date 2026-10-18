@@ -75,6 +75,7 @@ export default async function AdminAccountPage({ params, searchParams }: { param
         id={id}
         name={name}
         email={u.user.email ?? ""}
+        emailVerified={!!u.user.email_confirmed_at}
         avatarUrl={p.avatar_url ?? null}
         supportId={p.support_id}
         managed={(u.user.email ?? "").endsWith("@comptes.syxtee-networks.fr")}
@@ -235,12 +236,10 @@ export default async function AdminAccountPage({ params, searchParams }: { param
               <p className="mb-3 text-sm text-muted">Le client reçoit un e-mail avec un lien pour choisir lui-même son mot de passe.</p>
               <ResetLinkForm userId={id} />
             </div>
-            {!u.user.email_confirmed_at && (
-              <div>
-                <p className="mb-3 text-sm text-muted">L&apos;adresse n&apos;est pas vérifiée : le client reçoit un nouvel e-mail de vérification.</p>
-                <VerificationLinkForm userId={id} />
-              </div>
-            )}
+            <div>
+              <p className="mb-3 text-sm text-muted">{u.user.email_confirmed_at ? `Adresse déjà vérifiée le ${day(u.user.email_confirmed_at)} : rien à renvoyer.` : "Adresse non vérifiée : le client reçoit un nouvel e-mail de vérification."}</p>
+              <VerificationLinkForm userId={id} />
+            </div>
             <div>
               <p className="mb-3 text-sm text-muted">Tu choisis le mot de passe. Le client est prévenu par e-mail.</p>
               <SetPasswordForm userId={id} />

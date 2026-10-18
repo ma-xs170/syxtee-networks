@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowLink } from "@/components/dashboard/ui";
 import { Badge } from "@/components/ui/Tag";
+import { VerificationLinkForm } from "./AdminForms";
 import MessageButton from "./MessageButton";
 import PlanEditor from "./PlanEditor";
 
@@ -23,6 +24,8 @@ export type SheetProps = {
   id: string;
   name: string;
   email: string;
+  /** Adresse vérifiée : sinon, le bouton « Renvoyer l'e-mail de vérification » apparaît dans le Résumé. */
+  emailVerified: boolean;
   avatarUrl: string | null;
   supportId: string;
   managed: boolean;
@@ -244,6 +247,7 @@ export default function AccountSheet(p: SheetProps) {
               )}
 
               <div className="grid gap-2">
+                {!p.emailVerified && <VerificationLinkForm userId={p.id} />}
                 <Link href={href("securite")} className="btn btn-secondary w-full">Mot de passe et sécurité</Link>
               </div>
             </aside>

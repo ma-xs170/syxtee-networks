@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/tarifs" },
 };
 
-// Pas de paiement sur le site pour l'instant : le bouton de chaque formule est « Demander l'accès ».
+// Le bouton de chaque formule mène au choix de formule du compte (connexion demandée au besoin), où se fait le paiement Stripe.
 // Les trois tableaux ci-dessous donnent une valeur par formule, dans l'ordre : Essentiel, Signature, Prestige.
 type Three<T> = [T, T, T];
 
@@ -87,8 +87,8 @@ export default function TarifsPage() {
                   <span className="whitespace-nowrap text-4xl font-semibold tracking-tight">{t.price} €</span>
                   <span className="text-sm text-muted">/ mois</span>
                 </p>
-                <Link href="/acces" className={`btn mt-6 w-full ${t.highlight ? "btn-primary" : "btn-secondary"}`}>
-                  Demander l&apos;accès
+                <Link href="/dashboard/compte?onglet=formule" className={`btn mt-6 w-full ${t.highlight ? "btn-primary" : "btn-secondary"}`}>
+                  Choisir {t.name}
                 </Link>
 
                 <ul className="mt-8 space-y-3.5 text-sm">

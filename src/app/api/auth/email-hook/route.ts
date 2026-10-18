@@ -23,7 +23,7 @@ type Payload = {
 const fail = (status: number, message: string) => NextResponse.json({ error: { http_code: status, message } }, { status });
 
 /** Hôtes du site : un « redirect_to » ailleurs (ancien domaine, liste Supabase pas à jour) est ignoré. */
-const trusted = (u: URL) => /(^|\.)syxtee-networks\.fr$/.test(u.hostname) || u.hostname === "localhost";
+const trusted = (u: URL) => /(^|\.)syxtee-networks\.fr$/.test(u.hostname) || (process.env.NODE_ENV !== "production" && u.hostname === "localhost");
 
 /**
  * Lien /auth/confirm : on garde le « next » demandé par le site (redirect_to), sinon celui gardé dans le compte à l'inscription

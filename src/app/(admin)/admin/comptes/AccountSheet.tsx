@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ArrowLink } from "@/components/dashboard/ui";
+import { ArrowLink } from "@/components/admin/kit";
 import { Badge } from "@/components/ui/Tag";
 import { VerificationLinkForm } from "./AdminForms";
 import MessageButton from "./MessageButton";
@@ -99,9 +99,9 @@ export default function AccountSheet(p: SheetProps) {
         <div className="flex min-w-0 items-center gap-5">
           {p.avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={p.avatarUrl} alt="" width={64} height={64} className="size-16 shrink-0 rounded-2xl border border-line-strong object-cover" />
+            <img src={p.avatarUrl} alt="" width={80} height={80} className="size-20 shrink-0 rounded-full object-cover" />
           ) : (
-            <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-2xl border border-line-strong bg-surface-2 font-mono text-lg font-semibold">{initials}</span>
+            <span aria-hidden="true" className="grid size-20 shrink-0 place-items-center rounded-full bg-foreground/10 font-mono text-xl font-semibold">{initials}</span>
           )}
           <div className="min-w-0">
             <h1 className="h-page truncate">{p.name}</h1>
@@ -121,7 +121,7 @@ export default function AccountSheet(p: SheetProps) {
         </div>
       </header>
 
-      <nav aria-label="Sections du compte" className="mb-8 flex gap-7 overflow-x-auto border-b border-line">
+      <nav aria-label="Sections du compte" className="mb-10 flex gap-8 overflow-x-auto border-b border-foreground/10">
         {SHEET_TABS.map((t) => (
           <Link key={t.id} href={href(t.id)} aria-current={t.id === p.tab ? "page" : undefined} className={`-mb-px whitespace-nowrap border-b-2 pb-3 text-sm transition-colors ${t.id === p.tab ? "border-foreground text-foreground" : "border-transparent text-muted hover:text-foreground"}`}>
             {t.label}

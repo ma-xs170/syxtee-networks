@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
+import { DashHeader, DashPage, Tile, TileLabel } from "@/components/admin/kit";
 import { requireAdmin } from "@/lib/admin";
 import { type BotStatus, getBotStatus, hasBot } from "@/lib/discord-bot";
 import { toggleAlertsAction } from "./actions";

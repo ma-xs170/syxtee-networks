@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { DashHeader, DashPage, Tile } from "@/components/dashboard/ui";
+import { Avatar, Chip, DashHeader, DashPage, Tile } from "@/components/admin/kit";
 import { requireAdmin } from "@/lib/admin";
 import { listAccounts, type AccountFilter } from "@/lib/admin-data";
 import { PLANS, type PlanId } from "@/lib/plans";
@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Admin · Comptes", robots: { index: 
 // Réservée à l'admin (404 sinon, TOTP obligatoire). Un ID support exact ouvre directement la fiche.
 
 const PER_PAGE = 50;
-const field = "h-10 rounded-full border border-line bg-background px-4 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60";
+const field = "h-11 rounded-full border border-transparent px-5 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60";
 const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit", timeZone: "Europe/Paris" }) : "jamais");
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
 
@@ -43,13 +43,13 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
 
   return (
     <DashPage>
-      <DashHeader lead="Comptes" hl="clients" sub={`${total} compte${total > 1 ? "s" : ""}${one(sp.supprime) ? " · compte supprimé" : ""}`}>
-        <a href={`/api/admin/comptes?${qs({ page: "" })}`} className="text-sm underline-offset-4 hover:underline">
+      <DashHeader kicker="Clients" lead="Comptes" hl="clients" sub={`${total} compte${total > 1 ? "s" : ""}${one(sp.supprime) ? " · compte supprimé" : ""}`}>
+        <a href={`/api/admin/comptes?${qs({ page: "" })}`} className="inline-flex h-10 items-center rounded-full bg-foreground/[0.08] px-5 text-sm font-medium transition-colors hover:bg-foreground/[0.14]">
           Exporter en CSV
         </a>
       </DashHeader>
 
-      <form method="get" className="mb-4 flex flex-wrap items-end gap-3">
+      <form method="get" className="mb-8 flex flex-wrap items-end gap-3">
         <label className="grid gap-1.5">
           <span className="text-xs text-muted">Recherche</span>
           <input name="q" defaultValue={filter.q} placeholder="Email, prénom, nom, SYX-…" className={`${field} w-72`} />
@@ -108,15 +108,20 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
               <tbody className="divide-y divide-line" data-sensitive>
                 {rows.map((r) => (
                   <tr key={r.id} className="hover:bg-foreground/[0.08]">
-                    <td className="py-2.5 pr-4 font-mono text-xs">
+                    <td className="py-3 pr-4 font-mono text-xs">
                       <Link href={`/admin/comptes/${r.id}`} className="underline-offset-4 hover:underline">
                         {r.support_id}
                       </Link>
                     </td>
-                    <td className="py-2.5 pr-4">{[r.first_name, r.last_name].filter(Boolean).join(" ") || "?"}</td>
-                    <td className="max-w-[240px] truncate py-2.5 pr-4 text-muted">{r.email}</td>
-                    <td className="py-2.5 pr-4">{PLANS[r.plan as PlanId]?.name ?? r.plan}</td>
-                    <td className="py-2.5 pr-4 text-muted">{r.suspended_at ? "Suspendu" : "Actif"}</td>
+                    <td className="py-3 pr-4">
+                      <Link href={`/admin/comptes/${r.id}`} className="flex items-center gap-3 font-medium">
+                        <Avatar name={[r.first_name, r.last_name].filter(Boolean).join(" ")} size={30} />
+                        {[r.first_name, r.last_name].filter(Boolean).join(" ") || "?"}
+                      </Link>
+                    </td>
+                    <td className="max-w-[240px] truncate py-3 pr-4 text-muted">{r.email}</td>
+                    <td className="py-3 pr-4">{PLANS[r.plan as PlanId]?.name ?? r.plan}</td>
+                    <td className="py-3 pr-4">{r.suspended_at ? <Chip tone="bad">Suspendu</Chip> : <Chip tone="ok">Actif</Chip>}</td>
                     <td className="py-2.5 pr-4 font-mono text-xs text-muted">{day(r.created_at)}</td>
                     <td className="py-2.5 font-mono text-xs text-muted">{day(r.last_sign_in_at)}</td>
                   </tr>

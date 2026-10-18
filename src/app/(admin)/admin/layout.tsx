@@ -6,6 +6,7 @@ import { pendingCount } from "@/lib/access";
 import { newQuotesCount } from "@/lib/quotes";
 import { supportBadges } from "@/lib/support";
 import AdminShell from "./AdminShell";
+import "./admin.css";
 
 // Espace admin : coque à part (barre latérale propre), séparée du dashboard client. La vraie vérification (rôle, permission, TOTP)
 // est refaite dans chaque page, action et route ; ce layout renvoie seulement une 404 au plus tôt à un compte qui n'est pas dans l'équipe.

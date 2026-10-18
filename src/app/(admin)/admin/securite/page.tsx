@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import BanForm from "@/components/admin/BanForm";
-import { ArrowLink, DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
+import { ArrowLink, DashHeader, DashPage, Tile, TileLabel } from "@/components/admin/kit";
 import { requireAdmin } from "@/lib/admin";
 import { getSecurity, hasCore, type SecurityEvent } from "@/lib/core";
 import { unbanAction } from "./actions";

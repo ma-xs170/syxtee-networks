@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DashHeader, DashPage } from "@/components/dashboard/ui";
+import { DashHeader, DashPage } from "@/components/admin/kit";
 import { requireStaff } from "@/lib/admin";
 import { serverNow } from "@/lib/regions";
 import { listTeam, pendingInvites } from "@/lib/staff-data";

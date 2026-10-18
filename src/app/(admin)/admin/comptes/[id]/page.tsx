@@ -2,7 +2,7 @@ import { presenceOf } from "@/lib/presence";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLink, DashHeader, DashPage, SectionTabs, Tile, TileLabel } from "@/components/dashboard/ui";
+import { ArrowLink, DashHeader, DashPage, SectionTabs, Tile, TileLabel } from "@/components/admin/kit";
 import { ticketCounts } from "@/lib/support";
 import AccountSheet from "../AccountSheet";
 import { flag } from "@/lib/regions";

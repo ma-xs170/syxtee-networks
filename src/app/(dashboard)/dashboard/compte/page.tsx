@@ -8,7 +8,7 @@ import { ConsentToggle, EraseCoverage, PrivateZones, type PrivateZone } from "@/
 import LinkDevices from "@/components/dashboard/LinkDevices";
 import LowDataToggle from "@/components/dashboard/LowDataToggle";
 import StreamModeToggle from "@/components/dashboard/StreamModeToggle";
-import { Column, DkTabs, ListRow, PageTitle, Section, StatusBadge } from "@/components/dashboard/kit";
+import { Column, DkTabs, ListRow, Section, StatusBadge } from "@/components/dashboard/kit";
 import { ApiKeys, Webhooks, type HookRow, type KeyRow } from "@/components/dashboard/DevTools";
 import { ToastProvider } from "@/components/ui/Toast";
 import { getProfile, requireUser } from "@/lib/auth/dal";
@@ -47,7 +47,10 @@ export default async function ComptePage({ searchParams }: PageProps<"/dashboard
   return (
     <ToastProvider>
       <Column max={720}>
-        <PageTitle title="Compte" />
+        <header className="mb-10">
+          <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">Réglages</p>
+          <h1 className="text-[clamp(2.5rem,6vw,3.75rem)] font-semibold leading-none tracking-[-0.04em]">Compte</h1>
+        </header>
         <div className="mb-8">
           <DkTabs label="Compte" current={`/dashboard/compte?onglet=${tab}`} tabs={TABS.map((t) => ({ label: t.label, href: `/dashboard/compte?onglet=${t.id}` }))} />
         </div>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
+import { DashHeader, DashPage, Tile, TileLabel } from "@/components/admin/kit";
 import { requireAdmin } from "@/lib/admin";
 import { CATALOG, TIERS, isTier, mrrCents, type Interval, type Tier } from "@/lib/billing";
 import { PLANS, type PlanId } from "@/lib/plans";

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLink, DashHeader, DashPage, Tile } from "@/components/dashboard/ui";
+import { ArrowLink, DashHeader, DashPage, Tile } from "@/components/admin/kit";
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 

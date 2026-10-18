@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DashPage } from "@/components/dashboard/ui";
+import { DashPage } from "@/components/admin/kit";
 import Pager, { pageOf, pageParam } from "@/components/dashboard/Pager";
 import { requireStaff } from "@/lib/admin";
 import { staffCards } from "@/lib/staff-data";

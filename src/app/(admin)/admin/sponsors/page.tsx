@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DashPage } from "@/components/dashboard/ui";
+import { DashPage } from "@/components/admin/kit";
 import { requireAdmin } from "@/lib/admin";
 import { fmtAgo } from "@/lib/dashboard-data";
 import { listApplications, listCampaigns, SPONSOR_CATEGORIES } from "@/lib/sponsors";

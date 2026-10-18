@@ -22,14 +22,14 @@ export default async function CompteLayout({ children }: LayoutProps<"/compte">)
       <GridBackground />
       <header className="flex items-center gap-4">
         {profile.avatar_url ? (
-          <Image src={profile.avatar_url} alt="" width={64} height={64} className="size-14 shrink-0 rounded-2xl border border-line-strong object-cover sm:size-16" />
+          <Image src={profile.avatar_url} alt="" width={80} height={80} className="size-16 shrink-0 rounded-full object-cover sm:size-20" />
         ) : (
-          <span aria-hidden="true" className="flex size-14 shrink-0 items-center justify-center rounded-2xl border bg-gradient-to-br from-violet-500 to-pink-500 text-white font-mono text-lg uppercase sm:size-16">
+          <span aria-hidden="true" className="flex size-16 shrink-0 items-center justify-center rounded-full bg-foreground/10 font-mono text-lg uppercase sm:size-20">
             {name.slice(0, 2)}
           </span>
         )}
         <div className="min-w-0">
-          <h1 className="h-serif truncate text-3xl sm:text-4xl">{name}</h1>
+          <h1 className="h-serif truncate text-4xl tracking-[-0.04em] sm:text-5xl">{name}</h1>
           <p data-sensitive className="mt-0.5 truncate text-sm text-muted">{user.email}</p>
           <Link href="/dashboard/abonnement" className="mt-2 inline-flex min-h-7 items-center rounded-full border border-line bg-foreground/[0.04] px-2.5 font-mono text-[11px] uppercase tracking-[0.08em] text-muted transition-colors hover:text-foreground">
             {plan.name}

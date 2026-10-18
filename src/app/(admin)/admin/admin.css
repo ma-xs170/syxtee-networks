@@ -1,0 +1,63 @@
+/* Espace admin, direction éditoriale : grands titres, grands chiffres, surfaces plates séparées par un pas de ton (jamais de reflet ni d'ombre).
+   Tout est sous `.adm` (posé par AdminShell) : le dashboard client n'est pas touché. Couleurs = tokens de globals.css / dashboard.css. */
+.adm {
+  --adm-rail: 264px;
+  --adm-step-1: color-mix(in srgb, var(--foreground) 4%, var(--background));
+  --adm-step-2: color-mix(in srgb, var(--foreground) 7%, var(--background));
+}
+
+/* Tuiles existantes (Tile) : plates, un pas de ton au-dessus du fond, plus de filet, de reflet ni d'ombre. */
+.adm .tile {
+  border: 0;
+  border-radius: 1.5rem;
+  background: var(--adm-step-1);
+  box-shadow: none;
+}
+.adm .tile:hover { border-color: transparent; }
+
+/* Cartes et listes déjà écrites en `rounded-2xl border border-line bg-surface` (fiche compte, profil…) */
+.adm section.rounded-2xl.border-line,
+.adm div.rounded-2xl.border-line { border-color: transparent; background: var(--adm-step-1); border-radius: 1.5rem; }
+.adm .divide-line > :not([hidden]) ~ :not([hidden]) { border-color: color-mix(in srgb, var(--foreground) 8%, transparent); }
+
+/* Titre de page : plus grand, serré. */
+html .adm :is(.h-page, .h-serif) {
+  font-size: clamp(2.25rem, 4.6vw, 3.75rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-weight: 600;
+}
+html .adm h2 { letter-spacing: -0.02em; }
+
+/* Tableaux : en-têtes en mono discret, lignes aérées, survol par un pas de ton. */
+.adm table { border-collapse: separate; border-spacing: 0; }
+.adm thead th {
+  padding-bottom: 0.9rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.adm tbody tr { transition: background-color 0.12s; }
+.adm tbody tr:hover { background: var(--adm-step-2); }
+.adm tbody td { border-top: 1px solid color-mix(in srgb, var(--foreground) 7%, transparent); }
+.adm tbody tr:first-child td { border-top-color: transparent; }
+
+/* Champs : plats, un pas de ton, pleine hauteur de touche. */
+.adm :is(input:not([type="checkbox"], [type="radio"]), select, textarea) {
+  background-color: var(--adm-step-2);
+  border-color: transparent;
+}
+.adm :is(input, select, textarea):focus-visible { outline: 2px solid var(--foreground); outline-offset: 1px; }
+
+/* Rangée de chiffres (vue d'ensemble) */
+.adm-figure { font-variant-numeric: tabular-nums; letter-spacing: -0.05em; line-height: 0.95; font-weight: 600; }
+
+/* Entrée de navigation active : pas de filet, un fond plein. */
+.adm-nav-on { background: var(--adm-step-2); color: var(--foreground); }
+
+@media (prefers-reduced-motion: reduce) {
+  .adm *, .adm *::before, .adm *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}

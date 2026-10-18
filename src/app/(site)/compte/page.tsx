@@ -82,25 +82,20 @@ export default async function ComptePage({ searchParams }: PageProps<"/compte">)
         </ul>
       </div>
 
-      <ul className="hidden grid-cols-1 gap-4 sm:grid sm:grid-cols-2">
+      <ul className="hidden sm:block">
         {cards.map((c) => (
-          <li key={c.href}>
-            <Link
-              href={c.href}
-              className={`bento-cell group flex h-full flex-col p-5 sm:p-6 ${c.danger ? "!border-bad/30 hover:!border-bad/50" : ""}`}
-            >
-              <span className={`glass-icon mb-4 grid h-12 w-12 place-items-center rounded-[22%] ${c.danger ? "text-bad" : "text-foreground"}`}>
-                <c.Icon size={22} aria-hidden="true" />
+          <li key={c.href} className="border-t border-foreground/10 first:border-t-0">
+            <Link href={c.href} className="group flex items-center gap-6 py-7 transition-colors">
+              <c.Icon size={26} aria-hidden="true" className={`shrink-0 ${c.danger ? "text-bad" : "text-muted transition-colors group-hover:text-foreground"}`} />
+              <span className="min-w-0 flex-1">
+                <span className={`block text-2xl font-semibold tracking-tight ${c.danger ? "text-bad" : ""}`}>{c.title}</span>
+                <span className="mt-1.5 block max-w-[56ch] text-sm leading-relaxed text-muted">{c.text}</span>
               </span>
-              <span className="flex items-center justify-between gap-3">
-                <span className={`text-base font-semibold ${c.danger ? "text-bad" : ""}`}>{c.title}</span>
-                <span aria-hidden="true" className="text-muted transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none">
-                  →
-                </span>
-              </span>
-              <span className="mt-1.5 text-sm leading-relaxed text-muted">{c.text}</span>
-              <span data-sensitive={c.title === "Sécurité" ? "" : undefined} className="mt-auto truncate pt-5 font-mono text-xs text-foreground/80">
+              <span data-sensitive={c.title === "Sécurité" ? "" : undefined} className="hidden max-w-[16rem] truncate font-mono text-xs text-muted md:block">
                 {c.state}
+              </span>
+              <span aria-hidden="true" className="text-xl text-muted transition-transform group-hover:translate-x-1 motion-reduce:transition-none">
+                →
               </span>
             </Link>
           </li>

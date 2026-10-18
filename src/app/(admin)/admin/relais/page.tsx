@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DashHeader, DashPage, Tile } from "@/components/dashboard/ui";
+import { DashHeader, DashPage, Tile } from "@/components/admin/kit";
 import Pager, { pageOf, pageParam } from "@/components/dashboard/Pager";
 import { requireAdmin } from "@/lib/admin";
 import { liveNow } from "@/lib/admin-data";

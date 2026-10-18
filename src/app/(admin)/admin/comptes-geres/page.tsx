@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DashHeader, DashPage } from "@/components/dashboard/ui";
+import { DashHeader, DashPage } from "@/components/admin/kit";
 import { requireAdmin } from "@/lib/admin";
 import { isManagedEmail } from "@/lib/managed";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";

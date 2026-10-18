@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { DashPage } from "@/components/dashboard/ui";
+import { DashPage } from "@/components/admin/kit";
 import TicketChat from "@/components/support/TicketChat";
 import { requireStaff } from "@/lib/admin";
 import { staffCards } from "@/lib/staff-data";

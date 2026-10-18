@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DashHeader, DashPage, Tile, TileLabel } from "@/components/dashboard/ui";
+import { DashHeader, DashPage, Tile, TileLabel } from "@/components/admin/kit";
 import Pager, { pageOf, pageParam } from "@/components/dashboard/Pager";
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";

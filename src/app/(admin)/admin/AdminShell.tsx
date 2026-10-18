@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { signOut } from "@/app/(auth)/actions";
-import { Bell, Bug, ChartLineUp, ClockCounterClockwise, Globe, Key, Lifebuoy, List, MapTrifold, Radio, Robot, ShareNetwork, ShieldWarning, SquaresFour, Tag, Users, UsersThree, X, type IconProps } from "@/components/icons";
+import { Bell, ChartLineUp, Globe, Lifebuoy, List, Radio, ShieldWarning, SquaresFour, Users, UsersThree, X, type IconProps } from "@/components/icons";
 import { ROLE_META, roleStyle, type AnyRole, type Permission } from "@/lib/staff";
 import { type SupportCategory } from "@/lib/support-categories";
 
@@ -16,8 +16,9 @@ import { type SupportCategory } from "@/lib/support-categories";
 type Icon = ComponentType<IconProps>;
 /** `perm` : permission requise ; « full » : propriétaire et administrateurs ; « any » : tout membre. */
 type Need = Permission | "full" | "any";
-type Child = { label: string; href: string; badge: number; key: string };
-type Item = { label: string; href: string; icon: Icon; need: Need; badge?: number; children?: Child[] };
+type Tab = { label: string; href: string; need: Need; badge?: number };
+/** Une entrée du menu peut regrouper plusieurs pages voisines (`tabs`) : une seule ligne dans le menu, un sélecteur en haut de page. */
+type Item = { label: string; href: string; icon: Icon; need: Need; badge?: number; tabs?: Tab[] };
 type Group = { title?: string; items: Item[] };
 export type SupportBadges = { all: number; byCategory: Record<SupportCategory, number> };
 
@@ -29,40 +30,81 @@ function groups(support: SupportBadges, pending: number, quotes: number): Group[
       items: [
         {
           icon: Lifebuoy,
-          label: "Support",
+          label: "Demandes",
           href: "/admin/support",
-          need: "support",
-          badge: support.all,
-          // Pas de sous-menu : les catégories se choisissent sur la page Support (pastilles de filtre).
+          need: "any",
+          tabs: [
+            { label: "Support", href: "/admin/support", need: "support", badge: support.all },
+            { label: "Accès", href: "/admin/acces", need: "access", badge: pending },
+            { label: "Devis", href: "/admin/devis", need: "access", badge: quotes },
+          ],
         },
-        { icon: Key, label: "Demandes d'accès", href: "/admin/acces", need: "access", badge: pending },
-        { icon: Tag, label: "Demandes de devis", href: "/admin/devis", need: "access", badge: quotes },
-        { icon: Users, label: "Comptes", href: "/admin/comptes", need: "accounts" },
-        { icon: UsersThree, label: "Comptes gérés", href: "/admin/comptes-geres", need: "accounts" },
-        { icon: UsersThree, label: "Partenaires", href: "/admin/partenaires", need: "partners" },
-        { icon: Radio, label: "Chaînes accueil", href: "/admin/chaines", need: "partners" },
-        { icon: Tag, label: "Sponsors", href: "/admin/sponsors", need: "partners" },
-        { icon: ShareNetwork, label: "Affiliés", href: "/admin/affilies", need: "partners" },
-        { icon: Key, label: "Codes Encodeur", href: "/admin/encodeurs", need: "accounts" },
+        {
+          icon: Users,
+          label: "Comptes",
+          href: "/admin/comptes",
+          need: "any",
+          tabs: [
+            { label: "Comptes", href: "/admin/comptes", need: "accounts" },
+            { label: "Comptes gérés", href: "/admin/comptes-geres", need: "accounts" },
+            { label: "Codes Encodeur", href: "/admin/encodeurs", need: "accounts" },
+          ],
+        },
+        {
+          icon: UsersThree,
+          label: "Partenariats",
+          href: "/admin/partenaires",
+          need: "any",
+          tabs: [
+            { label: "Partenaires", href: "/admin/partenaires", need: "partners" },
+            { label: "Chaînes accueil", href: "/admin/chaines", need: "partners" },
+            { label: "Sponsors", href: "/admin/sponsors", need: "partners" },
+            { label: "Affiliés", href: "/admin/affilies", need: "partners" },
+          ],
+        },
       ],
     },
     {
       title: "Plateforme",
       items: [
-        { icon: Radio, label: "Relais", href: "/admin/relais", need: "relays" },
-        { icon: MapTrifold, label: "Carte", href: "/admin/carte", need: "relays" },
-        { icon: Tag, label: "Versions", href: "/admin/versions", need: "versions" },
-        { icon: Bell, label: "Notifications", href: "/admin/notifications", need: "notifications" },
-        { icon: Robot, label: "Discord", href: "/admin/discord", need: "discord" },
+        {
+          icon: Radio,
+          label: "Relais",
+          href: "/admin/relais",
+          need: "any",
+          tabs: [
+            { label: "Relais", href: "/admin/relais", need: "relays" },
+            { label: "Carte", href: "/admin/carte", need: "relays" },
+          ],
+        },
+        {
+          icon: Bell,
+          label: "Publication",
+          href: "/admin/versions",
+          need: "any",
+          tabs: [
+            { label: "Versions", href: "/admin/versions", need: "versions" },
+            { label: "Notifications", href: "/admin/notifications", need: "notifications" },
+            { label: "Discord", href: "/admin/discord", need: "discord" },
+          ],
+        },
       ],
     },
     { title: "Finances", items: [{ icon: ChartLineUp, label: "Revenus", href: "/admin/revenus", need: "revenue" }] },
     {
       title: "Sécurité",
       items: [
-        { icon: ShieldWarning, label: "Alertes", href: "/admin/securite", need: "security" },
-        { icon: Bug, label: "Erreurs", href: "/admin/erreurs", need: "security" },
-        { icon: ClockCounterClockwise, label: "Journal", href: "/admin/journal", need: "journal" },
+        {
+          icon: ShieldWarning,
+          label: "Sécurité",
+          href: "/admin/securite",
+          need: "any",
+          tabs: [
+            { label: "Alertes", href: "/admin/securite", need: "security" },
+            { label: "Erreurs", href: "/admin/erreurs", need: "security" },
+            { label: "Journal", href: "/admin/journal", need: "journal" },
+          ],
+        },
       ],
     },
     { title: "Équipe", items: [{ icon: Globe, label: "Équipe", href: "/admin/equipe", need: "any" }] },
@@ -73,7 +115,6 @@ export type AdminShellProps = { support: SupportBadges; pendingAccess: number; n
 
 export default function AdminShell({ support, pendingAccess, newQuotes = 0, name, role, permissions, full, children }: AdminShellProps) {
   const path = usePathname();
-  const category = useSearchParams().get("categorie");
   const [drawer, setDrawer] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setDrawer(false), 0);
@@ -90,12 +131,22 @@ export default function AdminShell({ support, pendingAccess, newQuotes = 0, name
   if (path === "/admin/2fa") return <>{children}</>;
 
   const allowed = (n: Need) => n === "any" || full || (n !== "full" && permissions.includes(n));
+  // Une entrée à onglets garde seulement les onglets permis ; son lien mène au premier, son badge cumule les leurs.
   const all = groups(support, pendingAccess, newQuotes)
-    .map((g) => ({ ...g, items: g.items.filter((i) => allowed(i.need)) }))
+    .map((g) => ({
+      ...g,
+      items: g.items
+        .map((i) => {
+          if (!i.tabs) return i;
+          const tabs = i.tabs.filter((t) => allowed(t.need));
+          return { ...i, tabs, href: tabs[0]?.href ?? i.href, badge: tabs.reduce((n, t) => n + (t.badge ?? 0), 0) };
+        })
+        .filter((i) => (i.tabs ? i.tabs.length > 0 : allowed(i.need))),
+    }))
     .filter((g) => g.items.length > 0);
   const flat = all.flatMap((g) => g.items);
-  const onSupport = path === "/admin/support" || path.startsWith("/admin/support/");
-  const active = (href: string) => (href === "/admin" ? path === "/admin" : path === href || path.startsWith(`${href}/`));
+  const isOn = (href: string) => (href === "/admin" ? path === "/admin" : path === href || path.startsWith(`${href}/`));
+  const active = (it: Item) => (it.tabs ? it.tabs.some((t) => isOn(t.href)) : isOn(it.href));
   const meta = ROLE_META[role];
 
   // Barre du bas (téléphone) : les trois entrées les plus utiles de CE membre, puis le menu.
@@ -107,7 +158,8 @@ export default function AdminShell({ support, pendingAccess, newQuotes = 0, name
       {meta.short}
     </span>
   );
-  const current = [...flat].sort((a, b) => b.href.length - a.href.length).find((i) => active(i.href));
+  const current = flat.find((i) => active(i));
+  const currentTab = current?.tabs?.find((t) => isOn(t.href));
   const section = all.find((g) => g.items.some((i) => i === current))?.title;
 
   const navList = (compact: boolean) => (
@@ -117,7 +169,7 @@ export default function AdminShell({ support, pendingAccess, newQuotes = 0, name
           {g.title && <p className="px-3 pb-2 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-faint">{g.title}</p>}
           <ul className="space-y-0.5">
             {g.items.map((it) => {
-              const on = active(it.href);
+              const on = active(it);
               const Icon = it.icon;
               return (
                 <li key={it.href}>
@@ -130,25 +182,6 @@ export default function AdminShell({ support, pendingAccess, newQuotes = 0, name
                     <span className="flex-1">{it.label}</span>
                     {!!it.badge && <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold tabular-nums text-on-accent">{it.badge}</span>}
                   </Link>
-                  {it.children && (
-                    <ul aria-label="Catégories du support" className="ml-[1.65rem] mt-1 space-y-0.5 pl-3">
-                      {it.children.map((c) => {
-                        const here = onSupport && (c.key === "tous" ? !category : category === c.key);
-                        return (
-                          <li key={c.key}>
-                            <Link
-                              href={c.href}
-                              aria-current={here && path === "/admin/support" ? "page" : undefined}
-                              className={`flex items-center justify-between gap-2 rounded-lg px-2.5 text-[13px] transition-colors ${compact ? "min-h-11" : "py-1.5"} ${here ? "adm-nav-on font-semibold" : "text-muted hover:bg-foreground/[0.05] hover:text-foreground"}`}
-                            >
-                              <span className="truncate">{c.label}</span>
-                              {c.badge > 0 && <span className="rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-on-accent">{c.badge}</span>}
-                            </Link>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
                 </li>
               );
             })}
@@ -194,7 +227,7 @@ export default function AdminShell({ support, pendingAccess, newQuotes = 0, name
         <div className="sticky top-0 z-30 hidden h-14 items-center justify-between gap-4 bg-background/90 px-8 backdrop-blur-md lg:flex">
           <p className="truncate font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
             Admin{section ? ` / ${section}` : ""}
-            {current ? <span className="text-foreground"> / {current.label}</span> : null}
+            {current ? <span className="text-foreground"> / {currentTab && currentTab.label !== current.label ? `${current.label} / ${currentTab.label}` : current.label}</span> : null}
           </p>
           <div className="flex min-w-0 items-center gap-3">
             <span className="truncate text-xs text-muted" data-sensitive>{name}</span>
@@ -211,6 +244,23 @@ export default function AdminShell({ support, pendingAccess, newQuotes = 0, name
           {roleChip}
         </header>
 
+        {current?.tabs && current.tabs.length > 1 && (
+          <nav aria-label={current.label} className="mx-auto w-full max-w-[1280px] overflow-x-auto px-4 pt-6 sm:px-8 sm:pt-8">
+            <ul className="flex w-max gap-1 rounded-full bg-[var(--adm-step-1)] p-1">
+              {current.tabs.map((t) => {
+                const on = isOn(t.href);
+                return (
+                  <li key={t.href}>
+                    <Link href={t.href} aria-current={on ? "page" : undefined} className={`flex min-h-9 items-center gap-2 whitespace-nowrap rounded-full px-4 text-sm transition-colors ${on ? "bg-foreground font-semibold text-background" : "text-muted hover:text-foreground"}`}>
+                      {t.label}
+                      {!!t.badge && <span className={`rounded-full px-1.5 text-[11px] font-semibold tabular-nums ${on ? "bg-background/20" : "bg-foreground/10 text-foreground"}`}>{t.badge}</span>}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        )}
         <main id="contenu" className="relative pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0">{children}</main>
       </div>
 
@@ -233,7 +283,7 @@ export default function AdminShell({ support, pendingAccess, newQuotes = 0, name
       <nav aria-label="Navigation rapide admin" className="fixed inset-x-0 bottom-0 z-40 bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden">
         <ul className={`mx-auto grid max-w-lg gap-1 px-2 pt-1.5 ${tabs.length === 3 ? "grid-cols-4" : tabs.length === 2 ? "grid-cols-3" : tabs.length === 1 ? "grid-cols-2" : "grid-cols-1"}`}>
           {tabs.map((t) => {
-            const on = active(t.href);
+            const on = active(t);
             const Icon = t.icon;
             return (
               <li key={t.href}>

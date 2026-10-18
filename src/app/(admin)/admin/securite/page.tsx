@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import BanForm from "@/components/admin/BanForm";
-import { ArrowLink, DashHeader, DashPage, Tile, TileLabel } from "@/components/admin/kit";
+import { DashHeader, DashPage, Tile, TileLabel } from "@/components/admin/kit";
 import { requireAdmin } from "@/lib/admin";
 import { getSecurity, hasCore, type SecurityEvent } from "@/lib/core";
 import { unbanAction } from "./actions";
@@ -68,9 +68,7 @@ export default async function AdminSecuritePage({ searchParams }: { searchParams
 
   return (
     <DashPage>
-      <DashHeader kicker="Sécurité" lead="Sécurité" sub="Connexions refusées sur les relais SRT, SRTLA, RTMP et Cam. 10 refus en 1 minute bannissent une IP 15 minutes.">
-        <ArrowLink href="/admin/comptes">Comptes</ArrowLink>
-      </DashHeader>
+      <DashHeader kicker="Sécurité" lead="Sécurité" sub="Connexions refusées sur les relais. 10 refus en 1 minute bannissent une IP 15 minutes." />
       {down ? (
         <p className="text-sm text-muted">Le Core ne répond pas, ou n&apos;a pas encore la page Sécurité. Réessaie après sa mise à jour.</p>
       ) : (
@@ -117,14 +115,12 @@ export default async function AdminSecuritePage({ searchParams }: { searchParams
               <p className="mt-4 text-sm text-muted">Aucune tentative refusée pour l&apos;instant.</p>
             ) : (
               <div className="mt-4 overflow-x-auto">
-                <table className="w-full min-w-[720px] text-left text-sm">
+                <table className="w-full min-w-[560px] text-left text-sm">
                   <thead className="text-xs text-muted">
                     <tr>
                       <th className="py-2 pr-4 font-normal">Date</th>
                       <th className="py-2 pr-4 font-normal">Événement</th>
-                      <th className="py-2 pr-4 font-normal">Protocole</th>
                       <th className="py-2 pr-4 font-normal">IP / pays</th>
-                      <th className="py-2 pr-4 font-normal">Relais visé</th>
                       <th className="py-2 pr-4 font-normal">Détail</th>
                       <th className="py-2 font-normal"><span className="sr-only">Action</span></th>
                     </tr>
@@ -133,13 +129,11 @@ export default async function AdminSecuritePage({ searchParams }: { searchParams
                     {events.map((e, i) => (
                       <tr key={`${e.at}-${i}`}>
                         <td className="whitespace-nowrap py-2 pr-4 font-mono text-xs text-muted">{when(e.at)}</td>
-                        <td className="whitespace-nowrap py-2 pr-4">{KIND[e.kind] ?? e.kind}</td>
-                        <td className="py-2 pr-4 font-mono text-xs uppercase">{e.protocol ?? ""}</td>
+                        <td className="whitespace-nowrap py-2 pr-4">{KIND[e.kind] ?? e.kind}{e.protocol && <span className="ml-2 font-mono text-xs uppercase text-muted">{e.protocol}</span>}</td>
                         <td className="whitespace-nowrap py-2 pr-4 font-mono text-xs">
                           {e.ip ?? (e.protocol === "srtla" ? "masquée (SRTLA)" : "")}
                           {e.country ? ` · ${e.country}` : ""}
                         </td>
-                        <td className="py-2 pr-4 font-mono text-xs text-muted">{e.relay_id ? e.relay_id.slice(0, 8) : ""}</td>
                         <td className="py-2 pr-4 text-xs text-muted">{detail(e)}</td>
                         <td className="py-2 text-right">
                           {e.ip && e.kind !== "banned" && e.kind !== "unbanned" && (

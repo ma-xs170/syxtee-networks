@@ -12,6 +12,8 @@ import { PASSWORD_MIN, passwordStrength, STRENGTH_LABEL } from "@/lib/auth/passw
 
 const RESEND_DELAY = 60;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+// Identifiant d'un compte géré (sans « @ »), même règle que src/lib/managed.ts.
+const LOGIN_RE = /^[a-z0-9][a-z0-9._-]{2,29}$/i;
 const IDLE: AuthState = { status: "idle" };
 
 
@@ -297,7 +299,7 @@ export function SignInCard({ next = "", error, email: prefill = "" }: { next?: s
           }
         />
         <div className="pt-1">
-          <Submit idle="Se connecter" busy="Connexion…" disabled={!EMAIL_RE.test(email.trim()) || !password} />
+          <Submit idle="Se connecter" busy="Connexion…" disabled={!(EMAIL_RE.test(email.trim()) || LOGIN_RE.test(email.trim())) || !password} />
         </div>
       </form>
 

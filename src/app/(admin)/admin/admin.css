@@ -45,11 +45,15 @@ html .adm h2 { letter-spacing: -0.02em; }
 .adm tbody td { border-top: 1px solid color-mix(in srgb, var(--foreground) 7%, transparent); }
 .adm tbody tr:first-child td { border-top-color: transparent; }
 
-/* Champs : plats, un pas de ton, pleine hauteur de touche. */
-.adm :is(input:not([type="checkbox"], [type="radio"]), select, textarea) {
-  background-color: var(--adm-step-2);
-  border-color: transparent;
+/* Champs : fond plein un cran au-dessus du fond, texte plein, contour fin visible (jamais blanc sur blanc). */
+.adm :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]), select, textarea) {
+  background-color: var(--surface-2);
+  color: var(--foreground);
+  border: 1px solid var(--line-strong);
+  color-scheme: dark;
 }
+.adm :is(input, textarea)::placeholder { color: var(--muted); opacity: 1; }
+.adm select option { background-color: var(--surface-2); color: var(--foreground); }
 .adm :is(input, select, textarea):focus-visible { outline: 2px solid var(--foreground); outline-offset: 1px; }
 
 /* Rangée de chiffres (vue d'ensemble) */

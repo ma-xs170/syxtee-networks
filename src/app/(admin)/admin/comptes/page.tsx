@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Admin · Comptes", robots: { index: 
 // Réservée à l'admin (404 sinon, TOTP obligatoire). Un ID support exact ouvre directement la fiche.
 
 const PER_PAGE = 50;
-const field = "h-11 rounded-full border border-transparent px-5 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60";
+const field = "h-11 rounded-full px-5 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/60";
 const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit", timeZone: "Europe/Paris" }) : "jamais");
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
 

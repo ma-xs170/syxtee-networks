@@ -15,7 +15,7 @@ import { renews } from "@/lib/billing";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 import { hasCore, listRelays, type RelayView } from "@/lib/core";
-import { CreateRelayForm, DeleteForm, IdentityForm, KeysForms, NoteForm, RelayRow, ResetLinkForm, SetPasswordForm, SuspendForm } from "../AdminForms";
+import { CreateRelayForm, DeleteForm, IdentityForm, KeysForms, NoteForm, RelayRow, ResetLinkForm, SetPasswordForm, SuspendForm, VerificationLinkForm } from "../AdminForms";
 import PlanForms from "../PlanForms";
 
 export const metadata: Metadata = { title: "Admin · Compte", robots: { index: false } };
@@ -235,6 +235,12 @@ export default async function AdminAccountPage({ params, searchParams }: { param
               <p className="mb-3 text-sm text-muted">Le client reçoit un e-mail avec un lien pour choisir lui-même son mot de passe.</p>
               <ResetLinkForm userId={id} />
             </div>
+            {!u.user.email_confirmed_at && (
+              <div>
+                <p className="mb-3 text-sm text-muted">L&apos;adresse n&apos;est pas vérifiée : le client reçoit un nouvel e-mail de vérification.</p>
+                <VerificationLinkForm userId={id} />
+              </div>
+            )}
             <div>
               <p className="mb-3 text-sm text-muted">Tu choisis le mot de passe. Le client est prévenu par e-mail.</p>
               <SetPasswordForm userId={id} />

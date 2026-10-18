@@ -5,7 +5,7 @@ import { useFormStatus } from "react-dom";
 import { ingestUrl } from "@/components/relais/RelayActions";
 import type { RelayView } from "@/lib/core";
 import { RELAY_SERVERS } from "@/lib/relay-servers";
-import { addNoteAction, adminCreateRelayAction, adminRelayAction, cutRelayAction, deleteAccountAction, keysAction, sendResetLinkAction, setPasswordAction, suspendAction, updateIdentityAction, type PlanState } from "./actions";
+import { addNoteAction, adminCreateRelayAction, adminRelayAction, cutRelayAction, deleteAccountAction, keysAction, sendResetLinkAction, sendVerificationLinkAction, setPasswordAction, suspendAction, updateIdentityAction, type PlanState } from "./actions";
 
 type Action = (prev: PlanState, form: FormData) => Promise<PlanState>;
 
@@ -248,6 +248,14 @@ export function ResetLinkForm({ userId }: { userId: string }) {
   return (
     <ActionForm action={sendResetLinkAction} userId={userId} confirm="Envoyer un lien de réinitialisation à ce client ?">
       <Button>Envoyer un lien de réinitialisation</Button>
+    </ActionForm>
+  );
+}
+
+export function VerificationLinkForm({ userId }: { userId: string }) {
+  return (
+    <ActionForm action={sendVerificationLinkAction} userId={userId} confirm="Renvoyer l'e-mail de vérification à ce client ?">
+      <Button>Renvoyer l&apos;e-mail de vérification</Button>
     </ActionForm>
   );
 }

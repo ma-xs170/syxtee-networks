@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin";
-import { passwordChanged, resetPassword, staffMessage } from "@/emails/templates";
+import { passwordChanged, resetPassword, staffMessage, verifyEmail } from "@/emails/templates";
 import { passwordProblem } from "@/lib/auth/password";
 import { sendEmailResult } from "@/lib/email/send";
 import { addMessage } from "@/lib/support";
@@ -295,6 +295,31 @@ export async function sendResetLinkAction(_prev: PlanState, form: FormData): Pro
   const sent = await sendEmailResult(email, resetPassword({ url }));
   await audit(admin.email!, "account.reset_link", userId.data, null, null);
   return sent.ok ? { ok: `Lien envoyé à ${email}. Il est valable 1 h.` } : { error: `E-mail non envoyé : ${sent.reason}` };
+}
+
+/** Renvoie l'e-mail de vérification d'adresse (lien valable 24 h). Le lien garde l'invitation demandée à l'inscription (user_metadata.next). */
+export async function sendVerificationLinkAction(_prev: PlanState, form: FormData): Promise<PlanState> {
+  const admin = await requireAdmin("accounts");
+  const userId = uid.safeParse(form.get("userId"));
+  if (!userId.success) return { error: "Requête invalide." };
+  const db = createAdminClient();
+  const { data: u } = await db.auth.admin.getUserById(userId.data);
+  const email = u.user?.email;
+  if (!email) return { error: "Compte introuvable." };
+  if (u.user?.email_confirmed_at) return { error: "Cette adresse est déjà vérifiée." };
+  const { data, error } = await db.auth.admin.generateLink({ type: "magiclink", email });
+  const hashed = data?.properties?.hashed_token;
+  if (error || !hashed) {
+    console.error("sendVerificationLinkAction", error?.message);
+    return { error: "Impossible de créer le lien." };
+  }
+  const saved = u.user?.user_metadata?.next;
+  const next = typeof saved === "string" && saved.startsWith("/") && !saved.startsWith("//") && !saved.startsWith("/\\") ? `&next=${encodeURIComponent(saved)}` : "";
+  const url = `${site.url}/auth/confirm?token_hash=${encodeURIComponent(hashed)}&type=magiclink${next}`;
+  const first = typeof u.user?.user_metadata?.first_name === "string" ? u.user.user_metadata.first_name : null;
+  const sent = await sendEmailResult(email, verifyEmail({ url, firstName: first }));
+  await audit(admin.email!, "account.verification_link", userId.data, null, null);
+  return sent.ok ? { ok: `E-mail de vérification envoyé à ${email}.` } : { error: `E-mail non envoyé : ${sent.reason}` };
 }
 
 /** Définit un nouveau mot de passe pour le client, puis le prévient par e-mail (sans lui envoyer le mot de passe). */

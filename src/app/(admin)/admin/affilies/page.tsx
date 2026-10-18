@@ -19,7 +19,7 @@ export default async function AdminAffiliesPage() {
   const rows = (data ?? []) as Affiliate[];
   return (
     <DashPage>
-      <DashHeader lead="Affiliés" hl="Liste" sub="Invite un streamer : il reçoit son lien à partager et le kit par e-mail, et retrouve tout dans l'espace « Affilié » de son dashboard." />
+      <DashHeader kicker="Clients" lead="Affiliés" hl="Liste" sub="Invite un streamer : il reçoit son lien à partager et le kit par e-mail, et retrouve tout dans l'espace « Affilié » de son dashboard." />
       <Tile className="mb-6">
         <TileLabel>Envoyer une invitation</TileLabel>
         <div className="mt-4"><InviteAffiliate /></div>

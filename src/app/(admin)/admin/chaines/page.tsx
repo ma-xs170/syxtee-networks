@@ -17,7 +17,7 @@ export default async function AdminChainesPage() {
   const rows = (data ?? []) as Row[];
   return (
     <DashPage>
-      <DashHeader lead="Admin" hl="Chaînes" sub="Les chaînes ajoutées ici s'affichent sur la page principale, sous « Ils streament avec SYXTEE. »." />
+      <DashHeader kicker="Clients" lead="Chaînes" sub="Les chaînes ajoutées ici s'affichent sur la page principale, sous « Ils streament avec SYXTEE. »." />
       <Tile className="mb-6">
         <TileLabel>Ajouter une chaîne</TileLabel>
         <div className="mt-4"><AddChannel /></div>

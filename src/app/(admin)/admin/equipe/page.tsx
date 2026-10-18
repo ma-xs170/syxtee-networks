@@ -32,7 +32,7 @@ export default async function AdminTeamPage() {
   const rows: InviteRow[] = invites.map((i) => ({ id: i.id, email: i.email, role: i.role, daysLeft: Math.max(0, Math.ceil((Date.parse(i.expiresAt) - now) / 86400_000)) }));
   return (
     <DashPage>
-      <DashHeader lead="Équipe" hl="SYXTEE" sub={access.owner ? "Tu invites, tu choisis les rôles et ce que chacun a le droit de faire." : "Les membres de l'équipe et leur présence."} />
+      <DashHeader kicker="Équipe" lead="Équipe" hl="SYXTEE" sub={access.owner ? "Tu invites, tu choisis les rôles et ce que chacun a le droit de faire." : "Les membres de l'équipe et leur présence."} />
       <TeamUI members={members} invites={rows} canManage={access.owner} />
     </DashPage>
   );

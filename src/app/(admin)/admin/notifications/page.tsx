@@ -20,7 +20,7 @@ export default async function AdminNotificationsPage() {
 
   return (
     <DashPage>
-      <DashHeader lead="Admin" hl="Notifications" sub="Apparaissent dans la cloche du dashboard de chaque destinataire." />
+      <DashHeader kicker="Plateforme" lead="Notifications" sub="Apparaissent dans la cloche du dashboard de chaque destinataire." />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Tile>
           <TileLabel>Nouvelle notification</TileLabel>

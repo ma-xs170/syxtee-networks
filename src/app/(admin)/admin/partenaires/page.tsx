@@ -29,7 +29,7 @@ export default async function AdminPartenairesPage() {
 
   return (
     <DashPage>
-      <DashHeader lead="Admin" hl="Partenaires" sub={`${rows.length} compte${rows.length > 1 ? "s" : ""} en formule Partenaire.`}>
+      <DashHeader kicker="Clients" lead="Partenaires" sub={`${rows.length} compte${rows.length > 1 ? "s" : ""} en formule Partenaire.`}>
         <ArrowLink href="/admin/comptes">Comptes</ArrowLink>
       </DashHeader>
       <Tile>

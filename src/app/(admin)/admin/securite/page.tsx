@@ -68,7 +68,7 @@ export default async function AdminSecuritePage({ searchParams }: { searchParams
 
   return (
     <DashPage>
-      <DashHeader lead="Admin" hl="Sécurité" sub="Connexions refusées sur les relais SRT, SRTLA, RTMP et Cam. 10 refus en 1 minute bannissent une IP 15 minutes.">
+      <DashHeader kicker="Sécurité" lead="Sécurité" sub="Connexions refusées sur les relais SRT, SRTLA, RTMP et Cam. 10 refus en 1 minute bannissent une IP 15 minutes.">
         <ArrowLink href="/admin/comptes">Comptes</ArrowLink>
       </DashHeader>
       {down ? (

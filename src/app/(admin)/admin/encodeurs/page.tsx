@@ -19,7 +19,7 @@ export default async function AdminEncodeursPage({ searchParams }: { searchParam
   const { rows, page, pages, total } = pageOf(every, pageParam((await searchParams).p));
   return (
     <DashPage>
-      <DashHeader lead="Codes" hl="d'activation" sub={`${total} code${total > 1 ? "s" : ""}, dont ${used} utilisé${used > 1 ? "s" : ""}.`} />
+      <DashHeader kicker="Clients" lead="Codes" hl="d'activation" sub={`${total} code${total > 1 ? "s" : ""}, dont ${used} utilisé${used > 1 ? "s" : ""}.`} />
       <div className="grid gap-4">
         <Tile>
           <TileLabel>Générer des codes</TileLabel>

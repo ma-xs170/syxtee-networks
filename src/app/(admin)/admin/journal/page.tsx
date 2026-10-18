@@ -37,7 +37,7 @@ export default async function AdminJournalPage({ searchParams }: { searchParams:
 
   return (
     <DashPage>
-      <DashHeader lead="Journal" hl="d'audit" sub="Chaque action admin : date, admin, cible, avant et après. Lecture seule." />
+      <DashHeader kicker="Sécurité" lead="Journal" hl="d'audit" sub="Chaque action admin : date, admin, cible, avant et après. Lecture seule." />
       <form method="get" className="mb-4 flex flex-wrap items-end gap-3">
         <label className="grid gap-1.5">
           <span className="text-xs text-muted">Action</span>

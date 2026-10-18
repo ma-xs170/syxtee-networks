@@ -32,7 +32,7 @@ export default async function AdminDiscordPage() {
 
   return (
     <DashPage>
-      <DashHeader lead="Admin" hl="Discord" sub="Panel du bot : annonces, statut, alertes de panne et état des services du serveur Discord SYXTEE." />
+      <DashHeader kicker="Plateforme" lead="Discord" sub="Panel du bot : annonces, statut, alertes de panne et état des services du serveur Discord SYXTEE." />
       {!status ? (
         <p className="text-sm text-muted">Le bot ne répond pas{problem ? ` (${problem})` : ""}. Vérifie qu&apos;il tourne sur le VPS : <span className="font-mono">docker compose logs bot</span>.</p>
       ) : (

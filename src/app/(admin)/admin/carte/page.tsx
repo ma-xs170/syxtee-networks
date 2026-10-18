@@ -22,7 +22,7 @@ export default async function AdminCartePage() {
 
   return (
     <DashPage>
-      <DashHeader lead="Carte" hl="communautaire" sub="Contributeurs des 30 derniers jours. Une série suspecte (beaucoup de mesures sur peu d'hexagones) se modère ici." />
+      <DashHeader kicker="Plateforme" lead="Carte" hl="communautaire" sub="Contributeurs des 30 derniers jours. Une série suspecte (beaucoup de mesures sur peu d'hexagones) se modère ici." />
       <Tile>
         {rows.length === 0 ? (
           <p className="text-sm text-muted">Aucune mesure sur 30 jours.</p>

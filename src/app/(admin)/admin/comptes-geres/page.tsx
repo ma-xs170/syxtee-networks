@@ -39,7 +39,7 @@ export default async function ManagedPage() {
   }
   return (
     <DashPage>
-      <DashHeader lead="Comptes" hl="gérés" sub="Crée un compte avec identifiant et mot de passe, à durée indéfinie ou qui se supprime tout seul." />
+      <DashHeader kicker="Clients" lead="Comptes" hl="gérés" sub="Crée un compte avec identifiant et mot de passe, à durée indéfinie ou qui se supprime tout seul." />
       <ManagedUI rows={rows} loginUrl="/connexion" />
     </DashPage>
   );

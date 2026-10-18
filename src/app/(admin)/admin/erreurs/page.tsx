@@ -23,7 +23,7 @@ export default async function AdminErreursPage() {
 
   return (
     <DashPage>
-      <DashHeader lead="Erreurs" hl="du site" sub="Chaque erreur distincte avec son nombre d'occurrences. 30 jours gardés. Le code est celui affiché au visiteur." />
+      <DashHeader kicker="Sécurité" lead="Erreurs" hl="du site" sub="Chaque erreur distincte avec son nombre d'occurrences. 30 jours gardés. Le code est celui affiché au visiteur." />
       <Tile>
         {failed ? (
           <p className="text-sm text-bad">Table error_logs introuvable : applique la migration 0054_garde_fous.sql.</p>

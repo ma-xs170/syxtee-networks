@@ -6,6 +6,7 @@ import ChatAccounts from "@/components/auth/ChatAccounts";
 import ProfileForm from "@/components/auth/ProfileForm";
 import { ConsentToggle, EraseCoverage, PrivateZones, type PrivateZone } from "@/components/dashboard/CoverageSettings";
 import LinkDevices from "@/components/dashboard/LinkDevices";
+import PlanPicker from "@/components/dashboard/PlanPicker";
 import LowDataToggle from "@/components/dashboard/LowDataToggle";
 import StreamModeToggle from "@/components/dashboard/StreamModeToggle";
 import { Column, DkTabs, ListRow, Section, StatusBadge } from "@/components/dashboard/kit";
@@ -14,6 +15,7 @@ import { ToastProvider } from "@/components/ui/Toast";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { authErrorMessage } from "@/lib/auth/errors";
 import { getPlan } from "@/lib/auth/plan";
+import { canSubscribe } from "@/lib/billing";
 import { publicCoreUrl } from "@/lib/core";
 import { LOW_DATA_COOKIE } from "@/lib/low-data";
 import { FEATURES } from "@/lib/plans";
@@ -117,6 +119,7 @@ function Plateformes({ erreur }: { erreur: string | null }) {
 
 async function Formule() {
   const plan = await getPlan();
+  const profile = await getProfile();
   const lim = (n: number, one: string, many: string) => (Number.isFinite(n) ? `${n} ${n > 1 ? many : one}` : `${many} illimités`);
   const included = [lim(plan.maxRelays, "serveur", "serveurs"), lim(plan.maxConcurrentStreams, "flux simultané", "flux simultanés"), ...plan.features.map((f) => FEATURES[f])];
   return (
@@ -128,9 +131,16 @@ async function Formule() {
         </ul>
         <div className="mt-5 flex flex-wrap gap-3">
           <ManageButton />
-          <Link href="/tarifs" className="dk-btn dk-btn-secondary">Voir les formules</Link>
+          {profile && canSubscribe(profile) && <a href="#formules" className="dk-btn dk-btn-secondary">Voir les formules</a>}
         </div>
       </Section>
+      {profile && canSubscribe(profile) && (
+        <div id="formules" className="scroll-mt-24">
+          <Section title="Choisir une formule" text="Paiement sécurisé par Stripe. Sans engagement : tu peux annuler quand tu veux.">
+            <PlanPicker />
+          </Section>
+        </div>
+      )}
       <Section title="Limites">
         <UsageTab />
       </Section>

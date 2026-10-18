@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DashPage } from "@/components/admin/kit";
+import { DashHeader, DashPage } from "@/components/admin/kit";
 import Pager, { pageOf, pageParam } from "@/components/dashboard/Pager";
 import { requireStaff } from "@/lib/admin";
 import { staffCards } from "@/lib/staff-data";
@@ -35,7 +35,7 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
 
   return (
     <DashPage>
-      <h1 className="h-page mb-6">Support</h1>
+      <DashHeader kicker="Clients" lead="Support" sub={`${count("attente")} demande${count("attente") > 1 ? "s" : ""} à répondre`} />
       <nav aria-label="Catégories" className="mb-6 flex flex-wrap gap-2">
         {[{ id: null as string | null, label: "Toutes" }, ...SUPPORT_CATEGORIES].map((c) => {
           const on = (cat ?? null) === c.id;
@@ -48,13 +48,13 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
           );
         })}
       </nav>
-      <nav aria-label="Filtrer" className="mb-6 flex gap-6 border-b border-line">
+      <nav aria-label="Filtrer" className="mb-8 flex gap-8 border-b border-foreground/10">
         {TABS.map((t) => (
           <Link
             key={t.id}
             href={`/admin/support${qs(t.id === "attente" ? "" : t.id)}`}
             aria-current={t.id === tab.id ? "page" : undefined}
-            className={`-mb-px border-b-2 pb-3 text-sm transition-colors ${t.id === tab.id ? "border-accent text-foreground" : "border-transparent text-muted hover:text-foreground"}`}
+            className={`-mb-px border-b-2 pb-3 text-sm transition-colors ${t.id === tab.id ? "border-foreground text-foreground" : "border-transparent text-muted hover:text-foreground"}`}
           >
             {t.label}
             <span className="ml-2 tabular-nums text-muted">{count(t.id)}</span>
@@ -62,12 +62,12 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
         ))}
       </nav>
       {rows.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-line p-10 text-center text-sm text-muted">Rien dans cette liste.</p>
+        <p className="tile p-12 text-center text-sm text-muted">Rien dans cette liste.</p>
       ) : (
         <ul className="divide-y divide-line overflow-hidden tile">
           {rows.map((t) => (
             <li key={t.id}>
-              <Link href={`/admin/support/${t.id}`} className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-foreground/[0.04]">
+              <Link href={`/admin/support/${t.id}`} className="flex items-center justify-between gap-4 px-6 py-5 transition-colors hover:bg-foreground/[0.05]">
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{t.subject}</span>
                   <span className="mt-1 block text-xs text-muted">

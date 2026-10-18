@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DashHeader, DashPage, Tile, TileLabel } from "@/components/admin/kit";
+import { DashHeader, DashPage, Figure, Tile, TileLabel } from "@/components/admin/kit";
 import { requireAdmin } from "@/lib/admin";
 import { CATALOG, TIERS, isTier, mrrCents, type Interval, type Tier } from "@/lib/billing";
 import { PLANS, type PlanId } from "@/lib/plans";
@@ -61,21 +61,18 @@ export default async function AdminRevenusPage() {
 
   return (
     <DashPage>
-      <DashHeader lead="Revenus" hl="du mois" sub={hasStripe ? undefined : "Stripe n'est pas encore configuré sur ce déploiement : aucun paiement ne peut arriver."} />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <DashHeader kicker="Finances" lead="Revenus" hl="du mois" sub={hasStripe ? undefined : "Stripe n'est pas encore configuré sur ce déploiement : aucun paiement ne peut arriver."} />
+      <div className="grid grid-cols-1 gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
         {[
           ["Chiffre d'affaires du mois", eur(revenue)],
           ["MRR", eur(mrrCents(subs))],
           ["Abonnés actifs", `${totalSubs}`],
           ["Paiement moyen (mois)", eur(thisMonth.length ? Math.round(revenue / thisMonth.length) : 0)],
         ].map(([label, v]) => (
-          <Tile key={label}>
-            <TileLabel>{label}</TileLabel>
-            <p className="mt-3 text-3xl font-semibold tabular-nums tracking-tight">{v}</p>
-          </Tile>
+          <Figure key={label} label={label} value={v} />
         ))}
       </div>
-      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1.5fr_1fr]">
+      <div className="mt-16 grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
         <Tile>
           <TileLabel>Historique mensuel</TileLabel>
           <div className="mt-6 grid h-40 grid-cols-12 items-end gap-2">
@@ -83,7 +80,7 @@ export default async function AdminRevenusPage() {
               const v = byMonth.get(m.key) ?? 0;
               return (
                 <div key={m.key} className="flex h-full flex-col justify-end gap-2 text-center" title={`${m.label} : ${eur(v)}`}>
-                  <div className="rounded-sm bg-foreground/20" style={{ height: v ? `${Math.max(2, (v / peak) * 100)}%` : "1px", opacity: v ? 1 : 0.3 }} />
+                  <div className="rounded-md bg-foreground" style={{ height: v ? `${Math.max(2, (v / peak) * 100)}%` : "1px", opacity: v ? 1 : 0.3 }} />
                   <span className="font-mono text-[10px] text-muted">{m.label}</span>
                 </div>
               );
@@ -111,14 +108,14 @@ export default async function AdminRevenusPage() {
           </dl>
         </Tile>
       </div>
-      <Tile className="mt-4">
+      <Tile className="mt-6">
         <TileLabel right={<a href="https://dashboard.stripe.com/payments" target="_blank" rel="noreferrer" className="text-xs text-muted underline underline-offset-4 hover:text-foreground">Stripe ↗</a>}>Derniers paiements</TileLabel>
         {!payments.length ? (
           <p className="mt-4 text-sm text-muted">Aucun paiement pour l&apos;instant.</p>
         ) : (
           <ul className="mt-4 grid gap-2">
             {payments.slice(0, 10).map((p) => (
-              <li key={p.invoice_id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line px-4 py-2.5 text-sm">
+              <li key={p.invoice_id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-foreground/[0.05] px-4 py-3 text-sm">
                 <span className="font-mono text-xs text-muted">{day(p.paid_at)}</span>
                 <span className="font-mono tabular-nums">{eur(p.amount_cents)}</span>
                 <span className="font-mono text-xs uppercase text-muted">{p.interval === "year" ? "annuel" : p.interval === "month" ? "mensuel" : "?"}</span>

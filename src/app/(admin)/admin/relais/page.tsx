@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DashHeader, DashPage, Tile } from "@/components/admin/kit";
+import { Avatar, Chip, DashHeader, DashPage, Tile } from "@/components/admin/kit";
 import Pager, { pageOf, pageParam } from "@/components/dashboard/Pager";
 import { requireAdmin } from "@/lib/admin";
 import { liveNow } from "@/lib/admin-data";
@@ -31,7 +31,7 @@ export default async function AdminRelaisPage({ searchParams }: { searchParams: 
 
   return (
     <DashPage>
-      <DashHeader lead="Tous les" hl="relais" sub={`${total} relais · ${live.length} en direct`}>
+      <DashHeader kicker="Plateforme" lead="Tous les" hl="relais" sub={`${total} relais · ${live.length} en direct`}>
         <Link href={archives === "1" ? "/admin/relais" : "/admin/relais?archives=1"} className="text-sm underline-offset-4 hover:underline">
           {archives === "1" ? "Masquer les archivés" : "Afficher les archivés"}
         </Link>
@@ -45,10 +45,11 @@ export default async function AdminRelaisPage({ searchParams }: { searchParams: 
               const p = who.get(r.user_id);
               const l = liveMap.get(r.id);
               return (
-                <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
-                  <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-                    {l ? <span className="h-2 w-2 rounded-full bg-live" aria-label="En direct" /> : <span className="h-2 w-2" aria-hidden="true" />}
+                <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-4 text-sm">
+                  <span className="flex min-w-0 items-center flex-wrap items-center gap-x-3 gap-y-1">
+                    <Avatar name={r.name} size={30} />
                     <span className="font-medium">{r.name}</span>
+                    {l && <Chip tone="live">En direct</Chip>}
                     <Link href={`/admin/comptes/${r.user_id}`} className="text-muted underline-offset-4 hover:underline">
                       {[p?.first_name, p?.last_name].filter(Boolean).join(" ") || p?.support_id || "compte"}
                     </Link>

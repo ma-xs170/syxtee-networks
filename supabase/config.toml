@@ -44,7 +44,7 @@ max_frequency = "60s"
 # aucun email d'inscription ne part). Projet de test : laisser false.
 [auth.hook.send_email]
 enabled = false
-uri = "https://syxtee-networks.vercel.app/api/auth/email-hook"
+uri = "https://www.syxtee-networks.fr/api/auth/email-hook"
 secrets = "env(SEND_EMAIL_HOOK_SECRET)"
 
 # Ancien modèle (SMTP), remplacé par le hook ci-dessus. Conservé pour mémoire.

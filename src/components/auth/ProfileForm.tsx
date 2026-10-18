@@ -97,7 +97,7 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
       )}
 
       <fieldset className="space-y-3">
-        <legend className="mb-3 text-sm font-medium text-foreground/80">{mode === "bienvenue" ? "Tes chaînes (au moins une)" : "Réseaux sociaux"}</legend>
+        <legend className="mb-3 text-sm font-medium text-foreground/80">{mode === "bienvenue" ? "Tes chaînes (facultatif)" : "Réseaux sociaux"}</legend>
         {verified ? (
           <div className="flex items-center gap-3">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-foreground/20 text-foreground/70" title="Twitch">
@@ -132,7 +132,7 @@ export default function ProfileForm({ profile, mode, next = "" }: { profile: Pro
         <span>
           <span className="block text-sm font-medium text-foreground">Afficher ma chaîne sur le site SYXTEE</span>
           <span className="mt-1 block text-xs leading-relaxed text-foreground/50">
-            Ta chaîne apparaît dans « Ils streament avec SYXTEE » sur l&apos;accueil, avec un lien vers twitch.tv/ton-pseudo. Tu peux décocher à tout moment.
+            Ta chaîne apparaît dans « Ils streament avec SYXTEE » sur l&apos;accueil, avec ton avatar et un lien vers ta chaîne Twitch ou YouTube (un seul pseudo suffit). Tu peux décocher à tout moment.
           </span>
         </span>
       </label>

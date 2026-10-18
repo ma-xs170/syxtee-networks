@@ -4,7 +4,7 @@ import type { HomeStreamer } from "@/lib/streamers";
 
 // Accueil : « Ils streament avec SYXTEE. » Deux rangées de cartes, une par chaîne (Twitch, Kick, YouTube : logo, avatar, @pseudo, lien) qui défilent
 // lentement en sens inverse, et s'arrêtent au survol. Données : comptes qui ont coché « Afficher ma chaîne » avec un
-// Twitch vérifié (public_streamers). Rien ne s'affiche tant qu'il n'y a aucun streamer. Immobile sous prefers-reduced-motion.
+// Twitch ou YouTube (public_streamers). Rien ne s'affiche tant qu'il n'y a aucun streamer. Immobile sous prefers-reduced-motion.
 
 function Avatar({ s }: { s: HomeStreamer }) {
   return s.avatar ? (
@@ -25,7 +25,7 @@ function Card({ c }: { c: Card }) {
       target="_blank"
       rel="noopener noreferrer"
       {...(c.dup ? { "aria-hidden": true, tabIndex: -1 } : {})}
-      className="mr-3 flex w-64 shrink-0 items-center gap-4 rounded-xl border border-line bg-surface px-5 py-4 transition-colors hover:border-line-strong hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground sm:w-72"
+      className="mr-3 flex w-64 shrink-0 items-center gap-4 rounded-xl border border-line bg-surface px-5 py-4 transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-line-strong hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground sm:w-72"
     >
       <Avatar s={s} />
       <span className="min-w-0">
@@ -66,7 +66,7 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
   if (streamers.length === 0) return null;
   const ranked = [...streamers].sort((a, b) => Number(!!b.live) - Number(!!a.live) || Number(b.partner) - Number(a.partner));
   // Une carte par chaîne vérifiée de chaque streamer.
-  const cards: Card[] = ranked.flatMap((s) => s.channels.filter((ch) => ch.platform === "twitch").map((ch) => ({ key: `${s.handle}-${ch.platform}`, s, platform: ch.platform, handle: ch.handle, url: ch.url })));
+  const cards: Card[] = ranked.flatMap((s) => s.channels.filter((ch) => ch.platform !== "kick").map((ch) => ({ key: `${s.handle}-${ch.platform}`, s, platform: ch.platform, handle: ch.handle, url: ch.url })));
   if (cards.length === 0) return null;
   // Toujours deux rangées en défilement, la première vers la gauche, la seconde vers la droite. La liste est répétée (copies masquées
   // aux lecteurs d'écran) jusqu'à remplir la largeur. Peu de chaînes : la seconde rangée reprend les mêmes, décalées d'un cran.

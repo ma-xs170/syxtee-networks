@@ -22,7 +22,7 @@ export default async function BienvenuePage({ searchParams }: PageProps<"/bienve
         <Image src="/logo-400.png" alt="SYXTEE" width={18} height={25} priority />
       </div>
       <h1 className="h-page mt-8 text-center">Bienvenue sur <em>SYXTEE</em></h1>
-      <p className="mt-3 text-center text-sm text-foreground/60">Choisis ta région et indique au moins une chaîne : Twitch ou YouTube. Tu pourras tout modifier plus tard.</p>
+      <p className="mt-3 text-center text-sm text-foreground/60">Choisis ta région. Ajouter une chaîne Twitch ou YouTube est facultatif, mais il en faut une pour figurer sur l’accueil. Tu pourras tout modifier plus tard.</p>
       {error && (
         <p role="alert" className="mt-4 text-center text-sm text-red-400/90">
           {error}

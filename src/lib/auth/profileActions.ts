@@ -28,12 +28,15 @@ export async function saveProfile(mode: "bienvenue" | "compte", _prev: FormState
 
   const profile = await getProfile();
   const values = parsed.data;
-  // La case n'a d'effet qu'avec un pseudo Twitch (saisi ici, ou lié par connexion) : sinon la chaîne n'apparaîtrait pas.
-  if (values.show_on_site && !(values.twitch || profile?.twitch_login || profile?.twitch_id)) return { error: "Indique ton pseudo Twitch pour afficher ta chaîne sur le site.", fields: raw };
+  // Aucun pseudo n'est obligatoire. Pour figurer sur l'accueil, il en faut au moins un : Twitch (saisi ou lié par connexion) OU YouTube.
+  const hasChannel = !!(values.twitch || profile?.twitch_login || profile?.twitch_id || values.youtube);
+  if (values.show_on_site && !hasChannel) {
+    // Inscription : la case est cochée d'office, on la décoche sans bloquer. Compte existant : on explique.
+    if (mode === "compte") return { error: "Pour afficher ta chaîne sur le site, indique un pseudo Twitch ou YouTube (un seul suffit).", fields: raw };
+    values.show_on_site = false;
+  }
   // Région obligatoire à l'inscription ; le fuseau doit appartenir au pays choisi.
   if (mode === "bienvenue" && !values.country) return { error: "Choisis ta région.", fields: raw };
-  // À l'inscription : au moins un pseudo, Twitch ou YouTube (le Twitch lié par connexion compte).
-  if (mode === "bienvenue" && !(values.twitch || profile?.twitch_login || values.youtube)) return { error: "Indique au moins un pseudo : Twitch ou YouTube.", fields: raw };
   const timezone = timezoneFor(values.country, String(formData.get("timezone") ?? ""));
 
   const supabase = await createClient();

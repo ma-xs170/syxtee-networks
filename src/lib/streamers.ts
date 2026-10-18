@@ -19,7 +19,7 @@ export type HomeStreamer = {
   channels: Channel[];
 };
 
-type Row = { username: string; first_name?: string | null; partner?: boolean | null; avatar_url: string | null; twitch_id: string | null; twitch_login: string; twitch_display_name: string | null; kick_name?: string | null; youtube_name?: string | null; youtube_id?: string | null; youtube_handle?: string | null };
+type Row = { username: string; first_name?: string | null; partner?: boolean | null; avatar_url: string | null; twitch_id: string | null; twitch_login: string | null; twitch_display_name: string | null; kick_name?: string | null; youtube_name?: string | null; youtube_id?: string | null; youtube_handle?: string | null };
 
 /** Lien de chaîne Twitch collé par l'équipe (twitch.tv/x, @x ou x) vers le pseudo. Les autres plateformes ne sont pas affichées. */
 export function parseChannelLink(input: string): { platform: "twitch"; login: string } | null {
@@ -73,16 +73,33 @@ export async function getHomeStreamers(): Promise<HomeStreamer[]> {
   } catch (e) {
     console.error("Twitch streams", e);
   }
-  const accounts = rows
-    .map((r) => ({
-      handle: r.twitch_display_name || r.twitch_login,
+  // Avatar de repli : photo Twitch quand le compte n'a pas de photo à lui.
+  const needAvatar = rows.flatMap((r) => (!r.avatar_url && r.twitch_login ? [r.twitch_login.toLowerCase()] : []));
+  let twitchUsers = new Map<string, { profile_image_url?: string }>();
+  try {
+    twitchUsers = await getTwitchUsersByLogin(needAvatar);
+  } catch (e) {
+    console.error("Twitch avatars", e);
+  }
+  const accounts = rows.flatMap((r) => {
+    const channels: Channel[] = [];
+    if (r.twitch_login) channels.push({ platform: "twitch", handle: r.twitch_display_name || r.twitch_login, url: `https://twitch.tv/${r.twitch_login}` });
+    // YouTube : pseudo saisi (@pseudo) en priorité, sinon la chaîne reliée au Multichat.
+    const yt = r.youtube_handle?.trim();
+    if (yt) channels.push({ platform: "youtube", handle: yt, url: `https://www.youtube.com/@${yt}` });
+    else if (r.youtube_id && r.youtube_name) channels.push({ platform: "youtube", handle: r.youtube_name, url: `https://www.youtube.com/channel/${r.youtube_id}` });
+    if (channels.length === 0) return [];
+    const main = channels[0];
+    return [{
+      handle: main.handle,
       firstName: r.first_name?.trim() || null,
       partner: r.partner === true,
-      url: `https://twitch.tv/${r.twitch_login}`,
-      avatar: r.avatar_url,
+      url: main.url,
+      avatar: r.avatar_url || (r.twitch_login ? twitchUsers.get(r.twitch_login.toLowerCase())?.profile_image_url ?? null : null),
       live: r.twitch_id && live.get(r.twitch_id) ? { viewers: live.get(r.twitch_id)!.viewers } : null,
-      channels: [{ platform: "twitch" as const, handle: r.twitch_display_name || r.twitch_login, url: `https://twitch.tv/${r.twitch_login}` }],
-    }));
+      channels,
+    } satisfies HomeStreamer];
+  });
   // Une chaîne déjà présente via un compte n'est pas répétée.
   const taken = new Set(accounts.flatMap((a) => a.channels.map((c) => `${c.platform}:${c.url.toLowerCase()}`)));
   const extra = featured.filter((f) => !taken.has(`${f.channels[0].platform}:${f.channels[0].url.toLowerCase()}`));

@@ -28,10 +28,7 @@ async function customerFor(user: { id: string; email?: string | null }, name: st
   return data?.stripe_customer_id ?? created.id;
 }
 
-type Opened = { error: string } | { url: string | null; clientSecret: string | null };
-
-/** Ouvre une session Checkout d'abonnement : page Stripe (`embedded` faux, app iOS) ou formulaire intégré au site (`embedded` vrai). */
-async function openSession(tier: Tier, interval: Interval, embedded: boolean): Promise<Opened> {
+export async function startCheckout(tier: Tier, interval: Interval): Promise<BillingState> {
   const user = await requireUser("/dashboard/abonnement");
   if (!hasStripe) return { error: "Le paiement n'est pas encore ouvert. Réessaie bientôt." };
   if (!isTier(tier) || (interval !== "month" && interval !== "year")) return { error: "Formule inconnue." };
@@ -40,6 +37,7 @@ async function openSession(tier: Tier, interval: Interval, embedded: boolean): P
   if (!canSubscribe(profile)) return { error: "Ton compte a déjà un abonnement ou une formule qui inclut tout." };
 
   const base = await origin();
+  let url: string | null;
   try {
     const name = [profile.first_name, profile.last_name].filter(Boolean).join(" ") || null;
     const customer = await customerFor(user, name, profile.stripe_customer_id);
@@ -49,8 +47,7 @@ async function openSession(tier: Tier, interval: Interval, embedded: boolean): P
       return { error: "Un abonnement est déjà en cours sur ton compte. Ouvre « Gérer l'abonnement » pour le modifier." };
     }
     // Double clic ou deux onglets : même clé d'idempotence pendant 30 min, Stripe renvoie alors la même session au lieu d'en créer une autre.
-    // Le mode (page Stripe ou intégré) fait partie de la clé : deux modes n'ont pas les mêmes paramètres.
-    const idempotencyKey = `checkout-${embedded ? "emb-" : ""}${user.id}-${tier}-${interval}-${Math.floor(Date.now() / 1_800_000)}`;
+    const idempotencyKey = `checkout-${user.id}-${tier}-${interval}-${Math.floor(Date.now() / 1_800_000)}`;
     const session = await stripe().checkout.sessions.create({
       mode: "subscription",
       customer,
@@ -64,30 +61,17 @@ async function openSession(tier: Tier, interval: Interval, embedded: boolean): P
           message: `J'accepte les [CGV](${base}/cgv) et je demande l'accès immédiat au service : je renonce à mon droit de rétractation de 14 jours.`,
         },
       },
-      ...(embedded
-        ? { ui_mode: "embedded_page" as const, return_url: `${base}/dashboard/compte?onglet=formule&paiement=ok` }
-        : { success_url: `${base}/dashboard/abonnement?paiement=ok`, cancel_url: `${base}/dashboard/abonnement` }),
+      success_url: `${base}/dashboard/abonnement?paiement=ok`,
+      cancel_url: `${base}/dashboard/abonnement`,
       integration_identifier: "syxtee-abonnement-qvmtrkzh",
     }, { idempotencyKey });
-    return { url: session.url, clientSecret: session.client_secret };
+    url = session.url;
   } catch (e) {
-    console.error(embedded ? "embeddedCheckout" : "startCheckout", e instanceof Error ? e.message : e);
+    console.error("startCheckout", e instanceof Error ? e.message : e);
     return { error: "Stripe ne répond pas. Réessaie dans un instant." };
   }
-}
-
-export async function startCheckout(tier: Tier, interval: Interval): Promise<BillingState> {
-  const r = await openSession(tier, interval, false);
-  if ("error" in r) return r;
-  if (!r.url) return { error: "Stripe ne répond pas. Réessaie dans un instant." };
-  redirect(r.url);
-}
-
-/** Secret de session pour le formulaire de paiement intégré (/dashboard/paiement). */
-export async function embeddedClientSecret(tier: Tier, interval: Interval): Promise<{ clientSecret?: string; error?: string }> {
-  const r = await openSession(tier, interval, true);
-  if ("error" in r) return r;
-  return r.clientSecret ? { clientSecret: r.clientSecret } : { error: "Stripe ne répond pas. Réessaie dans un instant." };
+  if (!url) return { error: "Stripe ne répond pas. Réessaie dans un instant." };
+  redirect(url);
 }
 
 export async function openPortal(): Promise<BillingState> {

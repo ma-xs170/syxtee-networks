@@ -14,8 +14,6 @@
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
     "@react-email/components": "^1.0.12",
-    "@stripe/react-stripe-js": "^7.0.0",
-    "@stripe/stripe-js": "^10.1.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
     "countries-and-timezones": "^3.10.0",

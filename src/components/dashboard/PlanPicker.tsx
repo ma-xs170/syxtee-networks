@@ -1,20 +1,24 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { startCheckout } from "@/app/(dashboard)/dashboard/abonnement/actions";
 import { Button } from "@/components/ui/Button";
+import { useToast } from "@/components/ui/Toast";
 import { CATALOG, INTERVALS, TIERS, type Interval, type Tier } from "@/lib/billing";
 
-/** Choix de formule : un bouton par formule, qui mène au formulaire de paiement intégré (/dashboard/paiement). */
+/** Choix de formule : un bouton par formule, qui ouvre Stripe Checkout. L'action redirige en cas de succès, sinon on affiche la raison. */
 export default function PlanPicker() {
-  const router = useRouter();
+  const toast = useToast();
   const [interval, setInterval] = useState<Interval>("month");
   const [pending, start] = useTransition();
   const [chosen, setChosen] = useState<Tier | null>(null);
 
   const choose = (tier: Tier) => {
     setChosen(tier);
-    start(() => router.push(`/dashboard/paiement?formule=${tier}&periode=${interval}`));
+    start(async () => {
+      const r = await startCheckout(tier, interval);
+      if (r?.error) toast(r.error, "error");
+    });
   };
 
   return (

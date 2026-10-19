@@ -114,8 +114,8 @@ export default function ControlePage() {
                 Pilote le vrai OBS de ton ordinateur depuis ton téléphone : scènes, son, direct. Où que tu sois.
               </p>
               <div className="rise mt-9 flex flex-col gap-3 sm:flex-row" style={{ "--i": 3 } as CSSProperties}>
-                <Link href="/acces" className={`${btn} btn-tonal`}>
-                  Demander l&apos;accès
+                <Link href="/inscription" className={`${btn} btn-tonal`}>
+                  Créer mon compte
                   <span aria-hidden="true">↗</span>
                 </Link>
                 <Link href="/application" className={`${btn} border border-foreground/20 bg-background/60 text-foreground backdrop-blur-sm hover:bg-background/90`}>
@@ -209,8 +209,8 @@ export default function ControlePage() {
               Ton prochain direct, <Highlight>sans bureau.</Highlight>
             </h2>
             <div className="mt-10 flex flex-col items-center gap-4">
-              <Link href="/acces" className={`${btn} btn-tonal px-8`}>
-                Demander l&apos;accès
+              <Link href="/inscription" className={`${btn} btn-tonal px-8`}>
+                Créer mon compte
                 <span aria-hidden="true">↗</span>
               </Link>
             </div>

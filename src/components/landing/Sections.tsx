@@ -45,7 +45,7 @@ export function ObsHeroSection({ streamers = [] }: { streamers?: HomeStreamer[] 
           Scènes, audio, direct : pilote ton OBS depuis ton téléphone ou ton navigateur, sur ton propre ordinateur. Aucun serveur à louer.
         </p>
         <div className="rise mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row" style={rise(2)}>
-          <ButtonLink href="/acces">Demander l&apos;accès</ButtonLink>
+          <ButtonLink href="/inscription">Créer mon compte</ButtonLink>
           <ButtonLink href="#comment" variant="secondary">Voir comment ça marche</ButtonLink>
         </div>
         <div className="rise mt-12" style={rise(3)}>
@@ -116,7 +116,7 @@ export function DirectorSection() {
                 Tu écris tes consignes en français, comme à un réalisateur. Une caméra coupée ou figée n&apos;est jamais choisie, et tu reprends la main d&apos;un tap.
               </p>
               <div className="mt-6">
-                <ButtonLink href="/acces">Demander l&apos;accès</ButtonLink>
+                <ButtonLink href="/inscription">Créer mon compte</ButtonLink>
               </div>
             </Reveal>
           }
@@ -244,7 +244,7 @@ export function FaqSection() {
   const items = [
     { q: "Faut-il un abonnement ?", a: "Le compte est gratuit. Les services s'ouvrent avec une formule : Essentiel, Signature ou Prestige, sans engagement." },
     { q: "Dois-je louer un serveur pour le contrôle à distance ?", a: "Non. Le plugin tourne sur ton propre PC ou Mac et se relie à ton compte avec un code." },
-    { q: "Quand est-ce disponible ?", a: "Le contrôle à distance est disponible pour les comptes invités. Demande ton accès." },
+    { q: "Quand est-ce disponible ?", a: "Le contrôle à distance est disponible pour les comptes invités. Crée ton compte." },
     { q: "Comment obtenir de l'aide ?", a: "Depuis ton espace, page Assistance : tu écris à l'équipe et tu suis la réponse sur place, généralement sous 24 h. Le Discord est réservé à la communauté." },
   ];
   return (
@@ -263,7 +263,7 @@ export function FinalCta() {
       <Container className="text-center">
         <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,6vw,4.5rem)]">Prêt à piloter ton <em>direct ?</em></h2>
         <div className="mt-9 flex justify-center">
-          <ButtonLink href="/acces">Demander l&apos;accès</ButtonLink>
+          <ButtonLink href="/inscription">Créer mon compte</ButtonLink>
         </div>
         <div className="mt-12"><PlatformStrip /></div>
       </Container>

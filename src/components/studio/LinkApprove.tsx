@@ -88,10 +88,10 @@ export default function LinkApprove({ code: initial, coreUrl, email = "" }: { co
         </>
       ) : state === "denied" ? (
         <>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight">Accès sur invitation</h1>
-          <p className="mt-3 text-sm text-muted">Ton compte n&apos;a pas encore l&apos;accès à SYXTEE Link et au Studio. Demande ton accès.</p>
-          <a href="/acces" className={`${btn} mt-6 btn-tonal`}>
-            Demander l&apos;accès
+          <h1 className="mt-3 text-2xl font-semibold tracking-tight">Accès non activé</h1>
+          <p className="mt-3 text-sm text-muted">Ton compte n&apos;a pas encore l&apos;accès à SYXTEE Link et au Studio. Choisis une formule pour l&apos;activer.</p>
+          <a href="/dashboard/compte?onglet=formule" className={`${btn} mt-6 btn-tonal`}>
+            Choisir une formule
           </a>
         </>
       ) : info ? (

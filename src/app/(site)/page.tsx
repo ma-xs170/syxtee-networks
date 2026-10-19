@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-// Accueil statique : le contrôle à distance d'OBS Studio avec multistream et relais (hero), puis contrôle, multistream, relais, espaces partagés, tarifs. Aucun paiement : « Demander l'accès ».
+// Accueil statique : le contrôle à distance d'OBS Studio avec multistream et relais (hero), puis contrôle, multistream, relais, espaces partagés, tarifs. Inscription ouverte, paiement Stripe depuis le compte.
 // Le mur de chaînes se rafraîchit toutes les 5 minutes (nouvelles chaînes ajoutées dans l'admin, statut en direct).
 export const revalidate = 300;
 

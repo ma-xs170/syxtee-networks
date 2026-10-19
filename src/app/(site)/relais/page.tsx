@@ -32,7 +32,7 @@ export default function RelaisPage() {
             Ton flux passe par un de nos serveurs avant d&apos;arriver dans OBS. Résultat : une vidéo stable, même sur un réseau mobile.
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <ButtonLink href="/acces">Demander l&apos;accès</ButtonLink>
+            <ButtonLink href="/inscription">Créer mon compte</ButtonLink>
             <ButtonLink href="#serveurs" variant="secondary">Voir les serveurs</ButtonLink>
           </div>
         </Container>

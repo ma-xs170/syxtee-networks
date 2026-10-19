@@ -48,8 +48,8 @@ export default function EspacesPartagesPage() {
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-foreground/75 sm:text-lg">Les espaces partagés sont faits pour les régies : plusieurs OBS, une équipe, un seul endroit.</p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/acces" className={`${btn} btn-tonal`}>
-              Demander l&apos;accès
+            <Link href="/inscription" className={`${btn} btn-tonal`}>
+              Créer mon compte
               <span aria-hidden="true">↗</span>
             </Link>
             <Link href="/tarifs" className={`${btn} border border-foreground/20 bg-background/60 text-foreground backdrop-blur-sm hover:bg-background/90`}>
@@ -127,8 +127,8 @@ export default function EspacesPartagesPage() {
           <h2 className="h-section">Inclus dans Signature et Prestige.</h2>
           <p className="mt-4 text-base leading-relaxed text-muted">1 espace partagé avec Signature (9,99 € par mois), jusqu&apos;à 5 avec Prestige (19,99 € par mois). Sans engagement.</p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/acces" className="btn btn-primary">
-              Demander l&apos;accès
+            <Link href="/inscription" className="btn btn-primary">
+              Créer mon compte
             </Link>
             <Link href="/tarifs" className="btn btn-secondary">
               Voir les tarifs

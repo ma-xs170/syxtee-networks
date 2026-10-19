@@ -45,7 +45,7 @@ export default function MultistreamPage() {
             On a pensé aux streamers qui veulent plus de vues. Le multistream est intégré au plugin SYXTEE : tu diffuses partout en même temps, sans rien installer de plus.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <ButtonLink href="/acces">Demander l&apos;accès</ButtonLink>
+            <ButtonLink href="/inscription">Créer mon compte</ButtonLink>
             <ButtonLink href="/controle-a-distance" variant="secondary">Voir le contrôle à distance</ButtonLink>
           </div>
         </Container>

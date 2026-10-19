@@ -25,14 +25,14 @@ export function UpgradeCard({ feature }: { feature?: string }) {
       </span>
       <h2 className="mt-5 text-xl font-semibold tracking-tight">Disponible avec un forfait</h2>
       <p className="mt-2 text-sm leading-relaxed text-muted">
-        {feature ? <span className="text-foreground">{feature}</span> : "Cette fonction"} s&apos;ouvre avec un abonnement. Les services ne sont pas encore ouverts à tous : ton compte gratuit donne accès à la documentation et au support, où tu peux demander un accès.
+        {feature ? <span className="text-foreground">{feature}</span> : "Cette fonction"} s&apos;ouvre avec un abonnement. Ton compte gratuit donne accès à la documentation et au support.
       </p>
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-        <Link href="/tarifs" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors">
-          Voir les forfaits
+        <Link href="/dashboard/compte?onglet=formule" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors">
+          Choisir une formule
         </Link>
-        <Link href="/dashboard/aide" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-line-strong px-5 text-sm font-medium transition-colors hover:bg-fill-hover">
-          Demander un accès
+        <Link href="/tarifs" className="flex h-11 items-center justify-center whitespace-nowrap rounded-full border border-line-strong px-5 text-sm font-medium transition-colors hover:bg-fill-hover">
+          Voir les forfaits
         </Link>
       </div>
       <Link href="/docs" className="mt-4 inline-block text-sm text-muted hover:text-foreground">Lire la documentation</Link>

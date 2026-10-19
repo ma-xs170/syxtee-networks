@@ -143,7 +143,7 @@ export default function GuideLiveIrlPage() {
               <FaqList items={faq} />
             </div>
             <div className="mt-10 flex flex-wrap gap-3">
-              <ButtonLink href="/acces">Demander l&apos;accès</ButtonLink>
+              <ButtonLink href="/inscription">Créer mon compte</ButtonLink>
               <ButtonLink href="/tarifs" variant="secondary">Voir les tarifs</ButtonLink>
             </div>
           </div>

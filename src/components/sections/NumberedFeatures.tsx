@@ -8,7 +8,7 @@ import { MultistreamDock, PlatformLogos } from "./Multistream";
 
 // Accueil : le site se présente comme le contrôle à distance d'OBS Studio, avec multistream et relais. Cinq sections numérotées, séparées par un filet :
 // Contrôle à distance (01), Multistream (02), Relais (03, bandeau), Espaces partagés (04, bandeau texte) et Tarifs accessibles (05, liste).
-// Aucun paiement sur le site : tous les boutons mènent à « Demander l'accès ».
+// Aucun paiement sur le site : tous les boutons mènent à « Créer mon compte ».
 
 const banner = "scroll-mt-20 border-t border-line py-20 lg:py-28";
 const num = "font-mono text-6xl font-semibold text-foreground/15 sm:text-7xl";
@@ -45,8 +45,8 @@ export default function NumberedFeatures() {
         flip
         actions={
           <>
-            <Link href="/acces" className="btn btn-primary">
-              Demander l&apos;accès
+            <Link href="/inscription" className="btn btn-primary">
+              Créer mon compte
             </Link>
             <Link href="/controle-a-distance" className="btn btn-secondary">
               Voir le contrôle
@@ -83,8 +83,8 @@ export default function NumberedFeatures() {
             <Link href="/relais" className="btn btn-primary">
               Découvrir les relais
             </Link>
-            <Link href="/acces" className="btn btn-secondary">
-              Demander l&apos;accès
+            <Link href="/inscription" className="btn btn-secondary">
+              Créer mon compte
             </Link>
           </div>
         </article>
@@ -126,8 +126,8 @@ export default function NumberedFeatures() {
               Le niveau de fiabilité d&apos;une régie, sans le budget d&apos;une régie. Dès 4,99 € par mois, sans engagement : tu changes ou tu arrêtes quand tu veux.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/acces" className="btn btn-primary">
-                Demander l&apos;accès
+              <Link href="/inscription" className="btn btn-primary">
+                Créer mon compte
               </Link>
               <Link href="/tarifs" className="btn btn-secondary">
                 Comparer les formules

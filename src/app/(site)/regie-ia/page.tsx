@@ -70,7 +70,7 @@ export default function RegieIaPage() {
             Plusieurs caméras, un seul direct. SYXTEE choisit la bonne image, bascule sur le secours et surveille ton micro pendant que tu filmes.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <ButtonLink href="/acces">Demander l&apos;accès</ButtonLink>
+            <ButtonLink href="/inscription">Créer mon compte</ButtonLink>
             <ButtonLink href="/controle-a-distance" variant="secondary">Voir le contrôle à distance</ButtonLink>
           </div>
         </Container>
@@ -136,7 +136,7 @@ export default function RegieIaPage() {
             Le secours automatique et la garde audio sont inclus dès Essentiel. L&apos;autogérance des prises et la régie IA (3 caméras) arrivent avec Signature, et la régie IA passe à 6 caméras avec Prestige.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <ButtonLink href="/acces">Demander l&apos;accès</ButtonLink>
+            <ButtonLink href="/inscription">Créer mon compte</ButtonLink>
             <ButtonLink href="/tarifs" variant="secondary">Voir les tarifs</ButtonLink>
           </div>
         </Container>

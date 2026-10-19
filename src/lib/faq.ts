@@ -16,7 +16,7 @@ export const faq: FaqItem[] = [
   },
   {
     q: "Comment avoir accès ?",
-    a: "L'ouverture au public arrive bientôt. En attendant, l'accès est ouvert aux partenaires : envoie ta demande depuis la page Demander l'accès. Une fois ton compte créé, tu choisis une formule parmi Essentiel, Signature et Prestige, à partir de 4,99 € par mois et sans engagement.",
+    a: "Les inscriptions sont ouvertes : crée ton compte, puis tu choisis une formule parmi Essentiel, Signature et Prestige, à partir de 4,99 € par mois et sans engagement.",
   },
   {
     q: "Comment contacter le support ?",

@@ -24,8 +24,8 @@ export default function Hero() {
             Pilote ton OBS depuis ton téléphone, diffuse vers toutes tes plateformes et garde un flux stable.
           </p>
           <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={{ "--i": 2 } as React.CSSProperties}>
-            <Link href="/acces" className={`${btn} btn-tonal`}>
-              Demander l&apos;accès
+            <Link href="/inscription" className={`${btn} btn-tonal`}>
+              Créer mon compte
               <span aria-hidden="true">↗</span>
             </Link>
             <Link href="/tarifs" className="inline-flex min-h-11 items-center text-base underline underline-offset-4 hover:text-foreground/70">

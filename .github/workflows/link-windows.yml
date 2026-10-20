@@ -37,6 +37,7 @@ jobs:
         working-directory: link
         shell: bash
         run: |
+          npm ci --prefix ../core
           npm ci
           npm test
 

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -40,7 +40,11 @@ async function stack() {
 }
 
 function makeCollection(name: string, media: Record<string, Buffer>) {
-  const dir = mkdtempSync(join(tmpdir(), "slk-media-"));
+  // Sous Windows, tmpdir() contient « \\Temp\\ » que skipFile exclut (à raison : un vrai média n'y vit pas) : les médias de test vont dans le dossier de travail.
+  const base = process.platform === "win32" ? join(process.cwd(), ".test-media") : tmpdir();
+  mkdirSync(base, { recursive: true });
+  const dir = mkdtempSync(join(base, "slk-media-"));
+  if (process.platform === "win32") process.once("exit", () => rmSync(dir, { recursive: true, force: true }));
   const sources: { settings: { file: string } }[] = [];
   for (const [rel, data] of Object.entries(media)) {
     const full = join(dir, rel);

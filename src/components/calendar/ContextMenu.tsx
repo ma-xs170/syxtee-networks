@@ -7,7 +7,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 export type MenuItem = { label: string; onSelect: () => void; disabled?: boolean; danger?: boolean } | { separator: true };
 
-export default function ContextMenu({ x, y, items, onClose }: { x: number; y: number; items: MenuItem[]; onClose: () => void }) {
+export default function ContextMenu({ x, y, getItems, onClose }: { x: number; y: number; getItems: () => MenuItem[]; onClose: () => void }) {
+  const items = getItems();
   const box = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ left: x, top: y });
 

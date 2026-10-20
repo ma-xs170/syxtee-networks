@@ -164,24 +164,30 @@ export default function TimeGrid({
     let active = false;
     let result: { start: number; end: number } | null = null;
     moved.current = false;
+    const compute = (x: number, y: number) => {
+      const t = timeAt(x, y).ms;
+      if (kind === "move") {
+        const s = roundStep(t - grab);
+        return { start: s, end: s + (end - start) };
+      }
+      return { start, end: Math.max(start + STEP, roundStep(t)) };
+    };
     trackPointer({
       onMove: (m) => {
         if (!active && Math.hypot(m.clientX - x0, m.clientY - y0) < DRAG_PX) return;
         active = true;
         moved.current = true;
         autoscroll(m.clientY);
-        const t = timeAt(m.clientX, m.clientY).ms;
-        if (kind === "move") {
-          const s = roundStep(t - grab);
-          result = { start: s, end: s + (end - start) };
-        } else result = { start, end: Math.max(start + STEP, roundStep(t)) };
+        result = compute(m.clientX, m.clientY);
         setPreview({ id: event.id, ...result, kind });
       },
-      onUp: (_u, cancelled) => {
+      onUp: (u, cancelled) => {
         setPreview(null);
-        if (!active || cancelled || !result) return;
-        if (kind === "move" && result.start !== start) onMove(event, new Date(result.start));
-        if (kind === "resize" && result.end !== end) onResize(event, new Date(result.end));
+        if (!active || cancelled) return;
+        // Position AU RELÂCHEMENT (pas au dernier mouvement : un geste rapide en saute).
+        const r = compute(u.clientX, u.clientY);
+        if (kind === "move" && r.start !== start) onMove(event, new Date(r.start));
+        if (kind === "resize" && r.end !== end) onResize(event, new Date(r.end));
       },
     });
   }

@@ -66,11 +66,14 @@ export default function MonthView({
         over = (document.elementFromPoint(m.clientX, m.clientY)?.closest("[data-day]") as HTMLElement | null)?.dataset.day ?? null;
         setDrag({ event, grabbed: day, x: m.clientX, y: m.clientY, over });
       },
-      onUp: (_u, cancelled) => {
+      onUp: (u, cancelled) => {
         document.body.style.cursor = "";
         setDrag(null);
-        if (!active || cancelled || !over) return;
-        const delta = diffDays(day, parseDayKey(over));
+        if (!active || cancelled) return;
+        // Case sous le pointeur AU RELÂCHEMENT (pas au dernier mouvement : un geste rapide en saute).
+        const drop = (document.elementFromPoint(u.clientX, u.clientY)?.closest("[data-day]") as HTMLElement | null)?.dataset.day ?? over;
+        if (!drop) return;
+        const delta = diffDays(day, parseDayKey(drop));
         if (delta !== 0) onMove(event, addDays(new Date(event.starts_at), delta));
       },
     });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AppleLogo, CaretLeft, CaretRight, Plus, ShareNetwork } from "@phosphor-icons/react";
 import { createLiveAction, deleteLiveAction, shareCalendarAction, unshareCalendarAction, updateLiveAction } from "@/app/(dashboard)/dashboard/calendrier/actions";
 import { platformOf, type LiveEvent } from "@/lib/calendar";
@@ -36,6 +36,11 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
   const [menu, setMenu] = useState<{ x: number; y: number; target: { at: Date } | { event: LiveEvent } } | null>(null);
   const [clip, setClip] = useState<LiveEvent | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Déplacements rapides : une file par live (le serveur reçoit les changements dans l'ordre), un numéro de version (seule la dernière réponse compte)
+  // et le dernier état confirmé par le serveur (retour en arrière en cas de refus).
+  const queue = useRef(new Map<string, Promise<unknown>>());
+  const version = useRef(new Map<string, number>());
+  const confirmed = useRef(new Map<string, LiveEvent>(initial.map((e) => [e.id, pick(e)])));
 
   // Le rendu dépend du fuseau du navigateur : rien n'est dessiné avant le montage (pas de décalage avec le rendu serveur).
   useEffect(() => {
@@ -98,14 +103,21 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
   };
   const openEvent = (e: LiveEvent) => setDraft({ id: e.id, title: e.title, location: e.location, description: e.description, platforms: e.platforms, start: new Date(e.starts_at), end: new Date(e.ends_at) });
 
-  /** Glisser-déposer : le live bouge tout de suite, le serveur confirme (ou le live revient). */
+  /** Glisser-déposer : le live bouge tout de suite, le serveur confirme (ou le live revient à sa dernière place confirmée). */
   async function change(e: LiveEvent, patch: Partial<Pick<LiveEvent, "starts_at" | "ends_at">>) {
-    const before = e;
+    const v = (version.current.get(e.id) ?? 0) + 1;
+    version.current.set(e.id, v);
     upsert({ ...e, ...patch });
-    const r = await updateLiveAction(e.id, patch);
+    const previous = queue.current.get(e.id) ?? Promise.resolve();
+    const run = previous.catch(() => {}).then(() => updateLiveAction(e.id, patch));
+    queue.current.set(e.id, run);
+    const r = await run;
+    if (r.ok) confirmed.current.set(e.id, pick(r.value));
+    // Un déplacement plus récent est en cours : sa réponse décidera de l'affichage (sinon le live sauterait à une ancienne place).
+    if (version.current.get(e.id) !== v) return;
     if (r.ok) upsert(r.value);
     else {
-      upsert(before);
+      upsert(confirmed.current.get(e.id) ?? e);
       setNotice(r.error);
     }
   }
@@ -124,8 +136,10 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
     if (!clip) return;
     const dur = Date.parse(clip.ends_at) - Date.parse(clip.starts_at);
     const r = await createLiveAction({ title: clip.title, location: clip.location, description: clip.description, platforms: clip.platforms, starts_at: at.toISOString(), ends_at: new Date(at.getTime() + dur).toISOString() });
-    if (r.ok) upsert(r.value);
-    else setNotice(r.error);
+    if (r.ok) {
+      confirmed.current.set(r.value.id, pick(r.value));
+      upsert(r.value);
+    } else setNotice(r.error);
   }
   /** Ouvre le courrier du Mac/PC avec le live déjà rédigé (titre, date, plateformes, lieu, description). */
   function mailLive(e: LiveEvent) {
@@ -161,6 +175,7 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
   async function save(input: DraftInput, id?: string): Promise<string | null> {
     const r = id ? await updateLiveAction(id, input) : await createLiveAction(input);
     if (!r.ok) return r.error;
+    confirmed.current.set(r.value.id, pick(r.value));
     upsert(r.value);
     setDraft(null);
     return null;
@@ -271,7 +286,7 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
         <p className="mt-4 text-sm text-muted">{editable ? "Aucun live planifié. Clique sur un jour (ou sélectionne un créneau en vue Semaine) pour ajouter ton prochain direct." : "Aucun live planifié pour le moment."}</p>
       )}
 
-      {menu && <ContextMenu x={menu.x} y={menu.y} items={menuItems(menu.target)} onClose={() => setMenu(null)} />}
+      {menu && <ContextMenu x={menu.x} y={menu.y} getItems={() => menuItems(menu.target)} onClose={() => setMenu(null)} />}
       <EventDialog draft={draft} editable={editable} onClose={() => setDraft(null)} onSave={save} onDelete={remove} />
       {editable && <ShareDialog open={sharing} token={token} onClose={() => setSharing(false)} onShare={share} onUnshare={unshare} />}
     </div>

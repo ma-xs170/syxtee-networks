@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Copy, UploadSimple } from "@phosphor-icons/react";
+import { AppleLogo, Check, Copy, UploadSimple } from "@phosphor-icons/react";
 import { siGoogle } from "@/lib/brand-icons";
 import { buttonClass } from "@/components/ui/button-styles";
 
@@ -99,20 +99,28 @@ export default function ShareDialog({
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="flex flex-col items-center gap-3 rounded-xl border border-line p-5 text-center">
+                  <AppleLogo size={44} weight="fill" aria-hidden="true" />
+                  <h4 className="text-sm font-semibold">Ajouter à Apple Calendrier</h4>
+                  <p className="text-xs leading-relaxed text-muted">S&apos;ouvre dans Calendrier (Mac, iPhone, iPad) : tes lives restent synchronisés, nouveautés et déplacements compris.</p>
+                  <a href={webcal} className={buttonClass("secondary", "mt-auto w-full")}>
+                    S&apos;abonner dans Apple Calendrier
+                  </a>
+                </div>
+                <div className="flex flex-col items-center gap-3 rounded-xl border border-line p-5 text-center">
                   <svg viewBox="0 0 24 24" width={44} height={44} fill={`#${siGoogle.hex}`} aria-hidden="true">
                     <path d={siGoogle.path} />
                   </svg>
                   <h4 className="text-sm font-semibold">S&apos;abonner via Google Agenda</h4>
-                  <p className="text-xs leading-relaxed text-muted">Exporte ce calendrier vers Google Agenda en un clic.</p>
+                  <p className="text-xs leading-relaxed text-muted">Exporte ce calendrier vers Google Agenda en un clic, il se met à jour tout seul.</p>
                   <a href={`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}`} target="_blank" rel="noopener noreferrer" className={buttonClass("secondary", "mt-auto w-full")}>
                     Exporter vers Google Agenda
                   </a>
                 </div>
-                <div className="flex flex-col items-center gap-3 rounded-xl border border-line p-5 text-center">
-                  <UploadSimple size={44} aria-hidden="true" />
+                <div className="flex flex-col items-center gap-3 rounded-xl border border-line p-5 text-center sm:col-span-2">
+                  <UploadSimple size={32} aria-hidden="true" />
                   <h4 className="text-sm font-semibold">S&apos;abonner manuellement avec n&apos;importe quel agenda</h4>
-                  <p className="text-xs leading-relaxed text-muted">Apple Calendrier, Outlook, etc. : ajoute-le comme « calendrier par abonnement ».</p>
-                  <div className="mt-auto flex w-full gap-2">
+                  <p className="text-xs leading-relaxed text-muted">Outlook et les autres : ajoute ce lien comme « calendrier par abonnement ».</p>
+                  <div className="flex w-full gap-2">
                     <input aria-label="Lien d'abonnement" readOnly value={webcal} onFocus={(e) => e.currentTarget.select()} className={field} />
                     <button type="button" onClick={() => copy("feed", webcal)} className={buttonClass("secondary", "shrink-0")} aria-label="Copier le lien d'abonnement">
                       {copied === "feed" ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}

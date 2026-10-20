@@ -71,7 +71,7 @@ function fold(line: string): string {
 }
 
 /** Flux iCalendar (.ics) : s'abonne dans Apple Calendrier, Google Agenda ou Outlook. */
-export function toIcs(events: EventRow[], calendarName: string, host: string): string {
+export function toIcs(events: EventRow[], calendarName: string, host: string, pageUrl?: string): string {
   const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//SYXTEE NETWORKS//Calendrier des lives//FR", "CALSCALE:GREGORIAN", "METHOD:PUBLISH", `X-WR-CALNAME:${esc(calendarName)}`, "REFRESH-INTERVAL;VALUE=DURATION:PT1H", "X-PUBLISHED-TTL:PT1H"];
   for (const e of events) {
     const names = e.platforms.map((p) => platformOf(p)?.label ?? p);
@@ -86,6 +86,7 @@ export function toIcs(events: EventRow[], calendarName: string, host: string): s
       ...(e.location ? [`LOCATION:${esc(e.location)}`] : []),
       ...(desc ? [`DESCRIPTION:${esc(desc)}`] : []),
       ...(names.length ? [`CATEGORIES:${names.map(esc).join(",")}`] : []),
+      ...(pageUrl ? [`URL:${pageUrl}`] : []),
       "END:VEVENT",
     );
   }

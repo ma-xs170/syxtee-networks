@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CaretLeft, CaretRight, Plus, ShareNetwork } from "@phosphor-icons/react";
+import { AppleLogo, CaretLeft, CaretRight, Plus, ShareNetwork } from "@phosphor-icons/react";
 import { createLiveAction, deleteLiveAction, shareCalendarAction, unshareCalendarAction, updateLiveAction } from "@/app/(dashboard)/dashboard/calendrier/actions";
 import { platformOf, type LiveEvent } from "@/lib/calendar";
 import { addDays, HOUR, monthTitle, rangeLabel, startOfDay, startOfMonth, startOfWeek, dayLabel, weekTitle } from "./date";
@@ -228,9 +228,15 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
           </>
         )}
         {shared && webcal && (
-          <a href={webcal} className={`${cta} bg-accent text-on-accent hover:opacity-90`}>
-            S&apos;abonner dans mon agenda
-          </a>
+          <>
+            <a href={webcal} className={`${cta} bg-accent text-on-accent hover:opacity-90`}>
+              <AppleLogo size={18} weight="fill" aria-hidden="true" />
+              Apple Calendrier
+            </a>
+            <a href={`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}`} target="_blank" rel="noopener noreferrer" className={`${cta} border border-line-strong text-foreground hover:border-foreground/40`}>
+              Google Agenda
+            </a>
+          </>
         )}
       </div>
 

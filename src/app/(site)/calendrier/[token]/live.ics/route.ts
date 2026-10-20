@@ -11,7 +11,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const shared = await loadShared(token).catch(() => null);
   if (!shared) return new Response("Calendrier introuvable", { status: 404, headers: { "Cache-Control": "no-store" } });
   const host = new URL(site.url).hostname;
-  return new Response(toIcs(shared.events, `Lives de ${shared.name}`, host), {
+  return new Response(toIcs(shared.events, `Lives de ${shared.name}`, host, `${site.url}/calendrier/${token}`), {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": 'inline; filename="lives-syxtee.ics"',

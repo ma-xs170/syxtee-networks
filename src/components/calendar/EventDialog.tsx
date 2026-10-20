@@ -12,7 +12,7 @@ import { platformNames, PlatformIcon } from "./parts";
 export type Draft = { id?: string; title: string; location: string; description: string; platforms: PlatformId[]; start: Date; end: Date };
 export type DraftInput = Omit<LiveEvent, "id" | "starts_at" | "ends_at"> & { starts_at: string; ends_at: string };
 
-const field = "h-11 w-full rounded-lg border border-line bg-background px-3 text-sm text-foreground placeholder:text-muted focus:border-foreground/60 focus:outline-none";
+const field = "h-11 w-full rounded-lg border border-line bg-background px-3 text-base text-foreground sm:text-sm placeholder:text-muted focus:border-foreground/60 focus:outline-none";
 
 export default function EventDialog({
   draft,
@@ -103,7 +103,7 @@ export default function EventDialog({
       onClose={onClose}
       onClick={(e) => e.target === dialog.current && dialog.current?.close()}
       aria-labelledby="live-title"
-      className="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-2xl border border-line-strong bg-background p-0 text-foreground backdrop:bg-black/70"
+      className="m-auto w-[min(32rem,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl border border-line-strong bg-background p-0 text-foreground backdrop:bg-black/70"
     >
       {draft && lock ? (
         <div className="p-6">

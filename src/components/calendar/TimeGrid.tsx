@@ -14,6 +14,8 @@ const HOUR_PX = 52;
 const GUTTER = 56;
 const DRAG_PX = 5;
 const SCROLL_EDGE = 40;
+/** Largeur minimale d'un jour en vue Semaine : en dessous (téléphone), la grille défile horizontalement. */
+const MIN_COL = 92;
 
 type Seg = { event: LiveEvent; start: number; end: number; first: boolean; last: boolean; lane: number; lanes: number };
 type Preview = { id: string | null; start: number; end: number; kind: "move" | "resize" | "create" };
@@ -195,7 +197,8 @@ export default function TimeGrid({
   const items = events.map((e) => ({ event: e, start: Date.parse(e.starts_at), end: Date.parse(e.ends_at) }));
 
   return (
-    <div onPointerDownCapture={(e) => (pointer.current = e.pointerType)} className="select-none overflow-hidden rounded-2xl border border-line">
+    <div onPointerDownCapture={(e) => (pointer.current = e.pointerType)} className="select-none overflow-x-auto rounded-2xl border border-line">
+      <div style={{ minWidth: days.length > 1 ? GUTTER + days.length * MIN_COL : undefined }}>
       <div className="grid border-b border-line bg-surface" style={{ gridTemplateColumns: template }}>
         <div />
         {days.map((d) => {
@@ -208,7 +211,7 @@ export default function TimeGrid({
           );
         })}
       </div>
-      <div ref={scroller} className="relative max-h-[68dvh] overflow-y-auto overscroll-contain">
+      <div ref={scroller} className="relative max-h-[68dvh] overflow-y-auto overscroll-y-contain">
         <div className="grid" style={{ gridTemplateColumns: template }}>
           <div className="relative" style={{ height: 24 * HOUR_PX }} aria-hidden="true">
             {Array.from({ length: 23 }, (_, i) => (
@@ -319,6 +322,7 @@ export default function TimeGrid({
             );
           })}
         </div>
+      </div>
       </div>
     </div>
   );

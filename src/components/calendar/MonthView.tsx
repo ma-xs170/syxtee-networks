@@ -1,8 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { Plus } from "@phosphor-icons/react";
 import type { LiveEvent } from "@/lib/calendar";
-import { addDays, dayKey, diffDays, parseDayKey, sameDay, startOfDay, startOfMonth, startOfWeek, timeLabel, weekdayShort } from "./date";
+import { addDays, dayKey, dayLabel, diffDays, parseDayKey, sameDay, startOfDay, startOfMonth, startOfWeek, timeLabel, weekdayShort } from "./date";
 import { eventColor, PlatformIcon, trackPointer } from "./parts";
 
 // Vue « Mois » : 6 semaines, lundi en premier. Un clic sur un jour vide crée un live, on glisse un live sur un autre jour pour le déplacer
@@ -43,6 +44,8 @@ export default function MonthView({
   const [drag, setDrag] = useState<Drag | null>(null);
   const moved = useRef(false);
   const pointer = useRef<string>("mouse");
+  const [phoneDay, setPhoneDay] = useState<Date | null>(null);
+  const isPhone = () => window.matchMedia("(max-width: 639px)").matches;
 
   const forDay = (d: Date) => {
     const a = d.getTime();
@@ -79,7 +82,10 @@ export default function MonthView({
     });
   }
 
+  const listDay = phoneDay ?? today;
+  const listEvents = forDay(listDay);
   return (
+    <>
     <div onPointerDownCapture={(e) => (pointer.current = e.pointerType)} className="select-none overflow-hidden rounded-2xl border border-line" role="grid" aria-label="Calendrier du mois">
       <div className="grid grid-cols-[repeat(7,minmax(0,1fr))] border-b border-line bg-surface text-center font-mono text-[11px] uppercase tracking-[0.12em] text-muted" role="row">
         {days.slice(0, 7).map((d) => (
@@ -108,19 +114,26 @@ export default function MonthView({
               }}
               onClick={(e) => {
                 if (e.target !== e.currentTarget) return;
-                // Souris : un clic désélectionne, un double-clic crée (comme Apple Calendrier). Écran tactile : un toucher crée.
-                if (editable && pointer.current === "touch") onCreate(d);
+                // Téléphone : un toucher choisit le jour (sa liste s'affiche sous la grille). Souris : un clic désélectionne, un double-clic crée
+                // (comme Apple Calendrier). Tablette tactile : un toucher crée.
+                if (isPhone()) setPhoneDay(startOfDay(d));
+                else if (editable && pointer.current === "touch") onCreate(d);
                 else onSelect(null);
               }}
               onDoubleClick={(e) => {
                 if (editable && e.target === e.currentTarget) onCreate(d);
               }}
-              className={`min-h-[6.25rem] min-w-0 overflow-hidden border-line p-1 sm:min-h-[8.25rem] sm:p-1.5 ${i % 7 !== 6 ? "border-r" : ""} ${i < 35 ? "border-b" : ""} ${target ? "bg-foreground/[0.1]" : inMonth ? "" : "bg-foreground/[0.025]"} ${editable ? "cursor-cell" : ""}`}
+              className={`min-h-[3.75rem] min-w-0 overflow-hidden border-line p-1 sm:min-h-[8.25rem] sm:p-1.5 ${i % 7 !== 6 ? "border-r" : ""} ${i < 35 ? "border-b" : ""} ${target ? "bg-foreground/[0.1]" : inMonth ? "" : "bg-foreground/[0.025]"} ${editable ? "cursor-cell" : ""}`}
             >
-              <div className="pointer-events-none flex justify-end pr-0.5 pt-0.5">
-                <span className={`grid h-6 min-w-6 place-items-center rounded-full px-1 text-xs font-medium sm:text-sm ${isToday ? "bg-accent text-on-accent" : inMonth ? "text-foreground" : "text-muted"}`}>{d.getDate() === 1 ? `${d.getDate()} ${new Intl.DateTimeFormat("fr-FR", { month: "short" }).format(d)}` : d.getDate()}</span>
+              <div className="pointer-events-none flex justify-center pt-0.5 sm:justify-end sm:pr-0.5">
+                <span className={`grid h-6 min-w-6 place-items-center rounded-full px-1 text-xs font-medium sm:text-sm ${isToday ? "bg-accent text-on-accent" : phoneDay && sameDay(phoneDay, d) ? "bg-foreground/[0.14] text-foreground" : inMonth ? "text-foreground" : "text-muted"}`}>{d.getDate() === 1 ? `${d.getDate()} ${new Intl.DateTimeFormat("fr-FR", { month: "short" }).format(d)}` : d.getDate()}</span>
               </div>
-              <ul className="mt-1 grid min-w-0 gap-0.5">
+              <div aria-hidden="true" className="mt-1 flex min-w-0 flex-wrap justify-center gap-0.5 px-0.5 sm:hidden">
+                {list.slice(0, 4).map((e) => (
+                  <span key={e.id} className="h-1.5 w-1.5 rounded-full" style={{ background: eventColor(e) }} />
+                ))}
+              </div>
+              <ul className="mt-1 hidden min-w-0 gap-0.5 sm:grid">
                 {target && drag && diffDays(drag.grabbed, d) !== 0 && (
                   <li aria-hidden="true">
                     <div style={{ borderLeftColor: eventColor(drag.event) }} className="flex min-w-0 items-center gap-1.5 rounded-md border border-l-[3px] border-dashed border-foreground/60 bg-foreground/[0.14] px-1.5 py-1 text-[11px] font-medium leading-tight sm:text-xs">
@@ -180,5 +193,41 @@ export default function MonthView({
         </div>
       )}
     </div>
+    <section aria-label="Lives du jour" className="mt-4 sm:hidden">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <h3 className="text-base font-semibold tracking-tight">{dayLabel(listDay)}</h3>
+        {editable && (
+          <button type="button" onClick={() => onCreate(listDay)} className="inline-flex h-10 items-center gap-1.5 rounded-full border border-line-strong px-4 text-sm font-medium">
+            <Plus size={16} weight="bold" aria-hidden="true" />
+            Nouveau live
+          </button>
+        )}
+      </div>
+      {listEvents.length === 0 ? (
+        <p className="text-sm text-muted">Aucun live ce jour-là.</p>
+      ) : (
+        <ul className="grid gap-2">
+          {listEvents.map((e) => (
+            <li key={e.id}>
+              <button type="button" onClick={() => onOpen(e)} style={{ borderLeftColor: eventColor(e) }} className="flex w-full min-w-0 items-center gap-3 rounded-xl border border-l-4 border-line bg-surface-2 px-3 py-3 text-left">
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">{e.title}</span>
+                  <span className="block truncate text-xs text-muted">
+                    {timeLabel(new Date(e.starts_at))} – {timeLabel(new Date(e.ends_at))}
+                    {e.location ? ` · ${e.location}` : ""}
+                  </span>
+                </span>
+                <span className="flex shrink-0 items-center gap-1">
+                  {e.platforms.slice(0, 4).map((p) => (
+                    <PlatformIcon key={p} id={p} size={14} />
+                  ))}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+    </>
   );
 }

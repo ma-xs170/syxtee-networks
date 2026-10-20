@@ -8,7 +8,7 @@ import { buttonClass } from "@/components/ui/button-styles";
 // Partage du calendrier : un lien en lecture seule (page publique) et le flux d'abonnement pour l'agenda de ceux qui l'ont.
 // Retirer ou renouveler le lien coupe l'accès de tous ceux qui avaient l'ancien.
 
-const field = "h-11 w-full rounded-lg border border-line bg-background px-3 font-mono text-xs text-foreground focus:border-foreground/60 focus:outline-none";
+const field = "h-11 w-full rounded-lg border border-line bg-background px-3 font-mono text-base text-foreground sm:text-xs focus:border-foreground/60 focus:outline-none";
 
 export default function ShareDialog({
   open,
@@ -81,7 +81,7 @@ export default function ShareDialog({
   );
 
   return (
-    <dialog ref={dialog} onClose={onClose} onClick={(e) => e.target === dialog.current && dialog.current?.close()} aria-labelledby="share-title" className="m-auto w-[min(46rem,calc(100vw-2rem))] rounded-2xl border border-line-strong bg-background p-0 text-foreground backdrop:bg-black/70">
+    <dialog ref={dialog} onClose={onClose} onClick={(e) => e.target === dialog.current && dialog.current?.close()} aria-labelledby="share-title" className="m-auto w-[min(46rem,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl border border-line-strong bg-background p-0 text-foreground backdrop:bg-black/70">
       <div className="grid gap-5 p-6">
         <div>
           <h2 id="share-title" className="text-lg font-semibold tracking-tight">

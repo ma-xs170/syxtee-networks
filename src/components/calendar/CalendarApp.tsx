@@ -201,25 +201,25 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
   }
 
   const seg = "h-full rounded-full px-4 text-sm transition-colors";
-  const nav = "grid h-full w-9 place-items-center rounded-full text-muted transition-colors hover:bg-foreground/[0.08] hover:text-foreground";
+  const nav = "grid h-full w-10 sm:w-9 place-items-center rounded-full text-muted transition-colors hover:bg-foreground/[0.08] hover:text-foreground";
   const cta = "inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 text-sm font-medium transition-[opacity,border-color,transform] duration-150 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
   const webcal = shared && token && typeof window !== "undefined" ? `${window.location.origin}/calendrier/${token}/live.ics`.replace(/^https?:/, "webcal:") : "";
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <h2 className="mr-auto min-w-0 text-3xl font-bold tracking-tight sm:text-4xl" aria-live="polite">
+      <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:flex-wrap">
+        <h2 className="order-1 min-w-0 truncate sm:mr-auto text-2xl font-bold tracking-tight sm:text-4xl" aria-live="polite">
           {/* L'année passe en gris clair : le mois (ou la période) reste le point d'attention. */}
           {title.replace(/\s\d{4}$/, "")} <span className="font-normal text-muted">{/\d{4}$/.exec(title)?.[0]}</span>
         </h2>
-        <div role="group" aria-label="Vue du calendrier" className="flex h-11 items-center gap-1 rounded-full border border-line p-1">
+        <div role="group" aria-label="Vue du calendrier" className="order-3 col-span-2 flex h-11 items-center gap-1 rounded-full border border-line p-1 sm:order-2 sm:col-span-1">
           {VIEWS.map((v) => (
-            <button key={v.id} type="button" aria-pressed={view === v.id} onClick={() => setView(v.id)} className={`${seg} ${view === v.id ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}>
+            <button key={v.id} type="button" aria-pressed={view === v.id} onClick={() => setView(v.id)} className={`${seg} flex-1 sm:flex-none ${view === v.id ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}>
               {v.label}
             </button>
           ))}
         </div>
-        <div role="group" aria-label="Navigation" className="flex h-11 items-center rounded-full border border-line p-1">
+        <div role="group" aria-label="Navigation" className="order-2 flex h-11 items-center rounded-full border border-line p-1 sm:order-3">
           <button type="button" onClick={() => step(-1)} aria-label="Période précédente" className={nav}>
             <CaretLeft size={20} weight="bold" aria-hidden="true" />
           </button>
@@ -231,7 +231,7 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
           </button>
         </div>
         {editable && (
-          <>
+          <div className="order-4 col-span-2 grid grid-cols-[minmax(0,1fr)_auto] gap-3 sm:contents">
             <button type="button" onClick={() => openNew()} className={`${cta} bg-accent text-on-accent hover:opacity-90`}>
               <Plus size={18} weight="bold" aria-hidden="true" />
               Nouveau live
@@ -240,10 +240,10 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
               <ShareNetwork size={18} aria-hidden="true" />
               Partager
             </button>
-          </>
+          </div>
         )}
         {shared && webcal && (
-          <>
+          <div className="order-4 col-span-2 grid grid-cols-2 gap-3 sm:contents">
             <a href={webcal} className={`${cta} bg-accent text-on-accent hover:opacity-90`}>
               <AppleLogo size={18} weight="fill" aria-hidden="true" />
               Apple Calendrier
@@ -251,7 +251,7 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
             <a href={`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}`} target="_blank" rel="noopener noreferrer" className={`${cta} border border-line-strong text-foreground hover:border-foreground/40`}>
               Google Agenda
             </a>
-          </>
+          </div>
         )}
       </div>
 

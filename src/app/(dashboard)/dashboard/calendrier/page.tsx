@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import CalendarApp from "@/components/calendar/CalendarApp";
-import { DashPage, DashHeader } from "@/components/dashboard/ui";
+import { DashPage } from "@/components/dashboard/ui";
 import { getShareToken, listEvents } from "@/lib/calendar-data";
 import { canManage, requireOwner } from "@/lib/workspace";
 
@@ -11,7 +11,7 @@ export default async function CalendarPage() {
   const [events, token] = await Promise.all([listEvents(owner.id), getShareToken(owner.id)]);
   return (
     <DashPage className="max-w-[1400px]">
-      <DashHeader lead="Calendrier des" hl="lives" />
+      <h1 className="sr-only">Calendrier des lives</h1>
       <CalendarApp initial={events} editable={canManage(owner.workspace)} shareToken={token} />
     </DashPage>
   );

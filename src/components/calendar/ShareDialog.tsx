@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Copy } from "@phosphor-icons/react";
+import { Check, Copy, UploadSimple } from "@phosphor-icons/react";
+import { siGoogle } from "@/lib/brand-icons";
 import { buttonClass } from "@/components/ui/button-styles";
 
 // Partage du calendrier : un lien en lecture seule (page publique) et le flux d'abonnement pour l'agenda de ceux qui l'ont.
@@ -80,7 +81,7 @@ export default function ShareDialog({
   );
 
   return (
-    <dialog ref={dialog} onClose={onClose} onClick={(e) => e.target === dialog.current && dialog.current?.close()} aria-labelledby="share-title" className="m-auto w-[min(34rem,calc(100vw-2rem))] rounded-2xl border border-line-strong bg-background p-0 text-foreground backdrop:bg-black/70">
+    <dialog ref={dialog} onClose={onClose} onClick={(e) => e.target === dialog.current && dialog.current?.close()} aria-labelledby="share-title" className="m-auto w-[min(46rem,calc(100vw-2rem))] rounded-2xl border border-line-strong bg-background p-0 text-foreground backdrop:bg-black/70">
       <div className="grid gap-5 p-6">
         <div>
           <h2 id="share-title" className="text-lg font-semibold tracking-tight">
@@ -91,10 +92,36 @@ export default function ShareDialog({
         {token ? (
           <>
             {row("page", "Lien du calendrier", page, "À envoyer tel quel : il s'ouvre dans le navigateur, sans compte.")}
-            {row("feed", "Abonnement à l'agenda", webcal, "Apple Calendrier, Outlook : ajoute-le comme « calendrier par abonnement ». Il se met à jour tout seul.")}
-            <a href={`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}`} target="_blank" rel="noopener noreferrer" className="text-sm text-muted underline underline-offset-4 hover:text-foreground">
-              Ajouter à Google Agenda ↗
-            </a>
+            <div className="grid gap-3">
+              <div>
+                <h3 className="text-base font-semibold tracking-tight">Exporter vers le calendrier</h3>
+                <p className="mt-0.5 text-sm text-muted">Tes potes ajoutent tes lives à leur agenda, qui se met à jour tout seul.</p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="flex flex-col items-center gap-3 rounded-xl border border-line p-5 text-center">
+                  <svg viewBox="0 0 24 24" width={44} height={44} fill={`#${siGoogle.hex}`} aria-hidden="true">
+                    <path d={siGoogle.path} />
+                  </svg>
+                  <h4 className="text-sm font-semibold">S&apos;abonner via Google Agenda</h4>
+                  <p className="text-xs leading-relaxed text-muted">Exporte ce calendrier vers Google Agenda en un clic.</p>
+                  <a href={`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}`} target="_blank" rel="noopener noreferrer" className={buttonClass("secondary", "mt-auto w-full")}>
+                    Exporter vers Google Agenda
+                  </a>
+                </div>
+                <div className="flex flex-col items-center gap-3 rounded-xl border border-line p-5 text-center">
+                  <UploadSimple size={44} aria-hidden="true" />
+                  <h4 className="text-sm font-semibold">S&apos;abonner manuellement avec n&apos;importe quel agenda</h4>
+                  <p className="text-xs leading-relaxed text-muted">Apple Calendrier, Outlook, etc. : ajoute-le comme « calendrier par abonnement ».</p>
+                  <div className="mt-auto flex w-full gap-2">
+                    <input aria-label="Lien d'abonnement" readOnly value={webcal} onFocus={(e) => e.currentTarget.select()} className={field} />
+                    <button type="button" onClick={() => copy("feed", webcal)} className={buttonClass("secondary", "shrink-0")} aria-label="Copier le lien d'abonnement">
+                      {copied === "feed" ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
+                      {copied === "feed" ? "Copié" : "Copier"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div className="flex flex-wrap gap-2 border-t border-line pt-4">
               <button type="button" disabled={busy} onClick={() => run(() => onShare(true))} className={buttonClass("secondary")}>
                 Nouveau lien

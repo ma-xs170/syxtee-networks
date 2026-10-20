@@ -79,7 +79,7 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
     );
 
   const step = (dir: -1 | 1) => setCursor(view === "month" ? new Date(cursor.getFullYear(), cursor.getMonth() + dir, 1) : addDays(cursor, dir * (view === "week" ? 7 : 1)));
-  const title = view === "month" ? monthTitle(cursor) : view === "week" ? weekTitle(startOfWeek(cursor)) : dayLabel(cursor);
+  const title = view === "month" ? monthTitle(cursor) : view === "week" ? weekTitle(startOfWeek(cursor)) : `${dayLabel(cursor)} ${cursor.getFullYear()}`;
   const days = view === "week" ? Array.from({ length: 7 }, (_, i) => addDays(startOfWeek(cursor), i)) : [cursor];
 
   const blank = (start: Date, end: Date): Draft => ({ title: "", location: "", description: "", platforms: [], start, end });
@@ -193,8 +193,9 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <h2 className="mr-auto min-w-0 text-xl font-semibold tracking-tight sm:text-2xl" aria-live="polite">
-          {title}
+        <h2 className="mr-auto min-w-0 text-3xl font-bold tracking-tight sm:text-4xl" aria-live="polite">
+          {/* L'année passe en gris clair : le mois (ou la période) reste le point d'attention. */}
+          {title.replace(/\s\d{4}$/, "")} <span className="font-normal text-muted">{/\d{4}$/.exec(title)?.[0]}</span>
         </h2>
         <div role="group" aria-label="Vue du calendrier" className="flex h-11 items-center gap-1 rounded-full border border-line p-1">
           {VIEWS.map((v) => (

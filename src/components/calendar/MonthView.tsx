@@ -78,14 +78,14 @@ export default function MonthView({
 
   return (
     <div onPointerDownCapture={(e) => (pointer.current = e.pointerType)} className="select-none overflow-hidden rounded-2xl border border-line" role="grid" aria-label="Calendrier du mois">
-      <div className="grid grid-cols-7 border-b border-line bg-surface text-center font-mono text-[11px] uppercase tracking-[0.12em] text-muted" role="row">
+      <div className="grid grid-cols-[repeat(7,minmax(0,1fr))] border-b border-line bg-surface text-center font-mono text-[11px] uppercase tracking-[0.12em] text-muted" role="row">
         {days.slice(0, 7).map((d) => (
           <div key={d.getDay()} role="columnheader" className="py-2.5">
             {weekdayShort(d)}
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7" role="rowgroup">
+      <div className="grid grid-cols-[repeat(7,minmax(0,1fr))]" role="rowgroup">
         {days.map((d, i) => {
           const list = forDay(d);
           const isToday = sameDay(d, today);
@@ -112,12 +112,12 @@ export default function MonthView({
               onDoubleClick={(e) => {
                 if (editable && e.target === e.currentTarget) onCreate(d);
               }}
-              className={`min-h-[6.25rem] border-line p-1 sm:min-h-[8.25rem] sm:p-1.5 ${i % 7 !== 6 ? "border-r" : ""} ${i < 35 ? "border-b" : ""} ${target ? "bg-foreground/[0.1]" : inMonth ? "" : "bg-foreground/[0.025]"} ${editable ? "cursor-cell" : ""}`}
+              className={`min-h-[6.25rem] min-w-0 overflow-hidden border-line p-1 sm:min-h-[8.25rem] sm:p-1.5 ${i % 7 !== 6 ? "border-r" : ""} ${i < 35 ? "border-b" : ""} ${target ? "bg-foreground/[0.1]" : inMonth ? "" : "bg-foreground/[0.025]"} ${editable ? "cursor-cell" : ""}`}
             >
               <div className="pointer-events-none flex justify-end pr-0.5 pt-0.5">
                 <span className={`grid h-6 min-w-6 place-items-center rounded-full px-1 text-xs font-medium sm:text-sm ${isToday ? "bg-accent text-on-accent" : inMonth ? "text-foreground" : "text-muted"}`}>{d.getDate() === 1 ? `${d.getDate()} ${new Intl.DateTimeFormat("fr-FR", { month: "short" }).format(d)}` : d.getDate()}</span>
               </div>
-              <ul className="mt-1 grid gap-0.5">
+              <ul className="mt-1 grid min-w-0 gap-0.5">
                 {target && drag && diffDays(drag.grabbed, d) !== 0 && (
                   <li aria-hidden="true">
                     <div style={{ borderLeftColor: eventColor(drag.event) }} className="flex min-w-0 items-center gap-1.5 rounded-md border border-l-[3px] border-dashed border-foreground/60 bg-foreground/[0.14] px-1.5 py-1 text-[11px] font-medium leading-tight sm:text-xs">
@@ -127,7 +127,7 @@ export default function MonthView({
                   </li>
                 )}
                 {list.slice(0, MAX_CHIPS).map((e) => (
-                  <li key={e.id}>
+                  <li key={e.id} className="min-w-0">
                     <button
                       type="button"
                       onContextMenu={(ev) => {

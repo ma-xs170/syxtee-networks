@@ -24,6 +24,12 @@ export async function listEvents(ownerId: string, now = Date.now()): Promise<Eve
   return (data as EventRow[] | null) ?? [];
 }
 
+/** Prochains lives (en cours ou à venir), les plus proches d'abord : widget du tableau de bord. */
+export async function listUpcoming(ownerId: string, limit = 3, now = Date.now()): Promise<LiveEvent[]> {
+  const { data } = await createAdminClient().from("scheduled_lives").select(LIVE_COLUMNS).eq("owner_id", ownerId).gt("ends_at", new Date(now).toISOString()).order("starts_at").limit(limit);
+  return (data as LiveEvent[] | null) ?? [];
+}
+
 export async function getShareToken(ownerId: string): Promise<string | null> {
   const { data } = await createAdminClient().from("calendar_shares").select("token").eq("owner_id", ownerId).maybeSingle();
   return (data as { token: string } | null)?.token ?? null;

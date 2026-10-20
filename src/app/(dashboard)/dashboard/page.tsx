@@ -3,7 +3,8 @@ import Overview from "@/components/dashboard/Overview";
 import Link from "next/link";
 import { getPlan } from "@/lib/auth/plan";
 import { getProfile } from "@/lib/auth/dal";
-import { requireOwner } from "@/lib/workspace";
+import { canManage, requireOwner } from "@/lib/workspace";
+import { listUpcoming } from "@/lib/calendar-data";
 import { publicCoreUrl } from "@/lib/core";
 import { getOverview } from "@/lib/dashboard-overview";
 
@@ -13,7 +14,8 @@ export const metadata: Metadata = { title: "Tableau de bord", robots: { index: f
 export default async function DashboardPage() {
   // Utilisateur, profil et formule en parallèle (une seule requête chacun, partagée), puis l'aperçu.
   const [user, profileRow, plan] = await Promise.all([requireOwner("/dashboard"), getProfile(), getPlan()]);
-  const initial = await getOverview(user.id, profileRow!, "7d", plan);
+  // Un échec du calendrier (migration pas encore appliquée) ne doit jamais casser le tableau de bord.
+  const [initial, upcoming] = await Promise.all([getOverview(user.id, profileRow!, "7d", plan), listUpcoming(user.id, 3).catch(() => [])]);
   return (
     <>
       {plan.id === "free" && (
@@ -27,7 +29,7 @@ export default async function DashboardPage() {
           </div>
         </div></div>
       )}
-      <Overview initial={initial} coreUrl={publicCoreUrl} />
+      <Overview initial={initial} coreUrl={publicCoreUrl} upcoming={upcoming} canEditCalendar={canManage(user.workspace)} />
     </>
   );
 }

@@ -7,6 +7,8 @@ import { pluginState } from "@/lib/plugin";
 import { DailyBars } from "./charts";
 import { apiFetch } from "./apiFetch";
 import { Card, Column, DkButton, DkLink, DkTabButtons, ListRow, PageTitle, StatusBadge } from "./kit";
+import UpcomingLives from "./UpcomingLives";
+import type { LiveEvent } from "@/lib/calendar";
 import { useLinkDevices, type DevicesDemo } from "./useLinkDevices";
 import { sendOnce, watchStream } from "../remote/callDevice";
 import { Confirm, type ConfirmAsk } from "../remote/ui";
@@ -89,7 +91,8 @@ function Alerts({ alerts }: { alerts: OverviewData["alerts"] }) {
   );
 }
 
-export default function Overview({ initial, coreUrl = "", demo }: { initial: OverviewData; coreUrl?: string; demo?: DevicesDemo }) {
+export default function Overview({ initial, coreUrl = "", demo, upcoming, canEditCalendar = true }: { initial: OverviewData; coreUrl?: string; demo?: DevicesDemo; upcoming?: LiveEvent[]; canEditCalendar?: boolean }) {
+  const [now] = useState(() => Date.now());
   const [range, setRange] = useState<Range>(initial.range);
   const [data, setData] = useState(initial);
   const [error, setError] = useState(false);
@@ -140,6 +143,8 @@ export default function Overview({ initial, coreUrl = "", demo }: { initial: Ove
             </div>
           ))}
         </dl>
+
+        {upcoming && <UpcomingLives lives={upcoming} canEdit={canEditCalendar} now={now} />}
 
         {data.alerts.length > 0 && <Alerts alerts={data.alerts} />}
 

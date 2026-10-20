@@ -23,6 +23,8 @@ export default function MonthView({
   onMove,
   onPickDay,
   onContext,
+  selectedId,
+  onSelect,
 }: {
   anchor: Date;
   events: LiveEvent[];
@@ -33,11 +35,14 @@ export default function MonthView({
   onMove: (e: LiveEvent, newStart: Date) => void;
   onPickDay: (day: Date) => void;
   onContext: (ev: React.MouseEvent, target: { at: Date } | { event: LiveEvent }) => void;
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
 }) {
   const first = startOfWeek(startOfMonth(anchor));
   const days = Array.from({ length: 42 }, (_, i) => addDays(first, i));
   const [drag, setDrag] = useState<Drag | null>(null);
   const moved = useRef(false);
+  const pointer = useRef<string>("mouse");
 
   const forDay = (d: Date) => {
     const a = d.getTime();
@@ -72,7 +77,7 @@ export default function MonthView({
   }
 
   return (
-    <div className="select-none overflow-hidden rounded-2xl border border-line" role="grid" aria-label="Calendrier du mois">
+    <div onPointerDownCapture={(e) => (pointer.current = e.pointerType)} className="select-none overflow-hidden rounded-2xl border border-line" role="grid" aria-label="Calendrier du mois">
       <div className="grid grid-cols-7 border-b border-line bg-surface text-center font-mono text-[11px] uppercase tracking-[0.12em] text-muted" role="row">
         {days.slice(0, 7).map((d) => (
           <div key={d.getDay()} role="columnheader" className="py-2.5">
@@ -99,6 +104,12 @@ export default function MonthView({
                 onContext(ev, { at });
               }}
               onClick={(e) => {
+                if (e.target !== e.currentTarget) return;
+                // Souris : un clic désélectionne, un double-clic crée (comme Apple Calendrier). Écran tactile : un toucher crée.
+                if (editable && pointer.current === "touch") onCreate(d);
+                else onSelect(null);
+              }}
+              onDoubleClick={(e) => {
                 if (editable && e.target === e.currentTarget) onCreate(d);
               }}
               className={`min-h-[6.25rem] border-line p-1 sm:min-h-[8.25rem] sm:p-1.5 ${i % 7 !== 6 ? "border-r" : ""} ${i < 35 ? "border-b" : ""} ${target ? "bg-foreground/[0.1]" : inMonth ? "" : "bg-foreground/[0.025]"} ${editable ? "cursor-cell" : ""}`}
@@ -125,15 +136,18 @@ export default function MonthView({
                         onContext(ev, { event: e });
                       }}
                       onPointerDown={(ev) => startDrag(ev, e, d)}
-                      onClick={() => {
+                      onClick={(ev) => {
                         if (moved.current) {
                           moved.current = false;
                           return;
                         }
-                        onOpen(e);
+                        // Clavier (Entrée) ou toucher : ouvre ; souris : sélectionne, le double-clic ouvre.
+                        if (ev.detail === 0 || pointer.current === "touch") onOpen(e);
+                        else onSelect(e.id);
                       }}
+                      onDoubleClick={() => onOpen(e)}
                       style={{ borderLeftColor: eventColor(e), touchAction: editable ? "none" : undefined }}
-                      className={`flex w-full min-w-0 items-center gap-1.5 rounded-md border-l-[3px] bg-foreground/[0.08] px-1.5 py-1 text-left text-[11px] leading-tight text-foreground transition-colors hover:bg-foreground/[0.14] sm:text-xs ${drag?.event.id === e.id ? "opacity-40" : ""} ${editable ? "cursor-grab active:cursor-grabbing" : ""}`}
+                      className={`flex w-full min-w-0 items-center gap-1.5 rounded-md border-l-[3px] bg-foreground/[0.08] px-1.5 py-1 text-left text-[11px] leading-tight text-foreground transition-colors hover:bg-foreground/[0.14] sm:text-xs ${drag?.event.id === e.id ? "opacity-40" : ""} ${selectedId === e.id ? "ring-2 ring-foreground/70" : ""} ${editable ? "cursor-grab active:cursor-grabbing" : ""}`}
                     >
                       <span className="min-w-0 flex-1 truncate font-medium">{e.title}</span>
                       <span className="hidden shrink-0 text-muted sm:inline">{timeLabel(new Date(e.starts_at))}</span>

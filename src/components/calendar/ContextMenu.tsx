@@ -5,7 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 // Menu du clic droit (comme Apple Calendrier) : « Nouveau live », « Coller le live » sur un créneau vide ; « Modifier », « Copier »,
 // « Dupliquer », « Supprimer » sur un live. Se ferme au clic ailleurs, au défilement, à Échap ; flèches haut/bas pour naviguer.
 
-export type MenuItem = { label: string; onSelect: () => void; disabled?: boolean; danger?: boolean };
+export type MenuItem = { label: string; onSelect: () => void; disabled?: boolean; danger?: boolean } | { separator: true };
 
 export default function ContextMenu({ x, y, items, onClose }: { x: number; y: number; items: MenuItem[]; onClose: () => void }) {
   const box = useRef<HTMLDivElement>(null);
@@ -50,7 +50,10 @@ export default function ContextMenu({ x, y, items, onClose }: { x: number; y: nu
 
   return (
     <div ref={box} role="menu" style={pos} className="fixed z-50 min-w-[13rem] rounded-xl border border-line-strong bg-surface-2 p-1.5 shadow-2xl">
-      {items.map((it) => (
+      {items.map((it, i) =>
+        "separator" in it ? (
+          <div key={`sep-${i}`} role="separator" className="my-1.5 h-px bg-line" />
+        ) : (
         <button
           key={it.label}
           type="button"
@@ -64,7 +67,8 @@ export default function ContextMenu({ x, y, items, onClose }: { x: number; y: nu
         >
           {it.label}
         </button>
-      ))}
+        ),
+      )}
     </div>
   );
 }

@@ -63,6 +63,8 @@ export default function TimeGrid({
   onMove,
   onResize,
   onContext,
+  selectedId,
+  onSelect,
 }: {
   days: Date[];
   events: LiveEvent[];
@@ -74,10 +76,13 @@ export default function TimeGrid({
   onMove: (e: LiveEvent, newStart: Date) => void;
   onResize: (e: LiveEvent, newEnd: Date) => void;
   onContext: (ev: React.MouseEvent, target: { at: Date } | { event: LiveEvent }) => void;
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
   const cols = useRef<(HTMLDivElement | null)[]>([]);
   const moved = useRef(false);
+  const pointer = useRef<string>("mouse");
   const [preview, setPreview] = useState<Preview | null>(null);
   const template = `${GUTTER}px repeat(${days.length}, minmax(0, 1fr))`;
 
@@ -139,7 +144,10 @@ export default function TimeGrid({
       },
       onUp: (_u, cancelled) => {
         setPreview(null);
-        if (!cancelled) onRange(new Date(range.start), new Date(range.end));
+        if (cancelled) return;
+        // Un vrai glissé crée le créneau ; un simple clic à la souris désélectionne (le double-clic crée) ; un toucher crée.
+        if (active || touch) onRange(new Date(range.start), new Date(range.end));
+        else onSelect(null);
       },
     });
   }
@@ -181,7 +189,7 @@ export default function TimeGrid({
   const items = events.map((e) => ({ event: e, start: Date.parse(e.starts_at), end: Date.parse(e.ends_at) }));
 
   return (
-    <div className="select-none overflow-hidden rounded-2xl border border-line">
+    <div onPointerDownCapture={(e) => (pointer.current = e.pointerType)} className="select-none overflow-hidden rounded-2xl border border-line">
       <div className="grid border-b border-line bg-surface" style={{ gridTemplateColumns: template }}>
         <div />
         {days.map((d) => {
@@ -217,6 +225,11 @@ export default function TimeGrid({
                 role="group"
                 aria-label={`${weekdayShort(d)} ${d.getDate()}`}
                 onPointerDown={(e) => startCreate(e, ci)}
+                onDoubleClick={(ev) => {
+                  if (!editable || ev.target !== ev.currentTarget) return;
+                  const t = floorStep(timeAt(ev.clientX, ev.clientY).ms);
+                  onRange(new Date(t), new Date(t + HOUR));
+                }}
                 onContextMenu={(ev) => {
                   if (!editable || ev.target !== ev.currentTarget) return;
                   onContext(ev, { at: new Date(floorStep(timeAt(ev.clientX, ev.clientY).ms)) });
@@ -239,15 +252,18 @@ export default function TimeGrid({
                           onContext(ev, { event: e });
                         }}
                         onPointerDown={(ev) => startEdit(ev, e, "move")}
-                        onClick={() => {
+                        onClick={(ev) => {
                           if (moved.current) {
                             moved.current = false;
                             return;
                           }
-                          onOpen(e);
+                          // Clavier (Entrée) ou toucher : ouvre ; souris : sélectionne, le double-clic ouvre.
+                          if (ev.detail === 0 || pointer.current === "touch") onOpen(e);
+                          else onSelect(e.id);
                         }}
+                        onDoubleClick={() => onOpen(e)}
                         style={{ borderLeftColor: eventColor(e), touchAction: editable ? "none" : undefined }}
-                        className={`relative flex h-full w-full flex-col overflow-hidden rounded-md border-l-[3px] bg-surface-2 px-1.5 py-1 text-left text-[11px] leading-tight text-foreground ring-1 ring-inset ring-line transition-colors hover:bg-foreground/[0.14] sm:text-xs ${dim ? "opacity-40" : ""} ${editable ? "cursor-grab active:cursor-grabbing" : ""}`}
+                        className={`relative flex h-full w-full flex-col overflow-hidden rounded-md border-l-[3px] bg-surface-2 px-1.5 py-1 text-left text-[11px] leading-tight text-foreground ring-1 ring-inset ring-line transition-colors hover:bg-foreground/[0.14] sm:text-xs ${dim ? "opacity-40" : ""} ${selectedId === e.id ? "ring-2 !ring-foreground/70" : ""} ${editable ? "cursor-grab active:cursor-grabbing" : ""}`}
                       >
                         <span className="truncate font-medium">{e.title}</span>
                         {height > 36 && (

@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { CaretLeft, CaretRight, Plus, ShareNetwork } from "@phosphor-icons/react";
 import { createLiveAction, deleteLiveAction, shareCalendarAction, unshareCalendarAction, updateLiveAction } from "@/app/(dashboard)/dashboard/calendrier/actions";
-import type { LiveEvent } from "@/lib/calendar";
-import { addDays, HOUR, monthTitle, startOfDay, startOfMonth, startOfWeek, dayLabel, weekTitle } from "./date";
+import { platformOf, type LiveEvent } from "@/lib/calendar";
+import { addDays, HOUR, monthTitle, rangeLabel, startOfDay, startOfMonth, startOfWeek, dayLabel, weekTitle } from "./date";
 import ContextMenu, { type MenuItem } from "./ContextMenu";
 import EventDialog, { type Draft, type DraftInput } from "./EventDialog";
 import MonthView from "./MonthView";
@@ -35,6 +35,7 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
   const [notice, setNotice] = useState("");
   const [menu, setMenu] = useState<{ x: number; y: number; target: { at: Date } | { event: LiveEvent } } | null>(null);
   const [clip, setClip] = useState<LiveEvent | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // Le rendu dépend du fuseau du navigateur : rien n'est dessiné avant le montage (pas de décalage avec le rendu serveur).
   useEffect(() => {
@@ -50,6 +51,24 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
     const t = setTimeout(() => setNotice(""), 6000);
     return () => clearTimeout(t);
   }, [notice]);
+
+  // Touche Suppr / Retour arrière : supprime le live sélectionné (hors champ de saisie et fenêtres ouvertes).
+  useEffect(() => {
+    if (!selectedId || !editable) return;
+    const onKey = (ev: KeyboardEvent) => {
+      if ((ev.key !== "Delete" && ev.key !== "Backspace") || (ev.target as HTMLElement).closest("input, textarea, select, dialog, [contenteditable]")) return;
+      ev.preventDefault();
+      const id = selectedId;
+      void deleteLiveAction(id).then((r) => {
+        if (r.ok) {
+          setEvents((list) => list.filter((x) => x.id !== id));
+          setSelectedId(null);
+        } else setNotice(r.error);
+      });
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedId, editable]);
 
   const today = useMemo(() => startOfDay(new Date(now)), [now]);
   const upsert = (e: LiveEvent) => setEvents((list) => sortEvents([...list.filter((x) => x.id !== e.id), e]));
@@ -108,6 +127,14 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
     if (r.ok) upsert(r.value);
     else setNotice(r.error);
   }
+  /** Ouvre le courrier du Mac/PC avec le live déjà rédigé (titre, date, plateformes, lieu, description). */
+  function mailLive(e: LiveEvent) {
+    const names = e.platforms.map((id) => platformOf(id)?.label ?? id).join(", ");
+    const body = [rangeLabel(new Date(e.starts_at), new Date(e.ends_at)), names && `Plateformes : ${names}`, e.location && `Lieu : ${e.location}`, e.description].filter(Boolean).join("\n\n");
+    const a = document.createElement("a");
+    a.href = `mailto:?subject=${encodeURIComponent(`Live : ${e.title}`)}&body=${encodeURIComponent(body)}`;
+    a.click();
+  }
   async function removeNow(e: LiveEvent) {
     const r = await deleteLiveAction(e.id);
     if (r.ok) setEvents((list) => list.filter((x) => x.id !== e.id));
@@ -120,10 +147,15 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
           { label: "Coller le live", onSelect: () => void paste(t.at), disabled: !clip },
         ]
       : [
-          { label: "Modifier", onSelect: () => openEvent(t.event) },
-          { label: "Copier", onSelect: () => setClip(t.event) },
-          { label: "Dupliquer", onSelect: () => setDraft({ title: t.event.title, location: t.event.location, description: t.event.description, platforms: t.event.platforms, start: new Date(t.event.starts_at), end: new Date(t.event.ends_at) }) },
+          { label: "Lire les informations", onSelect: () => openEvent(t.event) },
+          { separator: true },
           { label: "Supprimer", onSelect: () => void removeNow(t.event), danger: true },
+          { label: "Couper", onSelect: () => { setClip(t.event); void removeNow(t.event); } },
+          { label: "Copier", onSelect: () => setClip(t.event) },
+          { label: "Coller", onSelect: () => void paste(new Date(t.event.starts_at)), disabled: !clip },
+          { label: "Dupliquer", onSelect: () => setDraft({ title: t.event.title, location: t.event.location, description: t.event.description, platforms: t.event.platforms, start: new Date(t.event.starts_at), end: new Date(t.event.ends_at) }) },
+          { separator: true },
+          { label: "Envoyer le live par e-mail", onSelect: () => mailLive(t.event) },
         ];
 
   async function save(input: DraftInput, id?: string): Promise<string | null> {
@@ -217,13 +249,15 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
           onOpen={openEvent}
           onMove={move}
           onContext={onContext}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
           onPickDay={(d) => {
             setCursor(d);
             setView("day");
           }}
         />
       ) : (
-        <TimeGrid days={days} events={events} today={today} now={now} editable={editable} onRange={(s, e) => openNew(s, e)} onOpen={openEvent} onMove={move} onResize={resize} onContext={onContext} />
+        <TimeGrid days={days} events={events} today={today} now={now} editable={editable} onRange={(s, e) => openNew(s, e)} onOpen={openEvent} onMove={move} onResize={resize} onContext={onContext} selectedId={selectedId} onSelect={setSelectedId} />
       )}
 
       {events.length === 0 && (

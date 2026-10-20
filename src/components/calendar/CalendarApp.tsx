@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { CaretLeft, CaretRight, Plus, ShareNetwork } from "@phosphor-icons/react";
 import { createLiveAction, deleteLiveAction, shareCalendarAction, unshareCalendarAction, updateLiveAction } from "@/app/(dashboard)/dashboard/calendrier/actions";
-import { buttonClass } from "@/components/ui/button-styles";
 import type { LiveEvent } from "@/lib/calendar";
 import { addDays, HOUR, monthTitle, startOfDay, startOfMonth, startOfWeek, dayLabel, weekTitle } from "./date";
 import EventDialog, { type Draft, type DraftInput } from "./EventDialog";
@@ -121,7 +120,9 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
     return null;
   }
 
-  const seg = "rounded-full px-4 py-1.5 text-sm transition-colors";
+  const seg = "h-full rounded-full px-4 text-sm transition-colors";
+  const nav = "grid h-full w-9 place-items-center rounded-full text-muted transition-colors hover:bg-foreground/[0.08] hover:text-foreground";
+  const cta = "inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 text-sm font-medium transition-[opacity,border-color,transform] duration-150 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
   const webcal = shared && token && typeof window !== "undefined" ? `${window.location.origin}/calendrier/${token}/live.ics`.replace(/^https?:/, "webcal:") : "";
 
   return (
@@ -130,38 +131,38 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
         <h2 className="mr-auto min-w-0 text-xl font-semibold tracking-tight sm:text-2xl" aria-live="polite">
           {title}
         </h2>
-        <div role="group" aria-label="Vue du calendrier" className="flex gap-1 rounded-full border border-line p-1">
+        <div role="group" aria-label="Vue du calendrier" className="flex h-11 items-center gap-1 rounded-full border border-line p-1">
           {VIEWS.map((v) => (
             <button key={v.id} type="button" aria-pressed={view === v.id} onClick={() => setView(v.id)} className={`${seg} ${view === v.id ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}>
               {v.label}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-1">
-          <button type="button" onClick={() => step(-1)} aria-label="Période précédente" className={buttonClass("secondary", "w-10 px-0")}>
-            <CaretLeft size={18} weight="bold" aria-hidden="true" />
+        <div role="group" aria-label="Navigation" className="flex h-11 items-center rounded-full border border-line p-1">
+          <button type="button" onClick={() => step(-1)} aria-label="Période précédente" className={nav}>
+            <CaretLeft size={20} weight="bold" aria-hidden="true" />
           </button>
-          <button type="button" onClick={() => setCursor(view === "month" ? startOfMonth(today) : today)} className={buttonClass("secondary")}>
+          <button type="button" onClick={() => setCursor(view === "month" ? startOfMonth(today) : today)} className="h-full rounded-full px-4 text-sm font-medium text-foreground transition-colors hover:bg-foreground/[0.08]">
             Aujourd&apos;hui
           </button>
-          <button type="button" onClick={() => step(1)} aria-label="Période suivante" className={buttonClass("secondary", "w-10 px-0")}>
-            <CaretRight size={18} weight="bold" aria-hidden="true" />
+          <button type="button" onClick={() => step(1)} aria-label="Période suivante" className={nav}>
+            <CaretRight size={20} weight="bold" aria-hidden="true" />
           </button>
         </div>
         {editable && (
           <>
-            <button type="button" onClick={() => openNew()} className={buttonClass("primary", "!h-12 px-7 text-base")}>
+            <button type="button" onClick={() => openNew()} className={`${cta} bg-accent text-on-accent hover:opacity-90`}>
               <Plus size={18} weight="bold" aria-hidden="true" />
               Nouveau live
             </button>
-            <button type="button" onClick={() => setSharing(true)} className={buttonClass("secondary")}>
-              <ShareNetwork size={16} aria-hidden="true" />
+            <button type="button" onClick={() => setSharing(true)} className={`${cta} border border-line-strong text-foreground hover:border-foreground/40`}>
+              <ShareNetwork size={18} aria-hidden="true" />
               Partager
             </button>
           </>
         )}
         {shared && webcal && (
-          <a href={webcal} className={buttonClass("primary")}>
+          <a href={webcal} className={`${cta} bg-accent text-on-accent hover:opacity-90`}>
             S&apos;abonner dans mon agenda
           </a>
         )}

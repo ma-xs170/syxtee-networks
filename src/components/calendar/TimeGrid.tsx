@@ -62,6 +62,7 @@ export default function TimeGrid({
   onOpen,
   onMove,
   onResize,
+  onContext,
 }: {
   days: Date[];
   events: LiveEvent[];
@@ -72,6 +73,7 @@ export default function TimeGrid({
   onOpen: (e: LiveEvent) => void;
   onMove: (e: LiveEvent, newStart: Date) => void;
   onResize: (e: LiveEvent, newEnd: Date) => void;
+  onContext: (ev: React.MouseEvent, target: { at: Date } | { event: LiveEvent }) => void;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
   const cols = useRef<(HTMLDivElement | null)[]>([]);
@@ -215,6 +217,10 @@ export default function TimeGrid({
                 role="group"
                 aria-label={`${weekdayShort(d)} ${d.getDate()}`}
                 onPointerDown={(e) => startCreate(e, ci)}
+                onContextMenu={(ev) => {
+                  if (!editable || ev.target !== ev.currentTarget) return;
+                  onContext(ev, { at: new Date(floorStep(timeAt(ev.clientX, ev.clientY).ms)) });
+                }}
                 className={`relative border-l border-line ${editable ? "cursor-cell" : ""}`}
                 style={{ height: 24 * HOUR_PX, backgroundImage: "linear-gradient(to bottom, var(--line) 1px, transparent 1px)", backgroundSize: `100% ${HOUR_PX}px` }}
               >
@@ -227,6 +233,11 @@ export default function TimeGrid({
                     <div key={`${e.id}-${s.start}`} className="absolute px-0.5" style={{ top, height, left: `${(s.lane / s.lanes) * 100}%`, width: `${100 / s.lanes}%` }}>
                       <button
                         type="button"
+                        onContextMenu={(ev) => {
+                          if (!editable) return;
+                          ev.stopPropagation();
+                          onContext(ev, { event: e });
+                        }}
                         onPointerDown={(ev) => startEdit(ev, e, "move")}
                         onClick={() => {
                           if (moved.current) {

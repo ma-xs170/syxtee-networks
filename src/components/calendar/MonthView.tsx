@@ -22,6 +22,7 @@ export default function MonthView({
   onOpen,
   onMove,
   onPickDay,
+  onContext,
 }: {
   anchor: Date;
   events: LiveEvent[];
@@ -31,6 +32,7 @@ export default function MonthView({
   onOpen: (e: LiveEvent) => void;
   onMove: (e: LiveEvent, newStart: Date) => void;
   onPickDay: (day: Date) => void;
+  onContext: (ev: React.MouseEvent, target: { at: Date } | { event: LiveEvent }) => void;
 }) {
   const first = startOfWeek(startOfMonth(anchor));
   const days = Array.from({ length: 42 }, (_, i) => addDays(first, i));
@@ -53,12 +55,14 @@ export default function MonthView({
     trackPointer({
       onMove: (m) => {
         if (!active && Math.hypot(m.clientX - x0, m.clientY - y0) < DRAG_PX) return;
+        if (!active) document.body.style.cursor = "grabbing";
         active = true;
         moved.current = true;
         over = (document.elementFromPoint(m.clientX, m.clientY)?.closest("[data-day]") as HTMLElement | null)?.dataset.day ?? null;
         setDrag({ event, grabbed: day, x: m.clientX, y: m.clientY, over });
       },
       onUp: (_u, cancelled) => {
+        document.body.style.cursor = "";
         setDrag(null);
         if (!active || cancelled || !over) return;
         const delta = diffDays(day, parseDayKey(over));
@@ -88,6 +92,12 @@ export default function MonthView({
               key={key}
               role="gridcell"
               data-day={key}
+              onContextMenu={(ev) => {
+                if (!editable) return;
+                const at = new Date(d);
+                at.setHours(20, 0, 0, 0);
+                onContext(ev, { at });
+              }}
               onClick={(e) => {
                 if (editable && e.target === e.currentTarget) onCreate(d);
               }}
@@ -97,10 +107,23 @@ export default function MonthView({
                 <span className={`grid h-6 min-w-6 place-items-center rounded-full px-1 text-xs font-medium sm:text-sm ${isToday ? "bg-accent text-on-accent" : inMonth ? "text-foreground" : "text-muted"}`}>{d.getDate() === 1 ? `${d.getDate()} ${new Intl.DateTimeFormat("fr-FR", { month: "short" }).format(d)}` : d.getDate()}</span>
               </div>
               <ul className="mt-1 grid gap-0.5">
+                {target && drag && diffDays(drag.grabbed, d) !== 0 && (
+                  <li aria-hidden="true">
+                    <div style={{ borderLeftColor: eventColor(drag.event) }} className="flex min-w-0 items-center gap-1.5 rounded-md border border-l-[3px] border-dashed border-foreground/60 bg-foreground/[0.14] px-1.5 py-1 text-[11px] font-medium leading-tight sm:text-xs">
+                      <span className="min-w-0 flex-1 truncate">{drag.event.title}</span>
+                      <span className="hidden shrink-0 text-muted sm:inline">{timeLabel(new Date(drag.event.starts_at))}</span>
+                    </div>
+                  </li>
+                )}
                 {list.slice(0, MAX_CHIPS).map((e) => (
                   <li key={e.id}>
                     <button
                       type="button"
+                      onContextMenu={(ev) => {
+                        if (!editable) return;
+                        ev.stopPropagation();
+                        onContext(ev, { event: e });
+                      }}
                       onPointerDown={(ev) => startDrag(ev, e, d)}
                       onClick={() => {
                         if (moved.current) {

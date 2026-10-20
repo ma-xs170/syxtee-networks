@@ -5,6 +5,7 @@ import { CaretLeft, CaretRight, Plus, ShareNetwork } from "@phosphor-icons/react
 import { createLiveAction, deleteLiveAction, shareCalendarAction, unshareCalendarAction, updateLiveAction } from "@/app/(dashboard)/dashboard/calendrier/actions";
 import type { LiveEvent } from "@/lib/calendar";
 import { addDays, HOUR, monthTitle, startOfDay, startOfMonth, startOfWeek, dayLabel, weekTitle } from "./date";
+import ContextMenu, { type MenuItem } from "./ContextMenu";
 import EventDialog, { type Draft, type DraftInput } from "./EventDialog";
 import MonthView from "./MonthView";
 import ShareDialog from "./ShareDialog";
@@ -32,6 +33,8 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
   const [sharing, setSharing] = useState(false);
   const [token, setToken] = useState<string | null>(shareToken);
   const [notice, setNotice] = useState("");
+  const [menu, setMenu] = useState<{ x: number; y: number; target: { at: Date } | { event: LiveEvent } } | null>(null);
+  const [clip, setClip] = useState<LiveEvent | null>(null);
 
   // Le rendu dépend du fuseau du navigateur : rien n'est dessiné avant le montage (pas de décalage avec le rendu serveur).
   useEffect(() => {
@@ -92,6 +95,36 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
     return change(e, { starts_at: newStart.toISOString(), ends_at: new Date(newStart.getTime() + dur).toISOString() });
   };
   const resize = (e: LiveEvent, newEnd: Date) => change(e, { ends_at: newEnd.toISOString() });
+
+  const onContext = (ev: React.MouseEvent, target: { at: Date } | { event: LiveEvent }) => {
+    ev.preventDefault();
+    setMenu({ x: ev.clientX, y: ev.clientY, target });
+  };
+  /** Colle le live copié à l'endroit cliqué (même durée). */
+  async function paste(at: Date) {
+    if (!clip) return;
+    const dur = Date.parse(clip.ends_at) - Date.parse(clip.starts_at);
+    const r = await createLiveAction({ title: clip.title, location: clip.location, description: clip.description, platforms: clip.platforms, starts_at: at.toISOString(), ends_at: new Date(at.getTime() + dur).toISOString() });
+    if (r.ok) upsert(r.value);
+    else setNotice(r.error);
+  }
+  async function removeNow(e: LiveEvent) {
+    const r = await deleteLiveAction(e.id);
+    if (r.ok) setEvents((list) => list.filter((x) => x.id !== e.id));
+    else setNotice(r.error);
+  }
+  const menuItems = (t: { at: Date } | { event: LiveEvent }): MenuItem[] =>
+    "at" in t
+      ? [
+          { label: "Nouveau live", onSelect: () => openNew(t.at) },
+          { label: "Coller le live", onSelect: () => void paste(t.at), disabled: !clip },
+        ]
+      : [
+          { label: "Modifier", onSelect: () => openEvent(t.event) },
+          { label: "Copier", onSelect: () => setClip(t.event) },
+          { label: "Dupliquer", onSelect: () => setDraft({ title: t.event.title, location: t.event.location, description: t.event.description, platforms: t.event.platforms, start: new Date(t.event.starts_at), end: new Date(t.event.ends_at) }) },
+          { label: "Supprimer", onSelect: () => void removeNow(t.event), danger: true },
+        ];
 
   async function save(input: DraftInput, id?: string): Promise<string | null> {
     const r = id ? await updateLiveAction(id, input) : await createLiveAction(input);
@@ -183,19 +216,21 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
           onCreate={openDay}
           onOpen={openEvent}
           onMove={move}
+          onContext={onContext}
           onPickDay={(d) => {
             setCursor(d);
             setView("day");
           }}
         />
       ) : (
-        <TimeGrid days={days} events={events} today={today} now={now} editable={editable} onRange={(s, e) => openNew(s, e)} onOpen={openEvent} onMove={move} onResize={resize} />
+        <TimeGrid days={days} events={events} today={today} now={now} editable={editable} onRange={(s, e) => openNew(s, e)} onOpen={openEvent} onMove={move} onResize={resize} onContext={onContext} />
       )}
 
       {events.length === 0 && (
         <p className="mt-4 text-sm text-muted">{editable ? "Aucun live planifié. Clique sur un jour (ou sélectionne un créneau en vue Semaine) pour ajouter ton prochain direct." : "Aucun live planifié pour le moment."}</p>
       )}
 
+      {menu && <ContextMenu x={menu.x} y={menu.y} items={menuItems(menu.target)} onClose={() => setMenu(null)} />}
       <EventDialog draft={draft} editable={editable} onClose={() => setDraft(null)} onSave={save} onDelete={remove} />
       {editable && <ShareDialog open={sharing} token={token} onClose={() => setSharing(false)} onShare={share} onUnshare={unshare} />}
     </div>

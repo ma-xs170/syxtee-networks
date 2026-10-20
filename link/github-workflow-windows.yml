@@ -1,10 +1,11 @@
 # Plugin OBS SYXTEE pour Windows : module natif (CMake + Qt d'OBS) + agent (exécutable Node autonome) + installeur .exe.
-# BÊTA, NON ESSAYÉ : aucune machine Windows n'a servi à écrire ce fichier. À copier dans .github/workflows/link-windows.yml
-# (le jeton de push de l'assistant n'a pas le droit « workflow »), puis à lancer à la main (workflow_dispatch) et à corriger au besoin.
+# BÊTA : mis au point par essais successifs sur le runner windows-latest de GitHub (pas de machine Windows locale).
 # Résultat : artefact « SYXTEE-Link-windows.exe », puis à poser dans DATA_DIR/downloads du serveur avec manifest.json (champ windows).
 name: SYXTEE Link Windows
 
 on:
+  push:
+    paths: ["link/**", ".github/workflows/link-windows.yml"]
   workflow_dispatch:
     inputs:
       obs_tag:
@@ -16,19 +17,35 @@ env:
 
 jobs:
   windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 24 }
+        with: { node-version: 26 }
+
+      # Version : celle de l'agent (link/src/agent.ts), la même que sur Mac.
+      - name: Version
+        shell: pwsh
+        run: |
+          $v = [regex]::Match((Get-Content link/src/agent.ts -Raw), 'VERSION = "([\d.]+)"').Groups[1].Value
+          if (-not $v) { throw "VERSION introuvable dans link/src/agent.ts" }
+          "LINK_VERSION=$v" >> $env:GITHUB_ENV
+          Write-Host "SYXTEE Link $v"
+
+      # 0. Tests de l'agent sous Windows (Gardien, chemins, pipes).
+      - name: Tests de l'agent
+        working-directory: link
+        shell: bash
+        run: |
+          npm ci
+          npm test
 
       # 1. Agent : un seul .exe autonome (Node intégré).
       - name: Agent
         working-directory: link
         shell: bash
         run: |
-          npm ci
-          npx esbuild src/main.ts --bundle --platform=node --format=cjs --target=node24 --outfile=dist/helper.cjs
+          npx esbuild src/main.ts --bundle --platform=node --format=cjs --target=node26 --outfile=dist/helper.cjs
           echo '{"main":"dist/helper.cjs","output":"dist/syxtee-link-helper.exe","disableExperimentalSEAWarning":true}' > dist/sea.json
           node --build-sea dist/sea.json
 
@@ -36,18 +53,22 @@ jobs:
       - name: OBS (libobs) et dépendances
         shell: pwsh
         run: |
-          git clone --depth 1 --branch $env:OBS_TAG https://github.com/obsproject/obs-studio.git obs-studio
+          git clone --depth 1 --recurse-submodules --shallow-submodules --branch $env:OBS_TAG https://github.com/obsproject/obs-studio.git obs-studio
           cd obs-studio
           cmake --preset windows-x64 -DENABLE_PLUGINS=OFF -DENABLE_BROWSER=OFF -DENABLE_SCRIPTING=OFF -DENABLE_WEBSOCKET=OFF
-          cmake --build build_x64 --config RelWithDebInfo --target libobs obs-frontend-api
+          cmake --build build_x64 --config RelWithDebInfo --target libobs obs-frontend-api w32-pthreads
+          cmake --install build_x64 --config RelWithDebInfo --prefix ../obs-install --component Development
+          Get-ChildItem ../obs-install -Recurse -Filter '*Config.cmake' | ForEach-Object FullName
 
       # 3. Module natif.
       - name: Module
         shell: pwsh
         run: |
-          $deps = (Get-ChildItem obs-studio/.deps -Directory | Select-Object -First 4 | ForEach-Object FullName) -join ';'
+          $deps = (Get-ChildItem obs-studio/.deps -Directory | Where-Object { $_.Name -notmatch 'x86$' -and $_.Name -notmatch 'cef' } | ForEach-Object { $_.FullName -replace '\\','/' }) -join ';'
+          $root = $PWD.Path -replace '\\','/'
+          Write-Host $deps
           cmake -S link/plugin -B build -G "Visual Studio 17 2022" -A x64 `
-            -DCMAKE_PREFIX_PATH="$deps" -Dlibobs_DIR="$PWD/obs-studio/build_x64/libobs" -Dobs-frontend-api_DIR="$PWD/obs-studio/build_x64/frontend/api"
+            -DCMAKE_MODULE_PATH="$root/obs-studio/cmake/finders" -DCMAKE_PREFIX_PATH="$deps;$root/obs-install"
           cmake --build build --config RelWithDebInfo
 
       # 4. Installeur : copie dans %APPDATA%\obs-studio\plugins\syxtee-link\bin\64bit (sans droits administrateur).
@@ -60,21 +81,56 @@ jobs:
           Copy-Item link/dist/syxtee-link-helper.exe stage/obs-plugins/64bit/
           @"
           [Setup]
+          AppId={{6E1B7C3A-5D0F-4B7E-9E55-5C0A1F5E7A11}
           AppName=SYXTEE Link
-          AppVersion=0.4.0
+          AppVersion=$env:LINK_VERSION
+          AppPublisher=SYXTEE NETWORKS
           DefaultDirName={userappdata}\obs-studio\plugins\syxtee-link\bin\64bit
           PrivilegesRequired=lowest
           OutputBaseFilename=SYXTEE-Link-windows
           OutputDir=out
           DisableDirPage=yes
           DisableProgramGroupPage=yes
+          CloseApplications=yes
           [Files]
           Source: "stage\obs-plugins\64bit\*"; DestDir: "{app}"; Flags: ignoreversion
+          [Run]
+          Filename: "{app}\syxtee-link-helper.exe"; Parameters: "install-guardian"; Flags: runhidden waituntilterminated
+          [UninstallRun]
+          Filename: "{app}\syxtee-link-helper.exe"; Parameters: "uninstall-guardian"; Flags: runhidden waituntilterminated; RunOnceId: "StopGuardian"
+          [Code]
+          procedure CurStepChanged(CurStep: TSetupStep);
+          var
+            Code: Integer;
+            Helper: String;
+          begin
+            if CurStep = ssInstall then begin
+              Helper := ExpandConstant('{app}\syxtee-link-helper.exe');
+              if FileExists(Helper) then
+                Exec(Helper, 'uninstall-guardian', '', SW_HIDE, ewWaitUntilTerminated, Code);
+            end;
+          end;
           "@ | Set-Content installer.iss
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
+      # 5. Manifeste à fusionner avec celui du Mac (même dossier sur le serveur : DATA_DIR/downloads).
+      - name: Manifeste
+        shell: pwsh
+        run: |
+          $h = (Get-FileHash out/SYXTEE-Link-windows.exe -Algorithm SHA256).Hash.ToLower()
+          $notes = @((Get-Content link/release-notes.json -Raw | ConvertFrom-Json).$($env:LINK_VERSION))
+          [ordered]@{
+            version = $env:LINK_VERSION
+            released_at = (Get-Date).ToUniversalTime().ToString("o")
+            notes = $notes
+            windows = [ordered]@{ file = "SYXTEE-Link-windows.exe"; sha256 = $h; beta = $true }
+          } | ConvertTo-Json -Depth 5 | Set-Content out/manifest-windows.json
+          Get-Content out/manifest-windows.json
 
       - uses: actions/upload-artifact@v4
         with:
           name: SYXTEE-Link-windows
-          path: out/SYXTEE-Link-windows.exe
+          path: |
+            out/SYXTEE-Link-windows.exe
+            out/manifest-windows.json
           if-no-files-found: error

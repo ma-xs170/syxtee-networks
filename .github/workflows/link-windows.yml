@@ -4,6 +4,8 @@
 name: SYXTEE Link Windows
 
 on:
+  push:
+    paths: ["link/**", ".github/workflows/link-windows.yml"]
   workflow_dispatch:
     inputs:
       obs_tag:
@@ -12,7 +14,6 @@ on:
 
 env:
   OBS_TAG: ${{ inputs.obs_tag || '32.0.0' }}
-  LINK_VERSION: "0.7.16"
 
 jobs:
   windows:
@@ -22,12 +23,28 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 26 }
 
+      # Version : celle de l'agent (link/src/agent.ts), la même que sur Mac.
+      - name: Version
+        shell: pwsh
+        run: |
+          $v = [regex]::Match((Get-Content link/src/agent.ts -Raw), 'VERSION = "([\d.]+)"').Groups[1].Value
+          if (-not $v) { throw "VERSION introuvable dans link/src/agent.ts" }
+          "LINK_VERSION=$v" >> $env:GITHUB_ENV
+          Write-Host "SYXTEE Link $v"
+
+      # 0. Tests de l'agent sous Windows (Gardien, chemins, pipes).
+      - name: Tests de l'agent
+        working-directory: link
+        shell: bash
+        run: |
+          npm ci
+          npm test
+
       # 1. Agent : un seul .exe autonome (Node intégré).
       - name: Agent
         working-directory: link
         shell: bash
         run: |
-          npm ci
           npx esbuild src/main.ts --bundle --platform=node --format=cjs --target=node26 --outfile=dist/helper.cjs
           echo '{"main":"dist/helper.cjs","output":"dist/syxtee-link-helper.exe","disableExperimentalSEAWarning":true}' > dist/sea.json
           node --build-sea dist/sea.json
@@ -64,21 +81,56 @@ jobs:
           Copy-Item link/dist/syxtee-link-helper.exe stage/obs-plugins/64bit/
           @"
           [Setup]
+          AppId={{6E1B7C3A-5D0F-4B7E-9E55-5C0A1F5E7A11}
           AppName=SYXTEE Link
           AppVersion=$env:LINK_VERSION
+          AppPublisher=SYXTEE NETWORKS
           DefaultDirName={userappdata}\obs-studio\plugins\syxtee-link\bin\64bit
           PrivilegesRequired=lowest
           OutputBaseFilename=SYXTEE-Link-windows
           OutputDir=out
           DisableDirPage=yes
           DisableProgramGroupPage=yes
+          CloseApplications=yes
           [Files]
           Source: "stage\obs-plugins\64bit\*"; DestDir: "{app}"; Flags: ignoreversion
+          [Run]
+          Filename: "{app}\syxtee-link-helper.exe"; Parameters: "install-guardian"; Flags: runhidden waituntilterminated
+          [UninstallRun]
+          Filename: "{app}\syxtee-link-helper.exe"; Parameters: "uninstall-guardian"; Flags: runhidden waituntilterminated; RunOnceId: "StopGuardian"
+          [Code]
+          procedure CurStepChanged(CurStep: TSetupStep);
+          var
+            Code: Integer;
+            Helper: String;
+          begin
+            if CurStep = ssInstall then begin
+              Helper := ExpandConstant('{app}\syxtee-link-helper.exe');
+              if FileExists(Helper) then
+                Exec(Helper, 'uninstall-guardian', '', SW_HIDE, ewWaitUntilTerminated, Code);
+            end;
+          end;
           "@ | Set-Content installer.iss
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
+      # 5. Manifeste à fusionner avec celui du Mac (même dossier sur le serveur : DATA_DIR/downloads).
+      - name: Manifeste
+        shell: pwsh
+        run: |
+          $h = (Get-FileHash out/SYXTEE-Link-windows.exe -Algorithm SHA256).Hash.ToLower()
+          $notes = @((Get-Content link/release-notes.json -Raw | ConvertFrom-Json).$($env:LINK_VERSION))
+          [ordered]@{
+            version = $env:LINK_VERSION
+            released_at = (Get-Date).ToUniversalTime().ToString("o")
+            notes = $notes
+            windows = [ordered]@{ file = "SYXTEE-Link-windows.exe"; sha256 = $h; beta = $true }
+          } | ConvertTo-Json -Depth 5 | Set-Content out/manifest-windows.json
+          Get-Content out/manifest-windows.json
 
       - uses: actions/upload-artifact@v4
         with:
           name: SYXTEE-Link-windows
-          path: out/SYXTEE-Link-windows.exe
+          path: |
+            out/SYXTEE-Link-windows.exe
+            out/manifest-windows.json
           if-no-files-found: error

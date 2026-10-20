@@ -1,6 +1,6 @@
 # SYXTEE Link
 
-Plugin OBS (macOS, Windows à suivre) qui relie OBS à SYXTEE Studio.
+Plugin OBS (macOS et Windows, Windows en bêta) qui relie OBS à SYXTEE Studio.
 
 - **Contrôle à distance** : SYXTEE Studio (sur le site, même depuis un téléphone) affiche l'interface d'OBS ; chaque bouton agit sur ton PC (live, enregistrement, scènes, sources, audio, transitions, secours automatique).
 - **Sauvegarde des scènes** : collections de scènes avec leurs médias (scripts exclus), sur ton espace SYXTEE, **5 Go par compte**. Restauration sur n'importe quel PC, sans toucher aux collections existantes.
@@ -37,7 +37,7 @@ npm run plugin       # macOS : syxtee-link.plugin et SYXTEE-Link-<version>.pkg d
 
 Prérequis : OBS installé et les en-têtes de **la même version de Qt que celle d'OBS** (le script lit la version d'OBS et refuse une autre) : `pip install aqtinstall && aqt install-qt mac desktop <version> clang_64 -O ~/Qt`. `npm run plugin` télécharge les en-têtes de l'API d'OBS (`OBS_TAG`), compile le module (universel arm64 et x86_64, symboles d'OBS résolus au chargement), construit l'agent (Node « single executable » de la machine de build) et signe ad hoc. Sur un Mac Intel, construire sur un Mac Intel pour que l'agent soit en x86_64.
 
-**Windows** : le code du plugin gère déjà Windows (`CreateProcess`), mais le build n'est pas fait : `cl` avec les bibliothèques d'OBS (obs.lib, obs-frontend-api.lib) ou le gabarit `obs-plugintemplate` sur une machine Windows, et un agent construit avec `node --build-sea` sur Windows.
+**Windows** : construit par `.github/workflows/link-windows.yml` (voir plus bas), mêmes fonctions que sur Mac.
 
 ## Sécurité
 
@@ -64,9 +64,17 @@ Sans compte Apple Developer, le `.pkg` n'est pas notarisé : clic droit sur le f
 
 `npm run plugin` écrit dans `~/syxtee-link-plugin` : `SYXTEE-Link-mac.pkg` et `manifest.json` (version, date, nouveautés, SHA-256). Les poser dans `DATA_DIR/downloads` du serveur (`/opt/syxtee/data/downloads`) : le Core les sert (`/dl/SYXTEE-Link-mac.pkg`, `GET /v1/plugin/latest`), la page « Plugin OBS » et la carte « Mes OBS » affichent « à jour » ou « mise à jour disponible ».
 
-## Windows (bêta, non essayé)
+## Windows (bêta)
 
-`plugin/CMakeLists.txt` et `github-workflow-windows.yml` (à copier dans `.github/workflows/`) décrivent la construction du module, de l'agent (.exe autonome) et de l'installeur. Rien n'a pu être essayé sans machine Windows : à lancer à la main et à corriger. Une fois `SYXTEE-Link-windows.exe` obtenu, le poser à côté du `.pkg` et ajouter `"windows": {"file": "SYXTEE-Link-windows.exe", "sha256": "…", "beta": true}` au manifeste.
+`.github/workflows/link-windows.yml` (copie de référence : `github-workflow-windows.yml`) construit à chaque changement de `link/` : tests de l'agent, agent autonome (`syxtee-link-helper.exe`), module `syxtee-link.dll` (CMake + Qt d'OBS), puis l'installeur `SYXTEE-Link-windows.exe` (Inno Setup, dossier utilisateur, sans droits administrateur) et `manifest-windows.json`. Aucune machine Windows locale : la bêta n'a pas encore été essayée sur un vrai PC.
+
+Même fonctions que sur Mac :
+- **Gardien** (`src/winstartup.ts`, `src/winobs.ts`) : clé `HKCU\...\Run` qui lance un petit script VBS (aucune fenêtre), un superviseur relance le Gardien s'il s'arrête (équivalent de `KeepAlive`), `SetThreadExecutionState` via un PowerShell caché garde le PC éveillé, `tasklist` / `taskkill` / `obs64.exe --disable-missing-files-check` pour surveiller, fermer et rouvrir OBS (dossier de travail `bin\64bit`, chemin noté par le plugin dans `session.json`, sinon registre `HKLM\SOFTWARE\OBS Studio`).
+- **Plugin** (`plugin/syxtee-link.c`) : note de session `session.json {pid, exited, exe}`, journal de l'agent `%USERPROFILE%\.syxtee-link\helper.log`, chemins Unicode (dossier utilisateur accentué), variables d'environnement par `_putenv_s`.
+- **Boîte « Sauvegarder mes scènes »** après la connexion : fenêtre Windows (PowerShell).
+- L'installeur enregistre le Gardien (`install-guardian`) et le retire à la désinstallation.
+
+Publication : télécharger l'artefact `SYXTEE-Link-windows` du workflow, poser `SYXTEE-Link-windows.exe` à côté de `SYXTEE-Link-mac.pkg` dans `DATA_DIR/downloads`, et copier le champ `windows` de `manifest-windows.json` dans `manifest.json` (le champ `beta: true` s'affiche sur le site jusqu'à la validation sur un vrai PC).
 
 ## Essais sans OBS
 

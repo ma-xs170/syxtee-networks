@@ -1,15 +1,17 @@
 import { execFile, spawn, type ChildProcess } from "node:child_process";
 import { readdirSync, rmSync } from "node:fs";
-import { homedir, hostname } from "node:os";
+import { hostname } from "node:os";
 import { join } from "node:path";
 import { VERSION } from "./agent.ts";
 import { load } from "./config.ts";
-import { DEFAULT_SETTINGS, readSession, readSettings, readStreaming, writeResume, writeSettings, type GuardianSettings } from "./state.ts";
+import { obsRoot } from "./obsconfig.ts";
+import { DEFAULT_SETTINGS, readObsExe, readSession, readSettings, readStreaming, writeResume, writeSettings, type GuardianSettings } from "./state.ts";
 import { osLabel } from "./system.ts";
 import { refreshTokens } from "./tokens.ts";
+import { findObsWin, keepAwakeWin, killObsWin, launchObsWin } from "./winobs.ts";
 
-// Gardien SYXTEE : petit processus lancé par launchd à l'ouverture de session, indépendant d'OBS.
-//  - garde le Mac éveillé (caffeinate) : écran verrouillé, le direct continue ;
+// Gardien SYXTEE : petit processus lancé à l'ouverture de session (launchd sur Mac, clé Run sur Windows), indépendant d'OBS.
+//  - garde le PC éveillé (caffeinate sur Mac, SetThreadExecutionState sur Windows) : écran verrouillé, le direct continue ;
 //  - relance OBS s'il plante (jamais s'il est fermé normalement) et reprend le direct s'il était actif ;
 //  - reste connecté au Core quand OBS est tombé : le site affiche « OBS hors ligne » avec un bouton « Relancer OBS ».
 
@@ -180,7 +182,7 @@ const findObsMac = () =>
  * déclenche la fenêtre « OBS ne s'est pas arrêté correctement » (mode sans échec) : personne n'est là pour cliquer, donc on les retire avant la relance.
  * À n'appeler que lorsqu'OBS est fermé.
  */
-export function clearCrashSentinel(dir = join(homedir(), "Library", "Application Support", "obs-studio", ".sentinel")): number {
+export function clearCrashSentinel(dir = join(obsRoot(), ".sentinel")): number {
   let n = 0;
   try {
     for (const f of readdirSync(dir)) {
@@ -202,22 +204,28 @@ const launchObsMac = async () => {
   });
 };
 
+const isMac = process.platform === "darwin";
+const isWin = process.platform === "win32";
+
+/** Arrêt d'OBS demandé par le Gardien : SIGTERM = fermeture normale (taskkill sans /F sur Windows), SIGKILL = OBS gelé. */
+const killObs = (pid: number, sig: NodeJS.Signals) => (isWin ? killObsWin(pid, sig === "SIGKILL") : process.kill(pid, sig));
+
 export function startGuardian(opts: { log?: (m: string) => void } = {}) {
   const log = opts.log ?? (() => {});
-  if (process.platform !== "darwin") {
-    log("Le Gardien n'est disponible que sur macOS pour l'instant.");
+  if (!isMac && !isWin) {
+    log("Le Gardien n'est disponible que sur macOS et Windows pour l'instant.");
     return { stop() {} };
   }
-  const watch = new ObsWatch({ findObs: findObsMac, launchObs: launchObsMac, kill: (pid, sig) => process.kill(pid, sig), now: Date.now, log });
+  const watch = new ObsWatch(isWin ? { findObs: findObsWin, launchObs: () => launchObsWin(clearCrashSentinel, readObsExe()), kill: killObs, now: Date.now, log } : { findObs: findObsMac, launchObs: launchObsMac, kill: killObs, now: Date.now, log });
   watch.settings = readSettings();
 
-  // Garde le Mac éveillé tant que la surveillance est active : veille système et veille du disque (l'écran peut s'éteindre et se verrouiller).
+  // Garde le PC éveillé tant que la surveillance est active : veille système et veille du disque (l'écran peut s'éteindre et se verrouiller).
   let awake: ChildProcess | null = null;
   let stopped = false;
   const syncAwake = () => {
     if (stopped) return;
     if (watch.settings.watch && !awake) {
-      awake = spawn("caffeinate", ["-i", "-m", "-s"], { stdio: "ignore" });
+      awake = isWin ? keepAwakeWin(process.pid) : spawn("caffeinate", ["-i", "-m", "-s"], { stdio: "ignore" });
       awake.on("exit", () => {
         awake = null;
         if (!stopped) setTimeout(syncAwake, 2000);

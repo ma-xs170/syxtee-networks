@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { dir } from "./config.ts";
 
 // Petits fichiers d'état partagés entre le plugin OBS, l'agent et le Gardien (processus séparés, même utilisateur).
-//   session.json   écrit par le plugin : { pid, exited } (exited passe à true à la fermeture normale d'OBS ; un plantage le laisse à false)
+//   session.json   écrit par le plugin : { pid, exited, exe? } (exited passe à true à la fermeture normale d'OBS ; un plantage le laisse à false)
 //   stream.json    écrit par l'agent : { streaming, at } (le direct d'OBS était actif à ce moment)
 //   resume.json    écrit par le Gardien après une relance : { at } (l'agent reprend le direct s'il est récent)
 //   guardian.json  réglages du Gardien : { watch, resume }
@@ -41,6 +41,12 @@ export function removeFile(name: string) {
 export function readSession(): Session | null {
   const s = readJson<Partial<Session>>("session.json");
   return s && Number.isInteger(s.pid) && typeof s.exited === "boolean" ? { pid: s.pid!, exited: s.exited } : null;
+}
+
+/** Chemin d'obs64.exe noté par le plugin (Windows) : permet de rouvrir OBS là où il est installé. */
+export function readObsExe(): string | null {
+  const e = readJson<{ exe?: unknown }>("session.json")?.exe;
+  return typeof e === "string" && e ? e : null;
 }
 
 export function readSettings(): GuardianSettings {

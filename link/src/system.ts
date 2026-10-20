@@ -1,5 +1,6 @@
 import { execFile } from "node:child_process";
 import { release, type as osType } from "node:os";
+import { psArgs } from "./winobs.ts";
 
 /** Système du PC, pour l'écran d'autorisation et le registre des postes (ex. « macOS 24.1.0 »). */
 export const osLabel = () => `${osType() === "Darwin" ? "macOS" : osType() === "Windows_NT" ? "Windows" : osType()} ${release()}`.slice(0, 40);
@@ -13,11 +14,19 @@ export function openUrl(url: string) {
 }
 
 /**
- * Boîte de dialogue native (macOS) : propose de sauvegarder les scènes juste après la connexion. Renvoie true si l'utilisateur accepte.
+ * Boîte de dialogue native (macOS et Windows) : propose de sauvegarder les scènes juste après la connexion. Renvoie true si l'utilisateur accepte.
  * Ailleurs (ou si la boîte ne peut pas s'afficher), renvoie false : l'interface locale montre la même proposition.
  */
 export function askBackup(): Promise<boolean> {
-  if (process.platform !== "darwin" || process.env.SYXTEE_LINK_NO_OPEN) return Promise.resolve(false);
+  if ((process.platform !== "darwin" && process.platform !== "win32") || process.env.SYXTEE_LINK_NO_OPEN) return Promise.resolve(false);
+  if (process.platform === "win32") {
+    const ps =
+      "Add-Type -AssemblyName PresentationFramework\n" +
+      "[System.Windows.MessageBox]::Show(\"SYXTEE Link est connecté à ton compte.`n`nSauvegarder tes scènes OBS (avec leurs médias) sur ton espace de 5 Go avant de commencer ?\", \"SYXTEE Link\", \"YesNo\", \"Question\")";
+    return new Promise((resolve) => {
+      execFile("powershell.exe", psArgs(ps), { timeout: 10 * 60_000, windowsHide: true }, (err, stdout) => resolve(!err && /^Yes\s*$/m.test(stdout)));
+    });
+  }
   const script =
     'display dialog "SYXTEE Link est connecté à ton compte.\\n\\nSauvegarder tes scènes OBS (avec leurs médias) sur ton espace de 5 Go avant de commencer ?" ' +
     'buttons {"Plus tard", "Sauvegarder mes scènes"} default button 2 with title "SYXTEE Link" with icon note';

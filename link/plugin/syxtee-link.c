@@ -64,9 +64,28 @@ const char *obs_module_description(void)
 #ifdef _WIN32
 #include <windows.h>
 #include <shellapi.h>
+#include <wchar.h>
 
 static PROCESS_INFORMATION helper;
 static bool helper_running = false;
+
+/* Les chemins passent par les API Unicode : un dossier utilisateur accentué (« Frédéric ») doit rester le même que côté agent (UTF-8). */
+static bool utf8_to_w(const char *in, wchar_t *out, int cap)
+{
+	return MultiByteToWideChar(CP_UTF8, 0, in, -1, out, cap) > 0;
+}
+
+/* %USERPROFILE%\.syxtee-link (le même dossier que homedir() côté agent), créé au besoin. */
+static bool syxtee_state_dir(wchar_t *out, size_t cap)
+{
+	const wchar_t *home = _wgetenv(L"USERPROFILE");
+	if (!home || !*home)
+		return false;
+	_snwprintf(out, cap, L"%ls\\.syxtee-link", home);
+	out[cap - 1] = L'\0';
+	CreateDirectoryW(out, NULL);
+	return true;
+}
 
 static bool helper_path(char *out, size_t cap)
 {
@@ -86,18 +105,45 @@ static bool helper_path(char *out, size_t cap)
 
 static void start_helper(void)
 {
-	char path[MAX_PATH * 2];
+	char path[MAX_PATH * 4];
 	if (!helper_path(path, sizeof(path))) {
 		blog(LOG_WARNING, "[syxtee-link] chemin de l'agent introuvable");
 		return;
 	}
-	char cmd[MAX_PATH * 2 + 64];
+	char cmd[MAX_PATH * 4 + 64];
 	snprintf(cmd, sizeof(cmd), "\"%s\" run --parent-pid %lu", path, (unsigned long)GetCurrentProcessId());
-	STARTUPINFOA si;
+	wchar_t wcmd[MAX_PATH * 4 + 64];
+	if (!utf8_to_w(cmd, wcmd, (int)(sizeof(wcmd) / sizeof(wcmd[0])))) {
+		blog(LOG_WARNING, "[syxtee-link] chemin de l'agent illisible");
+		return;
+	}
+	STARTUPINFOW si;
 	ZeroMemory(&si, sizeof(si));
 	si.cb = sizeof(si);
 	ZeroMemory(&helper, sizeof(helper));
-	if (CreateProcessA(NULL, cmd, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &helper)) {
+
+	/* Journal de l'agent : %USERPROFILE%\.syxtee-link\helper.log (poignée héritée par l'agent, comme sur Mac). */
+	HANDLE logh = INVALID_HANDLE_VALUE;
+	wchar_t dir[MAX_PATH * 2];
+	if (syxtee_state_dir(dir, sizeof(dir) / sizeof(dir[0]))) {
+		wchar_t log[MAX_PATH * 2 + 16];
+		_snwprintf(log, sizeof(log) / sizeof(log[0]), L"%ls\\helper.log", dir);
+		log[sizeof(log) / sizeof(log[0]) - 1] = L'\0';
+		SECURITY_ATTRIBUTES sa;
+		sa.nLength = sizeof(sa);
+		sa.lpSecurityDescriptor = NULL;
+		sa.bInheritHandle = TRUE;
+		logh = CreateFileW(log, FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE, &sa, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		if (logh != INVALID_HANDLE_VALUE) {
+			si.dwFlags = STARTF_USESTDHANDLES;
+			si.hStdOutput = logh;
+			si.hStdError = logh;
+		}
+	}
+	BOOL started = CreateProcessW(NULL, wcmd, NULL, NULL, logh != INVALID_HANDLE_VALUE, CREATE_NO_WINDOW, NULL, NULL, &si, &helper);
+	if (logh != INVALID_HANDLE_VALUE)
+		CloseHandle(logh);
+	if (started) {
 		helper_running = true;
 		blog(LOG_INFO, "[syxtee-link] agent lancé");
 	} else {
@@ -225,7 +271,33 @@ static void write_session(bool exited)
 	fclose(f);
 	rename(tmp, path);
 #else
-	(void)exited;
+	/* Windows : même fichier, plus le chemin d'obs64.exe (le Gardien rouvre OBS là où il est installé). */
+	wchar_t dir[MAX_PATH * 2], path[MAX_PATH * 2 + 32], tmp[MAX_PATH * 2 + 40];
+	if (!syxtee_state_dir(dir, sizeof(dir) / sizeof(dir[0])))
+		return;
+	_snwprintf(path, sizeof(path) / sizeof(path[0]), L"%ls\\session.json", dir);
+	path[sizeof(path) / sizeof(path[0]) - 1] = L'\0';
+	_snwprintf(tmp, sizeof(tmp) / sizeof(tmp[0]), L"%ls.tmp", path);
+	tmp[sizeof(tmp) / sizeof(tmp[0]) - 1] = L'\0';
+	wchar_t wexe[MAX_PATH];
+	char exe[MAX_PATH * 4], esc[MAX_PATH * 8];
+	DWORD n = GetModuleFileNameW(NULL, wexe, MAX_PATH);
+	exe[0] = '\0';
+	if (n > 0 && n < MAX_PATH)
+		WideCharToMultiByte(CP_UTF8, 0, wexe, -1, exe, (int)sizeof(exe), NULL, NULL);
+	size_t j = 0;
+	for (size_t i = 0; exe[i] && j + 2 < sizeof(esc); i++) {
+		if (exe[i] == '\\' || exe[i] == '"')
+			esc[j++] = '\\';
+		esc[j++] = exe[i];
+	}
+	esc[j] = '\0';
+	FILE *f = _wfopen(tmp, L"wb");
+	if (!f)
+		return;
+	fprintf(f, "{\"pid\":%lu,\"exited\":%s,\"exe\":\"%s\"}\n", (unsigned long)GetCurrentProcessId(), exited ? "true" : "false", esc);
+	fclose(f);
+	MoveFileExW(tmp, path, MOVEFILE_REPLACE_EXISTING);
 #endif
 }
 
@@ -235,7 +307,7 @@ static void set_obs_ipc_path(void)
 #ifdef _WIN32
 	char name[96];
 	snprintf(name, sizeof(name), "syxtee-link-obs-%lu", (unsigned long)GetCurrentProcessId());
-	SetEnvironmentVariableA("SYXTEE_LINK_OBS_IPC", name);
+	_putenv_s("SYXTEE_LINK_OBS_IPC", name); /* _putenv_s, pas SetEnvironmentVariable : le getenv du module Qt doit le voir aussi */
 #else
 	const char *home = getenv("HOME");
 	if (!home)
@@ -255,7 +327,7 @@ bool obs_module_load(void)
 	set_obs_ipc_path();
 	write_session(false);
 #ifdef _WIN32
-	SetEnvironmentVariableA("SYXTEE_LINK_IPC", ipc_token);
+	_putenv_s("SYXTEE_LINK_IPC", ipc_token);
 #else
 	setenv("SYXTEE_LINK_IPC", ipc_token, 1);
 #endif
@@ -265,7 +337,7 @@ bool obs_module_load(void)
 	bool ui = syxtee_ui_load();
 	if (!ui) {
 #ifdef _WIN32
-		SetEnvironmentVariableA("SYXTEE_LINK_OBS_IPC", NULL);
+		_putenv_s("SYXTEE_LINK_OBS_IPC", ""); /* retire la variable */
 #else
 		unsetenv("SYXTEE_LINK_OBS_IPC");
 #endif

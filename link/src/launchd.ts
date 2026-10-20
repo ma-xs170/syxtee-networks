@@ -3,8 +3,10 @@ import { chmodSync, mkdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, join } from "node:path";
 import { dir } from "./config.ts";
+import { installGuardianWin, uninstallGuardianWin } from "./winstartup.ts";
 
 // Enregistrement du Gardien auprès de launchd (macOS) : un LaunchAgent de l'utilisateur, relancé s'il s'arrête, sans mot de passe.
+// Sur Windows : voir winstartup.ts (clé Run + superviseur).
 
 export const LABEL = "fr.syxtee.guardian";
 const plistPath = () => join(homedir(), "Library", "LaunchAgents", `${LABEL}.plist`);
@@ -32,7 +34,8 @@ const launchctl = (args: string[]) => new Promise<{ ok: boolean; out: string }>(
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export async function installGuardian(): Promise<string> {
-  if (process.platform !== "darwin") return "Le Gardien n'est disponible que sur macOS pour l'instant.";
+  if (process.platform === "win32") return installGuardianWin();
+  if (process.platform !== "darwin") return "Le Gardien n'est disponible que sur macOS et Windows pour l'instant.";
   const isNode = basename(process.execPath).startsWith("node");
   const logFile = join(dir(), "guardian.log");
   mkdirSync(dir(), { recursive: true, mode: 0o700 });
@@ -65,6 +68,7 @@ export async function installGuardian(): Promise<string> {
 }
 
 export async function uninstallGuardian(): Promise<string> {
+  if (process.platform === "win32") return uninstallGuardianWin();
   if (process.platform !== "darwin") return "Rien à retirer.";
   await launchctl(["bootout", `gui/${process.getuid!()}/${LABEL}`]);
   rmSync(plistPath(), { force: true });

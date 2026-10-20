@@ -7,6 +7,7 @@ import CommandPalette, { type Command } from "./CommandPalette";
 import { createContext, useContext, useEffect, useRef, useState, useTransition, type ComponentType } from "react";
 import {
   Archive,
+  CalendarBlank,
   CaretUpDown,
   HardDrives,
   ChartBar,
@@ -62,6 +63,7 @@ const GROUPS: Group[] = [
     items: [
       { label: "Appareils", href: "/dashboard/appareils", icon: HardDrives },
       { label: "Scènes", href: "/dashboard/scenes", icon: Archive, feature: "relais" },
+      { label: "Calendrier", href: "/dashboard/calendrier", icon: CalendarBlank },
       { label: "Équipe", href: "/dashboard/equipe", icon: UsersThree, feature: "relais" },
     ],
   },

@@ -86,6 +86,7 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
   const act = (label: string, action: string, danger = false) => ({ label, action: { id: relay.id, action }, danger });
   const sinceKey = relay.rotated_at ? fmtAgo(relay.rotated_at) : "Jamais régénérée";
   const trigger = { cut: "Coupure seulement", cut_lowbitrate: "Coupure et débit très bas", sensitive: "Sensible" }[relay.switch_trigger];
+  const stab = { low: "Faible délai (≈ 0,3 s)", balanced: "Équilibré (≈ 1 s)", max: "Stabilité maximale (≈ 2,5 s)" }[relay.stability ?? "low"];
   const serverOk = server ? server.available && !server.maintenance : false;
 
   return (
@@ -194,7 +195,10 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
                     <Setting label="Nom" help="Le nom de l'appareil qui utilise ce serveur." value={<span className="font-medium">{relay.name}</span>} button={<ActionButton action={{ id: relay.id, action: "rename" }}>Renommer</ActionButton>} />
                     <Setting label="Emplacement" help="Où ton flux est reçu. Changer garde les mêmes adresses." value={<span className="font-medium">{server ? `${flag(server.cc)} ${server.city}, ${server.country}` : relay.server}</span>} button={<ActionButton action={{ id: relay.id, action: "server" }}>Changer</ActionButton>} />
                     {!relay.archived && (
+                      <>
                       <Setting label="Bascule automatique" help="Quand OBS passe sur ta scène de secours." value={<span className="font-medium">{trigger}</span>} button={<ActionButton action={{ id: relay.id, action: "trigger" }}>Modifier</ActionButton>} />
+                      <Setting label="Stabilité du flux" help="Tampon entre ton encodeur et OBS : plus il est grand, plus l'image reste fluide malgré un signal instable." value={<span className="font-medium">{stab}</span>} button={<ActionButton action={{ id: relay.id, action: "stability" }}>Modifier</ActionButton>} />
+                      </>
                     )}
                     {!relay.archived && (
                       <Setting label="Clé de ce serveur" help={`Régénérer coupe les anciennes adresses tout de suite. ${sinceKey === "Jamais régénérée" ? "Jamais régénérée." : `Dernière fois : ${sinceKey}.`}`} button={<ActionButton action={{ id: relay.id, action: "rotate" }}>Régénérer</ActionButton>} />

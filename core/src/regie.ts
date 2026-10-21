@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { Relay } from "./relays.ts";
+import { LATENCY_MS, stabilityOf, type Relay } from "./relays.ts";
 import { CLOCK, mireSvg } from "./mire.ts";
 import { sessionCode } from "./ids.ts";
 import { supervise, type Supervised } from "./supervisor.ts";
@@ -25,7 +25,7 @@ export type RegieOptions = {
 const MS = 1_000_000; // ns
 
 /** Arguments de gst-launch-1.0 (un argument par jeton ; les valeurs avec espaces sont entre guillemets). */
-export function regieArgs(o: RegieOptions & { playId: string; outPublishId: string; mireSvgPath: string }) {
+export function regieArgs(o: RegieOptions & { playId: string; outPublishId: string; mireSvgPath: string; latencyMs?: number }) {
   const video = `video/x-raw,format=I420,width=${o.width},height=${o.height},framerate=${o.fps}/1`;
   const audio = "audio/x-raw,format=F32LE,rate=48000,channels=2,layout=interleaved";
   const scale = o.width / 1280;
@@ -38,7 +38,7 @@ export function regieArgs(o: RegieOptions & { playId: string; outPublishId: stri
     ...sw("vsw"),
     ...sw("asw"),
     // Entrée : le flux du téléphone lu dans le SLS. fallbacksrc réessaie seul tant que le téléphone est absent.
-    "fallbacksrc", "name=src", `uri=srt://${o.srtHost}:${o.playPort}?streamid=${o.playId}&latency=200`,
+    "fallbacksrc", "name=src", `uri=srt://${o.srtHost}:${o.playPort}?streamid=${o.playId}&latency=${o.latencyMs ?? 200}`,
     "enable-dummy=false", "restart-on-eos=true", `timeout=${1000 * MS}`, `restart-timeout=${2000 * MS}`, `retry-timeout=${86_400_000 * MS}`,
     "src.video_0", "!", "videoconvert", "!", "videoscale", "!", "videorate", "!", video, "!", "queue", "!", "vsw.sink_0",
     "src.audio_0", "!", "audioconvert", "!", "audioresample", "!", audio, "!", "queue", "!", "asw.sink_0",
@@ -62,14 +62,14 @@ export function regieArgs(o: RegieOptions & { playId: string; outPublishId: stri
 
 export function createRegie(o: RegieOptions & { dir: string; tz: string; relay: string; logoPng?: Buffer; log: (m: string) => void; username: (userId: string) => Promise<string> }) {
   mkdirSync(o.dir, { recursive: true });
-  const running = new Map<string, { proc: Supervised; outPublishId: string }>();
+  const running = new Map<string, { proc: Supervised; outPublishId: string; stability: string }>();
 
   async function start(k: Relay) {
     const svgPath = join(o.dir, `${k.id}.svg`);
     const source = await o.username(k.user_id);
     writeFileSync(svgPath, mireSvg({ width: o.width, height: o.height, relay: o.relay, source, session: sessionCode(), logoPng: o.logoPng }));
-    const args = regieArgs({ ...o, playId: k.play_id, outPublishId: k.out_publish_id, mireSvgPath: svgPath });
-    running.set(k.id, { proc: supervise(`régie ${source}`, "gst-launch-1.0", args, o.log, { TZ: o.tz }), outPublishId: k.out_publish_id });
+    const args = regieArgs({ ...o, playId: k.play_id, outPublishId: k.out_publish_id, mireSvgPath: svgPath, latencyMs: LATENCY_MS[stabilityOf(k)] });
+    running.set(k.id, { proc: supervise(`régie ${source}`, "gst-launch-1.0", args, o.log, { TZ: o.tz }), outPublishId: k.out_publish_id, stability: stabilityOf(k) });
   }
 
   return {
@@ -78,7 +78,7 @@ export function createRegie(o: RegieOptions & { dir: string; tz: string; relay: 
       const want = new Map(keys.map((k) => [k.id, k]));
       for (const [id, r] of running) {
         const k = want.get(id);
-        if (!k || k.out_publish_id !== r.outPublishId) {
+        if (!k || k.out_publish_id !== r.outPublishId || stabilityOf(k) !== r.stability) {
           r.proc.stop();
           running.delete(id);
         }

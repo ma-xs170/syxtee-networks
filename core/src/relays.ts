@@ -19,6 +19,11 @@ export type Mode = "direct" | "regie";
 export type Protocol = "srtla" | "rtmp" | "rist";
 export type SwitchTrigger = "cut" | "cut_lowbitrate" | "sensitive";
 export const SWITCH_TRIGGERS: SwitchTrigger[] = ["cut", "cut_lowbitrate", "sensitive"];
+/** Stabilité du flux = taille du tampon SRT (migration 0061) : faible délai, équilibré, stabilité maximale. */
+export type Stability = "low" | "balanced" | "max";
+export const STABILITIES: Stability[] = ["low", "balanced", "max"];
+export const LATENCY_MS: Record<Stability, number> = { low: 300, balanced: 1000, max: 2500 };
+export const stabilityOf = (r: Pick<Relay, "stability">): Stability => (STABILITIES.includes(r.stability as Stability) ? (r.stability as Stability) : "low");
 export type Relay = StreamIds & {
   id: string;
   user_id: string;
@@ -36,6 +41,8 @@ export type Relay = StreamIds & {
   record_format?: "mov" | "mp4";
   /** Déclenchement de la bascule automatique (migration 0043). */
   switch_trigger?: SwitchTrigger;
+  /** Tampon SRT du relais (migration 0061). */
+  stability?: Stability;
   status: "live" | "offline";
   archived: boolean;
   created_at: string;
@@ -53,7 +60,7 @@ export class PortsError extends Error {}
 export class ForbiddenError extends Error {}
 
 const UNIQUE_VIOLATION = "23505";
-const PUBLIC_COLUMNS = "id, user_id, name, protocol, server, mode, record, record_format, switch_trigger, status, archived, created_at, rotated_at, last_live_at, rist_port, keys_enc";
+const PUBLIC_COLUMNS = "id, user_id, name, protocol, server, mode, record, record_format, switch_trigger, stability, status, archived, created_at, rotated_at, last_live_at, rist_port, keys_enc";
 
 /** Paire du relais créée par SYXTEE et sans relais autorisé correspondant. */
 export function orphanPair(p: { player: string; description?: string }, known: Set<string>) {
@@ -278,6 +285,7 @@ export function createRelayStore(
     setMode: (r: Relay, mode: Mode) => update(r.id, { mode }),
     setRecord: (r: Relay, record: boolean) => update(r.id, { record }),
     setRecordFormat: (r: Relay, record_format: "mov" | "mp4") => update(r.id, { record_format }),
+    setStability: (r: Relay, stability: Stability) => update(r.id, { stability }),
     setSwitchTrigger: (r: Relay, switch_trigger: SwitchTrigger) => update(r.id, { switch_trigger }),
 
     /** Archiver retire la paire du SLS (sessions coupées) ; réactiver la redéclare (dans la limite de la formule). */

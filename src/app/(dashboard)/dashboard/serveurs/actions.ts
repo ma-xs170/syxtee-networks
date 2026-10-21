@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { canManage, requireOwner } from "@/lib/workspace";
 import { allow } from "@/lib/auth/rateLimit";
-import { CoreOutdated, CoreRefusal, createRelay, deleteRelay, rotateRelay, updateRelay, type RelayView, type SwitchTrigger } from "@/lib/core";
+import { CoreOutdated, CoreRefusal, createRelay, deleteRelay, rotateRelay, updateRelay, type RelayView, type Stability, type SwitchTrigger } from "@/lib/core";
 import { forgetOverview } from "@/lib/dashboard-overview";
 import { getPlan, LOCKED_MESSAGE } from "@/lib/auth/plan";
 import { can, relayLimit, type Feature } from "@/lib/plans";
@@ -133,6 +133,14 @@ export async function changeModeAction(relayId: string, mode: "direct" | "regie"
 export async function setRecordAction(relayId: string, record: boolean) {
   const r = await run(relayId, "record", 60, (u) => updateRelay(u, relayId, { record }));
   revalidatePath("/dashboard/enregistrements");
+  return r;
+}
+
+/** Stabilité du flux (tampon SRT) : l'adresse de lecture d'OBS et la régie suivent. */
+export async function setStabilityAction(relayId: string, stability: Stability) {
+  if (!["low", "balanced", "max"].includes(stability)) return { error: "Niveau inconnu." };
+  const r = await run(relayId, "relay-edit", 60, (u) => updateRelay(u, relayId, { stability }));
+  revalidatePath("/dashboard/direct");
   return r;
 }
 

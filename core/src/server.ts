@@ -9,7 +9,7 @@ import { isServiceToken } from "./auth.ts";
 import type { Config } from "./config.ts";
 import type { HealthMonitor, Live } from "./health.ts";
 import { createSysStats } from "./sysstats.ts";
-import { ForbiddenError, PortsError, QuotaError, SWITCH_TRIGGERS, type Relay, type RelayStore, type SwitchTrigger } from "./relays.ts";
+import { ForbiddenError, PortsError, QuotaError, LATENCY_MS, STABILITIES, SWITCH_TRIGGERS, stabilityOf, type Relay, type RelayStore, type Stability, type SwitchTrigger } from "./relays.ts";
 import type { Security } from "./security.ts";
 import type { SlsEvent } from "./sls-log.ts";
 import type { Rist } from "./rist.ts";
@@ -94,6 +94,7 @@ export function relayView(r: Relay, c: Config, live = false) {
     record: r.record === true,
     record_format: r.record_format === "mp4" ? ("mp4" as const) : ("mov" as const),
     switch_trigger: SWITCH_TRIGGERS.includes(r.switch_trigger as SwitchTrigger) ? (r.switch_trigger as SwitchTrigger) : ("cut" as const),
+    stability: stabilityOf(r),
     record_available: c.RECORD_ENABLED,
     mode: regie ? ("regie" as const) : r.mode,
     regie_available: c.REGIE_ENABLED,
@@ -109,7 +110,7 @@ export function relayView(r: Relay, c: Config, live = false) {
         : r.protocol === "rtmp"
         ? { rtmp_server: `rtmp://${host}:${c.RTMP_PORT}/${RTMP_APP}`, rtmp_key: r.publish_id, rtmp_url: `rtmp://${host}:${c.RTMP_PORT}/${RTMP_APP}/${r.publish_id}` }
         : { srtla_url: `srtla://${host}:${c.SRTLA_PORT}?streamid=${r.publish_id}`, srt_url: `srt://${host}:${c.SRT_PUBLISH_PORT}?streamid=${r.publish_id}` },
-    obs_srt_url: `srt://${host}:${c.SRT_PLAY_PORT}?streamid=${regie ? r.out_play_id : r.play_id}`,
+    obs_srt_url: `srt://${host}:${c.SRT_PLAY_PORT}?streamid=${regie ? r.out_play_id : r.play_id}&latency=${LATENCY_MS[stabilityOf(r)] * 1000}`,
     created_at: r.created_at,
     rotated_at: r.rotated_at,
     last_live_at: r.last_live_at,
@@ -204,6 +205,7 @@ export function buildServer(d: Deps) {
         record: z.boolean().optional(),
         record_format: z.enum(["mov", "mp4"]).optional(),
         switch_trigger: z.enum(["cut", "cut_lowbitrate", "sensitive"]).optional(),
+        stability: z.enum(STABILITIES as [string, ...string[]]).optional(),
         /** Changer de serveur : même relais, mêmes clés. */
         server: z.string().regex(/^[a-z0-9]{2,12}$/).optional(),
         limit: z.number().int().min(0).default(0),
@@ -220,6 +222,7 @@ export function buildServer(d: Deps) {
       }
       if (body.record_format !== undefined) r = await d.relays.setRecordFormat(r, body.record_format);
       if (body.switch_trigger !== undefined) r = await d.relays.setSwitchTrigger(r, body.switch_trigger);
+      if (body.stability !== undefined) r = await d.relays.setStability(r, body.stability as Stability);
       if (body.server !== undefined) r = await d.relays.move(r, body.server);
       if (body.archived !== undefined) r = await d.relays.setArchived(r, body.archived, body.limit);
     } catch (e) {

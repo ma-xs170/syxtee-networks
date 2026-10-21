@@ -53,6 +53,7 @@ const relay = (i: number, name: string, protocol: "srtla" | "rtmp", live: boolea
     record: false,
     record_format: "mov",
     switch_trigger: "cut",
+    stability: "low",
     record_available: false,
   urls: { srtla_url: `${url}demo${i}`, srt_url: `${url}demo${i}`, rtmp_server: "rtmp://relais.exemple.net/live", rtmp_key: `demo${i}`, rtmp_url: `rtmp://relais.exemple.net/live/demo${i}` },
   obs_srt_url: `${url}obs${i}`,

@@ -2,19 +2,25 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { archiveRelayAction, changeServerAction, deleteRelayAction, renameRelayAction, rotateRelayAction, setSwitchTriggerAction, type RelayActionState } from "@/app/(dashboard)/dashboard/serveurs/actions";
-import type { RelayView, SwitchTrigger } from "@/lib/core";
+import { archiveRelayAction, changeServerAction, deleteRelayAction, renameRelayAction, rotateRelayAction, setStabilityAction, setSwitchTriggerAction, type RelayActionState } from "@/app/(dashboard)/dashboard/serveurs/actions";
+import type { RelayView, Stability, SwitchTrigger } from "@/lib/core";
 import { flag, RELAY_SERVERS } from "@/lib/relay-servers";
 
 // Actions d'un relais : Copier l'URL (clé jamais affichée ici), Voir, et un menu (Renommer, Régénérer la clé,
 // Archiver ou Réactiver, Supprimer). Les actions qui coupent des URLs passent par une confirmation.
 
-type Pending = "rename" | "trigger" | "server" | "rotate" | "archive" | "delete" | null;
+type Pending = "rename" | "trigger" | "stability" | "server" | "rotate" | "archive" | "delete" | null;
 
 const TRIGGERS: { id: SwitchTrigger; title: string; text: string }[] = [
   { id: "cut", title: "Coupure seulement", text: "Bascule sur la scène de secours quand l'image se fige ou que le flux est coupé." },
   { id: "cut_lowbitrate", title: "Coupure et débit très bas", text: "Bascule aussi quand le débit du flux tombe sous 300 kbit/s, avant que l'image ne se fige." },
   { id: "sensitive", title: "Sensible", text: "Réagit aux micro-coupures : bascule dès 2 secondes d'image figée ou sous 800 kbit/s. Peut basculer un peu trop souvent." },
+];
+
+const STABILITIES: { id: Stability; title: string; text: string }[] = [
+  { id: "low", title: "Faible délai", text: "Environ 0,3 s de tampon. Pour une bonne connexion ou un échange en direct avec le chat." },
+  { id: "balanced", title: "Équilibré", text: "Environ 1 s de tampon. Rejoue les paquets perdus avant qu'ils ne se voient : le bon choix en 4G/5G." },
+  { id: "max", title: "Stabilité maximale", text: "Environ 2,5 s de tampon. Pour un signal très instable : image fluide, sans saccades, mais plus de décalage." },
 ];
 
 /** URL que l'encodeur colle : SRTLA pour Moblin, URL RTMP ou RIST complète sinon. */
@@ -30,6 +36,7 @@ export default function RelayActions({ relay, showView = true, onView, bare = fa
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState(relay.name);
   const [trig, setTrig] = useState<SwitchTrigger>(relay.switch_trigger ?? "cut");
+  const [stab, setStab] = useState<Stability>(relay.stability ?? "low");
   const otherServers = RELAY_SERVERS.filter((s) => s.available && s.id !== relay.server);
   const [target, setTarget] = useState(otherServers[0]?.id ?? "");
   const [pending, start] = useTransition();
@@ -47,7 +54,7 @@ export default function RelayActions({ relay, showView = true, onView, bare = fa
     window.addEventListener("relay-action", on);
     return () => window.removeEventListener("relay-action", on);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [relay.id, relay.name, relay.switch_trigger]);
+  }, [relay.id, relay.name, relay.switch_trigger, relay.stability]);
 
   useEffect(() => {
     if (!menu) return;
@@ -84,6 +91,7 @@ export default function RelayActions({ relay, showView = true, onView, bare = fa
     setError(null);
     setName(relay.name);
     setTrig(relay.switch_trigger ?? "cut");
+    setStab(relay.stability ?? "low");
     setAsk(p);
   }
 
@@ -92,6 +100,7 @@ export default function RelayActions({ relay, showView = true, onView, bare = fa
       let r: RelayActionState = {};
       if (ask === "rename") r = await renameRelayAction(relay.id, name);
       if (ask === "trigger") r = await setSwitchTriggerAction(relay.id, trig);
+      if (ask === "stability") r = await setStabilityAction(relay.id, stab);
       if (ask === "server") r = await changeServerAction(relay.id, target);
       if (ask === "rotate") r = await rotateRelayAction(relay.id);
       if (ask === "archive") r = await archiveRelayAction(relay.id, !relay.archived);
@@ -107,6 +116,11 @@ export default function RelayActions({ relay, showView = true, onView, bare = fa
   const texts: Record<Exclude<Pending, null>, { title: string; body: string; cta: string; danger?: boolean }> = {
     rename: { title: "Renommer la caméra", body: "Le nom de la caméra qui utilise ce flux. Les URLs ne changent pas. Dans OBS, la source « Flux › NOM » prend le nouveau nom toute seule.", cta: "Renommer" },
     trigger: { title: "Déclenchement de la bascule", body: "Quand OBS doit passer seul sur ta scène de secours. Le plugin lit ce réglage (aussi modifiable dans Contrôle à distance, panneau Appareil).", cta: "Enregistrer" },
+    stability: {
+      title: "Stabilité du flux",
+      body: "Taille du tampon entre ton encodeur et OBS. Plus il est grand, plus l'image reste fluide malgré un signal instable, au prix d'un peu de décalage. Le plugin Link met l'adresse OBS à jour tout seul ; sinon, recolle-la. Si tu diffuses, la mire redémarre quelques secondes.",
+      cta: "Enregistrer",
+    },
     server: {
       title: "Changer de serveur",
       body: "Le relais garde le même identifiant, la même clé et la même adresse : rien à recoller dans ton encodeur ni dans OBS. Si tu diffuses en ce moment, le direct est coupé quelques secondes.",
@@ -157,6 +171,7 @@ export default function RelayActions({ relay, showView = true, onView, bare = fa
               [
                 ["rename", "Renommer"],
                 ...(relay.archived ? [] : [["trigger", "Déclenchement de la bascule"]]),
+                ...(relay.archived ? [] : [["stability", "Stabilité du flux"]]),
                 ...(otherServers.length > 0 ? [["server", "Changer de serveur"]] : []),
                 ...(relay.archived ? [] : [["rotate", "Régénérer la clé"]]),
                 ["archive", relay.archived ? "Réactiver" : "Archiver"],
@@ -225,6 +240,20 @@ export default function RelayActions({ relay, showView = true, onView, bare = fa
                   <label key={x.id} className={`cursor-pointer rounded-xl border p-3 text-sm transition-colors ${trig === x.id ? "border-foreground" : "border-line hover:border-line-strong"}`}>
                     <span className="flex items-center gap-2 font-medium">
                       <input type="radio" name={`trigger-${relay.id}`} checked={trig === x.id} onChange={() => setTrig(x.id)} className="accent-current" />
+                      {x.title}
+                    </span>
+                    <span className="mt-1 block pl-6 text-xs text-muted">{x.text}</span>
+                  </label>
+                ))}
+              </fieldset>
+            )}
+            {ask === "stability" && (
+              <fieldset className="mt-4 grid gap-2">
+                <legend className="sr-only">Stabilité</legend>
+                {STABILITIES.map((x) => (
+                  <label key={x.id} className={`cursor-pointer rounded-xl border p-3 text-sm transition-colors ${stab === x.id ? "border-foreground" : "border-line hover:border-line-strong"}`}>
+                    <span className="flex items-center gap-2 font-medium">
+                      <input type="radio" name={`stability-${relay.id}`} checked={stab === x.id} onChange={() => setStab(x.id)} className="accent-current" />
                       {x.title}
                     </span>
                     <span className="mt-1 block pl-6 text-xs text-muted">{x.text}</span>

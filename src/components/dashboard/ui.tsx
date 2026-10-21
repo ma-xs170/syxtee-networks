@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Badge } from "../ui/Tag";
 import Highlight from "../ui/Highlight";
 import DashArt from "./DashArt";
+import TitleIcon from "./TitleIcon";
 import type { DashIcon, SectionTab } from "@/lib/dashboard-nav";
 
 // Briques communes des pages du dashboard : en-tête de page, tuile, libellé mono, page « bientôt ».
@@ -41,7 +42,9 @@ export function DashHeader({ lead, hl, sub, children, highlight = false }: { lea
   return (
     <div className="mb-6 flex flex-wrap items-end sm:mb-8 justify-between gap-4">
       <div>
-        <h1 className="h-serif pb-1.5 text-[clamp(2rem,4.2vw,3.25rem)]">
+        <h1 className="h-serif flex items-center gap-[0.35em] pb-1.5 text-[clamp(2rem,4.2vw,3.25rem)]">
+          <TitleIcon />
+          <span>
           {lead}
           {hl && (
             <>
@@ -49,6 +52,7 @@ export function DashHeader({ lead, hl, sub, children, highlight = false }: { lea
               {highlight ? <Highlight>{hl}</Highlight> : <em>{hl}</em>}
             </>
           )}
+          </span>
         </h1>
         {sub && <p className="mt-3 max-w-[65ch] text-sm leading-relaxed text-muted">{sub}</p>}
       </div>

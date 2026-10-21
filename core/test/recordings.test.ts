@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -24,9 +24,10 @@ function harness(o: { quota?: number; free?: number } = {}) {
       return { stop: () => (p.stopped = true), running: () => !p.stopped };
     }) as never,
   });
-  const put = (name: string, size: number) => {
+  const put = (name: string, size: number, ageDays = 0) => {
     mkdirSync(join(dir, USER, RID), { recursive: true });
     writeFileSync(join(dir, USER, RID, name), Buffer.alloc(size));
+    if (ageDays) utimesSync(join(dir, USER, RID, name), new Date(Date.now() - ageDays * 86_400_000), new Date(Date.now() - ageDays * 86_400_000));
   };
   return { rec, started, put };
 }
@@ -118,4 +119,14 @@ test("lien signé : valable 5 min, refusé si modifié", () => {
   assert.deepEqual(rec.verify(t, 2000), { user: USER, relay: RID, file: "20260101-000000.mp4" });
   assert.equal(rec.verify(t, 1000 + 6 * 60_000), null);
   assert.equal(rec.verify(`x${t}`, 2000), null);
+});
+
+test("fichiers périmés : masqués de la liste et du quota dès l'expiration, supprimés à la purge", async () => {
+  const { rec, put } = harness({ quota: 1000 });
+  put("20260101-000000.mp4", 600, 20);
+  put("20260102-000000.mp4", 100, 1);
+  assert.deepEqual((await rec.files(USER)).map((f) => f.file), ["20260102-000000.mp4"]);
+  assert.equal((await rec.usage(USER)).used, 100);
+  assert.equal(await rec.purge(), 1);
+  assert.equal((await rec.files(USER, true)).length, 1);
 });

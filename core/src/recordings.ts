@@ -90,7 +90,8 @@ export function createRecordings(o: {
   const userDir = (user: string) => join(o.dir, user);
   const relayDir = (user: string, relay: string) => join(o.dir, user, relay);
 
-  async function files(user: string): Promise<RecordingFile[]> {
+  /** Fichiers du compte. Les fichiers périmés (en attente de purge) sont masqués, sauf avec `withExpired`. */
+  async function files(user: string, withExpired = false): Promise<RecordingFile[]> {
     const out: RecordingFile[] = [];
     const mtimes = new Map<string, number>();
     const relayIds = await readdir(userDir(user)).catch(() => [] as string[]);
@@ -111,7 +112,8 @@ export function createRecordings(o: {
       const normal = (mtimes.get(`${f.relay_id}/${f.file}`) ?? 0) + retentionDays * 86_400_000;
       f.expires_at = new Date(over ? Math.min(normal, last + OVER_QUOTA_GRACE_MS) : normal).toISOString();
     }
-    return out.sort((a, b) => (a.file < b.file ? 1 : -1));
+    const now = Date.now();
+    return out.filter((f) => withExpired || f.recording || Date.parse(f.expires_at) > now).sort((a, b) => (a.file < b.file ? 1 : -1));
   }
   const total = (list: RecordingFile[]) => list.reduce((n, f) => n + f.size, 0);
 
@@ -192,7 +194,7 @@ export function createRecordings(o: {
       let n = 0;
       for (const user of await readdir(o.dir).catch(() => [] as string[])) {
         if (!UUID.test(user)) continue;
-        for (const f of await files(user)) {
+        for (const f of await files(user, true)) {
           if (f.recording || Date.parse(f.expires_at) > now) continue;
           await rm(join(relayDir(user, f.relay_id), f.file), { force: true });
           n++;

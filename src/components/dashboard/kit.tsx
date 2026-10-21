@@ -1,4 +1,5 @@
 import Link from "next/link";
+import TitleIcon from "./TitleIcon";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 // Briques de l'espace client (styles dans app/dashboard.css) : carte, boutons, toggle, badge, ligne, onglets, tableau.
@@ -12,7 +13,10 @@ export function PageTitle({ title, sub, action }: { title: string; sub?: string;
   return (
     <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="dk-h1">{title}</h1>
+        <h1 className="dk-h1 flex items-center gap-[0.4em]">
+          <TitleIcon />
+          {title}
+        </h1>
         {sub && <p className="mt-2 text-[14px] text-muted">{sub}</p>}
       </div>
       {action}

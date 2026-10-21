@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import type { Relay } from "./relays.ts";
+import { LATENCY_MS, stabilityOf, type Relay } from "./relays.ts";
 import { supervise, type Supervised } from "./supervisor.ts";
 
 // Entrée RIST (Reliable Internet Stream Transport, VSF TR-06-1/-2) : le srt-live-server ne reçoit que du SRT/SRTLA.
@@ -11,18 +11,22 @@ import { supervise, type Supervised } from "./supervisor.ts";
 // régénéré (nouveau secret) voit son écouteur arrêté ou relancé dans la seconde : l'ancien émetteur ne passe plus.
 
 /** Arguments ffmpeg de l'écouteur RIST d'un relais : RIST (MPEG-TS) → MPEG-TS/SRT vers le relais. */
-export function ristArgs(r: { port: number; secret: string }, output: string) {
+export function ristArgs(r: { port: number; secret: string; bufferMs?: number }, output: string) {
   return [
     "-hide_banner", "-loglevel", "error",
+    // Faible délai : pas de tampon d'entrée supplémentaire (librist garde 1 s de retransmission par défaut : réglé sur le niveau de stabilité).
+    "-fflags", "+nobuffer", "-flags", "low_delay",
     "-rist_profile", "main",
     "-secret", r.secret,
     "-encryption", "256",
     "-overrun_nonfatal", "1",
-    "-i", `rist://@:${r.port}`,
+    "-i", `rist://@:${r.port}${r.bufferMs ? `?buffer_size=${r.bufferMs}` : ""}`,
     "-map", "0:v:0", "-map", "0:a:0?",
     "-c:v", "copy",
     // Toujours en stéréo : une source mono est doublée sur les deux canaux, une source stéréo reste telle quelle.
     "-c:a", "aac", "-b:a", "160k", "-ar", "48000", "-ac", "2",
+    // Le muxeur MPEG-TS retient 0,7 s par défaut : coupé.
+    "-muxdelay", "0", "-muxpreload", "0", "-flush_packets", "1",
     "-f", "mpegts", output,
   ];
 }
@@ -60,7 +64,7 @@ export function createRist(o: {
       }
       for (const [id, r] of want) {
         if (listeners.has(id)) continue;
-        const args = ristArgs({ port: r.rist_port!, secret: r.rist_secret! }, o.output(r.publish_id));
+        const args = ristArgs({ port: r.rist_port!, secret: r.rist_secret!, bufferMs: Math.max(60, LATENCY_MS[stabilityOf(r)]) }, o.output(r.publish_id));
         listeners.set(id, { proc: run(`rist ${id.slice(0, 8)}`, "ffmpeg", args, o.log), signature: signature(r) });
         o.log(`rist ${id.slice(0, 8)} à l'écoute sur :${r.rist_port}`);
       }
@@ -75,6 +79,6 @@ export function createRist(o: {
   };
 }
 
-const signature = (r: Relay) => `${r.rist_port}|${r.rist_secret}|${r.publish_id}`;
+const signature = (r: Relay) => `${r.rist_port}|${r.rist_secret}|${r.publish_id}|${stabilityOf(r)}`;
 
 export type Rist = ReturnType<typeof createRist>;

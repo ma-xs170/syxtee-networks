@@ -19,12 +19,14 @@ export const isCamKey = (s: string) => /^cam_[0-9a-f]{32}$/.test(s);
 export function relayArgs(rtspUrl: string, path: string, output: string) {
   return [
     "-hide_banner", "-loglevel", "error",
+    "-fflags", "+nobuffer", "-flags", "low_delay",
     "-rtsp_transport", "tcp",
     "-i", `${rtspUrl}/${path}`,
     "-map", "0:v:0", "-map", "0:a:0?",
     "-c:v", "copy",
     // Toujours en stéréo : une source mono est doublée sur les deux canaux, une source stéréo reste telle quelle.
     "-c:a", "aac", "-b:a", "160k", "-ar", "48000", "-ac", "2",
+    "-muxdelay", "0", "-muxpreload", "0", "-flush_packets", "1",
     "-f", "mpegts", output,
   ];
 }

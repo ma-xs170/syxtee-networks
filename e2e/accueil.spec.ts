@@ -1,29 +1,23 @@
 import { expect, test } from "@playwright/test";
 
-// Accueil recentré sur le relais, SYXTEE PRO « À venir ». Ne dépend pas de Supabase.
+// Accueil centré sur le contrôle à distance d'OBS, menu principal à liens directs. Ne dépend pas de Supabase.
 
-test("accueil : héros, bento et étapes centrés sur le relais", async ({ page }) => {
+test("accueil : héros, sections et appels à l'action", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Le live IRL pro.");
-  await expect(page.getByRole("link", { name: "Créer mon relais" }).first()).toHaveAttribute("href", /\/inscription\?next=%2Fdashboard%2Frelais%3Fnouveau%3D1/);
-  await expect(page.getByRole("link", { name: "Voir les offres" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /Ce que ton relais fait pour toi/ })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /Crée ton relais en 3 étapes/ })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Pilote ton OBS à distance");
+  await expect(page.getByRole("link", { name: "Créer mon compte" }).first()).toHaveAttribute("href", "/inscription");
+  await expect(page.getByRole("link", { name: "Voir comment ça marche" })).toHaveAttribute("href", "#comment");
+  await expect(page.getByRole("heading", { name: /Des tarifs clairs/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Ils streament avec SYXTEE/ })).toBeVisible();
   await expect(page.getByText(/999 €|1 290/)).toHaveCount(0);
-
-  // Aperçu de l'assistant : une étape à la fois.
-  await page.getByRole("button", { name: /Serveur/ }).click();
-  await expect(page.getByText("Étape 3 sur 3")).toBeVisible();
-  await expect(page.getByText("New York", { exact: true }).last()).toBeVisible();
 });
 
-test("menu Produits : Relais en premier, SYXTEE PRO grisé « À venir »", async ({ page, isMobile }) => {
-  test.skip(isMobile, "menu déroulant desktop");
+test("menu principal : Contrôle à distance, Nos serveurs, Tarifs, Devenir partenaire", async ({ page, isMobile }) => {
+  test.skip(isMobile, "menu desktop");
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Navigation principale" });
-  await nav.getByRole("button", { name: /Produits/ }).click();
-  const items = nav.getByRole("link").filter({ hasText: /Relais SYXTEE|SYXTEE PRO/ });
-  await expect(items.first()).toContainText("Relais SYXTEE");
-  await expect(items.last()).toContainText("À venir");
+  const links = nav.getByRole("link");
+  await expect(links).toHaveText(["Contrôle à distance", "Nos serveurs", "Tarifs", "Devenir partenaire"]);
+  await expect(nav.getByRole("link", { name: "Nos serveurs" })).toHaveAttribute("href", "/relais");
+  await expect(nav.getByRole("link", { name: "Tarifs" })).toHaveAttribute("href", "/tarifs");
 });
-

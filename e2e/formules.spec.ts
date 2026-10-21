@@ -29,7 +29,7 @@ test.describe("comptes", () => {
     const a = await account("gratuit", { plan: "free" });
     await signInWithPassword(page, a.email, a.password);
     await expect(page).toHaveURL(/\/dashboard$/);
-    await expect(page.getByRole("region", { name: "Formule" })).toContainText("Formule gratuite");
+    await expect(page.getByRole("region", { name: "Formule" })).toContainText("Gratuit");
 
     await page.goto("/dashboard/relais");
     const lock = page.getByRole("button", { name: /Relais et URLs : réservé aux abonnés/ });
@@ -55,6 +55,6 @@ test.describe("comptes", () => {
   test("échéance passée : traité en gratuit avant même la tâche quotidienne", async ({ page }) => {
     const a = await account("echu", { plan: "partner", plan_until: new Date(Date.now() - 86_400_000).toISOString() });
     await signInWithPassword(page, a.email, a.password);
-    await expect(page.getByRole("region", { name: "Formule" })).toContainText("Formule gratuite");
+    await expect(page.getByRole("region", { name: "Formule" })).toContainText("Gratuit");
   });
 });

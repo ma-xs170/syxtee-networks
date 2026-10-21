@@ -2,18 +2,15 @@ import { expect, test } from "@playwright/test";
 
 // Pages de connexion : rendu, validation de l'email, redirections. Ne dépend pas de Supabase.
 
-test("/connexion : carte, OAuth, bouton email désactivé tant que l'email est invalide", async ({ page }) => {
+test("/connexion : carte, email ou identifiant + mot de passe, bouton désactivé tant que vide", async ({ page }) => {
   await page.goto("/connexion");
   await expect(page.getByRole("heading", { name: "Connexion à SYXTEE" })).toBeVisible();
-  for (const p of ["Twitch", "Discord"]) await expect(page.getByRole("button", { name: `Continuer avec ${p}` })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Google : bientôt disponible" })).toBeDisabled();
-  const submit = page.getByRole("button", { name: "Continuer avec l'email" });
+  const submit = page.getByRole("button", { name: "Se connecter" });
   await expect(submit).toBeDisabled();
-  await page.getByLabel("Email").fill("pas-un-email");
-  await expect(submit).toBeDisabled();
-  await page.getByLabel("Email").fill("toi@exemple.com");
+  await page.getByLabel("Email ou identifiant").fill("toi@exemple.com");
+  await page.getByLabel("Mot de passe", { exact: true }).fill("un-mot-de-passe");
   await expect(submit).toBeEnabled();
-  await expect(page.getByRole("link", { name: "Conditions d'utilisation" })).toHaveAttribute("href", "/cgu");
+  await expect(page.getByRole("link", { name: "Mot de passe oublié ?" })).toHaveAttribute("href", /^\/mot-de-passe-oublie/);
 });
 
 test("/inscription : textes inversés", async ({ page }) => {
@@ -30,10 +27,10 @@ test("redirections /login, /signup et pages privées", async ({ page }) => {
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/connexion\?next=%2Fdashboard$/);
   await page.goto("/dashboard/urls");
-  await expect(page).toHaveURL(/\/connexion\?next=%2Fdashboard%2Frelais$/);
+  await expect(page).toHaveURL(/\/connexion\?next=%2Fdashboard%2Fserveurs$/);
 });
 
 test("lien expiré : message en français", async ({ page }) => {
   await page.goto("/connexion?erreur=lien-expire");
-  await expect(page.getByRole("main").getByRole("alert")).toContainText("Ce lien de connexion a expiré");
+  await expect(page.getByRole("main").getByRole("alert")).toContainText("Ce lien a expiré");
 });

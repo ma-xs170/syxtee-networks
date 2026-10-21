@@ -12,6 +12,30 @@ export default function StreamPreview({ coreUrl, relayId }: { coreUrl: string; r
   const video = useRef<HTMLVideoElement>(null);
   const [state, setState] = useState<State>("connecting");
   const [muted, setMuted] = useState(true);
+  const box = useRef<HTMLDivElement>(null);
+  const [full, setFull] = useState(false);
+
+  // Plein écran : l'API du navigateur quand elle existe (Android, ordinateur, iPad), sinon (iPhone) la vidéo prend toute la fenêtre.
+  // Paysage demandé quand c'est possible ; Échap ou la croix referment ; la page derrière ne défile plus.
+  useEffect(() => {
+    if (!full) return;
+    const root = document.documentElement;
+    const before = root.style.overflow;
+    root.style.overflow = "hidden";
+    void box.current?.requestFullscreen?.().catch(() => {});
+    void (screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> }).lock?.("landscape").catch(() => {});
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setFull(false);
+    const onChange = () => !document.fullscreenElement && setFull(false);
+    window.addEventListener("keydown", onKey);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => {
+      root.style.overflow = before;
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("fullscreenchange", onChange);
+      screen.orientation?.unlock?.();
+      if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
+    };
+  }, [full]);
 
   useEffect(() => {
     const el = video.current;
@@ -110,22 +134,29 @@ export default function StreamPreview({ coreUrl, relayId }: { coreUrl: string; r
       <h2 id="apercu" className="sr-only">
         Aperçu du flux
       </h2>
-      <div className="relative aspect-video bg-black">
+      <div ref={box} className={full ? "fixed inset-0 z-[60] h-dvh w-screen bg-black" : "relative aspect-video bg-black"}>
         <video ref={video} muted={muted} playsInline autoPlay className={`h-full w-full object-contain ${state === "playing" ? "" : "invisible"}`} aria-label="Aperçu de ton flux" />
         {message && <p className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-muted">{message}</p>}
         {state === "playing" && (
           <>
-            <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded bg-black/75 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-white">
+            <span className={`absolute flex items-center gap-1.5 rounded bg-black/75 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-white ${full ? "left-[max(0.75rem,env(safe-area-inset-left))] top-[max(0.75rem,env(safe-area-inset-top))]" : "left-3 top-3"}`}>
               <span className="h-1.5 w-1.5 rounded-full bg-live" aria-hidden="true" />
               Direct
             </span>
             <button
               type="button"
               onClick={() => setMuted((m) => !m)}
-              className="absolute bottom-3 right-3 rounded-full bg-black/75 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-white transition-colors hover:bg-black"
+              className={`absolute flex h-11 items-center rounded-full bg-black/75 px-4 font-mono text-[10px] uppercase tracking-[0.12em] text-white transition-colors hover:bg-black ${full ? "bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-[max(0.75rem,env(safe-area-inset-right))]" : "bottom-3 right-3"}`}
               aria-pressed={!muted}
             >
               {muted ? "Activer le son" : "Couper le son"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setFull((f) => !f)}
+              className={`absolute flex h-11 items-center rounded-full bg-black/75 px-4 font-mono text-[10px] uppercase tracking-[0.12em] text-white transition-colors hover:bg-black ${full ? "right-[max(0.75rem,env(safe-area-inset-right))] top-[max(0.75rem,env(safe-area-inset-top))]" : "bottom-3 left-3"}`}
+            >
+              {full ? "Fermer" : "Plein écran"}
             </button>
           </>
         )}

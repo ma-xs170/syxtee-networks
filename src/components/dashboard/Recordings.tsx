@@ -16,7 +16,7 @@ const when = (f: string) => {
   return m ? `${m[3]}/${m[2]}/${m[1]} ${m[4]}:${m[5]}` : f;
 };
 
-const btn = "h-9 whitespace-nowrap rounded-full border border-line px-4 text-sm transition-colors hover:bg-foreground/10 disabled:opacity-40";
+const btn = "h-11 whitespace-nowrap sm:h-9 rounded-full border border-line px-4 text-sm transition-colors hover:bg-foreground/10 disabled:opacity-40";
 
 export default function Recordings({ coreUrl, relays }: { coreUrl: string; relays: { id: string; name: string; record: boolean }[] }) {
   const [data, setData] = useState<Data | null>(null);
@@ -143,7 +143,7 @@ export default function Recordings({ coreUrl, relays }: { coreUrl: string; relay
                       {f.recording && <span className="ml-2 text-[color:var(--live)]">● En cours</span>}
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex w-full flex-wrap gap-2 sm:w-auto">
                     <button type="button" className={btn} disabled={busy === key || f.recording} onClick={() => watch(f)}>
                       Aperçu
                     </button>
@@ -162,8 +162,8 @@ export default function Recordings({ coreUrl, relays }: { coreUrl: string; relay
       </section>
 
       {preview && (
-        <div role="dialog" aria-modal="true" aria-label="Aperçu de l'enregistrement" className="fixed inset-0 z-50 grid place-items-center bg-background/80 p-4 backdrop-blur-sm" onClick={() => setPreview(null)} onKeyDown={(e) => e.key === "Escape" && setPreview(null)}>
-          <div className="w-full max-w-3xl rounded-2xl border border-line bg-surface p-4" onClick={(e) => e.stopPropagation()}>
+        <div role="dialog" aria-modal="true" aria-label="Aperçu de l'enregistrement" className="fixed inset-0 z-50 grid place-items-center bg-background/80 p-0 backdrop-blur-sm sm:p-4" onClick={() => setPreview(null)} onKeyDown={(e) => e.key === "Escape" && setPreview(null)}>
+          <div className="flex h-dvh w-full max-w-3xl flex-col justify-center border-line bg-surface p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:block sm:h-auto sm:rounded-2xl sm:border" onClick={(e) => e.stopPropagation()}>
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="min-w-0 truncate text-sm font-medium">
                 {names.get(preview.file.relay_id) ?? "Relais supprimé"} · {when(preview.file.file)}

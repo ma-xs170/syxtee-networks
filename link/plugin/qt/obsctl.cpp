@@ -419,8 +419,9 @@ void stopWhip(bool wait = false)
 		signal_handler_disconnect(sh, "start", whipSignalCb, reinterpret_cast<void *>(1));
 		signal_handler_disconnect(sh, "stop", whipSignalCb, nullptr);
 	}
-	auto teardown = [w] {
-		if (w.out) {
+		// Attend l'arrêt réel de la sortie. Faux si elle reste active après 10 s.
+		auto halt = [w] {
+			if (!w.out) return true;
 			obs_output_stop(w.out);
 			for (int i = 0; i < 50 && obs_output_active(w.out); i++) std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			if (obs_output_active(w.out)) {
@@ -430,16 +431,25 @@ void stopWhip(bool wait = false)
 			// Encore actif après 10 s : on garde les objets plutôt que de risquer un plantage (fuite, mais OBS reste debout).
 			if (obs_output_active(w.out)) {
 				blog(LOG_WARNING, "[syxtee-link] sortie d'aperçu impossible à arrêter, objets conservés");
-				return;
+				return false;
 			}
-			obs_output_release(w.out);
+			return true;
+		};
+		auto release = [w] {
+			if (w.out) obs_output_release(w.out);
+			if (w.video) obs_encoder_release(w.video);
+			if (w.audio) obs_encoder_release(w.audio);
+			if (w.service) obs_service_release(w.service);
+		};
+		if (wait) {
+			if (halt()) release();
+		} else {
+			// Libération sur le fil principal : obs-x264 (os_end_high_performance, NSProcessInfo.endActivity) a planté OBS
+			// depuis ce fil de fond (2026-10-21).
+			std::thread([halt, release] {
+				if (halt()) onMain(release);
+			}).detach();
 		}
-		if (w.video) obs_encoder_release(w.video);
-		if (w.audio) obs_encoder_release(w.audio);
-		if (w.service) obs_service_release(w.service);
-	};
-	if (wait) teardown();
-	else std::thread(teardown).detach();
 }
 
 void whipSignalCb(void *param, calldata_t *cd)

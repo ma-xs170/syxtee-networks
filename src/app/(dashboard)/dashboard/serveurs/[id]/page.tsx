@@ -86,7 +86,7 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
   const act = (label: string, action: string, danger = false) => ({ label, action: { id: relay.id, action }, danger });
   const sinceKey = relay.rotated_at ? fmtAgo(relay.rotated_at) : "Jamais régénérée";
   const trigger = { cut: "Coupure seulement", cut_lowbitrate: "Coupure et débit très bas", sensitive: "Sensible" }[relay.switch_trigger];
-  const stab = { low: "Faible délai (≈ 0,3 s)", balanced: "Équilibré (≈ 1 s)", max: "Stabilité maximale (≈ 2,5 s)" }[relay.stability ?? "low"];
+  const stab = { low: "Basse latence (≈ 0,1 s)", balanced: "Équilibré (≈ 1 s)", max: "Stabilité maximale (≈ 2,5 s)" }[relay.stability ?? "low"];
   const serverOk = server ? server.available && !server.maintenance : false;
 
   return (

@@ -18,7 +18,7 @@ const TRIGGERS: { id: SwitchTrigger; title: string; text: string }[] = [
 ];
 
 const STABILITIES: { id: Stability; title: string; text: string }[] = [
-  { id: "low", title: "Faible délai", text: "Environ 0,3 s de tampon. Pour une bonne connexion ou un échange en direct avec le chat." },
+  { id: "low", title: "Basse latence", text: "Environ 0,1 s de tampon : la latence minimale. Pour une bonne connexion (fibre, Wi-Fi, 5G stable) ou un échange en direct avec le chat." },
   { id: "balanced", title: "Équilibré", text: "Environ 1 s de tampon. Rejoue les paquets perdus avant qu'ils ne se voient : le bon choix en 4G/5G." },
   { id: "max", title: "Stabilité maximale", text: "Environ 2,5 s de tampon. Pour un signal très instable : image fluide, sans saccades, mais plus de décalage." },
 ];

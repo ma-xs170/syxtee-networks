@@ -397,5 +397,8 @@ const shutdown = async () => {
   samples.close();
   process.exit(0);
 };
+// Une promesse oubliée ou une erreur de socket ne doit pas couper tous les flux en direct : on journalise et on continue.
+process.on("unhandledRejection", (e) => console.error("unhandledRejection", e));
+process.on("uncaughtException", (e) => console.error("uncaughtException", e));
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);

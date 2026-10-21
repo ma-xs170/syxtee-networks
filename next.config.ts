@@ -88,7 +88,6 @@ const nextConfig: NextConfig = {
       { source: "/dashboard/urls", destination: "/dashboard/serveurs", permanent: true },
       { source: "/docs/rist", destination: "/docs", permanent: true },
       { source: "/dashboard/apercu", destination: "/dashboard", permanent: true },
-      { source: "/dashboard/enregistrements", destination: "/dashboard", permanent: true },
       { source: "/dashboard/dji", destination: "/dashboard", permanent: true },
       { source: "/dashboard/scanner", destination: "/dashboard", permanent: true },
       { source: "/dashboard/analyseur", destination: "/dashboard", permanent: true },

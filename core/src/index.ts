@@ -303,6 +303,10 @@ const app = buildServer({
   },
 });
 
+// Purge des enregistrements expirés : au démarrage (le serveur peut avoir été arrêté longtemps) puis toutes les 10 min.
+const purgeRecordings = () => void recordings?.purge().then((n) => n && log(`enregistrements : ${n} fichier(s) expiré(s) supprimé(s)`)).catch((e) => log(`purge enregistrements : ${(e as Error).message}`));
+purgeRecordings();
+
 try {
   const n = await sessionDb.closeStale();
   if (n) log(`${n} direct(s) resté(s) ouvert(s) fermé(s)`);
@@ -359,7 +363,7 @@ const timers = [
   setInterval(() => void supabase.rpc("security_purge").then(({ error }) => error && log(`security_purge : ${error.message}`)), 24 * 3_600_000),
   setInterval(() => void sessions.tick(), 5_000),
   setInterval(() => void health.tick(), 200),
-  ...(recordings ? [setInterval(() => void recordings.purge().then((n) => n && log(`enregistrements : ${n} fichier(s) expiré(s) supprimé(s)`)).catch((e) => log(`purge enregistrements : ${(e as Error).message}`)), 3_600_000)] : []),
+  ...(recordings ? [setInterval(purgeRecordings, 600_000)] : []),
   ...(recordings ? [setInterval(() => void recordings.sync(health.liveRelays()).catch((e) => log(`enregistrements : ${(e as Error).message}`)), 10_000)] : []),
   setInterval(() => void refreshKeys(), 30_000),
   ...(cam ? [setInterval(() => void cam.syncRelays(), 1_000)] : []),

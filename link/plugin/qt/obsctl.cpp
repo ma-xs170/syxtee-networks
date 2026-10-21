@@ -970,18 +970,26 @@ void msRelease(MsOut *o)
 	}
 	if (!out && !video && !audio && !svc && !canvas) return;
 	std::thread([out, video, audio, svc, canvas, vscene] {
+		bool stopped = true;
 		if (out) {
 			obs_output_force_stop(out);
-			obs_output_release(out);
+			for (int i = 0; i < 100 && obs_output_active(out); i++) std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			stopped = !obs_output_active(out);
+			if (!stopped) blog(LOG_WARNING, "[syxtee-link] sortie impossible à arrêter, objets conservés");
+			else obs_output_release(out);
 		}
-		if (video) obs_encoder_release(video);
-		if (audio) obs_encoder_release(audio);
-		if (svc) obs_service_release(svc);
-		if (canvas) {
-			if (vscene) obs_canvas_scene_remove(vscene);
-			obs_canvas_remove(canvas);
-			obs_canvas_release(canvas);
-		}
+		// Encodeurs, service et canevas : sur le fil principal, une fois la sortie arrêtée (obs-x264 a planté OBS à la libération depuis un fil de fond).
+		if (!stopped) return;
+		onMain([video, audio, svc, canvas, vscene] {
+			if (video) obs_encoder_release(video);
+			if (audio) obs_encoder_release(audio);
+			if (svc) obs_service_release(svc);
+			if (canvas) {
+				if (vscene) obs_canvas_scene_remove(vscene);
+				obs_canvas_remove(canvas);
+				obs_canvas_release(canvas);
+			}
+		});
 	}).detach();
 }
 

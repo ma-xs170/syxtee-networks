@@ -48,21 +48,21 @@ const AffCtx = createContext<AffiliateInfo>(null);
 type Item = { sharedOnly?: boolean; label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean; wordmark?: string; /** « À venir » : pas encore ouvert (l'admin y accède quand même). */ soon?: boolean; /** Pastille de nouveauté à droite du libellé. */ fresh?: boolean };
 type Group = { title?: string; items: Item[] };
 
-// Menu : Tableau de bord, trois groupes (Diffuser, Studio, Croissance), Aide en bas. Le profil (en haut) ouvre Compte, espaces, thème, déconnexion.
+// Menu : Tableau de bord, trois groupes (Diffuser dans l'ordre du flux : Serveurs, Appareils, Direct, Destinations ; Studio ; Croissance), Aide en bas. Le profil (en haut) ouvre Compte, espaces, thème, déconnexion.
 const GROUPS: Group[] = [
   { items: [{ label: "Tableau de bord", href: "/dashboard", icon: SquaresFour }] },
   {
     title: "Diffuser",
     items: [
+      { label: "Serveurs", href: "/dashboard/serveurs", icon: Radio, feature: "relais" },
+      { label: "Appareils", href: "/dashboard/appareils", icon: HardDrives },
       { label: "Direct", href: "/dashboard/direct", icon: SlidersHorizontal, feature: "relais" },
       { label: "Destinations", href: "/dashboard/destinations", icon: ShareNetwork },
-      { label: "Serveurs", href: "/dashboard/serveurs", icon: Radio, feature: "relais" },
     ],
   },
   {
     title: "Studio",
     items: [
-      { label: "Appareils", href: "/dashboard/appareils", icon: HardDrives },
       { label: "Scènes", href: "/dashboard/scenes", icon: Archive, feature: "relais" },
       { label: "Enregistrements", href: "/dashboard/enregistrements", icon: FilmStrip, feature: "relais" },
       { label: "Calendrier", href: "/dashboard/calendrier", icon: CalendarBlank },

@@ -40,6 +40,7 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
   // et le dernier état confirmé par le serveur (retour en arrière en cas de refus).
   const queue = useRef(new Map<string, Promise<unknown>>());
   const version = useRef(new Map<string, number>());
+  const swipe = useRef<{ x: number; y: number } | null>(null);
   const confirmed = useRef(new Map<string, LiveEvent>(initial.map((e) => [e.id, pick(e)])));
 
   // Le rendu dépend du fuseau du navigateur : rien n'est dessiné avant le montage (pas de décalage avec le rendu serveur).
@@ -205,8 +206,23 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
   const cta = "inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 text-sm font-medium transition-[opacity,border-color,transform] duration-150 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
   const webcal = shared && token && typeof window !== "undefined" ? `${window.location.origin}/calendrier/${token}/live.ics`.replace(/^https?:/, "webcal:") : "";
 
+  // Téléphone : glisser un doigt à l'horizontale change de mois ou de jour (la vue Semaine défile déjà de côté).
+  const swipeable = view !== "week";
+  const onTouchStart = (ev: React.TouchEvent) => {
+    const t = ev.touches[0];
+    swipe.current = swipeable && ev.touches.length === 1 && !(ev.target as HTMLElement).closest("button, a, input, textarea, select, dialog") ? { x: t.clientX, y: t.clientY } : null;
+  };
+  const onTouchEnd = (ev: React.TouchEvent) => {
+    const s0 = swipe.current;
+    swipe.current = null;
+    if (!s0) return;
+    const t = ev.changedTouches[0];
+    const dx = t.clientX - s0.x;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(t.clientY - s0.y) * 1.5) step(dx < 0 ? 1 : -1);
+  };
+
   return (
-    <div>
+    <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:flex-wrap">
         <h2 className="order-1 min-w-0 truncate sm:mr-auto text-2xl font-bold tracking-tight sm:text-4xl" aria-live="polite">
           {/* L'année passe en gris clair : le mois (ou la période) reste le point d'attention. */}

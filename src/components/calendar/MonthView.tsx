@@ -82,7 +82,9 @@ export default function MonthView({
     });
   }
 
-  const listDay = phoneDay ?? today;
+  // Liste du jour (téléphone) : le jour touché, sinon aujourd'hui, sinon le 1er du mois affiché.
+  const inAnchor = (d: Date) => d.getFullYear() === anchor.getFullYear() && d.getMonth() === anchor.getMonth();
+  const listDay = phoneDay && inAnchor(phoneDay) ? phoneDay : inAnchor(today) ? today : startOfMonth(anchor);
   const listEvents = forDay(listDay);
   return (
     <>

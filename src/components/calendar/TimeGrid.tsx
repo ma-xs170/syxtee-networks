@@ -271,7 +271,7 @@ export default function TimeGrid({
                           else onSelect(e.id);
                         }}
                         onDoubleClick={() => onOpen(e)}
-                        style={{ borderLeftColor: eventColor(e), touchAction: editable ? "none" : undefined }}
+                        style={{ borderLeftColor: eventColor(e), touchAction: editable ? "pan-y" : undefined }}
                         className={`relative flex h-full w-full flex-col overflow-hidden rounded-md border-l-[3px] bg-surface-2 px-1.5 py-1 text-left text-[11px] leading-tight text-foreground ring-1 ring-inset ring-line transition-colors hover:bg-foreground/[0.14] sm:text-xs ${dim ? "opacity-40" : ""} ${selectedId === e.id ? "ring-2 !ring-foreground/70" : ""} ${editable ? "cursor-grab active:cursor-grabbing" : ""}`}
                       >
                         <span className="truncate font-medium">{e.title}</span>
@@ -292,7 +292,7 @@ export default function TimeGrid({
                         <div
                           role="presentation"
                           onPointerDown={(ev) => startEdit(ev, e, "resize")}
-                          className="absolute inset-x-1 bottom-0 z-10 h-2 cursor-ns-resize"
+                          className="absolute inset-x-1 bottom-0 z-10 h-2 cursor-ns-resize [@media(pointer:coarse)]:hidden"
                           style={{ touchAction: "none" }}
                         />
                       )}

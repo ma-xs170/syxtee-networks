@@ -48,7 +48,7 @@ export default function MentionsLegales() {
             <p className="mt-3">
               Le détail des données collectées par l&apos;espace client est dans la{" "}
               <Link href="/confidentialite" className="text-foreground underline">politique de confidentialité</Link>. Le site n&apos;utilise pas de
-              cookies publicitaires. Le support se fait par messagerie depuis l'espace client.
+              cookies publicitaires. Le support se fait par messagerie depuis l&apos;espace client.
             </p>
           </div>
         </div>

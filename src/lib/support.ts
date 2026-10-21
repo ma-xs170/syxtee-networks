@@ -61,7 +61,9 @@ export async function getThread(id: string, userId?: string): Promise<{ ticket: 
     if (userId) q = q.eq("user_id", userId);
     return q.maybeSingle();
   };
-  let { data: ticket, error: ticketError } = await find(COLS);
+  const first0 = await find(COLS);
+  let ticket = first0.data;
+  const ticketError = first0.error;
   if (missingColumn(ticketError)) ({ data: ticket } = await find(BASE_COLS));
   if (!ticket) return null;
   const first = await db.from("support_messages").select(`${MSG_BASE}, kind, signature`).eq("ticket_id", id).order("created_at");

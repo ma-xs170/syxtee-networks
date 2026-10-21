@@ -58,7 +58,7 @@ export default function CguPage() {
       </LegalBlock>
       <LegalBlock title="10. Contact">
         <p>
-          Par email : contact@syxtee-networks.fr, ou par la messagerie de l'espace client.
+          Par email : contact@syxtee-networks.fr, ou par la messagerie de l&apos;espace client.
         </p>
       </LegalBlock>
     </LegalPage>

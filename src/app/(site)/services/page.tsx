@@ -20,7 +20,7 @@ export default function ServicesPage() {
     <>
       <PageHero kicker="Services" title={<>Tout ce qu&apos;il faut pour sortir <em>streamer.</em></>} crumb="Services">
         Quatre briques simples : un relais qui encaisse les coupures, ton téléphone comme encodeur, ton OBS aux commandes, et
-        une vraie personne de l'équipe quand ça coince. Tu débutes ? Lis le{" "}
+        une vraie personne de l&apos;équipe quand ça coince. Tu débutes ? Lis le{" "}
         <Link href="/guide-live-irl" className="text-foreground underline underline-offset-4">guide du live IRL</Link>.
       </PageHero>
 

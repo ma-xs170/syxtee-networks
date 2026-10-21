@@ -27,7 +27,9 @@ export default function RelayGlobe({ servers, selected, onSelect, geo, className
   const canvas = useRef<HTMLCanvasElement>(null);
   // Les données changent sans relancer l'animation : on les range dans une ref lue à chaque image.
   const data = useRef({ servers, selected, geo, onSelect });
-  data.current = { servers, selected, geo, onSelect };
+  useEffect(() => {
+    data.current = { servers, selected, geo, onSelect };
+  });
   const state = useRef({ lon0: -50 * RAD, target: null as number | null, drag: false, lastX: 0, moved: 0 });
 
   useEffect(() => {

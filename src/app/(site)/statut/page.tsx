@@ -57,14 +57,14 @@ export default async function StatusPage() {
               </li>
             ))}
           </ul>
-          <p className="mt-6 max-w-2xl text-sm text-muted">Un souci qui n'apparaît pas ici ? Écris-nous depuis l'assistance du site, on regarde.</p>
+          <p className="mt-6 max-w-2xl text-sm text-muted">Un souci qui n&apos;apparaît pas ici ? Écris-nous depuis l&apos;assistance du site, on regarde.</p>
         </Container>
       </section>
 
       <section className="border-t border-line py-16 sm:py-24">
         <Container>
           <h2 className="h-section">Journal des incidents</h2>
-          <p className="mt-3 max-w-2xl text-sm text-muted">Chaque panne et chaque maintenance, avec ce qui s'est passé et quand c'est revenu.</p>
+          <p className="mt-3 max-w-2xl text-sm text-muted">Chaque panne et chaque maintenance, avec ce qui s&apos;est passé et quand c&apos;est revenu.</p>
           {incidents.length === 0 ? (
             <p className="mt-8 rounded-xl border border-line bg-surface p-5 text-sm text-muted">Aucun incident à signaler.</p>
           ) : (

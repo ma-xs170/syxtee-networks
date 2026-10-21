@@ -61,9 +61,35 @@ test("n'enregistre que les relais en direct dont l'option est activée, et s'arr
   assert.equal(started[0].stopped, true);
 });
 
-test("quota plein : pas d'enregistrement, et l'état est signalé", async () => {
+test("quota dépassé : l'enregistrement continue, les fichiers partent 48 h après le dernier", async () => {
   const { rec, started, put } = harness({ quota: 1000 });
-  put("20260101-000000.mp4", 1000);
+  put("20260101-000000.mp4", 1500);
+  await rec.sync([relay(true)]);
+  assert.equal(started.length, 1);
+  const u = await rec.usage(USER);
+  assert.equal(u.stopped, null);
+  assert.equal(u.over, true);
+  const f = (await rec.files(USER))[0];
+  const left = Date.parse(f.expires_at) - Date.now();
+  assert.ok(left > 47 * 3_600_000 && left <= 48 * 3_600_000, `reste ${left}`);
+  await rec.sync([]);
+  assert.equal(await rec.purge(), 0);
+  assert.equal(await rec.purge(Date.now() + 49 * 3_600_000), 1);
+});
+
+test("sous le quota : suppression à 15 jours seulement", async () => {
+  const { rec, put } = harness({ quota: 1000 });
+  put("20260101-000000.mp4", 100);
+  const u = await rec.usage(USER);
+  assert.equal(u.over, false);
+  assert.equal(u.purge_at, null);
+  assert.equal(await rec.purge(Date.now() + 49 * 3_600_000), 0);
+  assert.equal(await rec.purge(Date.now() + 16 * 86_400_000), 1);
+});
+
+test("plafond de sécurité (5 × le quota) : l'enregistrement s'arrête", async () => {
+  const { rec, started, put } = harness({ quota: 1000 });
+  put("20260101-000000.mp4", 5000);
   await rec.sync([relay(true)]);
   assert.equal(started.length, 0);
   assert.equal((await rec.usage(USER)).stopped, "quota");

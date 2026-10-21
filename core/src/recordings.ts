@@ -10,9 +10,13 @@ import { supervise, type Supervised } from "./supervisor.ts";
 // Enregistrement des flux : un ffmpeg par relais en direct qui a l'option « Enregistrer » activée lit le flux SRT du relais
 // et l'écrit sans réencodage (CPU quasi nul) en fichiers MP4 fragmentés (lisibles même si le serveur s'arrête en plein direct).
 // Fichiers : DATA_DIR/recordings/<compte>/<relais>/<date>.mp4. 10 Go par compte par défaut ; quand le quota est plein, ou que
-// le disque du serveur manque de place, l'enregistrement s'arrête (jamais d'effacement automatique des fichiers du membre).
+// le disque du serveur manque de place, l'enregistrement s'arrête.
+// Un direct peut dépasser les 10 Go (il n'est jamais coupé pour ça, sauf au plafond de sécurité) : tant que le compte dépasse son quota,
+// ses fichiers sont supprimés 48 h après la fin de son dernier enregistrement. Sous le quota : 15 jours après chaque fichier.
 
 export const QUOTA_BYTES = 10 * 1024 ** 3;
+/** Délai avant suppression des fichiers d'un compte qui dépasse son quota. */
+export const OVER_QUOTA_GRACE_MS = 48 * 3_600_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const FILE = /^\d{8}-\d{6}\.(mp4|mov)$/;
 export type RecordFormat = "mov" | "mp4";
@@ -52,6 +56,8 @@ export function createRecordings(o: {
   port: number;
   secret: string;
   quota?: number;
+  /** Plafond de sécurité : au-delà, l'enregistrement du compte s'arrête (par défaut 5 × le quota). */
+  hardCap?: number;
   /** Place libre minimale sur le disque du serveur : en dessous, plus aucun enregistrement. */
   minFreeBytes: number;
   segmentS?: number;
@@ -64,6 +70,7 @@ export function createRecordings(o: {
   superviseImpl?: typeof supervise;
 }) {
   const quota = o.quota ?? QUOTA_BYTES;
+  const hardCap = o.hardCap ?? quota * 5;
   const segmentS = o.segmentS ?? 900;
   const retentionDays = o.retentionDays ?? 15;
   const run = o.superviseImpl ?? supervise;
@@ -85,6 +92,7 @@ export function createRecordings(o: {
 
   async function files(user: string): Promise<RecordingFile[]> {
     const out: RecordingFile[] = [];
+    const mtimes = new Map<string, number>();
     const relayIds = await readdir(userDir(user)).catch(() => [] as string[]);
     for (const rid of relayIds) {
       if (!UUID.test(rid)) continue;
@@ -92,8 +100,16 @@ export function createRecordings(o: {
         if (!FILE.test(f)) continue;
         const st = await stat(join(relayDir(user, rid), f)).catch(() => null);
         if (!st) continue;
-        out.push({ relay_id: rid, file: f, size: st.size, created_at: st.birthtime.getTime() > 0 ? st.birthtime.toISOString() : st.mtime.toISOString(), expires_at: new Date(st.mtimeMs + retentionDays * 86_400_000).toISOString(), recording: running.has(rid) && Date.now() - st.mtimeMs < 20_000 });
+        mtimes.set(`${rid}/${f}`, st.mtimeMs);
+        out.push({ relay_id: rid, file: f, size: st.size, created_at: st.birthtime.getTime() > 0 ? st.birthtime.toISOString() : st.mtime.toISOString(), expires_at: "", recording: running.has(rid) && Date.now() - st.mtimeMs < 20_000 });
       }
+    }
+    // Compte au-dessus du quota : tout part 48 h après la dernière écriture (jamais pendant un direct, la dernière écriture est « maintenant »).
+    const over = total(out) > quota;
+    const last = Math.max(0, ...mtimes.values());
+    for (const f of out) {
+      const normal = (mtimes.get(`${f.relay_id}/${f.file}`) ?? 0) + retentionDays * 86_400_000;
+      f.expires_at = new Date(over ? Math.min(normal, last + OVER_QUOTA_GRACE_MS) : normal).toISOString();
     }
     return out.sort((a, b) => (a.file < b.file ? 1 : -1));
   }
@@ -111,7 +127,12 @@ export function createRecordings(o: {
     files,
     /** Octets utilisés par le compte, quota et état (coupé pour quota plein ou disque du serveur plein). */
     async usage(user: string) {
-      return { used: total(await files(user)), quota, retention_days: retentionDays, stopped: stopped.get(user) ?? null };
+      const list = await files(user);
+      const used = total(list);
+      const over = used > quota;
+      // Date de suppression la plus proche quand le compte dépasse son quota (le compte à rebours des 48 h).
+      const purgeAt = over && list.length ? list.reduce((m, f) => (f.expires_at < m ? f.expires_at : m), list[0].expires_at) : null;
+      return { used, quota, retention_days: retentionDays, stopped: stopped.get(user) ?? null, over, grace_hours: OVER_QUOTA_GRACE_MS / 3_600_000, purge_at: purgeAt };
     },
 
     /** Aligne les enregistreurs sur les relais en direct (appelé à chaque changement de statut et toutes les 10 s). */
@@ -125,7 +146,7 @@ export function createRecordings(o: {
       const launches: Promise<unknown>[] = [];
       for (const r of want) {
         if (!used.has(r.user_id)) used.set(r.user_id, total(await files(r.user_id)));
-        const reason: Stopped = !diskOk ? "disk" : (used.get(r.user_id) ?? 0) >= quota ? "quota" : null;
+        const reason: Stopped = !diskOk ? "disk" : (used.get(r.user_id) ?? 0) >= hardCap ? "quota" : null;
         if (reason) {
           stopped.set(r.user_id, reason);
           stopRelay(r.id);
@@ -186,9 +207,9 @@ export function createRecordings(o: {
       await rm(userDir(user), { recursive: true, force: true });
     },
 
-    /** Lien de téléchargement signé (5 min) : le navigateur ne peut pas envoyer son jeton dans un simple lien. */
-    sign(user: string, relay: string, file: string, now = Date.now()) {
-      const payload = Buffer.from(JSON.stringify({ u: user, r: relay, f: file, e: now + 5 * 60_000 })).toString("base64url");
+    /** Lien signé (5 min par défaut ; 1 h pour l'aperçu, qui se rouvre à chaque déplacement dans la vidéo) : le navigateur ne peut pas envoyer son jeton dans un simple lien. */
+    sign(user: string, relay: string, file: string, now = Date.now(), ttlMs = 5 * 60_000) {
+      const payload = Buffer.from(JSON.stringify({ u: user, r: relay, f: file, e: now + ttlMs })).toString("base64url");
       return `${payload}.${createHmac("sha256", o.secret).update(payload).digest("base64url")}`;
     },
     verify(token: string, now = Date.now()): { user: string; relay: string; file: string } | null {

@@ -499,9 +499,10 @@ export function buildServer(d: Deps) {
     app.post("/v1/me/recordings/link", async (req, reply) => {
       const id = await userId(req, reply);
       if (!id) return;
-      const b = z.object({ relay: z.uuid(), file: z.string().max(40) }).safeParse(req.body);
+      const b = z.object({ relay: z.uuid(), file: z.string().max(40), inline: z.boolean().optional() }).safeParse(req.body);
       if (!b.success || !(await rec.open(id, b.data.relay, b.data.file))) return reply.code(404).send({ error: "not_found" });
-      return { path: `/v1/rec/${rec.sign(id, b.data.relay, b.data.file)}` };
+      // Aperçu dans le navigateur : lien d'1 h (on peut se déplacer dans la vidéo), lecture sans téléchargement.
+      return b.data.inline ? { path: `/v1/rec/${rec.sign(id, b.data.relay, b.data.file, Date.now(), 3_600_000)}?inline=1` } : { path: `/v1/rec/${rec.sign(id, b.data.relay, b.data.file)}` };
     });
     app.delete("/v1/me/recordings/:rid/:file", async (req, reply) => {
       const id = await userId(req, reply);
@@ -534,7 +535,7 @@ export function buildServer(d: Deps) {
       return reply
         .code(m ? 206 : 200)
         .header("Content-Type", t.file.endsWith(".mov") ? "video/quicktime" : "video/mp4")
-        .header("Content-Disposition", `attachment; filename="syxtee-${t.file}"`)
+        .header("Content-Disposition", `${(req.query as { inline?: string }).inline === "1" ? "inline" : "attachment"}; filename="syxtee-${t.file}"`)
         .header("Accept-Ranges", "bytes")
         .header("Content-Length", String(end - start + 1))
         .header("Cache-Control", "no-store")

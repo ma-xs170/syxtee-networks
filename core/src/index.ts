@@ -103,6 +103,7 @@ const recordings = config.RECORD_ENABLED
       port: config.SRT_PLAY_PORT,
       secret: config.CORE_API_TOKEN,
       quota: config.RECORD_QUOTA_GB * 1024 ** 3,
+      hardCap: config.RECORD_HARD_CAP_GB * 1024 ** 3,
       retentionDays: config.RECORD_RETENTION_DAYS,
       minFreeBytes: config.RECORD_MIN_FREE_GB * 1024 ** 3,
       log,

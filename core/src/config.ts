@@ -60,6 +60,7 @@ const schema = z.object({
   // Enregistrement des flux sur le serveur : quota par compte et place libre minimale du disque (en dessous, plus d'enregistrement).
   RECORD_ENABLED: bool.default(true),
   RECORD_QUOTA_GB: z.coerce.number().positive().default(10),
+  RECORD_HARD_CAP_GB: z.coerce.number().positive().default(50),
   RECORD_RETENTION_DAYS: z.coerce.number().int().min(1).default(15),
   RECORD_MIN_FREE_GB: z.coerce.number().min(0).default(20),
   PREVIEW_ENABLED: bool.default(true),

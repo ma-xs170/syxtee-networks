@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import StreamerWall from "@/components/home/StreamerWall";
 import { getHomeStreamers } from "@/lib/streamers";
-import { StabilitySection } from "@/components/landing/StabilitySection";
 import { WhySection } from "@/components/landing/WhySection";
 import { FinalCta, ObsBento, ObsHeroSection, PricingSection } from "@/components/landing/Sections";
 
@@ -22,7 +21,6 @@ export default async function Home() {
     <>
       <ObsHeroSection streamers={streamers} />
       <ObsBento />
-      <StabilitySection />
       <WhySection />
       <PricingSection />
       <StreamerWall streamers={streamers} />

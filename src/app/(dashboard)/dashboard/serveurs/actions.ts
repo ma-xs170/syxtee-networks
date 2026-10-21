@@ -138,7 +138,7 @@ export async function setRecordAction(relayId: string, record: boolean) {
 
 /** Stabilité du flux (tampon SRT) : l'adresse de lecture d'OBS et la régie suivent. */
 export async function setStabilityAction(relayId: string, stability: Stability) {
-  if (!["low", "balanced", "max"].includes(stability)) return { error: "Niveau inconnu." };
+  if (!["ultra", "low", "balanced", "max"].includes(stability)) return { error: "Niveau inconnu." };
   const r = await run(relayId, "relay-edit", 60, (u) => updateRelay(u, relayId, { stability }));
   revalidatePath("/dashboard/direct");
   return r;

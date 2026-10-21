@@ -20,9 +20,9 @@ export type Protocol = "srtla" | "rtmp" | "rist";
 export type SwitchTrigger = "cut" | "cut_lowbitrate" | "sensitive";
 export const SWITCH_TRIGGERS: SwitchTrigger[] = ["cut", "cut_lowbitrate", "sensitive"];
 /** Stabilité du flux = taille du tampon SRT (migration 0061) : basse latence (120 ms), équilibré, stabilité maximale. */
-export type Stability = "low" | "balanced" | "max";
-export const STABILITIES: Stability[] = ["low", "balanced", "max"];
-export const LATENCY_MS: Record<Stability, number> = { low: 120, balanced: 1000, max: 2500 };
+export type Stability = "ultra" | "low" | "balanced" | "max";
+export const STABILITIES: Stability[] = ["ultra", "low", "balanced", "max"];
+export const LATENCY_MS: Record<Stability, number> = { ultra: 40, low: 120, balanced: 1000, max: 2500 };
 export const stabilityOf = (r: Pick<Relay, "stability">): Stability => (STABILITIES.includes(r.stability as Stability) ? (r.stability as Stability) : "low");
 export type Relay = StreamIds & {
   id: string;

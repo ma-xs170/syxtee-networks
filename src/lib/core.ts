@@ -12,7 +12,7 @@ export const publicCoreUrl = coreUrl;
 export type RelayProtocol = "srtla" | "rtmp" | "rist";
 export type SwitchTrigger = "cut" | "cut_lowbitrate" | "sensitive";
 /** Tampon SRT du relais : basse latence (120 ms), équilibré (1 s), stabilité maximale (2,5 s). */
-export type Stability = "low" | "balanced" | "max";
+export type Stability = "ultra" | "low" | "balanced" | "max";
 
 /** Un relais, tel que le Core le montre au dashboard. */
 export type RelayView = {

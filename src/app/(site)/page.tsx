@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-// Accueil statique : la promesse, ceux qui nous font confiance, puis deux parcours : les productions (devis) et les streamers indépendants (outils), « Me soutenir » et l'appel final.
+// Accueil statique : la promesse, deux parcours (production sur devis, streamers indépendants), ceux qui nous font confiance, « Me soutenir » et l'appel final.
 // Le mur de chaînes se rafraîchit toutes les 5 minutes (nouvelles chaînes ajoutées dans l'admin, statut en direct).
 export const revalidate = 300;
 
@@ -20,10 +20,10 @@ export default async function Home() {
   return (
     <>
       <HomeHero />
-      <StreamerWall streamers={streamers} />
       <ProductionSection />
       <StreamersIntro streamers={streamers} />
       <ObsBento />
+      <StreamerWall streamers={streamers} />
       <SupportSection id="soutenir" />
       <FinalCta />
     </>

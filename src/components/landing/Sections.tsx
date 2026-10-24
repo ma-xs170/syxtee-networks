@@ -7,6 +7,7 @@ import DirectorDemo from "./DirectorDemo";
 import Reveal from "../ui/Reveal";
 import Faq from "./Faq";
 import ObsHero from "./ObsHero";
+import SceneSwitcher from "./SceneSwitcher";
 import PlatformStrip from "./PlatformStrip";
 import StreamerStack from "@/components/home/StreamerStack";
 import type { HomeStreamer } from "@/lib/streamers";
@@ -65,11 +66,7 @@ export function ObsBento() {
         </Reveal>
         <div className="mt-12 grid gap-4 md:grid-cols-4">
           <Cell delay={0.0} className="md:col-span-2" title="Change de scène en un tap" text="Début, direct, connexion perdue, fin : la scène change sur ton OBS, sans attendre.">
-            <div className="grid w-full grid-cols-2 gap-3">
-              {["Début du stream", "En direct", "Connexion perdue", "Fin du stream"].map((s, i) => (
-                <span key={s} className={`rounded-xl border px-4 py-4 text-center text-sm ${i === 1 ? "border-foreground/40 bg-surface-2" : "border-line text-muted"}`}>{s}</span>
-              ))}
-            </div>
+            <SceneSwitcher />
           </Cell>
           <Cell delay={0.08} className="md:col-span-2" title="Mixer audio à distance" text="Coupe un micro ou règle un niveau pendant que tu es sur le terrain.">
             <div className="flex h-32 w-full items-end gap-1.5" aria-hidden="true">

@@ -8,6 +8,8 @@ import { signOut } from "@/app/(auth)/actions";
 import { activeAlso, dashboardNav, withLocks } from "@/lib/dashboard-nav";
 import { nav, site } from "@/lib/site";
 import AccountMenu, { Avatar, MenuLinkItem, siteAccountLinks, useAccount, type MenuGroup } from "./AccountMenu";
+import LangSwitch from "./LangSwitch";
+import T from "./T";
 import { LivePill } from "./dashboard/LiveStatus";
 import StreamModeToggle from "./dashboard/StreamModeToggle";
 import { restoreStreamMode } from "./dashboard/streamMode";
@@ -95,9 +97,10 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
             <AccountMenu account={account} groups={groups} />
           </div>
         ) : (
-          <div className="hidden shrink-0 items-center gap-5 justify-self-end lg:flex">
-            <Link href="/dashboard" className="inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-xl bg-foreground px-4 text-sm font-medium text-background transition-opacity hover:opacity-85">
-              Espace client <span aria-hidden="true">→</span>
+          <div className="hidden shrink-0 items-center gap-3 justify-self-end lg:flex">
+            <LangSwitch />
+            <Link href="/dashboard" className="inline-flex h-9 items-center whitespace-nowrap rounded-full border border-foreground/25 bg-foreground/[0.06] px-4 text-sm font-medium text-foreground transition-[background-color,border-color,transform] duration-150 hover:border-foreground/40 hover:bg-foreground/[0.12] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
+              <T>Espace client</T>
             </Link>
           </div>
         )}
@@ -138,9 +141,9 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
                   {...("arrow" in item && item.arrow ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                   onClick={() => setOpen(false)}
                   aria-current={isActive(item.href) ? "page" : undefined}
-                  className={"underline" in item && item.underline ? "my-3 flex h-12 items-center justify-center gap-2 rounded-full border border-foreground/25 bg-foreground/[0.06] text-base font-medium text-foreground" : `border-b border-line py-4 text-base hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-foreground/90"}`}
+                  className={"underline" in item && item.underline ? "my-3 flex h-12 items-center justify-center gap-2 rounded-full bg-foreground text-base font-medium text-background" : `border-b border-line py-4 text-base hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-foreground/90"}`}
                 >
-                  <span>{item.label}</span>
+                  <span><T>{item.label}</T></span>
                   {"arrow" in item && item.arrow && <span aria-hidden="true"> ↗</span>}
                 </Link>
               ),
@@ -183,7 +186,7 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
           {!dash && (
             <div className="mt-6">
               <Link href="/dashboard" onClick={() => setOpen(false)} className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-foreground px-4 text-sm font-medium text-background">
-                Espace client
+                <T>Espace client</T>
               </Link>
             </div>
           )}

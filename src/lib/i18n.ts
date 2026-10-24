@@ -1,0 +1,32 @@
+// Traductions anglaises des libellés de navigation et du pied de page (clé = texte français). Utilisé par le composant T.
+export const EN: Record<string, string> = {
+  // Menu
+  "Fonctionnalités": "Features",
+  "Contrôle à distance": "Remote control",
+  "Pilote OBS depuis ton téléphone": "Control OBS from your phone",
+  "Serveurs": "Servers",
+  "Relais SRTLA en Amérique et en Europe": "SRTLA relays in America and Europe",
+  "Tarifs": "Pricing",
+  "Contactez-nous": "Contact us",
+  "Espace client": "Client area",
+  // Pied de page
+  "Production": "Production",
+  "Streamers": "Streamers",
+  "Ressources": "Resources",
+  "Légal": "Legal",
+  "Production IRL": "IRL production",
+  "Guide du live IRL": "IRL live guide",
+  "Espaces partagés": "Shared spaces",
+  "Nos serveurs": "Our servers",
+  "Documentation": "Documentation",
+  "FAQ": "FAQ",
+  "État des services": "Service status",
+  "Me soutenir": "Support me",
+  "Mentions légales": "Legal notice",
+  "Confidentialité": "Privacy",
+  "CGU": "Terms of use",
+  "CGV": "Terms of sale",
+  "Le live IRL, partout. Production et outils pour streamers, depuis la Guadeloupe.": "Live IRL, anywhere. Production and tools for streamers, from Guadeloupe.",
+  "Systèmes opérationnels": "All systems operational",
+  "Basé en Guadeloupe.": "Based in Guadeloupe.",
+};

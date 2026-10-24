@@ -19,7 +19,7 @@ test("menu principal : Fonctionnalités, Tarifs, Contactez-nous", async ({ page,
   const nav = page.getByRole("navigation", { name: "Navigation principale" });
   const links = nav.getByRole("link");
   await expect(nav.getByRole("button", { name: "Fonctionnalités" })).toBeVisible();
-  await expect(links).toHaveText(["Tarifs", "Contactez-nous"]);
+  await expect(links).toHaveText(["Tarifs", "Contactez-nous"], { useInnerText: true });
   await nav.getByRole("button", { name: "Fonctionnalités" }).hover();
   await expect(page.getByRole("link", { name: /Serveurs/ })).toHaveAttribute("href", "/relais");
   await expect(nav.getByRole("link", { name: "Tarifs" })).toHaveAttribute("href", "/tarifs");

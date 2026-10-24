@@ -1,4 +1,5 @@
 import Image from "next/image";
+import L from "../L";
 import { siDji, siKick, siObsstudio, siTwitch, siWebrtc, siYoutube } from "@/lib/brand-icons";
 import type { HomeStreamer } from "@/lib/streamers";
 
@@ -73,7 +74,7 @@ const BRANDS: Brand[] = [
 function BrandStrip() {
   return (
     <section aria-labelledby="techno-titre" className="pb-20 pt-0 sm:pb-24">
-      <h2 id="techno-titre" className="px-4 text-center text-xl font-medium">Technologies implémentées</h2>
+      <h2 id="techno-titre" className="px-4 text-center text-xl font-medium"><L fr="Technologies implémentées" en="Supported technologies" /></h2>
       <div className="mx-auto mt-10 max-w-5xl overflow-hidden px-4">
         <div className="marquee-wrap overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="marquee marquee-l">
@@ -123,9 +124,9 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
         <path d={siTwitch.path} />
       </svg>
       <h2 id="mur-titre" className="h-section px-4 text-center">
-        Ils nous font confiance.
+        <L fr="Ils nous font confiance." en="They trust us." />
       </h2>
-      <p className="mx-auto mt-4 max-w-[48ch] px-4 text-center text-base leading-relaxed text-muted">Des streamers IRL qui diffusent avec SYXTEE.</p>
+      <p className="mx-auto mt-4 max-w-[48ch] px-4 text-center text-base leading-relaxed text-muted"><L fr="Des streamers IRL qui diffusent avec SYXTEE." en="IRL streamers who broadcast with SYXTEE." /></p>
       <div className="mt-14" style={{ maskImage: fade, WebkitMaskImage: fade }}>
         <Row items={row} />
       </div>

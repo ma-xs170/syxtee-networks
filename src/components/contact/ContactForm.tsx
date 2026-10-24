@@ -9,8 +9,6 @@ const field =
 const label = "text-sm font-medium";
 
 const EVENT_TYPES = ["Mobilité", "Bateau"];
-const DURATIONS = ["Moins de 2 h", "2 à 4 h", "4 à 8 h", "Plus de 8 h", "Plusieurs jours"];
-const NEEDS = ["Plusieurs caméras", "Bonding 4G / 5G", "Liaison satellite", "Contrôle à distance d'OBS", "Multistream", "Équipe sur place"];
 
 // Liste déroulante du site (pas celle du système) : même rendu partout, au clavier comme à la souris.
 const Select = ({ id, name, required, placeholder, options }: { id: string; name: string; required?: boolean; placeholder: string; options: string[] }) => {
@@ -96,48 +94,6 @@ export default function ContactForm() {
         <label htmlFor="c-message" className={label}>Décris ton projet *</label>
         <textarea id="c-message" name="message" required minLength={10} rows={5} maxLength={1200} placeholder="Ton projet, le parcours, les contraintes, ton budget approximatif…" className={`${field} h-auto py-3`} />
       </div>
-
-      <details className="group rounded-xl border border-line bg-input">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-sm font-medium [&::-webkit-details-marker]:hidden min-h-12">
-          <span>Ajouter des détails <span className="font-normal text-muted">(facultatif)</span></span>
-          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="shrink-0 text-muted transition-transform group-open:rotate-180"><path d="m6 9 6 6 6-6" /></svg>
-        </summary>
-        <div className="space-y-5 border-t border-line p-4">
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <label htmlFor="c-date" className={label}>Date prévue</label>
-              <input id="c-date" name="date" maxLength={60} placeholder="Ex. : 12 avril 2027" className={field} />
-            </div>
-            <div className="grid gap-2">
-              <label htmlFor="c-duration" className={label}>Durée du direct</label>
-              <Select id="c-duration" name="duration" placeholder="Sélectionne" options={DURATIONS} />
-            </div>
-            <div className="grid gap-2">
-              <label htmlFor="c-phone" className={label}>Téléphone</label>
-              <input id="c-phone" name="phone" type="tel" maxLength={30} autoComplete="tel" placeholder="06 12 34 56 78" className={field} />
-            </div>
-            <div className="grid gap-2">
-              <label htmlFor="c-channel" className={label}>Ta chaîne</label>
-              <input id="c-channel" name="channel" maxLength={200} placeholder="twitch.tv/ton-pseudo" className={field} />
-            </div>
-          </div>
-          <div className="grid gap-2">
-            <label htmlFor="c-audience" className={label}>Audience attendue</label>
-            <input id="c-audience" name="audience" maxLength={60} placeholder="Ex. : 5 000 spectateurs sur place" className={field} />
-          </div>
-          <fieldset className="grid gap-3">
-            <legend className={`${label} mb-1`}>Besoins</legend>
-            <div className="flex flex-wrap gap-2">
-              {NEEDS.map((n) => (
-                <label key={n} className="cursor-pointer">
-                  <input type="checkbox" name="needs" value={n} className="peer sr-only" />
-                  <span className="flex h-10 items-center rounded-xl border border-line bg-input px-4 text-sm text-muted transition-colors hover:border-line-strong hover:text-foreground peer-checked:border-foreground/50 peer-checked:bg-surface-2 peer-checked:text-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-foreground/30">{n}</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-        </div>
-      </details>
 
       <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
         <label>

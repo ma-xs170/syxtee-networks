@@ -3,6 +3,7 @@ import Link from "next/link";
 import { DiscordLogo, GithubLogo, InstagramLogo, YoutubeLogo } from "@phosphor-icons/react/dist/ssr";
 import { site, type NavLink } from "@/lib/site";
 import StatusPill from "./ui/StatusPill";
+import T from "./T";
 
 // Pied de page : à gauche le logo, la promesse, l'état du service et les réseaux (logos blancs) ; à droite quatre colonnes rangées par besoin.
 const columns: { title: string; links: NavLink[] }[] = [
@@ -58,7 +59,7 @@ export default function Footer() {
             <Image src="/logo-400.png" alt="" width={22} height={31} style={{ width: 22, height: "auto" }} className="ink-img" />
             <span className="text-sm font-medium tracking-[0.02em] text-foreground">SYXTEE NETWORKS</span>
           </Link>
-          <p className="mt-5 text-sm leading-relaxed text-muted">Le live IRL, partout. Production et outils pour streamers, depuis la Guadeloupe.</p>
+          <p className="mt-5 text-sm leading-relaxed text-muted"><T>Le live IRL, partout. Production et outils pour streamers, depuis la Guadeloupe.</T></p>
           <ul className="mt-6 flex items-center gap-2" aria-label="Réseaux sociaux">
             {socials.map(({ label, href, Icon }) => (
               <li key={label}>
@@ -68,18 +69,18 @@ export default function Footer() {
               </li>
             ))}
           </ul>
-          <Link href="/statut" className="mt-6 inline-block max-w-full"><StatusPill variant="ok" label="Systèmes opérationnels" /></Link>
+          <Link href="/statut" className="mt-6 inline-block max-w-full"><StatusPill variant="ok" label={<T>Systèmes opérationnels</T>} /></Link>
         </div>
 
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
           {columns.map((col) => (
             <div key={col.title}>
-              <p className="text-sm font-semibold">{col.title}</p>
+              <p className="text-sm font-semibold"><T>{col.title}</T></p>
               <ul className="mt-3 text-sm">
                 {col.links.map((l) => (
                   <li key={l.href}>
                     <Link href={l.href} {...(l.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})} className="inline-flex min-h-11 items-center text-muted hover:text-foreground sm:min-h-9">
-                      <span className="whitespace-nowrap">{l.label}</span>
+                      <span className="whitespace-nowrap"><T>{l.label}</T></span>
                     </Link>
                   </li>
                 ))}
@@ -91,7 +92,7 @@ export default function Footer() {
 
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <p>© {site.year} {site.name}. Basé en Guadeloupe.</p>
+          <p>© {site.year} {site.name}. <T>Basé en Guadeloupe.</T></p>
           <a href="mailto:contact@syxtee-networks.fr" className="inline-flex min-h-11 items-center hover:text-foreground sm:min-h-0">contact@syxtee-networks.fr</a>
         </div>
       </div>

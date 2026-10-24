@@ -55,6 +55,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="fr" suppressHydrationWarning className={`${inter.variable} ${GeistMono.variable} h-full antialiased`}>
+      <head>
+        {/* Langue choisie (FR par défaut) : posée avant l'affichage pour éviter le clignotement. Voir L.tsx et LangSwitch.tsx. */}
+        <script dangerouslySetInnerHTML={{ __html: `try{var l=localStorage.getItem("lang");if(l==="en")document.documentElement.lang="en"}catch(e){}` }} />
+      </head>
       <body className="min-h-full flex flex-col">
         <a href="#contenu" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-(--z-skip) focus:rounded-full focus:bg-accent focus:px-5 focus:py-2.5 focus:text-sm focus:font-medium focus:text-on-accent">Aller au contenu</a>
         <JsonLd

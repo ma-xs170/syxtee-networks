@@ -1,5 +1,6 @@
 "use client";
 
+import T from "./T";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
@@ -129,7 +130,7 @@ function PanelItem({ t, hovered, onHover, onClose, i, reduce }: { t: NavTool | D
             {t.badge && <Badge>{t.badge}</Badge>}
             {"locked" in t && t.locked && <LockIcon className="h-3.5 w-3.5 shrink-0 text-muted" />}
           </span>
-          <span className="mt-0.5 block text-sm leading-snug text-muted">{t.desc}</span>
+          <span className="mt-0.5 block text-sm leading-snug text-muted"><T>{t.desc}</T></span>
         </span>
         <span aria-hidden="true" className="relative z-10 text-muted transition-[transform,color] duration-200 group-hover:translate-x-0.5 group-hover:text-foreground">
           {external ? "↗" : "→"}
@@ -152,8 +153,8 @@ function PanelCard({ t, onClose, i, reduce }: { t: NavTool | DashTool; onClose: 
           <Thumb t={t} size={80} />
         </span>
         <span className="min-w-0">
-          <span className="block text-base font-medium text-foreground">{t.label}</span>
-          <span className="mt-1 block text-sm leading-snug text-muted">{t.desc}</span>
+          <span className="block text-base font-medium text-foreground"><T>{t.label}</T></span>
+          <span className="mt-1 block text-sm leading-snug text-muted"><T>{t.desc}</T></span>
         </span>
       </Link>
     </motion.li>
@@ -306,7 +307,7 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
           >
             <GlidePill show={hover === label || open === label} id="site-nav-pill" className="rounded-full" />
             <span className="relative z-10 flex items-center gap-1.5">
-              {item.label}
+              <T>{item.label}</T>
               {item.dot && <NewDot />}
               <Chevron open={open === label} />
             </span>
@@ -317,11 +318,10 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
               key={label}
               href={item.href}
               aria-current={active ? "page" : undefined}
-              className="ml-1 inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-full border border-foreground/25 bg-foreground/[0.06] px-4 text-sm font-medium text-foreground transition-[background-color,border-color,transform] duration-150 hover:border-foreground/40 hover:bg-foreground/[0.12] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+              className="ml-1 inline-flex h-9 items-center whitespace-nowrap rounded-full bg-foreground px-4 text-sm font-medium text-background transition-opacity hover:opacity-85 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
               {...common}
             >
-              <span aria-hidden="true" className="size-1.5 rounded-full bg-bad" />
-              {item.label}
+              <T>{item.label}</T>
             </Link>
           ) : (
           <Link
@@ -334,7 +334,7 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
           >
             <GlidePill show={hover === label} id="site-nav-pill" className="rounded-full" />
             <span className={`relative z-10 ${"underline" in item && item.underline ? "underline underline-offset-[6px] decoration-foreground/50" : ""}`}>
-              {item.label}
+              <T>{item.label}</T>
               {"arrow" in item && item.arrow && (
                 <span aria-hidden="true" className="ml-1 inline-block text-foreground/60">
                   ↗
@@ -399,7 +399,7 @@ export function NavAccordion({ menu, active, onNavigate }: { menu: AnyMenu; acti
         className={`flex w-full items-center justify-between py-4 text-base hover:text-foreground ${active ? "text-foreground" : "text-muted"}`}
       >
         <span className="flex items-center gap-2">
-          {menu.label}
+          <T>{menu.label}</T>
           {menu.dot && <NewDot />}
         </span>
         <Chevron open={open} />
@@ -420,7 +420,7 @@ export function NavAccordion({ menu, active, onNavigate }: { menu: AnyMenu; acti
                   {t.badge && <Badge>{t.badge}</Badge>}
                         {"locked" in t && t.locked && <LockIcon className="h-3.5 w-3.5 shrink-0 text-muted" />}
                 </span>
-                <span className="block text-sm text-muted">{t.desc}</span>
+                <span className="block text-sm text-muted"><T>{t.desc}</T></span>
               </span>
             </Link>
           </li>
@@ -443,5 +443,5 @@ function groupTools(children: (NavTool | DashTool)[]): [string, (NavTool | DashT
 
 /** Nom d'une entrée : logo S + « SYXTEE FONCTION » pour les produits SYXTEE, texte simple sinon. */
 function ToolLabel({ t }: { t: { label: string; wordmark?: string } }) {
-  return t.wordmark ? <Wordmark name={t.wordmark} size="sm" /> : <>{t.label}</>;
+  return t.wordmark ? <Wordmark name={t.wordmark} size="sm" /> : <T>{t.label}</T>;
 }

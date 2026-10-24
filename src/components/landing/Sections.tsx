@@ -6,6 +6,7 @@ import { ButtonLink } from "../ui/Button";
 import Highlight from "../ui/Highlight";
 import DirectorDemo from "./DirectorDemo";
 import Reveal from "../ui/Reveal";
+import L from "../L";
 import Faq from "./Faq";
 import ObsHero from "./ObsHero";
 import SceneSwitcher from "./SceneSwitcher";
@@ -23,7 +24,7 @@ const h2 = "h-serif text-[clamp(2.25rem,4.5vw,3.5rem)]";
 const lead = "mt-4 max-w-[60ch] text-base leading-relaxed text-muted";
 const rise = (i: number) => ({ "--i": i }) as React.CSSProperties;
 
-function Cell({ className = "", title, text, children, delay = 0, href, cta }: { className?: string; title: string; text: string; children?: React.ReactNode; delay?: number; href?: string; cta?: string }) {
+function Cell({ className = "", title, text, children, delay = 0, href, cta }: { className?: string; title: React.ReactNode; text: React.ReactNode; children?: React.ReactNode; delay?: number; href?: string; cta?: React.ReactNode }) {
   return (
     <Reveal as="article" delay={delay} className={`bento-cell flex flex-col p-6 sm:p-7 ${className}`}>
       <div className="flex h-44 items-center justify-center">{children}</div>
@@ -42,20 +43,20 @@ export function HomeHero() {
       <Container className="grid items-center gap-12 pb-24 pt-[calc(4rem+65px)] lg:grid-cols-2 lg:gap-16 lg:pb-32 lg:pt-[calc(6rem+65px)]">
         <div>
           <h1 className="rise h-serif max-w-[14ch] text-[clamp(2.75rem,6vw,5rem)]" style={rise(0)}>
-            Le live IRL, <em>partout.</em>
+            <L fr={<>Le live IRL, <em>partout.</em></>} en={<>Live IRL, <em>anywhere.</em></>} />
           </h1>
           <p className="rise mt-6 max-w-[48ch] text-lg leading-relaxed text-muted" style={rise(1)}>
-            <strong className="font-semibold text-foreground">Diffusez et capturez chaque instant.</strong> Production, cadreurs et relais SRTLA pour diffuser de n&apos;importe où. Lancé par des Guadeloupéens, avec les mêmes outils à petit prix pour les streamers indépendants.
+            <L fr={<><strong className="font-semibold text-foreground">Diffusez et capturez chaque instant.</strong> Production, cadreurs et relais SRTLA pour diffuser de n&apos;importe où. Lancé par des Guadeloupéens, avec les mêmes outils à petit prix pour les streamers indépendants.</>} en={<><strong className="font-semibold text-foreground">Stream and capture every moment.</strong> Production, camera operators and SRTLA relays to broadcast from anywhere. Launched by Guadeloupeans, with the same tools at a low price for independent streamers.</>} />
           </p>
           <div className="rise mt-9 flex flex-col gap-3 sm:flex-row" style={rise(2)}>
-            <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85">Contactez-nous <span aria-hidden="true">→</span></Link>
-            <Link href="/inscription" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-bad px-6 text-[15px] font-medium text-foreground transition-opacity hover:opacity-85">Commencer <span aria-hidden="true">→</span></Link>
+            <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><L fr="Contactez-nous" en="Contact us" /> <span aria-hidden="true">→</span></Link>
+            <Link href="/inscription" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-bad px-6 text-[15px] font-medium text-foreground transition-opacity hover:opacity-85"><L fr="Commencer" en="Get started" /> <span aria-hidden="true">→</span></Link>
           </div>
         </div>
         <div className="rise bento-cell relative overflow-hidden" style={rise(2)}>
           <div aria-hidden="true" className="flex h-72 items-center justify-center border-b border-line p-6 text-foreground/80 sm:h-96"><Streamer animated={false} /></div>
           <div className="flex items-center justify-between gap-4 p-5 sm:p-6">
-            <p className="text-base font-medium">Mobilité et bateau, en direct partout.</p>
+            <p className="text-base font-medium"><L fr="Mobilité et bateau, en direct partout." en="On foot, by bike or by boat, live from anywhere." /></p>
             <span className="shrink-0 text-sm text-muted">Guadeloupe</span>
           </div>
         </div>
@@ -71,9 +72,9 @@ export function ProductionSection() {
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(60% 45% at 100% 0%, color-mix(in srgb, var(--bad) 26%, transparent), transparent 70%), radial-gradient(50% 40% at 0% 100%, color-mix(in srgb, var(--bad) 14%, transparent), transparent 70%)" }} />
       <Container>
         <Reveal className="mx-auto max-w-3xl text-center">
-          <h2 className={h2}>On produit ton live IRL, <em>de A à Z.</em></h2>
+          <h2 className={h2}><L fr={<>On produit ton live IRL, <em>de A à Z.</em></>} en={<>We produce your IRL live, <em>from A to Z.</em></>} /></h2>
           <p className={`${lead} mx-auto`}>
-            Tu veux un direct sans monter d&apos;équipe ? Nos équipes s&apos;occupent de tout, à pied, à vélo, en voiture ou en bateau, avec notre propre infrastructure. Solutions payantes ou sur devis, partout dans le monde.
+            <L fr="Tu veux un direct sans monter d'équipe ? Nos équipes s'occupent de tout, à pied, à vélo, en voiture ou en bateau, avec notre propre infrastructure. Solutions payantes ou sur devis, partout dans le monde." en="Want a live stream without building a team? Our crews handle everything, on foot, by bike, by car or by boat, with our own infrastructure. Paid or quote-based solutions, anywhere in the world." />
           </p>
         </Reveal>
 
@@ -89,11 +90,11 @@ export function ProductionSection() {
           ))}
           <div className="grid gap-4 md:grid-cols-3 md:gap-16">
             {[
-              { Icon: ClipboardText, title: "Devis et étude de projet", text: "Nous voyons ce qui est envisageable.", points: ["Ton projet et ton lieu", "Devis gratuit, sur mesure"] },
-              { Icon: CalendarCheck, title: "Planification", text: "Toutes nos équipes travaillent sur le projet.", points: ["Régie, cadreurs et réseau", "Repérage et tests avant le jour J"] },
-              { Icon: Broadcast, title: "Stream", text: "Ton live IRL est en place.", points: ["Direct supervisé en continu", "Bilan à la fin du live"], live: true },
+              { Icon: ClipboardText, title: <L fr="Devis et étude de projet" en="Quote and project study" />, text: <L fr="Nous voyons ce qui est envisageable." en="We look at what is feasible." />, points: [<L key="a" fr="Ton projet et ton lieu" en="Your project and location" />, <L key="b" fr="Devis gratuit, sur mesure" en="Free, tailor-made quote" />] },
+              { Icon: CalendarCheck, title: <L fr="Planification" en="Planning" />, text: <L fr="Toutes nos équipes travaillent sur le projet." en="All our teams work on the project." />, points: [<L key="a" fr="Régie, cadreurs et réseau" en="Control room, camera operators and network" />, <L key="b" fr="Repérage et tests avant le jour J" en="Scouting and tests before the big day" />] },
+              { Icon: Broadcast, title: "Stream", text: <L fr="Ton live IRL est en place." en="Your IRL live is on." />, points: [<L key="a" fr="Direct supervisé en continu" en="Live continuously monitored" />, <L key="b" fr="Bilan à la fin du live" en="Debrief after the live" />], live: true },
             ].map((st, i) => (
-              <Reveal as="article" key={st.title} delay={i * 0.08} className="bento-cell relative flex flex-col p-7 sm:p-8">
+              <Reveal as="article" key={st.Icon.displayName ?? i} delay={i * 0.08} className="bento-cell relative flex flex-col p-7 sm:p-8">
                 <div className="flex items-center justify-between">
                   <span className="grid size-10 place-items-center rounded-full border border-line-strong bg-background text-foreground"><st.Icon size={20} aria-hidden="true" /></span>
                   <span className="flex items-center gap-2 font-mono text-xs text-muted">
@@ -104,8 +105,8 @@ export function ProductionSection() {
                 <h3 className="mt-7 text-xl font-semibold tracking-tight">{st.title}</h3>
                 <p className="mb-6 mt-2 text-sm leading-relaxed text-foreground/80">{st.text}</p>
                 <ul className="mt-auto grid gap-2 border-t border-line pt-5 text-sm text-muted">
-                  {st.points.map((pt) => (
-                    <li key={pt} className="flex items-start gap-2.5"><span aria-hidden="true" className="mt-2 size-1 shrink-0 rounded-full bg-foreground/40" />{pt}</li>
+                  {st.points.map((pt, j) => (
+                    <li key={j} className="flex items-start gap-2.5"><span aria-hidden="true" className="mt-2 size-1 shrink-0 rounded-full bg-foreground/40" />{pt}</li>
                   ))}
                 </ul>
               </Reveal>
@@ -114,8 +115,8 @@ export function ProductionSection() {
         </div>
 
         <Reveal className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85">Contactez-nous <span aria-hidden="true">→</span></Link>
-          <ButtonLink href="/cas-d-usage" variant="secondary" className="h-12 rounded-xl px-6 text-[15px]">Nos réalisations</ButtonLink>
+          <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><L fr="Contactez-nous" en="Contact us" /> <span aria-hidden="true">→</span></Link>
+          <ButtonLink href="/cas-d-usage" variant="secondary" className="h-12 rounded-xl px-6 text-[15px]"><L fr="Nos réalisations" en="Our work" /></ButtonLink>
         </Reveal>
       </Container>
     </section>
@@ -128,11 +129,11 @@ export function StreamersIntro({ streamers = [] }: { streamers?: HomeStreamer[] 
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(55% 40% at 0% 0%, color-mix(in srgb, #9146ff 22%, transparent), transparent 70%), radial-gradient(55% 40% at 100% 100%, color-mix(in srgb, #9146ff 14%, transparent), transparent 70%)" }} />
       <Container className="text-center">
         <Reveal>
-          <h2 className={`${h2} mx-auto max-w-[20ch]`}>Streamers indépendants : les mêmes outils, <em>pas cher.</em></h2>
-          <p className={`${lead} mx-auto`}>Pilote ton OBS depuis ton téléphone, diffuse en SRTLA sur nos relais et suis ton flux à la seconde. Gratuit pour commencer, puis dès 5 € par mois, sans engagement.</p>
+          <h2 className={`${h2} mx-auto max-w-[20ch]`}><L fr={<>Streamers indépendants : les mêmes outils, <em>pas cher.</em></>} en={<>Independent streamers: the same tools, <em>for less.</em></>} /></h2>
+          <p className={`${lead} mx-auto`}><L fr="Pilote ton OBS depuis ton téléphone, diffuse en SRTLA sur nos relais et suis ton flux à la seconde. Gratuit pour commencer, puis dès 5 € par mois, sans engagement." en="Control your OBS from your phone, stream over SRTLA on our relays and follow your feed to the second. Free to start, then from €5 a month, no commitment." /></p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <ButtonLink href="/inscription">Créer mon compte</ButtonLink>
-            <ButtonLink href="/tarifs" variant="secondary">Voir les tarifs</ButtonLink>
+            <ButtonLink href="/inscription"><L fr="Créer mon compte" en="Create my account" /></ButtonLink>
+            <ButtonLink href="/tarifs" variant="secondary"><L fr="Voir les tarifs" en="See pricing" /></ButtonLink>
           </div>
         </Reveal>
         <div className="mt-14">
@@ -172,28 +173,28 @@ export function ObsBento() {
     <section id="comment" className="scroll-mt-20 pb-24 pt-12 lg:pb-36 lg:pt-16">
       <Container>
         <Reveal>
-          <h2 className={h2}>{product.remoteName}, ton OBS <em>dans la poche.</em></h2>
-          <p className={lead}>Chaque bouton agit sur ton vrai OBS, en direct.</p>
+          <h2 className={h2}><L fr={<>{product.remoteName}, ton OBS <em>dans la poche.</em></>} en={<>Remote control, your OBS <em>in your pocket.</em></>} /></h2>
+          <p className={lead}><L fr="Chaque bouton agit sur ton vrai OBS, en direct." en="Every button acts on your real OBS, live." /></p>
         </Reveal>
         <div className="mt-12 grid gap-4 md:grid-cols-4">
-          <Cell delay={0.0} className="md:col-span-2" title="Change de scène en un tap" text="Début, direct, connexion perdue, fin : la scène change sur ton OBS, sans attendre.">
+          <Cell delay={0.0} className="md:col-span-2" title={<L fr="Change de scène en un tap" en="Switch scenes in one tap" />} text={<L fr="Début, direct, connexion perdue, fin : la scène change sur ton OBS, sans attendre." en="Start, live, connection lost, end: the scene changes on your OBS, instantly." />}>
             <SceneSwitcher />
           </Cell>
-          <Cell delay={0.08} className="md:col-span-2" title="Mixer audio à distance" text="Coupe un micro ou règle un niveau pendant que tu es sur le terrain.">
+          <Cell delay={0.08} className="md:col-span-2" title={<L fr="Mixer audio à distance" en="Remote audio mixer" />} text={<L fr="Coupe un micro ou règle un niveau pendant que tu es sur le terrain." en="Mute a mic or set a level while you are out in the field." />}>
             <div className="flex h-32 w-full items-end gap-1.5" aria-hidden="true">
               {[40, 62, 50, 78, 66, 88, 58, 72, 46, 64].map((h, i) => (
                 <span key={i} className={`level-bar h-full flex-1 origin-bottom rounded-t-md ${i > 7 ? "bg-warn" : "bg-ok"}`} style={{ "--p": h / 100, transform: `scaleY(${h / 100})`, opacity: 0.8, animationDuration: `${650 + ((i * 137) % 500)}ms`, animationDelay: `${-((i * 211) % 700)}ms` } as React.CSSProperties} />
               ))}
             </div>
           </Cell>
-          <Cell delay={0.16} className="md:col-span-2" title="Espaces partagés" text="Invite un modérateur ou un monteur à piloter avec toi, chacun avec son compte et son rôle." href="/espaces-partages" cta="Découvrir les espaces partagés">
+          <Cell delay={0.16} className="md:col-span-2" title={<L fr="Espaces partagés" en="Shared spaces" />} text={<L fr="Invite un modérateur ou un monteur à piloter avec toi, chacun avec son compte et son rôle." en="Invite a moderator or an editor to control with you, each with their own account and role." />} href="/espaces-partages" cta={<L fr="Découvrir les espaces partagés" en="Discover shared spaces" />}>
             <div className="flex items-center justify-center gap-4" aria-hidden="true">
               {[["M", "from-violet-500 to-pink-500"], ["L", "from-sky-500 to-blue-600"], ["S", "from-emerald-500 to-teal-600"], ["+", "from-amber-400 to-orange-500"]].map(([l, c]) => (
                 <span key={l} className={`grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br ${c} text-xl font-semibold text-white shadow-lg`}>{l}</span>
               ))}
             </div>
           </Cell>
-          <Cell delay={0.24} className="md:col-span-2" title="Tourne sur ton propre PC ou Mac" text="Zéro serveur à louer. Tu relies ton ordinateur avec un code.">
+          <Cell delay={0.24} className="md:col-span-2" title={<L fr="Tourne sur ton propre PC ou Mac" en="Runs on your own PC or Mac" />} text={<L fr="Zéro serveur à louer. Tu relies ton ordinateur avec un code." en="No server to rent. You link your computer with a code." />}>
             <MacAndPc className="mx-auto max-w-[440px]" />
           </Cell>
         </div>
@@ -368,10 +369,10 @@ export function FinalCta() {
     <section data-theme="dark" className="relative isolate overflow-hidden bg-background pb-56 pt-24 text-foreground sm:pb-72 sm:pt-32">
       <CtaGlobe />
       <Container className="relative text-center">
-        <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,6vw,4.5rem)]">Prêt à partir en <em>direct ?</em></h2>
+        <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,6vw,4.5rem)]"><L fr={<>Prêt à partir en <em>direct ?</em></>} en={<>Ready to go <em>live?</em></>} /></h2>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <ButtonLink href="/contact" className="border-foreground! bg-foreground! text-background! hover:bg-foreground/85!">Contacter</ButtonLink>
-          <ButtonLink href="/inscription" variant="secondary">Créer mon compte</ButtonLink>
+          <ButtonLink href="/contact" className="border-foreground! bg-foreground! text-background! hover:bg-foreground/85!"><L fr="Contacter" en="Contact us" /></ButtonLink>
+          <ButtonLink href="/inscription" variant="secondary"><L fr="Créer mon compte" en="Create my account" /></ButtonLink>
         </div>
       </Container>
     </section>

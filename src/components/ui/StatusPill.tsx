@@ -3,7 +3,7 @@ const dot: Record<Exclude<Variant, "dev">, string> = { ok: "var(--ok)", live: "v
 const DEFAULT: Record<Variant, string> = { ok: "Opérationnel", live: "En direct", unstable: "Instable", offline: "Hors ligne", dev: "EN DÉVELOPPEMENT" };
 
 /** Pastille de statut : pilule à fond 4 %, filet 8 %, point de 6 px dont le halo respire. `live` ajoute un timer mono. `dev` : sans point, filet pointillé. */
-export default function StatusPill({ variant = "ok", label, timer, className = "" }: { variant?: Variant; label?: string; timer?: string; className?: string }) {
+export default function StatusPill({ variant = "ok", label, timer, className = "" }: { variant?: Variant; label?: React.ReactNode; timer?: string; className?: string }) {
   const text = label ?? DEFAULT[variant];
   if (variant === "dev")
     return <span className={`inline-flex items-center rounded-full border border-dashed border-foreground/25 px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.08em] text-muted ${className}`}>{text}</span>;

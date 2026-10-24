@@ -1,5 +1,4 @@
 import "@/styles/fx.css";
-import "@/styles/brand.css";
 import Link from "next/link";
 import GridBackground from "@/components/ui/GridBackground";
 

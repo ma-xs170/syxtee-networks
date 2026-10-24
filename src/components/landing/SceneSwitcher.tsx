@@ -41,18 +41,11 @@ export default function SceneSwitcher() {
               }`}
             >
               {s}
-              {(isLive || isPreview) && (
-                <span className={`absolute right-2.5 top-2 font-mono text-[10px] uppercase tracking-[0.12em] ${isLive ? "text-program" : "text-preview"}`}>{isLive ? "Direct" : "Aperçu"}</span>
-              )}
             </button>
           );
         })}
       </div>
-      <div className="mt-4 flex min-h-9 items-center justify-between gap-3 text-xs text-muted">
-        <span className="flex items-center gap-4 font-mono">
-          <span className="inline-flex items-center gap-1.5"><span aria-hidden="true" className="size-2 rounded-full bg-program" />Direct</span>
-          <span className="inline-flex items-center gap-1.5"><span aria-hidden="true" className="size-2 rounded-full bg-preview" />Aperçu</span>
-        </span>
+      <div className="mt-4 flex min-h-9 items-center justify-end gap-3 text-xs text-muted">
         {preview !== null && (
           <button
             type="button"

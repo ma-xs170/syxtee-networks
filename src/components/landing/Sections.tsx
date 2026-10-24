@@ -1,6 +1,6 @@
 import MacAndPc from "@/components/landing/MacAndPc";
 import Link from "next/link";
-import { ArrowUpRight, Broadcast, CalendarCheck, ClipboardText } from "@phosphor-icons/react/dist/ssr";
+import { Broadcast, CalendarCheck, ClipboardText } from "@phosphor-icons/react/dist/ssr";
 import { Container } from "../ui";
 import { ButtonLink } from "../ui/Button";
 import Highlight from "../ui/Highlight";
@@ -115,7 +115,7 @@ export function ProductionSection() {
 
         <Reveal className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85">Contactez-nous <span aria-hidden="true">→</span></Link>
-          <Link href="/production" className="inline-flex min-h-11 items-center gap-1.5 text-sm text-foreground underline-offset-4 hover:underline">Voir comment on travaille <ArrowUpRight size={14} aria-hidden="true" /></Link>
+          <ButtonLink href="/cas-d-usage" variant="secondary" className="h-12 rounded-xl px-6 text-[15px]">Nos réalisations</ButtonLink>
         </Reveal>
       </Container>
     </section>

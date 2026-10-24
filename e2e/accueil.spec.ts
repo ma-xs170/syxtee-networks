@@ -6,7 +6,7 @@ test("accueil : promesse, deux parcours, soutien et appels à l'action", async (
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Le live IRL, partout");
   await expect(page.getByRole("link", { name: "Contactez-nous" }).first()).toHaveAttribute("href", "/contact");
-  await expect(page.getByRole("link", { name: "Commencer" })).toHaveAttribute("href", "/inscription");
+  await expect(page.getByRole("link", { name: "Commencer" }).first()).toHaveAttribute("href", "/inscription");
   await expect(page.getByRole("heading", { name: /Ton live IRL, entre de bonnes mains/ })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Streamers indépendants/ })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Des tarifs clairs/ })).toHaveCount(0);

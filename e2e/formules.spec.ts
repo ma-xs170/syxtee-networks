@@ -25,14 +25,20 @@ test.describe("comptes", () => {
     return { email, password };
   }
 
-  test("gratuit : bandeau, serveurs verrouillés avec carte d'upgrade", async ({ page }) => {
+  test("gratuit : 1 serveur inclus, contrôle à distance verrouillé avec carte d'upgrade", async ({ page }) => {
     const a = await account("gratuit", { plan: "free" });
     await signInWithPassword(page, a.email, a.password);
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(page.getByRole("region", { name: "Formule" })).toContainText("Gratuit");
 
+    // Le palier Gratuit garde 1 serveur.
     await page.goto("/dashboard/serveurs");
-    const lock = page.getByRole("region", { name: /Serveurs et URLs : disponible avec un forfait/ });
+    await expect(page.getByText("0 / 1 serveurs")).toBeVisible();
+    await expect(page.getByRole("region", { name: /disponible avec un forfait/ })).toHaveCount(0);
+
+    // Le contrôle à distance (scènes) reste réservé aux abonnés.
+    await page.goto("/dashboard/scenes");
+    const lock = page.getByRole("region", { name: /disponible avec un forfait/ });
     await expect(lock).toBeVisible();
     await expect(lock.getByRole("link", { name: "Choisir une formule" })).toHaveAttribute("href", "/dashboard/compte?onglet=formule");
     await expect(lock.getByRole("link", { name: "Voir les forfaits" })).toHaveAttribute("href", "/tarifs");

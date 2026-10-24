@@ -50,24 +50,24 @@ function Row({ items, reverse }: { items: Card[]; reverse?: boolean }) {
 }
 
 // Bandeau des technologies que SYXTEE implémente pour les streamers (en haut de la section) : logos en gris, qui défilent lentement. Sans logo vectoriel ici : mot-symbole (protocoles) ou icône de l'app (Moblin).
-type Brand = { key: string; node: React.ReactNode; note: string };
+type Brand = { key: string; node: React.ReactNode };
+// Même hauteur, même graisse, même corps pour tous : seul le contenu change.
 const glyph = (icon: { path: string }) => (
-  <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" aria-hidden="true"><path d={icon.path} /></svg>
+  <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true" className="shrink-0"><path d={icon.path} /></svg>
 );
-const word = "text-2xl font-semibold tracking-tight";
-const heavy = "text-3xl font-black tracking-[0.08em]";
+const word = (t: string) => <span className="text-[1.65rem] font-bold leading-none tracking-tight">{t}</span>;
 const BRANDS: Brand[] = [
-  { key: "srtla", node: <span className={heavy}>SRTLA</span>, note: "Bonding multi-réseaux" },
-  { key: "srt", node: <span className={heavy}>SRT</span>, note: "Transport fiable" },
-  { key: "rtmp", node: <span className={heavy}>RTMP</span>, note: "Vers les plateformes" },
-  { key: "rist", node: <span className={heavy}>RIST</span>, note: "Contribution pro" },
-  { key: "webrtc", node: <span className={word}>WebRTC</span>, note: "Direct depuis le navigateur" },
-  { key: "dji", node: <span className="text-3xl font-black italic tracking-tight">DJI</span>, note: "Caméras en Bluetooth" },
-  { key: "moblin", node: (<><Image src="/images/moblin/icon.png" alt="" width={64} height={64} className="size-8 rounded-lg grayscale" /><span className={word}>Moblin</span></>), note: "App de streaming iOS" },
-  { key: "obs", node: <span className={word}>OBS Studio</span>, note: "Pilotage à distance" },
-  { key: "twitch", node: (<>{glyph(siTwitch)}<span className={word}>Twitch</span></>), note: "Multistream" },
-  { key: "youtube", node: (<>{glyph(siYoutube)}<span className={word}>YouTube</span></>), note: "Multistream" },
-  { key: "kick", node: (<>{glyph(siKick)}<span className="text-2xl font-black tracking-tight">KICK</span></>), note: "Multistream" },
+  { key: "srtla", node: word("SRTLA") },
+  { key: "srt", node: word("SRT") },
+  { key: "rtmp", node: word("RTMP") },
+  { key: "rist", node: word("RIST") },
+  { key: "webrtc", node: word("WebRTC") },
+  { key: "dji", node: word("DJI") },
+  { key: "moblin", node: (<><Image src="/images/moblin/icon.png" alt="" width={56} height={56} className="size-7 shrink-0 rounded-md grayscale" />{word("Moblin")}</>) },
+  { key: "obs", node: word("OBS Studio") },
+  { key: "twitch", node: (<>{glyph(siTwitch)}{word("Twitch")}</>) },
+  { key: "youtube", node: (<>{glyph(siYoutube)}{word("YouTube")}</>) },
+  { key: "kick", node: (<>{glyph(siKick)}{word("Kick")}</>) },
 ];
 
 function BrandStrip() {
@@ -81,10 +81,7 @@ function BrandStrip() {
             {[0, 1].map((copy) => (
               <ul key={copy} className="flex shrink-0 items-center" aria-hidden={copy === 1 ? true : undefined}>
                 {[...BRANDS, ...BRANDS].map((b, i) => (
-                  <li key={`${b.key}-${i}`} className="mx-2 flex h-28 w-56 shrink-0 flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-surface/60 text-foreground/80 backdrop-blur-sm sm:mx-2.5">
-                    <span className="flex items-center gap-3">{b.node}</span>
-                    <span className="text-sm text-muted">{b.note}</span>
-                  </li>
+                  <li key={`${b.key}-${i}`} className="flex h-10 shrink-0 items-center gap-2.5 px-8 text-foreground/55 sm:px-12">{b.node}</li>
                 ))}
               </ul>
             ))}

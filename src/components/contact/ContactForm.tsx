@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { contactAction, type ContactState } from "@/app/(site)/contact/actions";
 import { buttonClass } from "@/components/ui/button-styles";
 
@@ -13,15 +13,50 @@ const EVENT_TYPES = ["Mobilité", "Bateau"];
 const DURATIONS = ["Moins de 2 h", "2 à 4 h", "4 à 8 h", "Plus de 8 h", "Plusieurs jours"];
 const NEEDS = ["Plusieurs caméras", "Bonding 4G / 5G", "Liaison satellite", "Contrôle à distance d'OBS", "Multistream", "Équipe sur place"];
 
-const Select = ({ id, name, required, placeholder, options }: { id: string; name: string; required?: boolean; placeholder: string; options: string[] }) => (
-  <div className="relative">
-    <select id={id} name={name} required={required} defaultValue="" className={`${field} appearance-none pr-10`}>
-      <option value="" disabled>{placeholder}</option>
-      {options.map((o) => <option key={o} value={o}>{o}</option>)}
-    </select>
-    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted"><path d="m6 9 6 6 6-6" /></svg>
-  </div>
-);
+// Liste déroulante du site (pas celle du système) : même rendu partout, au clavier comme à la souris.
+const Select = ({ id, name, required, placeholder, options }: { id: string; name: string; required?: boolean; placeholder: string; options: string[] }) => {
+  const [value, setValue] = useState("");
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: PointerEvent) => { if (!box.current?.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("pointerdown", away);
+    return () => document.removeEventListener("pointerdown", away);
+  }, [open]);
+  const pick = (o: string) => { setValue(o); setOpen(false); };
+  const onKey = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") setOpen(false);
+    else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!open) { setActive(Math.max(0, options.indexOf(value))); setOpen(true); }
+      else setActive((i) => (i + (e.key === "ArrowDown" ? 1 : options.length - 1)) % options.length);
+    } else if ((e.key === "Enter" || e.key === " ") && open) {
+      e.preventDefault();
+      pick(options[active]);
+    }
+  };
+  return (
+    <div ref={box} className="relative">
+      <input name={name} value={value} required={required} readOnly tabIndex={-1} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-0" />
+      <button type="button" id={id} role="combobox" aria-haspopup="listbox" aria-expanded={open} aria-controls={`${id}-list`} onClick={() => { setActive(Math.max(0, options.indexOf(value))); setOpen((o) => !o); }} onKeyDown={onKey} className={`${field} flex items-center justify-between gap-3 pr-4 text-left ${value ? "" : "text-muted/70"}`}>
+        <span className="truncate">{value || placeholder}</span>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className={`shrink-0 text-muted transition-transform ${open ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg>
+      </button>
+      {open && (
+        <ul id={`${id}-list`} role="listbox" className="absolute inset-x-0 top-[calc(100%+6px)] z-20 overflow-hidden rounded-xl border border-foreground/20 bg-surface p-1 shadow-lg">
+          {options.map((o, i) => (
+            <li key={o} role="option" aria-selected={o === value} onPointerDown={(e) => e.preventDefault()} onClick={() => pick(o)} onMouseEnter={() => setActive(i)} className={`flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 text-sm sm:min-h-10 ${i === active ? "bg-foreground/[0.08]" : ""} ${o === value ? "font-medium text-foreground" : "text-foreground/90"}`}>
+              {o}
+              {o === value && <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5 9-10" /></svg>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
 
 export default function ContactForm() {
   const [state, action, pending] = useActionState<ContactState, FormData>(contactAction, {});

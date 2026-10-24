@@ -32,6 +32,8 @@
   --bad: #dc2626;
   --info: #3b82f6;
   --live: #4ade80;
+  --program: #ef4444; /* scène à l'antenne (rouge, comme OBS) */
+  --preview: #f97316; /* scène en aperçu (orange) */
   --img-filter: none;
   --img-filter-rev: invert(1);
   --shadow-pop: rgba(0, 0, 0, 0.9);
@@ -65,6 +67,8 @@
   --color-text-2: var(--text-2);
   --color-warn: var(--warn);
   --color-bad: var(--bad);
+  --color-program: var(--program);
+  --color-preview: var(--preview);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-on-accent: var(--on-accent);

@@ -202,7 +202,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
         </>
       )}
 
-      <CreateRelayWizard open={wizard} onClose={() => setWizard(false)} coreUrl={coreUrl} geo={geo} />
+      <CreateRelayWizard open={wizard} onClose={() => setWizard(false)} coreUrl={coreUrl} geo={geo} active={active} max={max} />
     </div>
   );
 }

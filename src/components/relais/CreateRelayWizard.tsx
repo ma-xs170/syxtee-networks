@@ -74,12 +74,17 @@ export default function CreateRelayWizard({
   onClose,
   coreUrl,
   geo,
+  active,
+  max,
 }: {
   open: boolean;
   onClose: () => void;
   coreUrl: string;
   /** Position approximative du visiteur (IP), pour estimer la latence des serveurs à venir. */
   geo: { lat: number; lon: number } | null;
+  /** Relais actifs et plafond de la formule : l'assistant prévient avant l'étape finale si le quota est plein. */
+  active: number;
+  max: number;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const router = useRouter();
@@ -150,7 +155,9 @@ export default function CreateRelayWizard({
     setTimeout(reset, 200);
   }
 
-  const canNext = step === 0 || (step === 1 && name.trim().length > 0 && name.trim().length <= 40) || (step === 2 && !!server);
+  const full = active >= max;
+  const unlimited = max >= 1_000_000;
+  const canNext = (step === 0 && !full) || (step === 1 && name.trim().length > 0 && name.trim().length <= 40) || (step === 2 && !!server);
 
   function submit() {
     setError(null);
@@ -188,6 +195,11 @@ export default function CreateRelayWizard({
             Fermer
           </button>
         </div>
+        {!created && (
+          <p className="mt-1 text-sm text-muted">
+            {unlimited ? `${active} relais actif${active > 1 ? "s" : ""}, sans limite.` : `${active} relais actif${active > 1 ? "s" : ""} sur ${max} avec ta formule.`}
+          </p>
+        )}
 
         {!created && (
           <ol className="mt-6 grid grid-cols-4 gap-2" aria-label="Étapes">
@@ -208,7 +220,13 @@ export default function CreateRelayWizard({
           ) : step === 0 ? (
             <fieldset>
               <legend className="text-base text-muted">Comment ton appareil va envoyer la vidéo ?</legend>
-              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+              {full && (
+                <p role="alert" className="mt-4 rounded-xl border border-line p-4 text-sm">
+                  Tu as atteint la limite de ta formule ({max} relais). Archive ou supprime un relais, ou{" "}
+                  <Link href="/dashboard/compte?onglet=formule" className="underline underline-offset-4">change de formule</Link>.
+                </p>
+              )}
+              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
                 {PROTOCOLS.map((p) => (
                   <label
                     key={p.id}
@@ -256,7 +274,10 @@ export default function CreateRelayWizard({
                 className="mt-3 h-12 w-full rounded-xl border border-line bg-background px-4 text-base text-foreground placeholder:text-muted focus:border-foreground/70 focus:outline-none"
                 onKeyDown={(e) => e.key === "Enter" && canNext && (e.preventDefault(), setStep(2))}
               />
-              <p className="mt-2 text-xs text-muted">Tu le retrouveras dans ta liste de relais. 40 caractères au plus.</p>
+              <p className="mt-2 flex justify-between gap-4 text-xs text-muted">
+                <span>Tu le retrouveras dans ta liste de relais.</span>
+                <span className="font-mono tabular-nums">{name.length} / 40</span>
+              </p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {SUGGESTIONS[protocol].map((s) => (
                   <button

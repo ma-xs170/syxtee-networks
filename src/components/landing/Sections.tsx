@@ -11,10 +11,6 @@ import ObsHero from "./ObsHero";
 import SceneSwitcher from "./SceneSwitcher";
 import PlatformStrip from "./PlatformStrip";
 import CtaGlobe from "./CtaGlobe";
-import StudioWire from "@/components/illustrations/StudioWire";
-import Streamer from "@/components/illustrations/Streamer";
-import BackpackEncoder from "@/components/illustrations/BackpackEncoder";
-import BeachView from "@/components/illustrations/BeachView";
 import StreamerStack from "@/components/home/StreamerStack";
 import type { HomeStreamer } from "@/lib/streamers";
 import EncoderViewer from "@/components/encoder/EncoderViewer";
@@ -82,41 +78,17 @@ export function ProductionSection() {
         </Reveal>
 
         <div className="mt-14 grid gap-4 md:grid-cols-3">
-          <Reveal as="article" className="bento-cell flex flex-col overflow-hidden md:row-span-2">
-            <div aria-hidden="true" className="h-64 flex-1 border-b border-line text-foreground/80 md:min-h-72"><StudioWire animated={false} /></div>
-            <div className="p-6 sm:p-7">
-              <p className="font-mono text-xs text-muted">01</p>
-              <h3 className="mt-2 text-xl font-semibold tracking-tight">Régie en direct</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">Un régisseur pilote scènes, audio, caméras et plateformes pendant que tu es sur le terrain.</p>
-            </div>
-          </Reveal>
-
-          <Reveal as="article" delay={0.07} className="bento-cell flex flex-col overflow-hidden">
-            <div aria-hidden="true" className="h-44 border-b border-line text-foreground/80"><Streamer animated={false} /></div>
-            <div className="p-6">
-              <p className="font-mono text-xs text-muted">02</p>
-              <h3 className="mt-2 text-lg font-semibold tracking-tight">Cadreurs IRL</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">Des vidéastes formés au live en mobilité, à l&apos;épaule ou sur gimbal.</p>
-            </div>
-          </Reveal>
-
-          <Reveal as="article" delay={0.14} className="bento-cell flex flex-col overflow-hidden">
-            <div aria-hidden="true" className="h-44 border-b border-line text-foreground/80"><BackpackEncoder animated={false} /></div>
-            <div className="p-6">
-              <p className="font-mono text-xs text-muted">03</p>
-              <h3 className="mt-2 text-lg font-semibold tracking-tight">Un réseau qui tient</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">Plusieurs connexions cumulées sur nos relais SRTLA : le direct reste stable dans la foule.</p>
-            </div>
-          </Reveal>
-
-          <Reveal as="article" delay={0.21} className="bento-cell grid overflow-hidden sm:grid-cols-2 md:col-span-2">
-            <div className="flex flex-col justify-center p-6 sm:p-8">
-              <p className="font-mono text-xs text-muted">04</p>
-              <h3 className="mt-2 text-xl font-semibold tracking-tight">Sur place ou à distance</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">On se déplace, ou on pilote de loin depuis la Guadeloupe. Un seul interlocuteur du premier message au dernier plan.</p>
-            </div>
-            <div aria-hidden="true" className="h-48 border-t border-line text-foreground/80 sm:h-auto sm:border-l sm:border-t-0"><BeachView className="h-full w-full" animated={false} /></div>
-          </Reveal>
+          {[
+            { title: "Devis et étude de projet", text: "Nous voyons ce qui est envisageable." },
+            { title: "Planification", text: "Toutes nos équipes travaillent sur le projet." },
+            { title: "Stream", text: "Ton live IRL est en place." },
+          ].map((st, i) => (
+            <Reveal as="article" key={st.title} delay={i * 0.08} className="bento-cell relative p-7 sm:p-8">
+              <span className="font-mono text-sm text-muted">0{i + 1}{i < 2 ? " →" : ""}</span>
+              <h3 className="mt-6 text-xl font-semibold tracking-tight">{st.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">{st.text}</p>
+            </Reveal>
+          ))}
         </div>
 
         <Reveal className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">

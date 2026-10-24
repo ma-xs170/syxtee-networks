@@ -42,15 +42,12 @@ function Cell({ className = "", title, text, children, delay = 0, href, cta }: {
 
 /* Accueil : promesse, deux parcours (production sur devis, streamers indépendants) */
 export function HomeHero() {
-  const fade = "linear-gradient(to bottom, transparent 0%, #000 18%, #000 62%, transparent 100%)";
   return (
     <section data-theme="dark" className="relative isolate overflow-hidden bg-background text-foreground">
-      {/* Lueur rouge de l'accent, comme un projecteur en coin, puis globe fondu en haut et en bas. */}
+      {/* Lueur rouge en coin, puis calotte du globe sous le contenu (comme l'appel final). */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(60% 70% at 0% 0%, color-mix(in srgb, var(--bad) 42%, transparent), transparent 70%), radial-gradient(45% 60% at 100% 10%, color-mix(in srgb, var(--bad) 24%, transparent), transparent 70%)" }} />
-      <div aria-hidden="true" className="absolute inset-0" style={{ maskImage: fade, WebkitMaskImage: fade }}>
-        <CtaGlobe variant="full" />
-      </div>
-      <Container className="relative pb-24 pt-20 text-center lg:pb-36 lg:pt-32">
+      <CtaGlobe />
+      <Container className="relative pb-64 pt-20 text-center sm:pb-80 lg:pt-28">
         <h1 className="rise h-serif mx-auto max-w-[16ch] text-[clamp(2.75rem,7vw,5.5rem)]" style={rise(0)}>
           Le live IRL, <em>partout.</em>
         </h1>

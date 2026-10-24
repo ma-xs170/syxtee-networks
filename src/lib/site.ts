@@ -35,7 +35,7 @@ export const nav: NavItem[] = [
     ],
   },
   { label: "Tarifs", href: "/tarifs" },
-  { label: "Production IRL", href: "/contact", underline: true },
+  { label: "Contactez-nous", href: "/contact", underline: true },
 ];
 
 export const isMenu = (item: NavItem): item is NavMenu => "children" in item;

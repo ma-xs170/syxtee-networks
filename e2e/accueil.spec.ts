@@ -13,13 +13,13 @@ test("accueil : promesse, deux parcours, soutien et appels à l'action", async (
   await expect(page.getByText(/999 €|1 290|13,73/)).toHaveCount(0);
 });
 
-test("menu principal : Fonctionnalités, Tarifs, Production IRL", async ({ page, isMobile }) => {
+test("menu principal : Fonctionnalités, Tarifs, Contactez-nous", async ({ page, isMobile }) => {
   test.skip(isMobile, "menu desktop");
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Navigation principale" });
   const links = nav.getByRole("link");
   await expect(nav.getByRole("button", { name: "Fonctionnalités" })).toBeVisible();
-  await expect(links).toHaveText(["Tarifs", "Production IRL"]);
+  await expect(links).toHaveText(["Tarifs", "Contactez-nous"]);
   await nav.getByRole("button", { name: "Fonctionnalités" }).hover();
   await expect(page.getByRole("link", { name: /Serveurs/ })).toHaveAttribute("href", "/relais");
   await expect(nav.getByRole("link", { name: "Tarifs" })).toHaveAttribute("href", "/tarifs");

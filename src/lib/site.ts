@@ -31,11 +31,7 @@ export const nav: NavItem[] = [
     label: "Fonctionnalités",
     children: [
       { label: "Contrôle à distance", href: "/controle-a-distance", desc: "Pilote OBS depuis ton téléphone", icon: "phone" },
-      { label: "Nos serveurs", href: "/relais", desc: "Relais SRTLA en Amérique et en Europe", icon: "rack" },
-      { label: "Régie automatique", href: "/regie-ia", desc: "Scènes et prises de vue gérées pour toi", icon: "studio" },
-      { label: "Encodeur", href: "/encodeur", desc: "Le boîtier IRL prêt à diffuser", icon: "tower" },
-      { label: "Multistream", href: "/multistream", desc: "Un direct, plusieurs plateformes", icon: "route" },
-      { label: "Espaces partagés", href: "/espaces-partages", desc: "Une équipe, un seul tableau de bord", icon: "services" },
+      { label: "Serveurs", href: "/relais", desc: "Relais SRTLA en Amérique et en Europe", icon: "rack" },
     ],
   },
   { label: "Tarifs", href: "/tarifs" },

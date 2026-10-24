@@ -21,6 +21,6 @@ test("menu principal : Fonctionnalités, Tarifs, Production IRL", async ({ page,
   await expect(nav.getByRole("button", { name: "Fonctionnalités" })).toBeVisible();
   await expect(links).toHaveText(["Tarifs", "Production IRL"]);
   await nav.getByRole("button", { name: "Fonctionnalités" }).hover();
-  await expect(page.getByRole("link", { name: /Nos serveurs/ })).toHaveAttribute("href", "/relais");
+  await expect(page.getByRole("link", { name: /Serveurs/ })).toHaveAttribute("href", "/relais");
   await expect(nav.getByRole("link", { name: "Tarifs" })).toHaveAttribute("href", "/tarifs");
 });

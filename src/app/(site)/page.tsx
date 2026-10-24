@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import StreamerWall from "@/components/home/StreamerWall";
-import TwitchCategories from "@/components/home/TwitchCategories";
 import { getHomeStreamers } from "@/lib/streamers";
 import { FinalCta, HomeHero, ObsBento, ProductionSection, StreamersIntro } from "@/components/landing/Sections";
 
@@ -24,7 +23,6 @@ export default async function Home() {
       <StreamersIntro streamers={streamers} />
       <ObsBento />
       <StreamerWall streamers={streamers} />
-      <TwitchCategories />
       <FinalCta />
     </>
   );

@@ -15,7 +15,6 @@ export async function GET() {
     bio: p.bio, country: p.country, timezone: p.timezone ?? null,
     twitch: p.twitch ?? p.twitch_login, kick: p.kick, youtube: p.youtube, tiktok: p.tiktok, instagram: p.instagram, x: p.x,
     show_on_site: p.show_on_site, show_first_name: !!p.show_first_name,
-    support_id: p.support_id ?? null,
   });
 }
 

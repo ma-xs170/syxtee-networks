@@ -5,7 +5,6 @@ import { ArrowLink, DashPage, Tile, TileLabel } from "@/components/admin/kit";
 import { ticketCounts } from "@/lib/support";
 import AccountSheet from "../AccountSheet";
 import { flag } from "@/lib/regions";
-import { SupportId } from "@/components/SupportId";
 import { requireAdmin } from "@/lib/admin";
 import { liveNow } from "@/lib/admin-data";
 import { audit } from "@/lib/plan-admin";
@@ -158,7 +157,10 @@ export default async function AdminAccountPage({ params, searchParams }: { param
           <Tile aria-labelledby="ids">
             <TileLabel id="ids">Identifiants</TileLabel>
             <div className="mt-4 grid gap-3 text-sm">
-              <SupportId id={p.support_id} compact />
+              <p className="flex flex-wrap items-center gap-2 text-xs">
+                <span className="font-mono uppercase tracking-[0.1em] text-muted">ID support</span>
+                <span className="font-mono">{p.support_id}</span>
+              </p>
               <p className="flex flex-wrap items-center gap-2 text-xs">
                 <span className="font-mono uppercase tracking-[0.1em] text-muted">ID interne</span>
                 <span className="break-all font-mono" data-sensitive>

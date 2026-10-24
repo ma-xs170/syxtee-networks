@@ -258,7 +258,6 @@ struct ProfileView: View {
                 } header: { SectionLabel(text: "Visibilité") }.listRowBackground(Brand.surface)
                 Section {
                     LabeledContent("E-mail", value: p?.email ?? "")
-                    if let s = p?.support_id { LabeledContent("ID support", value: s) }
                     Button("Changer le mot de passe ou l'e-mail (sur le site)") { openURL(Config.siteURL.appending(path: "dashboard/profil")) }
                 } header: { SectionLabel(text: "Compte") }.listRowBackground(Brand.surface)
             } else { ProgressView().frame(maxWidth: .infinity) }

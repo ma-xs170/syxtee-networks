@@ -8,13 +8,12 @@ import { supabaseClient } from "@/lib/supabase/lazy";
 import { initials, shortName } from "@/lib/names";
 import { effectivePlan, type Feature } from "@/lib/plans";
 import { hasSupabase } from "@/lib/supabase/env";
-import { SupportId } from "./SupportId";
 
 // Nav : « Connexion » pour les visiteurs, avatar rond + menu (Dashboard, Mon compte, Déconnexion) une fois connecté.
 // Lecture côté navigateur : les pages publiques restent statiques.
 
 /** name : « Mathis N. » (ou l'email tant que le prénom n'est pas renseigné). */
-export type Account = { name: string; initials: string; avatar: string | null; supportId: string | null; planName: string; features: Feature[] } | null;
+export type Account = { name: string; initials: string; avatar: string | null; planName: string; features: Feature[] } | null;
 
 export function useAccount() {
   const [account, setAccount] = useState<Account | undefined>(hasSupabase ? undefined : null);
@@ -29,11 +28,11 @@ export function useAccount() {
         if (alive) setAccount(null);
         return;
       }
-      const { data: p } = await supabase.from("profiles").select("first_name, last_name, avatar_url, support_id, plan, plan_until, suspended_at").eq("id", user.id).single();
+      const { data: p } = await supabase.from("profiles").select("first_name, last_name, avatar_url, plan, plan_until, suspended_at").eq("id", user.id).single();
       const name = shortName(p, user.email ?? "?");
       // Affichage seulement (cadenas, nom de formule) : les droits sont revérifiés côté serveur.
       const plan = p?.suspended_at ? effectivePlan(null) : effectivePlan(p);
-      if (alive) setAccount({ name, initials: initials(p, name), avatar: p?.avatar_url ?? null, supportId: p?.support_id ?? null, planName: plan.name, features: plan.features });
+      if (alive) setAccount({ name, initials: initials(p, name), avatar: p?.avatar_url ?? null, planName: plan.name, features: plan.features });
     };
     load();
     const sub = supabaseClient().then((supabase) => supabase.auth.onAuthStateChange(() => { load(); }).data.subscription);
@@ -131,11 +130,6 @@ export default function AccountMenu({ account, groups = [{ links: siteAccountLin
               <p className="mt-0.5 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Formule {account.planName}</p>
             </div>
           </div>
-          {account.supportId && (
-            <div className="border-b border-line px-3 pb-3">
-              <SupportId id={account.supportId} compact />
-            </div>
-          )}
           {groups.map((g, i) => (
             <div key={g.label ?? i} className="border-b border-line py-2">
               {g.label && <p className="px-3 pb-1 pt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">{g.label}</p>}

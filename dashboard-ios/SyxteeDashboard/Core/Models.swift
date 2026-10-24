@@ -126,7 +126,7 @@ struct SupportTicket: Decodable, Identifiable, Equatable {
     let last_from: String
     let category_label: String
 }
-struct SupportList: Decodable { let tickets: [SupportTicket]; let counts: Counts; let support_id: String?
+struct SupportList: Decodable { let tickets: [SupportTicket]; let counts: Counts
     struct Counts: Decodable, Equatable { let open: Int; let resolved: Int } }
 struct SupportMessage: Decodable, Identifiable, Equatable {
     let id: String, body: String, created_at: String, from_staff: Bool
@@ -205,7 +205,6 @@ struct ProfileData: Decodable, Equatable {
     var twitch: String?, kick: String?, youtube: String?, tiktok: String?, instagram: String?, x: String?
     var show_on_site: Bool
     var show_first_name: Bool
-    var support_id: String?
 }
 
 func formatBytes(_ b: Int) -> String { ByteCountFormatter.string(fromByteCount: Int64(b), countStyle: .file) }

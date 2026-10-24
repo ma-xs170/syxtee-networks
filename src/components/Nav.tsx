@@ -12,7 +12,6 @@ import { LivePill } from "./dashboard/LiveStatus";
 import StreamModeToggle from "./dashboard/StreamModeToggle";
 import { restoreStreamMode } from "./dashboard/streamMode";
 import { DesktopMenus, NavAccordion } from "./NavTools";
-import { SupportId } from "./SupportId";
 
 // Barre du site. Sur /dashboard/* (variant « dashboard ») : mêmes logo, hauteur, flou et méga-menus, mais les menus
 // du dashboard au centre et, à droite, seulement le statut du direct, le mode stream et l'avatar. Tout le reste
@@ -153,11 +152,6 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
                   <Avatar account={account} size={28} />
                   {account.name}
                 </p>
-                {account.supportId && (
-                  <div className="border-b border-line pb-4">
-                    <SupportId id={account.supportId} compact />
-                  </div>
-                )}
                 {groups.map((g, i) => (
                   <div key={g.label ?? i} className="flex flex-col">
                     {g.label && <p className="pb-1 pt-5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">{g.label}</p>}

@@ -32,7 +32,6 @@ export type Profile = {
   /** Opérateur mobile déclaré (Scanner réseau, 0014_scanner.sql). */
   mobile_operator?: "orange" | "sfr" | "digicel" | "free" | "other" | null;
   onboarded_at: string | null;
-  support_id?: string | null;
   plan?: string | null;
   plan_until?: string | null;
   suspended_at?: string | null;
@@ -58,7 +57,7 @@ export const getUser = cache(async () => {
 
 // Colonnes lues à chaque page privée : seulement celles du type Profile (jamais les colonnes internes de la table).
 const PROFILE_COLUMNS =
-  "id, username, first_name, last_name, show_first_name, avatar_url, bio, country, timezone, twitch_id, twitch_login, twitch, twitch_display_name, kick, youtube, tiktok, instagram, x, show_on_site, coverage_consent, mobile_operator, onboarded_at, support_id, plan, plan_until, suspended_at, stripe_customer_id, billing_interval, billing_status, cancel_at_period_end, billing_period_end";
+  "id, username, first_name, last_name, show_first_name, avatar_url, bio, country, timezone, twitch_id, twitch_login, twitch, twitch_display_name, kick, youtube, tiktok, instagram, x, show_on_site, coverage_consent, mobile_operator, onboarded_at, plan, plan_until, suspended_at, stripe_customer_id, billing_interval, billing_status, cancel_at_period_end, billing_period_end";
 
 export const getProfile = cache(async (): Promise<Profile | null> => {
   const user = await getUser();

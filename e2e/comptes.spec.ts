@@ -154,19 +154,14 @@ test("modale prénom/nom : vraies erreurs, puis Mathis / CUSTOS enregistrés tel
   expect(data).toEqual({ first_name: "Mathis", last_name: "CUSTOS" }); // trim, casse conservée
 });
 
-test("ID support : généré à la création (SYX-XXXX-XXXX), l'admin reste réservé à ADMIN_EMAILS", async ({ page }) => {
-  const email = testEmail("support");
+test("admin : un compte normal reçoit une 404 sur /admin", async ({ page }) => {
+  const email = testEmail("admin404");
   const user = await createUser(email);
   created.push(user.id);
   await admin().from("profiles").update({ onboarded_at: new Date().toISOString() }).eq("id", user.id);
-  const { data } = await admin().from("profiles").select("support_id").eq("id", user.id).single();
-  expect(data?.support_id).toMatch(/^SYX-[2-9A-HJ-NP-Z]{4}-[2-9A-HJ-NP-Z]{4}$/);
-
   await signInWithMagicLink(page, email);
   await expect(page).toHaveURL(/\/dashboard$/);
-  // L'admin est réservé à ADMIN_EMAILS : un compte normal reçoit une 404.
-  const res = await page.goto(`/admin/comptes?q=${data!.support_id}`);
-  expect(res?.status()).toBe(404);
+  expect((await page.goto("/admin/comptes"))?.status()).toBe(404);
 });
 
 test("accueil : un streamer en live passe en premier avec badge et viewers", async ({ page }) => {

@@ -17,9 +17,6 @@ struct SupportView: View {
                     ForEach(list.tickets) { t in
                         NavigationLink { TicketView(store: store, ticketID: t.id, onChange: { Task { await load() } }) } label: { TicketRow(ticket: t) }.buttonStyle(.plain)
                     }
-                    if let sid = list.support_id {
-                        Card { VStack(alignment: .leading, spacing: 6) { SectionLabel(text: "Ton ID support"); Text(sid).font(.brandMono(14, .semibold)).foregroundStyle(Brand.foreground).textSelection(.enabled) } }
-                    }
                 } else { ProgressView().frame(maxWidth: .infinity).padding(30) }
             }
             .padding(.horizontal, 18).padding(.bottom, 30)

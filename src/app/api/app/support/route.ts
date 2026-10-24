@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   const s = request.nextUrl.searchParams.get("state");
   const state = s === "resolved" || s === "all" ? s : "open";
   const [tickets, counts] = await Promise.all([listTickets({ userId: u.id, state }), ticketCounts(u.id)]);
-  return privateJson({ tickets: tickets.map((t) => ({ ...t, category_label: categoryLabel(t.category) })), counts, support_id: u.profile.support_id ?? null });
+  return privateJson({ tickets: tickets.map((t) => ({ ...t, category_label: categoryLabel(t.category) })), counts });
 }
 
 // POST /api/app/support { category, subject, body, fields?: { nom: valeur } } : ouvre une demande (mêmes règles que le site).

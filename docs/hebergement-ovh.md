@@ -1,11 +1,13 @@
 # Héberger le site sur le VPS OVH (bhs1), sans Vercel
 
-Le site Next.js tourne dans un conteneur `web` à côté du Core, derrière le Caddy déjà en place (HTTPS automatique). Trois hôtes pour un seul conteneur :
+Le site Next.js tourne dans un conteneur `web` à côté du Core, derrière le Caddy déjà en place (HTTPS automatique). Cinq hôtes pour un seul conteneur :
 
 | Hôte | Rôle |
 |---|---|
 | `www.syxtee-networks.fr` | site public (l'apex `syxtee-networks.fr` redirige ici) |
-| `app.syxtee-networks.fr` | espace client, administration, Direct |
+| `app.syxtee-networks.fr` | espace client, Direct |
+| `admin.syxtee-networks.fr` | administration |
+| `remote.syxtee-networks.fr` | contrôle à distance d'un OBS |
 | `auth.syxtee-networks.fr` | connexion, inscription, mot de passe |
 
 Le site partage les 6 vCPU avec les relais. Le conteneur est plafonné à 3 Go. Le build (`next build`) charge le CPU plusieurs minutes : le lancer hors d'un live.
@@ -31,7 +33,7 @@ SITE_DOMAINS=staging.syxtee-networks.fr
 NEXT_PUBLIC_SUPABASE_URL=…
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=…
 NEXT_PUBLIC_COOKIE_DOMAIN=.syxtee-networks.fr
-CORS_ORIGINS=https://www.syxtee-networks.fr,https://app.syxtee-networks.fr,https://auth.syxtee-networks.fr,https://staging.syxtee-networks.fr,http://localhost:3000
+CORS_ORIGINS=https://www.syxtee-networks.fr,https://app.syxtee-networks.fr,https://auth.syxtee-networks.fr,https://admin.syxtee-networks.fr,https://remote.syxtee-networks.fr,https://staging.syxtee-networks.fr,http://localhost:3000
 ```
 
 `/opt/syxtee/.env.web` (`chmod 600`, variables serveur, mêmes valeurs qu'aujourd'hui, surtout `CHAT_TOKEN_KEY`) :
@@ -61,9 +63,9 @@ Sur staging les redirections entre `www`, `app` et `auth` ne s'appliquent pas (h
 
 ## 7. Bascule
 
-- [ ] `.env` : `SITE_DOMAINS=syxtee-networks.fr, www.syxtee-networks.fr, app.syxtee-networks.fr, auth.syxtee-networks.fr`, puis `sudo docker compose up -d caddy`.
+- [ ] `.env` : `SITE_DOMAINS=syxtee-networks.fr, www.syxtee-networks.fr, app.syxtee-networks.fr, auth.syxtee-networks.fr, admin.syxtee-networks.fr, remote.syxtee-networks.fr`, puis `sudo docker compose up -d caddy`.
 - [ ] DNS OVH : `@`, `www`, `app`, `auth` en **A vers `15.235.25.77`** (supprimer les CNAME Vercel).
-- [ ] Supabase, Authentication, URL Configuration : Site URL `https://www.syxtee-networks.fr`, Redirect URLs `app.`, `auth.`, `www.` (`/**`).
+- [ ] Supabase, Authentication, URL Configuration : Site URL `https://www.syxtee-networks.fr`, Redirect URLs `app.`, `auth.`, `admin.`, `remote.`, `www.` (`/**`).
 - [ ] Stripe : webhook `https://www.syxtee-networks.fr/api/stripe/webhook`.
 - [ ] OAuth Twitch / Kick / Google (liaison du multichat) : URI de retour `https://app.syxtee-networks.fr/api/chat/callback/twitch` (idem `kick`, `youtube`).
 - [ ] Bot Discord : `SITE_URL=https://www.syxtee-networks.fr`.

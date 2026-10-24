@@ -104,7 +104,7 @@ export default function ConfidentialitePage() {
 
       <LegalBlock title="Cookies">
         <p>
-          Uniquement des cookies nécessaires : la session de connexion, partagée entre les adresses du service (www, app et auth.syxtee-networks.fr) pour que tu
+          Uniquement des cookies nécessaires : la session de connexion, partagée entre les adresses du service (www, app, auth, admin et remote.syxtee-networks.fr) pour que tu
           restes connecté d&apos;une page à l&apos;autre. Aucun cookie publicitaire ni de mesure d&apos;audience.
         </p>
       </LegalBlock>

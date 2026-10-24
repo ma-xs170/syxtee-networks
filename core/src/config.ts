@@ -11,7 +11,7 @@ const schema = z.object({
   PORT: z.coerce.number().default(8787),
   HOST: z.string().default("0.0.0.0"),
   // Origines autorisées à appeler le Core depuis le navigateur (dashboard), séparées par des virgules.
-  CORS_ORIGINS: z.string().default("https://www.syxtee-networks.fr,https://app.syxtee-networks.fr,https://auth.syxtee-networks.fr,http://localhost:3000"),
+  CORS_ORIGINS: z.string().default("https://www.syxtee-networks.fr,https://app.syxtee-networks.fr,https://auth.syxtee-networks.fr,https://admin.syxtee-networks.fr,https://remote.syxtee-networks.fr,http://localhost:3000"),
   // Jeton partagé avec le serveur Vercel (actions du dashboard). Long et aléatoire.
   CORE_API_TOKEN: z.string().min(32, "CORE_API_TOKEN : 32 caractères minimum"),
 

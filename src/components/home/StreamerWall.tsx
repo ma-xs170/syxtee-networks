@@ -73,9 +73,9 @@ const BRANDS: Brand[] = [
 function BrandStrip() {
   const fade = "linear-gradient(to right, transparent, #000 22%, #000 78%, transparent)";
   return (
-    <div className="mb-16 border-b border-line pb-12 sm:mb-20">
-      <p className="px-4 text-center text-xl font-medium">Technologies implémentées</p>
-      <div className="mt-10" style={{ maskImage: fade, WebkitMaskImage: fade }}>
+    <section aria-labelledby="techno-titre" className="py-20 sm:py-28">
+      <h2 id="techno-titre" className="px-4 text-center text-xl font-medium">Technologies implémentées</h2>
+      <div className="mt-14" style={{ maskImage: fade, WebkitMaskImage: fade }}>
         <div className="marquee-wrap overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="marquee marquee-l">
             {[0, 1].map((copy) => (
@@ -88,7 +88,7 @@ function BrandStrip() {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -104,10 +104,11 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
   const fade = "linear-gradient(to right, transparent, #000 22%, #000 78%, transparent)";
 
   return (
-    <section aria-labelledby="mur-titre" className="relative isolate overflow-hidden border-b border-line pb-24 pt-10 sm:pb-32 sm:pt-14">
+    <>
+    <BrandStrip />
+    <section aria-labelledby="mur-titre" className="relative isolate overflow-hidden border-y border-line py-24 sm:py-32">
       {/* Dégradé violet Twitch en haut de section. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(70% 60% at 50% 0%, color-mix(in srgb, #9146ff 38%, transparent), transparent 75%)" }} />
-      <BrandStrip />
       <svg viewBox="0 0 24 24" width="44" height="44" fill="currentColor" role="img" aria-label="Twitch" className="mx-auto mb-6 block" style={{ color: `#${siTwitch.hex}` }}>
         <path d={siTwitch.path} />
       </svg>
@@ -119,5 +120,6 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
         <Row items={row} />
       </div>
     </section>
+    </>
   );
 }

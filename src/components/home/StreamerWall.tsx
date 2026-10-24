@@ -66,7 +66,7 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
   if (streamers.length === 0) return null;
   const ranked = [...streamers].sort((a, b) => Number(!!b.live) - Number(!!a.live) || Number(b.partner) - Number(a.partner));
   // Une carte par chaîne vérifiée de chaque streamer.
-  const cards: Card[] = ranked.flatMap((s) => s.channels.filter((ch) => ch.platform !== "kick").map((ch) => ({ key: `${s.handle}-${ch.platform}`, s, platform: ch.platform, handle: ch.handle, url: ch.url })));
+  const cards: Card[] = ranked.flatMap((s) => s.channels.filter((ch) => ch.platform === "twitch").map((ch) => ({ key: `${s.handle}-${ch.platform}`, s, platform: ch.platform, handle: ch.handle, url: ch.url })));
   if (cards.length === 0) return null;
   // Toujours deux rangées en défilement, la première vers la gauche, la seconde vers la droite. La liste est répétée (copies masquées
   // aux lecteurs d'écran) jusqu'à remplir la largeur. Peu de chaînes : la seconde rangée reprend les mêmes, décalées d'un cran.

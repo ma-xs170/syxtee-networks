@@ -5,6 +5,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 // fermée quand le flux reste hors ligne plus de GRACE_MS. Une coupure plus courte compte comme une reconnexion.
 
 export const GRACE_MS = 60_000;
+/** Flux perdu depuis ce délai : alerte « flux perdu » (sur un direct d'au moins 1 min, pour ne pas alerter une fin volontaire). */
+export const DROP_ALERT_MS = 20_000;
 const FLUSH_MS = 30_000;
 const SERIES_POINTS = 60;
 
@@ -39,7 +41,11 @@ type Open = {
   reconnects: number;
   points: number[]; // débit de chaque relevé (kbps)
   lastFlush: number;
+  dropAlerted: boolean;
 };
+
+/** Alertes de flux : perdu depuis DROP_ALERT_MS, puis revenu (avec la durée de la coupure). */
+export type SessionAlert = { type: "drop" | "recovered"; userId: string; relayId: string; offlineS?: number };
 
 /** Moyenne par tranche pour tenir en `n` points. */
 export function downsample(points: number[], n = SERIES_POINTS) {
@@ -56,7 +62,7 @@ export function downsample(points: number[], n = SERIES_POINTS) {
 /** Début et fin d'un direct, pour les webhooks (erreurs ignorées : un webhook en panne ne gêne jamais le suivi). */
 export type SessionEvent = { type: "live.started" | "live.ended"; userId: string; relayId: string; sessionId: string; startedAt: string; endedAt?: string; durationS?: number; avgKbps?: number; peakKbps?: number; reconnects?: number };
 
-export function createSessionTracker(opts: { db: SessionDb; relay: string; now?: () => number; log?: (m: string) => void; onEvent?: (e: SessionEvent) => void }) {
+export function createSessionTracker(opts: { db: SessionDb; relay: string; now?: () => number; log?: (m: string) => void; onEvent?: (e: SessionEvent) => void; onAlert?: (a: SessionAlert) => void }) {
   const { db, relay } = opts;
   const now = opts.now ?? Date.now;
   const log = opts.log ?? (() => {});
@@ -115,8 +121,10 @@ export function createSessionTracker(opts: { db: SessionDb; relay: string; now?:
       }
       if (s) {
         if (s.offlineSince !== null) {
+          if (s.dropAlerted) opts.onAlert?.({ type: "recovered", userId: s.userId, relayId, offlineS: (t - s.offlineSince) / 1000 });
           s.reconnects += 1;
           s.offlineSince = null;
+          s.dropAlerted = false;
         }
         s.lastLiveAt = t;
         return;
@@ -136,7 +144,7 @@ export function createSessionTracker(opts: { db: SessionDb; relay: string; now?:
       };
       let resolve!: (id: string | null) => void;
       const id = new Promise<string | null>((r) => (resolve = r));
-      open.set(relayId, { id, userId, startedAt: t, lastLiveAt: t, offlineSince: null, reconnects: 0, points: [], lastFlush: t });
+      open.set(relayId, { id, userId, startedAt: t, lastLiveAt: t, offlineSince: null, reconnects: 0, points: [], lastFlush: t, dropAlerted: false });
       serial(relayId, async () => {
         try {
           const sid = await db.insert(row);
@@ -162,6 +170,14 @@ export function createSessionTracker(opts: { db: SessionDb; relay: string; now?:
       const t = now();
       const jobs: Promise<unknown>[] = [];
       for (const [relayId, s] of open) {
+        if (s.offlineSince !== null && !s.dropAlerted && t - s.offlineSince >= DROP_ALERT_MS && t - s.startedAt >= 60_000) {
+          s.dropAlerted = true;
+          try {
+            opts.onAlert?.({ type: "drop", userId: s.userId, relayId });
+          } catch (err) {
+            log(`alerte : ${(err as Error).message}`);
+          }
+        }
         if (s.offlineSince !== null && t - s.offlineSince >= GRACE_MS) jobs.push(close(relayId, s));
         else if (s.offlineSince === null && t - s.lastFlush >= FLUSH_MS) jobs.push(flush(relayId, s, s.lastLiveAt, false));
       }

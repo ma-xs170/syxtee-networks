@@ -25,6 +25,7 @@ import { createBackups } from "./backups.ts";
 import { createRecordings } from "./recordings.ts";
 import { createSessionTracker, monthlyBytes, supabaseSessionDb } from "./sessions.ts";
 import { createWebhooks } from "./webhooks.ts";
+import { createAlerts } from "./alerts.ts";
 import { createSls } from "./sls.ts";
 import { createSealer, parseSecret } from "./keys.ts";
 import { limitsOf, planOf, publisherVerdict } from "./plans.ts";
@@ -92,7 +93,8 @@ const prefixes = createPrefixes(
 );
 const sessionDb = supabaseSessionDb(supabase);
 const webhooks = createWebhooks({ db: supabase, log });
-const sessions = createSessionTracker({ db: sessionDb, relay: config.RELAY_NAME, log, onEvent: (e) => void webhooks.emit(e) });
+const alerts = createAlerts({ db: supabase, log });
+const sessions = createSessionTracker({ db: sessionDb, relay: config.RELAY_NAME, log, onEvent: (e) => void webhooks.emit(e), onAlert: (a) => void alerts.notify(a.userId, a.type, { offlineS: a.offlineS }) });
 
 const previews = config.PREVIEW_ENABLED
   ? createPreviews({ dir: join(config.DATA_DIR, "previews"), host: config.SLS_SRT_HOST, port: config.SRT_PLAY_PORT, intervalS: config.PREVIEW_INTERVAL_S, log })
@@ -339,6 +341,8 @@ const runAggregate = async (full = false) => {
 /** Coupe les directs des comptes qui ont atteint leur plafond mensuel (la connexion suivante est refusée par checkPublisher). */
 async function enforceBandwidth() {
   for (const r of health.liveRelays()) {
+    const cap = limitsOf(planOf(await relays.account(r.user_id))).monthlyBytes;
+    if (cap !== undefined) void alerts.quota(r.user_id, await monthlyBytes(supabase, r.user_id), cap);
     if ((await verdictFor(r)) !== "bandwidth") continue;
     const n = await security.kickKeys([r.publish_id]);
     log(`plafond mensuel atteint : relais ${r.id.slice(0, 8)} coupé (${n} session(s))`);

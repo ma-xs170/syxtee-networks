@@ -217,6 +217,7 @@ async function Preferences() {
       </Panel>
       <Panel title="Autres">
         <ul>
+          <ListRow href="/dashboard/parametres/alertes" title="Alertes Discord" />
           <ListRow href="/dashboard/parametres/documents" title="Documents" />
           <ListRow href="/dashboard/parametres/labs" title="Labs" />
         </ul>

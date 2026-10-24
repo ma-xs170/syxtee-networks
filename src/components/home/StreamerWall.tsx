@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { siKick, siTwitch, siYoutube } from "@/lib/brand-icons";
+import { siDji, siKick, siObsstudio, siTwitch, siWebrtc, siYoutube } from "@/lib/brand-icons";
 import type { HomeStreamer } from "@/lib/streamers";
 
 // Accueil : « Ils nous font confiance. » Une rangée d'avatars ronds, décalés en hauteur, avec le pseudo Twitch en pastille ; elle défile
@@ -52,8 +52,8 @@ function Row({ items, reverse }: { items: Card[]; reverse?: boolean }) {
 // Bandeau des technologies que SYXTEE implémente pour les streamers (en haut de la section) : logos en gris, qui défilent lentement. Sans logo vectoriel ici : mot-symbole (protocoles) ou icône de l'app (Moblin).
 type Brand = { key: string; node: React.ReactNode };
 // Même hauteur, même graisse, même corps pour tous : seul le contenu change.
-const glyph = (icon: { path: string }) => (
-  <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true" className="shrink-0"><path d={icon.path} /></svg>
+const glyph = (icon: { path: string }, size = 28) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} preserveAspectRatio="xMidYMid meet" fill="currentColor" aria-hidden="true" className="shrink-0"><path d={icon.path} /></svg>
 );
 const word = (t: string) => <span className="text-[1.65rem] font-bold leading-none tracking-tight">{t}</span>;
 const BRANDS: Brand[] = [
@@ -61,10 +61,10 @@ const BRANDS: Brand[] = [
   { key: "srt", node: word("SRT") },
   { key: "rtmp", node: word("RTMP") },
   { key: "rist", node: word("RIST") },
-  { key: "webrtc", node: word("WebRTC") },
-  { key: "dji", node: word("DJI") },
+  { key: "webrtc", node: (<>{glyph(siWebrtc)}{word("WebRTC")}</>) },
+  { key: "dji", node: <span className="-my-4 flex">{glyph(siDji, 72)}</span> },
   { key: "moblin", node: (<><Image src="/images/moblin/icon.png" alt="" width={56} height={56} className="size-7 shrink-0 rounded-md grayscale" />{word("Moblin")}</>) },
-  { key: "obs", node: word("OBS Studio") },
+  { key: "obs", node: (<>{glyph(siObsstudio)}{word("OBS Studio")}</>) },
   { key: "twitch", node: (<>{glyph(siTwitch)}{word("Twitch")}</>) },
   { key: "youtube", node: (<>{glyph(siYoutube)}{word("YouTube")}</>) },
   { key: "kick", node: (<>{glyph(siKick)}{word("Kick")}</>) },
@@ -72,7 +72,7 @@ const BRANDS: Brand[] = [
 
 function BrandStrip() {
   return (
-    <section aria-labelledby="techno-titre" className="bg-surface py-20 sm:py-28">
+    <section aria-labelledby="techno-titre" className="py-20 sm:py-28">
       <h2 id="techno-titre" className="px-4 text-center text-xl font-medium">Technologies implémentées</h2>
       <div className="mx-auto mt-14 max-w-5xl overflow-hidden px-4">
         <div className="marquee-wrap overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

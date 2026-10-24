@@ -78,14 +78,14 @@ export function ProductionSection() {
         <div className="relative mt-14">
           {/* Chevrons lumineux entre les étapes (bureau). */}
           {[1, 2].map((n) => (
-            <span key={n} aria-hidden="true" className="pointer-events-none absolute top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 md:flex" style={{ left: `${(n * 100) / 3}%` }}>
-              <svg viewBox="0 0 32 24" width="32" height="24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-foreground" style={{ filter: "drop-shadow(0 0 6px color-mix(in srgb, var(--foreground) 80%, transparent))" }}>
-                <path d="m6 6 6 6-6 6" opacity="0.4" />
-                <path d="m16 6 6 6-6 6" />
+            <span key={n} aria-hidden="true" className="pointer-events-none absolute top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 md:flex" style={{ left: `calc((100% + 4rem) * ${n} / 3 - 2rem)` }}>
+              <svg viewBox="0 0 40 24" width="40" height="24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-foreground" style={{ filter: "drop-shadow(0 0 6px color-mix(in srgb, var(--foreground) 80%, transparent))" }}>
+                <path d="m6 6 6 6-6 6" opacity="0.35" />
+                <path d="m22 6 6 6-6 6" />
               </svg>
             </span>
           ))}
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-3 md:gap-16">
             {[
               { Icon: ClipboardText, title: "Devis et étude de projet", text: "Nous voyons ce qui est envisageable.", points: ["Ton projet et ton lieu", "Devis gratuit, sur mesure"] },
               { Icon: CalendarCheck, title: "Planification", text: "Toutes nos équipes travaillent sur le projet.", points: ["Régie, cadreurs et réseau", "Repérage et tests avant le jour J"] },
@@ -100,8 +100,8 @@ export function ProductionSection() {
                   </span>
                 </div>
                 <h3 className="mt-7 text-xl font-semibold tracking-tight">{st.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-foreground/80">{st.text}</p>
-                <ul className="mt-5 grid gap-2 border-t border-line pt-5 text-sm text-muted">
+                <p className="mb-6 mt-2 text-sm leading-relaxed text-foreground/80">{st.text}</p>
+                <ul className="mt-auto grid gap-2 border-t border-line pt-5 text-sm text-muted">
                   {st.points.map((pt) => (
                     <li key={pt} className="flex items-start gap-2.5"><span aria-hidden="true" className="mt-2 size-1 shrink-0 rounded-full bg-foreground/40" />{pt}</li>
                   ))}

@@ -50,3 +50,6 @@ next-env.d.ts
 
 # Supabase CLI
 /supabase/.temp/
+
+# Plan business privé (coûts, factures)
+/founder/

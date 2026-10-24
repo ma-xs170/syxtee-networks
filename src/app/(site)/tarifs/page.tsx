@@ -5,7 +5,7 @@ import { Check, X } from "@/components/icons";
 import { Container } from "@/components/ui";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import JsonLd from "@/components/seo/JsonLd";
-import { CATALOG, PROD_TIERS, PRODUCTION, TIERS } from "@/lib/billing";
+import { CATALOG, TIERS } from "@/lib/billing";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -123,34 +123,6 @@ export default function TarifsPage() {
                 </ul>
               </article>
             ))}
-          </div>
-        </Container>
-      </section>
-
-      <section className="border-t border-line py-16 sm:py-20" aria-labelledby="production">
-        <Container>
-          <h2 id="production" className="h-section text-center">Une <em>production</em> ? Un espace pour toute l&apos;équipe.</h2>
-          <p className="mx-auto mt-3 max-w-[56ch] text-center text-sm leading-relaxed text-muted">Streamers, vidéastes et planning réunis dans un espace partagé. Chaque streamer a son relais, chaque direct a son responsable.</p>
-          <div className="mt-10 grid grid-cols-1 gap-5 lg:grid-cols-3">
-            {PROD_TIERS.map((t) => {
-              const c = PRODUCTION[t];
-              return (
-                <article key={t} className={`flex flex-col rounded-2xl border p-7 ${c.featured ? "border-foreground/40 bg-surface" : "border-line"}`}>
-                  <h3 className="text-lg font-semibold">{c.name}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-muted">{c.pitch}</p>
-                  <p className="mt-6 flex items-baseline gap-1.5">
-                    <span className="whitespace-nowrap text-4xl font-semibold tracking-tight">{c.prices.month.amount}</span>
-                    <span className="text-sm text-muted">/ mois</span>
-                  </p>
-                  <Link href="/dashboard/compte?onglet=formule" className={`btn mt-6 w-full ${c.featured ? "btn-primary" : "btn-secondary"}`}>Choisir {c.name}</Link>
-                  <ul className="mt-8 space-y-3 text-sm">
-                    {c.points.map((x) => (
-                      <li key={x} className="flex items-start gap-2.5"><Check size={17} weight="bold" className="mt-0.5 shrink-0 text-ok" aria-hidden="true" />{x}</li>
-                    ))}
-                  </ul>
-                </article>
-              );
-            })}
           </div>
         </Container>
       </section>

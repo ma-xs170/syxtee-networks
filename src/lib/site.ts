@@ -30,7 +30,7 @@ export const nav: NavItem[] = [
   { label: "Contrôle à distance", href: "/controle-a-distance" },
   { label: "Nos serveurs", href: "/relais" },
   { label: "Tarifs", href: "/tarifs" },
-  { label: "Demander un devis", href: "/contact", underline: true },
+  { label: "Production IRL", href: "/contact", underline: true },
 ];
 
 export const isMenu = (item: NavItem): item is NavMenu => "children" in item;

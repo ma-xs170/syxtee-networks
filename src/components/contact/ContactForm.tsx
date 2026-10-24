@@ -125,7 +125,7 @@ export default function ContactForm() {
       )}
       <button type="submit" disabled={pending} aria-busy={pending} className={buttonClass("primary", "h-12 w-full")}>
         {pending ? <span aria-hidden="true" className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none" /> : <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" /></svg>}
-        {pending ? "Envoi…" : "Envoyer ma demande de devis"}
+        {pending ? "Envoi…" : "Envoyer ma demande de production"}
       </button>
     </form>
   );

@@ -6,8 +6,8 @@ import { Container } from "@/components/ui";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Demander un devis",
-  description: "Lancé par des Guadeloupéens : des solutions de streaming IRL flexibles. Décris ton événement, on revient vers toi avec un devis gratuit.",
+  title: "Demander une production IRL",
+  description: "Lancé par des Guadeloupéens : des solutions de streaming IRL flexibles. Décris ton projet de production IRL, on te répond avec un devis gratuit.",
   alternates: { canonical: "/contact" },
 };
 
@@ -18,9 +18,9 @@ export default function ContactPage() {
     <>
       <section className="py-16 sm:py-24">
         <Container className="max-w-5xl">
-          <h1 className="h-serif max-w-[16ch] text-[clamp(3rem,7vw,5rem)]">Demander un <em>devis.</em></h1>
+          <h1 className="h-serif max-w-[16ch] text-[clamp(3rem,7vw,5rem)]">Demander une <em>production IRL.</em></h1>
           <p className="mt-6 max-w-[58ch] text-base leading-relaxed text-muted sm:text-lg">Lancé par des Guadeloupéens, des solutions de streaming IRL flexibles.</p>
-          <p className="mt-4 max-w-[58ch] font-medium">Un événement en tête ? Décris-le, on revient vers toi avec un devis gratuit et sur mesure.</p>
+          <p className="mt-4 max-w-[58ch] font-medium">Tu veux qu&apos;on filme et diffuse ton direct IRL ? Décris ton projet : on s&apos;occupe de la production (régie, cadreur, réseau) et on te répond avec un devis gratuit et sur mesure.</p>
         </Container>
       </section>
 
@@ -45,7 +45,7 @@ export default function ContactPage() {
             </div>
           </div>
           <div className="bento-cell p-6 sm:p-8">
-            <h2 className="mb-6 text-xl font-semibold">Formulaire de devis</h2>
+            <h2 className="mb-6 text-xl font-semibold">Ta demande de production</h2>
             <ContactForm />
           </div>
         </Container>

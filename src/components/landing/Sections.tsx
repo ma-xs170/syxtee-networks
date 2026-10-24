@@ -46,7 +46,7 @@ export function HomeHero() {
           Une équipe de production, des cadreurs et des relais SRTLA pour diffuser depuis n&apos;importe où. Lancé par des Guadeloupéens, des solutions de streaming IRL flexibles, depuis la Caraïbe française. Et si tu streames seul, les mêmes outils à petit prix.
         </p>
         <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={rise(2)}>
-          <ButtonLink href="/contact">Demander un devis</ButtonLink>
+          <ButtonLink href="/contact">Demander une production IRL</ButtonLink>
           <ButtonLink href="#streamers" variant="secondary">Je suis streamer indépendant</ButtonLink>
         </div>
       </Container>
@@ -80,7 +80,7 @@ export function ProductionSection() {
           ))}
         </div>
         <Reveal className="mt-8 flex flex-wrap items-center gap-4">
-          <ButtonLink href="/contact">Demander un devis</ButtonLink>
+          <ButtonLink href="/contact">Demander une production IRL</ButtonLink>
           <Link href="/production" className="inline-flex min-h-11 items-center gap-1.5 text-sm text-foreground underline-offset-4 hover:underline">Voir comment on travaille <span aria-hidden="true">→</span></Link>
           <span className="text-sm text-muted">Estimation immédiate, devis gratuit.</span>
         </Reveal>
@@ -267,7 +267,7 @@ export function FieldSection() {
           <Reveal as="article" delay={0.35} className="bento-cell flex min-h-52 flex-col justify-between bg-surface-2 p-6 sm:p-7 md:col-span-2">
             <p className="h-serif max-w-[22ch] text-[clamp(1.75rem,3vw,2.5rem)]">Ton projet est <em>unique.</em></p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <ButtonLink href="/contact">Demander un devis</ButtonLink>
+              <ButtonLink href="/contact">Demander une production IRL</ButtonLink>
               <span className="text-sm text-muted">Gratuit et sans engagement.</span>
             </div>
           </Reveal>
@@ -337,7 +337,7 @@ export function FinalCta() {
       <Container className="relative text-center">
         <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,6vw,4.5rem)]">Prêt à partir en <em>direct ?</em></h2>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <ButtonLink href="/contact">Demander un devis</ButtonLink>
+          <ButtonLink href="/contact">Demander une production IRL</ButtonLink>
           <ButtonLink href="/inscription" variant="secondary">Créer mon compte</ButtonLink>
         </div>
         <div className="mt-12"><PlatformStrip /></div>

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { siKick, siTwitch, siYoutube } from "@/lib/brand-icons";
+import { siDiscord, siKick, siTwitch, siYoutube } from "@/lib/brand-icons";
 import type { HomeStreamer } from "@/lib/streamers";
 
 // Accueil : « Ils nous font confiance. » Une rangée d'avatars ronds, décalés en hauteur, avec le pseudo Twitch en pastille ; elle défile
@@ -49,6 +49,43 @@ function Row({ items, reverse }: { items: Card[]; reverse?: boolean }) {
   );
 }
 
+// Bandeau de marques (en haut de la section) : logos en gris, qui défilent lentement. Moblin et SRT n'ont pas de logo vectoriel ici : icône de l'app et mot-symbole.
+type Brand = { key: string; node: React.ReactNode };
+const glyph = (icon: { path: string }) => (
+  <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" aria-hidden="true"><path d={icon.path} /></svg>
+);
+const BRANDS: Brand[] = [
+  { key: "moblin", node: (<><Image src="/images/moblin/icon.png" alt="" width={64} height={64} className="size-8 rounded-lg grayscale" /><span className="text-2xl font-semibold tracking-tight">Moblin</span></>) },
+  { key: "srt", node: (<span className="text-3xl font-black tracking-[0.08em]">SRT</span>) },
+  { key: "twitch", node: (<>{glyph(siTwitch)}<span className="text-2xl font-semibold tracking-tight">Twitch</span></>) },
+  { key: "youtube", node: (<>{glyph(siYoutube)}<span className="text-2xl font-semibold tracking-tight">YouTube</span></>) },
+  { key: "kick", node: (<>{glyph(siKick)}<span className="text-2xl font-black tracking-tight">KICK</span></>) },
+  { key: "discord", node: (<>{glyph(siDiscord)}<span className="text-2xl font-semibold tracking-tight">Discord</span></>) },
+  { key: "srtla", node: (<span className="text-3xl font-black tracking-[0.08em]">SRTLA</span>) },
+];
+
+function BrandStrip() {
+  const fade = "linear-gradient(to right, transparent, #000 22%, #000 78%, transparent)";
+  return (
+    <div className="mb-24">
+      <p className="px-4 text-center text-xl font-medium">Marques avec lesquelles nous avons collaboré</p>
+      <div className="mt-10" style={{ maskImage: fade, WebkitMaskImage: fade }}>
+        <div className="marquee-wrap overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="marquee marquee-l">
+            {[0, 1].map((copy) => (
+              <ul key={copy} className="flex shrink-0 items-center" aria-hidden={copy === 1 ? true : undefined}>
+                {[...BRANDS, ...BRANDS].map((b, i) => (
+                  <li key={`${b.key}-${i}`} className="mx-10 flex shrink-0 items-center gap-3 text-foreground/55 sm:mx-14">{b.node}</li>
+                ))}
+              </ul>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] }) {
   if (streamers.length === 0) return null;
   const ranked = [...streamers].sort((a, b) => Number(!!b.live) - Number(!!a.live) || Number(b.partner) - Number(a.partner));
@@ -58,12 +95,13 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
   // La liste est répétée (copies masquées aux lecteurs d'écran) jusqu'à remplir la largeur ; un nombre pair garde l'alternance haut/bas.
   const row: Card[] = [];
   while (row.length < 10 || row.length % 2) row.push(...cards.map((c) => ({ ...c, dup: row.length > 0 })));
-  const fade = "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)";
+  const fade = "linear-gradient(to right, transparent, #000 22%, #000 78%, transparent)";
 
   return (
     <section aria-labelledby="mur-titre" className="relative isolate overflow-hidden border-b border-line py-24 sm:py-32">
       {/* Dégradé violet Twitch en haut de section. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(70% 60% at 50% 0%, color-mix(in srgb, #9146ff 38%, transparent), transparent 75%)" }} />
+      <BrandStrip />
       <svg viewBox="0 0 24 24" width="44" height="44" fill="currentColor" role="img" aria-label="Twitch" className="mx-auto mb-6 block" style={{ color: `#${siTwitch.hex}` }}>
         <path d={siTwitch.path} />
       </svg>

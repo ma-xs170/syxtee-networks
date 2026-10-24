@@ -71,11 +71,10 @@ const BRANDS: Brand[] = [
 ];
 
 function BrandStrip() {
-  const fade = "linear-gradient(to right, transparent, #000 22%, #000 78%, transparent)";
   return (
     <section aria-labelledby="techno-titre" className="bg-surface py-20 sm:py-28">
       <h2 id="techno-titre" className="px-4 text-center text-xl font-medium">Technologies implémentées</h2>
-      <div className="mt-14" style={{ maskImage: fade, WebkitMaskImage: fade }}>
+      <div className="mx-auto mt-14 max-w-5xl overflow-hidden px-4">
         <div className="marquee-wrap overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="marquee marquee-l">
             {[0, 1].map((copy) => (

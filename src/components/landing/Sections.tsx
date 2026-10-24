@@ -22,6 +22,13 @@ import { CATALOG, TIERS } from "@/lib/billing";
 
 const h2 = "h-serif text-[clamp(2.25rem,4.5vw,3.5rem)]";
 const lead = "mt-4 max-w-[60ch] text-base leading-relaxed text-muted";
+// Halo de fond d'une section : courbe douce (plusieurs paliers) et bords haut/bas estompés, pour ne jamais laisser de coupure nette.
+// Les halos alternent gauche/droite d'une section à l'autre : jamais deux couleurs côte à côte au raccord.
+const glow = (color: string, at: string, w: number, h: number, a: number): React.CSSProperties => {
+  const c = (n: number) => `color-mix(in srgb, ${color} ${(a * n).toFixed(1)}%, transparent)`;
+  const mask = "linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%)";
+  return { background: `radial-gradient(${w}% ${h}% at ${at}, ${c(1)} 0%, ${c(0.72)} 25%, ${c(0.4)} 48%, ${c(0.15)} 70%, ${c(0.04)} 88%, transparent 100%)`, maskImage: mask, WebkitMaskImage: mask };
+};
 const rise = (i: number) => ({ "--i": i }) as React.CSSProperties;
 
 function Cell({ className = "", title, text, children, delay = 0, href, cta }: { className?: string; title: React.ReactNode; text: React.ReactNode; children?: React.ReactNode; delay?: number; href?: string; cta?: React.ReactNode }) {
@@ -41,7 +48,7 @@ function Cell({ className = "", title, text, children, delay = 0, href, cta }: {
 export function HomeHero() {
   return (
     <section id="accueil-hero" data-theme="dark" className="relative isolate overflow-hidden bg-background text-foreground">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(60% 70% at 0% 0%, color-mix(in srgb, var(--bad) 32%, transparent), transparent 70%)" }} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("var(--bad)", "0% 0%", 70, 90, 32)} />
       <Container className="grid items-center gap-12 pb-24 pt-[calc(4rem+65px)] lg:grid-cols-2 lg:gap-16 lg:pb-32 lg:pt-[calc(6rem+65px)]">
         <div>
           <h1 className="rise h-serif max-w-[14ch] text-[clamp(2.75rem,6vw,5rem)]" style={rise(0)}>
@@ -71,7 +78,7 @@ export function HomeHero() {
 export function ProductionSection() {
   return (
     <section id="production" className="relative isolate scroll-mt-20 overflow-hidden border-b border-line pb-24 pt-20 lg:pb-32 lg:pt-28">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(60% 45% at 100% 0%, color-mix(in srgb, var(--bad) 26%, transparent), transparent 70%), radial-gradient(50% 40% at 0% 100%, color-mix(in srgb, var(--bad) 14%, transparent), transparent 70%)" }} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("var(--bad)", "100% 0%", 70, 60, 28)} />
       <Container>
         <Reveal className="mx-auto max-w-3xl text-center">
           <h2 className={h2}><L fr={<>Ton live IRL, <em>entre de bonnes mains.</em></>} en={<>Your IRL live, <em>in good hands.</em></>} /></h2>
@@ -90,7 +97,7 @@ export function ProductionSection() {
 export function StreamersIntro({ streamers = [] }: { streamers?: HomeStreamer[] }) {
   return (
     <section id="streamers" className="relative isolate scroll-mt-20 overflow-hidden border-b border-line pb-12 pt-24 lg:pb-16 lg:pt-36">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(55% 40% at 0% 0%, color-mix(in srgb, #9146ff 22%, transparent), transparent 70%), radial-gradient(55% 40% at 100% 100%, color-mix(in srgb, #9146ff 14%, transparent), transparent 70%)" }} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("#9146ff", "0% 0%", 70, 55, 24)} />
       <Container className="text-center">
         <Reveal>
           <h2 className={`${h2} mx-auto max-w-[20ch]`}><L fr={<>Streamers indépendants : les mêmes outils, <em>pas cher.</em></>} en={<>Independent streamers: the same tools, <em>for less.</em></>} /></h2>

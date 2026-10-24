@@ -3,14 +3,13 @@
 import { useActionState, useState } from "react";
 import { contactAction, type ContactState } from "@/app/(site)/contact/actions";
 import { buttonClass } from "@/components/ui/button-styles";
-import { LIMITS } from "@/config/devis";
 
 // Formulaire de demande de devis : événement, lieu, date, durée, besoins, description. Champ piège et horodatage antispam.
 const field =
   "h-11 w-full rounded-xl border border-line bg-input px-4 text-sm text-foreground placeholder:text-muted/70 transition-colors focus:border-foreground/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20";
 const label = "text-sm font-medium";
 
-const EVENT_TYPES = ["Marathon ou semi-marathon", "Course à pied ou trail", "Course cycliste", "Manifestation publique", "Festival ou concert", "Événement sportif", "Reportage ou tournage en mobilité", "Autre"];
+const EVENT_TYPES = ["Mobilité", "Bateau"];
 const DURATIONS = ["Moins de 2 h", "2 à 4 h", "4 à 8 h", "Plus de 8 h", "Plusieurs jours"];
 const NEEDS = ["Plusieurs caméras", "Bonding 4G / 5G", "Liaison satellite", "Contrôle à distance d'OBS", "Multistream", "Équipe sur place"];
 
@@ -23,48 +22,6 @@ const Select = ({ id, name, required, placeholder, options }: { id: string; name
     <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted"><path d="m6 9 6 6 6-6" /></svg>
   </div>
 );
-
-// Besoin détaillé : aucun prix montré au client. Le serveur calcule l'estimation et la joint à la demande, pour les administrateurs seulement.
-function QuotePanel() {
-  const [lives, setLives] = useState(1);
-  const [hours, setHours] = useState(2);
-  const [remote, setRemote] = useState(true);
-  const [crew, setCrew] = useState(false);
-  const [km, setKm] = useState(0);
-  const num = (v: string) => (v === "" ? 0 : Number(v));
-  return (
-    <fieldset className="rounded-2xl border border-line bg-surface p-4 sm:p-6">
-      <legend className="px-2 text-sm font-medium">Ton besoin</legend>
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <label htmlFor="q-hours" className={label}>Durée d&apos;un direct (heures)</label>
-          <input id="q-hours" name="q_hours" type="number" inputMode="decimal" min={1} max={LIMITS.maxHours} step={0.5} value={hours} onChange={(e) => setHours(num(e.target.value))} className={field} />
-        </div>
-        <div className="grid gap-2">
-          <label htmlFor="q-lives" className={label}>Nombre de directs</label>
-          <input id="q-lives" name="q_lives" type="number" inputMode="numeric" min={1} max={LIMITS.maxLives} step={1} value={lives} onChange={(e) => setLives(num(e.target.value))} className={field} />
-        </div>
-      </div>
-      <div className="mt-5 grid gap-3">
-        {([
-          ["q_remote", remote, setRemote, "Bonding SRTLA et régie à distance", "Un régisseur de l'équipe pilote ton direct."],
-          ["q_crew", crew, setCrew, "Vidéaste sur place", "Un cadreur IRL vient sur le lieu du direct."],
-        ] as const).map(([name, on, set, title, hint]) => (
-          <label key={name} className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-input p-3.5 text-sm">
-            <input type="checkbox" name={name} checked={on} onChange={(e) => set(e.target.checked)} className="mt-0.5 size-5 shrink-0 accent-[var(--foreground)]" />
-            <span><span className="font-medium">{title}</span><span className="block text-muted">{hint}</span></span>
-          </label>
-        ))}
-      </div>
-      {crew && (
-        <div className="mt-5 grid gap-2">
-          <label htmlFor="q-km" className={label}>Distance entre le domicile du vidéaste et le lieu (km, aller simple)</label>
-          <input id="q-km" name="q_km" type="number" inputMode="numeric" min={0} max={LIMITS.maxKm} step={1} value={km} onChange={(e) => setKm(num(e.target.value))} className={field} />
-        </div>
-      )}
-    </fieldset>
-  );
-}
 
 export default function ContactForm() {
   const [state, action, pending] = useActionState<ContactState, FormData>(contactAction, {});
@@ -105,8 +62,6 @@ export default function ContactForm() {
         <label htmlFor="c-message" className={label}>Décris ton projet *</label>
         <textarea id="c-message" name="message" required minLength={10} rows={5} maxLength={1200} placeholder="Ton projet, le parcours, les contraintes, ton budget approximatif…" className={`${field} h-auto py-3`} />
       </div>
-
-      <QuotePanel />
 
       <details className="group rounded-xl border border-line bg-surface">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-sm font-medium [&::-webkit-details-marker]:hidden">

@@ -15,7 +15,7 @@ import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 
 export type ContactState = { ok?: boolean; error?: string };
 
-const EVENT_TYPES = ["Marathon ou semi-marathon", "Course à pied ou trail", "Course cycliste", "Manifestation publique", "Festival ou concert", "Événement sportif", "Reportage ou tournage en mobilité", "Autre"] as const;
+const EVENT_TYPES = ["Mobilité", "Bateau"] as const;
 const DURATIONS = ["Moins de 2 h", "2 à 4 h", "4 à 8 h", "Plus de 8 h", "Plusieurs jours"] as const;
 const NEEDS = ["Plusieurs caméras", "Bonding 4G / 5G", "Liaison satellite", "Contrôle à distance d'OBS", "Multistream", "Équipe sur place"];
 
@@ -56,8 +56,10 @@ export async function contactAction(_prev: ContactState, form: FormData): Promis
   if (!(await allow("contact-global", 60, 3600))) return { error: "Beaucoup de demandes en ce moment. Réessaie dans un moment." };
 
   // Estimation recalculée ici : le navigateur n'est jamais cru sur les montants.
-  const quote = computeQuote({ lives: Number(form.get("q_lives")), hours: Number(form.get("q_hours")), remote: form.get("q_remote") === "on", crew: form.get("q_crew") === "on", km: Number(form.get("q_km")) });
-  d.message = `${d.message}\n\n${quoteText(quote)}`;
+  if (form.has("q_hours")) {
+    const quote = computeQuote({ lives: Number(form.get("q_lives")), hours: Number(form.get("q_hours")), remote: form.get("q_remote") === "on", crew: form.get("q_crew") === "on", km: Number(form.get("q_km")) });
+    d.message = `${d.message}\n\n${quoteText(quote)}`;
+  }
 
   const admins = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim()).filter(Boolean);
   let saved = false;

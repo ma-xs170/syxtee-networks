@@ -10,8 +10,7 @@ export function AnalysisSection() {
     <section id="analyse" className="scroll-mt-20 border-b border-line py-24 lg:py-36">
       <Container>
         <Reveal>
-          <p className="font-mono text-xs uppercase tracking-wider text-muted">Analyse en temps réel</p>
-          <h2 className={`${h2} mt-3`}>Vois ton flux <em>en direct.</em></h2>
+          <h2 className={h2}>Vois ton flux <em>en direct.</em></h2>
           <p className="mt-4 max-w-[60ch] text-base leading-relaxed text-muted">
             Débit, latence, pertes et liens SRTLA, mesurés à la seconde. La courbe marque les pics, pour voir quand et pourquoi ta connexion a tenu ou lâché.
           </p>

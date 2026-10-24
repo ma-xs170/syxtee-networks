@@ -7,6 +7,8 @@ import { pluginState } from "@/lib/plugin";
 import { DailyBars } from "./charts";
 import { apiFetch } from "./apiFetch";
 import { Card, Column, DkButton, DkLink, DkTabButtons, ListRow, PageTitle, StatusBadge } from "./kit";
+import RelayAnalysis from "@/components/relais/RelayAnalysis";
+import { useLiveStatus } from "./LiveStatus";
 import UpcomingLives from "./UpcomingLives";
 import type { LiveEvent } from "@/lib/calendar";
 import { useLinkDevices, type DevicesDemo } from "./useLinkDevices";
@@ -91,6 +93,27 @@ function Alerts({ alerts }: { alerts: OverviewData["alerts"] }) {
   );
 }
 
+/** Analyse en temps réel : tout en haut, seulement tant qu'un relais reçoit un flux (un bloc par relais en direct). */
+function LiveAnalysis({ coreUrl }: { coreUrl: string }) {
+  const { state } = useLiveStatus();
+  const lives = (state?.relays ?? []).filter((r) => r.live);
+  if (!coreUrl || lives.length === 0) return null;
+  return (
+    <section aria-label="Analyse en temps réel" className="grid gap-4">
+      <h2 className="flex items-center gap-2.5 text-[16px] text-foreground">
+        <span className="live-dot" aria-hidden="true" />
+        Analyse en temps réel
+      </h2>
+      {lives.map((r) => (
+        <div key={r.id} className="grid gap-3">
+          {lives.length > 1 && <p className="text-[14px] text-muted">{r.name}</p>}
+          <RelayAnalysis coreUrl={coreUrl} relayId={r.id} />
+        </div>
+      ))}
+    </section>
+  );
+}
+
 export default function Overview({ initial, coreUrl = "", demo, upcoming, canEditCalendar = true }: { initial: OverviewData; coreUrl?: string; demo?: DevicesDemo; upcoming?: LiveEvent[]; canEditCalendar?: boolean }) {
   const [now] = useState(() => Date.now());
   const [range, setRange] = useState<Range>(initial.range);
@@ -132,6 +155,7 @@ export default function Overview({ initial, coreUrl = "", demo, upcoming, canEdi
     <Column>
       <PageTitle title="Tableau de bord" sub="L'état de ton direct et l'activité de tes serveurs." />
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
+        <LiveAnalysis coreUrl={coreUrl} />
         <StatusCard data={data} coreUrl={coreUrl} deviceIds={online.map((d) => d.id)} />
 
         <dl className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-4 lg:grid-cols-4">

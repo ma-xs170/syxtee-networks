@@ -124,7 +124,7 @@ export function ProductionSection() {
 
 export function StreamersIntro({ streamers = [] }: { streamers?: HomeStreamer[] }) {
   return (
-    <section id="streamers" className="relative isolate scroll-mt-20 overflow-hidden border-b border-line py-24 lg:py-36">
+    <section id="streamers" className="relative isolate scroll-mt-20 overflow-hidden border-b border-line pb-12 pt-24 lg:pb-16 lg:pt-36">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(55% 40% at 0% 0%, color-mix(in srgb, #9146ff 22%, transparent), transparent 70%), radial-gradient(55% 40% at 100% 100%, color-mix(in srgb, var(--bad) 16%, transparent), transparent 70%)" }} />
       <Container className="text-center">
         <Reveal>
@@ -170,7 +170,7 @@ export function ObsHeroSection({ streamers = [] }: { streamers?: HomeStreamer[] 
 
 export function ObsBento() {
   return (
-    <section id="comment" className="scroll-mt-20 py-24 lg:py-36">
+    <section id="comment" className="scroll-mt-20 pb-24 pt-12 lg:pb-36 lg:pt-16">
       <Container>
         <Reveal>
           <h2 className={h2}>{product.remoteName}, ton OBS <em>dans la poche.</em></h2>

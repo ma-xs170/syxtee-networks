@@ -22,7 +22,8 @@ import { ctaLabel, product } from "@/config/product";
 import { deviceImage } from "@/lib/device-images";
 import { CATALOG, TIERS } from "@/lib/billing";
 
-const WHITE_BTN = "inline-flex h-12 items-center justify-center whitespace-nowrap rounded-full bg-foreground px-7 text-[15px] font-medium text-background transition-[opacity,transform] duration-150 hover:opacity-90 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
+const WHITE_BTN = "inline-flex h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-full border border-foreground/25 bg-foreground/[0.08] px-7 text-[15px] font-medium text-foreground transition-[background-color,border-color,transform] duration-150 hover:border-foreground/40 hover:bg-foreground/[0.14] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
+const DOT = <span aria-hidden="true" className="size-1.5 rounded-full bg-bad" />;
 const h2 = "h-serif text-[clamp(2.25rem,4.5vw,3.5rem)]";
 const lead = "mt-4 max-w-[60ch] text-base leading-relaxed text-muted";
 const rise = (i: number) => ({ "--i": i }) as React.CSSProperties;
@@ -56,8 +57,8 @@ export function HomeHero() {
           Une équipe de production, des cadreurs et des relais SRTLA pour diffuser depuis n&apos;importe où. Lancé par des Guadeloupéens, des solutions de streaming IRL flexibles, depuis la Caraïbe française. Et si tu streames seul, les mêmes outils à petit prix.
         </p>
         <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={rise(2)}>
-          <Link href="/contact" className={WHITE_BTN}>Demander une production IRL</Link>
-          <Link href="#streamers" className="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-full bg-bad px-7 text-[15px] font-medium text-white transition-[opacity,transform] duration-150 hover:opacity-90 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">Je suis streamer indépendant</Link>
+          <Link href="/contact" className={WHITE_BTN}>{DOT}Demander une production IRL</Link>
+          <Link href="#streamers" className={WHITE_BTN}>Je suis streamer indépendant</Link>
         </div>
         <div className="rise mt-14" style={rise(3)}>
           <p className="mb-5 text-sm text-muted">Diffuse sur</p>
@@ -119,7 +120,7 @@ export function ProductionSection() {
         </div>
 
         <Reveal className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link href="/contact" className={WHITE_BTN}>Demander une production IRL</Link>
+          <Link href="/contact" className={WHITE_BTN}>{DOT}Demander une production IRL</Link>
           <Link href="/production" className="inline-flex min-h-11 items-center gap-1.5 text-sm text-foreground underline-offset-4 hover:underline">Voir comment on travaille <span aria-hidden="true">→</span></Link>
         </Reveal>
       </Container>

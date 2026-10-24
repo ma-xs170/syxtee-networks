@@ -19,7 +19,7 @@ async function signedIn(page: import("@playwright/test").Page, tag: string) {
 }
 
 async function createRelay(page: import("@playwright/test").Page, protocol: "SRTLA" | "RTMP", name: string) {
-  await page.getByRole("button", { name: /Créer (un|mon premier) serveur/ }).first().click();
+  await page.getByRole("button", { name: /Créer (une|ma première) connexion/ }).first().click();
   const dialog = page.getByRole("dialog", { name: /Créer un relais/ });
   await dialog.locator("label", { hasText: protocol }).first().click();
   await dialog.getByRole("button", { name: "Suivant" }).click();
@@ -39,7 +39,7 @@ test("aucun relais d'office, assistant SRTLA puis RTMP, quota atteint", async ({
   await signedIn(page, "relais");
   await page.goto("/dashboard/urls");
   await expect(page).toHaveURL(/\/dashboard\/serveurs$/);
-  await expect(page.getByRole("heading", { name: "Aucun serveur pour l'instant" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Aucune connexion pour l'instant" })).toBeVisible();
 
   await createRelay(page, "SRTLA", "iPhone e2e");
   const done = page.getByRole("dialog", { name: /Relais créé/ });
@@ -47,8 +47,8 @@ test("aucun relais d'office, assistant SRTLA puis RTMP, quota atteint", async ({
   await expect(done.getByRole("button", { name: "Afficher le QR code" })).toBeVisible();
   await expect(done.getByText(/srtla:\/\/relais\.e2e:5000\?streamid=live_••••••••/)).toBeVisible();
   await done.getByRole("button", { name: "Terminé" }).click();
-  await expect(page.getByRole("link", { name: "iPhone e2e" })).toBeVisible();
-  await expect(page.getByText("1 / 3 serveurs")).toBeVisible();
+  await expect(page.getByRole("button", { name: /^iPhone e2e/ })).toBeVisible();
+  await expect(page.getByText("1 / 3 connexions")).toBeVisible();
 
   await createRelay(page, "RTMP", "Osmo Pocket 3");
   await expect(page.getByRole("dialog", { name: /Relais créé/ }).getByRole("tab", { name: /DJI, GoPro/ })).toBeVisible();
@@ -56,15 +56,16 @@ test("aucun relais d'office, assistant SRTLA puis RTMP, quota atteint", async ({
 
   await createRelay(page, "SRTLA", "Galaxy e2e");
   await page.getByRole("button", { name: "Terminé" }).click();
-  await expect(page.getByText("3 / 3 serveurs")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Limite atteinte · Demander plus de serveurs" })).toBeVisible();
+  await expect(page.getByText("3 / 3 connexions")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Limite atteinte · Demander plus de connexions" })).toBeVisible();
 
-  // Fiche d'un serveur RTMP : adresses, puis renommage par le menu « Actions du serveur ».
-  await page.getByRole("link", { name: "Osmo Pocket 3" }).click();
+  // Fiche d'un serveur RTMP : adresses, puis renommage par le menu « Actions de la connexion ».
+  await page.getByRole("button", { name: /^Osmo Pocket 3/ }).click();
+  await page.getByRole("link", { name: "Détails de Osmo Pocket 3" }).click();
   await expect(page).toHaveURL(/\/dashboard\/serveurs\/[0-9a-f-]{36}$/);
   await expect(page.getByRole("heading", { name: "Osmo Pocket 3", level: 1 })).toBeVisible();
   await expect(page.getByText("Serveur opérationnel").first()).toBeVisible();
-  await page.getByRole("button", { name: "Actions du serveur" }).click();
+  await page.getByRole("button", { name: "Actions de la connexion" }).click();
   await page.getByRole("menuitem", { name: "Renommer" }).click();
   const rename = page.getByRole("dialog", { name: "Renommer la caméra" });
   await rename.getByLabel("Nom de la caméra").fill("Osmo Action 5");
@@ -72,20 +73,26 @@ test("aucun relais d'office, assistant SRTLA puis RTMP, quota atteint", async ({
   await expect(page.getByRole("heading", { name: "Osmo Action 5", level: 1 })).toBeVisible();
 
   // Archiver libère une place dans le quota.
-  await page.getByRole("button", { name: "Actions du serveur" }).click();
+  await page.getByRole("button", { name: "Actions de la connexion" }).click();
   await page.getByRole("menuitem", { name: "Archiver" }).click();
   await page.getByRole("dialog", { name: "Archiver le relais" }).getByRole("button", { name: "Archiver", exact: true }).click();
-  await expect(page.getByText("Serveur archivé").first()).toBeVisible();
+  await expect(page.getByText("Connexion archivée").first()).toBeVisible();
   await page.goto("/dashboard/serveurs");
-  await expect(page.getByText("2 / 3 serveurs")).toBeVisible();
-  await expect(page.getByRole("button", { name: "+ Créer un serveur" })).toBeVisible();
+  await expect(page.getByText("2 / 3 connexions")).toBeVisible();
+  await expect(page.getByRole("button", { name: "+ Créer une connexion" })).toBeVisible();
+
+  // Corbeille de la ligne : confirmation avant de supprimer.
+  await page.getByRole("button", { name: "Supprimer Galaxy e2e" }).click();
+  await page.getByRole("dialog", { name: "Supprimer le relais" }).getByRole("button", { name: "Supprimer définitivement" }).click();
+  await expect(page.getByText("1 / 3 connexions")).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Galaxy e2e/ })).toHaveCount(0);
 });
 
-test("« Serveurs » est la première entrée du groupe Diffuser", async ({ page }) => {
+test("« Connexions » est la première entrée du groupe Diffuser", async ({ page }) => {
   await signedIn(page, "relais-nav");
   await page.setViewportSize({ width: 1280, height: 800 });
   const nav = page.getByRole("navigation", { name: "Navigation de l'espace client" });
-  const first = nav.getByRole("link", { name: "Serveurs" });
+  const first = nav.getByRole("link", { name: "Connexions" });
   await expect(first).toBeVisible();
   await expect(first).toHaveAttribute("href", "/dashboard/serveurs");
 });

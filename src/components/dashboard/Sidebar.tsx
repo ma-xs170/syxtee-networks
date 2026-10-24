@@ -48,7 +48,7 @@ const GROUPS: Group[] = [
   {
     title: "Diffuser",
     items: [
-      { label: "Serveurs", href: "/dashboard/serveurs", icon: Radio, feature: "relais" },
+      { label: "Connexions", href: "/dashboard/serveurs", icon: Radio, feature: "relais" },
       { label: "Appareils", href: "/dashboard/appareils", icon: HardDrives },
       { label: "Direct", href: "/dashboard/direct", icon: SlidersHorizontal, feature: "relais" },
       { label: "Destinations", href: "/dashboard/destinations", icon: ShareNetwork },
@@ -316,7 +316,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
 // Flux = tes flux (SRTLA, RTMP) ; OBS = liste des postes, plugin, et l'interface d'un OBS (/controle-a-distance/<poste>).
 const TABS: (Item & { also?: string[] })[] = [
   { label: "Tableau", href: "/dashboard", icon: SquaresFour },
-  { label: "Serveurs", href: "/dashboard/serveurs", icon: Radio, feature: "relais" },
+  { label: "Connexions", href: "/dashboard/serveurs", icon: Radio, feature: "relais" },
   { label: "Direct", href: "/dashboard/direct", icon: SlidersHorizontal, feature: "relais", also: ["/dashboard/obs", "/dashboard/plugin", "/controle-a-distance"] },
 ];
 

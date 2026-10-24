@@ -17,7 +17,7 @@ import { fmtAgo, fmtDuration, fmtInt } from "@/lib/dashboard-data";
 import { distanceKm, estimateRtt, flag, latencyTone, serverById } from "@/lib/relay-servers";
 import { dataClient, requireOwner } from "@/lib/workspace";
 
-export const metadata: Metadata = { title: "Serveur", robots: { index: false } };
+export const metadata: Metadata = { title: "Connexion", robots: { index: false } };
 
 const TONE = { good: "text-ok", fair: "text-warn", bad: "text-bad", none: "text-muted" } as const;
 
@@ -36,8 +36,8 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
   if (!relay) {
     return (
       <DashPage>
-        <Link href="/dashboard/serveurs" className="text-sm text-muted transition-colors hover:text-foreground">← Retour à la liste des serveurs</Link>
-        <p className="mt-6 text-sm text-muted">Ce serveur est introuvable, ou le service ne répond pas pour le moment. Réessaie dans quelques minutes.</p>
+        <Link href="/dashboard/serveurs" className="text-sm text-muted transition-colors hover:text-foreground">← Retour à la liste des connexions</Link>
+        <p className="mt-6 text-sm text-muted">Cette connexion est introuvable, ou le service ne répond pas pour le moment. Réessaie dans quelques minutes.</p>
       </DashPage>
     );
   }
@@ -90,7 +90,7 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
     <DashPage>
       <PlanGate feature="relais">
         <Link href="/dashboard/serveurs" className="inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground">
-          <span aria-hidden="true">←</span> Retour à la liste des serveurs
+          <span aria-hidden="true">←</span> Retour à la liste des connexions
         </Link>
 
         <header className="mb-10 mt-6 flex flex-wrap items-center justify-between gap-5">
@@ -102,13 +102,12 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
               </svg>
             </span>
             <div className="min-w-0">
-              <p className="text-sm text-muted">Serveur</p>
+              <p className="text-sm text-muted">Connexion</p>
               <h1 className="break-words text-3xl font-semibold tracking-tight sm:text-4xl">{relay.name}</h1>
             </div>
           </div>
-          <RowMenu label="Actions du serveur" items={[
+          <RowMenu label="Actions de la connexion" items={[
             act("Renommer", "rename"),
-            act("Changer d'emplacement", "server"),
             ...(relay.archived ? [] : [act("Régénérer la clé", "rotate")]),
             act(relay.archived ? "Réactiver" : "Archiver", "archive"),
             act("Supprimer", "delete", true),
@@ -124,14 +123,14 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
 
         <p className={`mb-8 flex items-center gap-3 rounded-2xl border px-5 py-4 text-[15px] ${relay.archived || !serverOk ? "border-line bg-surface" : "border-ok/30 bg-ok/5"}`}>
           <span aria-hidden="true" className={`size-2 shrink-0 rounded-full ${relay.live ? "bg-live" : relay.archived || !serverOk ? "bg-muted" : "bg-ok"}`} />
-          <span><span className="font-medium">{relay.archived ? "Serveur archivé" : relay.live ? "Direct en cours" : serverOk ? "Serveur opérationnel" : server?.maintenance ? "Serveur en maintenance" : "Serveur bientôt disponible"} : </span><span className="text-muted">{relay.archived ? "adresses désactivées." : relay.live ? "ton flux arrive." : serverOk ? "prêt à recevoir ton flux." : "réessaie plus tard."}</span></span>
+          <span><span className="font-medium">{relay.archived ? "Connexion archivée" : relay.live ? "Direct en cours" : serverOk ? "Serveur opérationnel" : server?.maintenance ? "Serveur en maintenance" : "Serveur bientôt disponible"} : </span><span className="text-muted">{relay.archived ? "adresses désactivées." : relay.live ? "ton flux arrive." : serverOk ? "prêt à recevoir ton flux." : "réessaie plus tard."}</span></span>
         </p>
         <RelayActions relay={relay} bare />
 
-        <TabsNav pill tabs={TABS.map((t) => ({ id: t.id, label: t.label, href: href(t.id) }))} current={tab} label="Sections du serveur" />
+        <TabsNav pill tabs={TABS.map((t) => ({ id: t.id, label: t.label, href: href(t.id) }))} current={tab} label="Sections de la connexion" />
 
         {relay.archived && tab !== "info" && tab !== "parametres" ? (
-          <p className="rounded-2xl border border-line bg-surface p-6 text-sm text-muted">Ce serveur est archivé : ses adresses ne marchent plus. Réactive-le depuis le menu « Plus » pour diffuser de nouveau.</p>
+          <p className="rounded-2xl border border-line bg-surface p-6 text-sm text-muted">Cette connexion est archivée : ses adresses ne marchent plus. Réactive-la depuis le menu « Actions » pour diffuser de nouveau.</p>
         ) : (
           <>
             {tab === "info" && (
@@ -142,7 +141,7 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
                     <Card title="Se connecter" className="h-full">
                       <div className="py-5">
                         <p className="mb-5 max-w-[62ch] text-sm leading-relaxed text-muted">
-                          Colle l&apos;adresse correspondant à ton appareil ou à ton logiciel. Elle contient la clé de ce serveur : ne la partage pas et ne la montre pas en direct.
+                          Colle l&apos;adresse correspondant à ton appareil ou à ton logiciel. Elle contient la clé de cette connexion : ne la partage pas et ne la montre pas en direct.
                         </p>
                         <RelayUrls relay={relay} />
                       </div>
@@ -189,7 +188,7 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
             {tab === "parametres" && (
               <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
                   <Card title="Réglages">
-                    <Setting label="Nom" help="Le nom de l'appareil qui utilise ce serveur." value={<span className="font-medium">{relay.name}</span>} button={<ActionButton action={{ id: relay.id, action: "rename" }}>Renommer</ActionButton>} />
+                    <Setting label="Nom" help="Le nom de l'appareil qui utilise cette connexion." value={<span className="font-medium">{relay.name}</span>} button={<ActionButton action={{ id: relay.id, action: "rename" }}>Renommer</ActionButton>} />
                     <Setting label="Emplacement" help="Où ton flux est reçu. Changer garde les mêmes adresses." value={<span className="font-medium">{server ? `${flag(server.cc)} ${server.city}, ${server.country}` : relay.server}</span>} button={<ActionButton action={{ id: relay.id, action: "server" }}>Changer</ActionButton>} />
                     {!relay.archived && (
                       <>
@@ -198,17 +197,17 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
                       </>
                     )}
                     {!relay.archived && (
-                      <Setting label="Clé de ce serveur" help={`Régénérer coupe les anciennes adresses tout de suite. ${sinceKey === "Jamais régénérée" ? "Jamais régénérée." : `Dernière fois : ${sinceKey}.`}`} button={<ActionButton action={{ id: relay.id, action: "rotate" }}>Régénérer</ActionButton>} />
+                      <Setting label="Clé de cette connexion" help={`Régénérer coupe les anciennes adresses tout de suite. ${sinceKey === "Jamais régénérée" ? "Jamais régénérée." : `Dernière fois : ${sinceKey}.`}`} button={<ActionButton action={{ id: relay.id, action: "rotate" }}>Régénérer</ActionButton>} />
                     )}
                   </Card>
 
                   <Card title="Archiver ou supprimer">
                     <Setting
-                      label={relay.archived ? "Réactiver ce serveur" : "Archiver ce serveur"}
+                      label={relay.archived ? "Réactiver cette connexion" : "Archiver cette connexion"}
                       help={relay.archived ? "Ses adresses remarchent tout de suite et il compte de nouveau dans ta limite." : "Ses adresses cessent de marcher, il ne compte plus dans ta limite. Tu peux le réactiver."}
                       button={<ActionButton action={{ id: relay.id, action: "archive" }}>{relay.archived ? "Réactiver" : "Archiver"}</ActionButton>}
                     />
-                    <Setting label="Supprimer ce serveur" help="Définitif. Tes directs restent dans l'historique." button={<ActionButton action={{ id: relay.id, action: "delete" }} danger>Supprimer</ActionButton>} />
+                    <Setting label="Supprimer cette connexion" help="Définitif. Tes directs restent dans l'historique." button={<ActionButton action={{ id: relay.id, action: "delete" }} danger>Supprimer</ActionButton>} />
                   </Card>
               </div>
             )}
@@ -224,7 +223,7 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
                 </Card>
                 <Card title="Derniers directs" className="h-full">
                   {sessions.length === 0 ? (
-                    <p className="py-8 text-center text-sm text-muted">Aucun direct sur ce serveur.</p>
+                    <p className="py-8 text-center text-sm text-muted">Aucun direct sur cette connexion.</p>
                   ) : (
                     <ul className="divide-y divide-line">
                       {sessions.slice(0, 5).map((s) => (

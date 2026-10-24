@@ -33,7 +33,7 @@ test.describe("comptes", () => {
 
     // Le palier Gratuit garde 1 serveur.
     await page.goto("/dashboard/serveurs");
-    await expect(page.getByText("0 / 1 serveurs")).toBeVisible();
+    await expect(page.getByText("0 / 1 connexions")).toBeVisible();
     await expect(page.getByRole("region", { name: /disponible avec un forfait/ })).toHaveCount(0);
 
     // Le contrôle à distance (scènes) reste réservé aux abonnés.

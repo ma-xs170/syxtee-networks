@@ -26,7 +26,7 @@ const tiers = [
 
 // Chiffres clés : « 0 » s'affiche ✕.
 const limits: { label: string; v: Three<string> }[] = [
-  { label: "Serveurs (SRTLA - RTMP)", v: ["1", "10", "∞"] },
+  { label: "Connexions (SRTLA - RTMP)", v: ["1", "10", "∞"] },
   { label: "Directs en même temps", v: ["1", "3", "10"] },
   { label: "Espaces partagés", v: ["0", "1", "5"] },
   { label: "Invités au contrôle à distance", v: ["0", "3", "5"] },

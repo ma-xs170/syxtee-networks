@@ -7,7 +7,7 @@ const place = (a: SecurityAlert) =>
   a.ip ? `${a.ip}${a.country ? ` / ${new Intl.DisplayNames(["fr"], { type: "region" }).of(a.country) ?? a.country}` : ""}` : "un appareil via SRTLA (IP masquée par le relais)";
 
 export default function SecurityAlerts({ alerts, relays }: { alerts: SecurityAlert[]; relays: { id: string; name: string }[] }) {
-  const name = (id: string | null) => relays.find((r) => r.id === id)?.name ?? "un serveur supprimé";
+  const name = (id: string | null) => relays.find((r) => r.id === id)?.name ?? "une connexion supprimée";
   return (
     <section aria-labelledby="tentatives" className="mt-6 overflow-hidden rounded-2xl border border-line bg-surface">
       <h2 id="tentatives" className="border-b border-line px-5 py-3 text-sm font-medium">
@@ -30,7 +30,7 @@ export default function SecurityAlerts({ alerts, relays }: { alerts: SecurityAle
               </li>
             ))}
           </ul>
-          <p className="border-t border-line px-5 py-3.5 text-sm text-muted">Ce n&apos;était pas toi ? Régénère la clé de ce serveur : l&apos;ancienne est coupée immédiatement.</p>
+          <p className="border-t border-line px-5 py-3.5 text-sm text-muted">Ce n&apos;était pas toi ? Régénère la clé de cette connexion : l&apos;ancienne est coupée immédiatement.</p>
         </>
       )}
     </section>

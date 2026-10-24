@@ -8,7 +8,7 @@ export type PlanId = "free" | "basic" | "beta" | "paid" | "extra" | "partner" | 
 export type Feature = "relais" | "sante" | "apercu" | "controle" | "remote" | "stats" | "lives" | "carte" | "mire" | "cam" | "dji" | "cles";
 
 export const FEATURES: Record<Feature, string> = {
-  relais: "Serveurs et URLs",
+  relais: "Connexions et URLs",
   sante: "Santé du flux",
   apercu: "Aperçu",
   controle: "Contrôle caméra",

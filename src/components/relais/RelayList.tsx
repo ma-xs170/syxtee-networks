@@ -8,9 +8,11 @@ import { flag, serverById } from "@/lib/relay-servers";
 import RelayServer from "../illustrations/RelayServer";
 import ProtocolBadge from "./ProtocolBadge";
 import CreateRelayWizard from "./CreateRelayWizard";
+import RelayActions from "./RelayActions";
+import RelayUrls from "./RelayUrls";
 import Link from "next/link";
 
-// Page « Mes relais » : compteur, bouton de création, filtres, et serveurs classés automatiquement : en direct (pastille rouge) tout en haut, actifs au milieu, inactifs puis archivés en bas.
+// Page « Mes connexions » : compteur, bouton de création, filtres, et serveurs classés automatiquement : en direct (pastille rouge) tout en haut, actifs au milieu, inactifs puis archivés en bas.
 
 type Props = {
   relays: RelayRow[];
@@ -38,8 +40,6 @@ export function ServerLabel({ id }: { id: string }) {
   );
 }
 
-const COLS = "lg:grid-cols-[minmax(0,2fr)_96px_minmax(0,1.2fr)_110px_minmax(0,1.1fr)_110px_6.5rem]";
-
 const STATE: Record<RelayGroup, { label: string; dot: string; text: string }> = {
   live: { label: "En direct", dot: "bg-live", text: "text-live" },
   active: { label: "Actif", dot: "bg-ok", text: "text-foreground" },
@@ -47,40 +47,50 @@ const STATE: Record<RelayGroup, { label: string; dot: string; text: string }> = 
   archived: { label: "Archivé", dot: "bg-foreground/15", text: "text-muted" },
 };
 
-/** Ligne du tableau des serveurs : nom et état, protocole, région, dernier direct, débit moyen, actions. Sur mobile, la ligne devient une carte. */
-function Row({ relay }: { relay: RelayRow }) {
+const icon = "grid size-9 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-foreground/10 hover:text-foreground";
+const ask = (id: string, action: string) => window.dispatchEvent(new CustomEvent("relay-action", { detail: { id, action } }));
+
+/** Ligne dépliable : un clic sur le nom ouvre « Se connecter » (QR, URL), crayon pour renommer, corbeille pour supprimer (avec confirmation). */
+function Row({ relay, open, onToggle }: { relay: RelayRow; open: boolean; onToggle: () => void }) {
   const g = relayGroup(relay);
   const st = STATE[g];
+  const panel = `panel-${relay.id}`;
   return (
-    <li className={`group relative grid grid-cols-1 gap-x-4 gap-y-3 px-4 py-4 transition-colors hover:bg-foreground/[0.04] sm:px-5 lg:items-center ${COLS}`}>
-      <div className="flex min-w-0 items-center gap-3">
-        {g === "live" ? <span className="live-dot shrink-0" aria-label="En direct" /> : <span aria-hidden="true" className={`size-2 shrink-0 rounded-full ${st.dot}`} />}
-        <Link href={`/dashboard/serveurs/${relay.id}`} className="truncate text-left text-sm font-medium after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:ring-1 focus-visible:after:ring-foreground/30">
-          {relay.name}
-        </Link>
-        <span className={`shrink-0 text-xs lg:hidden ${st.text}`}>{st.label}</span>
+    <li>
+      <div className="flex items-center gap-1 px-3 py-2.5 transition-colors hover:bg-foreground/[0.04] sm:px-4">
+        <button type="button" onClick={onToggle} aria-expanded={open} aria-controls={panel} className="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-2 py-2 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/30">
+          {g === "live" ? <span className="live-dot shrink-0" aria-label="En direct" /> : <span aria-hidden="true" className={`size-2 shrink-0 rounded-full ${st.dot}`} />}
+          <span className="min-w-0 truncate text-[15px] font-medium">{relay.name}</span>
+          <span className="hidden shrink-0 sm:inline-flex"><ProtocolBadge protocol={relay.protocol} /></span>
+          <span className={`hidden shrink-0 text-xs md:inline ${st.text}`}>{st.label}</span>
+          <span className="ml-auto hidden shrink-0 text-sm text-muted lg:inline">
+            {g === "live" ? "En ce moment" : relay.last_live_at ? fmtAgo(relay.last_live_at) : "Jamais utilisé"}
+            {relay.avg_kbps != null && <span className="ml-3 font-mono tabular-nums">{fmtInt(relay.avg_kbps)} kbps</span>}
+          </span>
+        </button>
+        <button type="button" onClick={() => ask(relay.id, "rename")} className={icon} aria-label={`Renommer ${relay.name}`} title="Renommer">
+          <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-4-4L4 16v4Z" /><path d="m13.5 6.5 4 4" /></svg>
+        </button>
+        <button type="button" onClick={() => ask(relay.id, "delete")} className={`${icon} hover:!text-red-300`} aria-label={`Supprimer ${relay.name}`} title="Supprimer">
+          <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" /></svg>
+        </button>
+        <button type="button" onClick={onToggle} tabIndex={-1} aria-hidden="true" className={icon}>
+          <svg viewBox="0 0 24 24" className={`size-[18px] transition-transform ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+        </button>
       </div>
-      <div className="flex items-center gap-3 lg:contents">
-        <div className="lg:block">
-          <ProtocolBadge protocol={relay.protocol} />
+      {open && (
+        <div id={panel} className="border-t border-line bg-background/40 px-4 py-6 sm:px-6">
+          {relay.archived ? (
+            <p className="text-sm text-muted">Cette connexion est archivée : ses adresses ne marchent plus. Réactive-la depuis sa fiche.</p>
+          ) : (
+            <RelayUrls relay={relay} />
+          )}
+          <Link href={`/dashboard/serveurs/${relay.id}`} aria-label={`Détails de ${relay.name}`} className="mt-6 inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground">
+            Détails, statistiques et réglages <span aria-hidden="true">→</span>
+          </Link>
         </div>
-        <div className="min-w-0 text-sm text-muted">
-          <ServerLabel id={relay.server} />
-        </div>
-      </div>
-      <div className={`hidden text-sm lg:flex lg:items-center ${st.text}`}>
-        <span className="inline-flex items-center gap-2">
-          <span aria-hidden="true" className={`size-1.5 rounded-full ${st.dot}`} />
-          {st.label}
-        </span>
-      </div>
-      <div className="flex items-center justify-between gap-4 text-sm text-muted lg:contents">
-        <span>{g === "live" ? "En ce moment" : relay.last_live_at ? fmtAgo(relay.last_live_at) : "Jamais utilisé"}</span>
-        <span className="font-mono tabular-nums lg:text-right">{relay.avg_kbps != null ? `${fmtInt(relay.avg_kbps)} kbps` : "-"}</span>
-      </div>
-      <span aria-hidden="true" className="hidden items-center justify-end gap-1.5 text-sm text-muted transition-colors group-hover:text-foreground lg:flex">
-        Détails <span className="transition-transform group-hover:translate-x-0.5">→</span>
-      </span>
+      )}
+      <RelayActions relay={relay} bare />
     </li>
   );
 }
@@ -88,6 +98,7 @@ function Row({ relay }: { relay: RelayRow }) {
 export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen = false }: Props) {
   const [wizard, setWizard] = useState(autoOpen && active < max);
   const [server, setServer] = useState("all");
+  const [openId, setOpenId] = useState<string | null>(null);
   const { state } = useLiveStatus();
 
   // Statut en direct : le flux SSE du Core prime sur l'état lu au chargement de la page.
@@ -111,10 +122,10 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="h-page">
-            Mes <em>serveurs</em>
+            Mes <em>connexions</em>
           </h1>
           <p className="mt-2 font-mono text-sm tabular-nums text-muted">
-            {active} / {unlimited ? "∞" : max} serveurs
+            {active} / {unlimited ? "∞" : max} connexions
           </p>
         </div>
       </div>
@@ -122,9 +133,9 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
       {relays.length === 0 ? (
         <section className="grid grid-cols-1 items-center gap-8 rounded-2xl border border-dashed border-line p-8 md:grid-cols-[minmax(0,1fr)_240px]">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight">Aucun serveur pour l&apos;instant</h2>
+            <h2 className="text-xl font-semibold tracking-tight">Aucune connexion pour l&apos;instant</h2>
             <p className="mt-2 max-w-[55ch] text-sm leading-relaxed text-muted">
-              Un serveur reçoit le flux de ton téléphone ou de ta caméra, et le renvoie à OBS. Crée-en un par appareil.
+              Une connexion reçoit le flux de ton téléphone ou de ta caméra, et le renvoie à OBS. Crées-en une par appareil.
             </p>
             {!full && (
               <button
@@ -132,7 +143,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
                 onClick={() => setWizard(true)}
                 className="mt-6 h-11 whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors active:scale-[0.98]"
               >
-                Créer mon premier serveur
+                Créer ma première connexion
               </button>
             )}
           </div>
@@ -159,7 +170,7 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
               )}
         {full ? (
           <a href="https://discord.gg/CD68F8yZuZ" target="_blank" rel="noopener noreferrer" className="inline-flex h-10 items-center whitespace-nowrap rounded-full border border-line px-5 text-sm font-medium transition-colors hover:bg-foreground/10">
-            Limite atteinte · Demander plus de serveurs
+            Limite atteinte · Demander plus de connexions
           </a>
         ) : (
           <button
@@ -167,31 +178,20 @@ export default function RelayList({ relays, active, max, coreUrl, geo, autoOpen 
             onClick={() => setWizard(true)}
             className="h-10 whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors active:scale-[0.98]"
           >
-            + Créer un serveur
+            + Créer une connexion
           </button>
         )}
             </div>
           </div>
 
           {rows.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-line p-10 text-center text-sm text-muted">Aucun serveur ne correspond.</p>
+            <p className="rounded-2xl border border-dashed border-line p-10 text-center text-sm text-muted">Aucune connexion ne correspond.</p>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-line bg-surface">
-              <div role="presentation" className={`hidden gap-x-4 border-b border-line px-5 py-3 text-xs text-muted lg:grid ${COLS}`}>
-                <span>Nom</span>
-                <span>Protocole</span>
-                <span>Région</span>
-                <span>État</span>
-                <span>Dernier direct</span>
-                <span className="text-right">Débit moyen</span>
-                <span aria-hidden="true" />
-              </div>
-              <ul className="divide-y divide-line">
-                {rows.map((r) => (
-                  <Row key={r.id} relay={r} />
-                ))}
-              </ul>
-            </div>
+            <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
+              {rows.map((r) => (
+                <Row key={r.id} relay={r} open={openId === r.id} onToggle={() => setOpenId((v) => (v === r.id ? null : r.id))} />
+              ))}
+            </ul>
           )}
         </>
       )}

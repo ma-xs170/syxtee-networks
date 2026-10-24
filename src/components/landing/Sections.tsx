@@ -9,7 +9,6 @@ import Reveal from "../ui/Reveal";
 import Faq from "./Faq";
 import ObsHero from "./ObsHero";
 import SceneSwitcher from "./SceneSwitcher";
-import PlatformStrip from "./PlatformStrip";
 import CtaGlobe from "./CtaGlobe";
 import StreamerStack from "@/components/home/StreamerStack";
 import type { HomeStreamer } from "@/lib/streamers";
@@ -52,10 +51,6 @@ export function HomeHero() {
         <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={rise(2)}>
           <Link href="/contact" className={WHITE_BTN}>{DOT}Réserver<ArrowUpRight size={16} aria-hidden="true" /></Link>
           <Link href="#streamers" className={WHITE_BTN}>Je suis streamer indépendant</Link>
-        </div>
-        <div className="rise mt-14" style={rise(3)}>
-          <p className="mb-5 text-sm text-muted">Diffuse sur</p>
-          <PlatformStrip />
         </div>
       </Container>
     </section>
@@ -372,7 +367,6 @@ export function FinalCta() {
           <ButtonLink href="/contact">Contacter</ButtonLink>
           <ButtonLink href="/inscription" variant="secondary">Créer mon compte</ButtonLink>
         </div>
-        <div className="mt-12"><PlatformStrip /></div>
       </Container>
     </section>
   );

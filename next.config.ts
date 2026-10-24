@@ -68,7 +68,7 @@ const nextConfig: NextConfig = {
       { source: "/", has: host(`docs.${ROOT}`), destination: "/docs", permanent: false },
       { source: "/", has: host(`status.${ROOT}`), destination: "/statut", permanent: false },
       { source: "/", has: host(`videastes.${ROOT}`), destination: "/videastes", permanent: false },
-      { source: "/", has: host(`stats.${ROOT}`), destination: `${APP}/dashboard/analyses`, permanent: false },
+      { source: "/", has: host(`stats.${ROOT}`), destination: `${APP}/dashboard/statistiques`, permanent: false },
       { source: "/", has: host(`remote.${ROOT}`), destination: `${APP}/dashboard/direct`, permanent: false },
       ],
     ];
@@ -82,6 +82,7 @@ const nextConfig: NextConfig = {
       { source: "/dashboard/backups", destination: "/dashboard/scenes", permanent: true },
       { source: "/dashboard/invitations", destination: "/dashboard/equipe", permanent: true },
       { source: "/dashboard/stats", destination: "/dashboard/statistiques", permanent: true },
+      { source: "/dashboard/analyses", destination: "/dashboard/statistiques", permanent: true },
       { source: "/dashboard/documentation", destination: "/dashboard/aide?onglet=documentation", permanent: true },
       { source: "/dashboard/support", destination: "/dashboard/aide", permanent: true },
       { source: "/dashboard/parametres", destination: "/dashboard/compte?onglet=preferences", permanent: true },

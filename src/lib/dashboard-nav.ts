@@ -25,21 +25,20 @@ export const dashboardNav: DashItem[] = [
     label: "Production",
     children: [{ label: "Scènes", href: "/dashboard/scenes", desc: "Tes collections de scènes sauvegardées", icon: "plan", feature: "remote" }],
   },
-  { label: "Statistiques", href: "/dashboard/analyses" },
+  { label: "Statistiques", href: "/dashboard/statistiques" },
 ];
 
 export type SectionTab = { label: string; href: string };
 
 /** Onglets de la section Statistiques. */
 export const statsTabs: SectionTab[] = [
-  { label: "Centre de contrôle", href: "/dashboard/analyses" },
-  { label: "Vue globale", href: "/dashboard/statistiques" },
+  { label: "Statistiques", href: "/dashboard/statistiques" },
   { label: "Historique", href: "/dashboard/lives" },
 ];
 
 /** Un lien de la barre reste actif sur toutes les pages de sa section. */
 export const activeAlso: Record<string, string[]> = {
-  "/dashboard/analyses": statsTabs.map((t) => t.href),
+  "/dashboard/statistiques": statsTabs.map((t) => t.href),
 };
 
 /** Entrées verrouillées (cadenas) pour la formule donnée. */

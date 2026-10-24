@@ -1,85 +1,22 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { DailyBars } from "@/components/dashboard/charts";
-import { ArrowLink, DashHeader, DashPage, Tile, TileLabel, SectionTabs } from "@/components/dashboard/ui";
-import { statsTabs } from "@/lib/dashboard-nav";
-import { getProfile } from "@/lib/auth/dal";
-import { requireOwner } from "@/lib/workspace";
-import { accountTimezone } from "@/lib/regions";
-import { delta, fmtDuration, fmtInt, isRange } from "@/lib/dashboard-data";
-import { getStats } from "@/lib/dashboard-overview";
+import ControlCenter from "@/components/analyses/ControlCenter";
+import { DashHeader, DashPage, SectionTabs } from "@/components/dashboard/ui";
 import PlanGate from "@/components/plans/PlanGate";
+import { publicCoreUrl } from "@/lib/core";
+import { statsTabs } from "@/lib/dashboard-nav";
+import { requireOwner } from "@/lib/workspace";
 
 export const metadata: Metadata = { title: "Statistiques", robots: { index: false } };
 
-function Figure({ label, value, sub }: { label: string; value: string; sub?: string }) {
+export default async function StatsPage() {
+  await requireOwner("/dashboard/statistiques");
   return (
-    <div className="tile p-4 sm:p-5">
-      <p className="text-xs text-muted">{label}</p>
-      <p className="mt-1.5 font-mono text-2xl tabular-nums tracking-tight">{value}</p>
-      {sub && <p className="mt-1 font-mono text-xs text-muted">{sub}</p>}
-    </div>
-  );
-}
-
-export default async function StatsPage({ searchParams }: PageProps<"/dashboard/statistiques">) {
-  const [, profile, { range: r }] = await Promise.all([requireOwner("/dashboard/statistiques"), getProfile(), searchParams]);
-  const timezone = accountTimezone(profile);
-  const range = isRange(r) ? r : "7d";
-  const { days, any, kpis: k, previous: p, longest, reconnects, short, daily } = await getStats(range, timezone);
-  const cmp = (a: number, b: number) => delta(a, b)?.text ?? "rien avant";
-
-  return (
-    <DashPage>
+    <DashPage className="max-w-[1500px]">
       <SectionTabs tabs={statsTabs} current="/dashboard/statistiques" label="Statistiques" />
       <PlanGate feature="stats">
-      <DashHeader lead="Ton" hl="analytique" sub={`Tes directs sur les ${days} derniers jours, comparés aux ${days} jours d'avant. Jours et heures en fuseau ${timezone.replace(/_/g, " ")}.`}>
-        <div role="radiogroup" aria-label="Période" className="inline-flex rounded-full border border-line p-0.5">
-          {(["7d", "30d"] as const).map((x) => (
-            <Link
-              key={x}
-              href={`/dashboard/statistiques?range=${x}`}
-              role="radio"
-              aria-checked={range === x}
-              className={`flex h-8 items-center rounded-full px-4 font-mono text-xs transition-colors ${range === x ? "bg-accent text-on-accent" : "text-muted hover:text-foreground"}`}
-            >
-              {x === "7d" ? "7 jours" : "30 jours"}
-            </Link>
-          ))}
-        </div>
-      </DashHeader>
-
-      {!any ? (
-        <Tile>
-          <p className="text-sm text-muted">Pas encore de direct enregistré. Tes chiffres apparaissent ici après ton premier live.</p>
-          <div className="mt-4">
-            <ArrowLink href="/dashboard/serveurs">Mes serveurs</ArrowLink>
-          </div>
-        </Tile>
-      ) : (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <Figure label="Temps de direct" value={fmtDuration(k.seconds)} sub={cmp(k.seconds, p.seconds)} />
-            <Figure label="Nombre de directs" value={fmtInt(k.count)} sub={cmp(k.count, p.count)} />
-            <Figure label="Durée moyenne" value={k.count ? fmtDuration(k.avgSeconds) : "-"} sub={cmp(k.avgSeconds, p.avgSeconds)} />
-            <Figure label="Débit moyen" value={k.avgKbps ? fmtInt(k.avgKbps) : "-"} sub={k.peakKbps ? `kbit/s, crête à ${fmtInt(k.peakKbps)}` : "kbit/s"} />
-            <Figure label="Plus long direct" value={longest ? fmtDuration(longest.duration_s) : "-"} />
-            <Figure label="Coupures" value={fmtInt(reconnects)} sub="reconnexions en direct" />
-            <Figure label="Directs de moins d'une minute" value={fmtInt(short)} />
-            <Figure label="Période précédente" value={fmtDuration(p.seconds)} sub={`${fmtInt(p.count)} directs`} />
-          </div>
-          <Tile>
-            <TileLabel>Temps de direct par jour</TileLabel>
-            <div className="mt-6">
-              <DailyBars days={daily} />
-            </div>
-          </Tile>
-          <div className="flex justify-end">
-            <ArrowLink href="/dashboard/lives">Historique des directs</ArrowLink>
-          </div>
-        </div>
-      )}
-    </PlanGate>
+        <DashHeader lead="Tes" hl="statistiques" sub="Aperçu, mesures en direct, courbe de qualité et une case par modem, pour chacun de tes relais." />
+        <ControlCenter coreUrl={publicCoreUrl} />
+      </PlanGate>
     </DashPage>
   );
 }

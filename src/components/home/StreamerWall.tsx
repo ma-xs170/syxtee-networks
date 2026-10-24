@@ -82,7 +82,7 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
   return (
     <section aria-labelledby="mur-titre" className="relative isolate overflow-hidden py-24 sm:py-32">
       {/* Dégradé violet Twitch en haut de section. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ maskImage: "linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent)", background: "radial-gradient(70% 60% at 50% 0%, color-mix(in srgb, #9146ff 38%, transparent), transparent 75%)" }} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ maskImage: "linear-gradient(to bottom, transparent, #000 28%, #000 72%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 28%, #000 72%, transparent)", background: "radial-gradient(70% 60% at 50% 0%, color-mix(in srgb, #9146ff 38%, transparent), transparent 75%)" }} />
       <svg viewBox="0 0 24 24" width="44" height="44" fill="currentColor" role="img" aria-label="Twitch" className="mx-auto mb-6 block" style={{ color: `#${siTwitch.hex}` }}>
         <path d={siTwitch.path} />
       </svg>

@@ -16,7 +16,7 @@ function Eye({ open }: { open: boolean }) {
   );
 }
 
-export default function MaskedUrl({ url, label, size = "md" }: { url: string; label: string; size?: "sm" | "md" }) {
+export default function MaskedUrl({ url, label, size = "md", mask }: { url: string; label: string; size?: "sm" | "md"; mask?: string }) {
   const [shown, setShown] = useState(false);
   const [copied, setCopied] = useState(false);
   const streamMode = useStreamMode();
@@ -36,7 +36,7 @@ export default function MaskedUrl({ url, label, size = "md" }: { url: string; la
   return (
     <div className="flex items-stretch overflow-hidden rounded-xl border border-line bg-background">
       <code data-sensitive className={`min-w-0 flex-1 break-all font-mono ${size === "sm" ? "p-3 text-xs" : "p-4 text-sm"}`}>
-        {visible ? url : maskUrl(url)}
+        {visible ? url : (mask ?? maskUrl(url))}
       </code>
       <button
         type="button"

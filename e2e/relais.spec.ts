@@ -43,14 +43,15 @@ test("aucun relais d'office, assistant SRTLA puis RTMP, quota atteint", async ({
 
   await createRelay(page, "SRTLA", "iPhone e2e");
   const done = page.getByRole("dialog", { name: /Relais créé/ });
-  await expect(done.getByText("Moblin (iPhone)")).toBeVisible();
+  await expect(done.getByRole("tab", { name: /Moblin/ })).toBeVisible();
+  await expect(done.getByRole("button", { name: "Afficher le QR code" })).toBeVisible();
   await expect(done.getByText(/srtla:\/\/relais\.e2e:5000\?streamid=live_••••••••/)).toBeVisible();
   await done.getByRole("button", { name: "Terminé" }).click();
   await expect(page.getByRole("link", { name: "iPhone e2e" })).toBeVisible();
   await expect(page.getByText("1 / 3 serveurs")).toBeVisible();
 
   await createRelay(page, "RTMP", "Osmo Pocket 3");
-  await expect(page.getByRole("dialog", { name: /Relais créé/ }).getByText("Serveur RTMP")).toBeVisible();
+  await expect(page.getByRole("dialog", { name: /Relais créé/ }).getByRole("tab", { name: /DJI, GoPro/ })).toBeVisible();
   await page.getByRole("button", { name: "Terminé" }).click();
 
   await createRelay(page, "SRTLA", "Galaxy e2e");

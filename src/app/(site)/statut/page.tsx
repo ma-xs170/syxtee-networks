@@ -1,3 +1,4 @@
+import { site } from "@/lib/site";
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
 import { Container } from "@/components/ui";
@@ -8,7 +9,7 @@ import { getServices, overall, type Status } from "@/lib/status";
 export const metadata: Metadata = {
   title: "État des services",
   description: "L'état en direct du site, de l'API, du relais SRT / SRTLA et des comptes SYXTEE NETWORKS.",
-  alternates: { canonical: "/statut" },
+  alternates: { canonical: `${site.statusUrl}/statut` },
 };
 
 // Mesures prises depuis le serveur, rafraîchies au plus toutes les 30 s.

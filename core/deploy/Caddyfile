@@ -1,6 +1,6 @@
 # HTTPS automatique (Let's Encrypt). Domaines dans .env :
 #   CORE_DOMAIN : API du Core (ex. 147-182-220-5.sslip.io)
-#   SITE_DOMAINS : les hôtes du site, séparés par des virgules (ex. syxtee-networks.fr, www.syxtee-networks.fr, app.syxtee-networks.fr, auth.syxtee-networks.fr, admin.syxtee-networks.fr, remote.syxtee-networks.fr)
+#   SITE_DOMAINS : les hôtes du site, séparés par des virgules (ex. syxtee-networks.fr, www.syxtee-networks.fr, app.syxtee-networks.fr, auth, admin, remote, docs, status.syxtee-networks.fr)
 #   CAM_DOMAIN  : WHIP de SYXTEE Cam vers MediaMTX (ex. cam.147-182-220-5.sslip.io)
 {$CORE_DOMAIN} {
 	encode gzip

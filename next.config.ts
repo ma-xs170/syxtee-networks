@@ -32,34 +32,41 @@ const nextConfig: NextConfig = {
     }));
   },
   async redirects() {
-    // Sous-domaines : www = site, app = espace client, auth = connexion, admin = administration, remote = contrôle à distance d'OBS. Le même projet sert les cinq ; ces règles renvoient chaque page sur son hôte.
+    // Sous-domaines : www = site, app = espace client, auth = connexion, admin = administration, remote = contrôle à distance d'OBS, docs = documentation, status = état du service. Le même projet sert les sept ; ces règles renvoient chaque page sur son hôte.
     const ROOT = "syxtee-networks.fr";
     const WWW = `https://www.${ROOT}`;
     const APP = `https://app.${ROOT}`;
     const AUTH = `https://auth.${ROOT}`;
     const ADMIN = `https://admin.${ROOT}`;
     const REMOTE = `https://remote.${ROOT}`;
+    const DOCS = `https://docs.${ROOT}`;
+    const STATUS = `https://status.${ROOT}`;
     const host = (value: string) => [{ type: "host" as const, value }];
     const AUTH_PAGES = ["/connexion", "/inscription", "/mot-de-passe-oublie", "/reinitialiser", "/premiere-connexion"];
     const APP_PAGES = ["/dashboard", "/bienvenue", "/cam"];
-    const OTHER_HOSTS = [`www.${ROOT}`, `app.${ROOT}`, `auth.${ROOT}`, `admin.${ROOT}`, `remote.${ROOT}`];
+    const OTHER_HOSTS = ["www", "app", "auth", "admin", "remote", "docs", "status"].map((h) => `${h}.${ROOT}`);
+    const except = (...keep: string[]) => OTHER_HOSTS.filter((h) => !keep.includes(h.split(".")[0]));
     const to = (base: string, sources: string[], from: string[]) =>
       from.flatMap((h) => sources.flatMap((src) => [{ source: src, has: host(h), destination: `${base}${src}`, permanent: true }, ...(src === "/cam" || src === "/bienvenue" || AUTH_PAGES.includes(src) ? [] : [{ source: `${src}/:path*`, has: host(h), destination: `${base}${src}/:path*`, permanent: true }])]));
     const hostRoutes = [
       { source: "/:path*", has: host(ROOT), destination: `${WWW}/:path*`, permanent: true },
       ...[
       // Espace client : toujours sur app.
-      ...to(APP, APP_PAGES, [`www.${ROOT}`, `auth.${ROOT}`, `admin.${ROOT}`, `remote.${ROOT}`]),
+      ...to(APP, APP_PAGES, except("app")),
       // Administration : toujours sur admin.
-      ...to(ADMIN, ["/admin"], OTHER_HOSTS.filter((h) => h !== `admin.${ROOT}`)),
+      ...to(ADMIN, ["/admin"], except("admin")),
       // Contrôle à distance d'un poste : toujours sur remote. (La page de présentation /controle-a-distance reste sur www.)
-      ...OTHER_HOSTS.filter((h) => h !== `remote.${ROOT}` && h !== `www.${ROOT}`).map((h) => ({ source: "/controle-a-distance/:id([0-9a-f-]{36})", has: host(h), destination: `${REMOTE}/controle-a-distance/:id`, permanent: true })),
-      { source: "/controle-a-distance/:id([0-9a-f-]{36})", has: host(`www.${ROOT}`), destination: `${REMOTE}/controle-a-distance/:id`, permanent: true },
+      ...except("remote").map((h) => ({ source: "/controle-a-distance/:id([0-9a-f-]{36})", has: host(h), destination: `${REMOTE}/controle-a-distance/:id`, permanent: true })),
+      // Documentation et état du service : leur propre adresse.
+      ...to(DOCS, ["/docs"], except("docs")),
+      ...to(STATUS, ["/statut"], except("status")),
       // Connexion, inscription, mot de passe : toujours sur auth.
-      ...to(AUTH, AUTH_PAGES, [`www.${ROOT}`, `app.${ROOT}`, `admin.${ROOT}`, `remote.${ROOT}`]),
+      ...to(AUTH, AUTH_PAGES, except("auth")),
       { source: "/", has: host(`app.${ROOT}`), destination: "/dashboard", permanent: false },
       { source: "/", has: host(`auth.${ROOT}`), destination: "/connexion", permanent: false },
       { source: "/", has: host(`admin.${ROOT}`), destination: "/admin", permanent: false },
+      { source: "/", has: host(`docs.${ROOT}`), destination: "/docs", permanent: false },
+      { source: "/", has: host(`status.${ROOT}`), destination: "/statut", permanent: false },
       { source: "/", has: host(`remote.${ROOT}`), destination: `${APP}/dashboard/direct`, permanent: false },
       ],
     ];

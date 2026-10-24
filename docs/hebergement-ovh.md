@@ -1,6 +1,6 @@
 # Héberger le site sur le VPS OVH (bhs1), sans Vercel
 
-Le site Next.js tourne dans un conteneur `web` à côté du Core, derrière le Caddy déjà en place (HTTPS automatique). Cinq hôtes pour un seul conteneur :
+Le site Next.js tourne dans un conteneur `web` à côté du Core, derrière le Caddy déjà en place (HTTPS automatique). Sept hôtes pour un seul conteneur :
 
 | Hôte | Rôle |
 |---|---|
@@ -8,6 +8,8 @@ Le site Next.js tourne dans un conteneur `web` à côté du Core, derrière le C
 | `app.syxtee-networks.fr` | espace client, Direct |
 | `admin.syxtee-networks.fr` | administration |
 | `remote.syxtee-networks.fr` | contrôle à distance d'un OBS |
+| `docs.syxtee-networks.fr` | documentation |
+| `status.syxtee-networks.fr` | état du service |
 | `auth.syxtee-networks.fr` | connexion, inscription, mot de passe |
 
 Le site partage les 6 vCPU avec les relais. Le conteneur est plafonné à 3 Go. Le build (`next build`) charge le CPU plusieurs minutes : le lancer hors d'un live.
@@ -63,9 +65,9 @@ Sur staging les redirections entre `www`, `app` et `auth` ne s'appliquent pas (h
 
 ## 7. Bascule
 
-- [ ] `.env` : `SITE_DOMAINS=syxtee-networks.fr, www.syxtee-networks.fr, app.syxtee-networks.fr, auth.syxtee-networks.fr, admin.syxtee-networks.fr, remote.syxtee-networks.fr`, puis `sudo docker compose up -d caddy`.
+- [ ] `.env` : `SITE_DOMAINS=syxtee-networks.fr, www.syxtee-networks.fr, app.syxtee-networks.fr, auth.syxtee-networks.fr, admin.syxtee-networks.fr, remote.syxtee-networks.fr, docs.syxtee-networks.fr, status.syxtee-networks.fr`, puis `sudo docker compose up -d caddy`.
 - [ ] DNS OVH : `@`, `www`, `app`, `auth` en **A vers `15.235.25.77`** (supprimer les CNAME Vercel).
-- [ ] Supabase, Authentication, URL Configuration : Site URL `https://www.syxtee-networks.fr`, Redirect URLs `app.`, `auth.`, `admin.`, `remote.`, `www.` (`/**`).
+- [ ] Supabase, Authentication, URL Configuration : Site URL `https://www.syxtee-networks.fr`, Redirect URLs `app.`, `auth.`, `admin.`, `remote.`, `docs.`, `status.`, `www.` (`/**`).
 - [ ] Stripe : webhook `https://www.syxtee-networks.fr/api/stripe/webhook`.
 - [ ] OAuth Twitch / Kick / Google (liaison du multichat) : URI de retour `https://app.syxtee-networks.fr/api/chat/callback/twitch` (idem `kick`, `youtube`).
 - [ ] Bot Discord : `SITE_URL=https://www.syxtee-networks.fr`.

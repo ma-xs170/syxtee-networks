@@ -1,3 +1,4 @@
+import { site } from "@/lib/site";
 import type { Metadata } from "next";
 import DocsIndex from "@/components/docs/DocsIndex";
 import { Container } from "@/components/ui";
@@ -5,7 +6,7 @@ import { Container } from "@/components/ui";
 export const metadata: Metadata = {
   title: "Documentation",
   description: "La documentation SYXTEE NETWORKS : créer un relais, plugin OBS, contrôle à distance, sauvegardes de scènes, membres, formules et support.",
-  alternates: { canonical: "/docs" },
+  alternates: { canonical: `${site.docsUrl}/docs` },
 };
 
 export default function DocsPage() {

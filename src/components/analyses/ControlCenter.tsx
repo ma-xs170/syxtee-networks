@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { coreFetch } from "@/components/dashboard/coreClient";
+import StreamPreview from "@/components/dashboard/StreamPreview";
 import { fmtKbps, levelOf, seriesStats, share, sortPeers, summarize, efficiency, type Level, type Peer, type Point } from "@/lib/control-center";
 
 // Centre de contrôle : tous les relais du compte et, pour celui qu'on regarde, une case par connexion (modem) avec son historique,
@@ -55,6 +56,30 @@ function Area({ points, window, max, className = "h-24", tone = "ok" }: { points
   );
 }
 
+/** Courbe de débit avec repères, comme une régie : échelle en Mb/s à gauche, temps en bas, grille en pointillés. */
+function QualityChart({ points, window, label }: { points: Point[]; window: number; label: string }) {
+  const top = Math.max(1000, ...points.map((p) => p.v)) * 1.1;
+  const steps = [1, 2 / 3, 1 / 3, 0];
+  const mb = (v: number) => (v / 1000).toFixed(v >= 10000 ? 0 : 1).replace(".", ",");
+  return (
+    <div>
+      <div className="flex">
+        <div className="flex h-48 w-8 shrink-0 flex-col justify-between pr-1.5 text-right font-mono text-[10px] tabular-nums text-muted" aria-hidden="true">
+          {steps.map((f) => <span key={f}>{mb(top * f)}</span>)}
+        </div>
+        <div className="min-w-0 flex-1 overflow-hidden rounded-lg border border-line bg-background">
+          <Area points={points} window={window} max={top} className="h-48" tone="ink" />
+        </div>
+      </div>
+      <p className="mt-1 flex justify-between pl-8 font-mono text-[10px] text-muted" aria-hidden="true">
+        <span>−{label}</span>
+        <span>maintenant</span>
+      </p>
+      <p className="sr-only">Débit en Mb/s sur les {label} écoulées.</p>
+    </div>
+  );
+}
+
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4 border-b border-line py-2 last:border-0">
@@ -77,7 +102,7 @@ function ModemTile({ index, peer, history, window, total }: { index: number; pee
         <span className="ml-auto font-mono text-sm tabular-nums">{fmtKbps(peer.bitrate)}</span>
       </header>
       <div className="mt-2">
-        <Area points={pts} window={window} />
+        <Area points={pts} window={window} tone="ink" />
       </div>
       <dl className="mt-2 grid grid-cols-2 gap-x-3 font-mono text-[11px] text-muted">
         <dt>Part du débit</dt>
@@ -206,10 +231,39 @@ export default function ControlCenter({ coreUrl }: { coreUrl: string }) {
 
       {current && (
         <>
-          <section className="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]" aria-label={`Analyse de ${current.name}`}>
+          <section className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.85fr)_minmax(0,1.25fr)]" aria-label={`Moniteur de ${current.name}`}>
+            <div className="space-y-3">
+              {live ? (
+                <StreamPreview coreUrl={coreUrl} relayId={current.id} />
+              ) : (
+                <div className="grid aspect-video place-items-center rounded-2xl border border-line bg-background px-6 text-center text-sm text-muted">Hors ligne : l&apos;aperçu revient dès que le flux arrive.</div>
+              )}
+              <div className="flex items-center gap-2 rounded-2xl border border-line bg-surface px-4 py-3">
+                <span className={`h-2 w-2 rounded-full ${live ? "bg-live" : "bg-muted/50"}`} aria-hidden="true" />
+                <h2 className="truncate text-sm font-semibold">{current.name}</h2>
+                <span className="ml-auto font-mono text-[11px] uppercase text-muted">{live ? duration(current.since, now) : "Hors ligne"}</span>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-line bg-surface p-4">
+              <h2 className="text-sm font-semibold">Mesures en direct</h2>
+              <dl className="mt-2">
+                <Stat label="Pertes (1 min)" value={current.lost_1m != null ? nf.format(current.lost_1m) : "—"} />
+                <Stat label="Congestion" value={sm ? `${Math.round(sm.congestion * 100)} %` : "—"} />
+                <Stat label="Débit utile" value={sm ? fmtKbps(sm.bitrate) : "—"} />
+                <Stat label="Débit réseau" value={net > 0 ? fmtKbps(net) : "—"} hint="Retransmissions comprises" />
+                <Stat label="Rendement" value={eff != null ? `${eff} %` : "—"} hint="Part du débit réseau qui est du débit utile" />
+                <Stat label="RTT" value={sm ? `${Math.round(sm.rtt)} ms` : "—"} />
+                <Stat label="Latence SRT" value={sm?.latency != null ? `${Math.round(sm.latency)} ms` : "—"} />
+                <Stat label="Tampon" value={sm?.buffer != null ? `${Math.round(sm.buffer)} ms` : "—"} />
+                <Stat label="Modems actifs" value={live ? `${sum.active} / ${peers.length}` : "—"} hint="Connexions qui portent plus de 300 kb/s" />
+                <Stat label="Modems faibles" value={live ? String(sum.weak) : "—"} hint="Moins de 1 Mb/s" />
+              </dl>
+            </div>
+
             <div className="rounded-2xl border border-line bg-surface p-4">
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="text-sm font-semibold">Débit utile · {current.name}</h2>
+                <h2 className="text-sm font-semibold">Qualité <span className="font-mono font-normal text-muted">{sm ? fmtKbps(sm.bitrate) : "—"}</span></h2>
                 <div role="group" aria-label="Période" className="ml-auto inline-flex rounded-full border border-line p-0.5 text-[13px]">
                   {RANGES.map((r) => (
                     <button key={r.id} type="button" aria-pressed={range === r.id} onClick={() => setRange(r.id)} className={`rounded-full px-3 py-1 transition-colors ${range === r.id ? "bg-foreground text-background" : "text-muted hover:text-foreground"}`}>
@@ -219,7 +273,7 @@ export default function ControlCenter({ coreUrl }: { coreUrl: string }) {
                 </div>
               </div>
               <div className="mt-3">
-                <Area points={bitrateSeries} window={win} className="h-48" />
+                <QualityChart points={bitrateSeries} window={win} label={RANGES.find((r) => r.id === range)!.label} />
               </div>
               <dl className="mt-3 grid grid-cols-2 gap-x-6 sm:grid-cols-4">
                 <Stat label="Moyen" value={fmtKbps(bs.avg)} />
@@ -229,32 +283,14 @@ export default function ControlCenter({ coreUrl }: { coreUrl: string }) {
               </dl>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div>
-                  <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Latence réseau (RTT, ms)</p>
-                  <Area points={rttSeries} window={win} className="h-20" tone="ink" />
+                  <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Latence (RTT, ms)</p>
+                  <Area points={rttSeries} window={win} className="h-16" tone="ink" />
                 </div>
                 <div>
-                  <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Paquets perdus · {nf.format(lost)} sur la période</p>
-                  <Area points={lossSeries} window={win} className="h-20" tone="ink" max={Math.max(10, ...lossSeries.map((p) => p.v)) * 1.1} />
+                  <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Pertes · {nf.format(lost)}</p>
+                  <Area points={lossSeries} window={win} className="h-16" tone="ink" max={Math.max(10, ...lossSeries.map((p) => p.v)) * 1.1} />
                 </div>
               </div>
-            </div>
-
-            <div className="rounded-2xl border border-line bg-surface p-4">
-              <h2 className="text-sm font-semibold">Mesures en direct</h2>
-              <dl className="mt-2">
-                <Stat label="Statut" value={live ? "En direct" : "Hors ligne"} />
-                <Stat label="Durée du direct" value={duration(current.since, now)} />
-                <Stat label="Débit utile" value={sm ? fmtKbps(sm.bitrate) : "—"} />
-                <Stat label="Débit réseau" value={net > 0 ? fmtKbps(net) : "—"} hint="Retransmissions comprises" />
-                <Stat label="Rendement" value={eff != null ? `${eff} %` : "—"} hint="Part du débit réseau qui est du débit utile" />
-                <Stat label="RTT" value={sm ? `${Math.round(sm.rtt)} ms` : "—"} />
-                <Stat label="Latence SRT" value={sm?.latency != null ? `${Math.round(sm.latency)} ms` : "—"} />
-                <Stat label="Tampon" value={sm?.buffer != null ? `${Math.round(sm.buffer)} ms` : "—"} />
-                <Stat label="Pertes (1 min)" value={current.lost_1m != null ? nf.format(current.lost_1m) : "—"} />
-                <Stat label="Congestion" value={sm ? `${Math.round(sm.congestion * 100)} %` : "—"} />
-                <Stat label="Modems actifs" value={live ? `${sum.active} / ${peers.length}` : "—"} hint="Connexions qui portent plus de 300 kb/s" />
-                <Stat label="Modems faibles" value={live ? String(sum.weak) : "—"} hint="Moins de 1 Mb/s" />
-              </dl>
             </div>
           </section>
 
@@ -263,7 +299,7 @@ export default function ControlCenter({ coreUrl }: { coreUrl: string }) {
             {peers.length === 0 && gone.length === 0 ? (
               <p className="rounded-2xl border border-dashed border-line p-8 text-center text-sm text-muted">{live ? "Flux en direct sans détail par connexion (flux SRT simple)." : "Aucune connexion : le direct n'est pas démarré."}</p>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
                 {peers.map((p, i) => (
                   <ModemTile key={p.connection_id} index={i + 1} peer={p} history={conns[p.connection_id] ?? []} window={win} total={sum.total} />
                 ))}

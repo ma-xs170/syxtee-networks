@@ -66,7 +66,7 @@ const GROUPS: Group[] = [
   {
     title: "Croissance",
     items: [
-      { label: "Statistiques", href: "/dashboard/statistiques", icon: ChartBar },
+      { label: "Statistiques", href: "/dashboard/analyses", icon: ChartBar },
     ],
   },
 ];

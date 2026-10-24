@@ -2,11 +2,10 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { contactAction, type ContactState } from "@/app/(site)/contact/actions";
-import { buttonClass } from "@/components/ui/button-styles";
 
 // Formulaire de demande de devis : événement, lieu, date, durée, besoins, description. Champ piège et horodatage antispam.
 const field =
-  "h-11 w-full rounded-xl border border-line bg-input px-4 text-sm text-foreground placeholder:text-muted/70 transition-colors focus:border-foreground/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20";
+  "h-12 w-full rounded-xl border border-line bg-input px-4 text-sm text-foreground placeholder:text-muted/70 transition-colors focus:border-foreground/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20";
 const label = "text-sm font-medium";
 
 const EVENT_TYPES = ["Mobilité", "Bateau"];
@@ -98,8 +97,8 @@ export default function ContactForm() {
         <textarea id="c-message" name="message" required minLength={10} rows={5} maxLength={1200} placeholder="Ton projet, le parcours, les contraintes, ton budget approximatif…" className={`${field} h-auto py-3`} />
       </div>
 
-      <details className="group rounded-xl border border-line bg-surface">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-sm font-medium [&::-webkit-details-marker]:hidden">
+      <details className="group rounded-xl border border-line bg-input">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-sm font-medium [&::-webkit-details-marker]:hidden min-h-12">
           <span>Ajouter des détails <span className="font-normal text-muted">(facultatif)</span></span>
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="shrink-0 text-muted transition-transform group-open:rotate-180"><path d="m6 9 6 6 6-6" /></svg>
         </summary>
@@ -147,7 +146,7 @@ export default function ContactForm() {
         </label>
       </div>
 
-      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface p-4 text-sm leading-relaxed text-muted">
+      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-input p-4 text-sm leading-relaxed text-muted">
         <input type="checkbox" name="consent" required className="mt-0.5 size-5 shrink-0 accent-[var(--foreground)]" />
         <span>J&apos;accepte que mes données soient utilisées pour me recontacter au sujet de ce devis. <a href="/confidentialite" className="font-medium text-foreground underline underline-offset-4">Politique de confidentialité</a></span>
       </label>
@@ -158,7 +157,7 @@ export default function ContactForm() {
           {state.error}
         </p>
       )}
-      <button type="submit" disabled={pending} aria-busy={pending} className={buttonClass("primary", "h-12 w-full")}>
+      <button type="submit" disabled={pending} aria-busy={pending} className="inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85 active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
         {pending ? <span aria-hidden="true" className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none" /> : <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" /></svg>}
         {pending ? "Envoi…" : "Envoyer ma demande de production"}
       </button>

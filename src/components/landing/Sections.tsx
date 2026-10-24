@@ -10,6 +10,10 @@ import ObsHero from "./ObsHero";
 import SceneSwitcher from "./SceneSwitcher";
 import PlatformStrip from "./PlatformStrip";
 import CtaGlobe from "./CtaGlobe";
+import StudioWire from "@/components/illustrations/StudioWire";
+import Streamer from "@/components/illustrations/Streamer";
+import BackpackEncoder from "@/components/illustrations/BackpackEncoder";
+import BeachView from "@/components/illustrations/BeachView";
 import StreamerStack from "@/components/home/StreamerStack";
 import type { HomeStreamer } from "@/lib/streamers";
 import EncoderViewer from "@/components/encoder/EncoderViewer";
@@ -54,35 +58,60 @@ export function HomeHero() {
   );
 }
 
-const PRODUCTION: { title: string; text: string }[] = [
-  { title: "Régie en direct", text: "Un régisseur suit ton direct : scènes, audio, caméras et plateformes. Tu te concentres sur ce qui se passe devant toi." },
-  { title: "Cadreurs IRL", text: "Des vidéastes à l'épaule, formés au live en mobilité : marathon, festival, manifestation, reportage." },
-  { title: "Réseau qui tient", text: "Nos relais SRTLA cumulent plusieurs connexions. Le direct reste stable quand la foule sature les antennes." },
-  { title: "Équipe sur place ou à distance", text: "On se déplace, ou on pilote de loin depuis la Guadeloupe. Un seul interlocuteur du premier message au dernier plan." },
-];
+const WHITE_BTN = "inline-flex h-12 items-center justify-center whitespace-nowrap rounded-full bg-foreground px-7 text-[15px] font-medium text-background transition-[opacity,transform] duration-150 hover:opacity-90 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 
 export function ProductionSection() {
   return (
     <section id="production" className="scroll-mt-20 border-b border-line py-24 lg:py-36">
       <Container>
-        <Reveal>
-          <h2 className={h2}>Pour les productions : on s&apos;en <em>charge.</em></h2>
-          <p className={lead}>
-            Tu veux un direct IRL sans monter une équipe ? Nos équipes de production s&apos;occupent de tout, avec notre propre infrastructure. Des solutions payantes ou sur devis, adaptées à ton événement, partout dans le monde.
+        <Reveal className="mx-auto max-w-3xl text-center">
+          <h2 className={h2}>On produit ton live IRL, <em>de A à Z.</em></h2>
+          <p className={`${lead} mx-auto`}>
+            Tu veux un direct sans monter d&apos;équipe ? Nos équipes s&apos;occupent de tout, à pied, à vélo, en voiture ou en bateau, avec notre propre infrastructure. Solutions payantes ou sur devis, partout dans le monde.
           </p>
         </Reveal>
-        <div className="mt-12 grid gap-4 md:grid-cols-2">
-          {PRODUCTION.map((p, i) => (
-            <Reveal as="article" key={p.title} delay={i * 0.07} className="bento-cell flex flex-col p-6 sm:p-7">
-              <h3 className="text-lg font-semibold tracking-tight">{p.title}</h3>
-              <p className="mt-2 max-w-[52ch] text-sm leading-relaxed text-muted">{p.text}</p>
-            </Reveal>
-          ))}
+
+        <div className="mt-14 grid gap-4 md:grid-cols-3">
+          <Reveal as="article" className="bento-cell flex flex-col overflow-hidden md:row-span-2">
+            <div aria-hidden="true" className="h-64 flex-1 border-b border-line text-foreground/80 md:min-h-72"><StudioWire animated={false} /></div>
+            <div className="p-6 sm:p-7">
+              <p className="font-mono text-xs text-muted">01</p>
+              <h3 className="mt-2 text-xl font-semibold tracking-tight">Régie en direct</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">Un régisseur pilote scènes, audio, caméras et plateformes pendant que tu es sur le terrain.</p>
+            </div>
+          </Reveal>
+
+          <Reveal as="article" delay={0.07} className="bento-cell flex flex-col overflow-hidden">
+            <div aria-hidden="true" className="h-44 border-b border-line text-foreground/80"><Streamer animated={false} /></div>
+            <div className="p-6">
+              <p className="font-mono text-xs text-muted">02</p>
+              <h3 className="mt-2 text-lg font-semibold tracking-tight">Cadreurs IRL</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">Des vidéastes formés au live en mobilité, à l&apos;épaule ou sur gimbal.</p>
+            </div>
+          </Reveal>
+
+          <Reveal as="article" delay={0.14} className="bento-cell flex flex-col overflow-hidden">
+            <div aria-hidden="true" className="h-44 border-b border-line text-foreground/80"><BackpackEncoder animated={false} /></div>
+            <div className="p-6">
+              <p className="font-mono text-xs text-muted">03</p>
+              <h3 className="mt-2 text-lg font-semibold tracking-tight">Un réseau qui tient</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">Plusieurs connexions cumulées sur nos relais SRTLA : le direct reste stable dans la foule.</p>
+            </div>
+          </Reveal>
+
+          <Reveal as="article" delay={0.21} className="bento-cell grid overflow-hidden sm:grid-cols-2 md:col-span-2">
+            <div className="flex flex-col justify-center p-6 sm:p-8">
+              <p className="font-mono text-xs text-muted">04</p>
+              <h3 className="mt-2 text-xl font-semibold tracking-tight">Sur place ou à distance</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">On se déplace, ou on pilote de loin depuis la Guadeloupe. Un seul interlocuteur du premier message au dernier plan.</p>
+            </div>
+            <div aria-hidden="true" className="h-48 border-t border-line text-foreground/80 sm:h-auto sm:border-l sm:border-t-0"><BeachView className="h-full w-full" animated={false} /></div>
+          </Reveal>
         </div>
-        <Reveal className="mt-8 flex flex-wrap items-center gap-4">
-          <ButtonLink href="/contact">Demander une production IRL</ButtonLink>
+
+        <Reveal className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <Link href="/contact" className={WHITE_BTN}>Demander une production IRL</Link>
           <Link href="/production" className="inline-flex min-h-11 items-center gap-1.5 text-sm text-foreground underline-offset-4 hover:underline">Voir comment on travaille <span aria-hidden="true">→</span></Link>
-          <span className="text-sm text-muted">Estimation immédiate, devis gratuit.</span>
         </Reveal>
       </Container>
     </section>

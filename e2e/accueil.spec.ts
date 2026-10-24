@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 test("accueil : promesse, deux parcours, soutien et appels à l'action", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Le live IRL, partout");
-  await expect(page.getByRole("link", { name: "Demander une production IRL" }).first()).toHaveAttribute("href", "/contact");
+  await expect(page.getByRole("link", { name: "Réserver" }).first()).toHaveAttribute("href", "/contact");
   await expect(page.getByRole("link", { name: "Je suis streamer indépendant" })).toHaveAttribute("href", "#streamers");
   await expect(page.getByRole("heading", { name: /On produit ton live IRL/ })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Streamers indépendants/ })).toBeVisible();

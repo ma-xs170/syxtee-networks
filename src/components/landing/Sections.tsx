@@ -50,7 +50,7 @@ export function HomeHero() {
           Production, cadreurs et relais SRTLA pour diffuser de n&apos;importe où. Lancé par des Guadeloupéens, avec les mêmes outils à petit prix pour les streamers indépendants.
         </p>
         <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={rise(2)}>
-          <Link href="/contact" className={WHITE_BTN}>{DOT}Demander une production IRL<ArrowUpRight size={16} aria-hidden="true" /></Link>
+          <Link href="/contact" className={WHITE_BTN}>{DOT}Réserver<ArrowUpRight size={16} aria-hidden="true" /></Link>
           <Link href="#streamers" className={WHITE_BTN}>Je suis streamer indépendant</Link>
         </div>
         <div className="rise mt-14" style={rise(3)}>
@@ -112,7 +112,7 @@ export function ProductionSection() {
         </div>
 
         <Reveal className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link href="/contact" className={WHITE_BTN}>{DOT}Demander une production IRL<ArrowUpRight size={16} aria-hidden="true" /></Link>
+          <Link href="/contact" className={WHITE_BTN}>{DOT}Réserver<ArrowUpRight size={16} aria-hidden="true" /></Link>
           <Link href="/production" className="inline-flex min-h-11 items-center gap-1.5 text-sm text-foreground underline-offset-4 hover:underline">Voir comment on travaille <ArrowUpRight size={14} aria-hidden="true" /></Link>
         </Reveal>
       </Container>
@@ -299,7 +299,7 @@ export function FieldSection() {
           <Reveal as="article" delay={0.35} className="bento-cell flex min-h-52 flex-col justify-between bg-surface-2 p-6 sm:p-7 md:col-span-2">
             <p className="h-serif max-w-[22ch] text-[clamp(1.75rem,3vw,2.5rem)]">Ton projet est <em>unique.</em></p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <ButtonLink href="/contact">Demander une production IRL</ButtonLink>
+              <ButtonLink href="/contact">Réserver</ButtonLink>
               <span className="text-sm text-muted">Gratuit et sans engagement.</span>
             </div>
           </Reveal>
@@ -369,7 +369,7 @@ export function FinalCta() {
       <Container className="relative text-center">
         <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,6vw,4.5rem)]">Prêt à partir en <em>direct ?</em></h2>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <ButtonLink href="/contact">Demander une production IRL</ButtonLink>
+          <ButtonLink href="/contact">Contacter</ButtonLink>
           <ButtonLink href="/inscription" variant="secondary">Créer mon compte</ButtonLink>
         </div>
         <div className="mt-12"><PlatformStrip /></div>

@@ -129,9 +129,9 @@ test("page Abonnement : offres en Gratuit, gestion une fois abonné", async ({ p
   await expect(page).toHaveURL(/\/dashboard$/);
   await page.goto("/dashboard/compte?onglet=formule");
   for (const name of ["Essentiel", "Signature", "Prestige"]) await expect(page.getByRole("button", { name: `Choisir ${name}` })).toBeVisible();
-  await expect(page.getByText("9,99 €", { exact: true })).toBeVisible();
+  await expect(page.getByText("10 €", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: /Annuel/ }).click();
-  await expect(page.getByText("99 €", { exact: true })).toBeVisible();
+  await expect(page.getByText("100 €", { exact: true })).toBeVisible();
 
   await send(request, event("customer.subscription.created", subscription(customer, { status: "active", end: Math.floor(Date.now() / 1000) + 30 * DAY })));
   await page.goto("/dashboard/compte?onglet=formule");
@@ -139,7 +139,7 @@ test("page Abonnement : offres en Gratuit, gestion une fois abonné", async ({ p
   await expect(page.getByText(/Prochain renouvellement le/)).toBeVisible();
   await expect(page.getByRole("button", { name: /^Choisir / })).toHaveCount(0);
   await expect(page.getByText("Signature", { exact: true }).first()).toBeVisible();
-  await expect(page.getByText("9,99 € par mois")).toBeVisible();
+  await expect(page.getByText("10 € par mois")).toBeVisible();
 });
 
 test("déjà connecté : « Choisir » sur /tarifs mène aux formules du compte, `next` hors site ignoré", async ({ page }) => {

@@ -13,13 +13,13 @@ export const CATALOG: Record<Tier, { name: string; pitch: string; points: string
     name: "Essentiel",
     pitch: "Le point de départ d'un direct maîtrisé.",
     points: ["1 serveur SRTLA ou RTMP", "1 direct à la fois", "Santé du flux", "Secours automatique et garde audio"],
-    prices: { month: { amount: "4,99 €", cents: 499 }, year: { amount: "49 €", cents: 4900 } },
+    prices: { month: { amount: "5 €", cents: 500 }, year: { amount: "50 €", cents: 5000 } },
   },
   paid: {
     name: "Signature",
     pitch: "Pour les créateurs qui diffusent régulièrement.",
     points: ["10 serveurs, 5 par protocole", "3 directs en même temps", "Contrôle à distance d'OBS, multistream inclus", "3 invités au contrôle à distance", "Statistiques et historique des directs", "Sauvegardes de scènes et Multichat", "Autogérance des prises et régie IA (3 caméras)"],
-    prices: { month: { amount: "9,99 €", cents: 999 }, year: { amount: "99 €", cents: 9900 } },
+    prices: { month: { amount: "10 €", cents: 1000 }, year: { amount: "100 €", cents: 10000 } },
     featured: true,
   },
   extra: {

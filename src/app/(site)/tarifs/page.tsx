@@ -10,7 +10,7 @@ import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Tarifs",
-  description: "Trois formules dès 4,99 € par mois : serveur SRTLA et RTMP, contrôle à distance d'OBS dès Signature, multistream, équipes et régies. Sans engagement.",
+  description: "Trois formules dès 5 € par mois : serveur SRTLA et RTMP, contrôle à distance d'OBS dès Signature, multistream, équipes et régies. Sans engagement.",
   alternates: { canonical: "/tarifs" },
 };
 
@@ -19,8 +19,8 @@ export const metadata: Metadata = {
 type Three<T> = [T, T, T];
 
 const tiers = [
-  { id: "essentiel", name: "Essentiel", price: "4,99", pitch: "Le point de départ d'un direct maîtrisé, de n'importe où.", highlight: false },
-  { id: "signature", name: "Signature", price: "9,99", pitch: "Pour les créateurs qui diffusent régulièrement et veulent tout.", highlight: true },
+  { id: "essentiel", name: "Essentiel", price: "5", pitch: "Le point de départ d'un direct maîtrisé, de n'importe où.", highlight: false },
+  { id: "signature", name: "Signature", price: "10", pitch: "Pour les créateurs qui diffusent régulièrement et veulent tout.", highlight: true },
   { id: "prestige", name: "Prestige", price: "19,99", pitch: "Pour les régies et les équipes qui exigent le meilleur.", highlight: false },
 ];
 
@@ -67,7 +67,7 @@ export default function TarifsPage() {
         <Container className="relative">
           <h1 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,7vw,4.75rem)]">Des tarifs <em>simples.</em></h1>
           <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
-            Trois formules, à partir de <strong>4,99 € par mois</strong>. Sans engagement : tu changes ou tu arrêtes quand tu veux.
+            Trois formules, à partir de <strong>5 € par mois</strong>. Sans engagement : tu changes ou tu arrêtes quand tu veux.
           </p>
           <p className="mx-auto mt-2 text-sm text-muted">TVA non applicable, article 293 B du CGI.</p>
         </Container>

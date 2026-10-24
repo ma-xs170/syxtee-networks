@@ -7,18 +7,21 @@ import { TIERS, type Interval, type Tier } from "./billing";
 // Subscriptions, Invoices et Prices (lecture). Le webhook, lui, n'appelle pas l'API.
 //
 // Prix : STRIPE_PRICE_{BASIC|PREMIUM|EXTRA}_{MONTHLY|YEARLY} (6 identifiants price_…, un produit par formule).
+// Un changement de tarif crée un nouveau Price Stripe : mets-le en premier (« price_nouveau,price_ancien »). Le premier sert au paiement,
+// les suivants restent reconnus pour les abonnés qui gardent l'ancien tarif.
 
 const ENV: Record<Tier, string> = { basic: "BASIC", paid: "PREMIUM", extra: "EXTRA" };
 const envName = (t: Tier, i: Interval) => `STRIPE_PRICE_${ENV[t]}_${i === "year" ? "YEARLY" : "MONTHLY"}`;
 
-export const priceId = (t: Tier, i: Interval) => process.env[envName(t, i)] ?? "";
+const priceIds = (t: Tier, i: Interval) => (process.env[envName(t, i)] ?? "").split(",").map((x) => x.trim()).filter(Boolean);
+export const priceId = (t: Tier, i: Interval) => priceIds(t, i)[0] ?? "";
 
 export const hasStripe = !!process.env.STRIPE_SECRET_KEY && TIERS.every((t) => priceId(t, "month") && priceId(t, "year"));
 
 /** Formule et périodicité d'un Price Stripe (null : prix inconnu de ce site). */
 export function tierOfPrice(id: string | null | undefined): { tier: Tier; interval: Interval } | null {
   if (!id) return null;
-  for (const tier of TIERS) for (const interval of ["month", "year"] as Interval[]) if (priceId(tier, interval) === id) return { tier, interval };
+  for (const tier of TIERS) for (const interval of ["month", "year"] as Interval[]) if (priceIds(tier, interval).includes(id)) return { tier, interval };
   return null;
 }
 

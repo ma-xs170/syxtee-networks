@@ -46,8 +46,9 @@ export function HomeHero() {
     <section data-theme="dark" className="relative isolate overflow-hidden bg-background text-foreground">
       {/* Lueur rouge en coin, puis calotte du globe sous le contenu (comme l'appel final). */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(60% 70% at 0% 0%, color-mix(in srgb, var(--bad) 42%, transparent), transparent 70%), radial-gradient(45% 60% at 100% 10%, color-mix(in srgb, var(--bad) 24%, transparent), transparent 70%)" }} />
-      <CtaGlobe />
-      <Container className="relative pb-64 pt-20 text-center sm:pb-80 lg:pt-28">
+      <CtaGlobe variant="hero" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
+      <Container className="relative pb-40 pt-20 text-center sm:pb-44 lg:pt-28">
         <h1 className="rise h-serif mx-auto max-w-[16ch] text-[clamp(2.75rem,7vw,5.5rem)]" style={rise(0)}>
           Le live IRL, <em>partout.</em>
         </h1>

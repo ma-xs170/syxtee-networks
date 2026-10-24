@@ -1,4 +1,4 @@
-import { DiscordLogo, GithubLogo, YoutubeLogo } from "@phosphor-icons/react/dist/ssr";
+import { DiscordLogo, GithubLogo, Heart, YoutubeLogo } from "@phosphor-icons/react/dist/ssr";
 import { site } from "@/lib/site";
 import { support } from "@/config/support";
 import { Container } from "../ui";
@@ -12,6 +12,7 @@ export default function SupportSection({ id }: { id?: string }) {
       <Container>
         <div className="bento-cell grid gap-10 p-7 sm:p-12 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center">
           <div className="max-w-xl">
+            <Heart size={40} weight="fill" aria-hidden="true" className="mb-5 text-bad" />
             <h2 className="h-serif text-[clamp(2.25rem,4.5vw,3.5rem)]">Me <em>soutenir.</em></h2>
             <p className="mt-5 text-lg font-medium leading-snug">Mathis, développeur de SYXTEE NETWORKS.</p>
             <p className="mt-4 leading-relaxed text-muted">

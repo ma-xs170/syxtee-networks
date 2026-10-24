@@ -29,6 +29,7 @@ const columns: { title: string; links: NavLink[] }[] = [
       { label: "Devenir partenaire", href: "/acces" },
       { label: "Nous contacter", href: "/contact" },
       { label: "État des services", href: "/statut" },
+      { label: "Soutenir", href: "/soutenir" },
     ],
   },
   {

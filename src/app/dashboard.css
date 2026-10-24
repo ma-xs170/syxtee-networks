@@ -21,9 +21,9 @@
   --bad: var(--dk-red);
 }
 .dash-surface {
-  --background: #050505;
-  --surface: #0b0b0b;
-  --surface-2: #101010;
+  --background: #0d0d0d;
+  --surface: #131313;
+  --surface-2: #181818;
   --dk-sidebar: #0a0a0a;
   --muted: #a3a3a3;
   --line: rgba(255, 255, 255, 0.1);

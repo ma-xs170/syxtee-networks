@@ -13,8 +13,8 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     orientation: "any",
     categories: ["utilities", "productivity"],
-    background_color: "#050505",
-    theme_color: "#050505",
+    background_color: "#0d0d0d",
+    theme_color: "#0d0d0d",
     lang: "fr",
     shortcuts: [
       { name: "Contrôle à distance", short_name: "OBS", description: "Pilote ton OBS depuis ton téléphone", url: "/dashboard/direct", icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }] },

@@ -12,21 +12,21 @@
    bleu = toggle actif/débit, ambre = alerte). Le dashboard réutilise les mêmes valeurs via dashboard.css. */
 :root {
   color-scheme: dark;
-  --background: #050505;
+  --background: #0d0d0d;
   --foreground: #ffffff;
   --text-2: #d4d4d4;
   --muted: #a3a3a3;
   --faint: #737373;
   --line: rgba(255, 255, 255, 0.1);
   --line-strong: rgba(255, 255, 255, 0.2);
-  --surface: #0b0b0b;
-  --surface-2: #101010;
+  --surface: #131313;
+  --surface-2: #181818;
   --accent: #ffffff;
   --accent-hover: #e5e5e5;
-  --on-accent: #050505;
+  --on-accent: #0d0d0d;
   --fill: #ffffff;
   --fill-hover: #e5e5e5;
-  --input: #101010;
+  --input: #181818;
   --ok: #4ade80;
   --warn: #fbbf24;
   --bad: #dc2626;

@@ -50,22 +50,24 @@ function Row({ items, reverse }: { items: Card[]; reverse?: boolean }) {
 }
 
 // Bandeau des technologies que SYXTEE implémente pour les streamers (en haut de la section) : logos en gris, qui défilent lentement. Sans logo vectoriel ici : mot-symbole (protocoles) ou icône de l'app (Moblin).
-type Brand = { key: string; node: React.ReactNode };
+type Brand = { key: string; node: React.ReactNode; note: string };
 const glyph = (icon: { path: string }) => (
   <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" aria-hidden="true"><path d={icon.path} /></svg>
 );
+const word = "text-2xl font-semibold tracking-tight";
+const heavy = "text-3xl font-black tracking-[0.08em]";
 const BRANDS: Brand[] = [
-  { key: "srtla", node: (<span className="text-3xl font-black tracking-[0.08em]">SRTLA</span>) },
-  { key: "srt", node: (<span className="text-3xl font-black tracking-[0.08em]">SRT</span>) },
-  { key: "rtmp", node: (<span className="text-3xl font-black tracking-[0.08em]">RTMP</span>) },
-  { key: "rist", node: (<span className="text-3xl font-black tracking-[0.08em]">RIST</span>) },
-  { key: "webrtc", node: (<span className="text-2xl font-semibold tracking-tight">WebRTC</span>) },
-  { key: "dji", node: (<span className="text-3xl font-black italic tracking-tight">DJI</span>) },
-  { key: "moblin", node: (<><Image src="/images/moblin/icon.png" alt="" width={64} height={64} className="size-8 rounded-lg grayscale" /><span className="text-2xl font-semibold tracking-tight">Moblin</span></>) },
-  { key: "obs", node: (<span className="text-2xl font-semibold tracking-tight">OBS Studio</span>) },
-  { key: "twitch", node: (<>{glyph(siTwitch)}<span className="text-2xl font-semibold tracking-tight">Twitch</span></>) },
-  { key: "youtube", node: (<>{glyph(siYoutube)}<span className="text-2xl font-semibold tracking-tight">YouTube</span></>) },
-  { key: "kick", node: (<>{glyph(siKick)}<span className="text-2xl font-black tracking-tight">KICK</span></>) },
+  { key: "srtla", node: <span className={heavy}>SRTLA</span>, note: "Bonding multi-réseaux" },
+  { key: "srt", node: <span className={heavy}>SRT</span>, note: "Transport fiable" },
+  { key: "rtmp", node: <span className={heavy}>RTMP</span>, note: "Vers les plateformes" },
+  { key: "rist", node: <span className={heavy}>RIST</span>, note: "Contribution pro" },
+  { key: "webrtc", node: <span className={word}>WebRTC</span>, note: "Direct depuis le navigateur" },
+  { key: "dji", node: <span className="text-3xl font-black italic tracking-tight">DJI</span>, note: "Caméras en Bluetooth" },
+  { key: "moblin", node: (<><Image src="/images/moblin/icon.png" alt="" width={64} height={64} className="size-8 rounded-lg grayscale" /><span className={word}>Moblin</span></>), note: "App de streaming iOS" },
+  { key: "obs", node: <span className={word}>OBS Studio</span>, note: "Pilotage à distance" },
+  { key: "twitch", node: (<>{glyph(siTwitch)}<span className={word}>Twitch</span></>), note: "Multistream" },
+  { key: "youtube", node: (<>{glyph(siYoutube)}<span className={word}>YouTube</span></>), note: "Multistream" },
+  { key: "kick", node: (<>{glyph(siKick)}<span className="text-2xl font-black tracking-tight">KICK</span></>), note: "Multistream" },
 ];
 
 function BrandStrip() {
@@ -79,7 +81,10 @@ function BrandStrip() {
             {[0, 1].map((copy) => (
               <ul key={copy} className="flex shrink-0 items-center" aria-hidden={copy === 1 ? true : undefined}>
                 {[...BRANDS, ...BRANDS].map((b, i) => (
-                  <li key={`${b.key}-${i}`} className="mx-10 flex shrink-0 items-center gap-3 text-foreground/55 sm:mx-14">{b.node}</li>
+                  <li key={`${b.key}-${i}`} className="mx-2 flex h-28 w-56 shrink-0 flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-surface/60 text-foreground/80 backdrop-blur-sm sm:mx-2.5">
+                    <span className="flex items-center gap-3">{b.node}</span>
+                    <span className="text-sm text-muted">{b.note}</span>
+                  </li>
                 ))}
               </ul>
             ))}

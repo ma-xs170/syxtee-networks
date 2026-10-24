@@ -4,7 +4,7 @@ import { useInView, useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import RelayAnalysis, { type AnalysisDemo, type Sample } from "@/components/relais/RelayAnalysis";
 
-// Analyse en temps réel de l'accueil : le vrai composant du dashboard, alimenté par un flux simulé (un relevé par seconde).
+// Analyse en temps réel de l'accueil : la courbe du débit du dashboard (composant réel), alimenté par un flux simulé (un relevé par seconde).
 // Le flux ne tourne que lorsque le bloc est à l'écran. prefers-reduced-motion : une image fixe, sans défilement.
 
 const POINTS = 900; // 15 min, un relevé par seconde
@@ -55,8 +55,8 @@ export default function LiveAnalysisDemo() {
   }, [state]);
 
   return (
-    <div ref={ref} className="min-h-[640px]">
-      {demo ? <RelayAnalysis coreUrl="" relayId="demo" demo={demo} /> : <div className="h-[640px] rounded-2xl border border-line bg-surface" aria-hidden="true" />}
+    <div ref={ref} className="min-h-[340px]">
+      {demo ? <RelayAnalysis coreUrl="" relayId="demo" demo={demo} chartOnly /> : <div className="h-[340px] rounded-2xl border border-line bg-surface" aria-hidden="true" />}
     </div>
   );
 }

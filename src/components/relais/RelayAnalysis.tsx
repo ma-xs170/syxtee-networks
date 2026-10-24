@@ -122,7 +122,7 @@ function Chart({ samples, rangeMs, rtt = false }: { samples: Sample[]; rangeMs: 
   );
 }
 
-export default function RelayAnalysis({ coreUrl, relayId, demo }: { coreUrl: string; relayId: string; demo?: AnalysisDemo }) {
+export default function RelayAnalysis({ coreUrl, relayId, demo, chartOnly = false }: { coreUrl: string; relayId: string; demo?: AnalysisDemo; /** Seulement la courbe du débit (accueil). */ chartOnly?: boolean }) {
   const tz = useTimezone();
   const [range, setRange] = useState<RangeId>("15m");
   const rangeMs = RANGES.find((r) => r.id === range)!.ms;
@@ -220,6 +220,25 @@ export default function RelayAnalysis({ coreUrl, relayId, demo }: { coreUrl: str
   }, [win]);
   const peaks = useMemo(() => findPeaks(win, rangeMs), [win, rangeMs]);
   const lostMinute = history.filter((h) => h.t > now - 60_000).reduce((a, h) => a + h.dropped, 0);
+
+  if (chartOnly) {
+    return (
+      <div className="rounded-2xl border border-line bg-surface p-4 sm:p-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm font-medium">Débit</p>
+          <p className="flex items-center gap-4 text-xs text-muted">
+            <span className="inline-flex items-center gap-1.5"><span aria-hidden="true" className="size-2 rounded-full bg-live" />Pic</span>
+            <span className="inline-flex items-center gap-1.5"><span aria-hidden="true" className="h-px w-4 border-t border-dashed border-foreground/50" />Moyenne</span>
+          </p>
+        </div>
+        <Chart samples={win} rangeMs={rangeMs} />
+        <p className="mt-2 flex justify-between font-mono text-[10px] text-muted">
+          <span>−{RANGES.find((r) => r.id === range)!.label}</span>
+          <span>maintenant</span>
+        </p>
+      </div>
+    );
+  }
 
   return (
     <section aria-labelledby="analyse" className="space-y-5">

@@ -33,7 +33,7 @@ export default async function UsagePage() {
   const [user, plan, workspaces] = await Promise.all([requireUser("/dashboard/parametres/usage"), getPersonalPlan(), listWorkspaces()]);
   const created = workspaces.filter((w) => w.created_by === user.id).length;
   return (
-    <>
+    <div className="grid gap-6">
       <Card title="Limites de ta formule" right={<Badge>{plan.name}</Badge>}>
         <div className="grid gap-6 sm:grid-cols-2">
           <Meter label="Espaces partagés créés" used={created} max={plan.maxWorkspaces} />
@@ -45,6 +45,6 @@ export default async function UsagePage() {
       <Card title="Heures de relais et bande passante">
         <p className="text-sm text-muted">Le détail mensuel (heures de relais, bande passante, appareils liés) arrive bientôt. En attendant, les statistiques de tes lives sont dans Mon espace.</p>
       </Card>
-    </>
+    </div>
   );
 }

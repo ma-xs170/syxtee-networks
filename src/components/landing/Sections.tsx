@@ -56,7 +56,7 @@ export function HomeHero() {
 const PRODUCTION: { title: string; text: string }[] = [
   { title: "Régie en direct", text: "Un régisseur suit ton direct : scènes, audio, caméras et plateformes. Tu te concentres sur ce qui se passe devant toi." },
   { title: "Cadreurs IRL", text: "Des vidéastes à l'épaule, formés au live en mobilité : marathon, festival, manifestation, reportage." },
-  { title: "Réseau qui tient", text: "Nos relais SRTLA cumulent plusieurs connexions (4G, 5G, Starlink). Le direct reste stable quand la foule sature les antennes." },
+  { title: "Réseau qui tient", text: "Nos relais SRTLA cumulent plusieurs connexions. Le direct reste stable quand la foule sature les antennes." },
   { title: "Équipe sur place ou à distance", text: "On se déplace, ou on pilote de loin depuis la Guadeloupe. Un seul interlocuteur du premier message au dernier plan." },
 ];
 
@@ -67,7 +67,7 @@ export function ProductionSection() {
         <Reveal>
           <h2 className={h2}>Pour les productions : on s&apos;en <em>charge.</em></h2>
           <p className={lead}>
-            Tu veux un direct IRL sans monter une équipe ? Nos équipes de production s&apos;occupent de tout, avec notre propre infrastructure. Pas de matériel TVU ou LiveU à louer : des solutions payantes ou sur devis, adaptées à ton événement, partout dans le monde.
+            Tu veux un direct IRL sans monter une équipe ? Nos équipes de production s&apos;occupent de tout, avec notre propre infrastructure. Des solutions payantes ou sur devis, adaptées à ton événement, partout dans le monde.
           </p>
         </Reveal>
         <div className="mt-12 grid gap-4 md:grid-cols-2">
@@ -81,7 +81,7 @@ export function ProductionSection() {
         <Reveal className="mt-8 flex flex-wrap items-center gap-4">
           <ButtonLink href="/contact">Demander un devis</ButtonLink>
           <Link href="/production" className="inline-flex min-h-11 items-center gap-1.5 text-sm text-foreground underline-offset-4 hover:underline">Voir comment on travaille <span aria-hidden="true">→</span></Link>
-          <span className="text-sm text-muted">Devis gratuit, sans engagement.</span>
+          <span className="text-sm text-muted">Estimation immédiate, devis gratuit.</span>
         </Reveal>
       </Container>
     </section>

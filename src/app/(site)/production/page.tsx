@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 const OFFERS = [
   { title: "Régie en direct", text: "Un régisseur pilote OBS, les scènes, l'audio et la diffusion multi-plateformes pendant que tu es sur le terrain." },
   { title: "Cadreurs IRL", text: "Des vidéastes formés au live en mobilité, à l'épaule ou sur gimbal. Ils connaissent les foules, les contraintes de réseau et le rythme d'un direct." },
-  { title: "Relais SRTLA dédiés", text: "Plusieurs connexions cumulées (4G, 5G, Starlink) vers nos serveurs : ton direct reste stable là où une seule antenne lâcherait." },
+  { title: "Relais SRTLA dédiés", text: "Plusieurs connexions cumulées vers nos serveurs : ton direct reste stable là où une seule antenne lâcherait." },
   { title: "Réseau et supervision", text: "On suit le débit de chaque connexion en direct et on corrige avant que le public le voie." },
 ];
 
@@ -42,9 +42,6 @@ export default function ProductionPage() {
               </article>
             ))}
           </div>
-          <p className="mt-8 max-w-[64ch] text-sm leading-relaxed text-muted">
-            On ne revend pas de matériel TVU ou LiveU. Notre infrastructure (relais SRTLA, supervision, contrôle à distance d&apos;OBS) est la nôtre, et ce sont nos équipes qui l&apos;utilisent pour toi : c&apos;est ce qui permet des prix plus doux.
-          </p>
         </Container>
       </section>
 

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { quoteRequested } from "@/emails/templates";
 import { allow, clientIp } from "@/lib/auth/rateLimit";
 import { sendEmail } from "@/lib/email/send";
+import { computeQuote, quoteText } from "@/lib/quote";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 
 // Formulaire public « Contacter » : demande de devis gratuit pour un live IRL en mobilité. Pas de compte requis.
@@ -30,7 +31,7 @@ const schema = z.object({
   date: z.string().trim().max(60).default(""),
   duration: z.string().trim().max(40).default(""),
   audience: z.string().trim().max(60).default(""),
-  message: text("Description du projet", 2000, 10),
+  message: text("Description du projet", 1200, 10),
   consent: z.literal("on", { error: "Accepte que tes données soient utilisées pour te recontacter." }),
 });
 
@@ -53,6 +54,10 @@ export async function contactAction(_prev: ContactState, form: FormData): Promis
   if (!(await allow(`contact-jour:${await clientIp()}`, 6, 86_400))) return { error: "Trop de demandes depuis cette connexion. Réessaie demain." };
   if (!(await allow(`contact-email:${d.email}`, 3, 86_400))) return { ok: true };
   if (!(await allow("contact-global", 60, 3600))) return { error: "Beaucoup de demandes en ce moment. Réessaie dans un moment." };
+
+  // Estimation recalculée ici : le navigateur n'est jamais cru sur les montants.
+  const quote = computeQuote({ lives: Number(form.get("q_lives")), hours: Number(form.get("q_hours")), remote: form.get("q_remote") === "on", crew: form.get("q_crew") === "on", km: Number(form.get("q_km")) });
+  d.message = `${d.message}\n\n${quoteText(quote)}`;
 
   const admins = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim()).filter(Boolean);
   let saved = false;

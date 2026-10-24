@@ -72,9 +72,9 @@ const BRANDS: Brand[] = [
 
 function BrandStrip() {
   return (
-    <section aria-labelledby="techno-titre" className="py-20 sm:py-28">
+    <section aria-labelledby="techno-titre" className="pb-20 pt-0 sm:pb-24">
       <h2 id="techno-titre" className="px-4 text-center text-xl font-medium">Technologies implémentées</h2>
-      <div className="mx-auto mt-14 max-w-5xl overflow-hidden px-4">
+      <div className="mx-auto mt-10 max-w-5xl overflow-hidden px-4">
         <div className="marquee-wrap overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="marquee marquee-l">
             {[0, 1].map((copy) => (

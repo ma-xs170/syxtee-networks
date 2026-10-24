@@ -26,7 +26,8 @@ function sphere(n: number) {
   return pts.filter((p) => p.w > 0.38);
 }
 
-export default function CtaGlobe() {
+// `cap` : calotte en bas de section (appel final). `full` : globe entier derrière le contenu (héros), points plus discrets pour garder le texte lisible.
+export default function CtaGlobe({ variant = "cap" }: { variant?: "cap" | "full" }) {
   const box = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
 
@@ -56,10 +57,12 @@ export default function CtaGlobe() {
 
     function draw() {
       ctx!.clearRect(0, 0, w, h);
-      const R = Math.min(w * 0.3, 520);
+      const full = variant === "full";
+      const R = full ? Math.min(w * 0.42, h * 0.78, 560) : Math.min(w * 0.3, 520);
       const cap = Math.min(h * 0.3, 260); // hauteur visible de la calotte, sous le contenu
       const cx = w / 2;
-      const cy = h - cap + R; // centre sous le bord bas : on ne voit que la calotte
+      const cy = full ? h * 0.52 : h - cap + R; // centre sous le bord bas : on ne voit que la calotte
+      const dim = full ? 0.55 : 1;
       ctx!.fillStyle = ink();
       // Halo et trait lumineux du bord.
       ctx!.save();
@@ -67,9 +70,9 @@ export default function CtaGlobe() {
       ctx!.lineWidth = 1.5;
       ctx!.shadowColor = ink();
       ctx!.shadowBlur = 28;
-      ctx!.globalAlpha = 0.6;
+      ctx!.globalAlpha = 0.6 * dim;
       ctx!.beginPath();
-      ctx!.arc(cx, cy, R, Math.PI * 1.1, Math.PI * 1.9);
+      ctx!.arc(cx, cy, R, full ? 0 : Math.PI * 1.1, full ? Math.PI * 2 : Math.PI * 1.9);
       ctx!.stroke();
       ctx!.restore();
       const tilt = 0.38;
@@ -84,7 +87,7 @@ export default function CtaGlobe() {
         const px = cx + x * R;
         const py = cy - y * R;
         if (py < 0 || py > h + 4) continue;
-        ctx!.globalAlpha = Math.min(0.75, z * 0.8) * (0.45 + 0.55 * p.w);
+        ctx!.globalAlpha = Math.min(0.75, z * 0.8) * (0.45 + 0.55 * p.w) * dim;
         ctx!.fillRect(px, py, 1.6, 1.6);
       }
       ctx!.globalAlpha = 1;
@@ -114,7 +117,7 @@ export default function CtaGlobe() {
       ro.disconnect();
       io.disconnect();
     };
-  }, []);
+  }, [variant]);
 
   return (
     <div ref={box} aria-hidden="true" className="cta-globe pointer-events-none absolute inset-0 overflow-hidden text-foreground">

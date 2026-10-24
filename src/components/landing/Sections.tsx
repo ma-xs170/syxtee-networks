@@ -1,6 +1,6 @@
 import MacAndPc from "@/components/landing/MacAndPc";
 import Link from "next/link";
-import { ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
+import { ArrowUpRight, Broadcast, CalendarCheck, ClipboardText } from "@phosphor-icons/react/dist/ssr";
 import { Container } from "../ui";
 import { ButtonLink } from "../ui/Button";
 import Highlight from "../ui/Highlight";
@@ -75,18 +75,31 @@ export function ProductionSection() {
           </p>
         </Reveal>
 
-        <div className="mt-14 grid gap-4 md:grid-cols-3">
-          {[
-            { title: "Devis et étude de projet", text: "Nous voyons ce qui est envisageable." },
-            { title: "Planification", text: "Toutes nos équipes travaillent sur le projet." },
-            { title: "Stream", text: "Ton live IRL est en place." },
-          ].map((st, i) => (
-            <Reveal as="article" key={st.title} delay={i * 0.08} className="bento-cell relative p-7 sm:p-8">
-              <span className="font-mono text-sm text-muted">0{i + 1}{i < 2 ? " →" : ""}</span>
-              <h3 className="mt-6 text-xl font-semibold tracking-tight">{st.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{st.text}</p>
-            </Reveal>
-          ))}
+        <div className="relative mt-14">
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              { Icon: ClipboardText, title: "Devis et étude de projet", text: "Nous voyons ce qui est envisageable.", points: ["Ton projet et ton lieu", "Devis gratuit, sur mesure"] },
+              { Icon: CalendarCheck, title: "Planification", text: "Toutes nos équipes travaillent sur le projet.", points: ["Régie, cadreurs et réseau", "Repérage et tests avant le jour J"] },
+              { Icon: Broadcast, title: "Stream", text: "Ton live IRL est en place.", points: ["Direct supervisé en continu", "Bilan à la fin du live"], live: true },
+            ].map((st, i) => (
+              <Reveal as="article" key={st.title} delay={i * 0.08} className="bento-cell relative flex flex-col p-7 sm:p-8">
+                <div className="flex items-center justify-between">
+                  <span className="grid size-10 place-items-center rounded-full border border-line-strong bg-background text-foreground"><st.Icon size={20} aria-hidden="true" /></span>
+                  <span className="flex items-center gap-2 font-mono text-xs text-muted">
+                    {st.live && <span aria-hidden="true" className="size-1.5 rounded-full bg-live" />}
+                    0{i + 1}
+                  </span>
+                </div>
+                <h3 className="mt-7 text-xl font-semibold tracking-tight">{st.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/80">{st.text}</p>
+                <ul className="mt-5 grid gap-2 border-t border-line pt-5 text-sm text-muted">
+                  {st.points.map((pt) => (
+                    <li key={pt} className="flex items-start gap-2.5"><span aria-hidden="true" className="mt-2 size-1 shrink-0 rounded-full bg-foreground/40" />{pt}</li>
+                  ))}
+                </ul>
+              </Reveal>
+            ))}
+          </div>
         </div>
 
         <Reveal className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">

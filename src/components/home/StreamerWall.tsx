@@ -2,22 +2,13 @@ import Image from "next/image";
 import { siKick, siTwitch, siYoutube } from "@/lib/brand-icons";
 import type { HomeStreamer } from "@/lib/streamers";
 
-// Accueil : « Ils nous font confiance. » Deux rangées de cartes, une par chaîne (Twitch, Kick, YouTube : logo, avatar, @pseudo, lien) qui défilent
-// lentement en sens inverse, et s'arrêtent au survol. Données : comptes qui ont coché « Afficher ma chaîne » avec un
-// Twitch ou YouTube (public_streamers). Rien ne s'affiche tant qu'il n'y a aucun streamer. Immobile sous prefers-reduced-motion.
-
-function Avatar({ s }: { s: HomeStreamer }) {
-  return s.avatar ? (
-    <Image src={s.avatar} alt="" width={104} height={104} className="h-[3.25rem] w-[3.25rem] shrink-0 rounded-full object-cover" />
-  ) : (
-    <span className="flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center rounded-full bg-surface-2 text-lg font-semibold uppercase text-muted">{s.handle.charAt(0)}</span>
-  );
-}
+// Accueil : « Ils nous font confiance. » Une rangée d'avatars ronds, décalés en hauteur, avec le pseudo Twitch en pastille ; elle défile
+// lentement et s'arrête au survol. Données : comptes qui ont coché « Afficher ma chaîne » avec un
+// Twitch (public_streamers). Rien ne s'affiche tant qu'il n'y a aucun streamer. Immobile sous prefers-reduced-motion.
 
 type Card = { key: string; s: HomeStreamer; platform: "twitch" | "kick" | "youtube"; handle: string; url: string; dup?: boolean };
-const ICON = { twitch: siTwitch, kick: siKick, youtube: siYoutube };
 
-function Card({ c }: { c: Card }) {
+function Card({ c, i }: { c: Card; i: number }) {
   const { s } = c;
   return (
     <a
@@ -25,20 +16,16 @@ function Card({ c }: { c: Card }) {
       target="_blank"
       rel="noopener noreferrer"
       {...(c.dup ? { "aria-hidden": true, tabIndex: -1 } : {})}
-      className="mr-3 flex w-64 shrink-0 items-center gap-4 rounded-xl border border-line bg-surface px-5 py-4 transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-line-strong hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground sm:w-72"
+      className={`group mx-5 flex w-36 shrink-0 flex-col items-center transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground ${i % 2 ? "mt-16" : ""}`}
     >
-      <Avatar s={s} />
-      <span className="min-w-0">
-        <span className="flex items-center gap-2 font-mono text-base">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill={`#${ICON[c.platform].hex}`} aria-label={c.platform} role="img" className="shrink-0">
-            <path d={ICON[c.platform].path} />
-          </svg>
-          <span className="truncate">@{c.handle}</span>
-          {c.platform === "twitch" && s.live && <span className="live-dot shrink-0" role="img" aria-label="En direct" />}
-        </span>
-        <span className="mt-0.5 block text-sm text-muted">
-          Voir la chaîne <span aria-hidden="true">→</span>
-        </span>
+      {s.avatar ? (
+        <Image src={s.avatar} alt="" width={224} height={224} className="size-28 rounded-full border border-line object-cover sm:size-32" />
+      ) : (
+        <span className="flex size-28 items-center justify-center rounded-full border border-line bg-surface-2 text-3xl font-semibold uppercase text-muted sm:size-32">{s.handle.charAt(0)}</span>
+      )}
+      <span className="relative -mt-4 flex max-w-full items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium text-white" style={{ background: "linear-gradient(135deg, #6d3bd2, #9146ff)" }}>
+        <span className="truncate">{c.handle}</span>
+        {s.live && <span className="live-dot shrink-0" role="img" aria-label="En direct" />}
       </span>
     </a>
   );
@@ -53,7 +40,7 @@ function Row({ items, reverse }: { items: Card[]; reverse?: boolean }) {
         {[0, 1].map((copy) => (
           <div key={copy} className="flex shrink-0" aria-hidden={copy === 1 ? true : undefined}>
             {base.map((c, i) => (
-              <Card key={`${c.key}-${i}`} c={c} />
+              <Card key={`${c.key}-${i}`} c={c} i={i} />
             ))}
           </div>
         ))}
@@ -65,19 +52,13 @@ function Row({ items, reverse }: { items: Card[]; reverse?: boolean }) {
 export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] }) {
   if (streamers.length === 0) return null;
   const ranked = [...streamers].sort((a, b) => Number(!!b.live) - Number(!!a.live) || Number(b.partner) - Number(a.partner));
-  // Une carte par chaîne vérifiée de chaque streamer.
+  // Une carte par chaîne Twitch.
   const cards: Card[] = ranked.flatMap((s) => s.channels.filter((ch) => ch.platform === "twitch").map((ch) => ({ key: `${s.handle}-${ch.platform}`, s, platform: ch.platform, handle: ch.handle, url: ch.url })));
   if (cards.length === 0) return null;
-  // Toujours deux rangées en défilement, la première vers la gauche, la seconde vers la droite. La liste est répétée (copies masquées
-  // aux lecteurs d'écran) jusqu'à remplir la largeur. Peu de chaînes : la seconde rangée reprend les mêmes, décalées d'un cran.
-  const pad = (list: Card[], allDup = false) => {
-    const out: Card[] = [];
-    while (list.length && out.length < 8) out.push(...list.map((c) => ({ ...c, dup: allDup || out.length > 0 })));
-    return out;
-  };
-  const many = cards.length >= 8;
-  const top = pad(many ? cards.filter((_, i) => i % 2 === 0) : cards);
-  const bottom = many ? pad(cards.filter((_, i) => i % 2 === 1)) : pad([...cards.slice(1), ...cards.slice(0, 1)], true);
+  // La liste est répétée (copies masquées aux lecteurs d'écran) jusqu'à remplir la largeur ; un nombre pair garde l'alternance haut/bas.
+  const row: Card[] = [];
+  while (row.length < 10 || row.length % 2) row.push(...cards.map((c) => ({ ...c, dup: row.length > 0 })));
+  const fade = "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)";
 
   return (
     <section aria-labelledby="mur-titre" className="relative isolate overflow-hidden border-b border-line py-24 sm:py-32">
@@ -89,9 +70,9 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
       <h2 id="mur-titre" className="h-section px-4 text-center">
         Ils nous font confiance.
       </h2>
-      <div className="mt-14 space-y-3">
-        <Row items={top} />
-        <Row items={bottom} reverse />
+      <p className="mx-auto mt-4 max-w-[48ch] px-4 text-center text-base leading-relaxed text-muted">Des streamers IRL qui diffusent avec SYXTEE.</p>
+      <div className="mt-14" style={{ maskImage: fade, WebkitMaskImage: fade }}>
+        <Row items={row} />
       </div>
     </section>
   );

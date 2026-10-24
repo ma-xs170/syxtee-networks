@@ -80,7 +80,12 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
   const bottom = many ? pad(cards.filter((_, i) => i % 2 === 1)) : pad([...cards.slice(1), ...cards.slice(0, 1)], true);
 
   return (
-    <section aria-labelledby="mur-titre" className="border-b border-line py-24 sm:py-32">
+    <section aria-labelledby="mur-titre" className="relative isolate overflow-hidden border-b border-line py-24 sm:py-32">
+      {/* Dégradé violet Twitch en haut de section. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(70% 60% at 50% 0%, color-mix(in srgb, #9146ff 38%, transparent), transparent 75%)" }} />
+      <svg viewBox="0 0 24 24" width="44" height="44" fill="currentColor" role="img" aria-label="Twitch" className="mx-auto mb-6 block" style={{ color: `#${siTwitch.hex}` }}>
+        <path d={siTwitch.path} />
+      </svg>
       <h2 id="mur-titre" className="h-section px-4 text-center">
         Ils nous font confiance.
       </h2>

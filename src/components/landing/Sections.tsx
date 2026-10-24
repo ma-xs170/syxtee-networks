@@ -71,7 +71,8 @@ export function HomeHero() {
 
 export function ProductionSection() {
   return (
-    <section id="production" className="scroll-mt-20 border-b border-line py-24 lg:py-36">
+    <section id="production" className="relative isolate scroll-mt-20 overflow-hidden border-b border-line py-24 lg:py-36">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(60% 45% at 100% 0%, color-mix(in srgb, var(--bad) 26%, transparent), transparent 70%), radial-gradient(50% 40% at 0% 100%, color-mix(in srgb, var(--bad) 14%, transparent), transparent 70%)" }} />
       <Container>
         <Reveal className="mx-auto max-w-3xl text-center">
           <h2 className={h2}>On produit ton live IRL, <em>de A à Z.</em></h2>
@@ -129,7 +130,8 @@ export function ProductionSection() {
 
 export function StreamersIntro({ streamers = [] }: { streamers?: HomeStreamer[] }) {
   return (
-    <section id="streamers" className="scroll-mt-20 border-b border-line py-24 lg:py-36">
+    <section id="streamers" className="relative isolate scroll-mt-20 overflow-hidden border-b border-line py-24 lg:py-36">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(55% 40% at 0% 0%, color-mix(in srgb, #9146ff 22%, transparent), transparent 70%), radial-gradient(55% 40% at 100% 100%, color-mix(in srgb, var(--bad) 16%, transparent), transparent 70%)" }} />
       <Container className="text-center">
         <Reveal>
           <h2 className={`${h2} mx-auto max-w-[20ch]`}>Streamers indépendants : les mêmes outils, <em>pas cher.</em></h2>

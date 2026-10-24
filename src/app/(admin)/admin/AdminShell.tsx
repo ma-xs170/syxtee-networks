@@ -58,8 +58,6 @@ function groups(support: SupportBadges, pending: number, quotes: number): Group[
           tabs: [
             { label: "Partenaires", href: "/admin/partenaires", need: "partners" },
             { label: "Chaînes accueil", href: "/admin/chaines", need: "partners" },
-            { label: "Sponsors", href: "/admin/sponsors", need: "partners" },
-            { label: "Affiliés", href: "/admin/affilies", need: "partners" },
           ],
         },
       ],

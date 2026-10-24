@@ -22,7 +22,6 @@ import {
   SignOut,
   SlidersHorizontal,
   SquaresFour,
-  Tag,
   X,
   type IconProps,
 } from "@/components/icons";
@@ -41,9 +40,6 @@ import NotificationsBell from "./NotificationsBell";
 /** Espaces partagés de l'utilisateur et espace actif (null : espace personnel). `left` : espaces qu'il peut encore créer (null : illimité). `features` : droits de l'espace actif. */
 export type WorkspaceInfo = { workspaces: { id: string; name: string; color: string; role: string }[]; activeId: string | null; left: number | null; features: Feature[] | null };
 const WsCtx = createContext<WorkspaceInfo>({ workspaces: [], activeId: null, left: 0, features: null });
-/** Compte invité au programme affilié (null : pas d'entrée « Affilié »). `isNew` : jamais ouvert, la pastille « Nouveau » s'affiche. */
-export type AffiliateInfo = { isNew: boolean } | null;
-const AffCtx = createContext<AffiliateInfo>(null);
 
 type Item = { sharedOnly?: boolean; label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean; wordmark?: string; /** « À venir » : pas encore ouvert (l'admin y accède quand même). */ soon?: boolean; /** Pastille de nouveauté à droite du libellé. */ fresh?: boolean };
 type Group = { title?: string; items: Item[] };
@@ -73,7 +69,6 @@ const GROUPS: Group[] = [
     title: "Croissance",
     items: [
       { label: "Statistiques", href: "/dashboard/statistiques", icon: ChartBar },
-      { label: "Sponsors", href: "/dashboard/sponsors", icon: Tag },
     ],
   },
 ];
@@ -294,8 +289,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
   const ws = useContext(WsCtx);
   const locked = (i: Item) => !!i.feature && !!account && !(ws.features ?? account.features).includes(i.feature);
   const [hover, setHover] = useState<string | null>(null);
-  const aff = useContext(AffCtx);
-  const groups: Group[] = aff ? GROUPS.map((g) => (g.title === "Croissance" ? { ...g, items: [...g.items, { label: "Affiliation", href: "/dashboard/affiliation", icon: ShareNetwork, fresh: aff.isNew }] } : g)) : GROUPS;
+  const groups: Group[] = GROUPS;
 
   return (
     <div className="flex h-full flex-col">
@@ -372,7 +366,7 @@ const EXTRA_COMMANDS: Command[] = [
   { label: "Nouvelle demande d'assistance", href: "/dashboard/aide/nouveau", hint: "Support" },
 ];
 
-export default function DashboardShell({ admin, children, workspace, affiliate = null }: { admin: boolean; children: React.ReactNode; workspace?: WorkspaceInfo; affiliate?: AffiliateInfo }) {
+export default function DashboardShell({ admin, children, workspace }: { admin: boolean; children: React.ReactNode; workspace?: WorkspaceInfo }) {
   // Cookie d'espace périmé (espace supprimé, membre retiré) : on l'efface, sinon le Core refuserait chaque appel.
   useEffect(() => {
     if (!workspace?.activeId && /(?:^|;\s*)syxtee_ws=/.test(document.cookie)) document.cookie = "syxtee_ws=; path=/; max-age=0";
@@ -409,7 +403,6 @@ export default function DashboardShell({ admin, children, workspace, affiliate =
 
   return (
     <WsCtx.Provider value={workspace ?? { workspaces: [], activeId: null, left: 0, features: null }}>
-    <AffCtx.Provider value={affiliate}>
     <div className="dash-surface min-h-dvh lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
       <CommandPalette commands={GROUPS.flatMap((g) => g.items).filter((i) => !i.external && !i.soon).map((i) => ({ label: i.label, href: i.href })).concat(EXTRA_COMMANDS)} />
       <aside className="sticky top-0 z-40 hidden h-dvh border-r border-line bg-surface lg:block">
@@ -452,7 +445,6 @@ export default function DashboardShell({ admin, children, workspace, affiliate =
         <div className="relative">{children}</div>
       </div>
     </div>
-    </AffCtx.Provider>
     </WsCtx.Provider>
   );
 }

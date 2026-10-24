@@ -18,7 +18,6 @@ import { publicCoreUrl } from "@/lib/core";
 import { hasNames } from "@/lib/names";
 import { TimezoneProvider } from "@/components/dashboard/Timezone";
 import { accountTimezone } from "@/lib/regions";
-import { getMyAffiliate } from "@/lib/affiliates";
 
 // Dashboard : barre latérale (Sidebar.tsx), statut du direct partagé par toutes les pages.
 // Pas de footer : l'ID support et le ticket Discord vivent sur la page Support.
@@ -29,7 +28,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
   const [user, profile] = await Promise.all([requireUser("/dashboard"), getProfile()]);
   if (!profile?.onboarded_at) redirect("/bienvenue");
   // Espaces partagés : liste, espace actif, espaces encore créables, droits de l'espace actif (affichage ; le serveur et le Core revérifient).
-  const [workspaces, activeWs, personal, affiliate, termsDue] = await Promise.all([listWorkspaces(), getActiveWorkspace(), getPersonalPlan(), getMyAffiliate(), needsTerms(user.id)]);
+  const [workspaces, activeWs, personal, termsDue] = await Promise.all([listWorkspaces(), getActiveWorkspace(), getPersonalPlan(), needsTerms(user.id)]);
   const created = workspaces.filter((w) => w.created_by === user.id).length;
   const workspace = {
     workspaces: workspaces.map((w) => ({ id: w.id, name: w.name, color: w.color, role: w.role })),
@@ -56,7 +55,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
   return (
     <LiveStatusProvider coreUrl={publicCoreUrl}>
       <TimezoneProvider timezone={accountTimezone(profile)}>
-      <DashboardShell admin={isAdminEmail(user.email)} workspace={workspace} affiliate={affiliate ? { isNew: !affiliate.seen_at } : null}>
+      <DashboardShell admin={isAdminEmail(user.email)} workspace={workspace}>
       {/* Prénom/nom manquants : modale hors live, bandeau pendant un live (en haut, sous la barre). */}
       {termsDue ? <TermsModal version={TERMS_VERSION} /> : !hasNames(profile) && <NamesModal />}
       <Heartbeat />

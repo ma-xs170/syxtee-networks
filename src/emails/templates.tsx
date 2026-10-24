@@ -340,22 +340,3 @@ export function staffMessage(o: { firstName?: string | null; subject: string; fr
     ),
   };
 }
-
-/** Invitation au programme affilié : lien à partager, espace Affilié et kit à télécharger. */
-export function affiliateInvite(o: { displayName: string; shareUrl: string; dashboardUrl: string; kitUrl: string }): Email {
-  return {
-    subject: "Tu es invité au programme affilié SYXTEE",
-    element: (
-      <Layout preview="Ton lien affilié et ton kit sont prêts." reason="L'équipe SYXTEE t'a invité avec cette adresse. Sans action de ta part, rien ne se passe.">
-        <Title lead="Bienvenue chez les" hl="affiliés." />
-        <Hi name={o.displayName} />
-        <Text style={p}>Voici ton lien à partager avec ta communauté : une page à ton nom pour streamer comme toi.</Text>
-        <InfoPanel rows={[["Ton lien affilié", o.shareUrl]]} />
-        <Cta href={o.dashboardUrl}>Ouvrir mon espace affilié</Cta>
-        <Text style={p}>Les visuels (logos, captures) sont dans le kit, à télécharger ci-dessous. Tu peux aussi changer ton pseudo et le nom de ton lien depuis ton espace.</Text>
-        <Cta href={o.kitUrl}>Télécharger le kit (zip)</Cta>
-        <Callout title="Connecte-toi avec cette adresse">Ton espace Affilié apparaît dans ton dashboard SYXTEE quand tu es connecté avec l&apos;adresse qui a reçu cet email.</Callout>
-      </Layout>
-    ),
-  };
-}

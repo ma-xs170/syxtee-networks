@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Archive, CalendarBlank, Camera, ChartBar, ChatsCircle, CreditCard, FileText, FilmStrip, Gear, HardDrives, Broadcast, Question, PuzzlePiece, Radio, ShareNetwork, SlidersHorizontal, SquaresFour, Tag, UserCircle, UsersThree, WifiLow, type Icon } from "@phosphor-icons/react";
+import { Archive, CalendarBlank, Camera, ChartBar, ChatsCircle, CreditCard, FileText, FilmStrip, Gear, HardDrives, Broadcast, Question, PuzzlePiece, Radio, ShareNetwork, SlidersHorizontal, SquaresFour, UserCircle, UsersThree, WifiLow, type Icon } from "@phosphor-icons/react";
 
 // Icône devant le titre d'une page du dashboard : la même que dans le menu, choisie d'après l'adresse (rien sur les pages inconnues, ni dans l'admin).
 const ICONS: Record<string, Icon> = {
@@ -16,8 +16,6 @@ const ICONS: Record<string, Icon> = {
   equipe: UsersThree,
   espaces: UsersThree,
   statistiques: ChartBar,
-  sponsors: Tag,
-  affiliation: ShareNetwork,
   aide: Question,
   plugin: PuzzlePiece,
   cam: Camera,

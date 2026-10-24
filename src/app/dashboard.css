@@ -102,3 +102,25 @@ html .dash-surface h3 { font-weight: 500; letter-spacing: -0.01em; }
 .mx-fader::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; margin-left: -5px; border-radius: 999px; background: #fff; border: 0; }
 .mx-fader::-moz-range-thumb { width: 14px; height: 14px; border-radius: 999px; background: #fff; border: 0; }
 .mx-fader:focus-visible { outline: 2px solid var(--foreground); outline-offset: 4px; border-radius: 6px; }
+
+/* Compte : navigation latérale (puis onglets défilants sur mobile) + panneaux à titre intégré. */
+.dk-account { display: grid; gap: 1.5rem; }
+@media (min-width: 900px) { .dk-account { grid-template-columns: 13.5rem minmax(0, 1fr); gap: 3rem; } }
+.dk-side { display: none; }
+@media (min-width: 900px) {
+  .dk-side { position: sticky; top: 2rem; display: flex; flex-direction: column; gap: 0.125rem; align-self: start; }
+  .dk-mobile-tabs { display: none; }
+}
+.dk-side a { border-radius: var(--dk-radius-sm); padding: 0.55rem 0.75rem; font-size: var(--dk-t-14); color: var(--muted); transition: background-color .12s, color .12s; }
+.dk-side a:hover { color: var(--foreground); background: color-mix(in srgb, var(--foreground) 5%, transparent); }
+.dk-side a[aria-current="page"] { color: var(--foreground); background: color-mix(in srgb, var(--foreground) 9%, transparent); }
+.dk-panel { border: 1px solid var(--line); border-radius: var(--dk-radius); background: var(--surface); padding: 1.5rem; }
+.dk-panel + .dk-panel { margin-top: 1rem; }
+.dk-panel-head h2 { font-size: var(--dk-t-16); font-weight: 600; }
+.dk-panel-head p { margin-top: 0.25rem; max-width: 60ch; font-size: var(--dk-t-14); line-height: 1.5; color: var(--muted); }
+.dk-panel-body { margin-top: 1.25rem; }
+.dk-panel[data-danger] { border-color: color-mix(in srgb, var(--dk-red) 35%, transparent); }
+.dk-panel[data-danger] h2 { color: var(--dk-red); }
+.dk-stat { display: grid; gap: 0.25rem; }
+.dk-stat dt { font-size: var(--dk-t-13); color: var(--muted); }
+.dk-stat dd { font-size: var(--dk-t-20); font-weight: 600; letter-spacing: -0.01em; }

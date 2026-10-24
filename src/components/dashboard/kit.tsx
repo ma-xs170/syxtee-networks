@@ -134,3 +134,16 @@ export function Section({ title, text, danger = false, children, id }: { title: 
     </section>
   );
 }
+
+/** Panneau d'une page de réglages : titre et phrase en tête, contenu dedans ; `danger` : bordure et titre rouges. */
+export function Panel({ title, text, danger = false, id, children }: { title: string; text?: string; danger?: boolean; id?: string; children: ReactNode }) {
+  return (
+    <section id={id} className="dk-panel scroll-mt-24" data-danger={danger ? "" : undefined}>
+      <div className="dk-panel-head">
+        <h2>{title}</h2>
+        {text && <p>{text}</p>}
+      </div>
+      <div className="dk-panel-body">{children}</div>
+    </section>
+  );
+}

@@ -7,7 +7,7 @@ import { useToast } from "@/components/ui/Toast";
 import { CATALOG, INTERVALS, TIERS, type Interval, type Tier } from "@/lib/billing";
 
 /** Choix de formule : un bouton par formule, qui ouvre Stripe Checkout. L'action redirige en cas de succès, sinon on affiche la raison. */
-export default function PlanPicker() {
+export default function PlanPicker({ current = null }: { current?: Tier | null }) {
   const toast = useToast();
   const [interval, setInterval] = useState<Interval>("month");
   const [pending, start] = useTransition();
@@ -48,9 +48,13 @@ export default function PlanPicker() {
                 <span className="text-[13px] text-muted">{INTERVALS[interval].per}</span>
               </p>
               <p className="mt-2 min-h-[3rem] text-[13px] leading-relaxed text-muted">{c.pitch}</p>
-              <Button variant={c.featured ? "primary" : "secondary"} className="mt-4 w-full" loading={pending && chosen === t} disabled={pending} onClick={() => choose(t)}>
-                Choisir {c.name}
-              </Button>
+              {current === t ? (
+                <p className="mt-4 grid h-10 place-items-center rounded-[10px] border border-line text-[14px] text-muted">Formule actuelle</p>
+              ) : (
+                <Button variant={c.featured && !current ? "primary" : "secondary"} className="mt-4 w-full" loading={pending && chosen === t} disabled={pending} onClick={() => choose(t)}>
+                  {current ? `Passer à ${c.name}` : `Choisir ${c.name}`}
+                </Button>
+              )}
             </div>
           );
         })}

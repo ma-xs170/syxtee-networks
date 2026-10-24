@@ -44,7 +44,7 @@ export async function getServices(): Promise<Service[]> {
     },
     {
       id: "relay",
-      name: "Relais SRT / SRTLA",
+      name: "Relais SRTLA",
       desc: "Réception de ton flux depuis le téléphone",
       status: coreUp && health?.sls ? "up" : "down",
       ms: null,

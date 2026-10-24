@@ -4,7 +4,7 @@ export const support = {
   sponsors: null as string | null,
   /** `perMonth` : euros par mois ; `perYear` : euros par an (affiché aussi en équivalent mensuel). */
   costs: [
-    { label: "Serveur (VPS OVH, 6 vCPU)", note: "Site, relais SRTLA et RTMP, Core", perMonth: 13.28 },
+    { label: "Serveur (VPS OVH, 6 vCPU)", note: "Site, relais SRTLA, Core", perMonth: 13.28 },
     { label: "Nom de domaine syxtee-networks.fr", note: "Renouvelé chaque année", perYear: 5.41 },
   ] as { label: string; note: string; perMonth?: number; perYear?: number }[],
 };

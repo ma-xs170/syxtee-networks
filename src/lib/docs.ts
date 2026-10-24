@@ -51,19 +51,18 @@ export const docs: DocGuide[] = [
   {
     slug: "creer-un-serveur",
     group: "Démarrer",
-    title: "Créer un serveur",
-    summary: "L'assistant en quatre étapes : protocole, appareil, serveur, récapitulatif.",
-    keywords: "srtla rtmp serveur protocole nouveau",
+    title: "Créer une connexion",
+    summary: "L'assistant en trois étapes : appareil, emplacement, récapitulatif.",
+    keywords: "srtla connexion serveur nouveau",
     blocks: [
-      { type: "p", text: "Dans Serveurs, le bouton de création ouvre un assistant en quatre étapes. Un compteur indique combien de serveurs tu utilises sur le maximum de ta formule." },
+      { type: "p", text: "Dans Connexions, le bouton de création ouvre un assistant en trois étapes. Un compteur indique combien de connexions tu utilises sur le maximum de ta formule." },
       { type: "h", text: "Les étapes" },
       {
         type: "steps",
         items: [
-          "Protocole : SRTLA (recommandé) répartit le flux sur plusieurs connexions pour un direct plus stable ; RTMP n'utilise qu'une seule connexion.",
-          "Appareil : donne un nom à ce serveur (1 à 40 caractères), par exemple le nom de ta caméra.",
-          "Serveur : la latence est mesurée depuis chez toi, le plus proche est indiqué. Un serveur peut être marqué « En maintenance » ou « Bientôt disponible ».",
-          "Récapitulatif : vérifie puis clique sur « Créer le serveur ».",
+          "Appareil : donne un nom à cette connexion (1 à 40 caractères), par exemple le nom de ta caméra.",
+          "Emplacement : la latence est mesurée depuis chez toi, le plus proche est indiqué. Un serveur peut être marqué « En maintenance » ou « Bientôt disponible ».",
+          "Récapitulatif : vérifie puis clique sur « Créer le relais ».",
         ],
       },
       { type: "p", text: "Quand la limite de ta formule est atteinte, le bouton devient « Limite atteinte » avec un lien pour demander plus de serveurs." },

@@ -11,25 +11,7 @@ import RelayUrls from "./RelayUrls";
 
 // Assistant « Créer un relais » : modale plein écran en 4 étapes (protocole, appareil, serveur, récap), puis les URLs.
 
-const STEPS = ["Protocole", "Appareil", "Serveur", "Récap"] as const;
-
-const PROTOCOLS: { id: RelayProtocol; name: string; badge?: string; pros: string[]; cons: string[]; foot: string }[] = [
-  {
-    id: "srtla",
-    name: "SRTLA",
-    badge: "Recommandé",
-    pros: ["Bonding : combine 4G, 5G, Wi-Fi et Starlink", "Le live continue quand un réseau lâche", "Idéal pour l'IRL en mouvement"],
-    cons: [],
-    foot: "Compatible : Moblin, IRL Pro, TVU, LiveU",
-  },
-  {
-    id: "rtmp",
-    name: "RTMP",
-    pros: ["Compatible avec presque tout : caméras DJI Osmo, GoPro, Insta360, OBS, logiciels", "Configuration simple"],
-    cons: ["Une seule connexion : plus sensible aux coupures"],
-    foot: "Idéal pour : caméra d'action, plan fixe, Wi-Fi stable",
-  },
-];
+const STEPS = ["Appareil", "Emplacement", "Récap"] as const;
 
 const SUGGESTIONS: Record<RelayProtocol, string[]> = {
   srtla: ["iPhone 16", "iPhone 15 Pro", "Galaxy S24", "Pixel 9", "TVU", "LiveU"],
@@ -87,8 +69,7 @@ export default function CreateRelayWizard({
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const router = useRouter();
-  const [step, setStep] = useState(0);
-  const [protocol, setProtocol] = useState<RelayProtocol>("srtla");
+  const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [server, setServer] = useState("bhs1");
   const [latency, setLatency] = useState<Record<string, number | null>>({});
@@ -139,8 +120,7 @@ export default function CreateRelayWizard({
   }, [fastest]);
 
   function reset() {
-    setStep(0);
-    setProtocol("srtla");
+    setStep(1);
     setName("");
     setServer("bhs1");
     setError(null);
@@ -156,12 +136,12 @@ export default function CreateRelayWizard({
 
   const full = active >= max;
   const unlimited = max >= 1_000_000;
-  const canNext = (step === 0 && !full) || (step === 1 && name.trim().length > 0 && name.trim().length <= 40) || (step === 2 && !!server);
+  const canNext = (step === 1 && !full && name.trim().length > 0 && name.trim().length <= 40) || (step === 2 && !!server);
 
   function submit() {
     setError(null);
     start(async () => {
-      const r = await createRelayAction({ name, protocol, server });
+      const r = await createRelayAction({ name, protocol: "srtla", server });
       if (r.error) return setError(r.error);
       setCreated(r.relay ?? null);
       router.refresh();
@@ -203,9 +183,9 @@ export default function CreateRelayWizard({
         {!created && (
           <ol className="mt-6 grid grid-cols-4 gap-2" aria-label="Étapes">
             {STEPS.map((label, i) => (
-              <li key={label} aria-current={i === step ? "step" : undefined}>
-                <span className={`block h-1 rounded-full transition-colors motion-reduce:transition-none ${i <= step ? "bg-accent" : "bg-foreground/20"}`} />
-                <span className={`mt-2 block text-xs ${i === step ? "text-foreground" : "text-muted"}`}>
+              <li key={label} aria-current={i + 1 === step ? "step" : undefined}>
+                <span className={`block h-1 rounded-full transition-colors motion-reduce:transition-none ${i < step ? "bg-accent" : "bg-foreground/20"}`} />
+                <span className={`mt-2 block text-xs ${i + 1 === step ? "text-foreground" : "text-muted"}`}>
                   {i + 1} {label}
                 </span>
               </li>
@@ -216,49 +196,14 @@ export default function CreateRelayWizard({
         <div className="mt-8 flex-1">
           {created ? (
             <Success relay={created} />
-          ) : step === 0 ? (
-            <fieldset>
-              <legend className="text-base text-muted">Comment ton appareil va envoyer la vidéo ?</legend>
+          ) : step === 1 ? (
+            <div>
               {full && (
-                <p role="alert" className="mt-4 rounded-xl border border-line p-4 text-sm">
-                  Tu as atteint la limite de ta formule ({max} relais). Archive ou supprime un relais, ou{" "}
+                <p role="alert" className="mb-4 rounded-xl border border-line p-4 text-sm">
+                  Tu as atteint la limite de ta formule ({max} connexions). Archive ou supprime une connexion, ou{" "}
                   <Link href="/dashboard/compte?onglet=formule" className="underline underline-offset-4">change de formule</Link>.
                 </p>
               )}
-              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-                {PROTOCOLS.map((p) => (
-                  <label
-                    key={p.id}
-                    className={`relative flex cursor-pointer flex-col rounded-2xl border p-5 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-foreground/60 ${
-                      protocol === p.id ? "border-accent bg-foreground/[0.08]" : "border-line hover:bg-foreground/[0.08]"
-                    }`}
-                  >
-                    <input type="radio" name="protocol" value={p.id} checked={protocol === p.id} onChange={() => setProtocol(p.id)} className="sr-only" />
-                    <span className="flex items-center justify-between gap-3">
-                      <span className="font-mono text-lg tracking-[0.08em]">{p.name}</span>
-                      {p.badge && <span className="rounded border border-foreground/40 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]">{p.badge}</span>}
-                    </span>
-                    <ul className="mt-4 space-y-2 text-sm">
-                      {p.pros.map((t) => (
-                        <li key={t} className="flex gap-3">
-                          <span aria-hidden="true" className="text-muted">+</span>
-                          {t}
-                        </li>
-                      ))}
-                      {p.cons.map((t) => (
-                        <li key={t} className="flex gap-3 text-muted">
-                          <span aria-hidden="true">−</span>
-                          {t}
-                        </li>
-                      ))}
-                    </ul>
-                    <span className="mt-auto pt-5 text-xs text-muted">{p.foot}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-          ) : step === 1 ? (
-            <div>
               <label htmlFor="relay-name" className="text-base text-muted">
                 Nom de l&apos;appareil qui utilisera ce relais
               </label>
@@ -269,7 +214,7 @@ export default function CreateRelayWizard({
                 maxLength={40}
                 autoFocus
                 autoComplete="off"
-                placeholder={protocol === "rtmp" ? "Ex. Osmo Pocket 3" : "Ex. iPhone 16"}
+                placeholder="Ex. iPhone 16"
                 className="mt-3 h-12 w-full rounded-xl border border-line bg-background px-4 text-base text-foreground placeholder:text-muted focus:border-foreground/70 focus:outline-none"
                 onKeyDown={(e) => e.key === "Enter" && canNext && (e.preventDefault(), setStep(2))}
               />
@@ -278,7 +223,7 @@ export default function CreateRelayWizard({
                 <span className="font-mono tabular-nums">{name.length} / 40</span>
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
-                {SUGGESTIONS[protocol].map((s) => (
+                {SUGGESTIONS.srtla.map((s) => (
                   <button
                     key={s}
                     type="button"
@@ -350,9 +295,9 @@ export default function CreateRelayWizard({
             <div>
               <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 {[
-                  ["Protocole", protocol.toUpperCase()],
+                  ["Protocole", "SRTLA"],
                   ["Appareil", name.trim()],
-                  ["Serveur", srv ? `${flag(srv.cc)} ${srv.city} (${srv.id})` : server],
+                  ["Emplacement", srv ? `${flag(srv.cc)} ${srv.city} (${srv.id})` : server],
                 ].map(([k, v]) => (
                   <div key={k} className="tile p-5">
                     <dt className="text-xs text-muted">{k}</dt>
@@ -361,9 +306,7 @@ export default function CreateRelayWizard({
                 ))}
               </dl>
               <p className="mt-4 text-sm leading-relaxed text-muted">
-                {protocol === "rtmp"
-                  ? "Ta caméra envoie en RTMP, le relais convertit le flux en SRT : OBS le lit comme un relais SRTLA."
-                  : "Ton téléphone envoie en SRTLA sur tous ses réseaux, le relais les recolle et OBS lit le flux en SRT."}
+                Ton téléphone envoie en SRTLA sur tous ses réseaux, le relais les recolle et ton OBS récupère le flux.
               </p>
               {error && (
                 <p role="alert" className="mt-4 text-sm text-red-400">
@@ -391,10 +334,10 @@ export default function CreateRelayWizard({
             <>
               <button
                 type="button"
-                onClick={() => (step === 0 ? close() : setStep(step - 1))}
+                onClick={() => (step === 1 ? close() : setStep(step - 1))}
                 className="h-11 whitespace-nowrap rounded-full border border-line px-5 text-sm transition-colors hover:bg-foreground/10"
               >
-                {step === 0 ? "Annuler" : "Retour"}
+                {step === 1 ? "Annuler" : "Retour"}
               </button>
               {step < 3 ? (
                 <button

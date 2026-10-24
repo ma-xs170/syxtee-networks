@@ -22,8 +22,7 @@ function devices(relay: Props["relay"]): Device[] {
   if (relay.protocol === "rtmp") {
     if (u.rtmp_url) list.push({ id: "rtmp", name: "DJI, GoPro, caméra", tag: "RTMP", hint: "DJI Mimo, GoPro Quik ou OBS : colle l'URL dans le champ RTMP. Si l'appareil a deux champs, ouvre « Avancé ».", url: u.rtmp_url, label: "URL RTMP complète" });
   } else {
-    if (u.srtla_url) list.push({ id: "moblin", name: "Moblin", tag: "iPhone", hint: "Moblin → Réglages → Streams → scanne ce QR code. Le stream est créé avec la bonne URL.", url: u.srtla_url, label: "URL SRTLA (Moblin)", moblin: true });
-    if (u.srt_url) list.push({ id: "srt", name: "IRL Pro, TVU, LiveU", tag: "SRT", hint: "Envoi direct en SRT, sans agrégation de liens : encodeurs, IRL Pro, TVU, LiveU.", url: u.srt_url, label: "URL SRT" });
+    if (u.srtla_url) list.push({ id: "moblin", name: "Moblin et autres applications SRTLA", tag: "SRTLA", hint: "Moblin → Réglages → Streams → scanne ce QR code. Le stream SRTLA est créé avec la bonne URL.", url: u.srtla_url, label: "URL SRTLA (Moblin)", moblin: true });
   }
   list.push({ id: "obs", name: "OBS Studio", tag: "Récupérer le flux", hint: "Source Média → décocher « Fichier local » → champ Entrée.", url: relay.obs_srt_url, label: "URL OBS" });
   return list;

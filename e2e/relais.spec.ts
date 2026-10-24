@@ -18,11 +18,9 @@ async function signedIn(page: import("@playwright/test").Page, tag: string) {
   await expect(page).toHaveURL(/\/dashboard$/);
 }
 
-async function createRelay(page: import("@playwright/test").Page, protocol: "SRTLA" | "RTMP", name: string) {
+async function createRelay(page: import("@playwright/test").Page, name: string) {
   await page.getByRole("button", { name: /Créer (une|ma première) connexion/ }).first().click();
   const dialog = page.getByRole("dialog", { name: /Créer un relais/ });
-  await dialog.locator("label", { hasText: protocol }).first().click();
-  await dialog.getByRole("button", { name: "Suivant" }).click();
   await dialog.getByLabel("Nom de l'appareil qui utilisera ce relais").fill(name);
   await dialog.getByRole("button", { name: "Suivant" }).click();
   // Latence mesurée en direct sur le faux Core, serveur le plus proche présélectionné.
@@ -35,13 +33,13 @@ async function createRelay(page: import("@playwright/test").Page, protocol: "SRT
   await expect(page.getByRole("dialog", { name: /Relais créé/ })).toBeVisible();
 }
 
-test("aucun relais d'office, assistant SRTLA puis RTMP, quota atteint", async ({ page }) => {
+test("aucun relais d'office, assistant SRTLA, quota atteint", async ({ page }) => {
   await signedIn(page, "relais");
   await page.goto("/dashboard/urls");
   await expect(page).toHaveURL(/\/dashboard\/serveurs$/);
   await expect(page.getByRole("heading", { name: "Aucune connexion pour l'instant" })).toBeVisible();
 
-  await createRelay(page, "SRTLA", "iPhone e2e");
+  await createRelay(page, "iPhone e2e");
   const done = page.getByRole("dialog", { name: /Relais créé/ });
   await expect(done.getByRole("tab", { name: /Moblin/ })).toBeVisible();
   await expect(done.getByRole("button", { name: "Afficher le QR code" })).toBeVisible();
@@ -50,16 +48,16 @@ test("aucun relais d'office, assistant SRTLA puis RTMP, quota atteint", async ({
   await expect(page.getByRole("button", { name: /^iPhone e2e/ })).toBeVisible();
   await expect(page.getByText("1 / 3 connexions")).toBeVisible();
 
-  await createRelay(page, "RTMP", "Osmo Pocket 3");
-  await expect(page.getByRole("dialog", { name: /Relais créé/ }).getByRole("tab", { name: /DJI, GoPro/ })).toBeVisible();
+  await createRelay(page, "Osmo Pocket 3");
+  await expect(page.getByRole("dialog", { name: /Relais créé/ }).getByRole("tab", { name: /Moblin/ })).toBeVisible();
   await page.getByRole("button", { name: "Terminé" }).click();
 
-  await createRelay(page, "SRTLA", "Galaxy e2e");
+  await createRelay(page, "Galaxy e2e");
   await page.getByRole("button", { name: "Terminé" }).click();
   await expect(page.getByText("3 / 3 connexions")).toBeVisible();
   await expect(page.getByRole("link", { name: "Limite atteinte · Demander plus de connexions" })).toBeVisible();
 
-  // Fiche d'un serveur RTMP : adresses, puis renommage par le menu « Actions de la connexion ».
+  // Fiche d'une connexion : adresses, puis renommage par le menu « Actions de la connexion ».
   await page.getByRole("button", { name: /^Osmo Pocket 3/ }).click();
   await page.getByRole("link", { name: "Détails de Osmo Pocket 3" }).click();
   await expect(page).toHaveURL(/\/dashboard\/serveurs\/[0-9a-f-]{36}$/);

@@ -8,7 +8,7 @@ import { getServices, overall, type Status } from "@/lib/status";
 
 export const metadata: Metadata = {
   title: "État des services",
-  description: "L'état en direct du site, de l'API, du relais SRT / SRTLA et des comptes SYXTEE NETWORKS.",
+  description: "L'état en direct du site, de l'API, du relais SRTLA et des comptes SYXTEE NETWORKS.",
   alternates: { canonical: `${site.statusUrl}/statut` },
 };
 

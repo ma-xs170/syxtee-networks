@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 const included = [
-  "10 flux, jusqu'à 5 par protocole : SRTLA et RTMP",
+  "10 connexions SRTLA",
   "Bonding 4G, 5G, eSIM et satellite",
   "Contrôle à distance d'OBS depuis un navigateur",
   "Suivi de la santé du flux et historique des directs",

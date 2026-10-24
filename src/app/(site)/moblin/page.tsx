@@ -21,8 +21,6 @@ const iconCredit = creditFor("icon.png");
 
 // Fonctionnalités vérifiées dans le README officiel de Moblin (readmeUrl).
 const features = [
-  "RTMP",
-  "SRT",
   "SRTLA",
   "H.264 / H.265",
   "Jusqu'à 4K60",
@@ -159,7 +157,7 @@ export default function MoblinPage() {
 
             <Step n="04" title="Active le bonding" img="/images/moblin/etape-04.jpg" alt="Moblin, choix des connexions pour le bonding">
               <p>
-                Dans les réglages SRT(LA) du stream, vérifie que le bonding utilise bien le{" "}
+                Dans les réglages SRTLA du stream, vérifie que le bonding utilise bien le{" "}
                 <strong className="font-medium text-foreground">cellulaire</strong> et le{" "}
                 <strong className="font-medium text-foreground">Wi-Fi</strong>. Le Wi-Fi peut venir du partage de connexion
                 d&apos;un deuxième téléphone, d&apos;un modem de poche ou d&apos;un{" "}
@@ -191,7 +189,7 @@ export default function MoblinPage() {
             <Step n="06" title="Lance le live et ajoute la source dans OBS" img="/images/moblin/etape-06.jpg" alt="Moblin en live">
               <p>
                 Sélectionne le stream SYXTEE et appuie sur <strong className="font-medium text-foreground">Go Live</strong>.
-                Dans OBS, ajoute ensuite la source SRT du relais :{" "}
+                Dans OBS, ajoute ensuite la source du relais :{" "}
                 <Link href="/fonctionnement" className="text-foreground underline underline-offset-4">
                   voir comment faire
                 </Link>

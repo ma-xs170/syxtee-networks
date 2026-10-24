@@ -22,7 +22,7 @@ const faq: FaqItem[] = [
   { q: "Quel matériel pour un premier live IRL ?", a: "Un smartphone récent, une application qui gère le SRTLA (Moblin sur iPhone, IRL Pro sur Android), un forfait avec beaucoup de data, une batterie externe USB-C et une perche ou un stabilisateur. Un PC avec OBS, à la maison, récupère le flux et l'envoie à ta plateforme." },
   { q: "Combien de data pour un live IRL ?", a: "Environ 1,4 Go par heure à 3 Mb/s, 2,7 Go à 6 Mb/s et 3,6 Go à 8 Mb/s. Prévois environ 10 % de plus pour les paquets renvoyés quand le réseau est instable. Pour de l'IRL, 4 à 6 Mb/s en 1080p H.265 est un bon compromis." },
   { q: "Le bonding, c'est quoi ?", a: "Le téléphone envoie la vidéo sur plusieurs connexions en même temps (4G, 5G, Wi-Fi). Un relais SRTLA rassemble les paquets et reconstitue un flux stable. Si une connexion lâche, le live continue sur les autres." },
-  { q: "SRTLA, SRT ou RTMP ?", a: "Le RTMP est simple mais fragile sur un réseau mobile. Le SRT récupère mieux les paquets perdus. Le SRTLA ajoute le bonding : c'est le choix le plus stable quand tu bouges." },
+  { q: "Pourquoi le SRTLA ?", a: "Un seul réseau mobile lâche vite quand tu bouges. Le SRTLA répartit ton flux sur plusieurs connexions (4G, 5G, Wi-Fi) et récupère les paquets perdus : c'est le choix le plus stable en direct." },
   { q: "Que faire quand le réseau tombe vraiment ?", a: "Prépare une scène de secours « BRB » dans OBS. Un outil comme NOALBS ou le plugin Advanced Scene Switcher peut basculer automatiquement quand le bitrate chute, puis revenir quand le signal repart." },
 ];
 
@@ -97,9 +97,9 @@ export default function GuideLiveIrlPage() {
           </IllustrationCard>
         }
       >
-        <Point label="RTMP, SRT, SRTLA">
+        <Point label="Pourquoi le SRTLA">
           <p>
-            Le RTMP est simple mais fragile sur un réseau mobile. Le <strong>SRT</strong> récupère mieux les paquets perdus. Le <strong>SRTLA</strong> ajoute le bonding. Il faut un relais pour rassembler les paquets des différentes connexions.
+            Un seul réseau mobile lâche vite quand tu bouges. Le <strong>SRTLA</strong> répartit ton flux sur plusieurs connexions (bonding) et récupère les paquets perdus. Il faut un relais pour rassembler les paquets des différentes connexions.
           </p>
         </Point>
         <Point label="Choisir son relais">

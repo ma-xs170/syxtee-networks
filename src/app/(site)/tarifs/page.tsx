@@ -10,7 +10,7 @@ import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Tarifs",
-  description: "Trois formules dès 5 € par mois : serveur SRTLA et RTMP, contrôle à distance d'OBS dès Signature, multistream, équipes et régies. Sans engagement.",
+  description: "Trois formules dès 5 € par mois : connexions SRTLA, contrôle à distance d'OBS dès Signature, multistream, équipes et régies. Sans engagement.",
   alternates: { canonical: "/tarifs" },
 };
 
@@ -26,7 +26,7 @@ const tiers = [
 
 // Chiffres clés : « 0 » s'affiche ✕.
 const limits: { label: string; v: Three<string> }[] = [
-  { label: "Connexions (SRTLA - RTMP)", v: ["1", "10", "∞"] },
+  { label: "Connexions SRTLA", v: ["1", "10", "∞"] },
   { label: "Directs en même temps", v: ["1", "3", "10"] },
   { label: "Espaces partagés", v: ["0", "1", "5"] },
   { label: "Invités au contrôle à distance", v: ["0", "3", "5"] },

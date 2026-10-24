@@ -49,8 +49,8 @@ export type Relay = {
 };
 
 export const relays: Relay[] = [
-  { city: "Beauharnois", region: "Canada · Québec", status: "online", protocols: ["SRTLA", "SRT", "RTMP"] },
-  { city: "New York", region: "USA · Côte Est", status: "maintenance", protocols: ["SRTLA", "SRT"] },
+  { city: "Beauharnois", region: "Canada · Québec", status: "online", protocols: ["SRTLA"] },
+  { city: "New York", region: "USA · Côte Est", status: "maintenance", protocols: ["SRTLA"] },
 ];
 
 export const compat = ["Twitch", "Kick", "YouTube"];

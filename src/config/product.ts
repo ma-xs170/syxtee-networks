@@ -43,7 +43,7 @@ export const product = {
     camera: "Entrée HDMI : n'importe quelle caméra, hybride ou de poche, en 1080p60", // TODO À CONFIRMER : liste des caméras compatibles
     videoInput: "1080p60",
     latencyMs: 84, // TODO À CONFIRMER : latence moyenne de bout en bout
-    protocols: ["SRT", "SRTLA", "RTMP"], // TODO À CONFIRMER
+    protocols: ["SRTLA"], // TODO À CONFIRMER
     ports: ["Entrée HDMI", "Ethernet", "Port USB-C pour clé 4G", "Alimentation USB-C"], // TODO À CONFIRMER
     engraving: "SYXTEE NETWORKS gravé sur le boîtier",
     power: "USB-C PD, 15 W", // TODO À CONFIRMER : alimentation
@@ -65,7 +65,7 @@ export const product = {
   ],
   /** Abonnement du contrôle à distance et de l'interface de l'Encodeur. Prix « bientôt disponible » tant que null. */
   plans: [
-    { id: "free", name: "Gratuit", text: "1 relais et 1 flux pour essayer.", points: ["1 relais SRTLA ou RTMP", "50 Go de données par mois", "Santé du flux et mire de coupure"], price: null as number | null },
+    { id: "free", name: "Gratuit", text: "1 relais et 1 flux pour essayer.", points: ["1 relais SRTLA", "50 Go de données par mois", "Santé du flux et mire de coupure"], price: null as number | null },
     { id: "paid", name: "Payant", text: "Direct stable, santé du flux et contrôle OBS à distance.", points: ["Direct stable en 4G et 5G", "Mire de coupure automatique", "Pilotage d'OBS depuis ton téléphone"], price: null as number | null, featured: true },
     { id: "partner", name: "Partenaire", text: "Pour les créateurs et les régies accompagnés.", points: ["Accès illimité", "Espaces partagés", "Contact direct"], price: null as number | null },
   ],

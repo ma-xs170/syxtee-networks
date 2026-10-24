@@ -35,7 +35,7 @@ export const CATEGORY_FORMS: Record<SupportCategory, CategoryForm> = {
     fields: [
       { name: "appareil", label: "Appareil de diffusion", type: "select", options: APPAREILS, required: true },
       { name: "appli", label: "Application utilisée", type: "text", placeholder: "Ex. : Moblin 2.4, OBS 30" },
-      { name: "protocole", label: "Protocole", type: "select", options: ["SRTLA", "RTMP", "Je ne sais pas"] },
+      { name: "protocole", label: "Protocole", type: "select", options: ["SRTLA", "Je ne sais pas"] },
       { name: "reseau", label: "Réseau", type: "select", options: ["4G", "5G", "Wi-Fi", "Plusieurs connexions", "Satellite", "Je ne sais pas"] },
       { name: "quand", label: "Quand ça arrive", type: "select", options: ["Tout le temps", "Par moments", "Au démarrage", "Pendant le direct"] },
     ],

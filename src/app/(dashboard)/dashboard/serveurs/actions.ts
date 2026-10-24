@@ -40,7 +40,7 @@ function done(userId: string, relayId?: string) {
 
 const createInput = z.object({
   name: z.string().trim().min(1, "Donne un nom à l'appareil.").max(40, "40 caractères au plus."),
-  protocol: z.enum(["srtla", "rtmp"]),
+  protocol: z.literal("srtla"),
   server: z.string(),
 });
 

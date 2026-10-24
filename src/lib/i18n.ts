@@ -14,6 +14,7 @@ export const EN: Record<string, string> = {
   "Streamers": "Streamers",
   "Ressources": "Resources",
   "Légal": "Legal",
+  "Relais": "Relays",
   "Production IRL": "IRL production",
   "Guide du live IRL": "IRL live guide",
   "Espaces partagés": "Shared spaces",

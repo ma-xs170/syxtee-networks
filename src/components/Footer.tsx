@@ -9,18 +9,13 @@ import T from "./T";
 const columns: { title: string; links: NavLink[] }[] = [
   {
     title: "Production",
-    links: [
-      { label: "Production IRL", href: "/contact" },
-      { label: "Guide du live IRL", href: "/guide-live-irl" },
-    ],
+    links: [{ label: "Contactez-nous", href: "/contact" }],
   },
   {
-    title: "Streamers",
+    title: "Fonctionnalités",
     links: [
+      { label: "Relais", href: "/relais" },
       { label: "Contrôle à distance", href: "/controle-a-distance" },
-      { label: "Espaces partagés", href: "/espaces-partages" },
-      { label: "Nos serveurs", href: "/relais" },
-      { label: "Tarifs", href: "/tarifs" },
     ],
   },
   {
@@ -28,8 +23,6 @@ const columns: { title: string; links: NavLink[] }[] = [
     links: [
       { label: "Documentation", href: "/docs" },
       { label: "FAQ", href: "/faq" },
-      { label: "État des services", href: "/statut" },
-      { label: "Me soutenir", href: "/soutenir" },
     ],
   },
   {
@@ -75,8 +68,8 @@ export default function Footer() {
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
           {columns.map((col) => (
             <div key={col.title}>
-              <p className="text-sm font-semibold"><T>{col.title}</T></p>
-              <ul className="mt-3 text-sm">
+              <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-foreground"><T>{col.title}</T></p>
+              <ul className="mt-4 grid gap-1 text-sm">
                 {col.links.map((l) => (
                   <li key={l.href}>
                     <Link href={l.href} {...(l.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})} className="inline-flex min-h-11 items-center text-muted hover:text-foreground sm:min-h-9">

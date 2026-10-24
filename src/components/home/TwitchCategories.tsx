@@ -1,3 +1,6 @@
+import { existsSync } from "node:fs";
+import path from "node:path";
+import Image from "next/image";
 import Link from "next/link";
 import { VideoCamera } from "@phosphor-icons/react/dist/ssr";
 import BeachView from "@/components/illustrations/BeachView";
@@ -9,13 +12,21 @@ import { ButtonLink } from "@/components/ui/Button";
 
 // Accueil : catégories Twitch couvertes par les directs SYXTEE. Cartes inclinées façon polaroïd (illustrations fil de fer, pas de photos),
 // à plat sur mobile. Fond violet Twitch, comme « Ils nous font confiance ».
+// Photos : déposer public/images/categories/<slug>.jpg (irl, travel, chatting, events ; .webp ou .png aussi) ; sans fichier, l'illustration fil de fer s'affiche.
 
 const CATEGORIES = [
-  { title: "IRL", text: "Le direct en mobilité", Art: Streamer, tilt: "lg:-rotate-6 lg:translate-y-6" },
-  { title: "Travel & Outdoors", text: "Mer, plage et grands espaces", Art: BeachView, tilt: "lg:rotate-3" },
-  { title: "Just Chatting", text: "Le direct qui discute", Art: StreamerDesk, tilt: "lg:-rotate-2 lg:translate-y-4" },
-  { title: "Special Events", text: "Les événements en direct", Art: HomeDesk, tilt: "lg:rotate-6 lg:translate-y-8" },
+  { slug: "irl", title: "IRL", text: "Le direct en mobilité", Art: Streamer, tilt: "lg:-rotate-6 lg:translate-y-6" },
+  { slug: "travel", title: "Travel & Outdoors", text: "Mer, plage et grands espaces", Art: BeachView, tilt: "lg:rotate-3" },
+  { slug: "chatting", title: "Just Chatting", text: "Le direct qui discute", Art: StreamerDesk, tilt: "lg:-rotate-2 lg:translate-y-4" },
+  { slug: "events", title: "Special Events", text: "Les événements en direct", Art: HomeDesk, tilt: "lg:rotate-6 lg:translate-y-8" },
 ] as const;
+
+function photoOf(slug: string) {
+  for (const ext of ["jpg", "webp", "png"]) {
+    if (existsSync(path.join(process.cwd(), "public/images/categories", `${slug}.${ext}`))) return `/images/categories/${slug}.${ext}`;
+  }
+  return null;
+}
 
 export default function TwitchCategories() {
   return (
@@ -34,15 +45,24 @@ export default function TwitchCategories() {
           <ButtonLink href="/cas-d-usage" variant="secondary">Voir les cas d&apos;usage</ButtonLink>
         </div>
         <ul className="mx-auto mt-16 grid max-w-5xl grid-cols-2 gap-4 lg:flex lg:items-start lg:justify-center lg:gap-0">
-          {CATEGORIES.map(({ title, text, Art, tilt }) => (
+          {CATEGORIES.map(({ slug, title, text, Art, tilt }) => {
+            const photo = photoOf(slug);
+            return (
             <li key={title} className={`rounded-2xl border border-line-strong bg-surface-2 p-3 text-left shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8)] lg:-mx-2 lg:w-60 ${tilt}`}>
-              <div aria-hidden="true" className="flex aspect-[4/5] items-center justify-center rounded-xl border border-line bg-background p-5 text-foreground/80">
-                <Art animated={false} className="h-full w-full" />
-              </div>
+              {photo ? (
+                <div className="relative aspect-[4/5] overflow-hidden rounded-xl border border-line">
+                  <Image src={photo} alt={title} fill sizes="240px" className="object-cover" />
+                </div>
+              ) : (
+                <div aria-hidden="true" className="flex aspect-[4/5] items-center justify-center rounded-xl border border-line bg-background p-5 text-foreground/80">
+                  <Art animated={false} className="h-full w-full" />
+                </div>
+              )}
               <p className="mt-3 px-1 font-semibold tracking-tight">{title}</p>
               <p className="px-1 pb-1 text-sm text-muted">{text}</p>
             </li>
-          ))}
+            );
+          })}
         </ul>
       </Container>
     </section>

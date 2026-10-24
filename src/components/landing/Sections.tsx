@@ -163,7 +163,7 @@ export function ObsHeroSection({ streamers = [] }: { streamers?: HomeStreamer[] 
 
 export function ObsBento() {
   return (
-    <section id="comment" className="scroll-mt-20 border-b border-line py-24 lg:py-36">
+    <section id="comment" className="scroll-mt-20 py-24 lg:py-36">
       <Container>
         <Reveal>
           <h2 className={h2}>{product.remoteName}, ton OBS <em>dans la poche.</em></h2>

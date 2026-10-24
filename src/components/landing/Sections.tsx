@@ -1,6 +1,5 @@
 import MacAndPc from "@/components/landing/MacAndPc";
 import Link from "next/link";
-import { Broadcast, CalendarCheck, ClipboardText } from "@phosphor-icons/react/dist/ssr";
 import { Container } from "../ui";
 import { ButtonLink } from "../ui/Button";
 import Highlight from "../ui/Highlight";
@@ -68,51 +67,12 @@ export function HomeHero() {
 
 export function ProductionSection() {
   return (
-    <section id="production" className="relative isolate scroll-mt-20 overflow-hidden border-b border-line py-24 lg:py-36">
+    <section id="production" className="relative isolate scroll-mt-20 overflow-hidden border-b border-line py-20 lg:py-28">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(60% 45% at 100% 0%, color-mix(in srgb, var(--bad) 26%, transparent), transparent 70%), radial-gradient(50% 40% at 0% 100%, color-mix(in srgb, var(--bad) 14%, transparent), transparent 70%)" }} />
       <Container>
         <Reveal className="mx-auto max-w-3xl text-center">
           <h2 className={h2}><L fr={<>On produit ton live IRL, <em>de A à Z.</em></>} en={<>We produce your IRL live, <em>from A to Z.</em></>} /></h2>
-          <p className={`${lead} mx-auto`}>
-            <L fr="Tu veux un direct sans monter d'équipe ? Nos équipes s'occupent de tout, à pied, à vélo, en voiture ou en bateau, avec notre propre infrastructure. Solutions payantes ou sur devis, partout dans le monde." en="Want a live stream without building a team? Our crews handle everything, on foot, by bike, by car or by boat, with our own infrastructure. Paid or quote-based solutions, anywhere in the world." />
-          </p>
         </Reveal>
-
-        <div className="relative mt-14">
-          {/* Chevrons lumineux entre les étapes (bureau). */}
-          {[1, 2].map((n) => (
-            <span key={n} aria-hidden="true" className="pointer-events-none absolute top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 md:flex" style={{ left: `calc((100% + 4rem) * ${n} / 3 - 2rem)` }}>
-              <svg viewBox="0 0 40 24" width="40" height="24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-foreground" style={{ filter: "drop-shadow(0 0 6px color-mix(in srgb, var(--foreground) 80%, transparent))" }}>
-                <path d="m6 6 6 6-6 6" opacity="0.35" />
-                <path d="m22 6 6 6-6 6" />
-              </svg>
-            </span>
-          ))}
-          <div className="grid gap-4 md:grid-cols-3 md:gap-16">
-            {[
-              { Icon: ClipboardText, title: <L fr="Devis et étude de projet" en="Quote and project study" />, text: <L fr="Nous voyons ce qui est envisageable." en="We look at what is feasible." />, points: [<L key="a" fr="Ton projet et ton lieu" en="Your project and location" />, <L key="b" fr="Devis gratuit, sur mesure" en="Free, tailor-made quote" />] },
-              { Icon: CalendarCheck, title: <L fr="Planification" en="Planning" />, text: <L fr="Toutes nos équipes travaillent sur le projet." en="All our teams work on the project." />, points: [<L key="a" fr="Régie, cadreurs et réseau" en="Control room, camera operators and network" />, <L key="b" fr="Repérage et tests avant le jour J" en="Scouting and tests before the big day" />] },
-              { Icon: Broadcast, title: "Stream", text: <L fr="Ton live IRL est en place." en="Your IRL live is on." />, points: [<L key="a" fr="Direct supervisé en continu" en="Live continuously monitored" />, <L key="b" fr="Bilan à la fin du live" en="Debrief after the live" />], live: true },
-            ].map((st, i) => (
-              <Reveal as="article" key={st.Icon.displayName ?? i} delay={i * 0.08} className="bento-cell relative flex flex-col p-7 sm:p-8">
-                <div className="flex items-center justify-between">
-                  <span className="grid size-10 place-items-center rounded-full border border-line-strong bg-background text-foreground"><st.Icon size={20} aria-hidden="true" /></span>
-                  <span className="flex items-center gap-2 font-mono text-xs text-muted">
-                    {st.live && <span aria-hidden="true" className="size-1.5 rounded-full bg-live" />}
-                    0{i + 1}
-                  </span>
-                </div>
-                <h3 className="mt-7 text-xl font-semibold tracking-tight">{st.title}</h3>
-                <p className="mb-6 mt-2 text-sm leading-relaxed text-foreground/80">{st.text}</p>
-                <ul className="mt-auto grid gap-2 border-t border-line pt-5 text-sm text-muted">
-                  {st.points.map((pt, j) => (
-                    <li key={j} className="flex items-start gap-2.5"><span aria-hidden="true" className="mt-2 size-1 shrink-0 rounded-full bg-foreground/40" />{pt}</li>
-                  ))}
-                </ul>
-              </Reveal>
-            ))}
-          </div>
-        </div>
 
         <Reveal className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><L fr="Contactez-nous" en="Contact us" /></Link>

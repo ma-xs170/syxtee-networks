@@ -47,7 +47,7 @@ const REMOTE_PLANS = new Set<PlanId>(["beta", "paid", "extra", "partner", "admin
 export const remoteAllowed = (plan: string | null | undefined) => REMOTE_PLANS.has((plan ?? "") as PlanId);
 
 export const PLAN_LIMITS: Record<PlanId, Limits> = {
-  free: { maxRelays: 0, maxConcurrentStreams: 0 },
+  free: { maxRelays: 1, maxConcurrentStreams: 1 },
   basic: { maxRelays: 1, maxConcurrentStreams: 1 },
   beta: { maxRelays: 3, maxConcurrentStreams: 3 },
   paid: { maxRelays: 10, maxConcurrentStreams: 3, maxPerProtocol: 5 },

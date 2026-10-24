@@ -51,7 +51,7 @@ export default function CgvPage() {
         <p>
           L&apos;abonnement est sans engagement et se renouvelle automatiquement. Tu peux le résilier à tout moment depuis Dashboard, puis Abonnement,
           puis « Gérer mon abonnement ». L&apos;accès reste ouvert jusqu&apos;à la fin de la période payée ; aucune période commencée n&apos;est
-          remboursée. Ensuite, le compte repasse en formule Gratuit : les relais sont conservés, mais mis en pause. Un changement de formule en cours de période est calculé au prorata par Stripe.
+          remboursée. Ensuite, le compte repasse en formule Gratuit : le plus ancien relais reste actif dans la limite du palier Gratuit, les autres sont conservés mais mis en pause. Un changement de formule en cours de période est calculé au prorata par Stripe.
         </p>
       </LegalBlock>
       <LegalBlock title="6. Droit de rétractation">

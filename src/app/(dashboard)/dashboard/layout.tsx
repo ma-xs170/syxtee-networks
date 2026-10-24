@@ -22,7 +22,7 @@ export default async function DashboardPlanLayout({ children }: LayoutProps<"/da
         <div role="region" aria-label="Formule" className="border-b border-line">
           <p className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5 text-sm text-muted sm:px-6">
             <span className="text-xs">Gratuit</span>
-            <span>Les relais, l&apos;aperçu et Mix en direct s&apos;ouvrent avec une formule.</span>
+            <span>1 relais et 1 flux inclus. Plus de relais, l&apos;aperçu et le contrôle à distance s&apos;ouvrent avec une formule.</span>
             <a href="/dashboard/compte?onglet=formule" className="whitespace-nowrap text-foreground underline-offset-4 hover:underline">
               Choisir une formule →
             </a>

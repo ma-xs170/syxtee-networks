@@ -4,7 +4,7 @@
 // Formules vendues (Stripe) : basic (Basique), paid (Premium, identifiant historique gardé), extra (Extra).
 export type PlanId = "free" | "basic" | "beta" | "paid" | "extra" | "partner" | "admin";
 
-/** Fonctions verrouillées en Gratuit (et, pour « remote », en Essentiel : Signature et au-dessus). Scanner et Analyseur restent actifs pour tous (hors liste). */
+/** Fonctions verrouillées en Gratuit (qui garde serveurs, santé, mire et clés ; et, pour « remote », en Essentiel : Signature et au-dessus). Scanner et Analyseur restent actifs pour tous (hors liste). */
 export type Feature = "relais" | "sante" | "apercu" | "controle" | "remote" | "stats" | "lives" | "carte" | "mire" | "cam" | "dji" | "cles";
 
 export const FEATURES: Record<Feature, string> = {
@@ -44,7 +44,7 @@ export type Plan = {
 };
 
 export const PLANS: Record<PlanId, Plan> = {
-  free: { id: "free", name: "Gratuit", maxRelays: 0, maxConcurrentStreams: 0, maxInvites: 0, maxWorkspaces: 0, features: [], regiePrises: false, regieCams: 0 },
+  free: { id: "free", name: "Gratuit", maxRelays: 1, maxConcurrentStreams: 1, maxInvites: 0, maxWorkspaces: 0, features: ["relais", "sante", "mire", "cles"], regiePrises: false, regieCams: 0 },
   beta: { id: "beta", name: "Bêta", maxRelays: 3, maxConcurrentStreams: 3, maxInvites: 3, maxWorkspaces: 3, features: ALL, regiePrises: true, regieCams: 3 },
   basic: { id: "basic", name: "Essentiel", maxRelays: 1, maxConcurrentStreams: 1, maxInvites: 0, maxWorkspaces: 0, features: ["relais", "sante", "mire", "cles"], regiePrises: false, regieCams: 0 },
   paid: { id: "paid", name: "Signature", maxRelays: 10, maxConcurrentStreams: 3, maxPerProtocol: 5, maxInvites: 3, maxWorkspaces: 1, features: ALL, regiePrises: true, regieCams: 3 },

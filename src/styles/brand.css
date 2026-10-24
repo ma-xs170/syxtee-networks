@@ -1,0 +1,21 @@
+/* Accent rouge SYXTEE sur le site public et l'authentification (le dashboard garde ses propres couleurs d'état).
+   Texte blanc sur fond rouge #dc2626 : 4,8:1 (AA). Rouge de texte #ef4444 sur #050505 : 5,3:1 (AA). */
+:root:root {
+  --accent: #ef4444;
+  --accent-hover: #f87171;
+  --fill: #dc2626;
+  --fill-hover: #b91c1c;
+  --on-accent: #ffffff;
+  --glow: rgba(239, 68, 68, 0.14);
+}
+
+/* Action principale : rouge plein, texte blanc. Les boutons secondaires restent neutres. */
+.btn-primary {
+  background: var(--fill);
+  color: var(--on-accent);
+  border-color: transparent;
+  box-shadow: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover { background: var(--fill-hover); }
+}

@@ -70,13 +70,13 @@ struct CreateRelayView: View {
                 Section {
                     TextField("Nom (ex. iPhone, Osmo Pocket)", text: $name)
                     Picker("Protocole", selection: $proto) {
-                        Text("SRTLA (Moblin, SYXTEE CAM)").tag("srtla"); Text("RTMP (caméras, drones)").tag("rtmp"); Text("RIST").tag("rist")
+                        Text("SRTLA (Moblin, SYXTEE CAM)").tag("srtla"); Text("RTMP (caméras, drones)").tag("rtmp")
                     }
                     Picker("Serveur", selection: $server) {
                         ForEach(store.servers) { Text($0.available ? $0.title : "\($0.title) · bientôt").tag($0.id).disabled(!$0.available) }
                     }
                 } footer: {
-                    Text("SRTLA agrège plusieurs connexions (5G + Wi-Fi). RTMP convient aux caméras DJI et aux drones. RIST est réservé aux encodeurs qui le gèrent.").font(.footnote).foregroundStyle(Brand.muted)
+                    Text("SRTLA agrège plusieurs connexions (5G + Wi-Fi). RTMP convient aux caméras DJI et aux drones.").font(.footnote).foregroundStyle(Brand.muted)
                 }
                 .listRowBackground(Brand.surface)
                 if let error { Section { Text(error).font(.footnote).foregroundStyle(Brand.bad) }.listRowBackground(Brand.surface) }
@@ -138,7 +138,6 @@ struct RelayDetail: View {
                     url("Serveur RTMP", relay.urls.rtmp_server)
                     url("Clé RTMP", relay.urls.rtmp_key)
                     url("URL RTMP complète", relay.urls.rtmp_url)
-                    url("URL RIST", relay.urls.rist_url)
                     SectionLabel(text: "Lecture dans OBS")
                     url("OBS Studio (Source média)", relay.obsSrtUrl)
 

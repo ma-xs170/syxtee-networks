@@ -203,11 +203,9 @@ const relayRefusal = (e: unknown) =>
       ? "Limite de relais de la formule atteinte : change d'abord la formule du compte."
       : e.code === "forbidden"
         ? "Compte suspendu ou formule sans relais : change d'abord sa formule."
-        : e.code === "rtmp_disabled" || e.code === "rist_disabled"
+        : e.code === "rtmp_disabled"
           ? "Ce protocole n'est pas ouvert sur le serveur."
-          : e.code === "rist_ports_full"
-            ? "Plus de port RIST libre."
-            : `Refusé par le relais : ${e.code}`
+          : `Refusé par le relais : ${e.code}`
     : "Le relais ne répond pas.";
 
 /** Formule effective du compte, pour la limite transmise au Core (qui recompte). */
@@ -219,7 +217,7 @@ async function limitOf(userId: string) {
 export async function adminCreateRelayAction(_prev: PlanState, form: FormData): Promise<PlanState> {
   const admin = await requireAdmin("accounts");
   const p = z
-    .object({ userId: uid, name: z.string().trim().min(1, "Donne un nom au relais.").max(40, "40 caractères au plus."), protocol: z.enum(["srtla", "rtmp", "rist"]), server: z.string() })
+    .object({ userId: uid, name: z.string().trim().min(1, "Donne un nom au relais.").max(40, "40 caractères au plus."), protocol: z.enum(["srtla", "rtmp"]), server: z.string() })
     .safeParse(Object.fromEntries(form));
   if (!p.success) return { error: p.error.issues[0]?.message ?? "Formulaire invalide." };
   if (!serverById(p.data.server)?.available) return { error: "Ce serveur n'est pas disponible." };

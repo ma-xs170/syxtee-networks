@@ -9,7 +9,7 @@ export const hasCore = coreUrl !== "" && token !== "";
 /** URL publique du Core, transmise aux composants client du dashboard. */
 export const publicCoreUrl = coreUrl;
 
-export type RelayProtocol = "srtla" | "rtmp" | "rist";
+export type RelayProtocol = "srtla" | "rtmp";
 export type SwitchTrigger = "cut" | "cut_lowbitrate" | "sensitive";
 /** Tampon SRT du relais : basse latence (120 ms), équilibré (1 s), stabilité maximale (2,5 s). */
 export type Stability = "ultra" | "low" | "balanced" | "max";
@@ -38,11 +38,6 @@ export type RelayView = {
     rtmp_server?: string;
     rtmp_key?: string;
     rtmp_url?: string;
-    rist_url?: string;
-    rist_server?: string;
-    rist_host?: string;
-    rist_port?: number;
-    rist_secret?: string;
   };
   obs_srt_url: string;
   created_at: string;

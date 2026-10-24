@@ -71,7 +71,6 @@ struct Overview: Decodable, Equatable {
 struct RelayItem: Decodable, Identifiable, Equatable {
     struct Urls: Decodable, Equatable {
         var srtla_url: String?, srt_url: String?, rtmp_server: String?, rtmp_key: String?, rtmp_url: String?
-        var rist_url: String?
     }
     let id: String
     let name: String

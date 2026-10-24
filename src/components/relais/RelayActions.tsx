@@ -24,8 +24,8 @@ const STABILITIES: { id: Stability; title: string; text: string }[] = [
   { id: "max", title: "Stabilité maximale", text: "Environ 2,5 s de tampon. Pour un signal très instable : image fluide, sans saccades, mais plus de décalage." },
 ];
 
-/** URL que l'encodeur colle : SRTLA pour Moblin, URL RTMP ou RIST complète sinon. */
-export const ingestUrl = (r: Pick<RelayView, "protocol" | "urls">) => (r.protocol === "rist" ? r.urls.rist_url : r.protocol === "rtmp" ? r.urls.rtmp_url : r.urls.srtla_url) ?? "";
+/** URL que l'encodeur colle : SRTLA pour Moblin, URL RTMP complète sinon. */
+export const ingestUrl = (r: Pick<RelayView, "protocol" | "urls">) => (r.protocol === "rtmp" ? r.urls.rtmp_url : r.urls.srtla_url) ?? "";
 
 const btn = "h-10 whitespace-nowrap rounded-full border border-line px-4 text-sm transition-colors hover:bg-foreground/10 disabled:opacity-40";
 

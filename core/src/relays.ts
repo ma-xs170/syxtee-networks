@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { newRistSecret, newStreamIds, type StreamIds } from "./ids.ts";
+import { newStreamIds, type StreamIds } from "./ids.ts";
 import { hashKey, keyHashes, type Sealer, type SecretKeys } from "./keys.ts";
 import { allowedRelayIds, limitsOf, planOf, roomFor, type Account } from "./plans.ts";
 import type { Sls } from "./sls.ts";
@@ -16,7 +16,7 @@ import type { Sls } from "./sls.ts";
 //   il refuse lui-même toute autre clé. Le Core réaligne le SLS toutes les 30 s et à chaque connexion d'un publieur.
 
 export type Mode = "direct" | "regie";
-export type Protocol = "srtla" | "rtmp" | "rist";
+export type Protocol = "srtla" | "rtmp";
 export type SwitchTrigger = "cut" | "cut_lowbitrate" | "sensitive";
 export const SWITCH_TRIGGERS: SwitchTrigger[] = ["cut", "cut_lowbitrate", "sensitive"];
 /** Stabilité du flux = taille du tampon SRT (migration 0061) : basse latence (120 ms), équilibré, stabilité maximale. */
@@ -31,9 +31,6 @@ export type Relay = StreamIds & {
   protocol: Protocol;
   server: string;
   cam_key: string | null;
-  /** Relais RIST : port UDP du Core (en clair en base) et secret AES (chiffré avec les clés). */
-  rist_port?: number | null;
-  rist_secret?: string | null;
   mode: Mode;
   /** Enregistrer le flux sur le serveur (quota par compte, voir recordings.ts). */
   record?: boolean;
@@ -51,16 +48,14 @@ export type Relay = StreamIds & {
 };
 
 /** Ligne de la table (clés chiffrées). Les colonnes en clair n'existent que sur une base pas encore migrée. */
-type Row = Omit<Relay, keyof StreamIds | "cam_key" | "rist_secret"> & { keys_enc: string | null } & Partial<SecretKeys>;
+type Row = Omit<Relay, keyof StreamIds | "cam_key"> & { keys_enc: string | null } & Partial<SecretKeys>;
 
 export class QuotaError extends Error {}
-/** Plus aucun port RIST libre dans la plage du serveur. */
-export class PortsError extends Error {}
 /** Compte suspendu ou formule sans relais. */
 export class ForbiddenError extends Error {}
 
 const UNIQUE_VIOLATION = "23505";
-const PUBLIC_COLUMNS = "id, user_id, name, protocol, server, mode, record, record_format, switch_trigger, stability, status, archived, created_at, rotated_at, last_live_at, rist_port, keys_enc";
+const PUBLIC_COLUMNS = "id, user_id, name, protocol, server, mode, record, record_format, switch_trigger, stability, status, archived, created_at, rotated_at, last_live_at, keys_enc";
 
 /** Paire du relais créée par SYXTEE et sans relais autorisé correspondant. */
 export function orphanPair(p: { player: string; description?: string }, known: Set<string>) {
@@ -76,8 +71,6 @@ export function createRelayStore(
     /** Clés de publication retirées du SLS (rotation, archivage, suppression, compte refusé) : couper les sessions en cours. */
     onRevoked?: (publishKeys: string[]) => void;
     log?: (m: string) => void;
-    /** Plage des ports UDP RIST attribués aux relais (un port par relais). */
-    ristPorts?: { min: number; max: number };
     /** Générateur de clés (remplaçable dans les tests). */
     newIds?: () => StreamIds;
   },
@@ -91,16 +84,15 @@ export function createRelayStore(
       ? o.sealer.open(row.keys_enc)
       : { publish_id: row.publish_id!, play_id: row.play_id!, out_publish_id: row.out_publish_id!, out_play_id: row.out_play_id!, cam_key: row.cam_key ?? null };
     const { keys_enc: _enc, ...rest } = row;
-    return { ...rest, publish_id: k.publish_id, play_id: k.play_id, out_publish_id: k.out_publish_id, out_play_id: k.out_play_id, cam_key: k.cam_key ?? null, rist_secret: k.rist_secret ?? null } as Relay;
+    return { ...rest, publish_id: k.publish_id, play_id: k.play_id, out_publish_id: k.out_publish_id, out_play_id: k.out_play_id, cam_key: k.cam_key ?? null } as Relay;
   }
   const encode = (k: SecretKeys) => ({ ...keyHashes(k), keys_enc: o.sealer.seal(k) });
-  const secrets = (r: StreamIds & { cam_key?: string | null; rist_secret?: string | null }): SecretKeys => ({
+  const secrets = (r: StreamIds & { cam_key?: string | null }): SecretKeys => ({
     publish_id: r.publish_id,
     play_id: r.play_id,
     out_publish_id: r.out_publish_id,
     out_play_id: r.out_play_id,
     cam_key: r.cam_key ?? null,
-    rist_secret: r.rist_secret ?? null,
   });
 
   async function get(id: string): Promise<Relay | null> {
@@ -185,23 +177,6 @@ export function createRelayStore(
     }
   }
 
-  /** Port UDP RIST libre, tiré au hasard dans la plage (le port n'est pas un secret, mais il n'est pas devinable pour autant). */
-  async function freeRistPort(): Promise<number> {
-    const range = o.ristPorts;
-    if (!range) throw new PortsError("ports");
-    const { data, error } = await table().select("rist_port").eq("server", server).not("rist_port", "is", null);
-    if (error) throw new Error(`relays : ${error.message}`);
-    const used = new Set((data ?? []).map((x) => (x as { rist_port: number }).rist_port));
-    const total = range.max - range.min + 1;
-    if (used.size >= total) throw new PortsError("ports");
-    for (let i = 0; i < 50; i++) {
-      const p = range.min + Math.floor(Math.random() * total);
-      if (!used.has(p)) return p;
-    }
-    for (let p = range.min; p <= range.max; p++) if (!used.has(p)) return p;
-    throw new PortsError("ports");
-  }
-
   return {
     get,
     list,
@@ -218,10 +193,9 @@ export function createRelayStore(
       if (!roomFor({ ...limits, maxRelays: limit }, await activeCounts(userId, p.protocol))) throw new QuotaError("quota");
       const id = crypto.randomUUID();
       return withFreshKeys(async (ids) => {
-        const rist = p.protocol === "rist" ? { port: await freeRistPort(), secret: newRistSecret() } : null;
         await register({ id, user_id: userId }, ids);
         const { data, error } = await table()
-          .insert({ id, user_id: userId, name: p.name, protocol: p.protocol, server, rist_port: rist?.port ?? null, ...encode({ ...secrets(ids), rist_secret: rist?.secret ?? null }) })
+          .insert({ id, user_id: userId, name: p.name, protocol: p.protocol, server, ...encode(secrets(ids)) })
           .select(PUBLIC_COLUMNS)
           .single();
         if (error) {
@@ -238,7 +212,7 @@ export function createRelayStore(
       const fresh = await withFreshKeys(async (ids) => {
         if (!r.archived) await register(r, ids);
         try {
-          return await update(r.id, { ...encode({ ...secrets(ids), cam_key: r.cam_key, rist_secret: r.protocol === "rist" ? newRistSecret() : null }), rotated_at: new Date().toISOString() });
+          return await update(r.id, { ...encode({ ...secrets(ids), cam_key: r.cam_key }), rotated_at: new Date().toISOString() });
         } catch (e) {
           if (!r.archived) {
             await sls.deleteStreamId(ids.play_id).catch(() => {});
@@ -262,17 +236,16 @@ export function createRelayStore(
     /**
      * Change le relais de serveur sans le recréer : même id, mêmes clés, mêmes URLs (seul le serveur qui répond change).
      * Ce Core retire la paire du SLS s'il quitte ce serveur, la déclare s'il l'accueille ; l'autre Core se réaligne
-     * tout seul (reconcile). Le port RIST est propre à chaque serveur : repris ici, ou attribué par le Core d'arrivée.
+     * tout seul (reconcile).
      */
     async move(r: Relay, target: string): Promise<Relay> {
       if (r.server === target) return r;
       const leaves = r.server === server && !r.archived;
       const arrives = target === server && !r.archived;
-      const rist = r.protocol === "rist" ? { rist_port: target === server ? await freeRistPort() : null } : {};
       if (arrives) await register(r, r);
       let moved: Relay;
       try {
-        moved = await update(r.id, { server: target, ...rist, ...(leaves ? { status: "offline" } : {}) });
+        moved = await update(r.id, { server: target, ...(leaves ? { status: "offline" } : {}) });
       } catch (e) {
         if (arrives) await unregister(r).catch(() => {});
         throw e;
@@ -342,11 +315,6 @@ export function createRelayStore(
      */
     async reconcile(): Promise<{ relays: Relay[]; added: number; removed: number }> {
       const ok = await allowed(); // base illisible : exception, on ne retire rien
-      // Relais RIST arrivé d'un autre serveur : il n'a pas encore de port sur celui-ci.
-      for (let i = 0; i < ok.length; i++) {
-        const r = ok[i]!;
-        if (r.protocol === "rist" && !r.rist_port && o.ristPorts) ok[i] = await update(r.id, { rist_port: await freeRistPort() }).catch(() => r);
-      }
       const want = new Map<string, { r: Relay; publisher: string; regie: boolean }>();
       for (const r of ok) {
         want.set(r.play_id, { r, publisher: r.publish_id, regie: false });

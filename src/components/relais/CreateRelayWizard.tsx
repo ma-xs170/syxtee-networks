@@ -34,7 +34,6 @@ const PROTOCOLS: { id: RelayProtocol; name: string; badge?: string; pros: string
 const SUGGESTIONS: Record<RelayProtocol, string[]> = {
   srtla: ["iPhone 16", "iPhone 15 Pro", "Galaxy S24", "Pixel 9", "TVU", "LiveU"],
   rtmp: ["Osmo Pocket 3", "Osmo Action 5 Pro", "Osmo 360", "GoPro HERO13", "Insta360 X4", "OBS"],
-  rist: ["iPhone 16", "Encodeur RIST", "OBS", "vMix"],
 };
 
 const TONE: Record<LatencyTone, string> = {
@@ -364,9 +363,7 @@ export default function CreateRelayWizard({
               <p className="mt-4 text-sm leading-relaxed text-muted">
                 {protocol === "rtmp"
                   ? "Ta caméra envoie en RTMP, le relais convertit le flux en SRT : OBS le lit comme un relais SRTLA."
-                  : protocol === "rist"
-                    ? "Ton encodeur envoie en RIST (chiffré, avec récupération des paquets perdus), le relais convertit le flux en SRT : OBS le lit comme un relais SRTLA."
-                    : "Ton téléphone envoie en SRTLA sur tous ses réseaux, le relais les recolle et OBS lit le flux en SRT."}
+                  : "Ton téléphone envoie en SRTLA sur tous ses réseaux, le relais les recolle et OBS lit le flux en SRT."}
               </p>
               {error && (
                 <p role="alert" className="mt-4 text-sm text-red-400">
@@ -433,10 +430,6 @@ const GUIDES: Record<RelayProtocol, { title: string; steps: string; href: string
   ],
   rtmp: [
     { title: "DJI", steps: "DJI Mimo → Diffusion en direct → RTMP : colle le serveur et la clé.", href: "/docs", link: "Documentation" },
-    { title: "OBS", steps: "Source média → décocher « Fichier local » → colle l'URL OBS dans Entrée.", href: "/fonctionnement", link: "Le trajet d'un live" },
-  ],
-  rist: [
-    { title: "Moblin", steps: "Réglages → Streams → ton stream → URL : colle l'URL RIST.", href: "/moblin", link: "Guide Moblin" },
     { title: "OBS", steps: "Source média → décocher « Fichier local » → colle l'URL OBS dans Entrée.", href: "/fonctionnement", link: "Le trajet d'un live" },
   ],
 };

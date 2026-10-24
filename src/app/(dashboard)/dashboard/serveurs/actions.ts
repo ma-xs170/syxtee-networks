@@ -29,11 +29,7 @@ const refusal = (e: unknown) =>
         ? "La régie n'est pas encore disponible."
         : e.code === "rtmp_disabled"
           ? "L'entrée RTMP n'est pas encore ouverte sur ce serveur."
-          : e.code === "rist_disabled"
-            ? "L'entrée RIST n'est pas encore ouverte sur ce serveur."
-            : e.code === "rist_ports_full"
-              ? "Plus de port RIST libre sur ce serveur. Choisis SRTLA ou RTMP."
-              : "Ce serveur n'accepte pas de nouveaux relais pour le moment."
+          : "Ce serveur n'accepte pas de nouveaux relais pour le moment."
     : DOWN;
 
 function done(userId: string, relayId?: string) {
@@ -44,7 +40,7 @@ function done(userId: string, relayId?: string) {
 
 const createInput = z.object({
   name: z.string().trim().min(1, "Donne un nom à l'appareil.").max(40, "40 caractères au plus."),
-  protocol: z.enum(["srtla", "rtmp", "rist"]),
+  protocol: z.enum(["srtla", "rtmp"]),
   server: z.string(),
 });
 

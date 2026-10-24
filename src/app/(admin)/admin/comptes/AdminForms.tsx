@@ -155,7 +155,6 @@ export function CreateRelayForm({ userId }: { userId: string }) {
         <select id="adm-relay-proto" name="protocol" defaultValue="srtla" className={field}>
           <option value="srtla">SRTLA</option>
           <option value="rtmp">RTMP</option>
-          <option value="rist">RIST</option>
         </select>
       </div>
       <div className="grid gap-2">

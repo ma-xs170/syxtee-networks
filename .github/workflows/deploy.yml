@@ -25,6 +25,8 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 24, cache: npm }
       - run: npm ci
+      # PageProps et LayoutProps sont générés par Next : sans cette étape, tsc ne les connaît pas.
+      - run: npx next typegen
       - run: npx tsc --noEmit
       - run: npm run test:unit
       - name: Tests du Core

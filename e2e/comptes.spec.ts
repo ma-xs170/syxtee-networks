@@ -37,10 +37,12 @@ test("inscription : formulaire → vérification → connexion → /bienvenue �
   await context.clearCookies();
   await signInWithPassword(page, email, password);
   await expect(page).toHaveURL(/\/bienvenue/);
-  await page.getByLabel("Kick").fill("@syxtee_kick");
+  await page.getByRole("combobox").fill("France");
+  await page.getByRole("option", { name: /France/ }).first().click();
+  await page.getByLabel("YouTube", { exact: true }).fill("@syxtee_yt");
   await page.getByRole("button", { name: "Continuer" }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByRole("heading", { name: "Salut Mathis." })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Mathis N/ })).toBeVisible(); // compte reconnu dans la barre latérale
 });
 
 test("connexion : mot de passe, erreur neutre, menu du compte, déconnexion", async ({ page }) => {
@@ -51,9 +53,9 @@ test("connexion : mot de passe, erreur neutre, menu du compte, déconnexion", as
   await admin().from("profiles").update({ onboarded_at: new Date().toISOString() }).eq("id", user.id);
 
   await signInWithPassword(page, email, "mauvais-mot-de-passe");
-  await expect(page.getByText("Email ou mot de passe incorrect.")).toBeVisible();
+  await expect(page.getByText(/ou mot de passe incorrect\./)).toBeVisible();
   await signInWithPassword(page, testEmail("inconnu"), password);
-  await expect(page.getByText("Email ou mot de passe incorrect.")).toBeVisible();
+  await expect(page.getByText(/ou mot de passe incorrect\./)).toBeVisible();
 
   await signInWithPassword(page, email, password);
   await expect(page).toHaveURL(/\/dashboard$/);
@@ -61,8 +63,7 @@ test("connexion : mot de passe, erreur neutre, menu du compte, déconnexion", as
   await expect(page).toHaveURL(/\/dashboard$/); // déjà connecté
 
   await page.setViewportSize({ width: 1280, height: 800 });
-  await page.getByRole("button", { name: /Menu du compte Léa M\./ }).click();
-  await expect(page.getByRole("menu")).toContainText("Léa M.");
+  await page.getByRole("button", { name: /Léa M/ }).first().click();
   await page.getByRole("menuitem", { name: "Déconnexion" }).click();
   await expect(page).toHaveURL(/\/$/);
   await page.goto("/dashboard");
@@ -99,7 +100,7 @@ test("mot de passe oublié : lien → nouveau mot de passe → connexion", async
   await expect(page).toHaveURL(/\/dashboard$/);
 });
 
-test("ancien compte sans prénom : modale obligatoire, puis « Salut Prénom. »", async ({ page }) => {
+test("ancien compte sans prénom : modale obligatoire, puis prénom affiché", async ({ page }) => {
   const email = testEmail("ancien");
   const password = testPassword();
   const user = await createUser(email, { password, names: false });
@@ -116,7 +117,7 @@ test("ancien compte sans prénom : modale obligatoire, puis « Salut Prénom. »
   await modal.getByLabel("Nom", { exact: true }).fill("Bernard");
   await modal.getByRole("button", { name: "Continuer" }).click();
   await expect(modal).toBeHidden();
-  await expect(page.getByRole("heading", { name: "Salut Noé." })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Noé B/ }).first()).toBeVisible();
 });
 
 test("modale prénom/nom : vraies erreurs, puis Mathis / CUSTOS enregistrés tels quels", async ({ page, context }) => {
@@ -127,7 +128,6 @@ test("modale prénom/nom : vraies erreurs, puis Mathis / CUSTOS enregistrés tel
   await admin().from("profiles").update({ onboarded_at: new Date().toISOString() }).eq("id", user.id);
 
   await signInWithPassword(page, email, password);
-  await expect(page.locator("h1")).toHaveText("Salut."); // prénom pas encore renseigné
   const modal = page.getByRole("dialog", { name: "Comment tu t'appelles ?" });
   await expect(modal).toBeVisible();
 
@@ -149,12 +149,12 @@ test("modale prénom/nom : vraies erreurs, puis Mathis / CUSTOS enregistrés tel
   await modal.getByLabel("Nom", { exact: true }).fill("CUSTOS");
   await modal.getByRole("button", { name: "Continuer" }).click();
   await expect(modal).toBeHidden();
-  await expect(page.getByRole("heading", { name: "Salut Mathis." })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Mathis C/ }).first()).toBeVisible();
   const { data } = await admin().from("profiles").select("first_name, last_name").eq("id", user.id).single();
   expect(data).toEqual({ first_name: "Mathis", last_name: "CUSTOS" }); // trim, casse conservée
 });
 
-test("ID support : généré à la création, visible dans le menu et les paramètres", async ({ page }) => {
+test("ID support : généré à la création (SYX-XXXX-XXXX), l'admin reste réservé à ADMIN_EMAILS", async ({ page }) => {
   const email = testEmail("support");
   const user = await createUser(email);
   created.push(user.id);
@@ -164,14 +164,6 @@ test("ID support : généré à la création, visible dans le menu et les param�
 
   await signInWithMagicLink(page, email);
   await expect(page).toHaveURL(/\/dashboard$/);
-  await page.setViewportSize({ width: 1280, height: 800 });
-  await page.getByRole("button", { name: /Menu du compte/ }).click();
-  await expect(page.getByRole("menu").getByTestId("support-id")).toHaveText(data!.support_id);
-
-  await page.goto("/dashboard/parametres");
-  await expect(page.locator("#support").getByTestId("support-id")).toHaveText(data!.support_id);
-  await expect(page.locator("#support").getByRole("button", { name: "Ouvrir un ticket Discord" })).toBeVisible();
-
   // L'admin est réservé à ADMIN_EMAILS : un compte normal reçoit une 404.
   const res = await page.goto(`/admin/comptes?q=${data!.support_id}`);
   expect(res?.status()).toBe(404);
@@ -188,10 +180,9 @@ test("accueil : un streamer en live passe en premier avec badge et viewers", asy
   expect(error).toBeNull();
 
   await page.goto("/");
-  const section = page.locator("#streamers");
-  await expect(section.getByText("En live maintenant")).toBeVisible();
-  const card = section.getByRole("link", { name: /@E2E_Live/ }).first();
-  await expect(card).toContainText("EN LIVE");
-  await expect(card).toContainText("42 viewers");
+  const section = page.locator("section", { has: page.getByRole("heading", { name: "Ils streament avec SYXTEE." }) });
+  await expect(section).toBeVisible();
+  const card = section.getByRole("link", { name: /@E2E_Live/i }).first();
+  await expect(card.getByRole("img", { name: "En direct" })).toBeVisible(); // pastille rouge : stream en cours
   await expect(card).toHaveAttribute("href", "https://twitch.tv/e2e_live");
 });

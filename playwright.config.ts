@@ -33,6 +33,7 @@ export default defineConfig({
         NEXT_PUBLIC_SUPABASE_URL: process.env.E2E_SUPABASE_URL ?? "",
         NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.E2E_SUPABASE_PUBLISHABLE_KEY ?? "",
         SUPABASE_SECRET_KEY: process.env.E2E_SUPABASE_SECRET_KEY ?? "",
+        E2E_NO_RATE_LIMIT: "1",
         TWITCH_CLIENT_ID: "e2e",
         TWITCH_CLIENT_SECRET: "e2e",
         TWITCH_API_BASE: `${TWITCH}/helix`,

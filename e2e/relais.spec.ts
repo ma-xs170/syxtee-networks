@@ -19,7 +19,7 @@ async function signedIn(page: import("@playwright/test").Page, tag: string) {
 }
 
 async function createRelay(page: import("@playwright/test").Page, protocol: "SRTLA" | "RTMP", name: string) {
-  await page.getByRole("button", { name: /Créer (un|mon premier) relais/ }).first().click();
+  await page.getByRole("button", { name: /Créer (un|mon premier) serveur/ }).first().click();
   const dialog = page.getByRole("dialog", { name: /Créer un relais/ });
   await dialog.locator("label", { hasText: protocol }).first().click();
   await dialog.getByRole("button", { name: "Suivant" }).click();
@@ -38,16 +38,16 @@ async function createRelay(page: import("@playwright/test").Page, protocol: "SRT
 test("aucun relais d'office, assistant SRTLA puis RTMP, quota atteint", async ({ page }) => {
   await signedIn(page, "relais");
   await page.goto("/dashboard/urls");
-  await expect(page).toHaveURL(/\/dashboard\/relais$/);
-  await expect(page.getByRole("heading", { name: "Aucun relais pour l'instant" })).toBeVisible();
+  await expect(page).toHaveURL(/\/dashboard\/serveurs$/);
+  await expect(page.getByRole("heading", { name: "Aucun serveur pour l'instant" })).toBeVisible();
 
   await createRelay(page, "SRTLA", "iPhone e2e");
   const done = page.getByRole("dialog", { name: /Relais créé/ });
-  await expect(done.getByText("Moblin (SRTLA)")).toBeVisible();
+  await expect(done.getByText("Moblin (iPhone)")).toBeVisible();
   await expect(done.getByText(/srtla:\/\/relais\.e2e:5000\?streamid=live_••••••••/)).toBeVisible();
   await done.getByRole("button", { name: "Terminé" }).click();
   await expect(page.getByRole("link", { name: "iPhone e2e" })).toBeVisible();
-  await expect(page.getByText("1 / 3 relais")).toBeVisible();
+  await expect(page.getByText("1 / 3 serveurs")).toBeVisible();
 
   await createRelay(page, "RTMP", "Osmo Pocket 3");
   await expect(page.getByRole("dialog", { name: /Relais créé/ }).getByText("Serveur RTMP")).toBeVisible();
@@ -55,58 +55,36 @@ test("aucun relais d'office, assistant SRTLA puis RTMP, quota atteint", async ({
 
   await createRelay(page, "SRTLA", "Galaxy e2e");
   await page.getByRole("button", { name: "Terminé" }).click();
-  await expect(page.getByText("3 / 3 relais")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Limite atteinte · Voir les offres" })).toBeVisible();
+  await expect(page.getByText("3 / 3 serveurs")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Limite atteinte · Demander plus de serveurs" })).toBeVisible();
 
-  // Fiche d'un relais RTMP : serveur + clé, puis renommage.
+  // Fiche d'un serveur RTMP : adresses, puis renommage par le menu « Actions du serveur ».
   await page.getByRole("link", { name: "Osmo Pocket 3" }).click();
-  await expect(page).toHaveURL(/\/dashboard\/relais\/[0-9a-f-]{36}$/);
-  await expect(page.getByText("Clé de stream")).toBeVisible();
-  await page.getByRole("button", { name: /Plus d'actions/ }).click();
+  await expect(page).toHaveURL(/\/dashboard\/serveurs\/[0-9a-f-]{36}$/);
+  await expect(page.getByRole("heading", { name: "Osmo Pocket 3", level: 1 })).toBeVisible();
+  await expect(page.getByText("Serveur opérationnel").first()).toBeVisible();
+  await page.getByRole("button", { name: "Actions du serveur" }).click();
   await page.getByRole("menuitem", { name: "Renommer" }).click();
-  await page.getByLabel("Nom de l'appareil").fill("Osmo Action 5");
-  await page.getByRole("button", { name: "Renommer", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Osmo Action 5" })).toBeVisible();
-
-  // Relais RTMP : « Configurer une DJI » → Caméras DJI, assistant d'ajout ouvert sur ce relais. Lancement réel : caméra requise.
-  await page.getByRole("link", { name: "Configurer une DJI" }).click();
-  await expect(page).toHaveURL(/\/dashboard\/dji\?relais=/);
-  const wizard = page.getByRole("dialog", { name: /Ajouter une caméra/ });
-  await expect(wizard).toBeVisible();
-  await expect(wizard.getByRole("button", { name: "Rechercher ma caméra" })).toBeVisible();
-  await expect(wizard.getByRole("button", { name: "Suivant" })).toBeDisabled(); // pas de caméra trouvée
-  await wizard.getByRole("button", { name: "Annuler" }).click();
-  await expect(wizard).toBeHidden();
-
-  // Réseaux : plusieurs réseaux, gardés sur ce téléphone.
-  await page.getByRole("tab", { name: /Réseaux/ }).click();
-  for (const ssid of ["iPhone e2e", "Routeur 4G e2e"]) {
-    await page.getByRole("button", { name: "Ajouter un réseau" }).click();
-    const net = page.getByRole("dialog", { name: /Ajouter un réseau/ });
-    await net.getByLabel("Nom du réseau").fill(ssid);
-    await net.getByLabel("Mot de passe", { exact: true }).fill("motdepasse-e2e");
-    await net.getByRole("button", { name: "Ajouter le réseau" }).click();
-    await expect(net).toBeHidden();
-  }
-  await expect(page.getByRole("tab", { name: "Réseaux · 2" })).toBeVisible();
-  await expect(page.getByText("Routeur 4G e2e")).toBeVisible();
-  await page.goBack();
+  const rename = page.getByRole("dialog", { name: "Renommer la caméra" });
+  await rename.getByLabel("Nom de la caméra").fill("Osmo Action 5");
+  await rename.getByRole("button", { name: "Renommer", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Osmo Action 5", level: 1 })).toBeVisible();
 
   // Archiver libère une place dans le quota.
-  await page.getByRole("button", { name: /Plus d'actions/ }).click();
+  await page.getByRole("button", { name: "Actions du serveur" }).click();
   await page.getByRole("menuitem", { name: "Archiver" }).click();
-  await page.getByRole("button", { name: "Archiver", exact: true }).click();
-  await expect(page.getByText(/Ce relais est archivé/)).toBeVisible();
-  await page.goto("/dashboard/relais");
-  await expect(page.getByText("2 / 3 relais")).toBeVisible();
-  await expect(page.getByRole("button", { name: "+ Créer un relais" })).toBeVisible();
+  await page.getByRole("dialog", { name: "Archiver le relais" }).getByRole("button", { name: "Archiver", exact: true }).click();
+  await expect(page.getByText("Serveur archivé").first()).toBeVisible();
+  await page.goto("/dashboard/serveurs");
+  await expect(page.getByText("2 / 3 serveurs")).toBeVisible();
+  await expect(page.getByRole("button", { name: "+ Créer un serveur" })).toBeVisible();
 });
 
-test("« Mes relais » est la première entrée du menu Direct", async ({ page }) => {
+test("« Serveurs » est la première entrée du groupe Diffuser", async ({ page }) => {
   await signedIn(page, "relais-nav");
   await page.setViewportSize({ width: 1280, height: 800 });
-  await page.getByRole("button", { name: "Direct", exact: true }).click();
-  const first = page.getByRole("link", { name: /Mes relais/ }).first();
+  const nav = page.getByRole("navigation", { name: "Navigation de l'espace client" });
+  const first = nav.getByRole("link", { name: "Serveurs" });
   await expect(first).toBeVisible();
-  await expect(first).toHaveAttribute("href", "/dashboard/relais");
+  await expect(first).toHaveAttribute("href", "/dashboard/serveurs");
 });

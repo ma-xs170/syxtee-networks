@@ -127,21 +127,22 @@ test("page Abonnement : offres en Gratuit, gestion une fois abonné", async ({ p
 
   await signInWithPassword(page, email, password);
   await expect(page).toHaveURL(/\/dashboard$/);
-  await page.goto("/dashboard/abonnement");
-  for (const name of ["Basique", "Premium", "Extra"]) await expect(page.getByRole("button", { name: `Choisir ${name}` })).toBeVisible();
-  await expect(page.getByText("9,99 €")).toBeVisible();
-  await page.getByRole("radio", { name: /Annuel/ }).click();
-  await expect(page.getByText("149 €", { exact: true })).toBeVisible();
+  await page.goto("/dashboard/compte?onglet=formule");
+  for (const name of ["Essentiel", "Signature", "Prestige"]) await expect(page.getByRole("button", { name: `Choisir ${name}` })).toBeVisible();
+  await expect(page.getByText("9,99 €", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: /Annuel/ }).click();
+  await expect(page.getByText("99 €", { exact: true })).toBeVisible();
 
   await send(request, event("customer.subscription.created", subscription(customer, { status: "active", end: Math.floor(Date.now() / 1000) + 30 * DAY })));
-  await page.goto("/dashboard/abonnement?paiement=ok");
-  await expect(page.getByRole("button", { name: "Gérer mon abonnement" })).toBeVisible();
-  await expect(page.getByText(/Prochain prélèvement le/)).toBeVisible();
+  await page.goto("/dashboard/compte?onglet=formule");
+  await expect(page.getByRole("button", { name: "Gérer l'abonnement" })).toBeVisible();
+  await expect(page.getByText(/Prochain renouvellement le/)).toBeVisible();
   await expect(page.getByRole("button", { name: /^Choisir / })).toHaveCount(0);
-  await expect(page.getByText(/Premium · Mensuel · 9,99 €/)).toBeVisible();
+  await expect(page.getByText("Signature", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("9,99 € par mois")).toBeVisible();
 });
 
-test("déjà connecté : « Choisir » sur /offres suit `next` au lieu de renvoyer sur le dashboard", async ({ page }) => {
+test("déjà connecté : « Choisir » sur /tarifs mène aux formules du compte, `next` hors site ignoré", async ({ page }) => {
   const email = testEmail("abo-next");
   const password = testPassword();
   const user = await createUser(email, { password, plan: "free" });
@@ -150,9 +151,9 @@ test("déjà connecté : « Choisir » sur /offres suit `next` au lieu de renvoy
 
   await signInWithPassword(page, email, password);
   await expect(page).toHaveURL(/\/dashboard$/);
-  await page.goto("/offres");
-  await page.getByRole("link", { name: "Choisir Basique" }).click();
-  await expect(page).toHaveURL(/\/dashboard\/abonnement$/);
+  await page.goto("/tarifs");
+  await page.getByRole("link", { name: "Choisir Essentiel" }).click();
+  await expect(page).toHaveURL(/\/dashboard\/compte\?onglet=formule$/);
 
   // Adresse hors du site : ignorée.
   await page.goto("/inscription?next=//evil.example");

@@ -25,31 +25,25 @@ test.describe("comptes", () => {
     return { email, password };
   }
 
-  test("gratuit : bandeau, relais grisés, modale d'upgrade, scanner accessible", async ({ page }) => {
+  test("gratuit : bandeau, serveurs verrouillés avec carte d'upgrade", async ({ page }) => {
     const a = await account("gratuit", { plan: "free" });
     await signInWithPassword(page, a.email, a.password);
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(page.getByRole("region", { name: "Formule" })).toContainText("Gratuit");
 
-    await page.goto("/dashboard/relais");
-    const lock = page.getByRole("button", { name: /Relais et URLs : réservé aux abonnés/ });
+    await page.goto("/dashboard/serveurs");
+    const lock = page.getByRole("region", { name: /Serveurs et URLs : disponible avec un forfait/ });
     await expect(lock).toBeVisible();
-    await lock.click();
-    const modal = page.getByRole("dialog", { name: "Fonction réservée aux abonnés" });
-    await expect(modal).toBeVisible();
-    await expect(modal.getByRole("link", { name: "Voir les offres" })).toBeVisible();
-    await expect(modal.getByRole("link", { name: "Passer à la formule payante" })).toBeVisible();
-
-    await page.goto("/dashboard/scanner");
-    await expect(page.getByRole("button", { name: /réservé aux abonnés/ })).toHaveCount(0);
+    await expect(lock.getByRole("link", { name: "Choisir une formule" })).toHaveAttribute("href", "/dashboard/compte?onglet=formule");
+    await expect(lock.getByRole("link", { name: "Voir les forfaits" })).toHaveAttribute("href", "/tarifs");
   });
 
   test("partenaire : tout débloqué, badge PARTENAIRE", async ({ page }) => {
     const a = await account("partenaire", { plan: "partner", plan_until: null });
     await signInWithPassword(page, a.email, a.password);
     await expect(page.getByRole("region", { name: "Formule" })).toContainText("PARTENAIRE");
-    await page.goto("/dashboard/relais");
-    await expect(page.getByRole("button", { name: /réservé aux abonnés/ })).toHaveCount(0);
+    await page.goto("/dashboard/serveurs");
+    await expect(page.getByRole("region", { name: /disponible avec un forfait/ })).toHaveCount(0);
   });
 
   test("échéance passée : traité en gratuit avant même la tâche quotidienne", async ({ page }) => {

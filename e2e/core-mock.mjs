@@ -55,7 +55,7 @@ createServer((req, res) => {
         return json(null, 204);
       }
       if (req.method === "POST") {
-        if (data.server !== "nyc1") return json({ error: "server_unavailable" }, 409);
+        if (data.server !== "bhs1") return json({ error: "server_unavailable" }, 409);
         if (mine.filter((r) => !r.archived).length >= data.limit) return json({ error: "quota" }, 403);
         const r = { id: randomUUID(), user, name: data.name, protocol: data.protocol, server: data.server, publish_id: `live_${hex()}`, play_id: `play_${hex()}`, mode: "direct", archived: false, created_at: new Date().toISOString(), rotated_at: null };
         relays.set(r.id, r);

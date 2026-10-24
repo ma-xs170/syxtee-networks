@@ -19,7 +19,7 @@ export default async function EquipePage() {
         <EmptyState
           icon={<Users weight="light" />}
           title="Aucune équipe pour l'instant"
-          text={canCreate ? "Crée un espace partagé depuis le sélecteur en haut de la barre latérale, puis invite tes modérateurs et ton équipe." : "Passe en Payant pour débloquer les espaces partagés."}
+          text={canCreate ? "Crée un espace partagé depuis le sélecteur en haut de la barre latérale, puis invite tes modérateurs et ton équipe." : "Les espaces partagés arrivent avec la formule Signature."}
           action={canCreate ? undefined : <ButtonLink href="/dashboard/abonnement">Voir l&apos;abonnement</ButtonLink>}
         />
       </div>

@@ -120,19 +120,22 @@ function Plateformes({ erreur }: { erreur: string | null }) {
 async function Formule() {
   const plan = await getPlan();
   const profile = await getProfile();
+  const paying = plan.id !== "free";
+  const subscribed = plan.id === "basic" || plan.id === "paid" || plan.id === "extra";
   const lim = (n: number, one: string, many: string) => (Number.isFinite(n) ? `${n} ${n > 1 ? many : one}` : `${many} illimités`);
   const included = [lim(plan.maxRelays, "serveur", "serveurs"), lim(plan.maxConcurrentStreams, "flux simultané", "flux simultanés"), ...plan.features.map((f) => FEATURES[f])];
   return (
     <>
       <Section title="Formule actuelle">
-        <ListRow title={<span className="text-[20px]">{plan.name}</span>} trailing={<StatusBadge tone="ok">Active</StatusBadge>} />
-        <ul className="mt-2 grid gap-1 text-[14px] text-muted sm:grid-cols-2">
+        <ListRow title={<span className="text-[22px] font-semibold tracking-[-0.02em]">{plan.name}</span>} trailing={<StatusBadge tone={paying ? "ok" : "neutral"}>{paying ? "Active" : "Aucune formule"}</StatusBadge>} />
+        <ul className="mt-3 grid gap-x-8 gap-y-1.5 text-[14px] text-muted sm:grid-cols-2">
           {included.map((i) => <li key={i}>{i}</li>)}
         </ul>
-        <div className="mt-5 flex flex-wrap gap-3">
-          <ManageButton />
+        <div className="mt-6 flex flex-wrap gap-3">
+          {subscribed && <ManageButton />}
           {profile && canSubscribe(profile) && <a href="#formules" className="dk-btn dk-btn-secondary">Voir les formules</a>}
         </div>
+        {subscribed && <p className="mt-3 text-[13px] text-muted">Moyen de paiement, factures et résiliation : dans le portail, via « Gérer l&apos;abonnement ».</p>}
       </Section>
       {profile && canSubscribe(profile) && (
         <div id="formules" className="scroll-mt-24">
@@ -141,11 +144,8 @@ async function Formule() {
           </Section>
         </div>
       )}
-      <Section title="Limites">
-        <UsageTab />
-      </Section>
-      <Section title="Factures" text="Tes factures apparaîtront ici dès ton premier paiement.">
-        <p className="text-[14px] text-muted">Aucune facture pour l&apos;instant.</p>
+      <Section title="Limites de ta formule">
+        <UsageTab embedded />
       </Section>
     </>
   );

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import MaskedUrl from "@/components/dashboard/MaskedUrl";
 import { useStreamMode } from "@/components/dashboard/streamMode";
 import type { RelayView } from "@/lib/core";
+import { moblinLink } from "@/lib/moblin-link";
 
 // Se connecter : on choisit son appareil, puis QR (Moblin) ou URL complète en bas, et « Avancé » pour URL et identifiant séparés.
 
@@ -26,10 +27,6 @@ function devices(relay: Props["relay"]): Device[] {
   }
   list.push({ id: "obs", name: "OBS Studio", tag: "Récupérer le flux", hint: "Source Média → décocher « Fichier local » → champ Entrée.", url: relay.obs_srt_url, label: "URL OBS" });
   return list;
-}
-
-export function moblinLink(name: string, url: string) {
-  return `moblin://?${encodeURIComponent(JSON.stringify({ streams: [{ name, url }] }))}`;
 }
 
 function Qr({ value, label }: { value: string; label: string }) {
@@ -85,6 +82,10 @@ export default function RelayUrls({ relay }: Props) {
   const { base, id } = splitUrl(dev.url);
   const rtmpKey = relay.protocol === "rtmp" && dev.id === "rtmp";
   const u = relay.urls;
+  // Facultatif, jamais enregistré : ces champs ne servent qu'à fabriquer le QR dans cette page.
+  const [obsUrl, setObsUrl] = useState("");
+  const [obsPass, setObsPass] = useState("");
+  const obs = /^wss?:\/\/\S+$/i.test(obsUrl.trim()) ? { url: obsUrl, password: obsPass } : undefined;
 
   return (
     <div className="space-y-6">
@@ -112,8 +113,26 @@ export default function RelayUrls({ relay }: Props) {
 
         {dev.moblin && (
           <>
-            <Qr value={moblinLink(relay.name, dev.url)} label={`QR code Moblin pour ${relay.name}`} />
-            <a href={moblinLink(relay.name, dev.url)} className="inline-flex rounded-full border border-line px-4 py-2 text-sm transition-colors hover:bg-foreground/10">
+            <Qr value={moblinLink(relay.name, dev.url, obs)} label={`QR code Moblin pour ${relay.name}`} />
+            <details className="rounded-xl border border-line">
+              <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium [&::-webkit-details-marker]:hidden">
+                Ajouter le contrôle d&apos;OBS au même QR <span className="font-normal text-muted">(facultatif)</span>
+              </summary>
+              <div className="grid gap-3 border-t border-line p-4 sm:grid-cols-2">
+                <label className="text-sm">
+                  Adresse WebSocket d&apos;OBS
+                  <input value={obsUrl} onChange={(e) => setObsUrl(e.target.value)} placeholder="ws://192.168.1.20:4455" inputMode="url" autoCapitalize="off" autoCorrect="off" spellCheck={false} className="mt-2 h-11 w-full rounded-xl border border-line bg-background px-4 font-mono text-sm focus:border-foreground/70 focus:outline-none" />
+                </label>
+                <label className="text-sm">
+                  Mot de passe
+                  <input value={obsPass} onChange={(e) => setObsPass(e.target.value)} type="password" autoComplete="off" className="mt-2 h-11 w-full rounded-xl border border-line bg-background px-4 text-sm focus:border-foreground/70 focus:outline-none" />
+                </label>
+                <p className="text-xs leading-relaxed text-muted sm:col-span-2">
+                  {obs ? "Le QR contient maintenant le stream et le contrôle d'OBS. Ne le montre à personne." : "OBS → Outils → Paramètres du serveur WebSocket. Ces champs restent dans cette page : rien n'est enregistré."}
+                </p>
+              </div>
+            </details>
+            <a href={moblinLink(relay.name, dev.url, obs)} className="inline-flex rounded-full border border-line px-4 py-2 text-sm transition-colors hover:bg-foreground/10">
               Ouvrir dans Moblin (depuis l&apos;iPhone)
             </a>
           </>

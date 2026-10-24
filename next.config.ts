@@ -44,7 +44,7 @@ const nextConfig: NextConfig = {
     const host = (value: string) => [{ type: "host" as const, value }];
     const AUTH_PAGES = ["/connexion", "/inscription", "/mot-de-passe-oublie", "/reinitialiser", "/premiere-connexion"];
     const APP_PAGES = ["/dashboard", "/bienvenue", "/cam"];
-    const OTHER_HOSTS = ["www", "app", "auth", "admin", "remote", "docs", "status"].map((h) => `${h}.${ROOT}`);
+    const OTHER_HOSTS = ["www", "app", "auth", "admin", "remote", "docs", "status", "videastes"].map((h) => `${h}.${ROOT}`);
     const except = (...keep: string[]) => OTHER_HOSTS.filter((h) => !keep.includes(h.split(".")[0]));
     const to = (base: string, sources: string[], from: string[]) =>
       from.flatMap((h) => sources.flatMap((src) => [{ source: src, has: host(h), destination: `${base}${src}`, permanent: true }, ...(src === "/cam" || src === "/bienvenue" || AUTH_PAGES.includes(src) ? [] : [{ source: `${src}/:path*`, has: host(h), destination: `${base}${src}/:path*`, permanent: true }])]));
@@ -67,6 +67,7 @@ const nextConfig: NextConfig = {
       { source: "/", has: host(`admin.${ROOT}`), destination: "/admin", permanent: false },
       { source: "/", has: host(`docs.${ROOT}`), destination: "/docs", permanent: false },
       { source: "/", has: host(`status.${ROOT}`), destination: "/statut", permanent: false },
+      { source: "/", has: host(`videastes.${ROOT}`), destination: "/videastes", permanent: false },
       { source: "/", has: host(`remote.${ROOT}`), destination: `${APP}/dashboard/direct`, permanent: false },
       ],
     ];

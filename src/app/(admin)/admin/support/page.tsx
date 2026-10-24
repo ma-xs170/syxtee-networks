@@ -6,6 +6,7 @@ import { requireStaff } from "@/lib/admin";
 import { staffCards } from "@/lib/staff-data";
 import { fmtAgo } from "@/lib/dashboard-data";
 import { listTickets, whoIs } from "@/lib/support";
+import { priorityUsers } from "@/lib/videastes-data";
 import { categoryLabel, isCategory, SUPPORT_CATEGORIES } from "@/lib/support-categories";
 
 export const metadata: Metadata = { title: "Admin · Support", robots: { index: false } };
@@ -25,7 +26,9 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
   const cat = isCategory(categorie) ? categorie : null;
   // Une catégorie à la fois (menu de gauche) : « Tous » les regroupe, chaque catégorie reste séparée.
   const every = await listTickets({ state: "all", limit: 300 });
-  const all = every.filter((t) => !cat || t.category === cat);
+  // Vidéastes publiés : accès prioritaire, leurs demandes passent devant (le tri garde l'ordre d'origine pour les autres).
+  const prio = await priorityUsers(every.map((t) => t.user_id));
+  const all = every.filter((t) => !cat || t.category === cat).sort((a, b) => Number(prio.has(b.user_id)) - Number(prio.has(a.user_id)));
   const waiting = (c: string | null) => every.filter((t) => (!c || t.category === c) && t.status === "open" && t.last_from === "user").length;
   const catHref = (c: string | null) => `/admin/support${[c ? `categorie=${c}` : "", tab.id !== "attente" ? `etat=${tab.id}` : ""].filter(Boolean).length ? `?${[c ? `categorie=${c}` : "", tab.id !== "attente" ? `etat=${tab.id}` : ""].filter(Boolean).join("&")}` : ""}`;
   const qs = (e: string) => `?${[cat ? `categorie=${cat}` : "", e ? `etat=${e}` : ""].filter(Boolean).join("&")}`;
@@ -71,7 +74,7 @@ export default async function AdminSupportPage({ searchParams }: { searchParams:
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{t.subject}</span>
                   <span className="mt-1 block text-xs text-muted">
-                    {names.get(t.user_id) ?? "Compte"} · {categoryLabel(t.category)} · {t.status === "resolved" ? "Résolu" : t.last_from === "user" ? "Attend ta réponse" : "Réponse envoyée"} · {t.assigned_to ? (t.assigned_to === me.id ? "Pris par toi" : `Pris par ${agents.get(t.assigned_to)?.firstName ?? "un agent"}`) : "Sans agent"} · {fmtAgo(t.updated_at)}
+                    {prio.has(t.user_id) && <span className="mr-2 rounded-full border border-foreground/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-foreground">Vidéaste</span>}{names.get(t.user_id) ?? "Compte"} · {categoryLabel(t.category)} · {t.status === "resolved" ? "Résolu" : t.last_from === "user" ? "Attend ta réponse" : "Réponse envoyée"} · {t.assigned_to ? (t.assigned_to === me.id ? "Pris par toi" : `Pris par ${agents.get(t.assigned_to)?.firstName ?? "un agent"}`) : "Sans agent"} · {fmtAgo(t.updated_at)}
                   </span>
                 </span>
                 {t.status === "open" && t.last_from === "user" && <span className="shrink-0 rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-on-accent">À répondre</span>}

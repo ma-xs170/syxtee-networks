@@ -4,6 +4,7 @@ export const site = {
   url: "https://www.syxtee-networks.fr",
   docsUrl: "https://docs.syxtee-networks.fr",
   statusUrl: "https://status.syxtee-networks.fr",
+  videastesUrl: "https://videastes.syxtee-networks.fr",
   description:
     "Pilote ton OBS à distance, diffuse partout en un clic et garde un flux stable, où que tu sois. Pensé pour les créateurs exigeants.",
   discord: "https://discord.gg/CD68F8yZuZ",

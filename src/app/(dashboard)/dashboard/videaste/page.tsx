@@ -20,6 +20,9 @@ export default async function VideastePage() {
   const isVideaste = (acc as { account_type?: string } | null)?.account_type === "videaste";
   const { data } = db && isVideaste ? await db.from("videographer_cards").select("display_name, region, country, price_from, price_to, price_unit, bio, specialties, status, review_note").eq("user_id", user.id).maybeSingle() : { data: null };
   const row = data as Row | null;
+  // Messages reçus par l'annuaire (table de la migration 0067).
+  const { data: inbox } = db && isVideaste ? await db.from("videographer_messages").select("id, from_name, from_email, body, created_at").eq("card_user_id", user.id).order("created_at", { ascending: false }).limit(30) : { data: null };
+  const messages = (inbox ?? []) as { id: string; from_name: string; from_email: string; body: string; created_at: string }[];
   const name = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ");
   const countries = regionList().map((r) => ({ code: r.code, name: `${r.flag} ${r.name}` }));
 
@@ -48,6 +51,26 @@ export default async function VideastePage() {
           <BecomeVideaste />
         )}
       </Card>
+      {isVideaste && (
+        <Card title="Messages reçus">
+          {messages.length === 0 ? (
+            <p className="text-sm text-muted">Aucun message pour l&apos;instant. Quand un streamer t&apos;écrit depuis l&apos;annuaire, son message arrive ici : réponds-lui directement par e-mail.</p>
+          ) : (
+            <ul className="divide-y divide-line">
+              {messages.map((m) => (
+                <li key={m.id} className="py-4">
+                  <p className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
+                    <span className="font-medium">{m.from_name} <a href={`mailto:${m.from_email}`} className="font-normal text-muted underline underline-offset-4">{m.from_email}</a></span>
+                    <span className="font-mono text-xs text-muted">{new Date(m.created_at).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Paris" })}</span>
+                  </p>
+                  <p className="mt-2 whitespace-pre-line text-sm leading-relaxed">{m.body}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="mt-6 border-t border-line pt-4 text-xs text-muted">Besoin d&apos;aide ? Les vidéastes publiés ont un accès prioritaire au support : écris-nous depuis le chat du site.</p>
+        </Card>
+      )}
     </DashPage>
   );
 }

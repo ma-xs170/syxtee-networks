@@ -16,6 +16,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${site.docsUrl}/docs`, changeFrequency: "monthly", priority: 0.7 },
     ...docs.map((d) => ({ url: `${site.docsUrl}/docs/${d.slug}`, changeFrequency: "monthly" as const, priority: 0.6 })),
     { url: `${site.statusUrl}/statut`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${site.url}/videastes`, changeFrequency: "daily", priority: 0.7 },
     { url: `${site.url}/cgv`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${site.url}/mentions-legales`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${site.url}/credits`, changeFrequency: "yearly", priority: 0.2 },

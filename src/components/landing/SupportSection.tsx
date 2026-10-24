@@ -1,4 +1,4 @@
-import { DiscordLogo, GithubLogo, Heart, YoutubeLogo } from "@phosphor-icons/react/dist/ssr";
+import { ArrowUpRight, DiscordLogo, GithubLogo, Heart, YoutubeLogo } from "@phosphor-icons/react/dist/ssr";
 import { site } from "@/lib/site";
 import { support } from "@/config/support";
 import { Container } from "../ui";
@@ -24,14 +24,17 @@ export default function SupportSection({ id }: { id?: string }) {
             <a href={support.sponsors ?? site.github} target="_blank" rel="noopener noreferrer" className={`${pill} btn-primary`}>
               <GithubLogo size={20} weight="fill" aria-hidden="true" />
               Contribuer sur GitHub
+              <ArrowUpRight size={16} aria-hidden="true" />
             </a>
             <a href={site.youtube} target="_blank" rel="noopener noreferrer" className={`${pill} btn-tonal`}>
               <YoutubeLogo size={20} weight="fill" aria-hidden="true" />
               Suivre sur YouTube · syxtee
+              <ArrowUpRight size={16} aria-hidden="true" />
             </a>
             <a href={site.discord} target="_blank" rel="noopener noreferrer" className={`${pill} btn-tonal`}>
               <DiscordLogo size={20} weight="fill" aria-hidden="true" />
               Rejoindre la communauté
+              <ArrowUpRight size={16} aria-hidden="true" />
             </a>
           </div>
         </div>

@@ -51,7 +51,7 @@ export function HomeHero() {
         </p>
         <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={rise(2)}>
           <Link href="/contact" className={WHITE_BTN}>{DOT}Demander une production IRL<ArrowUpRight size={16} aria-hidden="true" /></Link>
-          <Link href="#streamers" className={WHITE_BTN}>Je suis streamer indépendant<ArrowUpRight size={16} aria-hidden="true" /></Link>
+          <Link href="#streamers" className={WHITE_BTN}>Je suis streamer indépendant</Link>
         </div>
         <div className="rise mt-14" style={rise(3)}>
           <p className="mb-5 text-sm text-muted">Diffuse sur</p>

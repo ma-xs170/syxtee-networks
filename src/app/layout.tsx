@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { GeistMono } from "geist/font/mono";
-import { Inter } from "next/font/google";
+import { Caveat, Inter } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/site";
 import PwaRegister from "@/components/pwa/PwaRegister";
@@ -9,6 +9,8 @@ import JsonLd from "@/components/seo/JsonLd";
 
 
 // Deux familles : Inter (sans neutre et épurée, titres, interface et texte ; auto-hébergée par next/font) et Geist Mono (code, valeurs, petits labels).
+// Caveat : écriture manuscrite, seulement pour les légendes des polaroïds de l'accueil.
+const hand = Caveat({ subsets: ["latin"], variable: "--font-hand", display: "swap", weight: "600" });
 const inter = Inter({ subsets: ["latin", "latin-ext"], variable: "--font-ui", display: "swap" });
 
 // Icône d'onglet sans fond, assortie à l'onglet (logo noir sur barre claire, blanc sur barre sombre).
@@ -54,7 +56,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" suppressHydrationWarning className={`${inter.variable} ${GeistMono.variable} h-full antialiased`}>
+    <html lang="fr" suppressHydrationWarning className={`${inter.variable} ${hand.variable} ${GeistMono.variable} h-full antialiased`}>
       <head>
         {/* Langue choisie (FR par défaut) : posée avant l'affichage pour éviter le clignotement. Voir L.tsx et LangSwitch.tsx. */}
         <script dangerouslySetInnerHTML={{ __html: `try{var l=localStorage.getItem("lang");if(l==="en")document.documentElement.lang="en"}catch(e){}` }} />

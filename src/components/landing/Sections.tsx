@@ -6,6 +6,7 @@ import Highlight from "../ui/Highlight";
 import DirectorDemo from "./DirectorDemo";
 import Reveal from "../ui/Reveal";
 import L from "../L";
+import Polaroids from "./Polaroids";
 import Faq from "./Faq";
 import ObsHero from "./ObsHero";
 import SceneSwitcher from "./SceneSwitcher";
@@ -69,7 +70,7 @@ export function HomeHero() {
 
 export function ProductionSection() {
   return (
-    <section id="production" className="relative isolate scroll-mt-20 overflow-hidden border-b border-line py-20 lg:py-28">
+    <section id="production" className="relative isolate scroll-mt-20 overflow-hidden border-b border-line pb-24 pt-20 lg:pb-32 lg:pt-28">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(60% 45% at 100% 0%, color-mix(in srgb, var(--bad) 26%, transparent), transparent 70%), radial-gradient(50% 40% at 0% 100%, color-mix(in srgb, var(--bad) 14%, transparent), transparent 70%)" }} />
       <Container>
         <Reveal className="mx-auto max-w-3xl text-center">
@@ -80,6 +81,7 @@ export function ProductionSection() {
           <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><L fr="Contactez-nous" en="Contact us" /></Link>
           <ButtonLink href="/cas-d-usage" variant="secondary" className="h-12 px-6 text-[15px]"><L fr="Nos réalisations" en="Our work" /></ButtonLink>
         </Reveal>
+        <Polaroids />
       </Container>
     </section>
   );

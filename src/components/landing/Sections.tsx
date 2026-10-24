@@ -138,7 +138,6 @@ export function StreamersIntro({ streamers = [] }: { streamers?: HomeStreamer[] 
         <div className="mt-14">
           <ObsHero images={{ laptop: deviceImage("laptop"), phone: deviceImage("phone") }} />
         </div>
-        <div className="mt-8"><StreamerStack streamers={streamers.map((s) => ({ handle: s.handle, avatar: s.avatar }))} /></div>
       </Container>
     </section>
   );

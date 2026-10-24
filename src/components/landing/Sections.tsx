@@ -28,7 +28,7 @@ function Cell({ className = "", title, text, children, delay = 0, href, cta }: {
   // Même structure pour les quatre cartes : une zone d'illustration de hauteur fixe, un filet, puis titre et texte.
   return (
     <Reveal as="article" delay={delay} className={`bento-cell flex h-full flex-col ${className}`}>
-      <div className="flex h-48 items-center justify-center border-b border-line px-6 py-6 sm:px-8">{children}</div>
+      <div className="flex h-56 items-center justify-center border-b border-line px-6 sm:px-8">{children}</div>
       <div className="flex flex-1 flex-col p-6">
         <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
         <p className="mt-2 max-w-[48ch] text-sm leading-relaxed text-muted">{text}</p>
@@ -136,9 +136,9 @@ export function ObsBento() {
   return (
     <section id="comment" className="scroll-mt-20 pb-24 pt-12 lg:pb-36 lg:pt-16">
       <Container>
-        <Reveal>
-          <h2 className={h2}><L fr={<>{product.remoteName}, ton OBS <em>dans la poche.</em></>} en={<>Remote control, your OBS <em>in your pocket.</em></>} /></h2>
-          <p className={lead}><L fr="Chaque bouton agit sur ton vrai OBS, en direct." en="Every button acts on your real OBS, live." /></p>
+        <Reveal className="text-center">
+          <h2 className={`${h2} mx-auto max-w-[20ch]`}><L fr={<>{product.remoteName}, ton OBS <em>dans la poche.</em></>} en={<>Remote control, your OBS <em>in your pocket.</em></>} /></h2>
+          <p className={`${lead} mx-auto`}><L fr="Chaque bouton agit sur ton vrai OBS, en direct." en="Every button acts on your real OBS, live." /></p>
         </Reveal>
         <div className="mx-auto mt-12 grid max-w-4xl auto-rows-fr gap-5 md:grid-cols-2">
           <Cell delay={0.0} title={<L fr="Change de scène en un tap" en="Switch scenes in one tap" />} text={<L fr="Début, direct, connexion perdue, fin : la scène change sur ton OBS, sans attendre." en="Start, live, connection lost, end: the scene changes on your OBS, instantly." />}>

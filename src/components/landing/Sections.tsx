@@ -45,7 +45,7 @@ export function HomeHero() {
   return (
     <section data-theme="dark" className="relative isolate overflow-hidden bg-background text-foreground">
       {/* Lueur rouge en coin, puis calotte du globe sous le contenu (comme l'appel final). */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ maskImage: "linear-gradient(to bottom, transparent, #000 28%, #000 72%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 28%, #000 72%, transparent)", background: "radial-gradient(60% 70% at 0% 0%, color-mix(in srgb, var(--bad) 42%, transparent), transparent 70%), radial-gradient(45% 60% at 100% 10%, color-mix(in srgb, var(--bad) 24%, transparent), transparent 70%)" }} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ maskImage: "linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent)", background: "radial-gradient(60% 70% at 0% 0%, color-mix(in srgb, var(--bad) 42%, transparent), transparent 70%), radial-gradient(45% 60% at 100% 10%, color-mix(in srgb, var(--bad) 24%, transparent), transparent 70%)" }} />
       <CtaGlobe variant="hero" />
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
       <Container className="relative pb-40 pt-20 text-center sm:pb-44 lg:pt-28">
@@ -72,7 +72,7 @@ export function HomeHero() {
 export function ProductionSection() {
   return (
     <section id="production" className="relative isolate scroll-mt-20 overflow-hidden py-24 lg:py-36">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ maskImage: "linear-gradient(to bottom, transparent, #000 28%, #000 72%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 28%, #000 72%, transparent)", background: "radial-gradient(60% 45% at 100% 0%, color-mix(in srgb, var(--bad) 26%, transparent), transparent 70%), radial-gradient(50% 40% at 0% 100%, color-mix(in srgb, var(--bad) 14%, transparent), transparent 70%)" }} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ maskImage: "linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent)", background: "radial-gradient(60% 45% at 100% 0%, color-mix(in srgb, var(--bad) 26%, transparent), transparent 70%), radial-gradient(50% 40% at 0% 100%, color-mix(in srgb, var(--bad) 14%, transparent), transparent 70%)" }} />
       <Container>
         <Reveal className="mx-auto max-w-3xl text-center">
           <h2 className={h2}>On produit ton live IRL, <em>de A à Z.</em></h2>
@@ -131,7 +131,7 @@ export function ProductionSection() {
 export function StreamersIntro({ streamers = [] }: { streamers?: HomeStreamer[] }) {
   return (
     <section id="streamers" className="relative isolate scroll-mt-20 overflow-hidden py-24 lg:py-36">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ maskImage: "linear-gradient(to bottom, transparent, #000 28%, #000 72%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 28%, #000 72%, transparent)", background: "radial-gradient(55% 40% at 0% 0%, color-mix(in srgb, #9146ff 22%, transparent), transparent 70%), radial-gradient(55% 40% at 100% 100%, color-mix(in srgb, var(--bad) 16%, transparent), transparent 70%)" }} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ maskImage: "linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent)", background: "radial-gradient(55% 40% at 0% 0%, color-mix(in srgb, #9146ff 22%, transparent), transparent 70%), radial-gradient(55% 40% at 100% 100%, color-mix(in srgb, var(--bad) 16%, transparent), transparent 70%)" }} />
       <Container className="text-center">
         <Reveal>
           <h2 className={`${h2} mx-auto max-w-[20ch]`}>Streamers indépendants : les mêmes outils, <em>pas cher.</em></h2>

@@ -1,13 +1,14 @@
 import Image from "next/image";
 import L from "../L";
 import { siDji, siKick, siObsstudio, siTwitch, siWebrtc, siYoutube } from "@/lib/brand-icons";
+import { avatarTint, FALLBACK_TINT } from "@/lib/avatar-color";
 import type { HomeStreamer } from "@/lib/streamers";
 
 // Accueil : « Ils nous font confiance. » Une rangée d'avatars ronds, décalés en hauteur, avec le pseudo Twitch en pastille ; elle défile
 // lentement et s'arrête au survol. Données : comptes qui ont coché « Afficher ma chaîne » avec un
 // Twitch (public_streamers). Rien ne s'affiche tant qu'il n'y a aucun streamer. Immobile sous prefers-reduced-motion.
 
-type Card = { key: string; s: HomeStreamer; platform: "twitch" | "kick" | "youtube"; handle: string; url: string; dup?: boolean };
+type Card = { key: string; s: HomeStreamer; platform: "twitch" | "kick" | "youtube"; handle: string; url: string; tint?: string; dup?: boolean };
 
 function Card({ c, i }: { c: Card; i: number }) {
   const { s } = c;
@@ -24,7 +25,7 @@ function Card({ c, i }: { c: Card; i: number }) {
       ) : (
         <span className="flex size-28 items-center justify-center rounded-full border border-line bg-surface-2 text-3xl font-semibold uppercase text-muted sm:size-32">{s.handle.charAt(0)}</span>
       )}
-      <span className="relative -mt-4 flex max-w-full items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium text-white" style={{ background: "linear-gradient(135deg, #6d3bd2, #9146ff)" }}>
+      <span className="relative -mt-4 flex max-w-full items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium text-white" style={{ background: `linear-gradient(135deg, color-mix(in srgb, ${c.tint ?? FALLBACK_TINT} 78%, #000), ${c.tint ?? FALLBACK_TINT})` }}>
         <span className="truncate">{c.handle}</span>
         {s.live && <span className="live-dot shrink-0" role="img" aria-label="En direct" />}
       </span>
@@ -103,12 +104,15 @@ function BrandStrip() {
   );
 }
 
-export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] }) {
+export default async function StreamerWall({ streamers }: { streamers: HomeStreamer[] }) {
   if (streamers.length === 0) return null;
   const ranked = [...streamers].sort((a, b) => Number(!!b.live) - Number(!!a.live) || Number(b.partner) - Number(a.partner));
   // Une carte par chaîne Twitch.
   const cards: Card[] = ranked.flatMap((s) => s.channels.filter((ch) => ch.platform === "twitch").map((ch) => ({ key: `${s.handle}-${ch.platform}`, s, platform: ch.platform, handle: ch.handle, url: ch.url })));
   if (cards.length === 0) return null;
+  // Pastille de pseudo teintée selon la couleur dominante de l'avatar.
+  const tints = await Promise.all(cards.map((c) => avatarTint(c.s.avatar)));
+  cards.forEach((c, i) => { c.tint = tints[i]; });
   // La liste est répétée (copies masquées aux lecteurs d'écran) jusqu'à remplir la largeur ; un nombre pair garde l'alternance haut/bas.
   const row: Card[] = [];
   while (row.length < 10 || row.length % 2) row.push(...cards.map((c) => ({ ...c, dup: row.length > 0 })));

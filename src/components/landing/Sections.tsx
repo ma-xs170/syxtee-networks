@@ -328,9 +328,9 @@ export function FaqSection() {
 
 export function FinalCta() {
   return (
-    <section data-theme="dark" className="relative isolate overflow-hidden bg-background pb-56 pt-24 text-foreground sm:pb-72 sm:pt-32">
-      <CtaGlobe />
-      <Container className="relative text-center">
+    <section data-theme="dark" className="relative isolate flex min-h-[640px] items-center overflow-hidden bg-background py-24 text-foreground sm:min-h-[760px] sm:py-32">
+      <CtaGlobe variant="full" />
+      <Container className="relative w-full text-center">
         <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,6vw,4.5rem)]"><L fr={<>Prêt à partir en <em>direct ?</em></>} en={<>Ready to go <em>live?</em></>} /></h2>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <ButtonLink href="/contact" className="border-foreground! bg-foreground! text-background! hover:bg-foreground/85!"><L fr="Contacter" en="Contact us" /></ButtonLink>

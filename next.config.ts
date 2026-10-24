@@ -32,7 +32,7 @@ const nextConfig: NextConfig = {
     }));
   },
   async redirects() {
-    // Sous-domaines : www = site, app = espace client, auth = connexion, admin = administration, remote = contrôle à distance d'OBS, docs = documentation, status = état du service. Le même projet sert les sept ; ces règles renvoient chaque page sur son hôte.
+    // Sous-domaines : www = site, app = espace client, auth = connexion, admin = administration, remote = contrôle à distance d'OBS, docs = documentation, status = état du service, stats = statistiques. Le même projet sert les huit ; ces règles renvoient chaque page sur son hôte.
     const ROOT = "syxtee-networks.fr";
     const WWW = `https://www.${ROOT}`;
     const APP = `https://app.${ROOT}`;
@@ -41,6 +41,7 @@ const nextConfig: NextConfig = {
     const REMOTE = `https://remote.${ROOT}`;
     const DOCS = `https://docs.${ROOT}`;
     const STATUS = `https://status.${ROOT}`;
+    const STATS = `https://stats.${ROOT}`;
     const host = (value: string) => [{ type: "host" as const, value }];
     const AUTH_PAGES = ["/connexion", "/inscription", "/mot-de-passe-oublie", "/reinitialiser", "/premiere-connexion"];
     const APP_PAGES = ["/dashboard", "/bienvenue", "/cam"];
@@ -51,8 +52,13 @@ const nextConfig: NextConfig = {
     const hostRoutes = [
       { source: "/:path*", has: host(ROOT), destination: `${WWW}/:path*`, permanent: true },
       ...[
-      // Espace client : toujours sur app.
-      ...to(APP, APP_PAGES, except("app")),
+      // Statistiques : toujours sur stats (le centre de contrôle, pleine page).
+      ...to(STATS, ["/dashboard/statistiques"], except("stats")),
+      // Espace client : toujours sur app. Sur stats, seule la page Statistiques reste : le reste du dashboard renvoie sur app.
+      ...to(APP, APP_PAGES, except("app", "stats")),
+      ...to(APP, ["/bienvenue", "/cam"], [`stats.${ROOT}`]),
+      { source: "/dashboard", has: host(`stats.${ROOT}`), destination: `${APP}/dashboard`, permanent: true },
+      { source: "/dashboard/:path((?!statistiques(?:/|$)).+)", has: host(`stats.${ROOT}`), destination: `${APP}/dashboard/:path`, permanent: true },
       // Administration : toujours sur admin.
       ...to(ADMIN, ["/admin"], except("admin")),
       // Contrôle à distance d'un poste : toujours sur remote. (La page de présentation /controle-a-distance reste sur www.)
@@ -68,7 +74,7 @@ const nextConfig: NextConfig = {
       { source: "/", has: host(`docs.${ROOT}`), destination: "/docs", permanent: false },
       { source: "/", has: host(`status.${ROOT}`), destination: "/statut", permanent: false },
       { source: "/", has: host(`videastes.${ROOT}`), destination: "/videastes", permanent: false },
-      { source: "/", has: host(`stats.${ROOT}`), destination: `${APP}/dashboard/statistiques`, permanent: false },
+      { source: "/", has: host(`stats.${ROOT}`), destination: "/dashboard/statistiques", permanent: false },
       { source: "/", has: host(`remote.${ROOT}`), destination: `${APP}/dashboard/direct`, permanent: false },
       ],
     ];

@@ -1,6 +1,6 @@
 # Héberger le site sur le VPS OVH (bhs1), sans Vercel
 
-Le site Next.js tourne dans un conteneur `web` à côté du Core, derrière le Caddy déjà en place (HTTPS automatique). Sept hôtes pour un seul conteneur :
+Le site Next.js tourne dans un conteneur `web` à côté du Core, derrière le Caddy déjà en place (HTTPS automatique). Huit hôtes pour un seul conteneur :
 
 | Hôte | Rôle |
 |---|---|
@@ -10,6 +10,7 @@ Le site Next.js tourne dans un conteneur `web` à côté du Core, derrière le C
 | `remote.syxtee-networks.fr` | contrôle à distance d'un OBS |
 | `docs.syxtee-networks.fr` | documentation |
 | `status.syxtee-networks.fr` | état du service |
+| `stats.syxtee-networks.fr` | statistiques (centre de contrôle) |
 | `auth.syxtee-networks.fr` | connexion, inscription, mot de passe |
 
 Le site partage les 6 vCPU avec les relais. Le conteneur est plafonné à 3 Go. Le build (`next build`) charge le CPU plusieurs minutes : le lancer hors d'un live.
@@ -35,7 +36,7 @@ SITE_DOMAINS=staging.syxtee-networks.fr
 NEXT_PUBLIC_SUPABASE_URL=…
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=…
 NEXT_PUBLIC_COOKIE_DOMAIN=.syxtee-networks.fr
-CORS_ORIGINS=https://www.syxtee-networks.fr,https://app.syxtee-networks.fr,https://auth.syxtee-networks.fr,https://admin.syxtee-networks.fr,https://remote.syxtee-networks.fr,https://staging.syxtee-networks.fr,http://localhost:3000
+CORS_ORIGINS=https://www.syxtee-networks.fr,https://app.syxtee-networks.fr,https://auth.syxtee-networks.fr,https://admin.syxtee-networks.fr,https://remote.syxtee-networks.fr,https://stats.syxtee-networks.fr,https://staging.syxtee-networks.fr,http://localhost:3000
 ```
 
 `/opt/syxtee/.env.web` (`chmod 600`, variables serveur, mêmes valeurs qu'aujourd'hui, surtout `CHAT_TOKEN_KEY`) :

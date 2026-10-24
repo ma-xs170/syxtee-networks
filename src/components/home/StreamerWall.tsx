@@ -25,7 +25,7 @@ function Card({ c, i }: { c: Card; i: number }) {
       ) : (
         <span className="flex size-28 items-center justify-center rounded-full border border-line bg-surface-2 text-3xl font-semibold uppercase text-muted sm:size-32">{s.handle.charAt(0)}</span>
       )}
-      <span className="relative -mt-4 flex max-w-full items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium text-white" style={{ background: `linear-gradient(135deg, color-mix(in srgb, ${c.tint ?? FALLBACK_TINT} 78%, #000), ${c.tint ?? FALLBACK_TINT})` }}>
+      <span className="relative -mt-4 flex max-w-full items-center gap-1.5 rounded-full border border-white/15 px-3.5 py-1.5 text-sm font-medium text-white" style={{ background: `linear-gradient(135deg, color-mix(in srgb, ${c.tint ?? FALLBACK_TINT} 78%, #000), ${c.tint ?? FALLBACK_TINT})` }}>
         <span className="truncate">{c.handle}</span>
         {s.live && <span className="live-dot shrink-0" role="img" aria-label="En direct" />}
       </span>

@@ -1,9 +1,10 @@
 import sharp from "sharp";
 
 // Couleur de la pastille de pseudo : tirée de l'avatar du streamer (couleur dominante), assombrie pour que le texte blanc reste lisible (AA).
-// Calculée côté serveur, gardée en mémoire par URL (l'accueil est régénéré toutes les 5 minutes). Repli : violet Twitch.
+// Avatar noir ou gris (peu saturé) : pastille noire ou grise. Pas d'avatar : gris. Calculée côté serveur, gardée en mémoire par URL (l'accueil est régénéré toutes les 5 minutes).
 
-export const FALLBACK_TINT = "#7c3aed";
+export const FALLBACK_TINT = "#3f3f46";
+const BLACK_TINT = "#0a0a0a";
 const cache = new Map<string, string>();
 
 const hex = (n: number) => Math.round(n).toString(16).padStart(2, "0");
@@ -15,6 +16,7 @@ function toTint(r: number, g: number, b: number): string {
   let l = (max + min) / 2;
   const d = max - min;
   let s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+  if (s < 0.25) return l < 0.3 ? BLACK_TINT : FALLBACK_TINT;
   let h = 0;
   if (d !== 0) {
     if (max === r / 255) h = ((g - b) / 255 / d) % 6;

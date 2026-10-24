@@ -24,17 +24,19 @@ const lead = "mt-4 max-w-[60ch] text-base leading-relaxed text-muted";
 const rise = (i: number) => ({ "--i": i }) as React.CSSProperties;
 
 function Cell({ className = "", title, text, children, delay = 0, href, cta }: { className?: string; title: React.ReactNode; text: React.ReactNode; children?: React.ReactNode; delay?: number; href?: string; cta?: React.ReactNode }) {
+  // Même structure pour les quatre cartes : une zone d'illustration de hauteur fixe, un filet, puis titre et texte.
   return (
-    <Reveal as="article" delay={delay} className={`bento-cell flex flex-col p-6 sm:p-7 ${className}`}>
-      <div className="flex h-44 items-center justify-center">{children}</div>
-      <h3 className="mt-6 text-lg font-semibold tracking-tight">{title}</h3>
-      <p className="mt-1.5 max-w-[48ch] text-sm leading-relaxed text-muted">{text}</p>
-      {href && cta && <Link href={href} className="mt-2 inline-flex min-h-11 items-center gap-1.5 text-sm text-foreground underline-offset-4 hover:underline">{cta}</Link>}
+    <Reveal as="article" delay={delay} className={`bento-cell flex h-full flex-col ${className}`}>
+      <div className="flex h-64 items-center justify-center border-b border-line px-6 py-8 sm:px-8">{children}</div>
+      <div className="flex flex-1 flex-col p-6 sm:p-8">
+        <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
+        <p className="mt-2 max-w-[48ch] text-sm leading-relaxed text-muted">{text}</p>
+        {href && cta && <Link href={href} className="mt-auto inline-flex min-h-11 items-center pt-4 text-sm font-medium text-foreground underline-offset-4 hover:underline">{cta}</Link>}
+      </div>
     </Reveal>
   );
 }
 
-/* Accueil : promesse, deux parcours (production sur devis, streamers indépendants) */
 export function HomeHero() {
   return (
     <section id="accueil-hero" data-theme="dark" className="relative isolate overflow-hidden bg-background text-foreground">
@@ -136,25 +138,25 @@ export function ObsBento() {
           <h2 className={h2}><L fr={<>{product.remoteName}, ton OBS <em>dans la poche.</em></>} en={<>Remote control, your OBS <em>in your pocket.</em></>} /></h2>
           <p className={lead}><L fr="Chaque bouton agit sur ton vrai OBS, en direct." en="Every button acts on your real OBS, live." /></p>
         </Reveal>
-        <div className="mt-12 grid gap-4 md:grid-cols-4">
-          <Cell delay={0.0} className="md:col-span-2" title={<L fr="Change de scène en un tap" en="Switch scenes in one tap" />} text={<L fr="Début, direct, connexion perdue, fin : la scène change sur ton OBS, sans attendre." en="Start, live, connection lost, end: the scene changes on your OBS, instantly." />}>
+        <div className="mt-12 grid auto-rows-fr gap-6 md:grid-cols-2">
+          <Cell delay={0.0} title={<L fr="Change de scène en un tap" en="Switch scenes in one tap" />} text={<L fr="Début, direct, connexion perdue, fin : la scène change sur ton OBS, sans attendre." en="Start, live, connection lost, end: the scene changes on your OBS, instantly." />}>
             <SceneSwitcher />
           </Cell>
-          <Cell delay={0.08} className="md:col-span-2" title={<L fr="Mixer audio à distance" en="Remote audio mixer" />} text={<L fr="Coupe un micro ou règle un niveau pendant que tu es sur le terrain." en="Mute a mic or set a level while you are out in the field." />}>
-            <div className="flex h-32 w-full items-end gap-1.5" aria-hidden="true">
+          <Cell delay={0.08} title={<L fr="Mixer audio à distance" en="Remote audio mixer" />} text={<L fr="Coupe un micro ou règle un niveau pendant que tu es sur le terrain." en="Mute a mic or set a level while you are out in the field." />}>
+            <div aria-hidden="true" className="flex h-32 w-full max-w-sm items-end gap-1.5">
               {[40, 62, 50, 78, 66, 88, 58, 72, 46, 64].map((h, i) => (
-                <span key={i} className={`level-bar h-full flex-1 origin-bottom rounded-t-md ${i > 7 ? "bg-warn" : "bg-ok"}`} style={{ "--p": h / 100, transform: `scaleY(${h / 100})`, opacity: 0.8, animationDuration: `${650 + ((i * 137) % 500)}ms`, animationDelay: `${-((i * 211) % 700)}ms` } as React.CSSProperties} />
+                <span key={i} className={`level-bar h-full flex-1 origin-bottom rounded-t-md ${i > 7 ? "bg-bad" : "bg-foreground/55"}`} style={{ "--p": h / 100, transform: `scaleY(${h / 100})`, animationDuration: `${650 + ((i * 137) % 500)}ms`, animationDelay: `${-((i * 211) % 700)}ms` } as React.CSSProperties} />
               ))}
             </div>
           </Cell>
-          <Cell delay={0.16} className="md:col-span-2" title={<L fr="Espaces partagés" en="Shared spaces" />} text={<L fr="Invite un modérateur ou un monteur à piloter avec toi, chacun avec son compte et son rôle." en="Invite a moderator or an editor to control with you, each with their own account and role." />} href="/espaces-partages" cta={<L fr="Découvrir les espaces partagés" en="Discover shared spaces" />}>
-            <div className="flex items-center justify-center gap-4" aria-hidden="true">
-              {[["M", "from-violet-500 to-pink-500"], ["L", "from-sky-500 to-blue-600"], ["S", "from-emerald-500 to-teal-600"], ["+", "from-amber-400 to-orange-500"]].map(([l, c]) => (
-                <span key={l} className={`grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br ${c} text-xl font-semibold text-white shadow-lg`}>{l}</span>
+          <Cell delay={0.16} title={<L fr="Espaces partagés" en="Shared spaces" />} text={<L fr="Invite un modérateur ou un monteur à piloter avec toi, chacun avec son compte et son rôle." en="Invite a moderator or an editor to control with you, each with their own account and role." />} href="/espaces-partages" cta={<L fr="Découvrir les espaces partagés" en="Discover shared spaces" />}>
+            <div aria-hidden="true" className="flex items-center justify-center gap-4">
+              {["M", "L", "S", "+"].map((l) => (
+                <span key={l} className="grid size-16 place-items-center rounded-full border border-line-strong bg-background text-xl font-semibold">{l}</span>
               ))}
             </div>
           </Cell>
-          <Cell delay={0.24} className="md:col-span-2" title={<L fr="Tourne sur ton propre PC ou Mac" en="Runs on your own PC or Mac" />} text={<L fr="Zéro serveur à louer. Tu relies ton ordinateur avec un code." en="No server to rent. You link your computer with a code." />}>
+          <Cell delay={0.24} title={<L fr="Tourne sur ton propre PC ou Mac" en="Runs on your own PC or Mac" />} text={<L fr="Zéro serveur à louer. Tu relies ton ordinateur avec un code." en="No server to rent. You link your computer with a code." />}>
             <MacAndPc className="mx-auto max-w-[440px]" />
           </Cell>
         </div>

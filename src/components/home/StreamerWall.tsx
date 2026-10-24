@@ -75,7 +75,7 @@ function BrandStrip() {
   return (
     <section aria-labelledby="techno-titre" className="pb-20 pt-0 sm:pb-24">
       <h2 id="techno-titre" className="px-4 text-center text-xl font-medium"><L fr="Technologies implémentées" en="Supported technologies" /></h2>
-      <div className="mx-auto mt-10 max-w-5xl overflow-hidden px-4">
+      <div className="mx-auto mt-10 max-w-5xl overflow-hidden px-4" style={{ maskImage: "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)" }}>
         <div className="marquee-wrap overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="marquee marquee-l">
             {[0, 1].map((copy) => (

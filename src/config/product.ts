@@ -65,7 +65,7 @@ export const product = {
   ],
   /** Abonnement du contrôle à distance et de l'interface de l'Encodeur. Prix « bientôt disponible » tant que null. */
   plans: [
-    { id: "free", name: "Gratuit", text: "1 relais et 1 flux pour essayer.", points: ["1 relais SRTLA ou RTMP", "Santé du flux et mire de coupure", "Documentation"], price: null as number | null },
+    { id: "free", name: "Gratuit", text: "1 relais et 1 flux pour essayer.", points: ["1 relais SRTLA ou RTMP", "50 Go de données par mois", "Santé du flux et mire de coupure"], price: null as number | null },
     { id: "paid", name: "Payant", text: "Direct stable, santé du flux et contrôle OBS à distance.", points: ["Direct stable en 4G et 5G", "Mire de coupure automatique", "Pilotage d'OBS depuis ton téléphone"], price: null as number | null, featured: true },
     { id: "partner", name: "Partenaire", text: "Pour les créateurs et les régies accompagnés.", points: ["Accès illimité", "Espaces partagés", "Contact direct"], price: null as number | null },
   ],

@@ -202,3 +202,11 @@ export async function getStats(range: Range, timezone = "Europe/Paris") {
     timezone,
   };
 }
+
+/** Octets diffusés ce mois-ci (UTC) : durée × débit moyen des directs, comme le calcule le Core pour le plafond du palier Gratuit. */
+export async function monthlyBytesUsed(supabase: { from: (t: string) => any }, userId: string): Promise<number> {
+  const d = new Date();
+  const start = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString();
+  const { data } = await supabase.from("live_sessions").select("duration_s, avg_kbps").eq("user_id", userId).gte("started_at", start);
+  return ((data ?? []) as { duration_s: number; avg_kbps: number }[]).reduce((sum, r) => sum + r.duration_s * r.avg_kbps * 125, 0);
+}

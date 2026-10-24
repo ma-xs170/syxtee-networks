@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Admin · Partenaires", robots: { ind
 
 // Admin : comptes en formule Partenaire, avec l'échéance et la note. Réservée à ADMIN_EMAILS (404 sinon).
 
-type Row = { support_id: string; first_name: string | null; last_name: string | null; twitch_login: string | null; plan_until: string | null; plan_note: string | null };
+type Row = { id: string; first_name: string | null; last_name: string | null; twitch_login: string | null; plan_until: string | null; plan_note: string | null };
 
 /** Échéance dans moins de 7 jours (mise en avant). */
 const endsSoon = (iso: string | null) => !!iso && Date.parse(iso) - Date.now() < 7 * 86_400_000;
@@ -20,7 +20,7 @@ export default async function AdminPartenairesPage() {
   const { data } = hasAdmin
     ? await createAdminClient()
         .from("profiles")
-        .select("support_id, first_name, last_name, twitch_login, plan_until, plan_note")
+        .select("id, first_name, last_name, twitch_login, plan_until, plan_note")
         .eq("plan", "partner")
         .order("plan_until", { ascending: true, nullsFirst: false })
         .limit(500)
@@ -40,7 +40,6 @@ export default async function AdminPartenairesPage() {
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead className="text-xs text-muted">
                 <tr>
-                  <th className="py-2 pr-4 font-normal">ID support</th>
                   <th className="py-2 pr-4 font-normal">Nom</th>
                   <th className="py-2 pr-4 font-normal">Twitch</th>
                   <th className="py-2 pr-4 font-normal">Expire</th>
@@ -51,13 +50,12 @@ export default async function AdminPartenairesPage() {
                 {rows.map((r) => {
                   const soon = endsSoon(r.plan_until);
                   return (
-                    <tr key={r.support_id}>
-                      <td className="py-2.5 pr-4 font-mono text-xs">
-                        <Link href={`/admin/comptes?q=${r.support_id}`} className="underline-offset-4 hover:underline">
-                          {r.support_id}
+                    <tr key={r.id}>
+                      <td className="py-2.5 pr-4">
+                        <Link href={`/admin/comptes/${r.id}`} className="underline-offset-4 hover:underline">
+                          {[r.first_name, r.last_name].filter(Boolean).join(" ") || "?"}
                         </Link>
                       </td>
-                      <td className="py-2.5 pr-4">{[r.first_name, r.last_name].filter(Boolean).join(" ") || "?"}</td>
                       <td className="py-2.5 pr-4 text-muted">{r.twitch_login ? `@${r.twitch_login}` : ""}</td>
                       <td className={`py-2.5 pr-4 font-mono text-xs ${soon ? "text-foreground" : "text-muted"}`}>{r.plan_until ? day(r.plan_until) : "Sans fin"}</td>
                       <td className="py-2.5 text-muted">{r.plan_note ?? ""}</td>

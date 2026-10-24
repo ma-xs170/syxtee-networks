@@ -28,7 +28,7 @@ export default async function AdminTicketPage({ params }: { params: Promise<{ id
   const [agents, authors, { data: profile }, { data: auth }] = await Promise.all([
     staffCards(agentIds),
     whoIs([ticket.user_id, ...messages.map((m) => m.author_id).filter((x): x is string => !!x)]),
-    db.from("profiles").select("support_id, last_seen_at").eq("id", ticket.user_id).maybeSingle(),
+    db.from("profiles").select("last_seen_at").eq("id", ticket.user_id).maybeSingle(),
     db.auth.admin.getUserById(ticket.user_id),
   ]);
   const client = authors.get(ticket.user_id) ?? "Client";
@@ -127,18 +127,10 @@ export default async function AdminTicketPage({ params }: { params: Promise<{ id
               <dt className="text-muted">Messages</dt>
               <dd className="tabular-nums">{messages.length}</dd>
             </div>
-            {profile?.support_id && (
-              <div className="flex justify-between gap-4">
-                <dt className="text-muted">ID support</dt>
-                <dd className="font-mono text-xs">{profile.support_id}</dd>
-              </div>
-            )}
           </dl>
-          {profile?.support_id && (
-            <Link href={`/admin/comptes?q=${profile.support_id}`} className="inline-block text-foreground underline underline-offset-4">
-              Voir le compte
-            </Link>
-          )}
+          <Link href={`/admin/comptes/${ticket.user_id}`} className="inline-block text-foreground underline underline-offset-4">
+            Voir le compte
+          </Link>
         </aside>
       </div>
     </DashPage>

@@ -1,11 +1,17 @@
 import { getPlan } from "@/lib/auth/plan";
 import { getProfile, getUser } from "@/lib/auth/dal";
 import { managedOf } from "@/lib/managed";
+import { monthlyBytesLimit } from "@/lib/plans";
+import { monthlyBytesUsed } from "@/lib/dashboard-overview";
+import { createClient } from "@/lib/supabase/server";
 
 // Bandeau de formule en haut du dashboard : Gratuit (fonctions verrouillées) ou Partenaire (badge).
 export default async function DashboardPlanLayout({ children }: LayoutProps<"/dashboard">) {
   const [plan, profile, user] = await Promise.all([getPlan(), getProfile(), getUser()]);
   const managed = user ? await managedOf(user.id) : null;
+  const cap = monthlyBytesLimit(plan);
+  const used = cap && user ? await monthlyBytesUsed(await createClient(), user.id) : 0;
+  const gb = (n: number) => (n / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 1 });
   const ends = managed?.expires_at ? new Date(managed.expires_at).toLocaleDateString("fr-FR", { dateStyle: "long", timeZone: "Europe/Paris" }) : null;
   const until = profile?.plan_until ? new Date(profile.plan_until).toLocaleDateString("fr-FR", { dateStyle: "long", timeZone: "Europe/Paris" }) : null;
   return (
@@ -22,7 +28,7 @@ export default async function DashboardPlanLayout({ children }: LayoutProps<"/da
         <div role="region" aria-label="Formule" className="border-b border-line">
           <p className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5 text-sm text-muted sm:px-6">
             <span className="text-xs">Gratuit</span>
-            <span>1 relais et 1 flux inclus. Plus de relais, l&apos;aperçu et le contrôle à distance s&apos;ouvrent avec une formule.</span>
+            <span>1 relais et 1 flux inclus, {gb(used)} Go sur {gb(cap ?? 0)} Go ce mois-ci. Plus de relais, l&apos;aperçu et le contrôle à distance s&apos;ouvrent avec une formule.</span>
             <a href="/dashboard/compte?onglet=formule" className="whitespace-nowrap text-foreground underline-offset-4 hover:underline">
               Choisir une formule →
             </a>

@@ -27,7 +27,6 @@ export type SheetProps = {
   /** Adresse vérifiée : sinon, le bouton « Renvoyer l'e-mail de vérification » apparaît dans le Résumé. */
   emailVerified: boolean;
   avatarUrl: string | null;
-  supportId: string;
   managed: boolean;
   suspendedAt: string | null;
   planId: string;
@@ -80,7 +79,6 @@ export default function AccountSheet(p: SheetProps) {
   const pct = p.maxServers ? Math.min(100, Math.round((used / p.maxServers) * 100)) : 0;
   const href = (t: SheetTab) => `/admin/comptes/${p.id}${t === "resume" ? "" : `?onglet=${t}`}`;
   const info: [string, string][] = [
-    ["ID support", p.supportId],
     ["Inscrit le", day(p.createdAt)],
     ["Dernière connexion", day(p.lastSignIn)],
     ["Présence", p.presence],

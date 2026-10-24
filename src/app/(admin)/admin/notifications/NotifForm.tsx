@@ -20,7 +20,7 @@ export default function NotifForm() {
       </div>
       <div className="space-y-2">
         <label htmlFor="n-to" className={label}>Destinataire</label>
-        <input id="n-to" name="supportId" placeholder="ID support (vide = tous les comptes)" className={`${field} h-11`} />
+        <input id="n-to" name="email" type="email" placeholder="E-mail du compte (vide = tous les comptes)" className={`${field} h-11`} />
       </div>
       {state.error && <p role="alert" className="text-sm text-bad">{state.error}</p>}
       {state.ok && <p role="status" className="text-sm text-muted">{state.ok}</p>}

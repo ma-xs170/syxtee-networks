@@ -26,7 +26,7 @@ export default async function AdminRelaisPage({ searchParams }: { searchParams: 
   const liveMap = new Map(live.map((l) => [l.relay_id, l]));
   every.sort((a, b) => Number(liveMap.has(b.id)) - Number(liveMap.has(a.id)));
   const { rows, page, pages, total } = pageOf(every, pageParam(pageQuery));
-  const { data: people } = rows.length ? await db.from("profiles").select("id, first_name, last_name, support_id").in("id", [...new Set(rows.map((r) => r.user_id))]) : { data: [] };
+  const { data: people } = rows.length ? await db.from("profiles").select("id, first_name, last_name").in("id", [...new Set(rows.map((r) => r.user_id))]) : { data: [] };
   const who = new Map((people ?? []).map((p) => [p.id as string, p]));
 
   return (
@@ -51,7 +51,7 @@ export default async function AdminRelaisPage({ searchParams }: { searchParams: 
                     <span className="font-medium">{r.name}</span>
                     {l && <Chip tone="live">En direct</Chip>}
                     <Link href={`/admin/comptes/${r.user_id}`} className="text-muted underline-offset-4 hover:underline">
-                      {[p?.first_name, p?.last_name].filter(Boolean).join(" ") || p?.support_id || "compte"}
+                      {[p?.first_name, p?.last_name].filter(Boolean).join(" ") || "compte"}
                     </Link>
                     <span className="font-mono text-xs uppercase text-muted">
                       {r.protocol} · {r.server} · {r.mode}

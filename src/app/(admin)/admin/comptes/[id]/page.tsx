@@ -66,7 +66,6 @@ export default async function AdminAccountPage({ params, searchParams }: { param
         email={u.user.email ?? ""}
         emailVerified={!!u.user.email_confirmed_at}
         avatarUrl={p.avatar_url ?? null}
-        supportId={p.support_id}
         managed={(u.user.email ?? "").endsWith("@comptes.syxtee-networks.fr")}
         suspendedAt={p.suspended_at}
         planId={p.plan}
@@ -96,7 +95,7 @@ export default async function AdminAccountPage({ params, searchParams }: { param
             ["Réseaux", [["Twitch", p.twitch_login ? `@${p.twitch_login}` : p.twitch ? `@${p.twitch}` : null], ["Kick", p.kick], ["YouTube", p.youtube], ["TikTok", p.tiktok], ["Instagram", p.instagram], ["X", p.x]]],
             ["Compte", [["Inscrit le", day(p.created_at)], ["Dernière connexion", day(u.user.last_sign_in_at)], ["Dernière activité", day(p.last_seen_at)], ["Présence", presenceOf(p.last_seen_at, u.user.last_sign_in_at).label], ["Connexion via", ((u.user.app_metadata?.providers as string[] | undefined) ?? []).join(", ") || "e-mail"], ["Profil complété", p.onboarded_at ? day(p.onboarded_at) : "Non"]]],
             ["Préférences", [["Visible sur le site", p.show_on_site ? "Oui" : "Non"], ["Prénom affiché", p.show_first_name ? "Oui" : "Non"], ["Carte de couverture", p.coverage_consent ? "Consentement donné" : "Non"]]],
-            ["Identifiants", [["ID support", p.support_id], ["ID interne", id], ["Client Stripe", p.stripe_customer_id]]],
+            ["Identifiants", [["ID interne", id], ["Client Stripe", p.stripe_customer_id]]],
           ] as [string, [string, string | null | undefined][]][]).map(([title, rows]) => (
             <section key={title} aria-label={title} className="rounded-2xl border border-line bg-surface">
               <h2 className="border-b border-line px-5 py-3.5 text-sm font-semibold">{title}</h2>
@@ -157,10 +156,6 @@ export default async function AdminAccountPage({ params, searchParams }: { param
           <Tile aria-labelledby="ids">
             <TileLabel id="ids">Identifiants</TileLabel>
             <div className="mt-4 grid gap-3 text-sm">
-              <p className="flex flex-wrap items-center gap-2 text-xs">
-                <span className="font-mono uppercase tracking-[0.1em] text-muted">ID support</span>
-                <span className="font-mono">{p.support_id}</span>
-              </p>
               <p className="flex flex-wrap items-center gap-2 text-xs">
                 <span className="font-mono uppercase tracking-[0.1em] text-muted">ID interne</span>
                 <span className="break-all font-mono" data-sensitive>
@@ -250,7 +245,7 @@ export default async function AdminAccountPage({ params, searchParams }: { param
               <p className="mb-3 text-sm text-muted">{p.suspended_at ? "Le compte est suspendu : aucun flux possible." : "Suspendre coupe tous les flux du compte."}</p>
               <SuspendForm userId={id} suspended={!!p.suspended_at} />
             </div>
-            <DeleteForm userId={id} supportId={p.support_id} />
+            <DeleteForm userId={id} confirmWord={u.user.email ?? ""} />
           </div>
         </section>
       )}

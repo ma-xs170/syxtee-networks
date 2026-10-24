@@ -197,14 +197,14 @@ test("Clé régénérée → l'ancienne est retirée du SLS, ses sessions sont c
   assert.deepEqual(kicked, ["http://mtx/v3/rtmpconns/kick/old"]);
 });
 
-test("Compte gratuit → refusé : aucune création, paires retirées du SLS, publieur coupé", async () => {
-  const { db, store, pairs } = setup("free");
+test("Formule inconnue → refusé : aucune création, paires retirées du SLS, publieur coupé", async () => {
+  const { db, store, pairs } = setup("inconnue");
   await assert.rejects(store.create(U, { name: "iPhone", protocol: "srtla", limit: 3 }), ForbiddenError);
   // Compte passé en gratuit (ou suspendu) alors qu'il avait un relais : retiré au prochain alignement.
   db.rows("profiles")[0].plan = "beta";
   const r = await store.create(U, { name: "iPhone", protocol: "srtla", limit: 3 });
   assert.ok(pairs.has(r.play_id));
-  db.rows("profiles")[0].plan = "free";
+  db.rows("profiles")[0].plan = "inconnue";
   const { relays } = await store.reconcile();
   assert.equal(relays.length, 0);
   assert.ok(!pairs.has(r.play_id));
@@ -221,10 +221,11 @@ test("vérification à la connexion : formule, suspension, quota de relais, flux
   assert.equal(publisherVerdict({ plan: "beta", suspended: false }, three, "d", 0), "quota", "4e relais au-delà de la bêta (3)");
   assert.equal(publisherVerdict({ plan: "beta", suspended: false }, three, "c", 3), "streams");
   // Formule échue (plan_until passé) : traitée en Gratuit, même avant la tâche quotidienne.
-  assert.equal(publisherVerdict({ plan: "partner", suspended: false, until: "2020-01-01T00:00:00Z" }, three, "a", 0), "plan");
+  assert.equal(publisherVerdict({ plan: "partner", suspended: false, until: "2020-01-01T00:00:00Z" }, three, "a", 0), null, "Gratuit : le plus ancien relais reste permis");
+  assert.equal(publisherVerdict({ plan: "partner", suspended: false, until: "2020-01-01T00:00:00Z" }, three, "b", 0), "quota");
   assert.equal(publisherVerdict({ plan: "partner", suspended: false, until: "2999-01-01T00:00:00Z" }, three, "a", 0), null);
-  assert.equal(publisherVerdict({ plan: "free", suspended: false }, three, "a", 0), "plan");
-  assert.equal(publisherVerdict({ plan: "free", suspended: false }, three, "a", 0), "plan");
+  assert.equal(publisherVerdict({ plan: "free", suspended: false }, three, "a", 0), null);
+  assert.equal(publisherVerdict({ plan: "free", suspended: false }, three, "b", 0), "quota");
   assert.equal(publisherVerdict({ plan: "beta", suspended: true }, three, "a", 0), "suspended");
   assert.equal(publisherVerdict({ plan: "inconnue", suspended: false }, three, "a", 0), "plan", "formule inconnue = aucun droit");
   assert.equal(publisherVerdict(null, three, "a", 0), "account");

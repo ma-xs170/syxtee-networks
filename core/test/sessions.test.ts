@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { GRACE_MS, createSessionTracker, downsample, type SessionDb, type SessionRow } from "../src/sessions.ts";
+import { GRACE_MS, createSessionTracker, downsample, monthStart, sessionBytes, type SessionDb, type SessionRow } from "../src/sessions.ts";
 
 function fakeDb() {
   const rows = new Map<string, SessionRow>();
@@ -107,4 +107,9 @@ test("deux relais du même compte en direct en même temps : deux sessions", asy
   t += GRACE_MS;
   await s.tick();
   assert.deepEqual([...rows.values()].map((r) => r.relay_id).sort(), [R, R2]);
+});
+
+test("octets d'une session et début du mois", () => {
+  assert.equal(sessionBytes({ duration_s: 3600, avg_kbps: 8000 }), 3.6e9, "1 h à 8 Mbit/s = 3,6 Go");
+  assert.equal(monthStart(Date.UTC(2026, 9, 24, 12)), "2026-10-01T00:00:00.000Z");
 });

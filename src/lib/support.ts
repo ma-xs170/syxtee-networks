@@ -100,9 +100,9 @@ export const WAITING_AGENT_TEXT = "Merci, nous vous recherchons un support pour 
 export async function whoIs(ids: string[]): Promise<Map<string, string>> {
   const out = new Map<string, string>();
   if (!hasAdmin || ids.length === 0) return out;
-  const { data } = await createAdminClient().from("profiles").select("id, first_name, last_name, twitch_display_name, support_id").in("id", [...new Set(ids)]);
+  const { data } = await createAdminClient().from("profiles").select("id, first_name, last_name, twitch_display_name").in("id", [...new Set(ids)]);
   for (const p of data ?? []) {
-    const name = [p.first_name, p.last_name?.charAt(0) ? `${p.last_name.charAt(0)}.` : ""].filter(Boolean).join(" ") || p.twitch_display_name || p.support_id || "Compte";
+    const name = [p.first_name, p.last_name?.charAt(0) ? `${p.last_name.charAt(0)}.` : ""].filter(Boolean).join(" ") || p.twitch_display_name || "Compte";
     out.set(p.id as string, name);
   }
   return out;

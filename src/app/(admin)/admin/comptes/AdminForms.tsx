@@ -102,16 +102,16 @@ export function SuspendForm({ userId, suspended }: { userId: string; suspended: 
   );
 }
 
-export function DeleteForm({ userId, supportId }: { userId: string; supportId: string }) {
+export function DeleteForm({ userId, confirmWord }: { userId: string; confirmWord: string }) {
   const [text, setText] = useState("");
   return (
     <ActionForm action={deleteAccountAction} userId={userId} confirm="Supprimer définitivement ce compte ? Cette action est irréversible." className="grid gap-3">
       <label htmlFor="adm-delete" className="text-sm text-muted">
-        Tape <span className="font-mono text-foreground">{supportId}</span> pour confirmer
+        Tape <span className="font-mono text-foreground">{confirmWord}</span> pour confirmer
       </label>
-      <input id="adm-delete" name="confirm" value={text} onChange={(e) => setText(e.target.value)} autoComplete="off" className={`${field} max-w-xs font-mono uppercase`} />
+      <input id="adm-delete" name="confirm" value={text} onChange={(e) => setText(e.target.value)} autoComplete="off" className={`${field} max-w-xs font-mono`} />
       <div>
-        <Button danger disabled={text.trim().toUpperCase() !== supportId}>
+        <Button danger disabled={!confirmWord || text.trim().toLowerCase() !== confirmWord.toLowerCase()}>
           Supprimer le compte
         </Button>
       </div>

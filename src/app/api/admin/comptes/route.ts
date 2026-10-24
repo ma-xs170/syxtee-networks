@@ -22,9 +22,9 @@ export async function GET(request: NextRequest) {
   const { rows } = await listAccounts({ ...filter, page: 1, perPage: 5000 });
   await audit(admin.email!, "accounts.export_csv", null, null, { filter, rows: rows.length });
 
-  const head = ["id_support", "prenom", "nom", "email", "formule", "fin_formule", "statut", "inscrit_le", "derniere_connexion"];
+  const head = ["prenom", "nom", "email", "formule", "fin_formule", "statut", "inscrit_le", "derniere_connexion"];
   const lines = rows.map((r) =>
-    [r.support_id, r.first_name, r.last_name, r.email, PLANS[r.plan as PlanId]?.name ?? r.plan, r.plan_until, r.suspended_at ? "suspendu" : "actif", r.created_at, r.last_sign_in_at]
+    [r.first_name, r.last_name, r.email, PLANS[r.plan as PlanId]?.name ?? r.plan, r.plan_until, r.suspended_at ? "suspendu" : "actif", r.created_at, r.last_sign_in_at]
       .map(cell)
       .join(","),
   );

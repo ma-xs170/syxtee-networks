@@ -73,13 +73,9 @@ export default async function AdminOverviewPage() {
                   <span className="flex min-w-0 items-center gap-3">
                     <Avatar name={l.name ?? "?"} size={34} />
                     <span className="min-w-0 truncate">
-                      {l.support_id ? (
-                        <Link href={`/admin/comptes/${l.user_id}`} className="font-medium hover:underline">
-                          {l.name}
-                        </Link>
-                      ) : (
-                        <span className="font-medium">{l.name}</span>
-                      )}
+                      <Link href={`/admin/comptes/${l.user_id}`} className="font-medium hover:underline">
+                        {l.name}
+                      </Link>
                       <span className="text-muted"> · {l.relay_name ?? "relais"}</span>
                     </span>
                   </span>

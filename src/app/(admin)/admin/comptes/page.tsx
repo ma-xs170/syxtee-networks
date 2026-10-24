@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Avatar, Chip, DashHeader, DashPage, Tile } from "@/components/admin/kit";
 import { requireAdmin } from "@/lib/admin";
 import { listAccounts, type AccountFilter } from "@/lib/admin-data";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { hasAdmin } from "@/lib/supabase/admin";
-import { normalizeSupportId } from "@/lib/support-id";
 
 export const metadata: Metadata = { title: "Admin · Comptes", robots: { index: false } };
 
@@ -30,9 +28,7 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
     page: Math.max(1, Number(one(sp.page)) || 1),
     perPage: PER_PAGE,
   };
-  const exact = filter.q ? normalizeSupportId(filter.q) : null;
-  const { rows, total } = hasAdmin ? await listAccounts(exact ? { ...filter, q: exact } : filter) : { rows: [], total: 0 };
-  if (exact && rows.length === 1) redirect(`/admin/comptes/${rows[0].id}`);
+  const { rows, total } = hasAdmin ? await listAccounts(filter) : { rows: [], total: 0 };
 
   const qs = (patch: Record<string, string | number>) => {
     const p = new URLSearchParams();
@@ -98,7 +94,7 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
             <table className="w-full min-w-[820px] text-left text-sm">
               <thead className="text-xs text-muted">
                 <tr>
-                  {["ID support", "Nom", "Email", "Formule", "Statut", "Inscrit", "Connexion"].map((h) => (
+                  {["Nom", "Email", "Formule", "Statut", "Inscrit", "Connexion"].map((h) => (
                     <th key={h} className="py-2 pr-4 font-normal">
                       {h}
                     </th>
@@ -108,11 +104,6 @@ export default async function AdminComptesPage({ searchParams }: { searchParams:
               <tbody className="divide-y divide-line" data-sensitive>
                 {rows.map((r) => (
                   <tr key={r.id} className="hover:bg-foreground/[0.08]">
-                    <td className="py-3 pr-4 font-mono text-xs">
-                      <Link href={`/admin/comptes/${r.id}`} className="underline-offset-4 hover:underline">
-                        {r.support_id}
-                      </Link>
-                    </td>
                     <td className="py-3 pr-4">
                       <Link href={`/admin/comptes/${r.id}`} className="flex items-center gap-3 font-medium">
                         <Avatar name={[r.first_name, r.last_name].filter(Boolean).join(" ")} size={30} />

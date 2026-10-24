@@ -139,7 +139,6 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
           email="sl.euxin@comptes.syxtee-networks.fr"
           emailVerified
           avatarUrl={null}
-          supportId="K7QX2M"
           managed
           suspendedAt={null}
           planId="paid"

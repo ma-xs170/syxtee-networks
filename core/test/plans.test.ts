@@ -36,3 +36,12 @@ test("roomFor : total et protocole", () => {
   assert.equal(roomFor(PLAN_LIMITS.basic, { total: 1, sameProtocol: 0 }), false);
   assert.equal(roomFor(PLAN_LIMITS.extra, { total: 500, sameProtocol: 500 }), true);
 });
+
+test("Gratuit : 1 relais, 1 flux, refusé au plafond de 50 Go par mois", () => {
+  const rs = [relay("a", "rtmp", 1), relay("b", "srtla", 2)];
+  const free = { plan: "free", suspended: false };
+  assert.deepEqual([...allowedRelayIds(free, rs)], ["a"]);
+  assert.equal(publisherVerdict(free, rs, "a", 0, 49.9e9), null);
+  assert.equal(publisherVerdict(free, rs, "a", 0, 50e9), "bandwidth");
+  assert.equal(publisherVerdict({ plan: "basic", suspended: false }, rs, "a", 0, 500e9), null, "les formules payantes n'ont pas de plafond");
+});

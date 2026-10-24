@@ -72,3 +72,7 @@ export const can = (plan: Plan, feature: Feature) => plan.features.includes(feat
 
 /** Limite transmise au Core (qui recompte avant de créer). Illimité = très grand entier (JSON n'a pas d'Infinity). */
 export const relayLimit = (p: Plan) => (Number.isFinite(p.maxRelays) ? p.maxRelays : 1_000_000);
+
+/** Plafond mensuel de données diffusées du palier Gratuit : 50 Go (1 Go = 10^9 octets). Copie : FREE_MONTHLY_BYTES dans core/src/plans.ts. */
+export const FREE_MONTHLY_BYTES = 50e9;
+export const monthlyBytesLimit = (p: Plan) => (p.id === "free" ? FREE_MONTHLY_BYTES : null);

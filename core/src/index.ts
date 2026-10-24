@@ -23,11 +23,11 @@ import { createStudio } from "./studio.ts";
 import { createRemote } from "./remote.ts";
 import { createBackups } from "./backups.ts";
 import { createRecordings } from "./recordings.ts";
-import { createSessionTracker, supabaseSessionDb } from "./sessions.ts";
+import { createSessionTracker, monthlyBytes, supabaseSessionDb } from "./sessions.ts";
 import { createWebhooks } from "./webhooks.ts";
 import { createSls } from "./sls.ts";
 import { createSealer, parseSecret } from "./keys.ts";
-import { planOf, publisherVerdict } from "./plans.ts";
+import { limitsOf, planOf, publisherVerdict } from "./plans.ts";
 import { createGuardClient, createSecurity, supabaseSecurityDb } from "./security.ts";
 
 // SYXTEE Core : point d'entrée.
@@ -53,6 +53,13 @@ const relays = createRelayStore(supabase, sls, config.RELAY_NAME, {
   onRevoked: (keys) => void security.kickKeys(keys).then((n) => n && log(`${n} session(s) coupée(s) (clé retirée)`)),
 });
 const health = createHealthMonitor({ sls, samples, perSecond: config.SLS_STATS_PER_SECOND });
+async function verdictFor(relay: Relay) {
+  const account = await relays.account(relay.user_id);
+  const liveOthers = health.byUser(relay.user_id).filter((x) => x.relay.id !== relay.id && x.state.live).length;
+  // Le total du mois n'est lu que pour les formules plafonnées (Gratuit).
+  const used = limitsOf(planOf(account)).monthlyBytes !== undefined ? await monthlyBytes(supabase, relay.user_id) : 0;
+  return publisherVerdict(account, await relays.list(relay.user_id), relay.id, liveOthers, used);
+}
 const security = createSecurity({
   db: supabaseSecurityDb(supabase),
   guard,
@@ -63,11 +70,7 @@ const security = createSecurity({
   windowMs: config.SECURITY_WINDOW_S * 1000,
   banMinutes: config.SECURITY_BAN_MINUTES,
   // Publieur accepté par le SLS : compte actif, formule, quota de relais, flux simultanés (relus en base, sans cache).
-  async checkPublisher(relay) {
-    const account = await relays.account(relay.user_id);
-    const liveOthers = health.byUser(relay.user_id).filter((x) => x.relay.id !== relay.id && x.state.live).length;
-    return publisherVerdict(account, await relays.list(relay.user_id), relay.id, liveOthers);
-  },
+  checkPublisher: (relay) => verdictFor(relay),
   onDenied: () => reconcileSoon(),
 });
 const coverageSalt = config.COVERAGE_SALT || `coverage:${config.CORE_API_TOKEN}`;
@@ -333,6 +336,15 @@ const runAggregate = async (full = false) => {
   }
 };
 // Mesures prises sans base IPinfo : reclassées dès que la base est là (IP effacée ensuite).
+/** Coupe les directs des comptes qui ont atteint leur plafond mensuel (la connexion suivante est refusée par checkPublisher). */
+async function enforceBandwidth() {
+  for (const r of health.liveRelays()) {
+    if ((await verdictFor(r)) !== "bandwidth") continue;
+    const n = await security.kickKeys([r.publish_id]);
+    log(`plafond mensuel atteint : relais ${r.id.slice(0, 8)} coupé (${n} session(s))`);
+  }
+}
+
 const runPendingQueue = () =>
   void runPending({ db: supabasePendingDb(supabase), asn, relay, prefixes, touch: coverage.touch, log }).catch((e) => log(`couverture, file d'attente : ${(e as Error).message}`));
 // Re-traitement unique des mesures déjà collectées (règles v3 : ASN Antilles-Guyane, opérateur déclaré), puis carte complète.
@@ -351,6 +363,8 @@ const timers = [
   setInterval(() => void relay.refresh(), 6 * 3_600_000),
   setInterval(runPendingQueue, 10 * 60_000),
   setInterval(() => void security.flush(), 5_000),
+  // Plafond mensuel (Gratuit) : un direct en cours est coupé quand le compte atteint son plafond.
+  setInterval(() => void enforceBandwidth().catch((e) => log(`plafond mensuel : ${(e as Error).message}`)), 60_000),
   setInterval(() => void supabase.rpc("security_purge").then(({ error }) => error && log(`security_purge : ${error.message}`)), 24 * 3_600_000),
   setInterval(() => void sessions.tick(), 5_000),
   setInterval(() => void health.tick(), 200),

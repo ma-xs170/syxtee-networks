@@ -42,7 +42,7 @@ export default function SoutenirPage() {
             </li>
           </ul>
           <p className="mt-4 text-xs leading-relaxed text-muted">
-            Montants TTC. Ils montent avec l&apos;usage : plus de relais actifs, plus de CPU et de bande passante. Le palier gratuit est plafonné pour rester tenable.
+            Montants TTC. Ils montent avec l&apos;usage : plus de relais actifs, plus de CPU et de bande passante. Le palier gratuit est plafonné à 50 Go de données par mois pour rester tenable.
           </p>
         </Container>
       </section>

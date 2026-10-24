@@ -5,7 +5,10 @@
 export type PlanId = "free" | "basic" | "beta" | "paid" | "extra" | "partner" | "admin";
 
 /** `maxPerProtocol` : relais actifs au plus par protocole (SRTLA, RTMP), en plus du total. Absent = pas de limite. */
-export type Limits = { maxRelays: number; maxConcurrentStreams: number; maxPerProtocol?: number };
+export type Limits = { maxRelays: number; maxConcurrentStreams: number; maxPerProtocol?: number; /** Données diffusées au plus par mois civil (UTC), en octets. Absent = pas de plafond. */ monthlyBytes?: number };
+
+/** Plafond mensuel du palier Gratuit : 50 Go (1 Go = 10^9 octets). */
+export const FREE_MONTHLY_BYTES = 50e9;
 
 /** Régie automatique du contrôle à distance : prises (drone et autres sources) et caméras de la régie IA. Le secours et la garde audio sont pour toutes les formules payantes. */
 export type RegieRights = { prises: boolean; cams: number };
@@ -47,7 +50,7 @@ const REMOTE_PLANS = new Set<PlanId>(["beta", "paid", "extra", "partner", "admin
 export const remoteAllowed = (plan: string | null | undefined) => REMOTE_PLANS.has((plan ?? "") as PlanId);
 
 export const PLAN_LIMITS: Record<PlanId, Limits> = {
-  free: { maxRelays: 1, maxConcurrentStreams: 1 },
+  free: { maxRelays: 1, maxConcurrentStreams: 1, monthlyBytes: FREE_MONTHLY_BYTES },
   basic: { maxRelays: 1, maxConcurrentStreams: 1 },
   beta: { maxRelays: 3, maxConcurrentStreams: 3 },
   paid: { maxRelays: 10, maxConcurrentStreams: 3, maxPerProtocol: 5 },
@@ -57,7 +60,8 @@ export const PLAN_LIMITS: Record<PlanId, Limits> = {
 };
 
 /** Formule inconnue ou absente : aucun droit (refus par défaut). */
-export const limitsOf = (plan: string | null | undefined) => PLAN_LIMITS[(plan ?? "") as PlanId] ?? PLAN_LIMITS.free;
+const NO_RIGHTS: Limits = { maxRelays: 0, maxConcurrentStreams: 0 };
+export const limitsOf = (plan: string | null | undefined): Limits => PLAN_LIMITS[(plan ?? "") as PlanId] ?? NO_RIGHTS;
 
 /** `until` : fin de la formule (profiles.plan_until, migration 0016). Passée : le compte est traité en Gratuit. */
 export type Account = { plan: string | null; suspended: boolean; until?: string | null };
@@ -105,11 +109,14 @@ export function publisherVerdict<R extends RelayLike>(
   relays: R[],
   relayId: string,
   liveOthers: number,
-): "account" | "suspended" | "plan" | "quota" | "streams" | null {
+  /** Octets déjà diffusés ce mois-ci (utile seulement aux formules plafonnées). */
+  usedBytes = 0,
+): "account" | "suspended" | "plan" | "quota" | "streams" | "bandwidth" | null {
   if (!account) return "account";
   if (account.suspended) return "suspended";
   const limits = limitsOf(planOf(account));
   if (!allowedRelayIds(account, relays).has(relayId)) return limits.maxRelays <= 0 ? "plan" : "quota";
+  if (limits.monthlyBytes !== undefined && usedBytes >= limits.monthlyBytes) return "bandwidth";
   if (liveOthers + 1 > limits.maxConcurrentStreams) return "streams";
   return null;
 }

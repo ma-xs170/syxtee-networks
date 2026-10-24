@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Admin · Carte", robots: { index: fa
 // Carte communautaire : plus gros contributeurs sur 30 jours. Modération : effacer toutes les mesures d'un compte
 // (le Core les retire puis recalcule les hexagones). Pas encore de signalement de mesures par les utilisateurs.
 
-type Row = { user_id: string; support_id: string | null; first_name: string | null; last_name: string | null; measures: number; hexes: number; last_at: string };
+type Row = { user_id: string; first_name: string | null; last_name: string | null; measures: number; hexes: number; last_at: string };
 const nf = new Intl.NumberFormat("fr-FR");
 const day = (iso: string) => new Date(iso).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Paris" });
 
@@ -43,7 +43,7 @@ export default async function AdminCartePage() {
                   <tr key={r.user_id}>
                     <td className="py-2.5 pr-4">
                       <Link href={`/admin/comptes/${r.user_id}`} className="underline-offset-4 hover:underline">
-                        {[r.first_name, r.last_name].filter(Boolean).join(" ") || r.support_id || "compte"}
+                        {[r.first_name, r.last_name].filter(Boolean).join(" ") || "compte"}
                       </Link>
                     </td>
                     <td className="py-2.5 pr-4 font-mono tabular-nums">{nf.format(r.measures)}</td>

@@ -142,15 +142,16 @@ export async function suspendAction(_prev: PlanState, form: FormData): Promise<P
   return { ok: suspend ? "Compte suspendu : ses flux sont coupés." : "Compte réactivé." };
 }
 
-/** Suppression définitive : il faut retaper l'ID support du compte. */
+/** Suppression définitive : il faut retaper l'adresse e-mail du compte. */
 export async function deleteAccountAction(_prev: PlanState, form: FormData): Promise<PlanState> {
   const admin = await requireAdmin("accounts");
   const userId = uid.safeParse(form.get("userId"));
   if (!userId.success) return { error: "Requête invalide." };
   const db = createAdminClient();
-  const { data: p } = await db.from("profiles").select("support_id, first_name, last_name, plan").eq("id", userId.data).maybeSingle();
+  const { data: p } = await db.from("profiles").select("first_name, last_name, plan").eq("id", userId.data).maybeSingle();
   if (!p) return { error: "Compte introuvable." };
-  if (String(form.get("confirm") ?? "").trim().toUpperCase() !== p.support_id) return { error: `Tape ${p.support_id} pour confirmer.` };
+  const email = (await db.auth.admin.getUserById(userId.data)).data.user?.email ?? "";
+  if (!email || String(form.get("confirm") ?? "").trim().toLowerCase() !== email.toLowerCase()) return { error: `Tape ${email || "l'adresse e-mail"} pour confirmer.` };
   if (hasCore) {
     try {
       await deleteAllRelays(userId.data);

@@ -211,3 +211,19 @@ export function supabaseSessionDb(db: SupabaseClient): SessionDb {
     },
   };
 }
+
+/** Octets diffusés par une session : durée × débit moyen (kbit/s → octets). */
+export const sessionBytes = (r: { duration_s: number; avg_kbps: number }) => r.duration_s * r.avg_kbps * 125;
+
+/** Début du mois civil (UTC) qui contient `now`. */
+export const monthStart = (now: number) => {
+  const d = new Date(now);
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString();
+};
+
+/** Octets diffusés par un compte depuis le début du mois (sessions ouvertes comprises : elles sont mises à jour toutes les 30 s). */
+export async function monthlyBytes(db: SupabaseClient, userId: string, now = Date.now()): Promise<number> {
+  const { data, error } = await db.from("live_sessions").select("duration_s, avg_kbps").eq("user_id", userId).gte("started_at", monthStart(now));
+  if (error) throw new Error(`live_sessions : ${error.message}`);
+  return ((data ?? []) as { duration_s: number; avg_kbps: number }[]).reduce((sum, r) => sum + sessionBytes(r), 0);
+}

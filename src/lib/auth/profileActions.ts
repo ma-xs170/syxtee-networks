@@ -86,8 +86,7 @@ export async function saveNames(_prev: FormState, formData: FormData): Promise<F
   if (!user) return { error: "Session expirée, reconnecte-toi.", fields: raw };
   const parsed = namesSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Nom invalide.", fields: raw };
-  // Update de sa ligne (RLS). Pas d'upsert côté utilisateur : l'INSERT évaluerait le défaut support_id = new_support_id(),
-  // fonction interdite aux comptes (0012) → 42501. Ligne absente : créée par le serveur, pour l'id vérifié de la session.
+  // Update de sa ligne (RLS). Pas d'upsert côté utilisateur (migration 0017). Ligne absente : créée par le serveur, pour l'id vérifié de la session.
   const supabase = await createClient();
   let { data: rows, error } = await supabase.from("profiles").update(parsed.data).eq("id", user.id).select("id");
   if (!error && !rows?.length) {

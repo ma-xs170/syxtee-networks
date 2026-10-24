@@ -50,24 +50,24 @@ function Row({ items, reverse }: { items: Card[]; reverse?: boolean }) {
 }
 
 // Bandeau des technologies que SYXTEE implémente pour les streamers (en haut de la section) : logos en gris, qui défilent lentement. Sans logo vectoriel ici : mot-symbole (protocoles) ou icône de l'app (Moblin).
-type Brand = { key: string; node: React.ReactNode };
+type Brand = { key: string; name: string; href: string; node: React.ReactNode };
 // Même hauteur, même graisse, même corps pour tous : seul le contenu change.
 const glyph = (icon: { path: string }, size = 28) => (
   <svg viewBox="0 0 24 24" width={size} height={size} preserveAspectRatio="xMidYMid meet" fill="currentColor" aria-hidden="true" className="shrink-0"><path d={icon.path} /></svg>
 );
 const word = (t: string) => <span className="text-[1.65rem] font-bold leading-none tracking-tight">{t}</span>;
 const BRANDS: Brand[] = [
-  { key: "srtla", node: word("SRTLA") },
-  { key: "srt", node: word("SRT") },
-  { key: "rtmp", node: word("RTMP") },
-  { key: "rist", node: word("RIST") },
-  { key: "webrtc", node: (<>{glyph(siWebrtc)}{word("WebRTC")}</>) },
-  { key: "dji", node: <span className="-my-4 flex">{glyph(siDji, 72)}</span> },
-  { key: "moblin", node: (<><Image src="/images/moblin/icon.png" alt="" width={56} height={56} className="size-7 shrink-0 rounded-md grayscale" />{word("Moblin")}</>) },
-  { key: "obs", node: (<>{glyph(siObsstudio)}{word("OBS Studio")}</>) },
-  { key: "twitch", node: (<>{glyph(siTwitch)}{word("Twitch")}</>) },
-  { key: "youtube", node: (<>{glyph(siYoutube)}{word("YouTube")}</>) },
-  { key: "kick", node: (<>{glyph(siKick)}{word("Kick")}</>) },
+  { key: "srtla", name: "SRTLA", href: "https://github.com/BELABOX/srtla", node: word("SRTLA") },
+  { key: "srt", name: "SRT", href: "https://www.srtalliance.org", node: word("SRT") },
+  { key: "rtmp", name: "RTMP", href: "https://en.wikipedia.org/wiki/Real-Time_Messaging_Protocol", node: word("RTMP") },
+  { key: "rist", name: "RIST", href: "https://www.rist.tv", node: word("RIST") },
+  { key: "webrtc", name: "WebRTC", href: "https://webrtc.org", node: (<>{glyph(siWebrtc)}{word("WebRTC")}</>) },
+  { key: "dji", name: "DJI", href: "https://www.dji.com", node: <span className="-my-4 flex">{glyph(siDji, 72)}</span> },
+  { key: "moblin", name: "Moblin", href: "https://github.com/eerimoq/moblin", node: (<><Image src="/images/moblin/icon.png" alt="" width={56} height={56} className="size-7 shrink-0 rounded-md grayscale" />{word("Moblin")}</>) },
+  { key: "obs", name: "OBS Studio", href: "https://obsproject.com", node: (<>{glyph(siObsstudio)}{word("OBS Studio")}</>) },
+  { key: "twitch", name: "Twitch", href: "https://www.twitch.tv", node: (<>{glyph(siTwitch)}{word("Twitch")}</>) },
+  { key: "youtube", name: "YouTube", href: "https://www.youtube.com", node: (<>{glyph(siYoutube)}{word("YouTube")}</>) },
+  { key: "kick", name: "Kick", href: "https://kick.com", node: (<>{glyph(siKick)}{word("Kick")}</>) },
 ];
 
 function BrandStrip() {
@@ -80,7 +80,18 @@ function BrandStrip() {
             {[0, 1].map((copy) => (
               <ul key={copy} className="flex shrink-0 items-center" aria-hidden={copy === 1 ? true : undefined}>
                 {[...BRANDS, ...BRANDS].map((b, i) => (
-                  <li key={`${b.key}-${i}`} className="flex h-10 shrink-0 items-center gap-2.5 px-8 text-foreground/55 sm:px-12">{b.node}</li>
+                  <li key={`${b.key}-${i}`} className="shrink-0">
+                    <a
+                      href={b.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${b.name} (nouvel onglet)`}
+                      {...(copy === 1 || i >= BRANDS.length ? { tabIndex: -1 } : {})}
+                      className="flex h-10 items-center gap-2.5 px-8 text-foreground/55 transition-colors duration-200 hover:text-foreground focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground sm:px-12"
+                    >
+                      {b.node}
+                    </a>
+                  </li>
                 ))}
               </ul>
             ))}

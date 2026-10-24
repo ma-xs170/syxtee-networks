@@ -9,6 +9,8 @@ export const site = {
     "Pilote ton OBS à distance, diffuse partout en un clic et garde un flux stable, où que tu sois. Pensé pour les créateurs exigeants.",
   discord: "https://discord.gg/CD68F8yZuZ",
   instagram: "https://www.instagram.com/syxtee.networks/",
+  youtube: "https://www.youtube.com/@syxtee",
+  github: "https://github.com/ma-xs170/syxtee-networks",
   year: new Date().getFullYear(),
 };
 
@@ -28,7 +30,7 @@ export const nav: NavItem[] = [
   { label: "Contrôle à distance", href: "/controle-a-distance" },
   { label: "Nos serveurs", href: "/relais" },
   { label: "Tarifs", href: "/tarifs" },
-  { label: "Devenir partenaire", href: "/acces", underline: true },
+  { label: "Demander un devis", href: "/contact", underline: true },
 ];
 
 export const isMenu = (item: NavItem): item is NavMenu => "children" in item;

@@ -153,18 +153,6 @@ export default function TarifsPage() {
           </div>
         </Container>
       </section>
-
-      <section className="border-t border-line py-16 sm:py-20">
-        <Container className="max-w-4xl">
-          <div className="bento-cell flex flex-col items-start justify-between gap-6 p-7 sm:flex-row sm:items-center sm:p-9">
-            <div>
-              <h2 className="h-section">Une régie, une <em>équipe ?</em></h2>
-              <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-muted">Les espaces partagés réunissent plusieurs OBS et plusieurs personnes, chacune avec son compte et son rôle.</p>
-            </div>
-            <Link href="/espaces-partages" className="btn btn-primary shrink-0">Découvrir les espaces partagés</Link>
-          </div>
-        </Container>
-      </section>
     </>
   );
 }

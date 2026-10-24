@@ -7,7 +7,7 @@
   - soft dark grey (not pure black) + one red accent, three modes (Auto / Sombre / Clair) driven by tokens in `globals.css` (`--background`, `--surface`, `--foreground`, `--accent` = red, `--on-accent`). Neutral hovers/borders use `foreground/NN`, never `accent/NN`. Never hardcode `text-white`, `bg-black`, `#000`, `#fff` in SVG: use the tokens so both themes work. Wireframe (filaire) lines in ink color;
   - `font-mono` for labels, tags and technical metadata;
   - `--live` stays reserved for live / on-air states (dot, EN LIVE badge); red `--accent` is for primary actions;
-  - `Highlight` effect on key words in headlines;
+  - no highlight effect on headline words (removed on 2026-10-24, `Highlight` renders plain text);
   - hand-drawn wireframe SVG illustrations (`src/components/illustrations`) instead of photos.
 - Allowed exceptions to the skill: mono uppercase labels and numbered sections when the page justifies them; wireframe SVGs replace the "real images" rule; the live red dot is a real state, not decoration.
 - Kept from the skill: one accent color, WCAG AA contrast on buttons and forms, no CTA wrapping on desktop, one label per CTA intent, bento grids with no empty cells, `prefers-reduced-motion` support, no `window.addEventListener('scroll')`, `min-h-dvh` instead of `h-screen`.

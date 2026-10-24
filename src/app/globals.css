@@ -793,3 +793,4 @@ dialog[open]::backdrop { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
   .cta-globe-sky, .cta-star { animation: none; }
 }
+

@@ -33,6 +33,82 @@ function Cell({ className = "", title, text, children, delay = 0, href, cta }: {
   );
 }
 
+/* Accueil : promesse, deux parcours (production sur devis, streamers indépendants) */
+export function HomeHero() {
+  return (
+    <section className="relative overflow-hidden border-b border-line">
+      <Container className="pb-20 pt-16 text-center lg:pb-28 lg:pt-24">
+        <h1 className="rise h-serif mx-auto max-w-[16ch] text-[clamp(2.75rem,7vw,5.5rem)]" style={rise(0)}>
+          Le live IRL, <em>partout.</em>
+        </h1>
+        <p className="rise mx-auto mt-6 max-w-[58ch] text-lg leading-relaxed text-muted" style={rise(1)}>
+          Une équipe de production, des cadreurs et des relais SRTLA pour diffuser depuis n&apos;importe où. Basés en Guadeloupe, dans la Caraïbe française. Et si tu streames seul, les mêmes outils à petit prix.
+        </p>
+        <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={rise(2)}>
+          <ButtonLink href="/contact">Demander un devis</ButtonLink>
+          <ButtonLink href="#streamers" variant="secondary">Je suis streamer indépendant</ButtonLink>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+const PRODUCTION: { title: string; text: string }[] = [
+  { title: "Régie en direct", text: "Un régisseur suit ton direct : scènes, audio, caméras et plateformes. Tu te concentres sur ce qui se passe devant toi." },
+  { title: "Cadreurs IRL", text: "Des vidéastes à l'épaule, formés au live en mobilité : marathon, festival, manifestation, reportage." },
+  { title: "Réseau qui tient", text: "Nos relais SRTLA cumulent plusieurs connexions (4G, 5G, Starlink). Le direct reste stable quand la foule sature les antennes." },
+  { title: "Équipe sur place ou à distance", text: "On se déplace, ou on pilote de loin depuis la Guadeloupe. Un seul interlocuteur du premier message au dernier plan." },
+];
+
+export function ProductionSection() {
+  return (
+    <section id="production" className="scroll-mt-20 border-b border-line py-24 lg:py-36">
+      <Container>
+        <Reveal>
+          <h2 className={h2}>Pour les productions : on s&apos;en <em>charge.</em></h2>
+          <p className={lead}>
+            Tu veux un direct IRL sans monter une équipe ? Nos équipes de production s&apos;occupent de tout, avec notre propre infrastructure. Pas de matériel TVU ou LiveU à louer : des solutions payantes ou sur devis, adaptées à ton événement, partout dans le monde.
+          </p>
+        </Reveal>
+        <div className="mt-12 grid gap-4 md:grid-cols-2">
+          {PRODUCTION.map((p, i) => (
+            <Reveal as="article" key={p.title} delay={i * 0.07} className="bento-cell flex flex-col p-6 sm:p-7">
+              <h3 className="text-lg font-semibold tracking-tight">{p.title}</h3>
+              <p className="mt-2 max-w-[52ch] text-sm leading-relaxed text-muted">{p.text}</p>
+            </Reveal>
+          ))}
+        </div>
+        <Reveal className="mt-8 flex flex-wrap items-center gap-4">
+          <ButtonLink href="/contact">Demander un devis</ButtonLink>
+          <Link href="/production" className="inline-flex min-h-11 items-center gap-1.5 text-sm text-foreground underline-offset-4 hover:underline">Voir comment on travaille <span aria-hidden="true">→</span></Link>
+          <span className="text-sm text-muted">Devis gratuit, sans engagement.</span>
+        </Reveal>
+      </Container>
+    </section>
+  );
+}
+
+export function StreamersIntro({ streamers = [] }: { streamers?: HomeStreamer[] }) {
+  return (
+    <section id="streamers" className="scroll-mt-20 border-b border-line py-24 lg:py-36">
+      <Container className="text-center">
+        <Reveal>
+          <h2 className={`${h2} mx-auto max-w-[20ch]`}>Streamers indépendants : les mêmes outils, <em>pas cher.</em></h2>
+          <p className={`${lead} mx-auto`}>Pilote ton OBS depuis ton téléphone, diffuse en SRTLA sur nos relais et suis ton flux à la seconde. Gratuit pour commencer, puis dès 5 € par mois, sans engagement.</p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <ButtonLink href="/inscription">Créer mon compte</ButtonLink>
+            <ButtonLink href="/tarifs" variant="secondary">Voir les tarifs</ButtonLink>
+          </div>
+        </Reveal>
+        <div className="mt-14">
+          <ObsHero images={{ laptop: deviceImage("laptop"), phone: deviceImage("phone") }} />
+        </div>
+        <div className="mt-8"><StreamerStack streamers={streamers.map((s) => ({ handle: s.handle, avatar: s.avatar }))} /></div>
+      </Container>
+    </section>
+  );
+}
+
 /* 1. OBS CLOUD : hero, démo Mac + iPhone, bento, schéma */
 export function ObsHeroSection({ streamers = [] }: { streamers?: HomeStreamer[] }) {
   return (
@@ -258,9 +334,10 @@ export function FinalCta() {
     <section data-theme="dark" className="relative isolate overflow-hidden bg-background pb-56 pt-24 text-foreground sm:pb-72 sm:pt-32">
       <CtaGlobe />
       <Container className="relative text-center">
-        <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,6vw,4.5rem)]">Prêt à piloter ton <em>direct ?</em></h2>
-        <div className="mt-9 flex justify-center">
-          <ButtonLink href="/inscription">Créer mon compte</ButtonLink>
+        <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,6vw,4.5rem)]">Prêt à partir en <em>direct ?</em></h2>
+        <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <ButtonLink href="/contact">Demander un devis</ButtonLink>
+          <ButtonLink href="/inscription" variant="secondary">Créer mon compte</ButtonLink>
         </div>
         <div className="mt-12"><PlatformStrip /></div>
       </Container>

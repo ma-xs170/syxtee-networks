@@ -175,7 +175,7 @@ test("accueil : un streamer en live passe en premier avec badge et viewers", asy
   expect(error).toBeNull();
 
   await page.goto("/");
-  const section = page.locator("section", { has: page.getByRole("heading", { name: "Ils streament avec SYXTEE." }) });
+  const section = page.locator("section", { has: page.getByRole("heading", { name: "Ils nous font confiance." }) });
   await expect(section).toBeVisible();
   const card = section.getByRole("link", { name: /@E2E_Live/i }).first();
   await expect(card.getByRole("img", { name: "En direct" })).toBeVisible(); // pastille rouge : stream en cours

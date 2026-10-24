@@ -2,7 +2,7 @@ import Image from "next/image";
 import { siKick, siTwitch, siYoutube } from "@/lib/brand-icons";
 import type { HomeStreamer } from "@/lib/streamers";
 
-// Accueil : « Ils streament avec SYXTEE. » Deux rangées de cartes, une par chaîne (Twitch, Kick, YouTube : logo, avatar, @pseudo, lien) qui défilent
+// Accueil : « Ils nous font confiance. » Deux rangées de cartes, une par chaîne (Twitch, Kick, YouTube : logo, avatar, @pseudo, lien) qui défilent
 // lentement en sens inverse, et s'arrêtent au survol. Données : comptes qui ont coché « Afficher ma chaîne » avec un
 // Twitch ou YouTube (public_streamers). Rien ne s'affiche tant qu'il n'y a aucun streamer. Immobile sous prefers-reduced-motion.
 
@@ -82,7 +82,7 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
   return (
     <section aria-labelledby="mur-titre" className="border-b border-line py-24 sm:py-32">
       <h2 id="mur-titre" className="h-section px-4 text-center">
-        Ils streament avec SYXTEE.
+        Ils nous font confiance.
       </h2>
       <div className="mt-14 space-y-3">
         <Row items={top} />

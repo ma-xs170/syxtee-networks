@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { signOut } from "@/app/(auth)/actions";
 import { activeAlso, dashboardNav, withLocks } from "@/lib/dashboard-nav";
-import { nav } from "@/lib/site";
+import { nav, site } from "@/lib/site";
 import AccountMenu, { Avatar, MenuLinkItem, siteAccountLinks, useAccount, type MenuGroup } from "./AccountMenu";
 import { LivePill } from "./dashboard/LiveStatus";
 import StreamModeToggle from "./dashboard/StreamModeToggle";
@@ -45,6 +45,12 @@ function dashboardGroups(admin: boolean): MenuGroup[] {
 export default function Nav({ variant = "site", admin = false }: { variant?: "site" | "dashboard"; admin?: boolean }) {
   const [open, setOpen] = useState(false);
   const [compact, setCompact] = useState(false);
+  // Sur un sous-domaine (docs, status, videastes…), le logo ramène à l'accueil du site, pas à la racine du sous-domaine.
+  const [home, setHome] = useState("/");
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (/\.syxtee-networks\.fr$/.test(location.hostname) && !location.hostname.startsWith("www.")) setHome(site.url);
+  }, []);
   const sentinel = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const account = useAccount();
@@ -73,7 +79,7 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
     <header className={`sticky top-0 z-50 border-b border-line glass-bar transition-[background-color] duration-200 ${compact ? "bg-background/90" : "bg-background/60"}`}>
       {/* 3 zones : logo à gauche, menus centrés, compte + Discord à droite */}
       <div className={`mx-auto flex h-16 origin-top items-center justify-between gap-6 px-4 transition-transform duration-200 motion-reduce:transition-none sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] ${dash ? "max-w-[1400px]" : "max-w-6xl"} ${compact ? "scale-[0.97]" : ""}`}>
-        <Link href={dash ? "/dashboard" : "/"} onClick={() => setOpen(false)} className="flex min-h-11 shrink-0 items-center gap-3 justify-self-start" aria-label={dash ? "Dashboard SYXTEE" : "SYXTEE NETWORKS, accueil"}>
+        <Link href={dash ? "/dashboard" : home} onClick={() => setOpen(false)} className="flex min-h-11 shrink-0 items-center gap-3 justify-self-start" aria-label={dash ? "Dashboard SYXTEE" : "SYXTEE NETWORKS, accueil"}>
           <Image src="/logo-400.png" alt="" width={20} height={28} priority style={{ width: 20, height: "auto" }} className="ink-img" />
           <span className="whitespace-nowrap text-[15px] font-medium leading-none tracking-[0.02em] text-foreground">
             SYXTEE<span className="hidden font-medium text-foreground xl:inline"> {dash ? "DASHBOARD" : "NETWORKS"}</span>

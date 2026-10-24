@@ -1,10 +1,6 @@
 import type { ReactNode } from "react";
 
-// Surlignage d'une partie de titre (un seul par titre, jamais dans un paragraphe). Statique : fond plein, texte inversé.
+// Ancien surlignage de mots de titre : supprimé (décision du 2026-10-24). Le composant reste pour ne pas toucher aux appels : il n'affiche plus que le texte.
 export default function Highlight({ children }: { children: ReactNode }) {
-  return (
-    <span className="rounded-[2px] bg-foreground px-1 text-background [-webkit-box-decoration-break:clone] [box-decoration-break:clone]">
-      {children}
-    </span>
-  );
+  return <>{children}</>;
 }

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
-import { ButtonLink } from "@/components/ui/Button";
+import Link from "next/link";
+import { ArrowRight, DiscordLogo, GithubLogo, Heart } from "@phosphor-icons/react/dist/ssr";
+import ServerRack from "@/components/illustrations/ServerRack";
+import { site } from "@/lib/site";
 import { Container } from "@/components/ui";
 import Highlight from "@/components/ui/Highlight";
 import { monthly, support, totalMonthly } from "@/config/support";
@@ -10,6 +13,9 @@ export const metadata: Metadata = {
   description: "Les coûts réels de SYXTEE NETWORKS (serveur, domaine) et comment aider à garder le palier gratuit ouvert.",
   alternates: { canonical: "/soutenir" },
 };
+
+const pill = "inline-flex h-12 w-full items-center justify-center gap-2.5 whitespace-nowrap rounded-full px-6 text-[15px] font-medium transition-[background-color,border-color,transform] duration-150 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
+const ghost = "border border-line-strong bg-surface-2 text-foreground hover:border-foreground/30";
 
 const eur = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 
@@ -47,19 +53,53 @@ export default function SoutenirPage() {
         </Container>
       </section>
 
-      <section className="py-16">
-        <Container className="max-w-3xl">
+      <section className="py-16 sm:py-24">
+        <Container>
           <p className="label-mono">Aider</p>
-          <h2 className="h-serif mt-3 text-3xl">Un don finance les serveurs, rien d&apos;autre.</h2>
-          <p className="mt-4 max-w-[60ch] leading-relaxed text-muted">
-            Les formules payantes couvrent le service. Les dons servent à garder le palier gratuit ouvert et à financer les parties ouvertes du projet. Aucun don n&apos;est obligatoire, et aucune fonction n&apos;est réservée aux donateurs.
-          </p>
-          <div className="mt-8">
-            {support.sponsors ? (
-              <ButtonLink href={support.sponsors} external>Soutenir sur GitHub Sponsors</ButtonLink>
-            ) : (
-              <p className="inline-flex rounded-full border border-line px-4 py-2 font-mono text-xs text-muted">GitHub Sponsors : bientôt</p>
-            )}
+          <div className="mt-5 overflow-hidden rounded-3xl border border-line bg-surface">
+            <div className="grid gap-10 p-7 sm:p-12 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center">
+              <div className="max-w-xl">
+                <h2 className="h-serif text-3xl sm:text-4xl">
+                  Vous aimez SYXTEE&nbsp;? Aidez à garder le palier gratuit <Highlight>ouvert.</Highlight>
+                </h2>
+                <p className="mt-5 leading-relaxed text-muted">
+                  Un don finance les serveurs, rien d&apos;autre. Les formules payantes couvrent le service&nbsp;; les dons gardent le palier gratuit ouvert et financent les parties ouvertes du projet. Aucun don n&apos;est obligatoire, et aucune fonction n&apos;est réservée aux donateurs.
+                </p>
+                <ul className="mt-8 flex flex-wrap gap-2.5" aria-label="Ce que finance un don">
+                  {[`${eur.format(totalMonthly())} / mois de serveur et de domaine`, "1 relais gratuit par compte", "50 Go gratuits par mois"].map((t) => (
+                    <li key={t} className="rounded-full border border-line-strong bg-surface-2 px-4 py-2 font-mono text-xs text-muted">
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="relative z-10 flex flex-col gap-3">
+                {support.sponsors ? (
+                  <a href={support.sponsors} target="_blank" rel="noopener noreferrer" className={`${pill} btn-tonal`}>
+                    <Heart size={20} weight="fill" aria-hidden="true" />
+                    Soutenir sur GitHub Sponsors
+                  </a>
+                ) : (
+                  <span aria-disabled="true" className={`${pill} cursor-not-allowed border border-line-strong bg-surface-2 text-muted`}>
+                    <GithubLogo size={20} aria-hidden="true" />
+                    GitHub Sponsors
+                    <span className="rounded-full border border-line-strong px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.1em]">bientôt</span>
+                  </span>
+                )}
+                <a href={site.discord} target="_blank" rel="noopener noreferrer" className={`${pill} ${ghost}`}>
+                  <DiscordLogo size={20} aria-hidden="true" />
+                  Passer sur la communauté
+                </a>
+                <Link href="/tarifs" className={`${pill} ${ghost}`}>
+                  <ArrowRight size={20} aria-hidden="true" />
+                  Voir les formules
+                </Link>
+                <div aria-hidden="true" className="pointer-events-none mx-auto mt-3 hidden h-36 w-56 overflow-hidden opacity-60 [mask-image:linear-gradient(to_bottom,black_40%,transparent)] lg:block">
+                  <ServerRack animated={false} className="w-full" />
+                </div>
+              </div>
+            </div>
           </div>
         </Container>
       </section>

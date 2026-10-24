@@ -10,7 +10,7 @@ import TwitchCategories from "./TwitchCategories";
 import Faq from "./Faq";
 import ObsHero from "./ObsHero";
 import SceneSwitcher from "./SceneSwitcher";
-import CtaGlobe from "./CtaGlobe";
+import GuadeloupeMap from "./GuadeloupeMap";
 import Streamer from "@/components/illustrations/Streamer";
 import StreamerStack from "@/components/home/StreamerStack";
 import type { HomeStreamer } from "@/lib/streamers";
@@ -28,8 +28,8 @@ function Cell({ className = "", title, text, children, delay = 0, href, cta }: {
   // Même structure pour les quatre cartes : une zone d'illustration de hauteur fixe, un filet, puis titre et texte.
   return (
     <Reveal as="article" delay={delay} className={`bento-cell flex h-full flex-col ${className}`}>
-      <div className="flex h-64 items-center justify-center border-b border-line px-6 py-8 sm:px-8">{children}</div>
-      <div className="flex flex-1 flex-col p-6 sm:p-8">
+      <div className="flex h-48 items-center justify-center border-b border-line px-6 py-6 sm:px-8">{children}</div>
+      <div className="flex flex-1 flex-col p-6">
         <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
         <p className="mt-2 max-w-[48ch] text-sm leading-relaxed text-muted">{text}</p>
         {href && cta && <Link href={href} className="mt-auto inline-flex min-h-11 items-center pt-4 text-sm font-medium text-foreground underline-offset-4 hover:underline">{cta}</Link>}
@@ -140,12 +140,12 @@ export function ObsBento() {
           <h2 className={h2}><L fr={<>{product.remoteName}, ton OBS <em>dans la poche.</em></>} en={<>Remote control, your OBS <em>in your pocket.</em></>} /></h2>
           <p className={lead}><L fr="Chaque bouton agit sur ton vrai OBS, en direct." en="Every button acts on your real OBS, live." /></p>
         </Reveal>
-        <div className="mt-12 grid auto-rows-fr gap-6 md:grid-cols-2">
+        <div className="mx-auto mt-12 grid max-w-4xl auto-rows-fr gap-5 md:grid-cols-2">
           <Cell delay={0.0} title={<L fr="Change de scène en un tap" en="Switch scenes in one tap" />} text={<L fr="Début, direct, connexion perdue, fin : la scène change sur ton OBS, sans attendre." en="Start, live, connection lost, end: the scene changes on your OBS, instantly." />}>
             <SceneSwitcher />
           </Cell>
           <Cell delay={0.08} title={<L fr="Mixer audio à distance" en="Remote audio mixer" />} text={<L fr="Coupe un micro ou règle un niveau pendant que tu es sur le terrain." en="Mute a mic or set a level while you are out in the field." />}>
-            <div aria-hidden="true" className="flex h-32 w-full max-w-sm items-end gap-1.5">
+            <div aria-hidden="true" className="flex h-24 w-full max-w-xs items-end gap-1.5">
               {[40, 62, 50, 78, 66, 88, 58, 72, 46, 64].map((h, i) => (
                 <span key={i} className={`level-bar h-full flex-1 origin-bottom rounded-t-md ${i > 7 ? "bg-bad" : "bg-foreground/55"}`} style={{ "--p": h / 100, transform: `scaleY(${h / 100})`, animationDuration: `${650 + ((i * 137) % 500)}ms`, animationDelay: `${-((i * 211) % 700)}ms` } as React.CSSProperties} />
               ))}
@@ -154,12 +154,12 @@ export function ObsBento() {
           <Cell delay={0.16} title={<L fr="Espaces partagés" en="Shared spaces" />} text={<L fr="Invite un modérateur ou un monteur à piloter avec toi, chacun avec son compte et son rôle." en="Invite a moderator or an editor to control with you, each with their own account and role." />} href="/espaces-partages" cta={<L fr="Découvrir les espaces partagés" en="Discover shared spaces" />}>
             <div aria-hidden="true" className="flex items-center justify-center gap-4">
               {["M", "L", "S", "+"].map((l) => (
-                <span key={l} className="grid size-16 place-items-center rounded-full border border-line-strong bg-background text-xl font-semibold">{l}</span>
+                <span key={l} className="grid size-14 place-items-center rounded-full border border-line-strong bg-background text-lg font-semibold">{l}</span>
               ))}
             </div>
           </Cell>
           <Cell delay={0.24} title={<L fr="Tourne sur ton propre PC ou Mac" en="Runs on your own PC or Mac" />} text={<L fr="Zéro serveur à louer. Tu relies ton ordinateur avec un code." en="No server to rent. You link your computer with a code." />}>
-            <MacAndPc className="mx-auto max-w-[440px]" />
+            <MacAndPc className="mx-auto max-h-full max-w-[320px]" />
           </Cell>
         </div>
       </Container>
@@ -332,7 +332,7 @@ export function FinalCta() {
   return (
     <section data-theme="dark" className="relative isolate flex min-h-[680px] items-center overflow-hidden border-t border-line bg-background py-24 text-foreground sm:min-h-[820px] sm:py-32">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(50% 55% at 50% 50%, color-mix(in srgb, var(--bad) 20%, transparent), transparent 72%)" }} />
-      <CtaGlobe variant="full" />
+      <GuadeloupeMap />
       <Container className="relative w-full text-center">
         <h2 className="h-serif mx-auto max-w-[12ch] text-[clamp(2.75rem,6vw,4.5rem)]"><L fr={<>Prêt à partir en <em>direct ?</em></>} en={<>Ready to go <em>live?</em></>} /></h2>
         <p className="mx-auto mt-5 max-w-[34ch] text-base leading-relaxed text-muted sm:text-lg"><L fr="Production IRL, relais SRTLA et contrôle d'OBS à distance, depuis la Guadeloupe." en="IRL production, SRTLA relays and remote OBS control, from Guadeloupe." /></p>

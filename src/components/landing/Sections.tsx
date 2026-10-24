@@ -9,6 +9,7 @@ import Faq from "./Faq";
 import ObsHero from "./ObsHero";
 import SceneSwitcher from "./SceneSwitcher";
 import PlatformStrip from "./PlatformStrip";
+import CtaGlobe from "./CtaGlobe";
 import StreamerStack from "@/components/home/StreamerStack";
 import type { HomeStreamer } from "@/lib/streamers";
 import EncoderViewer from "@/components/encoder/EncoderViewer";
@@ -254,8 +255,9 @@ export function FaqSection() {
 
 export function FinalCta() {
   return (
-    <section className="py-24 sm:py-32">
-      <Container className="text-center">
+    <section data-theme="dark" className="relative isolate overflow-hidden bg-background pb-56 pt-24 text-foreground sm:pb-72 sm:pt-32">
+      <CtaGlobe />
+      <Container className="relative text-center">
         <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,6vw,4.5rem)]">Prêt à piloter ton <em>direct ?</em></h2>
         <div className="mt-9 flex justify-center">
           <ButtonLink href="/inscription">Créer mon compte</ButtonLink>

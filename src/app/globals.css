@@ -768,3 +768,28 @@ dialog[open]::backdrop { opacity: 1; }
   transition: background-color 0.12s, border-color 0.12s, color 0.12s, opacity 0.12s !important;
 }
 .dash-surface .dk-toggle::after { transition: transform 0.12s !important; }
+/* Appel final de l'accueil : dégradé qui tourne, points qui scintillent, halo du globe (CtaGlobe). */
+@property --cta-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+.cta-globe-sky {
+  background:
+    radial-gradient(120% 90% at 50% 105%, color-mix(in srgb, var(--foreground) 9%, transparent), transparent 60%),
+    conic-gradient(from var(--cta-angle) at 50% 120%, color-mix(in srgb, var(--foreground) 7%, transparent), transparent 25%, color-mix(in srgb, var(--foreground) 5%, transparent) 50%, transparent 75%, color-mix(in srgb, var(--foreground) 7%, transparent));
+  animation: cta-spin 40s linear infinite;
+}
+.cta-star {
+  animation: cta-twinkle 6s ease-in-out infinite;
+}
+@keyframes cta-spin {
+  to { --cta-angle: 360deg; }
+}
+@keyframes cta-twinkle {
+  0%, 100% { opacity: 0.25; transform: translateY(0); }
+  50% { opacity: 0.9; transform: translateY(-6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta-globe-sky, .cta-star { animation: none; }
+}

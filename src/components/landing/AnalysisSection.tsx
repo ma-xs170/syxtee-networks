@@ -7,7 +7,7 @@ const h2 = "h-serif text-[clamp(2.25rem,4.5vw,3.5rem)]";
 /* Analyse en temps réel : la même vue que dans le dashboard, avec la courbe du débit qui avance. */
 export function AnalysisSection() {
   return (
-    <section id="analyse" className="scroll-mt-20 border-b border-line py-24 lg:py-36">
+    <section id="analyse" className="scroll-mt-20 py-24 lg:py-36">
       <Container>
         <Reveal>
           <h2 className={h2}>Vois ton flux en <em>direct</em>.</h2>

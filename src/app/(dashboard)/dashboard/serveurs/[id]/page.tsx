@@ -70,8 +70,6 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
     { name: "Régie automatique", text: relay.regie_available ? (relay.mode === "regie" ? "Activée" : "Disponible") : "Indisponible", ok: relay.regie_available ? true : null },
   ];
 
-  const stateText = relay.archived ? "Archivé" : relay.live ? "En direct" : relay.last_live_at ? `Dernier direct ${fmtAgo(relay.last_live_at)}` : "Jamais utilisé";
-
   const TABS = [
     { id: "info", label: "Informations générales" },
     { id: "connexions", label: "Connexions actives" },
@@ -82,7 +80,6 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
   ] as const;
   const tab = TABS.find((t) => t.id === onglet)?.id ?? "info";
   const href = (t: string) => `/dashboard/serveurs/${relay.id}${t === "info" ? "" : `?onglet=${t}`}`;
-  const goto = (label: string, t: string) => ({ label, href: href(t) });
   const act = (label: string, action: string, danger = false) => ({ label, action: { id: relay.id, action }, danger });
   const sinceKey = relay.rotated_at ? fmtAgo(relay.rotated_at) : "Jamais régénérée";
   const trigger = { cut: "Coupure seulement", cut_lowbitrate: "Coupure et débit très bas", sensitive: "Sensible" }[relay.switch_trigger];

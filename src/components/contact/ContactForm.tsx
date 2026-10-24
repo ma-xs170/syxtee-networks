@@ -8,7 +8,6 @@ import { buttonClass } from "@/components/ui/button-styles";
 const field =
   "h-11 w-full rounded-xl border border-line bg-input px-4 text-sm text-foreground placeholder:text-muted/70 transition-colors focus:border-foreground/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20";
 const label = "text-sm font-medium";
-const hint = "text-xs text-muted";
 
 const EVENT_TYPES = ["Marathon ou semi-marathon", "Course à pied ou trail", "Course cycliste", "Manifestation publique", "Festival ou concert", "Événement sportif", "Reportage ou tournage en mobilité", "Autre"];
 const DURATIONS = ["Moins de 2 h", "2 à 4 h", "4 à 8 h", "Plus de 8 h", "Plusieurs jours"];

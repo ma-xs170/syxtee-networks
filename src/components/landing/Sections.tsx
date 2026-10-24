@@ -2,7 +2,6 @@ import MacAndPc from "@/components/landing/MacAndPc";
 import Link from "next/link";
 import { Container } from "../ui";
 import { ButtonLink } from "../ui/Button";
-import FxIcon from "../ui/FxIcon";
 import Highlight from "../ui/Highlight";
 import DirectorDemo from "./DirectorDemo";
 import Reveal from "../ui/Reveal";
@@ -19,7 +18,6 @@ import { CATALOG, TIERS } from "@/lib/billing";
 
 const h2 = "h-serif text-[clamp(2.25rem,4.5vw,3.5rem)]";
 const lead = "mt-4 max-w-[60ch] text-base leading-relaxed text-muted";
-const cap = "text-xs text-muted";
 const rise = (i: number) => ({ "--i": i }) as React.CSSProperties;
 
 function Cell({ className = "", title, text, children, delay = 0, href, cta }: { className?: string; title: string; text: string; children?: React.ReactNode; delay?: number; href?: string; cta?: string }) {

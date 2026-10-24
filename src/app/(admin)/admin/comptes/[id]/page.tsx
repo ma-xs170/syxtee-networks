@@ -1,12 +1,10 @@
 import { presenceOf } from "@/lib/presence";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLink, DashHeader, DashPage, SectionTabs, Tile, TileLabel } from "@/components/admin/kit";
+import { ArrowLink, DashPage, Tile, TileLabel } from "@/components/admin/kit";
 import { ticketCounts } from "@/lib/support";
 import AccountSheet from "../AccountSheet";
 import { flag } from "@/lib/regions";
-import { Badge } from "@/components/ui/Tag";
 import { SupportId } from "@/components/SupportId";
 import { requireAdmin } from "@/lib/admin";
 import { liveNow } from "@/lib/admin-data";
@@ -16,7 +14,6 @@ import { PLANS, type PlanId } from "@/lib/plans";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 import { hasCore, listRelays, type RelayView } from "@/lib/core";
 import { CreateRelayForm, DeleteForm, IdentityForm, KeysForms, NoteForm, RelayRow, ResetLinkForm, SetPasswordForm, SuspendForm, VerificationLinkForm } from "../AdminForms";
-import PlanForms from "../PlanForms";
 
 export const metadata: Metadata = { title: "Admin · Compte", robots: { index: false } };
 
@@ -59,13 +56,6 @@ export default async function AdminAccountPage({ params, searchParams }: { param
 
   const plan = PLANS[p.plan as PlanId]?.name ?? p.plan;
   const active = (relays ?? []).filter((r) => !r.archived);
-  const facts: [string, string][] = [
-    ["Inscrit le", day(p.created_at)],
-    ["Présence", presenceOf(p.last_seen_at, u.user.last_sign_in_at).label],
-    ["Dernière connexion", day(u.user.last_sign_in_at)],
-    ["Relais", `${active.length} actif${active.length > 1 ? "s" : ""}${liveIds.size ? ` · ${liveIds.size} en direct` : ""}`],
-    ["Twitch", p.twitch_login ? `@${p.twitch_login}` : "non lié"],
-  ];
 
   const maxServers = PLANS[p.plan as PlanId] && Number.isFinite(PLANS[p.plan as PlanId].maxRelays) ? PLANS[p.plan as PlanId].maxRelays : null;
   const lastLiveAt = (relays ?? []).map((r) => r.last_live_at as string | null).filter((x): x is string => !!x).sort().pop() ?? null;

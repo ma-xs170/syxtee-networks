@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getPlan } from "@/lib/auth/plan";
 import { getProfile, getUser } from "@/lib/auth/dal";
 import { managedOf } from "@/lib/managed";

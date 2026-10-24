@@ -14,8 +14,6 @@ import {
   ChartBar,
   List,
   Lock,
-  Moon,
-  Question,
   Radio,
   ShareNetwork,
   UsersThree,

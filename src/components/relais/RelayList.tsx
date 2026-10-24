@@ -12,12 +12,6 @@ import Link from "next/link";
 
 // Page « Mes relais » : compteur, bouton de création, filtres, et serveurs classés automatiquement : en direct (pastille rouge) tout en haut, actifs au milieu, inactifs puis archivés en bas.
 
-const GROUPS: { id: RelayGroup; label: string; mark: string }[] = [
-  { id: "live", label: "En live", mark: "●" },
-  { id: "active", label: "Actifs", mark: "○" },
-  { id: "idle", label: "Inactifs", mark: "◌" },
-];
-
 type Props = {
   relays: RelayRow[];
   active: number;

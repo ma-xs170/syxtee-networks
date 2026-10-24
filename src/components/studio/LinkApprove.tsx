@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { site } from "@/lib/site";
 import { coreFetch } from "../dashboard/coreClient";
 
 // Confirmation de la connexion d'un ordinateur (plugin SYXTEE Link) au compte. Le code vient d'OBS ; rien n'est autorisé sans clic.

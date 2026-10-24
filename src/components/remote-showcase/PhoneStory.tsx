@@ -37,7 +37,7 @@ function Copy({ step, i, p }: { step: Step; i: number; p: MotionValue<number> })
   );
 }
 
-function Shot({ step, i, p }: { step: Step; i: number; p: MotionValue<number> }) {
+function Shot({ i, p }: { i: number; p: MotionValue<number> }) {
   const opacity = useWindow(p, i);
   return (
     <motion.div style={{ opacity }} className="absolute inset-0">
@@ -88,7 +88,7 @@ export default function PhoneStory({ steps }: { steps: Step[] }) {
           <div className="h-full" style={{ aspectRatio: "9 / 19.5" }}>
             <Frame>
               {steps.map((s, i) => (
-                <Shot key={s.title} step={s} i={i} p={scrollYProgress} />
+                <Shot key={s.title} i={i} p={scrollYProgress} />
               ))}
             </Frame>
           </div>

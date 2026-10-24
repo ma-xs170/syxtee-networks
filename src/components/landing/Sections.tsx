@@ -76,6 +76,15 @@ export function ProductionSection() {
         </Reveal>
 
         <div className="relative mt-14">
+          {/* Chevrons lumineux entre les étapes (bureau). */}
+          {[1, 2].map((n) => (
+            <span key={n} aria-hidden="true" className="pointer-events-none absolute top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 md:flex" style={{ left: `${(n * 100) / 3}%` }}>
+              <svg viewBox="0 0 32 24" width="32" height="24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-foreground" style={{ filter: "drop-shadow(0 0 6px color-mix(in srgb, var(--foreground) 80%, transparent))" }}>
+                <path d="m6 6 6 6-6 6" opacity="0.4" />
+                <path d="m16 6 6 6-6 6" />
+              </svg>
+            </span>
+          ))}
           <div className="grid gap-4 md:grid-cols-3">
             {[
               { Icon: ClipboardText, title: "Devis et étude de projet", text: "Nous voyons ce qui est envisageable.", points: ["Ton projet et ton lieu", "Devis gratuit, sur mesure"] },

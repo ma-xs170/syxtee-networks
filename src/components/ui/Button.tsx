@@ -3,7 +3,19 @@
 import Link from "next/link";
 import { useFormStatus } from "react-dom";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { ArrowBendDownRight, Eye, Sliders, Tag, UserPlus, VideoCamera } from "@phosphor-icons/react/dist/ssr";
+import type { ComponentType } from "react";
 import { buttonClass, type Variant } from "./button-styles";
+
+// Icône à gauche du libellé, choisie d'après la destination : même geste, même icône sur tout le site.
+const ICONS: Record<string, ComponentType<{ size?: number; "aria-hidden"?: boolean | "true" | "false" }>> = {
+  "/inscription": UserPlus,
+  "/tarifs": Tag,
+  "/contact": VideoCamera,
+  "/controle-a-distance": Sliders,
+  "#comment": ArrowBendDownRight,
+  "#serveurs": Eye,
+};
 
 // Bouton du design system : primaire (pilule blanche), secondaire (fond sombre, filet), danger, fantôme.
 // `loading` désactive le bouton et affiche un petit indicateur. Un bouton `type="submit"` dans un formulaire
@@ -35,13 +47,17 @@ function OutArrow() {
 export function ButtonLink({ href, variant = "primary", children, className = "", external = false }: { href: string; variant?: Variant; children: ReactNode; className?: string; external?: boolean }) {
   const cls = buttonClass(variant, className);
   const arrow = !href.startsWith("#");
+  const Lead = ICONS[href];
+  const lead = Lead ? <Lead size={16} aria-hidden="true" /> : null;
   return external ? (
     <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
+      {lead}
       {children}
       <OutArrow />
     </a>
   ) : (
     <Link href={href} className={cls}>
+      {lead}
       {children}
       {arrow && <OutArrow />}
     </Link>

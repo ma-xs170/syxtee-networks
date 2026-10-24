@@ -28,7 +28,6 @@ export default function SoutenirPage() {
 
       <section className="border-b border-line py-16">
         <Container className="max-w-3xl">
-          <p className="label-mono">Coûts mensuels</p>
           <ul className="mt-6 divide-y divide-line rounded-2xl border border-line bg-surface">
             {support.costs.map((c) => (
               <li key={c.label} className="flex items-start justify-between gap-6 p-5">
@@ -55,7 +54,6 @@ export default function SoutenirPage() {
 
       <section className="py-16 sm:py-24">
         <Container>
-          <p className="label-mono">Aider</p>
           <div className="mt-5 overflow-hidden rounded-3xl border border-line bg-surface">
             <div className="grid gap-10 p-7 sm:p-12 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center">
               <div className="max-w-xl">

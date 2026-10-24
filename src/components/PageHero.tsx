@@ -3,13 +3,13 @@ import type { ReactNode } from "react";
 import { Container } from "./ui";
 
 export default function PageHero({
-  kicker,
   title,
   crumb,
   actions,
   children,
 }: {
-  kicker: string;
+  /** Gardé pour les appels existants : l'étiquette n'est plus affichée. */
+  kicker?: string;
   title: ReactNode;
   crumb: string;
   actions?: ReactNode;
@@ -28,8 +28,7 @@ export default function PageHero({
           </ol>
         </nav>
 
-        <p className="label-mono mt-10 inline-flex rounded-full border border-line bg-foreground/[0.08] px-3 py-1">{kicker}</p>
-        <h1 className="rise h-hero mt-5 max-w-4xl" style={{ "--i": 1 } as React.CSSProperties}>
+        <h1 className="rise h-hero mt-10 max-w-4xl" style={{ "--i": 1 } as React.CSSProperties}>
           {title}
         </h1>
         {children && (

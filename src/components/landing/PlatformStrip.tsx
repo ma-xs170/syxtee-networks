@@ -10,7 +10,6 @@ const P = [
 export default function PlatformStrip() {
   return (
     <div className="flex flex-col items-center gap-4">
-      <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Diffuse sur</p>
       <ul className="flex items-center justify-center gap-10">
         {P.map((p) => (
           <li key={p.label} className="opacity-85 transition-opacity duration-200 hover:opacity-100" style={{ color: `#${p.icon.hex}` }}>

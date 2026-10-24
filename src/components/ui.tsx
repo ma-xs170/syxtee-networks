@@ -32,11 +32,10 @@ export function DiscordButton({
   );
 }
 
-export function SectionHeader({ kicker, title, children }: { kicker: string; title: ReactNode; children?: ReactNode }) {
+export function SectionHeader({ title, children }: { kicker?: string; title: ReactNode; children?: ReactNode }) {
   return (
     <div className="max-w-2xl">
-      <p className="label-mono inline-flex rounded-full border border-line px-3 py-1">{kicker}</p>
-      <h2 className="h-section mt-5">{title}</h2>
+      <h2 className="h-section">{title}</h2>
       {children && <p className="mt-4 text-base leading-relaxed text-muted">{children}</p>}
     </div>
   );

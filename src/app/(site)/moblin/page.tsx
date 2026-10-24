@@ -89,7 +89,6 @@ export default function MoblinPage() {
 
       <section className="border-b border-line py-10">
         <Container>
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Fonctionnalités vérifiées</p>
           <ul className="mt-5 flex flex-wrap gap-2">
             {features.map((f) => (
               <li key={f} className="rounded-full border border-line px-4 py-2 font-mono text-xs text-foreground">{f}</li>
@@ -245,7 +244,6 @@ export default function MoblinPage() {
       <section className="py-20 sm:py-24">
         <Container>
           <aside className="rounded-2xl border border-line bg-foreground/[0.08] p-8">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Android</p>
             <h2 className="mt-4 text-2xl font-semibold tracking-tight">Sur Android ?</h2>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
               Moblin n&apos;existe que sur iPhone. Sur Android, <strong className="font-medium text-foreground">IRL Pro</strong>{" "}

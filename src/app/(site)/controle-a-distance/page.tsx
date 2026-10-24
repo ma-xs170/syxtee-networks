@@ -176,7 +176,6 @@ export default function ControlePage() {
       {/* 5. Gardien : OBS plante, il redémarre */}
       <section aria-labelledby="gardien" className="border-t border-line py-24 sm:py-32">
         <Container>
-          <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted">Gardien SYXTEE</p>
           <h2 id="gardien" className="h-section mt-4 max-w-3xl">
             Ton OBS plante en plein stream ? <Highlight>Il redémarre tout seul.</Highlight>
           </h2>

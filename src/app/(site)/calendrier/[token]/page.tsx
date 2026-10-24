@@ -16,7 +16,6 @@ export default async function SharedCalendarPage({ params }: { params: Promise<{
   if (!shared) notFound();
   return (
     <main className="mx-auto w-full max-w-[1400px] px-4 pb-20 pt-28 sm:px-6 sm:pt-32">
-      <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted">Calendrier partagé</p>
       <h1 className="h-serif mt-2 pb-1.5 text-[clamp(2rem,4.2vw,3.25rem)]">
         Les lives de <em>{shared.name}</em>
       </h1>

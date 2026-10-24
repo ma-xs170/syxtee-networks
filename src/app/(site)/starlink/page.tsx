@@ -99,13 +99,11 @@ export default function StarlinkPage() {
           <SectionHeader kicker="Le setup sac à dos" title="Tout tient dans un sac." />
           <div className="mt-24 space-y-28 md:mt-32 md:space-y-36">
             <PopOutImage alt="Sac à dos ouvert avec le Starlink Mini posé à plat dessus" side="left" overflow="side" art={<StarlinkMiniBag />}>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Dans le sac</p>
               <p className="mt-4 text-xl font-medium leading-snug sm:text-2xl">
                 Le Mini à plat vers le ciel, le câble et la powerbank.
               </p>
             </PopOutImage>
             <PopOutImage alt="Powerbank USB-C 100 W reliée au Starlink Mini" side="right" overflow="side" art={<Powerbank />}>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Alimentation</p>
               <p className="mt-4 text-xl font-medium leading-snug sm:text-2xl">
                 Une powerbank USB-C PD 100 W suffit, pas de batterie V-mount nécessaire.
               </p>
@@ -161,7 +159,6 @@ export default function StarlinkPage() {
           <div className="relative overflow-hidden rounded-3xl border border-line px-6 py-14 text-center sm:px-16">
             <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden="true" />
             <div className="relative">
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted">Forfaits</p>
               <h2 className="mt-4 h-section">Les prix changent souvent.</h2>
               <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-muted">
                 On ne les affiche pas ici : consulte directement les forfaits à jour, et choisis-en un qui autorise

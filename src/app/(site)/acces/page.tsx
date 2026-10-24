@@ -58,7 +58,6 @@ export default function AccessPage() {
           <div className="grid content-start gap-6">
             <article className="bento-cell p-8 sm:p-10">
               <GlassIcon name="shared" size={64} />
-              <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Accès partenaire</p>
               <h2 className="h-serif mt-3 text-[clamp(2rem,4vw,2.75rem)]">Tout le site, sans limite.</h2>
               <p className="mt-4 text-sm leading-relaxed text-muted">Réservé à nos partenaires : toutes les fonctions sont ouvertes, sans formule à choisir.</p>
               <ul className="mt-8 space-y-3.5 border-t border-line pt-8">

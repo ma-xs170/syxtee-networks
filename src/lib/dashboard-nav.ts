@@ -34,6 +34,7 @@ export type SectionTab = { label: string; href: string };
 export const statsTabs: SectionTab[] = [
   { label: "Vue globale", href: "/dashboard/statistiques" },
   { label: "Historique", href: "/dashboard/lives" },
+  { label: "Centre de contrôle", href: "/dashboard/analyses" },
 ];
 
 /** Un lien de la barre reste actif sur toutes les pages de sa section. */

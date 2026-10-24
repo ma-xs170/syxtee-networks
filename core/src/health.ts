@@ -82,6 +82,7 @@ export function createHealthMonitor(opts: { sls: Sls; samples: SampleStore; perS
     e.state = { ...e.state, sample, peers: stats.peers };
     if (t - e.lastStored >= 2000) {
       samples.add(e.key.id, sample);
+      if (stats.peers?.length) samples.addPeers(e.key.id, t, stats.peers);
       e.lastStored = t;
     }
     events.emit("sample", e.key.id, e.state, e.key);

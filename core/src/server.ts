@@ -327,6 +327,14 @@ export function buildServer(d: Deps) {
     return { live: d.health.state(r.id), samples: d.samples.history(r.id, Date.now() - RANGES[range]) };
   });
 
+  // Centre de contrôle : historique par connexion (modem) d'un relais.
+  app.get("/v1/me/relays/:rid/peers", async (req, reply) => {
+    const r = await myRelay(req, reply);
+    if (!r) return;
+    const { range } = z.object({ range: z.enum(["15m", "1h", "6h", "24h"]).default("15m") }).parse(req.query);
+    return reply.header("Cache-Control", "no-store").send({ conns: d.samples.peerHistory(r.id, Date.now() - RANGES[range]) });
+  });
+
   // Server-Sent Events : réponse écrite à la main, on remet les en-têtes CORS.
   const openStream = (req: FastifyRequest, reply: FastifyReply) => {
     reply.hijack();
@@ -413,6 +421,30 @@ export function buildServer(d: Deps) {
           links: sm?.links ?? null,
           lost_1m: sm ? d.samples.history(relay.id, since).reduce((a, x) => a + x.dropped, 0) : null,
           since: s.live ? s.since : null,
+        };
+      });
+    return reply.header("Cache-Control", "no-store").send({ t: Date.now(), relays });
+  });
+
+  // Centre de contrôle : tous les relais du compte avec leurs connexions (modems) à l'instant, relevé par relevé (page lue toutes les 2 s).
+  app.get("/v1/me/control", async (req, reply) => {
+    const id = await userId(req, reply);
+    if (!id) return;
+    const since = Date.now() - 60_000;
+    const relays = d.health
+      .byUser(id)
+      .filter(({ relay }) => !relay.archived)
+      .map(({ relay, state: s }) => {
+        const sm = s.live ? s.sample : null;
+        return {
+          id: relay.id,
+          name: relay.name,
+          protocol: relay.protocol,
+          live: s.live,
+          since: s.live ? s.since : null,
+          sample: sm,
+          lost_1m: sm ? d.samples.history(relay.id, since).reduce((a, x) => a + x.dropped, 0) : null,
+          peers: s.live ? (s.peers ?? []) : [],
         };
       });
     return reply.header("Cache-Control", "no-store").send({ t: Date.now(), relays });

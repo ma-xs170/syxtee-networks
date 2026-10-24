@@ -17,6 +17,9 @@ export type Sample = {
   links: number; // connexions SRTLA actives
 };
 
+/** Une connexion SRTLA (un modem) à un instant : débit utile, débit réseau (retransmissions comprises) et gigue. */
+export type PeerSample = { t: number; conn: string; bitrate: number; throughput: number | null; jitter: number | null };
+
 export type Position = { t: number; lat: number; lon: number; acc: number | null; speed: number | null };
 
 const DAY = 24 * 3600 * 1000;
@@ -44,7 +47,40 @@ export function openSamples(file: string) {
   const rangePos = db.prepare("SELECT t, lat, lon, acc, speed FROM positions WHERE user_id = ? AND t >= ? ORDER BY t");
   const purgePos = db.prepare("DELETE FROM positions WHERE t < ?");
 
+  // Historique par connexion (modem) : mêmes 24 h, même rythme (un point toutes les 2 s par connexion).
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS peer_samples (relay_id TEXT NOT NULL, t INTEGER NOT NULL, conn TEXT NOT NULL, bitrate REAL, throughput REAL, jitter REAL);
+    CREATE INDEX IF NOT EXISTS peer_samples_relay_t ON peer_samples (relay_id, t);
+  `);
+  const insertPeer = db.prepare("INSERT INTO peer_samples VALUES (?, ?, ?, ?, ?, ?)");
+  const rangePeers = db.prepare("SELECT t, conn, bitrate, throughput, jitter FROM peer_samples WHERE relay_id = ? AND t >= ? ORDER BY t");
+  const purgePeers = db.prepare("DELETE FROM peer_samples WHERE t < ?");
+
   return {
+    addPeers(relayId: string, t: number, peers: { connection_id: string; bitrate: number; throughput?: number; jitter?: number }[]) {
+      for (const p of peers) insertPeer.run(relayId, t, p.connection_id, p.bitrate, p.throughput ?? null, p.jitter ?? null);
+    },
+    /** Historique par connexion depuis `sinceMs`, réduit à `maxPoints` au plus par connexion (moyenne par tranche). */
+    peerHistory(relayId: string, sinceMs: number, maxPoints = 360): Record<string, PeerSample[]> {
+      const rows = rangePeers.all(relayId, sinceMs) as unknown as PeerSample[];
+      const by: Record<string, PeerSample[]> = {};
+      for (const r of rows) (by[r.conn] ??= []).push(r);
+      for (const [conn, list] of Object.entries(by)) {
+        if (list.length <= maxPoints) continue;
+        const size = Math.ceil(list.length / maxPoints);
+        const out: PeerSample[] = [];
+        for (let i = 0; i < list.length; i += size) {
+          const c = list.slice(i, i + size);
+          const avg = (k: "bitrate" | "throughput" | "jitter") => {
+            const v = c.map((x) => x[k]).filter((x): x is number => x !== null);
+            return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+          };
+          out.push({ t: c[0].t, conn, bitrate: avg("bitrate") ?? 0, throughput: avg("throughput"), jitter: avg("jitter") });
+        }
+        by[conn] = out;
+      }
+      return by;
+    },
     add(relayId: string, s: Sample) {
       insert.run(relayId, s.t, s.bitrate, s.rtt, s.dropped, s.buffer, s.latency, s.congestion, s.links);
     },
@@ -78,6 +114,7 @@ export function openSamples(file: string) {
     },
     purge(now = Date.now()) {
       purgePos.run(now - DAY);
+      purgePeers.run(now - DAY);
       return Number(purge.run(now - DAY).changes);
     },
     close() {

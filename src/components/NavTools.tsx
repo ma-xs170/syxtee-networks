@@ -280,6 +280,17 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
             </span>
           </button>
         ) : (
+          "underline" in item && item.underline ? (
+            <Link
+              key={label}
+              href={item.href}
+              aria-current={active ? "page" : undefined}
+              className="ml-1 inline-flex h-9 items-center whitespace-nowrap rounded-full bg-foreground px-4 text-sm font-medium text-background transition-[opacity,transform] duration-150 hover:opacity-90 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+              {...common}
+            >
+              {item.label}
+            </Link>
+          ) : (
           <Link
             key={label}
             href={item.href}
@@ -299,6 +310,7 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
             </span>
             {item.badge && <span className="relative z-10 ml-2"><Badge>{item.badge}</Badge></span>}
           </Link>
+          )
         );
       })}
 

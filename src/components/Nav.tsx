@@ -138,9 +138,9 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
                   {...("arrow" in item && item.arrow ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                   onClick={() => setOpen(false)}
                   aria-current={isActive(item.href) ? "page" : undefined}
-                  className={`border-b border-line py-4 text-base hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-foreground/90"}`}
+                  className={"underline" in item && item.underline ? "my-3 flex h-12 items-center justify-center rounded-full bg-foreground text-base font-medium text-background" : `border-b border-line py-4 text-base hover:text-foreground ${isActive(item.href) ? "text-foreground" : "text-foreground/90"}`}
                 >
-                  <span className={"underline" in item && item.underline ? "underline underline-offset-4 decoration-foreground/50" : ""}>{item.label}</span>
+                  <span>{item.label}</span>
                   {"arrow" in item && item.arrow && <span aria-hidden="true"> ↗</span>}
                 </Link>
               ),

@@ -7,11 +7,11 @@ import { site } from "@/lib/site";
 
 // Coordonnées affichées à droite du formulaire : e-mail, lieu, puis tous les réseaux.
 const CONTACTS = [
-  { Icon: Envelope, label: "contact@syxtee-networks.fr", href: "mailto:contact@syxtee-networks.fr" },
-  { Icon: InstagramLogo, label: "Instagram : syxtee.networks", href: site.instagram },
-  { Icon: YoutubeLogo, label: "YouTube : @syxtee", href: site.youtube },
-  { Icon: DiscordLogo, label: "Discord : rejoindre la communauté", href: site.discord },
-  { Icon: GithubLogo, label: "GitHub : syxtee-networks", href: site.github },
+  { Icon: Envelope, label: "E-mail", sub: "contact@syxtee-networks.fr", href: "mailto:contact@syxtee-networks.fr" },
+  { Icon: InstagramLogo, label: "Instagram", sub: "@syxtee.networks", href: site.instagram },
+  { Icon: YoutubeLogo, label: "YouTube", sub: "@syxtee", href: site.youtube },
+  { Icon: DiscordLogo, label: "Discord", sub: "Rejoindre la communauté", href: site.discord },
+  { Icon: GithubLogo, label: "GitHub", sub: "syxtee-networks", href: site.github },
 ];
 
 export const metadata: Metadata = {
@@ -47,11 +47,11 @@ export default function ContactPage() {
                   <span className="grid size-10 shrink-0 place-items-center rounded-full border border-line-strong bg-background"><MapPin size={18} aria-hidden="true" /></span>
                   <span className="pt-0.5 text-sm"><span className="block font-medium">Petit-Bourg</span><span className="text-muted">Déplacement partout en Guadeloupe</span></span>
                 </li>
-                {CONTACTS.map(({ Icon, label, href }) => (
+                {CONTACTS.map(({ Icon, label, sub, href }) => (
                   <li key={label}>
                     <a href={href} {...(href.startsWith("mailto:") ? {} : { target: "_blank", rel: "noopener noreferrer" })} className="group flex min-h-10 items-center gap-3.5 text-sm">
                       <span className="grid size-10 shrink-0 place-items-center rounded-full border border-line-strong bg-background transition-colors group-hover:border-foreground/50"><Icon size={18} aria-hidden="true" /></span>
-                      <span className="font-medium group-hover:underline group-hover:underline-offset-4">{label}</span>
+                      <span><span className="block font-medium group-hover:underline group-hover:underline-offset-4">{label}</span><span className="text-muted">{sub}</span></span>
                     </a>
                   </li>
                 ))}

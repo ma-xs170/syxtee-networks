@@ -794,3 +794,6 @@ dialog[open]::backdrop { opacity: 1; }
   .cta-globe-sky, .cta-star { animation: none; }
 }
 
+
+/* Accueil : le héros passe sous la barre de menu (transparente tant qu'on n'a pas défilé), comme l'exemple. */
+body:has(#accueil-hero) .site-nav { margin-bottom: -65px; }

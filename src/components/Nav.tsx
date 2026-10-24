@@ -76,7 +76,7 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
   return (
     <>
     <div ref={sentinel} aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-16" />
-    <header className={`sticky top-0 z-50 border-b border-line glass-bar transition-[background-color] duration-200 ${compact ? "bg-background/80" : "bg-background/50"}`}>
+    <header className={`site-nav sticky top-0 z-50 border-b transition-[background-color,border-color,backdrop-filter] duration-200 ${compact || dash || open ? "glass-bar border-line bg-background/80" : "border-transparent bg-transparent"}`}>
       {/* 3 zones : logo à gauche, menus centrés, compte + Discord à droite */}
       <div className={`mx-auto flex h-16 origin-top items-center justify-between gap-6 px-4 transition-transform duration-200 motion-reduce:transition-none sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] ${dash ? "max-w-[1400px]" : "max-w-6xl"} ${compact ? "scale-[0.97]" : ""}`}>
         <Link href={dash ? "/dashboard" : home} onClick={() => setOpen(false)} className="flex min-h-11 shrink-0 items-center gap-3 justify-self-start" aria-label={dash ? "Dashboard SYXTEE" : "SYXTEE NETWORKS, accueil"}>

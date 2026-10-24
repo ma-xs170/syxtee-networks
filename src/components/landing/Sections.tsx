@@ -38,10 +38,10 @@ function Cell({ className = "", title, text, children, delay = 0, href, cta }: {
 /* Accueil : promesse, deux parcours (production sur devis, streamers indépendants) */
 export function HomeHero() {
   return (
-    <section data-theme="dark" className="relative isolate overflow-hidden bg-background text-foreground">
+    <section id="accueil-hero" data-theme="dark" className="relative isolate overflow-hidden bg-background text-foreground">
       <CtaGlobe variant="hero" />
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
-      <Container className="relative pb-40 pt-20 text-center sm:pb-44 lg:pt-28">
+      <Container className="relative pb-40 pt-[calc(5rem+65px)] text-center sm:pb-44 lg:pt-[calc(7rem+65px)]">
         <h1 className="rise h-serif mx-auto max-w-[16ch] text-[clamp(2.75rem,7vw,5.5rem)]" style={rise(0)}>
           Le live IRL, <em>partout.</em>
         </h1>

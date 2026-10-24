@@ -123,7 +123,7 @@ export default async function StreamerWall({ streamers }: { streamers: HomeStrea
     <BrandStrip />
     <section aria-labelledby="mur-titre" className="relative isolate overflow-hidden border-b border-line py-24 sm:py-32">
       {/* Dégradé violet Twitch en haut de section. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(70% 60% at 50% 0%, color-mix(in srgb, #9146ff 38%, transparent), transparent 75%)" }} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(75% 85% at 50% 22%, color-mix(in srgb, #9146ff 30%, transparent) 0%, color-mix(in srgb, #9146ff 22%, transparent) 22%, color-mix(in srgb, #9146ff 13%, transparent) 42%, color-mix(in srgb, #9146ff 6%, transparent) 62%, color-mix(in srgb, #9146ff 2%, transparent) 80%, transparent 100%)", maskImage: "linear-gradient(to bottom, transparent 0%, #000 30%, #000 70%, transparent 100%)", WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, #000 30%, #000 70%, transparent 100%)" }} />
       <svg viewBox="0 0 24 24" width="44" height="44" fill="currentColor" role="img" aria-label="Twitch" className="mx-auto mb-6 block" style={{ color: `#${siTwitch.hex}` }}>
         <path d={siTwitch.path} />
       </svg>

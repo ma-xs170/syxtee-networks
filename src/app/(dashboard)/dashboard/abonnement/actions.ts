@@ -47,6 +47,8 @@ export async function startCheckout(tier: PaidTier, interval: Interval): Promise
     if (existing.data.some((s) => ["active", "trialing", "past_due", "unpaid"].includes(s.status))) {
       return { error: "Un abonnement est déjà en cours sur ton compte. Ouvre « Gérer l'abonnement » pour le modifier." };
     }
+    // Essai gratuit de 7 jours sans carte, une seule fois par client : sans carte à la fin, Stripe annule l'abonnement.
+    const firstSubscription = existing.data.length === 0;
     // Double clic ou deux onglets : même clé d'idempotence pendant 30 min, Stripe renvoie alors la même session au lieu d'en créer une autre.
     const idempotencyKey = `checkout-${user.id}-${tier}-${interval}-${Math.floor(Date.now() / 1_800_000)}`;
     const session = await stripe().checkout.sessions.create({
@@ -55,6 +57,10 @@ export async function startCheckout(tier: PaidTier, interval: Interval): Promise
       client_reference_id: user.id,
       line_items: [{ price: priceId(tier, interval), quantity: 1 }],
       locale: "fr",
+      ...(firstSubscription && {
+        payment_method_collection: "if_required" as const,
+        subscription_data: { trial_period_days: 7, trial_settings: { end_behavior: { missing_payment_method: "cancel" as const } } },
+      }),
       // Service numérique démarré tout de suite : accord exprès et renonciation au délai de rétractation.
       consent_collection: { terms_of_service: "required" },
       custom_text: {

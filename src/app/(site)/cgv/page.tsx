@@ -43,8 +43,9 @@ export default function CgvPage() {
       </LegalBlock>
       <LegalBlock title="4. Paiement">
         <p>
-          Le paiement est traité par Stripe. {site.name} ne voit ni ne conserve tes données de carte. Le premier prélèvement a lieu à la souscription,
-          puis à chaque échéance (mois ou année). Une facture est envoyée par email à chaque paiement.
+          Le paiement est traité par Stripe. {site.name} ne voit ni ne conserve tes données de carte. Pour une première souscription, un essai gratuit de
+          7 jours est offert sans carte bancaire ; sans moyen de paiement ajouté à la fin de l&apos;essai, l&apos;abonnement s&apos;arrête sans frais.
+          Sinon le premier prélèvement a lieu à la souscription, puis à chaque échéance (mois ou année). Une facture est envoyée par email à chaque paiement.
         </p>
       </LegalBlock>
       <LegalBlock title="5. Durée et résiliation">
@@ -58,6 +59,10 @@ export default function CgvPage() {
         <p>
           Le service démarre dès le paiement. En cochant la case prévue lors du paiement, tu demandes expressément cet accès immédiat et tu renonces à ton
           droit de rétractation de 14 jours (article L221-28 du Code de la consommation).
+        </p>
+        <p>
+          Garantie commerciale, en plus de tes droits légaux : si le service ne te convient pas, demande le remboursement de ton premier paiement dans
+          les 30 jours qui suivent, sur le Discord ou par email. Il est remboursé sans justification. Cette garantie ne s&apos;applique qu&apos;au premier paiement de chaque compte.
         </p>
       </LegalBlock>
       <LegalBlock title="7. Défaut de paiement">

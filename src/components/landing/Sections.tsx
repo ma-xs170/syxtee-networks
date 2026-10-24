@@ -6,7 +6,7 @@ import Highlight from "../ui/Highlight";
 import DirectorDemo from "./DirectorDemo";
 import Reveal from "../ui/Reveal";
 import L from "../L";
-import Polaroids from "./Polaroids";
+import TwitchCategories from "./TwitchCategories";
 import Faq from "./Faq";
 import ObsHero from "./ObsHero";
 import SceneSwitcher from "./SceneSwitcher";
@@ -81,7 +81,7 @@ export function ProductionSection() {
           <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><L fr="Contactez-nous" en="Contact us" /></Link>
           <ButtonLink href="/cas-d-usage" variant="secondary" className="h-12 px-6 text-[15px]"><L fr="Nos réalisations" en="Our work" /></ButtonLink>
         </Reveal>
-        <Polaroids />
+        <TwitchCategories />
       </Container>
     </section>
   );

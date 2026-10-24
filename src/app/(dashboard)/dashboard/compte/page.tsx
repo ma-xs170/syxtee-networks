@@ -45,7 +45,7 @@ export default async function ComptePage({ searchParams }: PageProps<"/dashboard
   const sp = await searchParams;
   const raw = typeof sp.onglet === "string" ? sp.onglet : "";
   const tab: TabId = TABS.some((t) => t.id === raw) ? (raw as TabId) : "profil";
-  await requireUser("/dashboard/compte");
+  await requireUser(`/dashboard/compte?onglet=${tab}`);
   return (
     <ToastProvider>
       <Column max={720}>

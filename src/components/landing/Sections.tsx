@@ -19,8 +19,6 @@ import { ctaLabel, product } from "@/config/product";
 import { deviceImage } from "@/lib/device-images";
 import { CATALOG, TIERS } from "@/lib/billing";
 
-const WHITE_BTN = "inline-flex h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-full border border-foreground/25 bg-foreground/[0.08] px-7 text-[15px] font-medium text-foreground transition-[background-color,border-color,transform] duration-150 hover:border-foreground/40 hover:bg-foreground/[0.14] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
-const DOT = <span aria-hidden="true" className="size-1.5 rounded-full bg-bad" />;
 const h2 = "h-serif text-[clamp(2.25rem,4.5vw,3.5rem)]";
 const lead = "mt-4 max-w-[60ch] text-base leading-relaxed text-muted";
 const rise = (i: number) => ({ "--i": i }) as React.CSSProperties;
@@ -47,11 +45,11 @@ export function HomeHero() {
             Le live IRL, <em>partout.</em>
           </h1>
           <p className="rise mt-6 max-w-[48ch] text-lg leading-relaxed text-muted" style={rise(1)}>
-            Production, cadreurs et relais SRTLA pour diffuser de n&apos;importe où. Lancé par des Guadeloupéens, avec les mêmes outils à petit prix pour les streamers indépendants.
+            <strong className="font-semibold text-foreground">Diffusez et capturez chaque instant.</strong> Production, cadreurs et relais SRTLA pour diffuser de n&apos;importe où. Lancé par des Guadeloupéens, avec les mêmes outils à petit prix pour les streamers indépendants.
           </p>
           <div className="rise mt-9 flex flex-col gap-3 sm:flex-row" style={rise(2)}>
-            <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-xl bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85">Réserver<ArrowUpRight size={16} aria-hidden="true" /></Link>
-            <Link href="#streamers" className={WHITE_BTN}>Je suis streamer indépendant</Link>
+            <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85">Contactez-nous <span aria-hidden="true">→</span></Link>
+            <Link href="/inscription" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-bad px-6 text-[15px] font-medium text-foreground transition-opacity hover:opacity-85">Commencer <span aria-hidden="true">→</span></Link>
           </div>
         </div>
         <div className="rise bento-cell relative overflow-hidden" style={rise(2)}>
@@ -116,7 +114,7 @@ export function ProductionSection() {
         </div>
 
         <Reveal className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link href="/contact" className={WHITE_BTN}>{DOT}Réserver<ArrowUpRight size={16} aria-hidden="true" /></Link>
+          <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85">Contactez-nous <span aria-hidden="true">→</span></Link>
           <Link href="/production" className="inline-flex min-h-11 items-center gap-1.5 text-sm text-foreground underline-offset-4 hover:underline">Voir comment on travaille <ArrowUpRight size={14} aria-hidden="true" /></Link>
         </Reveal>
       </Container>
@@ -303,7 +301,7 @@ export function FieldSection() {
           <Reveal as="article" delay={0.35} className="bento-cell flex min-h-52 flex-col justify-between bg-surface-2 p-6 sm:p-7 md:col-span-2">
             <p className="h-serif max-w-[22ch] text-[clamp(1.75rem,3vw,2.5rem)]">Ton projet est <em>unique.</em></p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <ButtonLink href="/contact">Réserver</ButtonLink>
+              <ButtonLink href="/contact">Contactez-nous</ButtonLink>
               <span className="text-sm text-muted">Gratuit et sans engagement.</span>
             </div>
           </Reveal>

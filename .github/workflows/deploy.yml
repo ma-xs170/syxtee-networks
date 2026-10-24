@@ -1,0 +1,54 @@
+name: Déploiement
+
+# À chaque push sur main : vérifications (types et tests), puis déploiement sur le VPS OVH (scripts/deploy.sh).
+# Prérequis, dans GitHub → Settings → Secrets and variables → Actions :
+#   VPS_HOST      adresse du VPS (relais.syxtee-networks.fr ou l'IP)
+#   VPS_USER      utilisateur SSH qui a le droit d'utiliser sudo
+#   VPS_SSH_KEY   clé privée dédiée au déploiement (ssh-keygen -t ed25519 -f deploy_key, clé publique dans ~/.ssh/authorized_keys du VPS)
+#   VPS_KNOWN_HOSTS   sortie de `ssh-keyscan -H <hôte>` (évite de faire confiance au premier venu)
+# Les migrations Supabase ne sont PAS appliquées ici : elles restent manuelles.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run test:unit
+      - name: Tests du Core
+        working-directory: core
+        run: |
+          npm ci
+          npx tsc --noEmit
+          npm test
+
+  deploy:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Clé SSH
+        env:
+          KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN" > ~/.ssh/known_hosts
+      - name: Déployer
+        env:
+          HOST: ${{ secrets.VPS_HOST }}
+          USER_NAME: ${{ secrets.VPS_USER }}
+        run: ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes "$USER_NAME@$HOST" "sudo /opt/syxtee/repo/scripts/deploy.sh"

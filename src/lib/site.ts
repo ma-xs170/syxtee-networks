@@ -27,8 +27,17 @@ export type NavItem = NavLink | NavMenu;
 // Menu du site : les arguments de l'accueil et la documentation. « Demander l'accès » est le bouton d'action à droite (Nav.tsx), pas une entrée du menu.
 // L'encodeur vit aussi dans le pied de page.
 export const nav: NavItem[] = [
-  { label: "Contrôle à distance", href: "/controle-a-distance" },
-  { label: "Nos serveurs", href: "/relais" },
+  {
+    label: "Fonctionnalités",
+    children: [
+      { label: "Contrôle à distance", href: "/controle-a-distance", desc: "Pilote OBS depuis ton téléphone", icon: "phone" },
+      { label: "Nos serveurs", href: "/relais", desc: "Relais SRTLA en Amérique et en Europe", icon: "rack" },
+      { label: "Régie automatique", href: "/regie-ia", desc: "Scènes et prises de vue gérées pour toi", icon: "studio" },
+      { label: "Encodeur", href: "/encodeur", desc: "Le boîtier IRL prêt à diffuser", icon: "tower" },
+      { label: "Multistream", href: "/multistream", desc: "Un direct, plusieurs plateformes", icon: "route" },
+      { label: "Espaces partagés", href: "/espaces-partages", desc: "Une équipe, un seul tableau de bord", icon: "services" },
+    ],
+  },
   { label: "Tarifs", href: "/tarifs" },
   { label: "Production IRL", href: "/contact", underline: true },
 ];

@@ -59,7 +59,7 @@ export default function CtaGlobe({ variant = "cap" }: { variant?: "cap" | "full"
       ctx!.clearRect(0, 0, w, h);
       const full = variant === "full";
       const hero = variant === "hero";
-      const R = full ? Math.min(w * 0.3, h * 0.4, 420) : hero ? Math.min(w * 0.24, 380) : Math.min(w * 0.3, 520);
+      const R = full ? Math.min(w * 0.34, h * 0.44, 440) : hero ? Math.min(w * 0.24, 380) : Math.min(w * 0.3, 520);
       const cap = hero ? Math.min(h * 0.2, 140) : Math.min(h * 0.3, 260); // hauteur visible de la calotte, sous le contenu
       const cx = w / 2;
       const cy = full ? h * 0.5 : h - cap + R; // centre sous le bord bas : on ne voit que la calotte

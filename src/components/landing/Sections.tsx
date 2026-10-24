@@ -330,13 +330,15 @@ export function FaqSection() {
 
 export function FinalCta() {
   return (
-    <section data-theme="dark" className="relative isolate flex min-h-[640px] items-center overflow-hidden bg-background py-24 text-foreground sm:min-h-[760px] sm:py-32">
+    <section data-theme="dark" className="relative isolate flex min-h-[680px] items-center overflow-hidden border-t border-line bg-background py-24 text-foreground sm:min-h-[820px] sm:py-32">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(50% 55% at 50% 50%, color-mix(in srgb, var(--bad) 20%, transparent), transparent 72%)" }} />
       <CtaGlobe variant="full" />
       <Container className="relative w-full text-center">
-        <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,6vw,4.5rem)]"><L fr={<>Prêt à partir en <em>direct ?</em></>} en={<>Ready to go <em>live?</em></>} /></h2>
+        <h2 className="h-serif mx-auto max-w-[12ch] text-[clamp(2.75rem,6vw,4.5rem)]"><L fr={<>Prêt à partir en <em>direct ?</em></>} en={<>Ready to go <em>live?</em></>} /></h2>
+        <p className="mx-auto mt-5 max-w-[34ch] text-base leading-relaxed text-muted sm:text-lg"><L fr="Production IRL, relais SRTLA et contrôle d'OBS à distance, depuis la Guadeloupe." en="IRL production, SRTLA relays and remote OBS control, from Guadeloupe." /></p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <ButtonLink href="/contact" className="border-foreground! bg-foreground! text-background! hover:bg-foreground/85!"><L fr="Contacter" en="Contact us" /></ButtonLink>
-          <ButtonLink href="/inscription" variant="secondary"><L fr="Créer mon compte" en="Create my account" /></ButtonLink>
+          <Link href="/contact" className="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><L fr="Contactez-nous" en="Contact us" /></Link>
+          <Link href="/inscription" className="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-full bg-bad px-6 text-[15px] font-medium text-foreground transition-opacity hover:opacity-85"><L fr="Commencer" en="Get started" /></Link>
         </div>
       </Container>
     </section>

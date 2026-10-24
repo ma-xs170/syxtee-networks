@@ -364,7 +364,7 @@ export function FinalCta() {
       <Container className="relative text-center">
         <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,6vw,4.5rem)]">Prêt à partir en <em>direct ?</em></h2>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <ButtonLink href="/contact">Contacter</ButtonLink>
+          <ButtonLink href="/contact" className="border-foreground! bg-foreground! text-background! hover:bg-foreground/85!">Contacter</ButtonLink>
           <ButtonLink href="/inscription" variant="secondary">Créer mon compte</ButtonLink>
         </div>
       </Container>

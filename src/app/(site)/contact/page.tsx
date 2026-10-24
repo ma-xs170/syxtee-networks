@@ -15,7 +15,9 @@ const cardLink = "inline-flex min-h-11 items-center gap-1.5 text-sm font-medium 
 
 export default function ContactPage() {
   return (
-    <>
+    <div className="relative isolate overflow-hidden">
+      {/* Dégradé rouge en haut de page, comme un projecteur sur la scène. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[1100px]" style={{ maskImage: "linear-gradient(to bottom, #000 55%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, #000 55%, transparent)", background: "radial-gradient(70% 55% at 0% 0%, color-mix(in srgb, var(--bad) 40%, transparent), transparent 70%), radial-gradient(55% 50% at 100% 30%, color-mix(in srgb, var(--bad) 26%, transparent), transparent 70%)" }} />
       <section className="py-16 sm:py-24">
         <Container className="max-w-5xl">
           <h1 className="h-serif max-w-[16ch] text-[clamp(3rem,7vw,5rem)]">Demander une <em>production IRL.</em></h1>
@@ -62,6 +64,6 @@ export default function ContactPage() {
           </a>
         </Container>
       </section>
-    </>
+    </div>
   );
 }

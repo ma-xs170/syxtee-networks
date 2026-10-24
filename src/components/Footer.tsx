@@ -9,7 +9,7 @@ const columns: { title: string; links: NavLink[] }[] = [
   {
     title: "Production",
     links: [
-      { label: "Demander une production IRL", href: "/contact" },
+      { label: "Production IRL", href: "/contact" },
       { label: "Régie et cadreurs IRL", href: "/production" },
       { label: "Annuaire des vidéastes", href: site.videastesUrl },
       { label: "Cas d'usage", href: "/cas-d-usage" },

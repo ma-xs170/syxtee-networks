@@ -4,7 +4,6 @@ import { useActionState, useState } from "react";
 import { contactAction, type ContactState } from "@/app/(site)/contact/actions";
 import { buttonClass } from "@/components/ui/button-styles";
 import { LIMITS } from "@/config/devis";
-import { computeQuote, eur } from "@/lib/quote";
 
 // Formulaire de demande de devis : événement, lieu, date, durée, besoins, description. Champ piège et horodatage antispam.
 const field =
@@ -25,18 +24,17 @@ const Select = ({ id, name, required, placeholder, options }: { id: string; name
   </div>
 );
 
-// Devis automatique : l'estimation se met à jour pendant la saisie. Le serveur la recalcule et la joint à la demande.
+// Besoin détaillé : aucun prix montré au client. Le serveur calcule l'estimation et la joint à la demande, pour les administrateurs seulement.
 function QuotePanel() {
   const [lives, setLives] = useState(1);
   const [hours, setHours] = useState(2);
   const [remote, setRemote] = useState(true);
   const [crew, setCrew] = useState(false);
   const [km, setKm] = useState(0);
-  const quote = computeQuote({ lives, hours, remote, crew, km });
   const num = (v: string) => (v === "" ? 0 : Number(v));
   return (
     <fieldset className="rounded-2xl border border-line bg-surface p-4 sm:p-6">
-      <legend className="px-2 text-sm font-medium">Estimation automatique</legend>
+      <legend className="px-2 text-sm font-medium">Ton besoin</legend>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div className="grid gap-2">
           <label htmlFor="q-hours" className={label}>Durée d&apos;un direct (heures)</label>
@@ -64,19 +62,6 @@ function QuotePanel() {
           <input id="q-km" name="q_km" type="number" inputMode="numeric" min={0} max={LIMITS.maxKm} step={1} value={km} onChange={(e) => setKm(num(e.target.value))} className={field} />
         </div>
       )}
-      <dl className="mt-6 divide-y divide-line rounded-xl border border-line text-sm">
-        {quote.lines.map((l) => (
-          <div key={l.label} className="flex items-baseline justify-between gap-4 px-4 py-3">
-            <div className="min-w-0"><dt className="font-medium">{l.label}</dt><dd className="text-xs text-muted">{l.detail}</dd></div>
-            <dd className="shrink-0 tabular-nums">{eur(l.cents)}</dd>
-          </div>
-        ))}
-        <div className="flex items-baseline justify-between gap-4 bg-surface-2 px-4 py-3.5">
-          <dt className="font-semibold">Total estimé</dt>
-          <dd className="text-lg font-semibold tabular-nums" aria-live="polite">{eur(quote.totalCents)}</dd>
-        </div>
-      </dl>
-      <p className="mt-3 text-xs leading-relaxed text-muted">Estimation indicative, TVA non applicable. On confirme le devis définitif par e-mail, avec facture.</p>
     </fieldset>
   );
 }

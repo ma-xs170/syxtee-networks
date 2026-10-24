@@ -42,7 +42,7 @@ export function HomeHero() {
           Le live IRL, <em>partout.</em>
         </h1>
         <p className="rise mx-auto mt-6 max-w-[58ch] text-lg leading-relaxed text-muted" style={rise(1)}>
-          Une équipe de production, des cadreurs et des relais SRTLA pour diffuser depuis n&apos;importe où. Basés en Guadeloupe, dans la Caraïbe française. Et si tu streames seul, les mêmes outils à petit prix.
+          Une équipe de production, des cadreurs et des relais SRTLA pour diffuser depuis n&apos;importe où. Lancé par des Guadeloupéens, des solutions de streaming IRL flexibles, depuis la Caraïbe française. Et si tu streames seul, les mêmes outils à petit prix.
         </p>
         <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={rise(2)}>
           <ButtonLink href="/contact">Demander un devis</ButtonLink>

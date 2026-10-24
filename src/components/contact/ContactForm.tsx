@@ -113,7 +113,7 @@ export default function ContactForm() {
           {state.error}
         </p>
       )}
-      <button type="submit" disabled={pending} aria-busy={pending} className="inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85 active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
+      <button type="submit" disabled={pending} aria-busy={pending} className="inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85 active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground">
         {pending ? <span aria-hidden="true" className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none" /> : <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" /></svg>}
         {pending ? "Envoi…" : "Envoyer ma demande de production"}
       </button>

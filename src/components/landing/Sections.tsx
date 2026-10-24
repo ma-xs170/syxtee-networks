@@ -30,7 +30,7 @@ function Cell({ className = "", title, text, children, delay = 0, href, cta }: {
       <div className="flex h-44 items-center justify-center">{children}</div>
       <h3 className="mt-6 text-lg font-semibold tracking-tight">{title}</h3>
       <p className="mt-1.5 max-w-[48ch] text-sm leading-relaxed text-muted">{text}</p>
-      {href && cta && <Link href={href} className="mt-2 inline-flex min-h-11 items-center gap-1.5 text-sm text-foreground underline-offset-4 hover:underline">{cta} <span aria-hidden="true">→</span></Link>}
+      {href && cta && <Link href={href} className="mt-2 inline-flex min-h-11 items-center gap-1.5 text-sm text-foreground underline-offset-4 hover:underline">{cta}</Link>}
     </Reveal>
   );
 }
@@ -49,8 +49,8 @@ export function HomeHero() {
             <L fr={<><strong className="font-semibold text-foreground">Diffusez et capturez chaque instant.</strong> Production, cadreurs et relais SRTLA pour diffuser de n&apos;importe où. Lancé par des Guadeloupéens, avec les mêmes outils à petit prix pour les streamers indépendants.</>} en={<><strong className="font-semibold text-foreground">Stream and capture every moment.</strong> Production, camera operators and SRTLA relays to broadcast from anywhere. Launched by Guadeloupeans, with the same tools at a low price for independent streamers.</>} />
           </p>
           <div className="rise mt-9 flex flex-col gap-3 sm:flex-row" style={rise(2)}>
-            <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><L fr="Contactez-nous" en="Contact us" /> <span aria-hidden="true">→</span></Link>
-            <Link href="/inscription" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-bad px-6 text-[15px] font-medium text-foreground transition-opacity hover:opacity-85"><L fr="Commencer" en="Get started" /> <span aria-hidden="true">→</span></Link>
+            <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><L fr="Contactez-nous" en="Contact us" /></Link>
+            <Link href="/inscription" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-bad px-6 text-[15px] font-medium text-foreground transition-opacity hover:opacity-85"><L fr="Commencer" en="Get started" /></Link>
           </div>
         </div>
         <div className="rise bento-cell relative overflow-hidden" style={rise(2)}>
@@ -115,8 +115,8 @@ export function ProductionSection() {
         </div>
 
         <Reveal className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><L fr="Contactez-nous" en="Contact us" /> <span aria-hidden="true">→</span></Link>
-          <ButtonLink href="/cas-d-usage" variant="secondary" className="h-12 rounded-xl px-6 text-[15px]"><L fr="Nos réalisations" en="Our work" /></ButtonLink>
+          <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><L fr="Contactez-nous" en="Contact us" /></Link>
+          <ButtonLink href="/cas-d-usage" variant="secondary" className="h-12 px-6 text-[15px]"><L fr="Nos réalisations" en="Our work" /></ButtonLink>
         </Reveal>
       </Container>
     </section>

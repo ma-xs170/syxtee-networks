@@ -35,7 +35,7 @@ export function Button({ variant = "primary", loading = false, children, classNa
   );
 }
 
-// Flèche ↗ sur tout bouton qui ouvre une autre page ou un autre site ; pas sur un lien d'ancre (#section) qui reste sur la page.
+// Flèche ↗ facultative (prop `arrow`), désactivée par défaut : les boutons du site n'ont plus de flèche.
 function OutArrow() {
   return (
     <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -44,16 +44,16 @@ function OutArrow() {
   );
 }
 
-export function ButtonLink({ href, variant = "primary", children, className = "", external = false }: { href: string; variant?: Variant; children: ReactNode; className?: string; external?: boolean }) {
+export function ButtonLink({ href, variant = "primary", children, className = "", external = false, arrow: showArrow = false }: { href: string; variant?: Variant; children: ReactNode; className?: string; external?: boolean; arrow?: boolean }) {
   const cls = buttonClass(variant, className);
-  const arrow = !href.startsWith("#");
+  const arrow = showArrow && !href.startsWith("#");
   const Lead = ICONS[href];
   const lead = Lead ? <Lead size={16} aria-hidden="true" /> : null;
   return external ? (
     <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
       {lead}
       {children}
-      <OutArrow />
+      {showArrow && <OutArrow />}
     </a>
   ) : (
     <Link href={href} className={cls}>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUpRight, DiscordLogo, Envelope, GithubLogo, InstagramLogo, MapPin, YoutubeLogo } from "@phosphor-icons/react/dist/ssr";
+import { DiscordLogo, Envelope, GithubLogo, InstagramLogo, MapPin, YoutubeLogo } from "@phosphor-icons/react/dist/ssr";
 import ContactForm from "@/components/contact/ContactForm";
 import { Container } from "@/components/ui";
 import { site } from "@/lib/site";
@@ -65,7 +65,7 @@ export default function ContactPage() {
             <div className={card}>
               <h2 className="text-xl font-semibold tracking-tight">Devis gratuit</h2>
               <p className="mt-2 text-sm leading-relaxed text-muted">Décris ton projet et reçois une estimation personnalisée.</p>
-              <Link href="/faq" className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium underline-offset-4 hover:underline">Consulter la FAQ <ArrowUpRight size={14} aria-hidden="true" /></Link>
+              <Link href="/faq" className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium underline-offset-4 hover:underline">Consulter la FAQ</Link>
             </div>
           </aside>
         </Container>
@@ -78,7 +78,7 @@ export default function ContactPage() {
           <h2 className="h-serif mt-5 max-w-[18ch] text-[clamp(2.25rem,5vw,3.5rem)]">Échange, apprends, progresse <em>ensemble.</em></h2>
           <p className="mt-5 max-w-[50ch] leading-relaxed text-muted">Partage des astuces, demande de l&apos;aide pour ton installation et grandis avec la communauté SYXTEE.</p>
           <a href={site.discord} target="_blank" rel="noopener noreferrer" className="mt-7 inline-flex h-12 items-center gap-2 whitespace-nowrap rounded-full btn-tonal px-6 text-[15px] font-medium">
-            Rejoindre le Discord <ArrowUpRight size={16} aria-hidden="true" />
+            Rejoindre le Discord
           </a>
         </Container>
       </section>

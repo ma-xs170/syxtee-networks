@@ -353,17 +353,6 @@ html[data-stream-mode="on"] [data-sensitive] {
 /* Logo posé sur un fond « encre » (bouton plein) : l'inverse de ink-img. */
 .ink-img-rev { filter: var(--img-filter-rev); }
 
-/* Halo ambiant de la page : un dégradé doux en haut, fixe derrière tout le contenu. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 70% 40% at 50% -5%, color-mix(in srgb, var(--foreground) 9%, transparent), transparent 70%),
-    radial-gradient(ellipse 40% 30% at 100% 100%, color-mix(in srgb, var(--foreground) 5%, transparent), transparent 70%);
-}
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
     .h-section {

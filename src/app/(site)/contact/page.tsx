@@ -57,7 +57,7 @@ export default function ContactPage() {
           <DiscordLogo size={44} weight="fill" aria-hidden="true" style={{ color: "#5865f2" }} />
           <h2 className="h-serif mt-5 max-w-[18ch] text-[clamp(2.25rem,5vw,3.5rem)]">Échange, apprends, progresse <em>ensemble.</em></h2>
           <p className="mt-5 max-w-[50ch] leading-relaxed text-muted">Partage des astuces, demande de l&apos;aide pour ton installation et grandis avec la communauté SYXTEE.</p>
-          <a href={site.discord} target="_blank" rel="noopener noreferrer" className="mt-7 inline-flex h-12 items-center gap-2 whitespace-nowrap rounded-full border border-line-strong bg-surface-2 px-6 text-[15px] font-medium text-foreground transition-colors hover:border-foreground/30">
+          <a href={site.discord} target="_blank" rel="noopener noreferrer" className="mt-7 inline-flex h-12 items-center gap-2 whitespace-nowrap rounded-full btn-tonal px-6 text-[15px] font-medium">
             Rejoindre le Discord <ArrowRight size={16} aria-hidden="true" />
           </a>
         </Container>

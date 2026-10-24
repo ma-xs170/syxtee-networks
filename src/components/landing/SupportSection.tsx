@@ -28,7 +28,7 @@ export default function SupportSection({ id }: { id?: string }) {
               <YoutubeLogo size={20} weight="fill" aria-hidden="true" />
               Suivre sur YouTube · syxtee
             </a>
-            <a href={site.discord} target="_blank" rel="noopener noreferrer" className={`${pill} border border-line-strong bg-surface-2 text-foreground hover:border-foreground/30`}>
+            <a href={site.discord} target="_blank" rel="noopener noreferrer" className={`${pill} btn-tonal`}>
               <DiscordLogo size={20} weight="fill" aria-hidden="true" />
               Rejoindre la communauté
             </a>

@@ -10,6 +10,7 @@ import Faq from "./Faq";
 import ObsHero from "./ObsHero";
 import SceneSwitcher from "./SceneSwitcher";
 import CtaGlobe from "./CtaGlobe";
+import Streamer from "@/components/illustrations/Streamer";
 import StreamerStack from "@/components/home/StreamerStack";
 import type { HomeStreamer } from "@/lib/streamers";
 import EncoderViewer from "@/components/encoder/EncoderViewer";
@@ -39,18 +40,26 @@ function Cell({ className = "", title, text, children, delay = 0, href, cta }: {
 export function HomeHero() {
   return (
     <section id="accueil-hero" data-theme="dark" className="relative isolate overflow-hidden bg-background text-foreground">
-      <CtaGlobe variant="hero" />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
-      <Container className="relative pb-40 pt-[calc(5rem+65px)] text-center sm:pb-44 lg:pt-[calc(7rem+65px)]">
-        <h1 className="rise h-serif mx-auto max-w-[16ch] text-[clamp(2.75rem,7vw,5.5rem)]" style={rise(0)}>
-          Le live IRL, <em>partout.</em>
-        </h1>
-        <p className="rise mx-auto mt-6 max-w-[58ch] text-lg leading-relaxed text-muted" style={rise(1)}>
-          Production, cadreurs et relais SRTLA pour diffuser de n&apos;importe où. Lancé par des Guadeloupéens, avec les mêmes outils à petit prix pour les streamers indépendants.
-        </p>
-        <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={rise(2)}>
-          <Link href="/contact" className={WHITE_BTN}>{DOT}Réserver<ArrowUpRight size={16} aria-hidden="true" /></Link>
-          <Link href="#streamers" className={WHITE_BTN}>Je suis streamer indépendant</Link>
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(60% 70% at 0% 0%, color-mix(in srgb, var(--bad) 32%, transparent), transparent 70%)" }} />
+      <Container className="grid items-center gap-12 pb-24 pt-[calc(4rem+65px)] lg:grid-cols-2 lg:gap-16 lg:pb-32 lg:pt-[calc(6rem+65px)]">
+        <div>
+          <h1 className="rise h-serif max-w-[14ch] text-[clamp(2.75rem,6vw,5rem)]" style={rise(0)}>
+            Le live IRL, <em>partout.</em>
+          </h1>
+          <p className="rise mt-6 max-w-[48ch] text-lg leading-relaxed text-muted" style={rise(1)}>
+            Production, cadreurs et relais SRTLA pour diffuser de n&apos;importe où. Lancé par des Guadeloupéens, avec les mêmes outils à petit prix pour les streamers indépendants.
+          </p>
+          <div className="rise mt-9 flex flex-col gap-3 sm:flex-row" style={rise(2)}>
+            <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-xl bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85">Réserver<ArrowUpRight size={16} aria-hidden="true" /></Link>
+            <Link href="#streamers" className={WHITE_BTN}>Je suis streamer indépendant</Link>
+          </div>
+        </div>
+        <div className="rise bento-cell relative overflow-hidden" style={rise(2)}>
+          <div aria-hidden="true" className="flex h-72 items-center justify-center border-b border-line p-6 text-foreground/80 sm:h-96"><Streamer animated={false} /></div>
+          <div className="flex items-center justify-between gap-4 p-5 sm:p-6">
+            <p className="text-base font-medium">Mobilité et bateau, en direct partout.</p>
+            <span className="shrink-0 text-sm text-muted">Guadeloupe</span>
+          </div>
         </div>
       </Container>
     </section>

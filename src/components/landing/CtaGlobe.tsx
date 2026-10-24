@@ -62,7 +62,7 @@ export default function CtaGlobe({ variant = "cap" }: { variant?: "cap" | "full"
       const cap = Math.min(h * 0.3, 260); // hauteur visible de la calotte, sous le contenu
       const cx = w / 2;
       const cy = full ? h * 0.52 : h - cap + R; // centre sous le bord bas : on ne voit que la calotte
-      const dim = full ? 0.55 : 1;
+      const dim = full ? 0.3 : 1;
       ctx!.fillStyle = ink();
       // Halo et trait lumineux du bord.
       ctx!.save();

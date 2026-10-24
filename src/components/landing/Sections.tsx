@@ -1,5 +1,6 @@
 import MacAndPc from "@/components/landing/MacAndPc";
 import Link from "next/link";
+import { ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
 import { Container } from "../ui";
 import { ButtonLink } from "../ui/Button";
 import Highlight from "../ui/Highlight";
@@ -54,11 +55,11 @@ export function HomeHero() {
           Le live IRL, <em>partout.</em>
         </h1>
         <p className="rise mx-auto mt-6 max-w-[58ch] text-lg leading-relaxed text-muted" style={rise(1)}>
-          Une équipe de production, des cadreurs et des relais SRTLA pour diffuser depuis n&apos;importe où. Lancé par des Guadeloupéens, des solutions de streaming IRL flexibles, depuis la Caraïbe française. Et si tu streames seul, les mêmes outils à petit prix.
+          Production, cadreurs et relais SRTLA pour diffuser de n&apos;importe où. Lancé par des Guadeloupéens, avec les mêmes outils à petit prix pour les streamers indépendants.
         </p>
         <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={rise(2)}>
-          <Link href="/contact" className={WHITE_BTN}>{DOT}Demander une production IRL</Link>
-          <Link href="#streamers" className={WHITE_BTN}>Je suis streamer indépendant</Link>
+          <Link href="/contact" className={WHITE_BTN}>{DOT}Demander une production IRL<ArrowUpRight size={16} aria-hidden="true" /></Link>
+          <Link href="#streamers" className={WHITE_BTN}>Je suis streamer indépendant<ArrowUpRight size={16} aria-hidden="true" /></Link>
         </div>
         <div className="rise mt-14" style={rise(3)}>
           <p className="mb-5 text-sm text-muted">Diffuse sur</p>
@@ -120,8 +121,8 @@ export function ProductionSection() {
         </div>
 
         <Reveal className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link href="/contact" className={WHITE_BTN}>{DOT}Demander une production IRL</Link>
-          <Link href="/production" className="inline-flex min-h-11 items-center gap-1.5 text-sm text-foreground underline-offset-4 hover:underline">Voir comment on travaille <span aria-hidden="true">→</span></Link>
+          <Link href="/contact" className={WHITE_BTN}>{DOT}Demander une production IRL<ArrowUpRight size={16} aria-hidden="true" /></Link>
+          <Link href="/production" className="inline-flex min-h-11 items-center gap-1.5 text-sm text-foreground underline-offset-4 hover:underline">Voir comment on travaille <ArrowUpRight size={14} aria-hidden="true" /></Link>
         </Reveal>
       </Container>
     </section>

@@ -9,7 +9,9 @@ import { platformNames, PlatformIcon } from "./parts";
 
 // Fiche d'un live : création, modification (titre, dates, lieu, description, plateformes) ou simple lecture sur un calendrier partagé.
 
-export type Draft = { id?: string; title: string; location: string; description: string; platforms: PlatformId[]; start: Date; end: Date };
+export type Draft = { id?: string; title: string; location: string; description: string; platforms: PlatformId[]; assignee_id: string | null; start: Date; end: Date };
+export type TeamMember = { id: string; name: string; kind: "streamer" | "videaste" | "staff" };
+const KIND_LABEL = { streamer: "Streamer", videaste: "Vidéaste", staff: "Encadrement" } as const;
 export type DraftInput = Omit<LiveEvent, "id" | "starts_at" | "ends_at"> & { starts_at: string; ends_at: string };
 
 const field = "h-11 w-full rounded-lg border border-line bg-background px-3 text-base text-foreground sm:text-sm placeholder:text-muted focus:border-foreground/60 focus:outline-none";
@@ -17,12 +19,17 @@ const field = "h-11 w-full rounded-lg border border-line bg-background px-3 text
 export default function EventDialog({
   draft,
   editable,
+  team,
+  conflict,
   onClose,
   onSave,
   onDelete,
 }: {
   draft: Draft | null;
   editable: boolean;
+  team: TeamMember[];
+  /** Fonction qui dit si la personne a déjà un autre live qui chevauche la plage donnée. */
+  conflict: (assignee: string, start: Date, end: Date, ignoreId?: string) => boolean;
   onClose: () => void;
   onSave: (d: DraftInput, id?: string) => Promise<string | null>;
   onDelete: (id: string) => Promise<string | null>;
@@ -32,6 +39,7 @@ export default function EventDialog({
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [platforms, setPlatforms] = useState<PlatformId[]>([]);
+  const [assignee, setAssignee] = useState("");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [error, setError] = useState("");
@@ -50,6 +58,7 @@ export default function EventDialog({
     setLocation(draft.location);
     setDescription(draft.description);
     setPlatforms(draft.platforms);
+    setAssignee(draft.assignee_id ?? "");
     setStart(toInput(draft.start));
     setEnd(toInput(draft.end));
     setError("");
@@ -77,7 +86,7 @@ export default function EventDialog({
     if (b.getTime() - a.getTime() > 7 * 24 * HOUR) return setError("Un live dure 7 jours au plus.");
     setBusy(true);
     setError("");
-    const err = await onSave({ title: title.trim(), location: location.trim(), description: description.trim(), platforms, starts_at: a.toISOString(), ends_at: b.toISOString() }, draft?.id);
+    const err = await onSave({ title: title.trim(), location: location.trim(), description: description.trim(), platforms, assignee_id: assignee || null, starts_at: a.toISOString(), ends_at: b.toISOString() }, draft?.id);
     if (err) {
       setError(err);
       setBusy(false);
@@ -96,6 +105,10 @@ export default function EventDialog({
 
   const toggle = (id: PlatformId) => setPlatforms((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
   const lock = !editable;
+  const sa = fromInput(start);
+  const sb = fromInput(end);
+  const clash = !!assignee && !!sa && !!sb && sb > sa && conflict(assignee, sa, sb, draft?.id);
+  const whoName = team.find((m) => m.id === draft?.assignee_id)?.name;
 
   return (
     <dialog
@@ -120,6 +133,13 @@ export default function EventDialog({
                 </li>
               ))}
             </ul>
+          )}
+          {whoName && (
+            <p className="mt-4 text-sm">
+              <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">Responsable</span>
+              <br />
+              {whoName}
+            </p>
           )}
           {draft.location && (
             <p className="mt-4 text-sm">
@@ -174,6 +194,18 @@ export default function EventDialog({
               })}
             </div>
           </fieldset>
+          {team.length > 0 && (
+            <label className="grid gap-1.5 text-sm text-muted">
+              Responsable
+              <select value={assignee} onChange={(e) => setAssignee(e.target.value)} className={field}>
+                <option value="">Non attribué</option>
+                {team.map((m) => (
+                  <option key={m.id} value={m.id}>{m.name} ({KIND_LABEL[m.kind]})</option>
+                ))}
+              </select>
+              {clash && <span role="status" className="text-xs text-bad">Cette personne a déjà un live à ce moment-là.</span>}
+            </label>
+          )}
           <label className="grid gap-1.5 text-sm text-muted">
             Lieu
             <input value={location} onChange={(e) => setLocation(e.target.value)} maxLength={120} placeholder="Ville, salon, studio, en ligne…" className={field} />

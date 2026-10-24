@@ -6,7 +6,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { isAdminEmail } from "@/lib/admin";
 import { getProfile, requireUser } from "@/lib/auth/dal";
-import { getPersonalPlan } from "@/lib/auth/plan";
+import { getPersonalPlan, getPlan } from "@/lib/auth/plan";
+import { isKind, kindFullMessage, type MemberKind } from "@/lib/production";
 import { allow } from "@/lib/auth/rateLimit";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 import { remoteWorkspaceInvite } from "./mail";
@@ -66,7 +67,7 @@ export async function createWorkspaceAction(raw: { name: string }): Promise<Work
   const admin = isAdminEmail(user.email);
   const [ws, member, prof] = await Promise.all([
     db.from("workspaces").insert({ id, name: parsed.data, color, created_by: user.id }),
-    db.from("workspace_members").insert({ workspace_id: id, user_id: user.id, role: "owner" }),
+    db.from("workspace_members").insert({ workspace_id: id, user_id: user.id, role: "owner", kind: "staff" }),
     db.from("profiles").update({ plan: admin ? "admin" : (profile?.plan ?? "free"), plan_until: admin ? null : (profile?.plan_until ?? null), suspended_at: profile?.suspended_at ?? null, onboarded_at: new Date().toISOString() }).eq("id", id),
   ]);
   if (ws.error || member.error || prof.error) {
@@ -94,7 +95,7 @@ async function managedWorkspace() {
 }
 
 /** Invite un membre par email : il doit avoir (ou créer) un compte avec cette adresse. */
-export async function inviteMemberAction(raw: { email: string; role: "admin" | "member" }): Promise<WorkspaceState> {
+export async function inviteMemberAction(raw: { email: string; role: "admin" | "member"; kind?: MemberKind }): Promise<WorkspaceState> {
   const m = await managedWorkspace();
   if ("error" in m) return { error: m.error };
   const email = z.email().safeParse(raw.email.trim().toLowerCase());
@@ -108,9 +109,17 @@ export async function inviteMemberAction(raw: { email: string; role: "admin" | "
     db.from("workspace_invites").select("id", { count: "exact", head: true }).eq("workspace_id", m.ws.id).is("accepted_at", null).is("revoked_at", null).gt("expires_at", new Date().toISOString()),
   ]);
   if ((members ?? 0) + (pending ?? 0) >= MAX_MEMBERS) return { error: `Cet espace a atteint ${MAX_MEMBERS} membres (invitations comprises).` };
+  // Formule Production : des places par type de membre (streamers, vidéastes). Un admin est de l'encadrement, jamais compté.
+  const kind: MemberKind = raw.role === "admin" ? "staff" : isKind(raw.kind) ? raw.kind : "streamer";
+  const [{ count: sameKind }, { count: pendingKind }] = await Promise.all([
+    db.from("workspace_members").select("user_id", { count: "exact", head: true }).eq("workspace_id", m.ws.id).eq("kind", kind),
+    db.from("workspace_invites").select("id", { count: "exact", head: true }).eq("workspace_id", m.ws.id).eq("kind", kind).is("accepted_at", null).is("revoked_at", null).gt("expires_at", new Date().toISOString()),
+  ]);
+  const full = kindFullMessage(await getPlan(), kind, (sameKind ?? 0) + (pendingKind ?? 0));
+  if (full) return { error: full };
   const token = `swi_${randomBytes(24).toString("hex")}`;
   const expires = new Date(Date.now() + 7 * 86_400_000);
-  const { error } = await db.from("workspace_invites").insert({ workspace_id: m.ws.id, email: email.data, role: raw.role, token_hash: hashToken(token), invited_by: m.user.id, expires_at: expires.toISOString() });
+  const { error } = await db.from("workspace_invites").insert({ workspace_id: m.ws.id, email: email.data, role: raw.role, kind, token_hash: hashToken(token), invited_by: m.user.id, expires_at: expires.toISOString() });
   if (error) {
     console.error("inviteMember", error.message);
     return { error: "Impossible d'envoyer l'invitation. Réessaie dans un instant." };
@@ -217,10 +226,10 @@ export async function acceptWorkspaceInviteAction(token: string): Promise<Worksp
   if (!/^swi_[0-9a-f]{48}$/.test(token) || !hasAdmin) return { error: "Cette invitation n'est pas valide." };
   if (!(await allow(`ws-accept:${user.id}`, 20, 3600))) return { error: "Trop d'essais. Réessaie dans une heure." };
   const db = createAdminClient();
-  const { data: inv } = await db.from("workspace_invites").select("id, workspace_id, email, role, expires_at, accepted_at, revoked_at").eq("token_hash", hashToken(token)).maybeSingle();
+  const { data: inv } = await db.from("workspace_invites").select("id, workspace_id, email, role, kind, expires_at, accepted_at, revoked_at").eq("token_hash", hashToken(token)).maybeSingle();
   if (!inv || inv.accepted_at || inv.revoked_at || Date.parse(inv.expires_at) <= Date.now()) return { error: "Cette invitation n'est plus valable : demande-en une nouvelle." };
   if (!user.email || user.email.toLowerCase() !== String(inv.email).toLowerCase()) return { error: `Cette invitation est pour ${inv.email}. Connecte-toi avec cette adresse.` };
-  const { error } = await db.from("workspace_members").upsert({ workspace_id: inv.workspace_id, user_id: user.id, role: inv.role }, { onConflict: "workspace_id,user_id", ignoreDuplicates: true });
+  const { error } = await db.from("workspace_members").upsert({ workspace_id: inv.workspace_id, user_id: user.id, role: inv.role, kind: inv.kind ?? "streamer" }, { onConflict: "workspace_id,user_id", ignoreDuplicates: true });
   if (error) {
     console.error("acceptInvite", error.message);
     return { error: "Impossible de rejoindre l'espace pour le moment." };

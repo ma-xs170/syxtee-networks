@@ -51,7 +51,8 @@ export async function loadShared(token: string): Promise<{ name: string; events:
   ]);
   const p = profile as { first_name: string | null; twitch_display_name: string | null; username: string | null } | null;
   const name = (ws as { name: string } | null)?.name || p?.twitch_display_name || p?.first_name || p?.username || "SYXTEE";
-  return { name, events };
+  // Le lien public ne montre pas qui est responsable : seulement les lives.
+  return { name, events: events.map((e) => ({ ...e, assignee_id: null })) };
 }
 
 const esc = (s: string) => s.replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");

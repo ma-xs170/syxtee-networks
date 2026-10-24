@@ -12,12 +12,16 @@ import Modal from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { DotsThree, Users } from "@/components/icons";
 
-type Member = { id: string; name: string; email: string; role: "owner" | "admin" | "member"; joined: string };
-type Invite = { id: string; email: string; role: "admin" | "member"; created: string };
+type Kind = "streamer" | "videaste" | "staff";
+type Member = { id: string; name: string; email: string; role: "owner" | "admin" | "member"; kind: Kind; joined: string };
+type Invite = { id: string; email: string; role: "admin" | "member"; kind: Kind; created: string };
+type Seats = { used: number; limit: number | null };
+export type Quota = { plan: string; streamer: Seats; videaste: Seats } | null;
+const KIND: Record<Kind, string> = { streamer: "Streamer", videaste: "Vidéaste", staff: "Encadrement" };
 const ROLE: Record<Member["role"], string> = { owner: "Propriétaire", admin: "Admin", member: "Membre" };
 const date = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric", timeZone: "Europe/Paris" });
 
-export default function TeamSettings({ workspace, admin, owner, meId, members, invites }: { workspace: { id: string; name: string; color: string; role: string }; admin: boolean; owner: boolean; meId: string; members: Member[]; invites: Invite[] }) {
+export default function TeamSettings({ workspace, admin, owner, meId, quota, members, invites }: { workspace: { id: string; name: string; color: string; role: string }; admin: boolean; owner: boolean; meId: string; quota: Quota; members: Member[]; invites: Invite[] }) {
   const router = useRouter();
   const toast = useToast();
   const [pending, start] = useTransition();
@@ -26,6 +30,7 @@ export default function TeamSettings({ workspace, admin, owner, meId, members, i
   const [inviting, setInviting] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "member">("member");
+  const [kind, setKind] = useState<"streamer" | "videaste">("streamer");
   const [deleting, setDeleting] = useState(false);
   const [confirm, setConfirm] = useState("");
   const [menu, setMenu] = useState<string | null>(null);
@@ -71,6 +76,20 @@ export default function TeamSettings({ workspace, admin, owner, meId, members, i
         </CardFooter>
       </Card>
 
+      {quota && (
+        <Card title={`Production : ${quota.plan}`}>
+          <dl className="grid grid-cols-2 gap-4 text-sm">
+            {([["Streamers", quota.streamer], ["Vidéastes", quota.videaste]] as const).map(([label, s]) => (
+              <div key={label}>
+                <dt className="text-muted">{label}</dt>
+                <dd className="mt-1 font-mono text-lg tabular-nums">{s.used} / {s.limit ?? "∞"}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-4 text-xs text-muted">Invitations en attente comprises. L&apos;encadrement (propriétaire et admins) n&apos;est pas compté.</p>
+        </Card>
+      )}
+
       <Card>
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div role="tablist" className="flex gap-1">
@@ -109,6 +128,7 @@ export default function TeamSettings({ workspace, admin, owner, meId, members, i
                     </td>
                     <td className="py-4 pr-4">
                       <Badge>{ROLE[m.role]}</Badge>
+                      {quota && <span className="ml-2 font-mono text-xs uppercase text-muted">{KIND[m.kind]}</span>}
                     </td>
                     <td className="relative py-4 text-right">
                       {owner && m.role !== "owner" && m.id !== meId && (
@@ -139,6 +159,7 @@ export default function TeamSettings({ workspace, admin, owner, meId, members, i
                     </td>
                     <td className="py-4 pr-4">
                       <Badge tone="warn">En attente</Badge>
+                      {quota && <span className="ml-2 font-mono text-xs uppercase text-muted">{KIND[i.kind]}</span>}
                     </td>
                     <td className="py-4 text-right">
                       {admin && (
@@ -180,7 +201,7 @@ export default function TeamSettings({ workspace, admin, owner, meId, members, i
           className="mt-4 grid gap-4"
           onSubmit={(e) => {
             e.preventDefault();
-            run(() => inviteMemberAction({ email, role }), "Invitation envoyée.", () => { setInviting(false); setEmail(""); });
+            run(() => inviteMemberAction({ email, role, kind }), "Invitation envoyée.", () => { setInviting(false); setEmail(""); });
           }}
         >
           <Input label="Adresse e-mail" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -191,6 +212,15 @@ export default function TeamSettings({ workspace, admin, owner, meId, members, i
               <option value="admin">Admin</option>
             </select>
           </div>
+          {quota && role === "member" && (
+            <div className="grid gap-2">
+              <label htmlFor="inv-kind" className="text-sm text-muted">Type de membre</label>
+              <select id="inv-kind" value={kind} onChange={(e) => setKind(e.target.value as "streamer" | "videaste")} className="h-11 rounded-xl border border-line bg-input px-3 text-sm">
+                <option value="streamer">Streamer</option>
+                <option value="videaste">Vidéaste</option>
+              </select>
+            </div>
+          )}
           <div className="flex gap-2">
             <Button type="submit" loading={pending}>Envoyer l&apos;invitation</Button>
             <Button variant="secondary" onClick={() => setInviting(false)}>Annuler</Button>

@@ -15,7 +15,8 @@ import { ToastProvider } from "@/components/ui/Toast";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { authErrorMessage } from "@/lib/auth/errors";
 import { getPlan } from "@/lib/auth/plan";
-import { canSubscribe, CATALOG, type Tier } from "@/lib/billing";
+import { canSubscribe, CATALOG, isProdTier, PRODUCTION, type Tier } from "@/lib/billing";
+import { hasProductionPrices } from "@/lib/stripe";
 import { publicCoreUrl } from "@/lib/core";
 import { LOW_DATA_COOKIE } from "@/lib/low-data";
 import { FEATURES } from "@/lib/plans";
@@ -147,12 +148,13 @@ async function Formule() {
   const plan = await getPlan();
   const profile = await getProfile();
   const paying = plan.id !== "free";
-  const subscribed = plan.id === "basic" || plan.id === "paid" || plan.id === "extra";
+  const subscribed = plan.id === "basic" || plan.id === "paid" || plan.id === "extra" || isProdTier(plan.id);
   const lim = (n: number, one: string, many: string) => (Number.isFinite(n) ? `${n} ${n > 1 ? many : one}` : `${many} illimités`);
   const included = [lim(plan.maxRelays, "serveur", "serveurs"), lim(plan.maxConcurrentStreams, "flux simultané", "flux simultanés"), ...plan.features.map((f) => FEATURES[f])];
   const fmt = (v: string | null | undefined) => (v ? new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" }).format(new Date(v)) : null);
   const end = fmt(profile?.billing_period_end ?? profile?.plan_until);
-  const price = subscribed ? CATALOG[plan.id as Tier].prices[profile?.billing_interval === "year" ? "year" : "month"] : null;
+  const priceOf = (i: "month" | "year") => (isProdTier(plan.id) ? PRODUCTION[plan.id].prices[i] : CATALOG[plan.id as Tier].prices[i]);
+  const price = subscribed ? priceOf(profile?.billing_interval === "year" ? "year" : "month") : null;
   const renewal = !end ? null : profile?.cancel_at_period_end ? `Se termine le ${end}, sans renouvellement.` : subscribed ? `Prochain renouvellement le ${end}.` : `Valable jusqu'au ${end}.`;
   return (
     <>
@@ -179,7 +181,7 @@ async function Formule() {
       {profile && canSubscribe(profile) && (
         <div className="mt-4" id="formules">
           <Panel title={subscribed ? "Changer de formule" : "Choisir une formule"} text="Paiement sécurisé par Stripe. Sans engagement : tu peux annuler quand tu veux.">
-            <PlanPicker current={subscribed ? (plan.id as Tier) : null} />
+            <PlanPicker current={subscribed ? (plan.id as Tier) : null} production={hasProductionPrices} />
           </Panel>
         </div>
       )}

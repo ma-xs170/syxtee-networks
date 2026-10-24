@@ -2,7 +2,7 @@
 // Copie côté Core : core/src/plans.ts (mêmes limites), qui revérifie formule, échéance et suspension à chaque connexion.
 
 // Formules vendues (Stripe) : basic (Basique), paid (Premium, identifiant historique gardé), extra (Extra).
-export type PlanId = "free" | "basic" | "beta" | "paid" | "extra" | "partner" | "admin";
+export type PlanId = "free" | "basic" | "beta" | "paid" | "extra" | "prod_s" | "prod_m" | "prod_l" | "partner" | "admin";
 
 /** Fonctions verrouillées en Gratuit (qui garde serveurs, santé, mire et clés ; et, pour « remote », en Essentiel : Signature et au-dessus). Scanner et Analyseur restent actifs pour tous (hors liste). */
 export type Feature = "relais" | "sante" | "apercu" | "controle" | "remote" | "stats" | "lives" | "carte" | "mire" | "cam" | "dji" | "cles";
@@ -37,6 +37,8 @@ export type Plan = {
   maxInvites: number;
   /** Espaces partagés que ce compte peut créer au plus. 0 : pas d'espaces partagés. */
   maxWorkspaces: number;
+  /** Formules Production : vidéastes au plus dans l'espace (les streamers sont limités par `maxRelays`, un relais chacun). Absent : pas de distinction. */
+  maxVideographers?: number;
   features: Feature[];
   /** Régie automatique : prises (drone et autres sources) permises, et caméras de la régie IA au plus (0 : pas de régie IA). Copie : core/src/plans.ts. */
   regiePrises: boolean;
@@ -49,12 +51,15 @@ export const PLANS: Record<PlanId, Plan> = {
   basic: { id: "basic", name: "Essentiel", maxRelays: 1, maxConcurrentStreams: 1, maxInvites: 0, maxWorkspaces: 0, features: ["relais", "sante", "mire", "cles"], regiePrises: false, regieCams: 0 },
   paid: { id: "paid", name: "Signature", maxRelays: 10, maxConcurrentStreams: 3, maxPerProtocol: 5, maxInvites: 3, maxWorkspaces: 1, features: ALL, regiePrises: true, regieCams: 3 },
   extra: { id: "extra", name: "Prestige", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: 10, maxInvites: 5, maxWorkspaces: 5, features: ALL, regiePrises: true, regieCams: 6 },
+  prod_s: { id: "prod_s", name: "Production S", maxRelays: 5, maxConcurrentStreams: 5, maxInvites: 5, maxWorkspaces: 1, maxVideographers: 2, features: ALL, regiePrises: true, regieCams: 3 },
+  prod_m: { id: "prod_m", name: "Production M", maxRelays: 15, maxConcurrentStreams: 15, maxInvites: 5, maxWorkspaces: 1, maxVideographers: 5, features: ALL, regiePrises: true, regieCams: 6 },
+  prod_l: { id: "prod_l", name: "Production L", maxRelays: 40, maxConcurrentStreams: 40, maxInvites: 10, maxWorkspaces: 1, maxVideographers: 15, features: ALL, regiePrises: true, regieCams: 6 },
   partner: { id: "partner", name: "Partenaire", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: Number.POSITIVE_INFINITY, maxInvites: 3, maxWorkspaces: 3, features: ALL, regiePrises: true, regieCams: 6 },
   admin: { id: "admin", name: "Admin", maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: Number.POSITIVE_INFINITY, maxInvites: Number.POSITIVE_INFINITY, maxWorkspaces: Number.POSITIVE_INFINITY, features: ALL, regiePrises: true, regieCams: 6 },
 };
 
 /** Formules que l'admin peut attribuer (Admin vient d'ADMIN_EMAILS, Bêta des comptes d'avant les formules). */
-export const ASSIGNABLE: PlanId[] = ["free", "basic", "paid", "extra", "partner", "beta"];
+export const ASSIGNABLE: PlanId[] = ["free", "basic", "paid", "extra", "prod_s", "prod_m", "prod_l", "partner", "beta"];
 
 export type PlanRow = { plan?: string | null; plan_until?: string | null; suspended_at?: string | null };
 

@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { canSubscribe, isTier, type Interval, type Tier } from "@/lib/billing";
+import { canSubscribe, isPaidTier, type Interval, type PaidTier } from "@/lib/billing";
 import { getProfile, requireUser } from "@/lib/auth/dal";
 import { hasStripe, priceId, stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -28,10 +28,11 @@ async function customerFor(user: { id: string; email?: string | null }, name: st
   return data?.stripe_customer_id ?? created.id;
 }
 
-export async function startCheckout(tier: Tier, interval: Interval): Promise<BillingState> {
+export async function startCheckout(tier: PaidTier, interval: Interval): Promise<BillingState> {
   const user = await requireUser("/dashboard/abonnement");
   if (!hasStripe) return { error: "Le paiement n'est pas encore ouvert. Réessaie bientôt." };
-  if (!isTier(tier) || (interval !== "month" && interval !== "year")) return { error: "Formule inconnue." };
+  if (!isPaidTier(tier) || (interval !== "month" && interval !== "year")) return { error: "Formule inconnue." };
+  if (!priceId(tier, interval)) return { error: "Cette formule n'est pas encore ouverte à la vente." };
   const profile = await getProfile();
   if (!profile) return { error: "Profil introuvable. Recharge la page." };
   if (!canSubscribe(profile)) return { error: "Ton compte a déjà un abonnement ou une formule qui inclut tout." };

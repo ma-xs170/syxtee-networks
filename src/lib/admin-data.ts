@@ -43,7 +43,7 @@ export async function overview() {
     profiles().gte("created_at", since(7)).then((r) => r.count ?? 0),
     profiles().gte("created_at", since(30)).then((r) => r.count ?? 0),
     profiles()
-      .in("plan", ["basic", "paid", "extra", "partner"])
+      .in("plan", ["basic", "paid", "extra", "prod_s", "prod_m", "prod_l", "partner"])
       .or(`plan_until.is.null,plan_until.gt.${now}`)
       .then((r) => r.count ?? 0),
     db.from("relays").select("id", { count: "exact", head: true }).eq("archived", false).then((r) => r.count ?? 0),

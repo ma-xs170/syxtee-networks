@@ -25,9 +25,11 @@ export type LiveEvent = {
   platforms: PlatformId[];
   starts_at: string;
   ends_at: string;
+  /** Responsable du direct (membre de l'espace Production). Null : non attribué. */
+  assignee_id: string | null;
 };
 
-export const LIVE_COLUMNS = "id, title, location, description, platforms, starts_at, ends_at";
+export const LIVE_COLUMNS = "id, title, location, description, platforms, starts_at, ends_at, assignee_id";
 
 /** Durée maximale d'un live planifié (la base la vérifie aussi). */
 export const MAX_DURATION_MS = 7 * 24 * 3600_000;

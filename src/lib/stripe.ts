@@ -1,6 +1,6 @@
 import "server-only";
 import Stripe from "stripe";
-import { TIERS, type Interval, type Tier } from "./billing";
+import { PROD_TIERS, TIERS, type Interval, type PaidTier, type ProdTier } from "./billing";
 
 // Client Stripe côté serveur. STRIPE_SECRET_KEY : clé RESTREINTE (rk_…) stockée en variable sensible Vercel.
 // Droits : Customers (écriture), Checkout Sessions (écriture), Customer portal (écriture),
@@ -10,18 +10,22 @@ import { TIERS, type Interval, type Tier } from "./billing";
 // Un changement de tarif crée un nouveau Price Stripe : mets-le en premier (« price_nouveau,price_ancien »). Le premier sert au paiement,
 // les suivants restent reconnus pour les abonnés qui gardent l'ancien tarif.
 
-const ENV: Record<Tier, string> = { basic: "BASIC", paid: "PREMIUM", extra: "EXTRA" };
-const envName = (t: Tier, i: Interval) => `STRIPE_PRICE_${ENV[t]}_${i === "year" ? "YEARLY" : "MONTHLY"}`;
+const ENV: Record<PaidTier, string> = { basic: "BASIC", paid: "PREMIUM", extra: "EXTRA", prod_s: "PROD_S", prod_m: "PROD_M", prod_l: "PROD_L" };
+const envName = (t: PaidTier, i: Interval) => `STRIPE_PRICE_${ENV[t]}_${i === "year" ? "YEARLY" : "MONTHLY"}`;
 
-const priceIds = (t: Tier, i: Interval) => (process.env[envName(t, i)] ?? "").split(",").map((x) => x.trim()).filter(Boolean);
-export const priceId = (t: Tier, i: Interval) => priceIds(t, i)[0] ?? "";
+const priceIds = (t: PaidTier, i: Interval) => (process.env[envName(t, i)] ?? "").split(",").map((x) => x.trim()).filter(Boolean);
+export const priceId = (t: PaidTier, i: Interval) => priceIds(t, i)[0] ?? "";
 
 export const hasStripe = !!process.env.STRIPE_SECRET_KEY && TIERS.every((t) => priceId(t, "month") && priceId(t, "year"));
 
 /** Formule et périodicité d'un Price Stripe (null : prix inconnu de ce site). */
-export function tierOfPrice(id: string | null | undefined): { tier: Tier; interval: Interval } | null {
+/** Les formules Production se vendent seulement quand leurs six prix sont déclarés (STRIPE_PRICE_PROD_{S|M|L}_{MONTHLY|YEARLY}). */
+export const hasProductionPrices = hasStripe && PROD_TIERS.every((t) => priceId(t, "month") && priceId(t, "year"));
+export const productionSellable = (t: ProdTier) => hasStripe && !!priceId(t, "month") && !!priceId(t, "year");
+
+export function tierOfPrice(id: string | null | undefined): { tier: PaidTier; interval: Interval } | null {
   if (!id) return null;
-  for (const tier of TIERS) for (const interval of ["month", "year"] as Interval[]) if (priceIds(tier, interval).includes(id)) return { tier, interval };
+  for (const tier of [...TIERS, ...PROD_TIERS]) for (const interval of ["month", "year"] as Interval[]) if (priceIds(tier, interval).includes(id)) return { tier, interval };
   return null;
 }
 

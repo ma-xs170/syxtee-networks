@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DashHeader, DashPage, Figure, Tile, TileLabel } from "@/components/admin/kit";
 import { requireAdmin } from "@/lib/admin";
-import { CATALOG, TIERS, isTier, mrrCents, type Interval, type Tier } from "@/lib/billing";
+import { CATALOG, PROD_TIERS, PRODUCTION, TIERS, isPaidTier, mrrCents, type Interval, type PaidTier } from "@/lib/billing";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { hasStripe } from "@/lib/stripe";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
@@ -27,20 +27,20 @@ export default async function AdminRevenusPage() {
   const months = last12Months();
   const counts: Partial<Record<PlanId, number>> = {};
   let payments: Payment[] = [];
-  const subs: Partial<Record<Tier, Partial<Record<Interval, number>>>> = {};
+  const subs: Partial<Record<PaidTier, Partial<Record<Interval, number>>>> = {};
   if (hasAdmin) {
     const db = createAdminClient();
     const [pay, live] = await Promise.all([
       db.from("billing_payments").select("invoice_id, user_id, amount_cents, interval, paid_at").gte("paid_at", months[0].start.toISOString()).order("paid_at", { ascending: false }).limit(5000),
       db.from("profiles").select("plan, billing_interval").in("billing_status", ["active", "past_due"]).limit(10000),
-      ...(["free", "basic", "beta", "paid", "extra", "partner"] as PlanId[]).map(async (p) => {
+      ...(["free", "basic", "beta", "paid", "extra", "prod_s", "prod_m", "prod_l", "partner"] as PlanId[]).map(async (p) => {
         const { count } = await db.from("profiles").select("id", { count: "exact", head: true }).eq("plan", p);
         counts[p] = count ?? 0;
       }),
     ]);
     payments = (pay.data ?? []) as Payment[];
     for (const r of (live.data ?? []) as { plan: string; billing_interval: Interval | null }[]) {
-      if (!isTier(r.plan) || !r.billing_interval) continue;
+      if (!isPaidTier(r.plan) || !r.billing_interval) continue;
       const t = (subs[r.plan] ??= {});
       t[r.billing_interval] = (t[r.billing_interval] ?? 0) + 1;
     }
@@ -55,8 +55,8 @@ export default async function AdminRevenusPage() {
   const thisMonth = payments.filter((p) => new Date(p.paid_at) >= months[11].start);
   const revenue = thisMonth.reduce((s, p) => s + p.amount_cents, 0);
   const peak = Math.max(1, ...byMonth.values());
-  const subCount = (t: Tier) => (subs[t]?.month ?? 0) + (subs[t]?.year ?? 0);
-  const totalSubs = TIERS.reduce((n, t) => n + subCount(t), 0);
+  const subCount = (t: PaidTier) => (subs[t]?.month ?? 0) + (subs[t]?.year ?? 0);
+  const totalSubs = [...TIERS, ...PROD_TIERS].reduce((n, t) => n + subCount(t), 0);
   const day = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short", timeZone: "Europe/Paris" });
 
   return (
@@ -97,9 +97,9 @@ export default async function AdminRevenusPage() {
                 <dd className="font-mono tabular-nums">{counts[p] ?? 0}</dd>
               </div>
             ))}
-            {TIERS.map((t) => (
+            {[...TIERS, ...PROD_TIERS].map((t) => (
               <div key={t} className="flex justify-between py-2.5">
-                <dt className="text-muted">{`Abonnés ${CATALOG[t].name} (mois / an)`}</dt>
+                <dt className="text-muted">{`Abonnés ${(t in PRODUCTION ? PRODUCTION[t as keyof typeof PRODUCTION] : CATALOG[t as keyof typeof CATALOG]).name} (mois / an)`}</dt>
                 <dd className="font-mono tabular-nums">
                   {subs[t]?.month ?? 0} / {subs[t]?.year ?? 0}
                 </dd>

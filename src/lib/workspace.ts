@@ -60,19 +60,19 @@ export async function dataClient() {
   return { db: await createClient(), ownerId: null as string | null };
 }
 
-export type WorkspaceMember = { user_id: string; role: WorkspaceRole; created_at: string; name: string; email: string; avatar: string | null };
-export type WorkspaceInviteRow = { id: string; email: string; role: "admin" | "member"; created_at: string; expires_at: string };
+export type WorkspaceMember = { user_id: string; role: WorkspaceRole; kind: "streamer" | "videaste" | "staff"; created_at: string; name: string; email: string; avatar: string | null };
+export type WorkspaceInviteRow = { id: string; email: string; role: "admin" | "member"; kind: "streamer" | "videaste" | "staff"; created_at: string; expires_at: string };
 
 /** Membres d'un espace (nom, email, avatar) et invitations en attente. Lecture avec la clé de service : à n'appeler qu'après `getActiveWorkspace()`. */
 export async function loadMembers(workspaceId: string): Promise<{ members: WorkspaceMember[]; invites: WorkspaceInviteRow[] }> {
   if (!hasAdmin) return { members: [], invites: [] };
   const db = createAdminClient();
   const [{ data: rows }, { data: inv }] = await Promise.all([
-    db.from("workspace_members").select("user_id, role, created_at").eq("workspace_id", workspaceId).order("created_at"),
-    db.from("workspace_invites").select("id, email, role, created_at, expires_at").eq("workspace_id", workspaceId).is("accepted_at", null).is("revoked_at", null).gt("expires_at", new Date().toISOString()).order("created_at"),
+    db.from("workspace_members").select("user_id, role, kind, created_at").eq("workspace_id", workspaceId).order("created_at"),
+    db.from("workspace_invites").select("id, email, role, kind, created_at, expires_at").eq("workspace_id", workspaceId).is("accepted_at", null).is("revoked_at", null).gt("expires_at", new Date().toISOString()).order("created_at"),
   ]);
   const members = await Promise.all(
-    ((rows ?? []) as { user_id: string; role: WorkspaceRole; created_at: string }[]).map(async (m) => {
+    ((rows ?? []) as { user_id: string; role: WorkspaceRole; kind: WorkspaceMember["kind"]; created_at: string }[]).map(async (m) => {
       const [{ data: u }, { data: p }] = await Promise.all([
         db.auth.admin.getUserById(m.user_id),
         db.from("profiles").select("first_name, last_name, twitch_display_name, username, avatar_url").eq("id", m.user_id).maybeSingle(),

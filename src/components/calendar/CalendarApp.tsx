@@ -4,9 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AppleLogo, CaretLeft, CaretRight, Plus, ShareNetwork } from "@phosphor-icons/react";
 import { createLiveAction, deleteLiveAction, shareCalendarAction, unshareCalendarAction, updateLiveAction } from "@/app/(dashboard)/dashboard/calendrier/actions";
 import { platformOf, type LiveEvent } from "@/lib/calendar";
+import { conflicts } from "@/lib/calendar-conflicts";
 import { addDays, HOUR, monthTitle, rangeLabel, startOfDay, startOfMonth, startOfWeek, dayLabel, weekTitle } from "./date";
 import ContextMenu, { type MenuItem } from "./ContextMenu";
-import EventDialog, { type Draft, type DraftInput } from "./EventDialog";
+import EventDialog, { type Draft, type DraftInput, type TeamMember } from "./EventDialog";
 import MonthView from "./MonthView";
 import ShareDialog from "./ShareDialog";
 import TimeGrid from "./TimeGrid";
@@ -22,9 +23,9 @@ const VIEWS: { id: View; label: string }[] = [
 ];
 
 const sortEvents = (list: LiveEvent[]) => [...list].sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at));
-const pick = (e: LiveEvent): LiveEvent => ({ id: e.id, title: e.title, location: e.location, description: e.description, platforms: e.platforms, starts_at: e.starts_at, ends_at: e.ends_at });
+const pick = (e: LiveEvent): LiveEvent => ({ id: e.id, title: e.title, location: e.location, description: e.description, platforms: e.platforms, starts_at: e.starts_at, ends_at: e.ends_at, assignee_id: e.assignee_id ?? null });
 
-export default function CalendarApp({ initial, editable, shareToken, shared = false }: { initial: LiveEvent[]; editable: boolean; shareToken: string | null; shared?: boolean }) {
+export default function CalendarApp({ initial, editable, shareToken, shared = false, team = [] }: { initial: LiveEvent[]; editable: boolean; shareToken: string | null; shared?: boolean; team?: TeamMember[] }) {
   const [events, setEvents] = useState<LiveEvent[]>(() => sortEvents(initial.map(pick)));
   const [view, setView] = useState<View>("month");
   const [cursor, setCursor] = useState<Date | null>(null); // null tant que le navigateur n'a pas donné son heure locale
@@ -36,6 +37,7 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
   const [menu, setMenu] = useState<{ x: number; y: number; target: { at: Date } | { event: LiveEvent } } | null>(null);
   const [clip, setClip] = useState<LiveEvent | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [who, setWho] = useState(""); // "" : tout le monde, "none" : non attribués, sinon un membre
   // Déplacements rapides : une file par live (le serveur reçoit les changements dans l'ordre), un numéro de version (seule la dernière réponse compte)
   // et le dernier état confirmé par le serveur (retour en arrière en cas de refus).
   const queue = useRef(new Map<string, Promise<unknown>>());
@@ -77,6 +79,8 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
   }, [selectedId, editable]);
 
   const today = useMemo(() => startOfDay(new Date(now)), [now]);
+  const clashing = useMemo(() => conflicts(events), [events]);
+  const shown = useMemo(() => (who ? events.filter((e) => (who === "none" ? !e.assignee_id : e.assignee_id === who)) : events), [events, who]);
   const upsert = (e: LiveEvent) => setEvents((list) => sortEvents([...list.filter((x) => x.id !== e.id), e]));
 
   if (!cursor)
@@ -88,7 +92,7 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
   const title = view === "month" ? monthTitle(cursor) : view === "week" ? weekTitle(startOfWeek(cursor)) : `${dayLabel(cursor)} ${cursor.getFullYear()}`;
   const days = view === "week" ? Array.from({ length: 7 }, (_, i) => addDays(startOfWeek(cursor), i)) : [cursor];
 
-  const blank = (start: Date, end: Date): Draft => ({ title: "", location: "", description: "", platforms: [], start, end });
+  const blank = (start: Date, end: Date): Draft => ({ title: "", location: "", description: "", platforms: [], assignee_id: who && who !== "none" ? who : null, start, end });
   const openNew = (start?: Date, end?: Date) => {
     const s = start ?? (() => {
       const d = new Date(today);
@@ -102,7 +106,7 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
     s.setHours(20, 0, 0, 0);
     openNew(s);
   };
-  const openEvent = (e: LiveEvent) => setDraft({ id: e.id, title: e.title, location: e.location, description: e.description, platforms: e.platforms, start: new Date(e.starts_at), end: new Date(e.ends_at) });
+  const openEvent = (e: LiveEvent) => setDraft({ id: e.id, title: e.title, location: e.location, description: e.description, platforms: e.platforms, assignee_id: e.assignee_id, start: new Date(e.starts_at), end: new Date(e.ends_at) });
 
   /** Glisser-déposer : le live bouge tout de suite, le serveur confirme (ou le live revient à sa dernière place confirmée). */
   async function change(e: LiveEvent, patch: Partial<Pick<LiveEvent, "starts_at" | "ends_at">>) {
@@ -136,7 +140,7 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
   async function paste(at: Date) {
     if (!clip) return;
     const dur = Date.parse(clip.ends_at) - Date.parse(clip.starts_at);
-    const r = await createLiveAction({ title: clip.title, location: clip.location, description: clip.description, platforms: clip.platforms, starts_at: at.toISOString(), ends_at: new Date(at.getTime() + dur).toISOString() });
+    const r = await createLiveAction({ title: clip.title, location: clip.location, description: clip.description, platforms: clip.platforms, assignee_id: clip.assignee_id, starts_at: at.toISOString(), ends_at: new Date(at.getTime() + dur).toISOString() });
     if (r.ok) {
       confirmed.current.set(r.value.id, pick(r.value));
       upsert(r.value);
@@ -168,7 +172,7 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
           { label: "Couper", onSelect: () => { setClip(t.event); void removeNow(t.event); } },
           { label: "Copier", onSelect: () => setClip(t.event) },
           { label: "Coller", onSelect: () => void paste(new Date(t.event.starts_at)), disabled: !clip },
-          { label: "Dupliquer", onSelect: () => setDraft({ title: t.event.title, location: t.event.location, description: t.event.description, platforms: t.event.platforms, start: new Date(t.event.starts_at), end: new Date(t.event.ends_at) }) },
+          { label: "Dupliquer", onSelect: () => setDraft({ title: t.event.title, location: t.event.location, description: t.event.description, platforms: t.event.platforms, assignee_id: t.event.assignee_id, start: new Date(t.event.starts_at), end: new Date(t.event.ends_at) }) },
           { separator: true },
           { label: "Envoyer le live par e-mail", onSelect: () => mailLive(t.event) },
         ];
@@ -271,6 +275,27 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
         )}
       </div>
 
+      {team.length > 0 && (
+        <div className="mb-3 flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2 text-sm text-muted">
+            Personne
+            <select value={who} onChange={(e) => setWho(e.target.value)} className="h-10 rounded-lg border border-line bg-background px-3 text-sm text-foreground">
+              <option value="">Toute l&apos;équipe</option>
+              <option value="none">Non attribué</option>
+              {team.map((m) => (
+                <option key={m.id} value={m.id}>{m.name}</option>
+              ))}
+            </select>
+          </label>
+          {clashing.size > 0 && (
+            <p role="status" className="text-sm text-bad">
+              {clashing.size} lives en conflit : une personne est prévue sur deux directs en même temps.{" "}
+              <button type="button" className="underline underline-offset-4" onClick={() => setWho("")}>Voir tous</button>
+            </p>
+          )}
+        </div>
+      )}
+
       {notice && (
         <p role="alert" className="mb-3 rounded-lg border border-bad/40 bg-bad/10 px-3 py-2 text-sm text-bad">
           {notice}
@@ -280,7 +305,7 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
       {view === "month" ? (
         <MonthView
           anchor={cursor}
-          events={events}
+          events={shown}
           today={today}
           editable={editable}
           onCreate={openDay}
@@ -295,7 +320,7 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
           }}
         />
       ) : (
-        <TimeGrid days={days} events={events} today={today} now={now} editable={editable} onRange={(s, e) => openNew(s, e)} onOpen={openEvent} onMove={move} onResize={resize} onContext={onContext} selectedId={selectedId} onSelect={setSelectedId} />
+        <TimeGrid days={days} events={shown} today={today} now={now} editable={editable} onRange={(s, e) => openNew(s, e)} onOpen={openEvent} onMove={move} onResize={resize} onContext={onContext} selectedId={selectedId} onSelect={setSelectedId} />
       )}
 
       {events.length === 0 && (
@@ -303,7 +328,7 @@ export default function CalendarApp({ initial, editable, shareToken, shared = fa
       )}
 
       {menu && <ContextMenu x={menu.x} y={menu.y} getItems={() => menuItems(menu.target)} onClose={() => setMenu(null)} />}
-      <EventDialog draft={draft} editable={editable} onClose={() => setDraft(null)} onSave={save} onDelete={remove} />
+      <EventDialog draft={draft} editable={editable} team={team} conflict={(a, s, e, ignore) => events.some((x) => x.id !== ignore && x.assignee_id === a && Date.parse(x.starts_at) < e.getTime() && Date.parse(x.ends_at) > s.getTime())} onClose={() => setDraft(null)} onSave={save} onDelete={remove} />
       {editable && <ShareDialog open={sharing} token={token} onClose={() => setSharing(false)} onShare={share} onUnshare={unshare} />}
     </div>
   );

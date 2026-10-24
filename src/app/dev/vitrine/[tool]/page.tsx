@@ -283,12 +283,12 @@ export default async function VitrinePage({ params }: { params: Promise<{ tool: 
               role: "owner",
               meId: "u1",
               members: [
-                { user_id: "u1", role: "owner", created_at: iso(90 * 86400_000), name: "Mathis Custos", email: "mathis@exemple.com", avatar: null },
-                { user_id: "u2", role: "admin", created_at: iso(40 * 86400_000), name: "Inès Marlot", email: "ines@exemple.com", avatar: null },
-                { user_id: "u3", role: "member", created_at: iso(12 * 86400_000), name: "Kairo Duval", email: "kairo@exemple.com", avatar: null },
-                { user_id: "u4", role: "member", created_at: iso(3 * 86400_000), name: "Sam Roche", email: "sam@exemple.com", avatar: null },
+                { user_id: "u1", role: "owner", kind: "streamer", created_at: iso(90 * 86400_000), name: "Mathis Custos", email: "mathis@exemple.com", avatar: null },
+                { user_id: "u2", role: "admin", kind: "streamer", created_at: iso(40 * 86400_000), name: "Inès Marlot", email: "ines@exemple.com", avatar: null },
+                { user_id: "u3", role: "member", kind: "streamer", created_at: iso(12 * 86400_000), name: "Kairo Duval", email: "kairo@exemple.com", avatar: null },
+                { user_id: "u4", role: "member", kind: "streamer", created_at: iso(3 * 86400_000), name: "Sam Roche", email: "sam@exemple.com", avatar: null },
               ],
-              pending: [{ id: "p1", email: "lea@exemple.com", role: "member", created_at: iso(86400_000), expires_at: iso(-6 * 86400_000) }],
+              pending: [{ id: "p1", email: "lea@exemple.com", role: "member", kind: "streamer", created_at: iso(86400_000), expires_at: iso(-6 * 86400_000) }],
             }}
           />
         </DashPage>

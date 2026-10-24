@@ -2,7 +2,7 @@
 // les deux tables doivent rester identiques). La formule vient de profiles.plan (migration 0010).
 
 // Formules vendues (Stripe) : basic (Basique), paid (Premium), extra (Extra).
-export type PlanId = "free" | "basic" | "beta" | "paid" | "extra" | "partner" | "admin";
+export type PlanId = "free" | "basic" | "beta" | "paid" | "extra" | "prod_s" | "prod_m" | "prod_l" | "partner" | "admin";
 
 /** `maxPerProtocol` : relais actifs au plus par protocole (SRTLA, RTMP), en plus du total. Absent = pas de limite. */
 export type Limits = { maxRelays: number; maxConcurrentStreams: number; maxPerProtocol?: number; /** Données diffusées au plus par mois civil (UTC), en octets. Absent = pas de plafond. */ monthlyBytes?: number };
@@ -18,6 +18,9 @@ export const REGIE_RIGHTS: Record<PlanId, RegieRights> = {
   beta: { prises: true, cams: 3 },
   paid: { prises: true, cams: 3 },
   extra: { prises: true, cams: 6 },
+  prod_s: { prises: true, cams: 3 },
+  prod_m: { prises: true, cams: 6 },
+  prod_l: { prises: true, cams: 6 },
   partner: { prises: true, cams: 6 },
   admin: { prises: true, cams: 6 },
 };
@@ -46,7 +49,7 @@ export function gateRegie(plan: string | null | undefined, params: unknown): Rec
 }
 
 /** Contrôle à distance (OBS, multistream, chat) : Signature et au-dessus, bêta, partenaire, admin. Essentiel et Gratuit : refusé. */
-const REMOTE_PLANS = new Set<PlanId>(["beta", "paid", "extra", "partner", "admin"]);
+const REMOTE_PLANS = new Set<PlanId>(["beta", "paid", "extra", "prod_s", "prod_m", "prod_l", "partner", "admin"]);
 export const remoteAllowed = (plan: string | null | undefined) => REMOTE_PLANS.has((plan ?? "") as PlanId);
 
 export const PLAN_LIMITS: Record<PlanId, Limits> = {
@@ -55,6 +58,9 @@ export const PLAN_LIMITS: Record<PlanId, Limits> = {
   beta: { maxRelays: 3, maxConcurrentStreams: 3 },
   paid: { maxRelays: 10, maxConcurrentStreams: 3, maxPerProtocol: 5 },
   extra: { maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: 10 },
+  prod_s: { maxRelays: 5, maxConcurrentStreams: 5 },
+  prod_m: { maxRelays: 15, maxConcurrentStreams: 15 },
+  prod_l: { maxRelays: 40, maxConcurrentStreams: 40 },
   partner: { maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: Number.POSITIVE_INFINITY },
   admin: { maxRelays: Number.POSITIVE_INFINITY, maxConcurrentStreams: Number.POSITIVE_INFINITY },
 };

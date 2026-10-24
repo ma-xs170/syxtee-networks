@@ -18,6 +18,7 @@ const fields = {
   platforms: z.array(z.enum(PLATFORM_IDS)).max(PLATFORM_IDS.length),
   starts_at: iso,
   ends_at: iso,
+  assignee_id: z.string().uuid().nullable(),
 };
 const full = z.object(fields);
 const patch = z.object(fields).partial();
@@ -40,6 +41,13 @@ function checkRange(starts: string, ends: string): string | null {
 
 const normalize = (platforms: string[]) => [...new Set(platforms)];
 
+/** Le responsable d'un direct doit être un membre de l'espace (un calendrier personnel n'a pas de responsable). */
+async function assigneeError(workspaceId: string, assignee: string | null | undefined): Promise<string | null> {
+  if (!assignee) return null;
+  const { data } = await createAdminClient().from("workspace_members").select("user_id").eq("workspace_id", workspaceId).eq("user_id", assignee).maybeSingle();
+  return data ? null : "Ce responsable ne fait pas partie de l'équipe.";
+}
+
 export async function createLiveAction(input: unknown): Promise<Result<LiveEvent>> {
   const owner = await guard();
   if (!owner) return fail("Seuls les administrateurs de l'espace modifient le calendrier.");
@@ -47,6 +55,8 @@ export async function createLiveAction(input: unknown): Promise<Result<LiveEvent
   if (!p.success) return fail(p.error.issues[0]?.message ?? "Live invalide.");
   const range = checkRange(p.data.starts_at, p.data.ends_at);
   if (range) return fail(range);
+  const who = await assigneeError(owner.id, p.data.assignee_id);
+  if (who) return fail(who);
   const { data, error } = await createAdminClient()
     .from("scheduled_lives")
     .insert({ ...p.data, platforms: normalize(p.data.platforms), owner_id: owner.id, created_by: owner.user.id })
@@ -72,6 +82,8 @@ export async function updateLiveAction(liveId: string, input: unknown): Promise<
   if (!current) return fail("Live introuvable.");
   const range = checkRange(p.data.starts_at ?? (current as { starts_at: string }).starts_at, p.data.ends_at ?? (current as { ends_at: string }).ends_at);
   if (range) return fail(range);
+  const who = await assigneeError(owner.id, p.data.assignee_id);
+  if (who) return fail(who);
   const { data, error } = await db
     .from("scheduled_lives")
     .update({ ...p.data, ...(p.data.platforms ? { platforms: normalize(p.data.platforms) } : {}), updated_at: new Date().toISOString() })

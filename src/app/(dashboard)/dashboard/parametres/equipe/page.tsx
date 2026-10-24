@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import EmptyState from "@/components/ui/EmptyState";
 import { ButtonLink } from "@/components/ui/Button";
 import { Users } from "@/components/icons";
-import { getPersonalPlan } from "@/lib/auth/plan";
+import { getPersonalPlan, getPlan } from "@/lib/auth/plan";
+import { isProduction, kindLimit } from "@/lib/production";
 import { requireUser } from "@/lib/auth/dal";
 import { getActiveWorkspace, loadMembers } from "@/lib/workspace";
 import TeamSettings from "./TeamSettings";
@@ -25,7 +26,10 @@ export default async function EquipePage() {
       </div>
     );
   }
-  const { members, invites } = await loadMembers(ws.id);
+  const [{ members, invites }, plan] = await Promise.all([loadMembers(ws.id), getPlan()]);
+  const production = isProduction(plan);
+  const used = (kind: "streamer" | "videaste") => members.filter((m) => m.kind === kind).length + invites.filter((i) => i.kind === kind).length;
+  const quota = production ? { plan: plan.name, streamer: { used: used("streamer"), limit: kindLimit(plan, "streamer") }, videaste: { used: used("videaste"), limit: kindLimit(plan, "videaste") } } : null;
   const admin = ws.role === "owner" || ws.role === "admin";
   return (
     <TeamSettings
@@ -33,8 +37,9 @@ export default async function EquipePage() {
       admin={admin}
       owner={ws.role === "owner"}
       meId={user.id}
-      members={members.map((m) => ({ id: m.user_id, name: m.name, email: m.email, role: m.role, joined: m.created_at }))}
-      invites={invites.map((i) => ({ id: i.id, email: i.email, role: i.role, created: i.created_at }))}
+      quota={quota}
+      members={members.map((m) => ({ id: m.user_id, name: m.name, email: m.email, role: m.role, kind: m.kind, joined: m.created_at }))}
+      invites={invites.map((i) => ({ id: i.id, email: i.email, role: i.role, kind: i.kind, created: i.created_at }))}
     />
   );
 }

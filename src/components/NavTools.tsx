@@ -139,8 +139,40 @@ function PanelItem({ t, hovered, onHover, onClose, i, reduce }: { t: NavTool | D
   );
 }
 
+/** Carte du panneau « Fonctionnalités » : grande miniature à gauche, titre et description à droite. */
+function PanelCard({ t, onClose, i, reduce }: { t: NavTool | DashTool; onClose: () => void; i: number; reduce: boolean | null }) {
+  return (
+    <motion.li initial={reduce ? false : { opacity: 0, y: 6, filter: "blur(6px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} transition={{ duration: 0.28, delay: reduce ? 0 : 0.05 * i, ease: EASE }}>
+      <Link
+        href={t.href}
+        onClick={onClose}
+        className="group flex h-full items-center gap-5 rounded-2xl border border-line bg-surface-2 p-5 transition-[border-color,background-color] duration-200 hover:border-line-strong hover:bg-surface focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-foreground/50"
+      >
+        <span className="h-20 w-20 shrink-0 transition-transform duration-300 ease-out group-hover:scale-[1.06]">
+          <Thumb t={t} size={80} />
+        </span>
+        <span className="min-w-0">
+          <span className="block text-base font-medium text-foreground">{t.label}</span>
+          <span className="mt-1 block text-sm leading-snug text-muted">{t.desc}</span>
+        </span>
+      </Link>
+    </motion.li>
+  );
+}
+
 function PanelContent({ menu, onClose, reduce }: { menu: AnyMenu; onClose: () => void; reduce: boolean | null }) {
   const [hover, setHover] = useState<string | null>(null);
+  if ("cards" in menu && menu.cards) {
+    return (
+      <div className="p-3">
+        <ul className="grid w-[640px] grid-cols-2 gap-3">
+          {menu.children.map((t, i) => (
+            <PanelCard key={t.href} t={t} i={i} onClose={onClose} reduce={reduce} />
+          ))}
+        </ul>
+      </div>
+    );
+  }
   const groups = groupTools(menu.children);
   const cols = menu.children.length > 3 && !groups ? "grid-cols-2" : "grid-cols-1";
   const list = (tools: (NavTool | DashTool)[]) => (

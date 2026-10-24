@@ -21,7 +21,7 @@ export type NavLink = { label: string; href: string; badge?: string; /** Flèche
 /** `soon` : produit pas encore sorti, affiché grisé dans les menus (le lien reste cliquable). */
 export type NavTool = NavLink & { desc: string; icon: ToolIcon; /** Miniature verre 3D (menus de la navigation). */ glass?: GlassName; soon?: boolean; /** Produit SYXTEE : affiché « (S) SYXTEE <fonction> » avec le logo. */ wordmark?: string; /** Sous-section du menu (titre de colonne). */ group?: string };
 /** Menu déroulant : `dot` = point rouge de nouveauté à côté du libellé, `note` = ligne en pied de panneau. */
-export type NavMenu = { label: string; children: NavTool[]; dot?: boolean; note?: string };
+export type NavMenu = { label: string; children: NavTool[]; dot?: boolean; note?: string; /** Panneau en cartes côte à côte (miniature à gauche, titre et description). */ cards?: boolean };
 export type NavItem = NavLink | NavMenu;
 
 // Menu du site : les arguments de l'accueil et la documentation. « Demander l'accès » est le bouton d'action à droite (Nav.tsx), pas une entrée du menu.
@@ -29,6 +29,7 @@ export type NavItem = NavLink | NavMenu;
 export const nav: NavItem[] = [
   {
     label: "Fonctionnalités",
+    cards: true,
     children: [
       { label: "Contrôle à distance", href: "/controle-a-distance", desc: "Pilote OBS depuis ton téléphone", icon: "phone" },
       { label: "Serveurs", href: "/relais", desc: "Relais SRTLA en Amérique et en Europe", icon: "rack" },

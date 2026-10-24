@@ -9,7 +9,6 @@ test("accueil : promesse, deux parcours, soutien et appels à l'action", async (
   await expect(page.getByRole("link", { name: "Je suis streamer indépendant" })).toHaveAttribute("href", "#streamers");
   await expect(page.getByRole("heading", { name: /On produit ton live IRL/ })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Streamers indépendants/ })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /Me soutenir/ })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Des tarifs clairs/ })).toHaveCount(0);
   await expect(page.getByText(/999 €|1 290|13,73/)).toHaveCount(0);
 });

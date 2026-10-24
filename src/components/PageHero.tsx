@@ -17,7 +17,7 @@ export default function PageHero({
 }) {
   return (
     <section className="bg-field relative isolate overflow-hidden border-b border-line">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(60% 90% at 0% 0%, color-mix(in srgb, var(--bad) 30%, transparent), transparent 70%), radial-gradient(45% 70% at 100% 0%, color-mix(in srgb, #9146ff 22%, transparent), transparent 70%)" }} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(60% 90% at 0% 0%, color-mix(in srgb, var(--bad) 30%, transparent), transparent 70%)" }} />
       <Container className="relative pb-16 pt-12 sm:pb-24 sm:pt-16">
         <nav aria-label="Fil d'Ariane" className="font-mono text-xs text-muted">
           <ol className="flex flex-wrap items-center gap-2">

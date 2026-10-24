@@ -63,7 +63,7 @@ export default function TarifsPage() {
       />
       <Glow />
       <section data-theme="dark" className="relative bg-background text-foreground -mt-[4.0625rem] overflow-hidden border-b border-line pb-16 pt-[9rem] text-center sm:pb-24 sm:pt-[10.5rem]">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(60% 90% at 0% 0%, color-mix(in srgb, var(--bad) 32%, transparent), transparent 70%), radial-gradient(45% 70% at 100% 0%, color-mix(in srgb, #9146ff 24%, transparent), transparent 70%)" }} />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(60% 90% at 0% 0%, color-mix(in srgb, var(--bad) 32%, transparent), transparent 70%)" }} />
         <CloudBackdrop />
         <Container className="relative">
           <h1 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,7vw,4.75rem)]">Des tarifs <em>simples.</em></h1>

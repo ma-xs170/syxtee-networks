@@ -9,7 +9,7 @@ const pill = "inline-flex h-12 w-full items-center justify-center gap-2.5 whites
 export default function SupportSection({ id }: { id?: string }) {
   return (
     <section id={id} className="relative isolate overflow-hidden border-b border-line py-24 lg:py-32">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(60% 60% at 0% 100%, color-mix(in srgb, var(--bad) 22%, transparent), transparent 70%), radial-gradient(50% 50% at 100% 0%, color-mix(in srgb, #5865f2 18%, transparent), transparent 70%)" }} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(60% 60% at 0% 100%, color-mix(in srgb, var(--bad) 22%, transparent), transparent 70%), radial-gradient(50% 50% at 100% 0%, color-mix(in srgb, var(--bad) 16%, transparent), transparent 70%)" }} />
       <Container>
         <div className="bento-cell grid gap-10 p-7 sm:p-12 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center">
           <div className="max-w-xl">

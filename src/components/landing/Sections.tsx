@@ -125,7 +125,7 @@ export function ProductionSection() {
 export function StreamersIntro({ streamers = [] }: { streamers?: HomeStreamer[] }) {
   return (
     <section id="streamers" className="relative isolate scroll-mt-20 overflow-hidden border-b border-line pb-12 pt-24 lg:pb-16 lg:pt-36">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(55% 40% at 0% 0%, color-mix(in srgb, #9146ff 22%, transparent), transparent 70%), radial-gradient(55% 40% at 100% 100%, color-mix(in srgb, var(--bad) 16%, transparent), transparent 70%)" }} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(55% 40% at 0% 0%, color-mix(in srgb, #9146ff 22%, transparent), transparent 70%), radial-gradient(55% 40% at 100% 100%, color-mix(in srgb, #9146ff 14%, transparent), transparent 70%)" }} />
       <Container className="text-center">
         <Reveal>
           <h2 className={`${h2} mx-auto max-w-[20ch]`}>Streamers indépendants : les mêmes outils, <em>pas cher.</em></h2>

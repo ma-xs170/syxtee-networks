@@ -17,7 +17,6 @@ export function AnalysisSection() {
         </Reveal>
         <div className="mt-12">
           <LiveAnalysisDemo />
-          <p className="mt-4 font-mono text-xs text-muted">Démonstration : données simulées.</p>
         </div>
       </Container>
     </section>

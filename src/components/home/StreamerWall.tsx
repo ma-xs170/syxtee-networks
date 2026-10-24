@@ -67,7 +67,7 @@ const BRANDS: Brand[] = [
 function BrandStrip() {
   const fade = "linear-gradient(to right, transparent, #000 22%, #000 78%, transparent)";
   return (
-    <div className="mb-24">
+    <div className="mb-20 border-b border-line pb-16 sm:mb-24">
       <p className="px-4 text-center text-xl font-medium">Marques avec lesquelles nous avons collaboré</p>
       <div className="mt-10" style={{ maskImage: fade, WebkitMaskImage: fade }}>
         <div className="marquee-wrap overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

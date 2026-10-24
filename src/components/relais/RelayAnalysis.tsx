@@ -130,6 +130,13 @@ export default function RelayAnalysis({ coreUrl, relayId, demo }: { coreUrl: str
   const [history, setHistory] = useState<Sample[]>(demo?.history ?? []);
   const [link, setLink] = useState<"connecting" | "ok" | "error">(demo ? "ok" : "connecting");
 
+  // Démonstration : les données viennent de l'appelant et peuvent changer (accueil : flux simulé en continu).
+  useEffect(() => {
+    if (!demo) return;
+    setLive(demo.live);
+    setHistory(demo.history);
+  }, [demo]);
+
   // Historique de la période choisie.
   useEffect(() => {
     if (demo) return;

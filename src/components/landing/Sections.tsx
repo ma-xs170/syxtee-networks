@@ -71,7 +71,7 @@ export function ProductionSection() {
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(60% 45% at 100% 0%, color-mix(in srgb, var(--bad) 26%, transparent), transparent 70%), radial-gradient(50% 40% at 0% 100%, color-mix(in srgb, var(--bad) 14%, transparent), transparent 70%)" }} />
       <Container>
         <Reveal className="mx-auto max-w-3xl text-center">
-          <h2 className={h2}><L fr={<>On produit ton live IRL, <em>de A à Z.</em></>} en={<>We produce your IRL live, <em>from A to Z.</em></>} /></h2>
+          <h2 className={h2}><L fr={<>Ton live IRL, <em>entre de bonnes mains.</em></>} en={<>Your IRL live, <em>in good hands.</em></>} /></h2>
         </Reveal>
 
         <Reveal className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">

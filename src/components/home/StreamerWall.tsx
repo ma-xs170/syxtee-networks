@@ -30,6 +30,7 @@ function Card({ c }: { c: Card }) {
         <span className="flex items-center gap-1.5 font-mono text-[15px] font-medium text-foreground">
           <span className="truncate">@{c.handle.toLowerCase()}</span>
           {s.live && <span className="live-dot shrink-0" role="img" aria-label="En direct" />}
+          {s.partner && <span className="shrink-0 rounded-full border border-foreground/25 px-1.5 py-px font-mono text-[9px] uppercase leading-4 tracking-[0.14em] text-foreground/80"><L fr="Partenaire" en="Partner" /></span>}
         </span>
         <span className="mt-0.5 block text-sm text-muted transition-colors group-hover:text-foreground"><L fr="Voir la chaîne" en="View channel" /> →</span>
       </span>

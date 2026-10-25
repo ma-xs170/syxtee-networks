@@ -5,9 +5,9 @@ import HoverVideo from "./HoverVideo";
 // Catégories Twitch où diffuse l'IRL : pochettes officielles (1080×1440 recadrées en 600×800) posées en « polaroïds » penchés, légende manuscrite.
 // Le cadre suit les couleurs du thème (fond = encre, texte = fond). Chaque polaroïd ouvre la catégorie sur Twitch.
 const ITEMS = [
-  { src: "/images/categories/irl.webp", tilt: "-rotate-6", drop: "sm:mt-8", fr: "Mobilité", en: "Mobility", video: "/videos/mobilite-hover", href: "https://www.twitch.tv/directory/category/irl" },
-  { src: "/images/categories/evenements-speciaux.webp", tilt: "rotate-2", drop: "sm:mt-0", fr: "Événements", en: "Events", video: "/videos/event-hover", mark: true, href: "https://www.twitch.tv/directory/category/special-events" },
-  { src: "/images/categories/piscines-plages.webp", tilt: "rotate-6", drop: "sm:mt-6", fr: "Sortie en mer", en: "At sea", video: "/videos/mer-hover", mark: true, href: "https://www.twitch.tv/directory/category/pools-hot-tubs-and-beaches" },
+  { src: "/images/categories/irl.webp", tilt: "-rotate-6", drop: "sm:mt-8", fr: "En Mobilité", en: "On the move", video: "/videos/mobilite-hover", href: "https://www.twitch.tv/directory/category/irl" },
+  { src: "/images/categories/evenements-speciaux.webp", tilt: "rotate-2", drop: "sm:mt-0", fr: "En Soirée", en: "At parties", video: "/videos/event-hover", mark: true, href: "https://www.twitch.tv/directory/category/special-events" },
+  { src: "/images/categories/piscines-plages.webp", tilt: "rotate-6", drop: "sm:mt-6", fr: "En Mer", en: "At sea", video: "/videos/mer-hover", mark: true, href: "https://www.twitch.tv/directory/category/pools-hot-tubs-and-beaches" },
 ];
 
 export default function TwitchCategories() {

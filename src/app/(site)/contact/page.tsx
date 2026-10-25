@@ -6,6 +6,7 @@ import ContactForm from "@/components/contact/ContactForm";
 import { Container } from "@/components/ui";
 import { site } from "@/lib/site";
 import { glow } from "@/lib/glow";
+import HeroVideo from "@/components/landing/HeroVideo";
 
 // Une seule carte pour toute la page : mêmes marges, mêmes arrondis, mêmes pastilles d'icône.
 const card = "rounded-2xl border border-line bg-surface p-6 sm:p-8";
@@ -31,6 +32,10 @@ export default function ContactPage() {
     <div data-hero className="relative isolate overflow-hidden">
       {/* Dégradé rouge en haut de page, comme un projecteur sur la scène. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[900px]" style={glow("var(--bad)", "0% 0%", 70, 80, 30)} />
+      {/* Vraies images de terrain à droite du titre, fondues dans la page. */}
+      <div aria-hidden="true" className="pointer-events-none absolute right-0 top-0 -z-10 hidden h-[560px] w-[58%] lg:block" style={{ maskImage: "linear-gradient(to right, transparent, #000 45%), linear-gradient(to bottom, #000 70%, transparent)", maskComposite: "intersect", WebkitMaskImage: "linear-gradient(to right, transparent, #000 45%), linear-gradient(to bottom, #000 70%, transparent)", WebkitMaskComposite: "source-in" }}>
+        <HeroVideo />
+      </div>
       <section className="pb-12 pt-[calc(5rem+65px)] sm:pb-16 sm:pt-[calc(7rem+65px)]">
         <Container className="max-w-5xl">
           <h1 className="h-serif max-w-[18ch] text-[clamp(2.75rem,6vw,4.5rem)]">Demander une <em>production IRL.</em></h1>

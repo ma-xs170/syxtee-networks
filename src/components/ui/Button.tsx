@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import SignupLink from "@/components/SignupLink";
 import { useFormStatus } from "react-dom";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { ArrowBendDownRight, Envelope, Eye, Sliders, Tag, UserPlus } from "@phosphor-icons/react/dist/ssr";
@@ -55,6 +56,11 @@ export function ButtonLink({ href, variant = "primary", children, className = ""
       {children}
       {showArrow && <OutArrow />}
     </a>
+  ) : href === "/inscription" ? (
+    <SignupLink className={cls}>
+      {lead}
+      {children}
+    </SignupLink>
   ) : (
     <Link href={href} className={cls}>
       {lead}

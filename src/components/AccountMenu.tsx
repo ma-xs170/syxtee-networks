@@ -24,6 +24,7 @@ export function useAccount() {
       const supabase = await supabaseClient();
       const { data } = await supabase.auth.getSession();
       const user = data.session?.user;
+      if (user) { try { localStorage.setItem("syx-member", "1"); } catch {} }
       if (!user) {
         if (alive) setAccount(null);
         return;

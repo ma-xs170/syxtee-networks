@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import SignupLink from "@/components/SignupLink";
 import type { ComponentType, CSSProperties } from "react";
 import { ClockCounterClockwise, DeviceMobile, Faders, LockKey, PlugsConnected, ShieldCheck, type IconProps } from "@/components/icons";
 import GuardianDemo from "@/components/landing/GuardianDemo";
@@ -46,7 +47,7 @@ export default function ControlePage() {
             Pilote le vrai OBS de ton ordinateur depuis ton téléphone. Où que tu sois.
           </p>
           <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={{ "--i": 2 } as CSSProperties}>
-            <Link href="/inscription" className={WHITE}>Créer mon compte</Link>
+            <SignupLink className={WHITE}>Créer mon compte</SignupLink>
             <Link href="/application" className={TONAL}>Mettre sur l&apos;écran d&apos;accueil</Link>
           </div>
           <div className="mx-auto mt-16 max-w-5xl lg:mt-20"><ObsHero still images={{ laptop: deviceImage("laptop"), phone: deviceImage("phone") }} /></div>
@@ -107,7 +108,7 @@ export default function ControlePage() {
         <Container className="text-center">
           <h2 className="h-serif mx-auto max-w-[16ch] text-[clamp(2.75rem,6vw,4.5rem)]">Ton prochain direct, <em>sans bureau.</em></h2>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/inscription" className={WHITE}>Créer mon compte</Link>
+            <SignupLink className={WHITE}>Créer mon compte</SignupLink>
             <Link href="/contact" className={TONAL}><Envelope size={18} weight="fill" aria-hidden="true" className="mr-2.5" />Contactez-nous</Link>
           </div>
         </Container>

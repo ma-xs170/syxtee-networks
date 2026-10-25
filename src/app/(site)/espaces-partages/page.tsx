@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import SignupLink from "@/components/SignupLink";
 import CloudBackdrop from "@/components/home/CloudBackdrop";
 import { Check, MonitorPlay, ShareNetwork, SquaresFour, UsersThree } from "@/components/icons";
 import type { ComponentType } from "react";
@@ -48,10 +49,7 @@ export default function EspacesPartagesPage() {
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-foreground/75 sm:text-lg">Les espaces partagés sont faits pour les régies : plusieurs OBS, une équipe, un seul endroit.</p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/inscription" className={`${btn} btn-tonal`}>
-              Créer mon compte
-              <span aria-hidden="true">↗</span>
-            </Link>
+            <SignupLink className={`${btn} btn-tonal`}>Créer mon compte</SignupLink>
             <Link href="/tarifs" className={`${btn} border border-foreground/20 bg-background/60 text-foreground backdrop-blur-sm hover:bg-background/90`}>
               Voir les tarifs
             </Link>
@@ -125,9 +123,7 @@ export default function EspacesPartagesPage() {
           <h2 className="h-section">Inclus dans Signature et Prestige.</h2>
           <p className="mt-4 text-base leading-relaxed text-muted">1 espace partagé avec Signature (10 € par mois), jusqu&apos;à 5 avec Prestige (19,99 € par mois). Sans engagement.</p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/inscription" className="btn btn-primary">
-              Créer mon compte
-            </Link>
+            <SignupLink className="btn btn-primary">Créer mon compte</SignupLink>
             <Link href="/tarifs" className="btn btn-secondary">
               Voir les tarifs
             </Link>

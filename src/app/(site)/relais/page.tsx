@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import FxImage from "@/components/landing/FxImage";
 import Link from "next/link";
+import SignupLink from "@/components/SignupLink";
 import type { ComponentType, CSSProperties } from "react";
 import { Broadcast, Camera, Globe, type IconProps } from "@/components/icons";
 import { Container } from "@/components/ui";
@@ -38,7 +39,7 @@ export default function RelaisPage() {
             Il passe par nos serveurs avant ton OBS. Même sur un réseau mobile.
           </p>
           <div className="rise mt-9 flex justify-center" style={{ "--i": 2 } as CSSProperties}>
-            <Link href="/inscription" className={WHITE}>Créer mon compte</Link>
+            <SignupLink className={WHITE}>Créer mon compte</SignupLink>
           </div>
         </Container>
       </section>

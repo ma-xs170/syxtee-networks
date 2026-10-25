@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Heart } from "@phosphor-icons/react/dist/ssr";
 import L from "../L";
 import { siDji, siKick, siObsstudio, siTwitch, siWebrtc, siYoutube } from "@/lib/brand-icons";
-import { GRAIN } from "@/lib/glow";
+import { GRAIN, glow } from "@/lib/glow";
 import type { HomeStreamer } from "@/lib/streamers";
 
 // Accueil : « Ils nous font confiance. » Une rangée d'avatars ronds, décalés en hauteur, avec le pseudo Twitch en pastille ; elle défile
@@ -180,10 +180,29 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
 }
 
 /** Heures de direct déjà transmises sur SYXTEE (somme des sessions live). Rien ne s'affiche tant que le chiffre est inconnu ou nul. */
+const HEARTS = [
+  { left: "8%", size: 14, delay: "0s", dur: "9s" },
+  { left: "18%", size: 20, delay: "3s", dur: "11s" },
+  { left: "29%", size: 12, delay: "6s", dur: "8s" },
+  { left: "41%", size: 18, delay: "1.5s", dur: "10s" },
+  { left: "58%", size: 14, delay: "4.5s", dur: "9s" },
+  { left: "69%", size: 22, delay: "0.8s", dur: "12s" },
+  { left: "79%", size: 12, delay: "5.5s", dur: "8.5s" },
+  { left: "90%", size: 18, delay: "2.5s", dur: "10.5s" },
+];
+
+/** Heures de direct déjà transmises sur SYXTEE (somme des sessions live). Rien ne s'affiche tant que le chiffre est inconnu ou nul.
+ *  Halo rouge en fond et petits cœurs qui montent doucement (fixes sous prefers-reduced-motion). */
 export function HoursStat({ hours }: { hours: number | null }) {
   if (!hours || hours < 1) return null;
   return (
-    <section aria-label="Heures de direct transmises" className="border-b border-line py-24 text-center sm:py-32">
+    <section aria-label="Heures de direct transmises" className="relative isolate overflow-hidden border-b border-line py-24 text-center sm:py-32">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("var(--bad)", "50% 100%", 70, 90, 26)} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 motion-reduce:hidden">
+        {HEARTS.map((h, i) => (
+          <Heart key={i} weight="fill" size={h.size} className="heart-float absolute bottom-0 text-bad" style={{ left: h.left, animationDelay: h.delay, animationDuration: h.dur }} />
+        ))}
+      </div>
       <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted"><L fr="Déjà" en="Already" /></p>
       <p className="mt-6 flex items-baseline justify-center gap-2">
         <span className="text-[clamp(4.5rem,12vw,8rem)] font-semibold leading-none tracking-tight tabular-nums">{Math.round(hours).toLocaleString("fr-FR")}</span>

@@ -331,11 +331,10 @@ export function FinalCta() {
       {/* Voile sombre derrière le texte : la carte reste en fond, le texte garde tout son contraste. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(40% 45% at 50% 50%, color-mix(in srgb, var(--background) 88%, transparent), transparent 100%)" }} />
       <Container className="relative w-full text-center">
-        <h2 className="h-serif mx-auto max-w-[12ch] text-[clamp(2.75rem,6vw,4.5rem)]"><L fr={<>Prêt à partir en <em>direct ?</em></>} en={<>Ready to go <em>live?</em></>} /></h2>
-        <p className="mx-auto mt-5 max-w-[34ch] text-base leading-relaxed text-foreground/80 sm:text-lg"><L fr="Production IRL, relais SRTLA et contrôle d'OBS à distance, depuis la Guadeloupe." en="IRL production, SRTLA relays and remote OBS control, from Guadeloupe." /></p>
-        <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><Envelope size={18} weight="fill" aria-hidden="true" /><L fr="Contactez-nous" en="Contact us" /></Link>
-          <Link href="/inscription" aria-label="Créer mon compte" className="inline-grid size-12 place-items-center rounded-full bg-bad text-foreground transition-opacity hover:opacity-85"><UserCircle size={24} weight="fill" aria-hidden="true" /></Link>
+        <h2 className="h-serif mx-auto max-w-[14ch] text-[clamp(2.75rem,6vw,4.5rem)]"><L fr={<>Ton prochain direct <em>commence ici.</em></>} en={<>Your next live <em>starts here.</em></>} /></h2>
+        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-full border border-foreground/25 bg-foreground/[0.06] px-6 text-[15px] font-medium text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/[0.12]"><Envelope size={18} weight="fill" aria-hidden="true" /><L fr="Contactez-nous" en="Contact us" /></Link>
+          <Link href="/inscription" className="inline-flex h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-full border border-foreground/25 bg-foreground/[0.06] px-6 text-[15px] font-medium text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/[0.12]"><UserCircle size={18} weight="fill" aria-hidden="true" /><L fr="Créer un compte" en="Create an account" /></Link>
         </div>
       </Container>
     </section>

@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
     // Formats modernes, plus légers que le JPEG/PNG d'origine ; une image optimisée reste 1 jour en cache.
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 86_400,
+    // Qualités autorisées : 75 par défaut, 90 pour les images vidéo des polaroïds.
+    qualities: [75, 90],
     remotePatterns: [
       { protocol: "https", hostname: "static-cdn.jtvnw.net" }, // avatars Twitch
       { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" }, // avatars envoyés

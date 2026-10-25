@@ -16,7 +16,7 @@ export default function TwitchCategories() {
       {ITEMS.map((it) => (
         <li key={it.src} className={`${it.drop} w-full max-w-[260px]`}>
           <a href={it.href} target="_blank" rel="noopener noreferrer" className={`${it.tilt} block rounded-sm bg-foreground p-3 pb-4 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.6)] transition-transform duration-300 hover:rotate-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground motion-reduce:transition-none min-[560px]:-mx-2`}>
-            {"video" in it && it.video ? <HoverVideo src={it.src} video={it.video} /> : <Image src={it.src} alt="" width={600} height={800} sizes="260px" className="aspect-[3/4] w-full rounded-[2px] object-cover" />}
+            {"video" in it && it.video ? <HoverVideo video={it.video} /> : <Image src={it.src} alt="" width={600} height={800} sizes="260px" className="aspect-[3/4] w-full rounded-[2px] object-cover" />}
             <span className="mt-3 block text-center font-[family-name:var(--font-hand)] text-2xl leading-tight text-background">
               <L fr={it.fr} en={it.en} />
             </span>

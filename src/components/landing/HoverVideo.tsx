@@ -3,10 +3,10 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 
-// Image de polaroïd qui laisse place à une vraie vidéo au survol (ou au focus clavier). Même traitement que le hero :
+// Polaroïd vidéo : une image extraite de la vidéo et un bouton lecture montrent qu'il y a de la vidéo ; elle démarre au survol (ou au focus clavier). Même traitement que le hero :
 // flou de mouvement (dans le fichier), aberration chromatique, ombre sur les bords, mais sans trame de pixels.
-// Sans survol (écran tactile) ou sous prefers-reduced-motion : l'image reste affichée.
-export default function HoverVideo({ src, video }: { src: string; video: string }) {
+// Sans survol (écran tactile) ou sous prefers-reduced-motion : l'image extraite reste affichée.
+export default function HoverVideo({ video }: { video: string }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [on, setOn] = useState(false);
 
@@ -23,7 +23,10 @@ export default function HoverVideo({ src, video }: { src: string; video: string 
 
   return (
     <span className="relative block aspect-[3/4] w-full overflow-hidden rounded-[2px]" onMouseEnter={start} onMouseLeave={stop} onFocus={start} onBlur={stop}>
-      <Image src={src} alt="" width={600} height={800} sizes="260px" className="aspect-[3/4] w-full object-cover" />
+      <Image src={`${video}.jpg`} alt="" width={480} height={640} sizes="260px" className="aspect-[3/4] w-full object-cover" />
+      <span aria-hidden="true" className={`absolute bottom-3 right-3 grid size-9 place-items-center rounded-full bg-black/55 backdrop-blur-sm transition-opacity duration-300 motion-reduce:opacity-100 ${on ? "opacity-0" : "opacity-100"}`}>
+        <svg viewBox="0 0 10 10" className="ml-0.5 size-3 fill-white"><path d="M1 0l9 5-9 5z" /></svg>
+      </span>
       <svg width="0" height="0" className="absolute" focusable="false" aria-hidden="true">
         <filter id="ev-ca" colorInterpolationFilters="sRGB" x="0" y="0" width="100%" height="100%">
           <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="r" />

@@ -791,3 +791,8 @@ body:has(#accueil-hero, [data-hero]) .site-nav { margin-bottom: -65px; }
 .l-en { display: none; }
 html[lang="en"] .l-en { display: inline; }
 html[lang="en"] .l-fr { display: none; }
+
+/* Faux chat du hero : un message arrive en glissant depuis le bas. */
+@keyframes chat-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.chat-in { animation: chat-in 0.35s ease-out both; }
+@media (prefers-reduced-motion: reduce) { .chat-in { animation: none; } }

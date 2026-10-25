@@ -27,10 +27,10 @@ export default async function VideastesPage({ searchParams }: { searchParams: Pr
   return (
     <>
       <PageHero kicker="Annuaire" crumb="Vidéastes" title={<>Trouve un <em>vidéaste</em> près de chez toi.</>}>
-        <p className="mt-6 max-w-[58ch] text-lg leading-relaxed text-muted">Des vidéastes qui connaissent le live IRL. Compare les régions et les tarifs, puis écris-leur par SYXTEE : leur e-mail reste privé.</p>
+        Des vidéastes qui connaissent le live IRL. Écris-leur par SYXTEE : leur e-mail reste privé.
       </PageHero>
       <Container className="pb-24 pt-12">
-        <form action="/videastes" className="mb-10 flex flex-wrap items-center gap-3" role="search">
+        <form action="/videastes" className="mb-12 flex flex-wrap items-center justify-center gap-3" role="search">
           <label className="sr-only" htmlFor="v-q">Rechercher</label>
           <input id="v-q" name="q" defaultValue={q ?? ""} placeholder="Nom, ville, spécialité" className={`${input} w-64`} />
           <label className="sr-only" htmlFor="v-pays">Pays</label>
@@ -72,7 +72,7 @@ export default async function VideastesPage({ searchParams }: { searchParams: Pr
           </ul>
         )}
 
-        <p className="mt-12 text-sm text-muted">
+        <p className="mt-14 text-center text-sm text-muted">
           Tu es vidéaste ? <Link href="/inscription?next=%2Fdashboard%2Fvideaste" className="text-foreground underline underline-offset-4">Crée ton compte gratuit</Link> et ajoute ta fiche.
         </p>
       </Container>

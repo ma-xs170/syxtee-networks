@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import PageHero from "@/components/PageHero";
 import SupportSection from "@/components/landing/SupportSection";
 
 export const metadata: Metadata = {
@@ -10,11 +9,8 @@ export const metadata: Metadata = {
 
 export default function SoutenirPage() {
   return (
-    <>
-      <PageHero title={<>Me <em>soutenir.</em></>} crumb="Soutenir">
-        Un projet fait seul, depuis la Guadeloupe, et ouvert à tous.
-      </PageHero>
+    <div className="pt-16 lg:pt-24">
       <SupportSection />
-    </>
+    </div>
   );
 }

@@ -4,7 +4,7 @@ import L from "../L";
 // Catégories Twitch où diffuse l'IRL : pochettes officielles (1080×1440 recadrées en 600×800) posées en « polaroïds » penchés, légende manuscrite.
 // Le cadre suit les couleurs du thème (fond = encre, texte = fond). Chaque polaroïd ouvre la catégorie sur Twitch.
 const ITEMS = [
-  { src: "/images/categories/irl.webp", tilt: "-rotate-6", drop: "sm:mt-8", fr: "IRL", en: "IRL", href: "https://www.twitch.tv/directory/category/irl" },
+  { src: "/images/categories/irl.webp", tilt: "-rotate-6", drop: "sm:mt-8", fr: "Mobilité", en: "Mobility", href: "https://www.twitch.tv/directory/category/irl" },
   { src: "/images/categories/evenements-speciaux.webp", tilt: "rotate-2", drop: "sm:mt-0", fr: "Événements spéciaux", en: "Special Events", href: "https://www.twitch.tv/directory/category/special-events" },
   { src: "/images/categories/piscines-plages.webp", tilt: "rotate-6", drop: "sm:mt-6", fr: "Piscines, jacuzzi et plages", en: "Pools, Hot Tubs & Beaches", href: "https://www.twitch.tv/directory/category/pools-hot-tubs-and-beaches" },
 ];

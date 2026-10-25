@@ -54,7 +54,9 @@ export default function ProductionPage() {
         </Container>
       </section>
 
-      <section className="py-20 lg:py-28">
+      <section className="relative isolate overflow-clip py-20 lg:py-28">
+        {/* orange coucher de soleil */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("#e8892b", "0% 0%", 70, 90, 34)} />
         <Container className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           <div className="lg:sticky lg:top-28 lg:self-start">
             <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Ce qu&apos;on fait</p>
@@ -75,15 +77,21 @@ export default function ProductionPage() {
         </Container>
       </section>
 
-      <section className="overflow-hidden pb-6 pt-20 text-center lg:pb-8 lg:pt-28">
+      <section className="relative isolate overflow-hidden pb-6 pt-20 text-center lg:pb-8 lg:pt-28">
+        {/* bleu mer */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("#2b7fe0", "100% 50%", 70, 100, 34)} />
+
         <Container>
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Sur le terrain</p>
-          <h2 className="h-serif mx-auto mt-4 max-w-3xl text-[clamp(2.25rem,4.5vw,3.5rem)]">Mobilité, soirée, mer : <em>on te suit partout.</em></h2>
+          <h2 className="h-serif mx-auto mt-4 max-w-3xl text-[clamp(2.25rem,4.5vw,3.5rem)]">Mobilité, soirée, mer&nbsp;: <em>on te suit partout.</em></h2>
         </Container>
         <TwitchCategories />
       </section>
 
-      <section className="pb-20 pt-10 lg:pb-28 lg:pt-14">
+      <section className="relative isolate overflow-clip pb-20 pt-10 lg:pb-28 lg:pt-14">
+        {/* violet nuit de soirée */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("#8b5cf6", "0% 100%", 70, 90, 32)} />
+
         <Container>
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Comment ça se passe</p>
           <h2 className="h-serif mt-4 text-[clamp(2.25rem,4.5vw,3.5rem)]">Trois étapes, <em>zéro stress.</em></h2>

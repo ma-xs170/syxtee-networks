@@ -20,7 +20,7 @@ const OFFERS = [
 ];
 
 const STEPS = [
-  { n: "1", title: "Tu décris ton événement", text: "Date, lieu, nombre de caméras, plateformes. Un message suffit." },
+  { n: "1", title: "Tu décris ton événement", text: "Mobilité, soirée, mer, ville… Dis-nous où et quand, on prépare le devis." },
   { n: "2", title: "On te propose un devis", text: "Une proposition claire, gratuite et sans engagement, avec ce qui est inclus." },
   { n: "3", title: "On s'en charge", text: "L'équipe prépare, diffuse et suit le direct. Tu reçois le retour de fin de live." },
 ];

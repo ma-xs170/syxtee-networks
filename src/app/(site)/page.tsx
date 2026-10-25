@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import StreamerWall from "@/components/home/StreamerWall";
-import { getHomeStreamers } from "@/lib/streamers";
+import StreamerWall, { HoursStat } from "@/components/home/StreamerWall";
+import { getHomeStreamers, getTotalLiveHours } from "@/lib/streamers";
 import { FinalCta, HomeHero, ObsBento, ProductionSection, StreamersIntro } from "@/components/landing/Sections";
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function Home() {
-  const streamers = await getHomeStreamers();
+  const [streamers, hours] = await Promise.all([getHomeStreamers(), getTotalLiveHours()]);
   return (
     <>
       <HomeHero />
@@ -23,6 +23,7 @@ export default async function Home() {
       <StreamersIntro streamers={streamers} />
       <ObsBento />
       <StreamerWall streamers={streamers} />
+      <HoursStat hours={hours} />
       <FinalCta />
     </>
   );

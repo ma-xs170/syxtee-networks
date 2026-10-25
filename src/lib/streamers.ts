@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { hasSupabase, supabaseKey, supabaseUrl } from "@/lib/supabase/env";
+import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 import { timedFetch } from "@/lib/supabase/fetch";
 import { getLiveStreams, getTwitchUsersByLogin } from "@/lib/twitch";
 
@@ -107,4 +108,17 @@ export async function getHomeStreamers(): Promise<HomeStreamer[]> {
   const taken = new Set(accounts.flatMap((a) => a.channels.map((c) => `${c.platform}:${c.url.toLowerCase()}`)));
   const extra = featured.filter((f) => !taken.has(`${f.channels[0].platform}:${f.channels[0].url.toLowerCase()}`));
   return [...accounts, ...extra].sort((a, b) => (b.live?.viewers ?? -1) - (a.live?.viewers ?? -1) || a.handle.localeCompare(b.handle));
+}
+
+/** Total d'heures de direct déjà transmises (toutes sessions). Null si la clé serveur manque ou si la lecture échoue : la page n'affiche alors rien. */
+export async function getTotalLiveHours(): Promise<number | null> {
+  if (!hasAdmin) return null;
+  try {
+    const { data, error } = await createAdminClient().rpc("admin_live_hours", { p_days: 36500 });
+    if (error) throw error;
+    return Number(data ?? 0);
+  } catch (e) {
+    console.error("admin_live_hours", e);
+    return null;
+  }
 }

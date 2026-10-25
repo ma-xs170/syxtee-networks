@@ -2,16 +2,15 @@ import Image from "next/image";
 import L from "../L";
 import { siDji, siKick, siObsstudio, siTwitch, siWebrtc, siYoutube } from "@/lib/brand-icons";
 import { GRAIN } from "@/lib/glow";
-import { avatarTint, FALLBACK_TINT } from "@/lib/avatar-color";
 import type { HomeStreamer } from "@/lib/streamers";
 
 // Accueil : « Ils nous font confiance. » Une rangée d'avatars ronds, décalés en hauteur, avec le pseudo Twitch en pastille ; elle défile
 // lentement et s'arrête au survol. Données : comptes qui ont coché « Afficher ma chaîne » avec un
 // Twitch (public_streamers). Rien ne s'affiche tant qu'il n'y a aucun streamer. Immobile sous prefers-reduced-motion.
 
-type Card = { key: string; s: HomeStreamer; platform: "twitch" | "kick" | "youtube"; handle: string; url: string; tint?: string; dup?: boolean };
+type Card = { key: string; s: HomeStreamer; platform: "twitch" | "kick" | "youtube"; handle: string; url: string; dup?: boolean };
 
-function Card({ c, i }: { c: Card; i: number }) {
+function Card({ c }: { c: Card }) {
   const { s } = c;
   return (
     <a
@@ -19,16 +18,19 @@ function Card({ c, i }: { c: Card; i: number }) {
       target="_blank"
       rel="noopener noreferrer"
       {...(c.dup ? { "aria-hidden": true, tabIndex: -1 } : {})}
-      className={`group mx-5 flex w-36 shrink-0 flex-col items-center transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground ${i % 2 ? "mt-16" : ""}`}
+      className="group mx-2.5 flex w-[17rem] shrink-0 items-center gap-3.5 rounded-xl border border-line bg-black/35 px-4 py-3.5 backdrop-blur-sm transition-colors duration-200 hover:border-foreground/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
     >
       {s.avatar ? (
-        <Image src={s.avatar} alt="" width={224} height={224} className="size-28 rounded-full border border-line object-cover sm:size-32" />
+        <Image src={s.avatar} alt="" width={96} height={96} className="size-12 shrink-0 rounded-full object-cover" />
       ) : (
-        <span className="flex size-28 items-center justify-center rounded-full border border-line bg-surface-2 text-3xl font-semibold uppercase text-muted sm:size-32">{s.handle.charAt(0)}</span>
+        <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-surface-2 text-lg font-semibold uppercase text-muted">{s.handle.charAt(0)}</span>
       )}
-      <span className="relative -mt-4 flex max-w-full items-center gap-1.5 rounded-full border border-white/15 px-3.5 py-1.5 text-sm font-medium text-white" style={{ background: `linear-gradient(135deg, color-mix(in srgb, ${c.tint ?? FALLBACK_TINT} 78%, #000), ${c.tint ?? FALLBACK_TINT})` }}>
-        <span className="truncate">{c.handle}</span>
-        {s.live && <span className="live-dot shrink-0" role="img" aria-label="En direct" />}
+      <span className="min-w-0">
+        <span className="flex items-center gap-1.5 font-mono text-[15px] font-medium text-foreground">
+          <span className="truncate">@{c.handle.toLowerCase()}</span>
+          {s.live && <span className="live-dot shrink-0" role="img" aria-label="En direct" />}
+        </span>
+        <span className="mt-0.5 block text-sm text-muted transition-colors group-hover:text-foreground"><L fr="Voir la chaîne" en="View channel" /> →</span>
       </span>
     </a>
   );
@@ -43,7 +45,7 @@ function Row({ items, reverse }: { items: Card[]; reverse?: boolean }) {
         {[0, 1].map((copy) => (
           <div key={copy} className="flex shrink-0" aria-hidden={copy === 1 ? true : undefined}>
             {base.map((c, i) => (
-              <Card key={`${c.key}-${i}`} c={c} i={i} />
+              <Card key={`${c.key}-${i}`} c={c} />
             ))}
           </div>
         ))}
@@ -134,19 +136,23 @@ function Partners() {
   );
 }
 
-export default async function StreamerWall({ streamers }: { streamers: HomeStreamer[] }) {
+export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] }) {
   if (streamers.length === 0) return null;
   const ranked = [...streamers].sort((a, b) => Number(!!b.live) - Number(!!a.live) || Number(b.partner) - Number(a.partner));
   // Une carte par chaîne Twitch.
   const cards: Card[] = ranked.flatMap((s) => s.channels.filter((ch) => ch.platform === "twitch").map((ch) => ({ key: `${s.handle}-${ch.platform}`, s, platform: ch.platform, handle: ch.handle, url: ch.url })));
   if (cards.length === 0) return null;
-  // Pastille de pseudo teintée selon la couleur dominante de l'avatar.
-  const tints = await Promise.all(cards.map((c) => avatarTint(c.s.avatar)));
-  cards.forEach((c, i) => { c.tint = tints[i]; });
-  // La liste est répétée (copies masquées aux lecteurs d'écran) jusqu'à remplir la largeur ; un nombre pair garde l'alternance haut/bas.
-  const row: Card[] = [];
-  while (row.length < 10 || row.length % 2) row.push(...cards.map((c) => ({ ...c, dup: row.length > 0 })));
-  const fade = "linear-gradient(to right, transparent, #000 22%, #000 78%, transparent)";
+  // Deux rangées qui défilent en sens inverse : une carte sur deux dans chacune, répétées (copies masquées aux lecteurs d'écran) jusqu'à remplir la largeur.
+  const fill = (list: Card[]) => {
+    const out: Card[] = [];
+    while (out.length < 8) out.push(...list.map((c) => ({ ...c, dup: out.length > 0 })));
+    return out;
+  };
+  const top = cards.filter((_, i) => i % 2 === 0);
+  const bottom = cards.filter((_, i) => i % 2 === 1);
+  const rowTop = fill(top);
+  const rowBottom = fill(bottom.length ? bottom : [...cards].reverse());
+  const fade = "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)";
 
   return (
     <>
@@ -163,10 +169,26 @@ export default async function StreamerWall({ streamers }: { streamers: HomeStrea
         <L fr="Ils nous font confiance." en="They trust us." />
       </h2>
       <p className="mx-auto mt-4 max-w-[48ch] px-4 text-center text-base leading-relaxed text-muted"><L fr="Des streamers IRL qui diffusent avec SYXTEE." en="IRL streamers who broadcast with SYXTEE." /></p>
-      <div className="mt-14" style={{ maskImage: fade, WebkitMaskImage: fade }}>
-        <Row items={row} />
+      <div className="mt-14 space-y-5" style={{ maskImage: fade, WebkitMaskImage: fade }}>
+        <Row items={rowTop} />
+        <Row items={rowBottom} reverse />
       </div>
     </section>
     </>
+  );
+}
+
+/** Heures de direct déjà transmises sur SYXTEE (somme des sessions live). Rien ne s'affiche tant que le chiffre est inconnu ou nul. */
+export function HoursStat({ hours }: { hours: number | null }) {
+  if (!hours || hours < 1) return null;
+  return (
+    <section aria-label="Heures de direct transmises" className="border-b border-line py-24 text-center sm:py-32">
+      <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted"><L fr="Déjà" en="Already" /></p>
+      <p className="mt-6 flex items-baseline justify-center gap-2">
+        <span className="text-[clamp(4.5rem,12vw,8rem)] font-semibold leading-none tracking-tight tabular-nums">{Math.round(hours).toLocaleString("fr-FR")}</span>
+        <span className="text-[clamp(1.75rem,4vw,3rem)] font-medium text-muted">h</span>
+      </p>
+      <p className="mt-6 text-lg text-muted"><L fr="De direct transmis grâce à SYXTEE." en="Of live streamed with SYXTEE." /></p>
+    </section>
   );
 }

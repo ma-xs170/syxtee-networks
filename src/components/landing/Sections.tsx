@@ -5,7 +5,7 @@ import { ButtonLink } from "../ui/Button";
 import Highlight from "../ui/Highlight";
 import DirectorDemo from "./DirectorDemo";
 import Reveal from "../ui/Reveal";
-import { Envelope, Phone } from "@phosphor-icons/react/dist/ssr";
+import { Envelope, UserCircle } from "@phosphor-icons/react/dist/ssr";
 import L from "../L";
 import { glow } from "@/lib/glow";
 import HeroVideo from "./HeroVideo";
@@ -335,9 +335,8 @@ export function FinalCta() {
         <h2 className="h-serif mx-auto max-w-[12ch] text-[clamp(2.75rem,6vw,4.5rem)]"><L fr={<>Prêt à partir en <em>direct ?</em></>} en={<>Ready to go <em>live?</em></>} /></h2>
         <p className="mx-auto mt-5 max-w-[34ch] text-base leading-relaxed text-foreground/80 sm:text-lg"><L fr="Production IRL, relais SRTLA et contrôle d'OBS à distance, depuis la Guadeloupe." en="IRL production, SRTLA relays and remote OBS control, from Guadeloupe." /></p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><Phone size={18} weight="fill" aria-hidden="true" /><L fr="Contactez-nous" en="Contact us" /></Link>
-          <Link href="/inscription" className="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-full bg-bad px-6 text-[15px] font-medium text-foreground transition-opacity hover:opacity-85"><L fr="Commencer" en="Get started" /></Link>
-          <a href="mailto:contact@syxtee-networks.fr" aria-label="Écrire à contact@syxtee-networks.fr" className="inline-grid size-12 place-items-center rounded-full border border-foreground/25 bg-foreground/[0.06] transition-colors hover:bg-foreground/[0.12]"><Envelope size={20} aria-hidden="true" /></a>
+          <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><Envelope size={18} weight="fill" aria-hidden="true" /><L fr="Contactez-nous" en="Contact us" /></Link>
+          <Link href="/inscription" aria-label="Créer mon compte" className="inline-grid size-12 place-items-center rounded-full bg-bad text-foreground transition-opacity hover:opacity-85"><UserCircle size={24} weight="fill" aria-hidden="true" /></Link>
         </div>
       </Container>
     </section>

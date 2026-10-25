@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import FxImage from "@/components/landing/FxImage";
 import Link from "next/link";
 import type { ComponentType, CSSProperties } from "react";
@@ -74,7 +73,7 @@ export default function RelaisPage() {
               <p className="mt-5 max-w-[36ch] text-lg leading-relaxed text-muted">Des serveurs fiables, pensés pour le direct.</p>
             </div>
             <div className="relative aspect-[3/2] overflow-hidden rounded-2xl border border-line">
-              <Image src="/images/hebergeur-ovh.webp" alt="Bâtiment OVHcloud" fill sizes="(min-width:1024px) 55vw, 100vw" className="object-cover" />
+              <FxImage src="/images/hebergeur-ovh.webp" alt="Bâtiment OVHcloud" sizes="(min-width:1024px) 55vw, 100vw" aberration={false} />
             </div>
           </div>
         </Container>

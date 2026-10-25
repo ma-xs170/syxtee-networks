@@ -1,7 +1,7 @@
 import Image from "next/image";
 
-// Photo traitée comme les vidéos du hero : aberration chromatique (rouge à gauche, bleu à droite), grain de pellicule et trame de petits pixels.
-export default function FxImage({ src, alt = "", sizes, priority, className = "" }: { src: string; alt?: string; sizes: string; priority?: boolean; className?: string }) {
+// Photo traitée comme les vidéos du hero : aberration chromatique (rouge à gauche, bleu à droite, désactivable), grain de pellicule et trame de petits pixels.
+export default function FxImage({ src, alt = "", sizes, priority, aberration = true, className = "" }: { src: string; alt?: string; sizes: string; priority?: boolean; aberration?: boolean; className?: string }) {
   return (
     <div className="absolute inset-0 overflow-hidden">
       <svg width="0" height="0" className="absolute" focusable="false" aria-hidden="true">
@@ -15,7 +15,7 @@ export default function FxImage({ src, alt = "", sizes, priority, className = ""
           <feBlend in="rg" in2="bo" mode="screen" />
         </filter>
       </svg>
-      <div className="absolute -inset-2" style={{ filter: "url(#fx-ca)" }}>
+      <div className="absolute -inset-2" style={aberration ? { filter: "url(#fx-ca)" } : undefined}>
         <Image src={src} alt={alt} fill sizes={sizes} priority={priority} className={`object-cover ${className}`} />
       </div>
       <div className="film-grain" />

@@ -150,8 +150,8 @@ export default async function StreamerWall({ streamers }: { streamers: HomeStrea
 
   return (
     <>
-    <BrandStrip />
     <Partners />
+    <BrandStrip />
     <section aria-labelledby="mur-titre" className="relative isolate overflow-hidden border-b border-line py-24 sm:py-32">
       {/* Fond violet Twitch : large, saturé en haut, qui se fond vers le bas ; quadrillage très discret qui s'estompe avec lui. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: `${GRAIN}, radial-gradient(130% 85% at 50% 0%, color-mix(in srgb, #9146ff 30%, transparent) 0%, color-mix(in srgb, #9146ff 24%, transparent) 25%, color-mix(in srgb, #9146ff 15%, transparent) 50%, color-mix(in srgb, #9146ff 7%, transparent) 72%, transparent 100%), linear-gradient(to bottom, color-mix(in srgb, #9146ff 10%, transparent), transparent 70%)` }} />

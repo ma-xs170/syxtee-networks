@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// Fond du hero : vraies images de terrain (saut en parachute, scène, public, soirée) en fondu enchaîné.
+// Fond du hero : vraies images de terrain (scène, public, soirée) en fondu enchaîné.
 // Une seule vidéo joue à la fois ; les autres attendent en pause (poster visible). Sous prefers-reduced-motion : images fixes.
-const CLIPS = ["parachute", "scene", "public", "soiree"] as const;
+const CLIPS = ["scene", "public", "soiree"] as const;
 const HOLD_MS = 7000;
 
 export default function HeroVideo({ children }: { children?: React.ReactNode }) {

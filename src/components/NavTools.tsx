@@ -318,7 +318,7 @@ export function DesktopMenus({ items, isActive }: { items: AnyItem[]; isActive: 
               key={label}
               href={item.href}
               aria-current={active ? "page" : undefined}
-              className="ml-1 inline-flex h-9 items-center whitespace-nowrap rounded-full bg-foreground px-4 text-sm font-medium text-background transition-opacity hover:opacity-85 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+              className="ml-1 inline-flex h-9 items-center whitespace-nowrap rounded-full border border-foreground/25 bg-foreground/[0.06] px-4 text-sm font-medium text-foreground transition-[background-color,border-color,transform] duration-150 hover:border-foreground/40 hover:bg-foreground/[0.12] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
               {...common}
             >
               <T>{item.label}</T>

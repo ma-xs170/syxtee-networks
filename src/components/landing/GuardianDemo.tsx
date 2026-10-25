@@ -1,10 +1,9 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Le Gardien en trois temps, en boucle : OBS en direct, OBS plante (la fenêtre tremble puis se fige), le Gardien le relance et le direct repart.
-// Image du direct : vraie image de terrain. Sous prefers-reduced-motion : la fenêtre reste en direct, sans boucle.
+// Image du direct : vraie vidéo de terrain ; elle se fige au plantage et repart de zéro quand OBS est relancé. Sous prefers-reduced-motion : la fenêtre reste en direct, sans boucle.
 const PHASES = [
   { ms: 2800, key: "live" },
   { ms: 2200, key: "crash" },
@@ -15,9 +14,11 @@ const PHASES = [
 export default function GuardianDemo() {
   const [i, setI] = useState(0);
   const [still, setStill] = useState(false);
+  const video = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- lit la préférence du système au montage
     setStill(mq.matches);
     const on = () => setStill(mq.matches);
     mq.addEventListener("change", on);
@@ -34,6 +35,17 @@ export default function GuardianDemo() {
   const crashed = phase === "crash";
   const restarting = phase === "restart";
   const down = crashed || restarting;
+
+  useEffect(() => {
+    const v = video.current;
+    if (!v || still) return;
+    if (phase === "live") void v.play().catch(() => {});
+    else if (crashed) v.pause();
+    else if (phase === "back") {
+      v.currentTime = 0;
+      void v.play().catch(() => {});
+    }
+  }, [phase, crashed, still]);
 
   return (
     <div className="w-full" role="img" aria-label="OBS plante en plein direct, puis le Gardien le relance et le direct repart">
@@ -54,7 +66,10 @@ export default function GuardianDemo() {
         </div>
 
         <div className="relative aspect-video bg-background">
-          <Image src="/videos/hero-scene.jpg" alt="" fill sizes="576px" className={`object-cover transition-[opacity,filter] duration-300 ${down ? "opacity-15 grayscale" : "opacity-90"}`} />
+          <video ref={video} className={`absolute inset-0 size-full object-cover transition-[opacity,filter] duration-300 ${down ? "opacity-15 grayscale" : "opacity-90"}`} poster="/videos/hero-scene.jpg" muted loop playsInline autoPlay={!still} preload="metadata">
+            <source src="/videos/hero-scene.mp4" type="video/mp4" />
+            <source src="/videos/hero-scene.webm" type="video/webm" />
+          </video>
           {crashed && <span aria-hidden="true" className="guardian-glitch absolute inset-0" />}
           <div className={`absolute inset-0 grid place-items-center text-center transition-opacity duration-300 ${down ? "opacity-100" : "opacity-0"}`}>
             {crashed ? (

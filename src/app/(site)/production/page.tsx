@@ -107,8 +107,8 @@ export default function ProductionPage() {
       </section>
 
       <section className="relative isolate overflow-hidden border-t border-line py-24 lg:py-32">
-        {/* vert tropical : la Guadeloupe, le terrain */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("#1f9d55", "50% 100%", 80, 100, 45)} />
+        {/* rouge de la marque, comme les appels finaux des autres pages */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("var(--bad)", "50% 40%", 60, 80, 24)} />
         <Container className="text-center">
           <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.25rem,5vw,3.75rem)]">Parle-nous de ton <em>événement.</em></h2>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">

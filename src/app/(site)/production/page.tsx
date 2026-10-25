@@ -54,9 +54,7 @@ export default function ProductionPage() {
         </Container>
       </section>
 
-      <section className="relative isolate overflow-clip py-20 lg:py-28">
-        {/* orange coucher de soleil */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("#e8892b", "0% 0%", 70, 90, 34)} />
+      <section className="py-20 lg:py-28">
         <Container className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           <div className="lg:sticky lg:top-28 lg:self-start">
             <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Ce qu&apos;on fait</p>
@@ -88,9 +86,7 @@ export default function ProductionPage() {
         <TwitchCategories />
       </section>
 
-      <section className="relative isolate overflow-clip pb-20 pt-10 lg:pb-28 lg:pt-14">
-        {/* violet nuit de soirée */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("#8b5cf6", "0% 100%", 70, 90, 32)} />
+      <section className="pb-20 pt-10 lg:pb-28 lg:pt-14">
 
         <Container>
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Comment ça se passe</p>

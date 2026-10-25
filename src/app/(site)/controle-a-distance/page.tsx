@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ComponentType, CSSProperties } from "react";
 import { DeviceMobile, Faders, LockKey, ShieldCheck, type IconProps } from "@/components/icons";
 import ObsHero from "@/components/landing/ObsHero";
+import { deviceImage } from "@/lib/device-images";
 import PhoneStory, { type Step } from "@/components/remote-showcase/PhoneStory";
 import { Container } from "@/components/ui";
 import { Envelope } from "@phosphor-icons/react/dist/ssr";
@@ -75,7 +76,7 @@ export default function ControlePage() {
             <Link href="/inscription" className={WHITE}>Créer mon compte</Link>
             <Link href="/application" className={TONAL}>Mettre sur l&apos;écran d&apos;accueil</Link>
           </div>
-          <div className="mx-auto mt-16 max-w-5xl lg:mt-20"><ObsHero still /></div>
+          <div className="mx-auto mt-16 max-w-5xl lg:mt-20"><ObsHero still images={{ laptop: deviceImage("laptop"), phone: deviceImage("phone") }} /></div>
         </Container>
       </section>
 

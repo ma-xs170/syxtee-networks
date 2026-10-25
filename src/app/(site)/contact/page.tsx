@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { DiscordLogo, Envelope, GithubLogo, InstagramLogo, MapPin, YoutubeLogo } from "@phosphor-icons/react/dist/ssr";
+import { Envelope, InstagramLogo, MapPin } from "@phosphor-icons/react/dist/ssr";
 import ContactForm from "@/components/contact/ContactForm";
 import { Container } from "@/components/ui";
 import { site } from "@/lib/site";
@@ -14,11 +14,8 @@ const iconBox = "grid size-6 shrink-0 place-items-center text-foreground";
 
 // Coordonnées affichées à droite du formulaire : e-mail, lieu, puis tous les réseaux.
 const CONTACTS = [
-  { Icon: Envelope, label: "E-mail", sub: "contact@syxtee-networks.fr", href: "mailto:contact@syxtee-networks.fr" },
+  { Icon: Envelope, label: "Mail", sub: "contact@syxtee-networks.fr", href: "mailto:contact@syxtee-networks.fr" },
   { Icon: InstagramLogo, label: "Instagram", sub: "@syxtee.networks", href: site.instagram },
-  { Icon: YoutubeLogo, label: "YouTube", sub: "@syxtee", href: site.youtube },
-  { Icon: DiscordLogo, label: "Discord", sub: "Rejoindre la communauté", href: site.discord },
-  { Icon: GithubLogo, label: "GitHub", sub: "syxtee-networks", href: site.github },
 ];
 
 export const metadata: Metadata = {
@@ -56,7 +53,7 @@ export default function ContactPage() {
               <ul className="mt-6 grid gap-5">
                 <li className="flex items-center gap-4">
                   <span className={iconBox}><MapPin size={22} aria-hidden="true" /></span>
-                  <span className="text-sm"><span className="block font-medium">Petit-Bourg</span><span className="block text-muted">Déplacement partout en Guadeloupe</span></span>
+                  <span className="text-sm"><span className="block font-medium">Guadeloupe</span><span className="block text-muted">Petit-Bourg, déplacement partout sur l&apos;île</span></span>
                 </li>
                 {CONTACTS.map(({ Icon, label, sub, href }) => (
                   <li key={label}>

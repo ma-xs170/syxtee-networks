@@ -12,10 +12,10 @@ export const metadata: Metadata = {
 };
 
 const OFFERS = [
-  { n: "01", title: "Régie en direct", text: "Un régisseur pilote OBS, les scènes, l'audio et la diffusion multi-plateformes pendant que tu es sur le terrain." },
-  { n: "02", title: "Cadreurs IRL", text: "Des vidéastes formés au live en mobilité, à l'épaule ou sur gimbal. Ils connaissent les foules, les contraintes de réseau et le rythme d'un direct." },
-  { n: "03", title: "Relais SRTLA dédiés", text: "Plusieurs connexions cumulées vers nos serveurs : ton direct reste stable là où une seule antenne lâcherait." },
-  { n: "04", title: "Réseau et supervision", text: "On suit le débit de chaque connexion en direct et on corrige avant que le public le voie." },
+  { n: "01", title: "Régie en direct", text: "Un régisseur pilote OBS pendant que tu es sur le terrain." },
+  { n: "02", title: "Cadreurs IRL", text: "Des vidéastes formés au live en mobilité." },
+  { n: "03", title: "Réseau et supervision", text: "On suit chaque connexion en direct et on corrige avant le public." },
+  { n: "04", title: "Connectivité cellulaire et satellite", text: "Multi-opérateurs, Starlink et plus : le signal tient partout." },
 ];
 
 const STEPS = [

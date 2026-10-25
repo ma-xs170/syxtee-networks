@@ -15,7 +15,7 @@ import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 
 export type ContactState = { ok?: boolean; error?: string };
 
-const EVENT_TYPES = ["Mobilité", "Bateau"] as const;
+const EVENT_TYPES = ["Mobilité", "Soirée", "Mer"] as const;
 const DURATIONS = ["Moins de 2 h", "2 à 4 h", "4 à 8 h", "Plus de 8 h", "Plusieurs jours"] as const;
 const NEEDS = ["Plusieurs caméras", "Bonding 4G / 5G", "Liaison satellite", "Contrôle à distance d'OBS", "Multistream", "Équipe sur place"];
 

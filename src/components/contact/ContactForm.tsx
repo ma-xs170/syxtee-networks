@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
+import { MusicNotes, PersonSimpleWalk, Sailboat } from "@phosphor-icons/react/dist/ssr";
 import { contactAction, type ContactState } from "@/app/(site)/contact/actions";
 
 // Formulaire de demande de devis : événement, lieu, date, durée, besoins, description. Champ piège et horodatage antispam.
@@ -8,7 +9,12 @@ const field =
   "h-12 w-full rounded-xl border border-line bg-input px-4 text-sm text-foreground placeholder:text-muted/70 transition-colors focus:border-foreground/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20";
 const label = "text-sm font-medium";
 
-const EVENT_TYPES = ["Mobilité", "Bateau"];
+const EVENT_TYPES = ["Mobilité", "Soirée", "Mer"];
+const TYPE_ICONS: Record<string, React.ReactNode> = {
+  Mobilité: <PersonSimpleWalk size={18} aria-hidden="true" />,
+  Soirée: <MusicNotes size={18} aria-hidden="true" />,
+  Mer: <Sailboat size={18} aria-hidden="true" />,
+};
 
 // Les 32 communes de Guadeloupe, plus une entrée pour un projet ailleurs.
 const CITIES = [
@@ -19,7 +25,7 @@ const CITIES = [
 ];
 
 // Liste déroulante du site (pas celle du système) : même rendu partout, au clavier comme à la souris.
-const Select = ({ id, name, required, placeholder, options }: { id: string; name: string; required?: boolean; placeholder: string; options: string[] }) => {
+const Select = ({ id, name, required, placeholder, options, icons }: { id: string; name: string; required?: boolean; placeholder: string; options: string[]; icons?: Record<string, React.ReactNode> }) => {
   const [value, setValue] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -46,14 +52,14 @@ const Select = ({ id, name, required, placeholder, options }: { id: string; name
     <div ref={box} className="relative">
       <input name={name} value={value} required={required} readOnly tabIndex={-1} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-0" />
       <button type="button" id={id} role="combobox" aria-haspopup="listbox" aria-expanded={open} aria-controls={`${id}-list`} onClick={() => { setActive(Math.max(0, options.indexOf(value))); setOpen((o) => !o); }} onKeyDown={onKey} className={`${field} flex items-center justify-between gap-3 pr-4 text-left ${value ? "" : "text-muted/70"}`}>
-        <span className="truncate">{value || placeholder}</span>
+        <span className="flex min-w-0 items-center gap-2.5">{value && icons?.[value]}<span className="truncate">{value || placeholder}</span></span>
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className={`shrink-0 text-muted transition-transform ${open ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg>
       </button>
       {open && (
         <ul id={`${id}-list`} role="listbox" className="absolute inset-x-0 top-[calc(100%+6px)] z-20 max-h-64 overflow-y-auto rounded-xl border border-foreground/20 bg-surface p-1 shadow-lg">
           {options.map((o, i) => (
             <li key={o} role="option" aria-selected={o === value} ref={open && i === active ? (el) => el?.scrollIntoView({ block: "nearest" }) : undefined} onPointerDown={(e) => e.preventDefault()} onClick={() => pick(o)} onMouseEnter={() => setActive(i)} className={`flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 text-sm sm:min-h-10 ${i === active ? "bg-foreground/[0.08]" : ""} ${o === value ? "font-medium text-foreground" : "text-foreground/90"}`}>
-              {o}
+              <span className="flex items-center gap-2.5">{icons?.[o]}{o}</span>
               {o === value && <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5 9-10" /></svg>}
             </li>
           ))}
@@ -90,7 +96,7 @@ export default function ContactForm() {
         </div>
         <div className="grid gap-2">
           <label htmlFor="c-type" className={label}>Type d&apos;événement *</label>
-          <Select id="c-type" name="event_type" required placeholder="Sélectionne un type" options={EVENT_TYPES} />
+          <Select id="c-type" name="event_type" required placeholder="Sélectionne un type" options={EVENT_TYPES} icons={TYPE_ICONS} />
         </div>
         <div className="grid gap-2">
           <label htmlFor="c-location" className={label}>Ville *</label>

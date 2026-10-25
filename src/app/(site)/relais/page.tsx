@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
-import Glow from "@/components/landing/Glow";
-import { deviceImage } from "@/lib/device-images";
-import StreamPath from "@/components/landing/StreamPath";
+import Link from "next/link";
+import type { ComponentType, CSSProperties } from "react";
+import { Broadcast, Camera, Globe, type IconProps } from "@/components/icons";
 import { Container } from "@/components/ui";
-import { ButtonLink } from "@/components/ui/Button";
-import CloudBackdrop from "@/components/home/CloudBackdrop";
-import SectionHeader from "@/components/ui/SectionHeader";
-import StatusPill from "@/components/ui/StatusPill";
-import WordsReveal from "@/components/ui/WordsReveal";
+import { glow } from "@/lib/glow";
 
 export const metadata: Metadata = {
   title: "Nos serveurs",
@@ -16,41 +12,55 @@ export const metadata: Metadata = {
   alternates: { canonical: "/relais" },
 };
 
+type Step = { title: string; text: string; icon: ComponentType<IconProps> };
+const STEPS: Step[] = [
+  { title: "Ta caméra envoie", text: "4G, 5G et Wi-Fi en même temps.", icon: Camera },
+  { title: "Nos serveurs stabilisent", text: "Les paquets perdus sont récupérés.", icon: Broadcast },
+  { title: "Ton OBS reçoit", text: "Un flux propre, prêt à diffuser.", icon: Globe },
+];
+
+const WHITE = "inline-flex h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85";
+
 export default function RelaisPage() {
   return (
     <>
-      <Glow />
-      {/* Hero */}
-      <section data-theme="dark" className="relative bg-background text-foreground -mt-[4.0625rem] overflow-hidden border-b border-line pb-20 pt-[9rem] text-center sm:pb-28 sm:pt-[10.5rem]">
-        <CloudBackdrop />
-        <Container className="relative">
-          <StatusPill variant="ok" label="Serveurs opérationnels" />
-          <h1 className="h-serif mx-auto mt-8 max-w-[16ch] text-[clamp(3rem,8vw,5.5rem)]">
-            <WordsReveal text="Ta caméra, nos serveurs, ton OBS." />
+      {/* 1. Hero */}
+      <section data-hero data-theme="dark" className="relative isolate overflow-hidden border-b border-line bg-background text-foreground">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("#2b7fe0", "50% 0%", 70, 80, 28)} />
+        <Container className="pb-24 pt-[calc(5rem+65px)] text-center lg:pb-32 lg:pt-[calc(7rem+65px)]">
+          <h1 className="rise h-serif mx-auto max-w-[14ch] text-[clamp(2.75rem,6.5vw,5.5rem)]" style={{ "--i": 0 } as CSSProperties}>
+            Ton flux, <em>stabilisé.</em>
           </h1>
-          <p className="mx-auto mt-6 max-w-[560px] text-base leading-relaxed text-muted sm:text-lg">
-            Ton flux passe par un de nos serveurs avant d&apos;arriver dans OBS. Résultat : une vidéo stable, même sur un réseau mobile.
+          <p className="rise mx-auto mt-6 max-w-[40ch] text-lg leading-relaxed text-muted" style={{ "--i": 1 } as CSSProperties}>
+            Il passe par nos serveurs avant ton OBS. Même sur un réseau mobile.
           </p>
-          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <ButtonLink href="/inscription">Créer mon compte</ButtonLink>
-            <ButtonLink href="#serveurs" variant="secondary">Voir les serveurs</ButtonLink>
+          <div className="rise mt-9 flex justify-center" style={{ "--i": 2 } as CSSProperties}>
+            <Link href="/inscription" className={WHITE}>Créer mon compte</Link>
           </div>
         </Container>
       </section>
 
-      {/* Le trajet du flux */}
-      <section className="border-b border-line py-24 sm:py-32">
+      {/* 2. Le trajet, en trois colonnes */}
+      <section className="border-t border-line py-24 sm:py-32">
         <Container>
-          <SectionHeader title={<>Le trajet de <em>ton flux.</em></>} subtitle="Trois étapes, de ta caméra jusqu'à ton direct." />
-          <div className="mt-16">
-            <StreamPath images={{ laptop: deviceImage("laptop"), phone: deviceImage("phone") }} />
-          </div>
-          <p className="mx-auto mt-14 max-w-[58ch] text-center text-sm leading-relaxed text-muted">
-            Prends le serveur le plus proche de l&apos;endroit où tu filmes, pas de chez toi : c&apos;est la liaison mobile entre ton téléphone et le serveur qui est fragile. En voyage, change de serveur avant le live.
+          <h2 className="h-serif mx-auto max-w-3xl text-center text-[clamp(2.25rem,4.5vw,3.5rem)]">Le trajet de <em>ton flux.</em></h2>
+          <ul className="mx-auto mt-16 grid max-w-5xl gap-x-12 gap-y-10 sm:grid-cols-3">
+            {STEPS.map((s) => {
+              const Icon = s.icon;
+              return (
+                <li key={s.title}>
+                  <Icon size={26} weight="regular" className="text-foreground" aria-hidden="true" />
+                  <h3 className="mt-4 text-lg font-semibold tracking-tight">{s.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{s.text}</p>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="mx-auto mt-16 max-w-[44ch] text-center text-sm leading-relaxed text-muted">
+            Choisis le serveur le plus proche de l&apos;endroit où tu filmes. En voyage, change avant le live.
           </p>
         </Container>
       </section>
-
     </>
   );
 }

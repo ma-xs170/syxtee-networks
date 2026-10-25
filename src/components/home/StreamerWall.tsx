@@ -105,21 +105,30 @@ function BrandStrip() {
   );
 }
 
-const PARTNERS = [
-  { name: "LA SUNSHINES", src: "/images/partner-la-sunshines.webp", w: 640, h: 101, cls: "h-8 sm:h-10" },
+const PARTNERS: { name: string; src: string; w: number; h: number; href?: string }[] = [
+  { name: "THE MOUV", src: "/images/partner-the-mouv.webp", w: 640, h: 267 },
+  { name: "LAWCY MUSIC", src: "/images/partner-lawcy-music.webp", w: 640, h: 273, href: "https://www.youtube.com/@lawcy-music" },
 ];
 
-/** Partenaires : logos blancs sur fond sombre, discrets (opacité réduite), pleine force au survol. */
+/** Partenaires : logos blancs sur fond sombre. Chaque logo tient dans une boîte de taille fixe (object-contain) : aucun ne déborde ni ne dépasse les autres. */
 function Partners() {
   return (
     <section aria-labelledby="partenaires-titre" className="pb-20 sm:pb-24">
       <h2 id="partenaires-titre" className="px-4 text-center text-xl font-medium"><L fr="Partenaires" en="Partners" /></h2>
-      <ul className="mx-auto mt-10 flex max-w-4xl flex-wrap items-center justify-center gap-x-16 gap-y-8 px-4">
-        {PARTNERS.map((p) => (
-          <li key={p.name}>
-            <Image src={p.src} alt={p.name} width={p.w} height={p.h} className={`${p.cls} w-auto opacity-70 transition-opacity duration-200 hover:opacity-100`} />
-          </li>
-        ))}
+      <ul className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-14 gap-y-8 px-4">
+        {PARTNERS.map((p) => {
+          const logo = <Image src={p.src} alt={p.name} width={p.w} height={p.h} className="size-full object-contain opacity-70 transition-opacity duration-200 group-hover:opacity-100" />;
+          const box = "group flex h-20 w-44 items-center justify-center";
+          return (
+            <li key={p.name}>
+              {p.href ? (
+                <a href={p.href} target="_blank" rel="noopener noreferrer" aria-label={`${p.name} (nouvel onglet)`} className={`${box} focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground`}>{logo}</a>
+              ) : (
+                <div className={box}>{logo}</div>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

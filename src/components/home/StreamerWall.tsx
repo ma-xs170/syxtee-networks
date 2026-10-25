@@ -178,27 +178,44 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
   );
 }
 
-/** Heures de direct déjà transmises sur SYXTEE (somme des sessions live). Rien ne s'affiche tant que le chiffre est inconnu ou nul. */
-const HEARTS = [
-  { left: "8%", size: 14, delay: "0s", dur: "9s" },
-  { left: "18%", size: 20, delay: "3s", dur: "11s" },
-  { left: "29%", size: 12, delay: "6s", dur: "8s" },
-  { left: "41%", size: 18, delay: "1.5s", dur: "10s" },
-  { left: "58%", size: 14, delay: "4.5s", dur: "9s" },
-  { left: "69%", size: 22, delay: "0.8s", dur: "12s" },
-  { left: "79%", size: 12, delay: "5.5s", dur: "8.5s" },
-  { left: "90%", size: 18, delay: "2.5s", dur: "10.5s" },
-];
+/** Volée de cœurs : positions, tailles et rythmes tirés d'un générateur à graine fixe (même rendu serveur et client), un peu comme une œuvre.
+ *  Beaucoup de petits, quelques gros ; les gros sont plus flous et plus pâles pour la profondeur. */
+const HEARTS = (() => {
+  let x = 7;
+  const r = () => ((x = (x * 16807) % 2147483647) - 1) / 2147483646;
+  return Array.from({ length: 30 }, (_, i) => {
+    const big = r();
+    const size = Math.round(big > 0.88 ? 40 + r() * 28 : big > 0.6 ? 20 + r() * 14 : 8 + r() * 9);
+    return {
+      left: `${(2 + ((i * 0.618034 + r() * 0.05) % 1) * 96).toFixed(1)}%`,
+      top: `${(8 + r() * 82).toFixed(1)}%`,
+      size,
+      blur: size > 38 ? 2.5 : size > 19 ? 0.8 : 0,
+      op: size > 38 ? 0.18 : size > 19 ? 0.32 : 0.5,
+      dx: `${Math.round((r() - 0.5) * 90)}px`,
+      rot: `${Math.round((r() - 0.5) * 70)}deg`,
+      rise: `${Math.round(120 + r() * 220)}px`,
+      delay: `${(r() * 12).toFixed(1)}s`,
+      dur: `${(8 + r() * 9).toFixed(1)}s`,
+    };
+  });
+})();
 
 /** Heures de direct déjà transmises sur SYXTEE (somme des sessions live). Rien ne s'affiche tant que le chiffre est inconnu ou nul.
- *  Halo rouge en fond et petits cœurs qui montent doucement (fixes sous prefers-reduced-motion). */
+ *  Volée de cœurs de toutes tailles qui montent et s'estompent (fixes sous prefers-reduced-motion). */
 export function HoursStat({ hours }: { hours: number | null }) {
   if (!hours || hours < 1) return null;
   return (
     <section aria-label="Heures de direct transmises" className="relative isolate overflow-hidden border-b border-line py-24 text-center sm:py-32">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 motion-reduce:hidden">
         {HEARTS.map((h, i) => (
-          <Heart key={i} weight="fill" size={h.size} className="heart-float absolute bottom-0 text-bad" style={{ left: h.left, animationDelay: h.delay, animationDuration: h.dur }} />
+          <Heart
+            key={i}
+            weight="fill"
+            size={h.size}
+            className="heart-float absolute text-bad"
+            style={{ left: h.left, top: h.top, animationDelay: h.delay, animationDuration: h.dur, filter: h.blur ? `blur(${h.blur}px)` : undefined, "--hx": h.dx, "--hr": h.rot, "--hy": h.rise, "--ho": h.op } as React.CSSProperties}
+          />
         ))}
       </div>
       <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted"><L fr="Déjà" en="Already" /></p>

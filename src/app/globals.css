@@ -816,13 +816,13 @@ html[lang="en"] .l-fr { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .film-grain { animation: none; } }
 
-/* Petits cœurs qui montent et s'estompent derrière le compteur d'heures. */
+/* Volée de cœurs derrière le compteur d'heures : chacun monte en se balançant et tourne un peu, avec sa propre distance, sa pâleur et son rythme (variables --hx, --hr, --hy, --ho). */
 @keyframes heart-float {
-  0% { transform: translateY(0) scale(0.8); opacity: 0; }
-  15% { opacity: 0.5; }
-  100% { transform: translateY(-22rem) scale(1.1); opacity: 0; }
+  0% { transform: translate(0, 0) rotate(0) scale(0.6); opacity: 0; }
+  20% { opacity: var(--ho, 0.5); }
+  100% { transform: translate(var(--hx, 0), calc(var(--hy, 200px) * -1)) rotate(var(--hr, 0deg)) scale(1.15); opacity: 0; }
 }
-.heart-float { animation-name: heart-float; animation-timing-function: ease-out; animation-iteration-count: infinite; opacity: 0; }
+.heart-float { animation-name: heart-float; animation-timing-function: ease-in-out; animation-iteration-count: infinite; opacity: 0; }
 
 /* Logo Moblin : petit tremblement au survol, puis il se remet droit. */
 @keyframes moblin-wiggle {

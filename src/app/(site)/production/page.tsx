@@ -99,7 +99,7 @@ export default function ProductionPage() {
         </Container>
       </section>
 
-      <section className="py-24 lg:py-32">
+      <section className="border-t border-line py-24 lg:py-32">
         <Container className="text-center">
           <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.25rem,5vw,3.75rem)]">Parle-nous de ton <em>événement.</em></h2>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">

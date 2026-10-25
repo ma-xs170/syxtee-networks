@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Heart } from "@phosphor-icons/react/dist/ssr";
 import L from "../L";
 import { siDji, siKick, siObsstudio, siTwitch, siWebrtc, siYoutube } from "@/lib/brand-icons";
 import { GRAIN } from "@/lib/glow";
@@ -188,7 +189,7 @@ export function HoursStat({ hours }: { hours: number | null }) {
         <span className="text-[clamp(4.5rem,12vw,8rem)] font-semibold leading-none tracking-tight tabular-nums">{Math.round(hours).toLocaleString("fr-FR")}</span>
         <span className="text-[clamp(1.75rem,4vw,3rem)] font-medium text-muted">h</span>
       </p>
-      <p className="mt-6 text-lg text-muted"><L fr="De direct transmis grâce à SYXTEE." en="Of live streamed with SYXTEE." /></p>
+      <p className="mt-6 flex items-center justify-center gap-2 text-lg text-muted"><L fr="De direct. C'est grâce à vous" en="Of live. It's thanks to you" /><Heart size={20} weight="fill" aria-hidden="true" className="text-bad" /></p>
     </section>
   );
 }

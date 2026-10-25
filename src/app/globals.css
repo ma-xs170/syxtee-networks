@@ -816,11 +816,12 @@ html[lang="en"] .l-fr { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .film-grain { animation: none; } }
 
-/* Volée de cœurs derrière le compteur d'heures : chacun monte en se balançant et tourne un peu, avec sa propre distance, sa pâleur et son rythme (variables --hx, --hr, --hy, --ho). */
+/* Gros cœurs penchés derrière le compteur d'heures : chacun garde son inclinaison (--r0), monte un peu en se balançant puis s'estompe (--hx, --hy, --ho). */
 @keyframes heart-float {
-  0% { transform: translate(0, 0) rotate(0) scale(0.6); opacity: 0; }
-  20% { opacity: var(--ho, 0.5); }
-  100% { transform: translate(var(--hx, 0), calc(var(--hy, 200px) * -1)) rotate(var(--hr, 0deg)) scale(1.15); opacity: 0; }
+  0% { transform: translate(0, 0) rotate(var(--r0, 0deg)) scale(0.85); opacity: 0; }
+  25% { opacity: var(--ho, 0.3); }
+  75% { opacity: var(--ho, 0.3); }
+  100% { transform: translate(var(--hx, 0), calc(var(--hy, 40px) * -1)) rotate(calc(var(--r0, 0deg) + 8deg)) scale(1.05); opacity: 0; }
 }
 .heart-float { animation-name: heart-float; animation-timing-function: ease-in-out; animation-iteration-count: infinite; opacity: 0; }
 

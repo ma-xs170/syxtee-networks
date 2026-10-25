@@ -178,27 +178,14 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
   );
 }
 
-/** Quatre gros cœurs qui débordent de la section sur les voisines : positions, tailles et rythmes tirés d'un générateur à graine fixe (même rendu serveur et client), un peu comme une œuvre.
- *  4 gros cœurs flous, pas de petits ; les gros sont plus flous et plus pâles pour la profondeur. */
-const HEARTS = (() => {
-  let x = 7;
-  const r = () => ((x = (x * 16807) % 2147483647) - 1) / 2147483646;
-  return Array.from({ length: 4 }, (_, i) => {
-    const size = Math.round(64 + r() * 30);
-    return {
-      left: `${(3 + ((i * 0.618034 + r() * 0.05) % 1) * 94).toFixed(1)}%`,
-      top: `${(-40 + r() * 170).toFixed(1)}%`,
-      size,
-      blur: size > 38 ? 3 : size > 19 ? 0.8 : 0,
-      op: size > 38 ? 0.18 : size > 19 ? 0.32 : 0.5,
-      dx: `${Math.round((r() - 0.5) * 90)}px`,
-      rot: `${Math.round((r() - 0.5) * 70)}deg`,
-      rise: `${Math.round(160 + r() * 300)}px`,
-      delay: `${(r() * 12).toFixed(1)}s`,
-      dur: `${(8 + r() * 9).toFixed(1)}s`,
-    };
-  });
-})();
+/** Quatre gros cœurs flous, penchés, posés aux quatre coins du compteur : deux débordent sur la section voisine.
+ *  Chacun monte et se balance un peu autour de son inclinaison (--r0), à son propre rythme. */
+const HEARTS = [
+  { left: "6%", top: "-12%", size: 84, rot: "-20deg", dx: "14px", rise: "46px", delay: "0s", dur: "9s", op: 0.26 },
+  { left: "88%", top: "10%", size: 70, rot: "17deg", dx: "-12px", rise: "40px", delay: "2.5s", dur: "11s", op: 0.22 },
+  { left: "14%", top: "76%", size: 76, rot: "24deg", dx: "10px", rise: "44px", delay: "5s", dur: "10s", op: 0.24 },
+  { left: "80%", top: "84%", size: 92, rot: "-15deg", dx: "-14px", rise: "50px", delay: "1.2s", dur: "12s", op: 0.28 },
+];
 
 /** Heures de direct déjà transmises sur SYXTEE (somme des sessions live). Rien ne s'affiche tant que le chiffre est inconnu ou nul.
  *  Volée de cœurs de toutes tailles qui montent et s'estompent (fixes sous prefers-reduced-motion). */
@@ -212,8 +199,8 @@ export function HoursStat({ hours }: { hours: number | null }) {
             key={i}
             weight="fill"
             size={h.size}
-            className="heart-float absolute text-bad"
-            style={{ left: h.left, top: h.top, animationDelay: h.delay, animationDuration: h.dur, filter: h.blur ? `blur(${h.blur}px)` : undefined, "--hx": h.dx, "--hr": h.rot, "--hy": h.rise, "--ho": h.op } as React.CSSProperties}
+            className="heart-float absolute -translate-x-1/2 text-bad blur-[3px]"
+            style={{ left: h.left, top: h.top, animationDelay: h.delay, animationDuration: h.dur, "--r0": h.rot, "--hx": h.dx, "--hy": h.rise, "--ho": h.op } as React.CSSProperties}
           />
         ))}
       </div>

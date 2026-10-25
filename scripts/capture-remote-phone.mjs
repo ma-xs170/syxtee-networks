@@ -1,6 +1,6 @@
 import { chromium } from "playwright";
 
-// Capture de la vraie interface « Contrôle à distance » sur un téléphone (390x844, x2), pour l'accueil du site et la page /application.
+// Capture de la vraie interface « Contrôle à distance » sur un téléphone (390x782, x2 : même proportion que l’écran du téléphone une fois les marges de l’île et de la barre retirées), pour l'accueil du site et la page /application.
 // npm run dev, puis node scripts/capture-remote-phone.mjs public/images/remote/controle-mobile.png
 // Faux Core : mêmes messages que le vrai. L'image du programme est un exemple dessiné ici (aperçu en images).
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
@@ -36,7 +36,7 @@ function handle(ws, m) {
 }
 
 const browser = await chromium.launch();
-const ctx = await browser.newContext(desktop ? { viewport: { width: 1800, height: 1125 }, deviceScaleFactor: 1.2, colorScheme: "dark", reducedMotion: "reduce" } : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: "dark", reducedMotion: "reduce", hasTouch: true, isMobile: true });
+const ctx = await browser.newContext(desktop ? { viewport: { width: 1800, height: 1125 }, deviceScaleFactor: 1.2, colorScheme: "dark", reducedMotion: "reduce" } : { viewport: { width: 390, height: 782 }, deviceScaleFactor: 2, colorScheme: "dark", reducedMotion: "reduce", hasTouch: true, isMobile: true });
 const page = await ctx.newPage();
 // Image d'exemple du programme (dessinée dans la page : ciel, route, silhouette).
 const frame = await page.evaluate(() => {

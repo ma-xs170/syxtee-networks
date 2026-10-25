@@ -4,6 +4,6 @@ import type { Shot } from "./DeviceFrame";
 export const SHOTS = {
   sante: { src: "/images/screens/sante-bureau.png", width: 1650, height: 1032, alt: "Santé du flux : quatre liens SRTLA réunis, débit reçu, latence et pertes en temps réel" },
   controleBureau: { src: "/images/remote/controle-bureau-v4.png", width: 2160, height: 1350, alt: "Contrôle à distance sur ordinateur : aperçu du programme, scènes, sources, mixeur audio et contrôles du direct" },
-  controleMobile: { src: "/images/remote/controle-mobile-v3.png", width: 780, height: 1688, alt: "Contrôle à distance sur téléphone : aperçu du programme et scènes" },
+  controleMobile: { src: "/images/remote/controle-mobile-v5.png", width: 780, height: 1564, alt: "Contrôle à distance sur téléphone : aperçu du programme et scènes" },
   membres: { src: "/images/screens/membres-bureau.png", width: 1650, height: 1032, alt: "Page Membres d'un espace partagé : propriétaire, administrateur et membres avec leurs rôles, invitation en attente" },
 } satisfies Record<string, Shot>;

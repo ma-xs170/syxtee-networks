@@ -197,7 +197,7 @@ export const docs: DocGuide[] = [
         ],
       },
       { type: "img", src: "/images/remote/controle-bureau-v4.png", alt: "Console de contrôle à distance sur ordinateur", w: 2160, h: 1350 },
-      { type: "img", src: "/images/remote/controle-mobile-v3.png", alt: "Console de contrôle à distance sur mobile", w: 780, h: 1688 },
+      { type: "img", src: "/images/remote/controle-mobile-v5.png", alt: "Console de contrôle à distance sur mobile", w: 780, h: 1564 },
     ],
   },
   {

@@ -796,3 +796,22 @@ html[lang="en"] .l-fr { display: none; }
 @keyframes chat-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .chat-in { animation: chat-in 0.35s ease-out both; }
 @media (prefers-reduced-motion: reduce) { .chat-in { animation: none; } }
+
+/* Grain de pellicule sur les vidéos : bruit fin qui saute d'une position à l'autre (effet argentique). Fixe sous prefers-reduced-motion. */
+@keyframes film-grain {
+  0%, 100% { background-position: 0 0; }
+  20% { background-position: -37px 21px; }
+  40% { background-position: 29px -43px; }
+  60% { background-position: -53px -17px; }
+  80% { background-position: 41px 33px; }
+}
+.film-grain {
+  pointer-events: none;
+  position: absolute;
+  inset: -50px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>");
+  mix-blend-mode: overlay;
+  opacity: 0.55;
+  animation: film-grain 0.6s steps(1) infinite;
+}
+@media (prefers-reduced-motion: reduce) { .film-grain { animation: none; } }

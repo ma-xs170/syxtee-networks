@@ -77,6 +77,8 @@ export default function HeroVideo({ children }: { children?: React.ReactNode }) 
       <div className="absolute inset-0 bg-background/40" />
       <div className="absolute inset-0" style={{ background: "radial-gradient(120% 90% at 50% 40%, transparent 45%, color-mix(in srgb, var(--background) 62%, transparent) 100%)" }} />
       <div className="absolute inset-x-0 bottom-0 h-1/3" style={{ background: "linear-gradient(to bottom, transparent, var(--background))" }} />
+      {/* Grain de pellicule, par-dessus le tout */}
+      <div className="film-grain" />
       {/* Trame de petits pixels + lignes de balayage */}
       <div className="absolute inset-0 opacity-70 mix-blend-multiply" style={{ backgroundImage: "linear-gradient(to right, rgba(0,0,0,.7) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,.7) 1px, transparent 1px)", backgroundSize: "2px 2px" }} />
     </div>

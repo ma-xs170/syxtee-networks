@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 
 // Polaroïd vidéo : une image extraite de la vidéo et un bouton lecture montrent qu'il y a de la vidéo ; elle démarre au survol (ou au focus clavier). Même traitement que le hero :
-// flou de mouvement (dans le fichier), aberration chromatique, ombre sur les bords, mais sans trame de pixels.
+// flou de mouvement (dans le fichier), aberration chromatique, grain de pellicule, ombre sur les bords, mais sans trame de pixels.
 // Sans survol (écran tactile) ou sous prefers-reduced-motion : l'image extraite reste affichée.
 export default function HoverVideo({ video }: { video: string }) {
   const ref = useRef<HTMLVideoElement>(null);
@@ -43,6 +43,7 @@ export default function HoverVideo({ video }: { video: string }) {
           <source src={`${video}.webm`} type="video/webm" />
           <source src={`${video}.mp4`} type="video/mp4" />
         </video>
+        <span className="film-grain" />
         <span className="absolute inset-0" style={{ background: "radial-gradient(120% 90% at 50% 45%, transparent 50%, rgba(0,0,0,0.55) 100%)" }} />
       </span>
     </span>

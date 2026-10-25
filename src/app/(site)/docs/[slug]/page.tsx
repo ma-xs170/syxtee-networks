@@ -43,7 +43,7 @@ function Block({ b }: { b: DocBlock }) {
         </ul>
       );
     case "note":
-      return <p className="mt-6 rounded-xl border border-line bg-surface px-4 py-3 text-sm leading-relaxed text-muted">{b.text}</p>;
+      return <p className="mt-6 border-l-2 border-line-strong pl-4 text-sm leading-relaxed text-muted">{b.text}</p>;
     case "img":
       return (
         <figure className="mt-8">
@@ -59,14 +59,14 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
   const i = docs.indexOf(doc);
   const next = docs[i + 1];
   return (
-    <section className="border-b border-line py-12 sm:py-16">
+    <section className="pb-24 pt-[calc(3rem+65px)] sm:pb-32 sm:pt-[calc(4rem+65px)]">
       <Container className="grid gap-12 lg:grid-cols-[240px_1fr]">
         <nav aria-label="Documentation" className="lg:sticky lg:top-24 lg:self-start">
-          <Link href="/docs" className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted hover:text-foreground">← Documentation</Link>
+          <Link href="/docs" className="text-sm font-medium text-muted hover:text-foreground">← Documentation</Link>
           <div className="mt-5 hidden space-y-6 lg:block">
             {docGroups.map((g) => (
               <div key={g}>
-                <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{g}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">{g}</p>
                 <ul className="mt-2 space-y-1">
                   {docs.filter((d) => d.group === g).map((d) => (
                     <li key={d.slug}>
@@ -79,14 +79,14 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
           </div>
         </nav>
         <article className="max-w-2xl">
-          <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{doc.group}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">{doc.group}</p>
           <h1 className="h-serif mt-3 text-[clamp(2.25rem,5vw,3.5rem)]">{doc.title}</h1>
           <p className="mt-4 text-lg leading-relaxed text-muted">{doc.summary}</p>
           {doc.blocks.map((b, k) => <Block key={k} b={b} />)}
           {next && (
-            <Link href={`/docs/${next.slug}`} className="mt-14 flex items-center justify-between gap-4 rounded-2xl border border-line bg-surface p-5 transition-colors hover:border-line-strong hover:bg-surface-2">
-              <span><span className="block font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Suivant</span><span className="mt-1 block text-lg font-medium">{next.title}</span></span>
-              <span aria-hidden="true">→</span>
+            <Link href={`/docs/${next.slug}`} className="mt-16 block border-t border-line pt-8 transition-opacity hover:opacity-70">
+              <span className="block text-sm text-muted">Suivant</span>
+              <span className="mt-1 block text-2xl font-semibold tracking-tight">{next.title}</span>
             </Link>
           )}
         </article>

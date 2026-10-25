@@ -11,10 +11,10 @@ export const metadata: Metadata = {
 
 export default function DocsPage() {
   return (
-    <section className="border-b border-line py-20 text-center sm:py-24">
+    <section className="pb-24 pt-[calc(5rem+65px)] text-center sm:pb-32 lg:pt-[calc(7rem+65px)]">
       <Container>
         <h1 className="h-serif mx-auto max-w-3xl text-[clamp(2.75rem,7vw,4.75rem)]">La <em>documentation.</em></h1>
-        <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted sm:text-lg">Toutes les fonctions du site, expliquées simplement.</p>
+        <p className="mx-auto mt-6 max-w-[40ch] text-lg leading-relaxed text-muted">Toutes les fonctions du site, expliquées simplement.</p>
         <DocsIndex />
       </Container>
     </section>

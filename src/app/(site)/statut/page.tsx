@@ -1,7 +1,7 @@
 import { site } from "@/lib/site";
 import type { Metadata } from "next";
-import PageHero from "@/components/PageHero";
 import { Container } from "@/components/ui";
+import { glow } from "@/lib/glow";
 import StatusPill from "@/components/ui/StatusPill";
 import { incidents, type IncidentStatus } from "@/lib/incidents";
 import { getServices, overall, type Status } from "@/lib/status";
@@ -29,6 +29,8 @@ const INCIDENT: Record<IncidentStatus, { text: string; variant: "ok" | "unstable
 const fmt = (iso: string) => new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Paris" }).format(new Date(iso));
 const HEADLINE = { ok: "Tous les systèmes opérationnels", unstable: "Certains services sont lents", offline: "Un service est hors ligne" } as const;
 
+const TONE = { ok: "#1f9d55", unstable: "#e8892b", offline: "var(--bad)" } as const;
+
 export default async function StatusPage() {
   const services = await getServices();
   const state = overall(services);
@@ -36,53 +38,61 @@ export default async function StatusPage() {
 
   return (
     <>
-      <PageHero kicker="État" title={<>État des <em>services.</em></>} crumb="État des services">
-        <span className="flex flex-wrap items-center gap-3">
-          <StatusPill variant={state} label={HEADLINE[state]} />
-          <span className="font-mono text-xs text-muted">Mesuré le {time}</span>
-        </span>
-      </PageHero>
-      <section className="py-16 sm:py-24">
+      {/* 1. État global, centré */}
+      <section data-hero data-theme="dark" className="relative isolate overflow-hidden border-b border-line bg-background text-foreground">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow(TONE[state], "50% 0%", 70, 80, 30)} />
+        <Container className="pb-20 pt-[calc(5rem+65px)] text-center lg:pb-28 lg:pt-[calc(7rem+65px)]">
+          <h1 className="rise h-serif mx-auto max-w-[14ch] text-[clamp(2.75rem,6.5vw,5.5rem)]" style={{ "--i": 0 } as React.CSSProperties}>
+            État des <em>services.</em>
+          </h1>
+          <div className="rise mt-8 flex justify-center" style={{ "--i": 1 } as React.CSSProperties}>
+            <StatusPill variant={state} label={HEADLINE[state]} />
+          </div>
+          <p className="rise mt-4 text-sm text-muted" style={{ "--i": 2 } as React.CSSProperties}>Mesuré le {time}</p>
+        </Container>
+      </section>
+
+      {/* 2. Les services, en lignes */}
+      <section className="py-20 sm:py-28">
         <Container>
-          <ul className="grid gap-3">
+          <ul className="mx-auto max-w-3xl divide-y divide-line border-y border-line">
             {services.map((s) => (
-              <li key={s.id} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-xl border border-line bg-surface p-5">
+              <li key={s.id} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-6">
                 <div className="min-w-0">
-                  <h2 className="text-base font-semibold">{s.name}</h2>
+                  <h2 className="text-lg font-semibold tracking-tight">{s.name}</h2>
                   <p className="mt-1 text-sm text-muted">{s.desc}{s.detail ? ` · ${s.detail}` : ""}</p>
                 </div>
                 <div className="flex items-center gap-4">
-                  {s.ms != null && <span className="font-mono text-xs tabular-nums text-muted">{s.ms} ms</span>}
+                  {s.ms != null && <span className="text-sm tabular-nums text-muted">{s.ms} ms</span>}
                   <StatusPill variant={LABEL[s.status].variant} label={LABEL[s.status].text} />
                 </div>
               </li>
             ))}
           </ul>
-          <p className="mt-6 max-w-2xl text-sm text-muted">Un souci qui n&apos;apparaît pas ici ? Écris-nous depuis l&apos;assistance du site, on regarde.</p>
         </Container>
       </section>
 
-      <section className="border-t border-line py-16 sm:py-24">
+      {/* 3. Journal des incidents */}
+      <section className="border-t border-line py-20 sm:py-28">
         <Container>
-          <h2 className="h-section">Journal des incidents</h2>
-          <p className="mt-3 max-w-2xl text-sm text-muted">Chaque panne et chaque maintenance, avec ce qui s&apos;est passé et quand c&apos;est revenu.</p>
+          <h2 className="h-serif mx-auto max-w-3xl text-center text-[clamp(2.25rem,4.5vw,3.5rem)]">Journal des <em>incidents.</em></h2>
           {incidents.length === 0 ? (
-            <p className="mt-8 rounded-xl border border-line bg-surface p-5 text-sm text-muted">Aucun incident à signaler.</p>
+            <p className="mt-8 text-center text-muted">Aucun incident à signaler.</p>
           ) : (
-            <ol className="mt-8 grid gap-4">
+            <ol className="mx-auto mt-14 max-w-3xl divide-y divide-line border-y border-line">
               {incidents.map((i) => (
-                <li key={i.id} className="rounded-xl border border-line bg-surface p-5 sm:p-6">
+                <li key={i.id} className="py-8">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{i.kind === "maintenance" ? "Maintenance" : "Incident"} · {fmt(i.start)}{i.end ? ` → ${fmt(i.end)}` : ""}</p>
-                      <h3 className="mt-1.5 text-base font-semibold">{i.title}</h3>
+                      <p className="text-sm text-muted">{i.kind === "maintenance" ? "Maintenance" : "Incident"} · {fmt(i.start)}{i.end ? ` → ${fmt(i.end)}` : ""}</p>
+                      <h3 className="mt-1.5 text-lg font-semibold tracking-tight">{i.title}</h3>
                     </div>
                     <StatusPill variant={INCIDENT[i.status].variant} label={INCIDENT[i.status].text} />
                   </div>
-                  <ul className="mt-4 grid gap-3 border-l border-line pl-4">
+                  <ul className="mt-5 grid gap-4 border-l border-line pl-5">
                     {i.updates.map((u) => (
                       <li key={u.at}>
-                        <p className="font-mono text-xs text-muted">{fmt(u.at)}</p>
+                        <p className="text-xs text-muted">{fmt(u.at)}</p>
                         <p className="mt-0.5 text-sm leading-relaxed">{u.text}</p>
                       </li>
                     ))}

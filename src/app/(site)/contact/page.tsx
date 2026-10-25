@@ -47,7 +47,7 @@ export default function ContactPage() {
             <p className="mb-8 mt-1.5 text-sm text-muted">Les champs marqués d&apos;une étoile sont obligatoires.</p>
             <ContactForm />
           </div>
-          <aside className="grid grid-rows-[auto_1fr] gap-6">
+          <aside className="grid content-start gap-6">
             <div className={card}>
               <h2 className="text-xl font-semibold tracking-tight">Coordonnées</h2>
               <ul className="mt-6 grid gap-5">

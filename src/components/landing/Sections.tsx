@@ -48,7 +48,7 @@ export function HomeHero() {
       <HeroVideo><HeroChat /></HeroVideo>
       <Container className="relative pb-24 pt-[calc(5rem+65px)] text-center lg:pb-32">
         <h1 className="rise h-serif mx-auto max-w-[16ch] text-[clamp(2.75rem,6.5vw,5.5rem)] [text-shadow:0_2px_30px_rgba(0,0,0,0.5)]" style={rise(0)}>
-          <L fr={<>Le live IRL, <em>partout.</em></>} en={<>Live IRL, <em>anywhere.</em></>} />
+          <L fr={<>Ton direct, <em>sans limites.</em></>} en={<>Your live, <em>without limits.</em></>} />
         </h1>
         <p className="rise mx-auto mt-6 max-w-[52ch] text-lg leading-relaxed text-foreground/80 [text-shadow:0_1px_16px_rgba(0,0,0,0.6)]" style={rise(1)}>
           <L fr={<><strong className="font-semibold text-foreground">Diffusez et capturez chaque instant.</strong> Production, cadreurs et relais SRTLA pour diffuser de n&apos;importe où. Lancé par des Guadeloupéens, avec les mêmes outils à petit prix pour les streamers indépendants.</>} en={<><strong className="font-semibold text-foreground">Stream and capture every moment.</strong> Production, camera operators and SRTLA relays to broadcast from anywhere. Launched by Guadeloupeans, with the same tools at a low price for independent streamers.</>} />

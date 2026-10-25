@@ -9,10 +9,10 @@ import { useRef } from "react";
 // prefers-reduced-motion : pas de défilement piloté, les quatre étapes se lisent à la suite, chacune avec sa capture.
 
 export type Step = { title: string; text: string; src?: string; alt: string };
-// L'interface du téléphone a quatre onglets : les sorties multistream et le chat se montrent sur le dernier (Direct).
-const TABS: PhoneTab[] = ["scenes", "sources", "mixer", "controls", "controls", "controls"];
+// Une étape par onglet de l'interface du téléphone.
+const TABS: PhoneTab[] = ["scenes", "sources", "mixer", "controls"];
 
-const N = 6;
+const N = TABS.length;
 
 /** Poids d'une étape dans [0, 1] : plein autour de son centre, nul au-delà (la première et la dernière restent pleines à leur bord).
  *  Calculé par fonction (pas par plages) : les plages sortiraient de [0, 1] pour la première et la dernière étape. */
@@ -70,7 +70,7 @@ export default function PhoneStory({ steps }: { steps: Step[] }) {
     );
 
   return (
-    <div ref={ref} className="relative h-[420vh]">
+    <div ref={ref} className="relative h-[300vh]">
       <div className="sticky top-0 mx-auto grid h-dvh max-w-6xl grid-rows-[auto_1fr] items-center gap-6 px-4 pb-8 pt-20 sm:px-6 lg:grid-cols-2 lg:grid-rows-1 lg:gap-16 lg:py-0">
         <div className="mx-auto h-[min(54dvh,32rem)] lg:order-2 lg:h-[min(78dvh,46rem)]">
           <div className="h-full" style={{ aspectRatio: "9 / 19.5" }}>

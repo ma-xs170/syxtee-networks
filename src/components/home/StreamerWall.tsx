@@ -106,7 +106,7 @@ function BrandStrip() {
 }
 
 const PARTNERS: { name: string; src: string; w: number; h: number; href?: string }[] = [
-  { name: "THE MOUV", src: "/images/partner-the-mouv.webp", w: 640, h: 267 },
+  { name: "THE MOUV", src: "/images/partner-the-mouv.webp", w: 640, h: 267, href: "https://www.instagram.com/themouv2.0/" },
   { name: "LAWCY MUSIC", src: "/images/partner-lawcy-music.webp", w: 640, h: 273, href: "https://www.youtube.com/@lawcy-music" },
 ];
 

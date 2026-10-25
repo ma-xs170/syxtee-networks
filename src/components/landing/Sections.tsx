@@ -9,6 +9,7 @@ import { Envelope, UserCircle } from "@phosphor-icons/react/dist/ssr";
 import L from "../L";
 import { glow } from "@/lib/glow";
 import HeroVideo from "./HeroVideo";
+import RotatingWords from "./RotatingWords";
 import HeroChat from "./HeroChat";
 import TwitchCategories from "./TwitchCategories";
 import Faq from "./Faq";
@@ -48,7 +49,7 @@ export function HomeHero() {
       <HeroVideo><HeroChat /></HeroVideo>
       <Container className="relative pb-24 pt-[calc(5rem+65px)] text-center lg:pb-32">
         <h1 className="rise h-serif mx-auto max-w-[16ch] text-[clamp(2.75rem,6.5vw,5.5rem)] [text-shadow:0_2px_30px_rgba(0,0,0,0.5)]" style={rise(0)}>
-          <L fr={<>Ton direct, <em>sans limites.</em></>} en={<>Your live, <em>without limits.</em></>} />
+          <L fr={<>Ton direct,<br /><RotatingWords items={["sans limites.", "en Mobilité.", "en Soirée.", "en Mer."]} /></>} en={<>Your live,<br /><RotatingWords items={["without limits.", "on the move.", "at night.", "at sea."]} /></>} />
         </h1>
         <p className="rise mx-auto mt-6 max-w-[40ch] text-lg leading-relaxed text-foreground/80 [text-shadow:0_1px_16px_rgba(0,0,0,0.6)]" style={rise(1)}>
           <L fr={<><strong className="font-semibold text-foreground">Nous produisons de A à Z</strong> votre prochain stream IRL.</>} en={<><strong className="font-semibold text-foreground">We produce from A to Z</strong> your next IRL stream.</>} />

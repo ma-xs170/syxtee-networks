@@ -60,8 +60,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         {/* Langue choisie (FR par défaut) : posée avant l'affichage pour éviter le clignotement. Voir L.tsx et LangSwitch.tsx. */}
         <script dangerouslySetInnerHTML={{ __html: `try{var l=localStorage.getItem("lang");if(l==="en")document.documentElement.lang="en"}catch(e){}` }} />
+        {/* Écran de chargement : une seule fois par session (voir .splash dans globals.css). */}
+        <script dangerouslySetInnerHTML={{ __html: `try{if(sessionStorage.getItem("splash"))document.documentElement.dataset.splash="off";else sessionStorage.setItem("splash","1")}catch(e){}` }} />
       </head>
       <body className="min-h-full flex flex-col">
+        <div aria-hidden="true" className="splash">
+          <span className="splash-glow"><span className="splash-logo" /></span>
+        </div>
         <a href="#contenu" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-(--z-skip) focus:rounded-full focus:bg-accent focus:px-5 focus:py-2.5 focus:text-sm focus:font-medium focus:text-on-accent">Aller au contenu</a>
         <JsonLd
           data={{

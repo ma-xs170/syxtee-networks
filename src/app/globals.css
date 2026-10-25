@@ -841,3 +841,30 @@ html[lang="en"] .l-fr { display: none; }
 .rist-chevron { transform-box: fill-box; }
 .group:hover .rist-chevron, .group:focus-visible .rist-chevron { animation: rist-wave 0.9s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .group:hover .rist-chevron, .group:focus-visible .rist-chevron { animation: none; } }
+
+/* Écran de chargement : fond du thème, éclair SYXTEE rouge néon qui s'allume en scintillant, puis fondu. Une fois par session, jamais sous prefers-reduced-motion. */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  background: var(--background);
+  animation: splash-out 0.6s ease-in 1.6s forwards;
+}
+html[data-splash="off"] .splash { display: none; }
+.splash-glow {
+  filter: drop-shadow(0 0 3px #ff1f3d) drop-shadow(0 0 14px #ff1f3d) drop-shadow(0 0 34px rgb(255 31 61 / 0.7));
+  animation: splash-neon 1.2s steps(1, end) both;
+}
+.splash-logo {
+  display: block;
+  width: clamp(40px, 5vw, 58px);
+  aspect-ratio: 460 / 630;
+  -webkit-mask: url(/images/logo-eclair.webp) center / contain no-repeat;
+  mask: url(/images/logo-eclair.webp) center / contain no-repeat;
+  background: #ff4a5e;
+}
+@keyframes splash-neon { 0% { opacity: 0; } 12% { opacity: 0.9; } 18% { opacity: 0.15; } 30% { opacity: 1; } 38% { opacity: 0.35; } 52%, 100% { opacity: 1; } }
+@keyframes splash-out { to { opacity: 0; visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .splash { display: none; } }

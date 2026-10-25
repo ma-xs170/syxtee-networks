@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 
 test("accueil : promesse, deux parcours, soutien et appels à l'action", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Ton direct, sans limites");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Ton direct,");
   await expect(page.getByRole("link", { name: "Contactez-nous" }).first()).toHaveAttribute("href", "/contact");
   await expect(page.getByRole("link", { name: "Nos réalisations" }).first()).toHaveAttribute("href", "/realisations");
   await expect(page.getByRole("heading", { name: /Ton live IRL, entre de bonnes mains/ })).toBeVisible();

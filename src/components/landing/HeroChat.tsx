@@ -28,14 +28,14 @@ const MSGS: Msg[] = [
   { u: "Joss_GP", c: "#f87171", t: "qui est là pour le feu d'artifice ?", b: "sub" },
 ];
 
-const MAX = 6;
+const MAX = 13;
 
-function Badge({ kind }: { kind: Badge }) {
-  if (!kind) return null;
-  const style = kind === "mod" ? "bg-[#00ad03]" : kind === "sub" ? "bg-[#8b5cf6]" : "bg-[#e91e63]";
+// Pastille de plateforme (Twitch violet ou YouTube rouge), comme sur un chat incrusté dans une vidéo.
+function Platform({ id }: { id: number }) {
+  const tw = id % 3 === 0;
   return (
-    <span className={`mr-1.5 inline-grid size-[15px] translate-y-[2px] place-items-center rounded-[3px] ${style}`}>
-      <svg viewBox="0 0 16 16" className="size-[10px] fill-white"><path d={kind === "mod" ? "M2 14l2-4 6-6 2 2-6 6zm9-12l3 3-2 2-3-3z" : "M8 1l2.2 4.6 5 .7-3.6 3.5.9 5L8 12.4 3.5 14.8l.9-5L.8 6.3l5-.7z"} /></svg>
+    <span className={`mr-1.5 inline-grid h-[11px] w-[15px] translate-y-[1px] place-items-center rounded-[3px] ${tw ? "bg-[#9146ff]" : "bg-[#ff0000]"}`}>
+      <svg viewBox="0 0 8 8" className="size-[6px] fill-white"><path d={tw ? "M1 0h7v5L5.5 7.5H4L2.5 8V7.5H1zm2 1v3h1V1zm2 0v3h1V1z" : "M1 0l6 4-6 4z"} /></svg>
     </span>
   );
 }
@@ -54,13 +54,14 @@ export default function HeroChat() {
       setList((l) => [...l.slice(-(MAX - 1)), { ...m, id }]);
     };
     if (still) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- l'état initial dépend de matchMedia, inconnu côté serveur
       setList(MSGS.slice(0, MAX).map((m, n) => ({ ...m, id: n })));
       return;
     }
     let timer: number;
     const loop = () => {
       push();
-      timer = window.setTimeout(loop, 900 + Math.random() * 1700);
+      timer = window.setTimeout(loop, 600 + Math.random() * 1300);
     };
     timer = window.setTimeout(loop, 1200);
     return () => window.clearTimeout(timer);
@@ -69,14 +70,14 @@ export default function HeroChat() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute bottom-8 left-4 z-10 hidden w-[19.5rem] flex-col justify-end gap-1.5 text-[13px] leading-snug sm:flex lg:bottom-12 lg:left-8"
-      style={{ maskImage: "linear-gradient(to bottom, transparent 0%, #000 45%)", WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, #000 45%)" }}
+      className="pointer-events-none absolute right-3 top-[calc(65px+0.5rem)] z-10 hidden w-[17rem] flex-col justify-end gap-[3px] overflow-hidden text-[12.5px] leading-[1.35] text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.95),0_0_8px_rgba(0,0,0,0.6)] sm:flex lg:right-6"
+      style={{ height: "21rem", maskImage: "linear-gradient(to bottom, transparent 0%, #000 22%)", WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, #000 22%)" }}
     >
       {list.map((m) => (
-        <p key={m.id} className="chat-in rounded-md bg-black/45 px-2.5 py-1.5 text-white/90 backdrop-blur-[2px]">
-          <Badge kind={m.b ?? ""} />
+        <p key={m.id} className="chat-in">
+          <Platform id={m.id} />
           <span className="font-semibold" style={{ color: m.c }}>{m.u}</span>
-          <span className="text-white/60">: </span>
+          <span>: </span>
           {m.t}
         </p>
       ))}

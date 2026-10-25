@@ -10,6 +10,14 @@ const label = "text-sm font-medium";
 
 const EVENT_TYPES = ["Mobilité", "Bateau"];
 
+// Les 32 communes de Guadeloupe, plus une entrée pour un projet ailleurs.
+const CITIES = [
+  "Abymes", "Anse-Bertrand", "Baie-Mahault", "Baillif", "Basse-Terre", "Bouillante", "Capesterre-Belle-Eau", "Capesterre-de-Marie-Galante",
+  "Deshaies", "Désirade (La)", "Gosier (Le)", "Gourbeyre", "Goyave", "Grand-Bourg", "Lamentin", "Morne-à-l'Eau", "Moule (Le)", "Petit-Bourg",
+  "Petit-Canal", "Pointe-à-Pitre", "Pointe-Noire", "Port-Louis", "Saint-Claude", "Saint-François", "Saint-Louis", "Sainte-Anne", "Sainte-Rose",
+  "Terre-de-Bas", "Terre-de-Haut", "Trois-Rivières", "Vieux-Fort", "Vieux-Habitants", "Autre (hors Guadeloupe)",
+];
+
 // Liste déroulante du site (pas celle du système) : même rendu partout, au clavier comme à la souris.
 const Select = ({ id, name, required, placeholder, options }: { id: string; name: string; required?: boolean; placeholder: string; options: string[] }) => {
   const [value, setValue] = useState("");
@@ -42,9 +50,9 @@ const Select = ({ id, name, required, placeholder, options }: { id: string; name
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className={`shrink-0 text-muted transition-transform ${open ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg>
       </button>
       {open && (
-        <ul id={`${id}-list`} role="listbox" className="absolute inset-x-0 top-[calc(100%+6px)] z-20 overflow-hidden rounded-xl border border-foreground/20 bg-surface p-1 shadow-lg">
+        <ul id={`${id}-list`} role="listbox" className="absolute inset-x-0 top-[calc(100%+6px)] z-20 max-h-64 overflow-y-auto rounded-xl border border-foreground/20 bg-surface p-1 shadow-lg">
           {options.map((o, i) => (
-            <li key={o} role="option" aria-selected={o === value} onPointerDown={(e) => e.preventDefault()} onClick={() => pick(o)} onMouseEnter={() => setActive(i)} className={`flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 text-sm sm:min-h-10 ${i === active ? "bg-foreground/[0.08]" : ""} ${o === value ? "font-medium text-foreground" : "text-foreground/90"}`}>
+            <li key={o} role="option" aria-selected={o === value} ref={open && i === active ? (el) => el?.scrollIntoView({ block: "nearest" }) : undefined} onPointerDown={(e) => e.preventDefault()} onClick={() => pick(o)} onMouseEnter={() => setActive(i)} className={`flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 text-sm sm:min-h-10 ${i === active ? "bg-foreground/[0.08]" : ""} ${o === value ? "font-medium text-foreground" : "text-foreground/90"}`}>
               {o}
               {o === value && <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5 9-10" /></svg>}
             </li>
@@ -85,8 +93,8 @@ export default function ContactForm() {
           <Select id="c-type" name="event_type" required placeholder="Sélectionne un type" options={EVENT_TYPES} />
         </div>
         <div className="grid gap-2">
-          <label htmlFor="c-location" className={label}>Lieu ou ville *</label>
-          <input id="c-location" name="location" required maxLength={120} placeholder="Ex. : Paris" className={field} />
+          <label htmlFor="c-location" className={label}>Ville *</label>
+          <Select id="c-location" name="location" required placeholder="Sélectionne une ville" options={CITIES} />
         </div>
       </div>
 

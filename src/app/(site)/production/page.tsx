@@ -36,7 +36,7 @@ export default function ProductionPage() {
         <Container className="relative pb-16 pt-[calc(5rem+65px)] sm:pb-24">
           <nav aria-label="Fil d'Ariane" className="text-xs font-medium text-foreground/70">
             <ol className="flex flex-wrap items-center gap-2">
-              <li><Link href="/" className="hover:text-foreground">Accueil</Link></li>
+              <li><Link href="/" className="inline-block py-3 hover:text-foreground">Accueil</Link></li>
               <li aria-hidden="true" className="text-foreground/30">/</li>
               <li aria-current="page" className="text-foreground">Production</li>
             </ol>

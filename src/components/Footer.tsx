@@ -68,7 +68,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
           {columns.map((col) => (
             <div key={col.title}>
-              <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-foreground"><T>{col.title}</T></p>
+              <p className="font-mono text-xs font-medium uppercase tracking-[0.14em] text-foreground"><T>{col.title}</T></p>
               <ul className="mt-4 grid gap-1 text-sm">
                 {col.links.map((l) => (
                   <li key={l.href}>

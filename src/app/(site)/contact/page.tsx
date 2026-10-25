@@ -22,7 +22,7 @@ const CONTACTS = [
 ];
 
 export const metadata: Metadata = {
-  title: "Demander une production IRL",
+  title: "Discutons de votre projet",
   description: "Lancé par des Guadeloupéens : des solutions de streaming IRL flexibles. Décris ton projet de production IRL, on te répond avec un devis gratuit.",
   alternates: { canonical: "/contact" },
 };
@@ -38,15 +38,15 @@ export default function ContactPage() {
       </div>
       <section className="pb-12 pt-[calc(5rem+65px)] sm:pb-16 sm:pt-[calc(7rem+65px)]">
         <Container className="max-w-5xl">
-          <h1 className="h-serif max-w-[18ch] text-[clamp(2.75rem,6vw,4.5rem)]">Demander une <em>production IRL.</em></h1>
-          <p className="mt-6 max-w-[58ch] text-base leading-relaxed text-muted sm:text-lg">Décris ton projet : on s&apos;occupe de la production (régie, cadreur, réseau) et on te répond avec un devis gratuit et sur mesure.</p>
+          <h1 className="h-serif max-w-[18ch] text-[clamp(2.75rem,6vw,4.5rem)]">Discutons de <em>votre projet.</em></h1>
+          <p className="mt-6 max-w-[58ch] text-base leading-relaxed text-muted sm:text-lg">Nous produisons de A à Z votre prochain stream IRL : régie, cadreurs, réseau. Décrivez-nous votre projet, nous vous répondons avec un devis gratuit et sur mesure.</p>
         </Container>
       </section>
 
       <section className="pb-20 sm:pb-28">
         <Container className="grid max-w-5xl items-stretch gap-6 lg:grid-cols-[1fr_360px]">
           <div className={card}>
-            <h2 className="text-xl font-semibold tracking-tight">Ta demande de production</h2>
+            <h2 className="text-xl font-semibold tracking-tight">Parlez-nous de votre projet</h2>
             <p className="mb-8 mt-1.5 text-sm text-muted">Les champs marqués d&apos;une étoile sont obligatoires.</p>
             <ContactForm />
           </div>

@@ -106,7 +106,6 @@ function BrandStrip() {
 }
 
 const PARTNERS = [
-  { name: "THE MOUV", src: "/images/partner-the-mouv.webp", w: 640, h: 267, cls: "h-14 sm:h-16" },
   { name: "LA SUNSHINES", src: "/images/partner-la-sunshines.webp", w: 640, h: 101, cls: "h-8 sm:h-10" },
 ];
 

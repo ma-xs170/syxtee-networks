@@ -20,25 +20,25 @@ const STEPS: Step[] = [
   {
     title: "Une scène. Un toucher.",
     text: "Touche une scène : OBS change sur ton ordinateur, tout de suite. Et si tu changes dans OBS, ton téléphone suit.",
-    src: "/images/remote/controle-mobile-v2.png",
+    src: "/images/remote/controle-mobile-v3.png",
     alt: "Liste des scènes d'OBS sur téléphone, la scène en direct en surbrillance",
   },
   {
     title: "Tes sources, d'un doigt.",
     text: "Montre ou cache n'importe quelle source de la scène, comme l'œil d'OBS. Navigateur, texte, média, flux : tout y est.",
-    src: "/images/remote/controle-mobile-sources-v2.png",
+    src: "/images/remote/controle-mobile-v3-sources.png",
     alt: "Sources de la scène avec leur type et l'œil pour les afficher ou les masquer",
   },
   {
     title: "Le son, sous ton pouce.",
     text: "Un fader par piste, les niveaux en direct, le mute et l'écoute. Chaque scène a ses sons : tu ne vois que les bons.",
-    src: "/images/remote/controle-mobile-mixer-v2.png",
+    src: "/images/remote/controle-mobile-v3-mixer.png",
     alt: "Mixeur audio vertical avec niveaux en direct",
   },
   {
     title: "Le direct, en un geste.",
     text: "Pars en direct, enregistre, surveille le débit. Une confirmation te protège des fausses manipulations.",
-    src: "/images/remote/controle-mobile-controles-v2.png",
+    src: "/images/remote/controle-mobile-v3-controles.png",
     alt: "Bouton Arrêter le direct en rouge avec la durée, et le débit du flux",
   },
   {

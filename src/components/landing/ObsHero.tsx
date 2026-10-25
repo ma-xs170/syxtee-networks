@@ -95,13 +95,13 @@ export default function ObsHero({ images, still = false }: { images?: HeroImages
       {/* ordinateur : caché sur petit écran (téléphone et montre seulement) */}
       <motion.div style={{ x: reduce ? 0 : macX }} className="relative mx-auto hidden w-[78%] md:block">
         <DeviceMac image={images?.laptop}>
-          {still ? <Image src="/images/remote/controle-bureau-v2.png" alt="Contrôle à distance d'OBS sur ordinateur : aperçu du programme, scènes, sources, mixer audio, contrôles et multistream" width={2560} height={1600} sizes="(min-width: 768px) 750px, 100vw" priority className="h-full w-full object-cover" /> : <MacUI c={c} />}
+          {still ? <Image src="/images/remote/controle-bureau-v4.png" alt="Contrôle à distance d'OBS sur ordinateur : aperçu du programme, scènes, sources, mixer audio, contrôles et multistream" width={2160} height={1350} sizes="(min-width: 768px) 750px, 100vw" priority className="h-full w-full object-cover" /> : <MacUI c={c} />}
         </DeviceMac>
       </motion.div>
       {/* téléphone : devant, à droite */}
       <motion.div style={{ x: reduce ? 0 : phoneX, y: reduce ? 0 : phoneY }} className="relative mx-auto w-[50%] max-w-[230px] md:absolute md:bottom-0 md:right-[-9%] md:mx-0 md:w-[21%] md:max-w-none">
         <DeviceIphone image={images?.phone} className="device-float">
-          {still ? <Image src="/images/remote/controle-mobile-v2.png" alt="Contrôle à distance d'OBS sur téléphone : aperçu du programme et liste des scènes" width={780} height={1688} sizes="230px" className="h-full w-full object-cover" /> : <PhoneUI c={c} />}
+          {still ? <div className="h-full w-full bg-black pb-[14px] pt-[50px]"><Image src="/images/remote/controle-mobile-v3.png" alt="Contrôle à distance d'OBS sur téléphone : aperçu du programme et liste des scènes" width={780} height={1688} sizes="230px" className="h-full w-full object-contain object-top" /></div> : <PhoneUI c={c} />}
         </DeviceIphone>
       </motion.div>
     </motion.div>

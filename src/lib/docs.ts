@@ -196,8 +196,8 @@ export const docs: DocGuide[] = [
           "Changer de profil et de collection de scènes.",
         ],
       },
-      { type: "img", src: "/images/remote/controle-bureau-v2.png", alt: "Console de contrôle à distance sur ordinateur", w: 2560, h: 1600 },
-      { type: "img", src: "/images/remote/controle-mobile-v2.png", alt: "Console de contrôle à distance sur mobile", w: 780, h: 1688 },
+      { type: "img", src: "/images/remote/controle-bureau-v4.png", alt: "Console de contrôle à distance sur ordinateur", w: 2160, h: 1350 },
+      { type: "img", src: "/images/remote/controle-mobile-v3.png", alt: "Console de contrôle à distance sur mobile", w: 780, h: 1688 },
     ],
   },
   {

@@ -5,7 +5,7 @@ import { chromium } from "playwright";
 // Faux Core : mêmes messages que le vrai. L'image du programme est un exemple dessiné ici (aperçu en images).
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
 const out = process.argv[2] ?? "/tmp/controle-mobile.png";
-// VIEW=desktop : capture 1440x900 de l'interface sur ordinateur (pour la maquette ordinateur + téléphone de l'accueil).
+// VIEW=desktop : capture 1800x1125 (x1,2) de l'interface sur ordinateur (pour la maquette ordinateur + téléphone de l'accueil).
 const desktop = process.env.VIEW === "desktop";
 
 const scenes = ["⏳ › ON COMMENCE BIENTÔT", "🔴 › EN DIRECT", "🎥 › DRONE", "📶 › CONNEXION PERDUE", "🔚 › FIN DE STREAM"];
@@ -36,7 +36,7 @@ function handle(ws, m) {
 }
 
 const browser = await chromium.launch();
-const ctx = await browser.newContext(desktop ? { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1.5, colorScheme: "dark", reducedMotion: "reduce" } : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: "dark", reducedMotion: "reduce", hasTouch: true, isMobile: true });
+const ctx = await browser.newContext(desktop ? { viewport: { width: 1800, height: 1125 }, deviceScaleFactor: 1.2, colorScheme: "dark", reducedMotion: "reduce" } : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: "dark", reducedMotion: "reduce", hasTouch: true, isMobile: true });
 const page = await ctx.newPage();
 // Image d'exemple du programme (dessinée dans la page : ciel, route, silhouette).
 const frame = await page.evaluate(() => {
@@ -69,21 +69,22 @@ await page.routeWebSocket(/\/v1\/link\/remote/, (ws) => {
       ws.send(JSON.stringify({ type: "ready", agent: { online: true, id: "d1", name: "OBS-DJ-SYXTEE.local", platform: "darwin", version: "0.4.0", since: Date.now() - 39000 } }));
       setInterval(() => ws.send(JSON.stringify({ type: "event", name: "link.preview", data: { scene: state.program, image: frame } })), 200);
       setInterval(() => ws.send(JSON.stringify({ type: "event", name: "link.levels", data: { Micro: -17, "Flux › OSMO POCKET": -28 } })), 300);
-      setInterval(() => ws.send(JSON.stringify({ type: "event", name: "link.stats", data: { cpuUsage: 11, activeFps: 60, stream: { outputActive: true, outputDuration: 2_460_000, kbps: 4210, encoder: "Apple VT H264", outputCongestion: 0 }, record: { outputActive: false } } })), 1000);
+      setInterval(() => ws.send(JSON.stringify({ type: "event", name: "link.stats", data: { cpuUsage: 11, activeFps: 60, stream: { outputActive: true, outputDuration: 2_460_000, kbps: Math.round(4200 + 650 * Math.sin(Date.now() / 900) + 220 * Math.sin(Date.now() / 230)), encoder: "Apple VT H264", outputCongestion: 0 }, record: { outputActive: false } } })), 150);
     } else if (m.type === "req") handle(ws, m);
   });
 });
 await page.goto(`${BASE}/dev/vitrine/controle-obs`, { waitUntil: "load" });
 await page.waitForSelector("text=EN DIRECT", { timeout: 15000 });
-await page.waitForTimeout(2500);
+await page.waitForTimeout(15000); // le graphique du débit se remplit avec les mesures reçues
 await page.addStyleTag({ content: "nextjs-portal{display:none!important} section[aria-label=Programme] p[role=status]{display:none}" });
 await page.waitForTimeout(300);
-await page.screenshot({ path: out });
-// Les autres panneaux (même nom de fichier, suffixe de l'onglet) : sources, mixer, contrôles.
-for (const [tab, name] of desktop ? [] : [["Sources", "sources"], ["Mixer", "mixer"], ["Contrôles", "controles"]]) {
+// Onglets du téléphone : Scènes (fichier de base), puis Sources, Audio (-mixer) et Direct (-controles).
+const TABS = desktop ? [] : [["Scènes", ""], ["Sources", "-sources"], ["Audio", "-mixer"], ["Direct", "-controles"]];
+if (desktop) await page.screenshot({ path: out });
+for (const [tab, suffix] of TABS) {
   await page.getByRole("tab", { name: tab }).click();
-  await page.waitForTimeout(500);
-  await page.screenshot({ path: out.replace(/\.png$/, `-${name}.png`) });
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: out.replace(/\.png$/, `${suffix}.png`) });
 }
 console.log("capture :", out);
 await browser.close();

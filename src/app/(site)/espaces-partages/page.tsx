@@ -64,7 +64,7 @@ export default function EspacesPartagesPage() {
           <DeviceScene
             kind="display"
             main={{ src: "/images/screens/membres-bureau.png", alt: "Page Membres d'un espace partagé : propriétaire, administrateur et membres avec leurs rôles, invitation en attente" }}
-            phone={{ src: "/images/remote/controle-mobile-v2.png", alt: "Contrôle à distance d'un OBS de l'espace depuis un téléphone" }}
+            phone={{ src: "/images/remote/controle-mobile-v3.png", alt: "Contrôle à distance d'un OBS de l'espace depuis un téléphone" }}
           />
           <ul className="mt-14 grid grid-cols-1 gap-x-12 gap-y-8 sm:grid-cols-2">
             {POINTS.map(([t, d], i) => {

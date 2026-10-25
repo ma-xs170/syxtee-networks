@@ -1,7 +1,6 @@
 "use client";
 
-import type { PhoneTab } from "../landing/RemoteScreens";
-import RemotePhone from "./RemotePhone";
+import RemotePhone, { type PhoneTab } from "./RemotePhone";
 import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
 import { useRef } from "react";
 

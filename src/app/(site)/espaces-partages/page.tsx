@@ -87,9 +87,7 @@ export default function EspacesPartagesPage() {
 
       <section className="border-b border-line py-20 sm:py-24">
         <Container className="max-w-4xl">
-          <h2 className="h-section">Des rôles clairs.</h2>
-          <p className="mt-4 max-w-[56ch] text-base leading-relaxed text-muted">Le propriétaire a la main sur tout. Il donne à chaque membre le niveau qu&apos;il faut, ni plus ni moins.</p>
-          <div className="mt-10 overflow-x-auto">
+          <div className="overflow-x-auto">
             <table className="w-full min-w-[34rem] text-left text-sm">
               <thead>
                 <tr className="border-b border-line">

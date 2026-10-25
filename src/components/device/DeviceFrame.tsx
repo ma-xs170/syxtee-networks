@@ -10,7 +10,7 @@ export type DeviceVariant = "desktop" | "laptop" | "phone";
 const glass =
   "pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0.03)_28%,transparent_42%)]";
 
-function Screen({ shot, sizes, priority }: { shot: Shot; sizes: string; priority?: boolean }) {
+function Screen({ shot, sizes, priority, fit = "object-cover" }: { shot: Shot; sizes: string; priority?: boolean; fit?: string }) {
   return (
     <Image
       src={shot.src}
@@ -19,7 +19,7 @@ function Screen({ shot, sizes, priority }: { shot: Shot; sizes: string; priority
       height={shot.height}
       sizes={sizes}
       priority={priority}
-      className="absolute inset-0 h-full w-full object-cover object-top"
+      className={`absolute inset-0 h-full w-full ${fit} object-top`}
     />
   );
 }
@@ -41,7 +41,12 @@ export default function DeviceFrame({ variant, shot, priority = false, className
         <Halo className="-bottom-10 left-1/2 -translate-x-1/2" />
         <div className="relative w-full rounded-[17%/7.8%] border-[1.5px] border-foreground/50 bg-black p-[3.6%] shadow-[0_40px_70px_-25px_var(--shadow-pop)]" style={{ aspectRatio: "9 / 19.5" }}>
           <div className="relative h-full w-full overflow-hidden rounded-[12.5%/5.8%] bg-black">
-            <Screen shot={shot} sizes="(min-width: 640px) 272px, 70vw" priority={priority} />
+            {/* marge haute sous l'île dynamique ; la capture garde ses proportions : rien n'est rogné sur les côtés */}
+            <div className="absolute inset-0 bg-[#0d0d0d] pt-[11%]">
+              <div className="relative h-full w-full">
+                <Screen shot={shot} sizes="(min-width: 640px) 272px, 70vw" priority={priority} fit="object-contain" />
+              </div>
+            </div>
             <span aria-hidden="true" className="absolute left-1/2 top-[1.1%] h-[2.3%] w-[26%] -translate-x-1/2 rounded-full bg-black ring-1 ring-white/15" />
             <span aria-hidden="true" className={glass} />
           </div>

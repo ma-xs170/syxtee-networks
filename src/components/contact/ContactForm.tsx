@@ -35,7 +35,7 @@ const DIALS = [
 const dialShort = (o: string) => `${o.split(" ")[0]} ${o.split(" ").at(-1)}`;
 
 // Liste déroulante du site (pas celle du système) : même rendu partout, au clavier comme à la souris.
-const Select = ({ id, name, required, placeholder, options, icons, short, wide, initial = "" }: { id: string; name: string; required?: boolean; placeholder: string; options: string[]; icons?: Record<string, React.ReactNode>; short?: (o: string) => string; wide?: boolean; initial?: string }) => {
+const Select = ({ id, name, required, placeholder, options, icons, short, wide, bare, initial = "" }: { id: string; name: string; required?: boolean; placeholder: string; options: string[]; icons?: Record<string, React.ReactNode>; short?: (o: string) => string; wide?: boolean; bare?: boolean; initial?: string }) => {
   const [value, setValue] = useState(initial);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -76,7 +76,7 @@ const Select = ({ id, name, required, placeholder, options, icons, short, wide, 
   return (
     <div ref={box} className="relative">
       <input name={name} value={value} required={required} readOnly tabIndex={-1} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-0" />
-      <button type="button" id={id} role="combobox" aria-haspopup="listbox" aria-expanded={open} aria-controls={`${id}-list`} onClick={() => { setActive(Math.max(0, options.indexOf(value))); setOpen((o) => !o); }} onKeyDown={onKey} onBlur={() => { typed.current.text = ""; }} className={`${field} flex items-center justify-between gap-3 pr-4 text-left ${value ? "" : "text-muted/70"}`}>
+      <button type="button" id={id} role="combobox" aria-haspopup="listbox" aria-expanded={open} aria-controls={`${id}-list`} onClick={() => { setActive(Math.max(0, options.indexOf(value))); setOpen((o) => !o); }} onKeyDown={onKey} onBlur={() => { typed.current.text = ""; }} className={`${bare ? "h-12 w-full rounded-l-xl bg-transparent px-4 text-sm text-foreground focus:outline-none focus-visible:bg-foreground/[0.06]" : field} flex items-center justify-between gap-3 pr-4 text-left ${value ? "" : "text-muted/70"}`}>
         <span className="flex min-w-0 items-center gap-2.5">{value && icons?.[value]}<span className="truncate">{value ? (short ? short(value) : value) : placeholder}</span></span>
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className={`shrink-0 text-muted transition-transform ${open ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg>
       </button>
@@ -121,9 +121,9 @@ export default function ContactForm() {
         </div>
         <div className="grid gap-2 sm:col-span-2">
           <label htmlFor="c-phone" className={label}>Téléphone *</label>
-          <div className="flex gap-3">
-            <div className="w-[8.5rem] shrink-0"><Select id="c-phone-code" name="phone_code" required placeholder="Pays" options={DIALS} initial={DIALS[0]} short={dialShort} wide /></div>
-            <input id="c-phone" name="phone_number" type="tel" inputMode="tel" required minLength={6} maxLength={20} autoComplete="tel-national" placeholder="690 12 34 56" className={field} />
+          <div className="flex rounded-xl border border-line bg-input transition-colors focus-within:border-foreground/50 focus-within:ring-2 focus-within:ring-foreground/20">
+            <div className="w-[8.5rem] shrink-0 border-r border-line"><Select id="c-phone-code" name="phone_code" required placeholder="Pays" options={DIALS} initial={DIALS[0]} short={dialShort} wide bare /></div>
+            <input id="c-phone" name="phone_number" type="tel" inputMode="tel" required minLength={6} maxLength={20} autoComplete="tel-national" placeholder="690 12 34 56" className="h-12 min-w-0 flex-1 rounded-r-xl bg-transparent px-4 text-sm text-foreground placeholder:text-muted/70 focus:outline-none" />
           </div>
         </div>
         <div className="grid gap-2">

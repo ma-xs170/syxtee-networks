@@ -7,7 +7,7 @@ import FloatingPhone from "@/components/remote-showcase/FloatingPhone";
 import ProgramPeek from "@/components/mockups/ProgramPeek";
 import PhoneStory, { type Step } from "@/components/remote-showcase/PhoneStory";
 import { Container } from "@/components/ui";
-import { Phone } from "@phosphor-icons/react/dist/ssr";
+import { Envelope } from "@phosphor-icons/react/dist/ssr";
 import { glow } from "@/lib/glow";
 
 export const metadata: Metadata = {
@@ -199,7 +199,7 @@ export default function ControlePage() {
           <h2 className="h-serif mx-auto max-w-[16ch] text-[clamp(2.75rem,6vw,4.5rem)]">Ton prochain direct, <em>sans bureau.</em></h2>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/inscription" className={WHITE}>Créer mon compte</Link>
-            <Link href="/contact" className={TONAL}><Phone size={18} weight="fill" aria-hidden="true" className="mr-2.5" />Contactez-nous</Link>
+            <Link href="/contact" className={TONAL}><Envelope size={18} weight="fill" aria-hidden="true" className="mr-2.5" />Contactez-nous</Link>
           </div>
         </Container>
       </section>

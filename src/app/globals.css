@@ -823,3 +823,12 @@ html[lang="en"] .l-fr { display: none; }
   100% { transform: translateY(-22rem) scale(1.1); opacity: 0; }
 }
 .heart-float { animation-name: heart-float; animation-timing-function: ease-out; animation-iteration-count: infinite; opacity: 0; }
+
+/* Logo Moblin : petit tremblement au survol, puis il se remet droit. */
+@keyframes moblin-wiggle {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-14deg) scale(1.1); }
+  40% { transform: rotate(11deg) scale(1.1); }
+  60% { transform: rotate(-7deg); }
+  80% { transform: rotate(4deg); }
+}

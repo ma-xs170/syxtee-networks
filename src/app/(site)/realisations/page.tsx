@@ -21,7 +21,7 @@ export default function RealisationsPage() {
   return (
     <>
       <PageHero title={<>Nos dernières <em>réalisations.</em></>} crumb="Réalisations">
-        Nos premières productions arrivent bientôt. Elles s&apos;afficheront ici, avec les extraits du direct.
+        Nous produisons de A à Z votre prochain stream IRL. Nos premières productions arrivent bientôt et s&apos;afficheront ici.
       </PageHero>
 
       <section className="border-b border-line py-20 lg:py-28">

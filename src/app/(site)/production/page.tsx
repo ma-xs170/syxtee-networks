@@ -7,7 +7,7 @@ import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Production de live IRL",
-  description: "Régie, cadreurs IRL et relais SRTLA pour diffuser ton événement depuis n'importe où. Équipe basée en Guadeloupe, devis gratuit.",
+  description: "Nous produisons de A à Z votre prochain stream IRL : régie, cadreurs et relais SRTLA, où que vous soyez. Équipe basée en Guadeloupe, devis gratuit.",
   alternates: { canonical: "/production" },
 };
 
@@ -28,7 +28,7 @@ export default function ProductionPage() {
   return (
     <>
       <PageHero title={<>Ton live IRL, <em>produit pour toi.</em></>} crumb="Production">
-        Des équipes de production basées en Guadeloupe, dans la Caraïbe française, qui diffusent partout dans le monde. Sur devis.
+        Nous produisons de A à Z votre prochain stream IRL : régie, cadreurs et relais, depuis la Guadeloupe. Sur devis.
       </PageHero>
 
       <section className="border-b border-line py-20 lg:py-28">

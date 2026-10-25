@@ -51,7 +51,7 @@ export function HomeHero() {
           <L fr={<>Ton direct, <em>sans limites.</em></>} en={<>Your live, <em>without limits.</em></>} />
         </h1>
         <p className="rise mx-auto mt-6 max-w-[40ch] text-lg leading-relaxed text-foreground/80 [text-shadow:0_1px_16px_rgba(0,0,0,0.6)]" style={rise(1)}>
-          <L fr={<><strong className="font-semibold text-foreground">Production, cadreurs et relais SRTLA</strong> pour diffuser de n&apos;importe où.</>} en={<><strong className="font-semibold text-foreground">Production, camera operators and SRTLA relays</strong> to broadcast from anywhere.</>} />
+          <L fr={<><strong className="font-semibold text-foreground">Nous produisons de A à Z</strong> votre prochain stream IRL.</>} en={<><strong className="font-semibold text-foreground">We produce from A to Z</strong> your next IRL stream.</>} />
         </p>
         <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={rise(2)}>
           <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><L fr="Contactez-nous" en="Contact us" /></Link>

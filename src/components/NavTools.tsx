@@ -166,7 +166,7 @@ function PanelContent({ menu, onClose, reduce }: { menu: AnyMenu; onClose: () =>
   if ("cards" in menu && menu.cards) {
     return (
       <div className="p-3">
-        <ul className="grid w-[640px] grid-cols-2 gap-3">
+        <ul className={`grid w-[640px] grid-cols-2 gap-3 ${menu.children.length % 2 ? "[&>li:first-child]:col-span-2" : ""}`}>
           {menu.children.map((t, i) => (
             <PanelCard key={t.href} t={t} i={i} onClose={onClose} reduce={reduce} />
           ))}

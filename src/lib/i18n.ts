@@ -2,6 +2,7 @@
 export const EN: Record<string, string> = {
   // Menu
   "Fonctionnalités": "Features",
+  "Nous produisons de A à Z votre prochain stream IRL": "We produce your next IRL stream from A to Z",
   "Contrôle à distance": "Remote control",
   "Pilote OBS depuis ton téléphone": "Control OBS from your phone",
   "Serveurs": "Servers",

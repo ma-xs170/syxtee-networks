@@ -66,10 +66,10 @@ const BRANDS: Brand[] = [
   { key: "srtla", name: "SRTLA", href: "https://github.com/BELABOX/srtla", node: word("SRTLA") },
   { key: "srt", name: "SRT", href: "https://www.srtalliance.org", node: <Image src="/images/logo-srt.webp" alt="" width={374} height={95} className="h-7 w-auto opacity-55 transition-opacity duration-200 group-hover:opacity-100" /> },
   { key: "rtmp", name: "RTMP", href: "https://en.wikipedia.org/wiki/Real-Time_Messaging_Protocol", node: word("RTMP") },
-  { key: "rist", name: "RIST", href: "https://www.rist.tv", node: (<><Image src="/images/logo-rist-chevrons.webp" alt="" width={400} height={244} className="h-6 w-auto opacity-55 transition-opacity duration-200 group-hover:opacity-100" />{word("RIST")}</>) },
+  { key: "rist", name: "RIST", href: "https://www.rist.tv", node: (<><Image src="/images/logo-rist-chevrons.webp" alt="" width={400} height={244} className="h-6 w-auto opacity-55 transition-[opacity,transform] duration-300 group-hover:translate-x-1 group-hover:opacity-100 motion-reduce:transform-none" />{word("RIST")}</>) },
   { key: "webrtc", name: "WebRTC", href: "https://webrtc.org", node: (<>{glyph(siWebrtc)}{word("WebRTC")}</>) },
   { key: "dji", name: "DJI", href: "https://www.dji.com", node: <span className="-my-4 flex">{glyph(siDji, 72)}</span> },
-  { key: "moblin", name: "Moblin", href: "https://github.com/eerimoq/moblin", node: (<><Image src="/images/moblin/icon.png" alt="" width={56} height={56} className="size-7 shrink-0 rounded-md grayscale" />{word("Moblin")}</>) },
+  { key: "moblin", name: "Moblin", href: "https://github.com/eerimoq/moblin", node: (<><Image src="/images/moblin/icon.png" alt="" width={56} height={56} className="size-7 shrink-0 rounded-md grayscale transition-[filter] duration-300 group-hover:animate-[moblin-wiggle_0.7s_ease-in-out] group-hover:grayscale-0 motion-reduce:animate-none" />{word("Moblin")}</>) },
   { key: "obs", name: "OBS Studio", href: "https://obsproject.com", node: (<>{glyph(siObsstudio)}{word("OBS Studio")}</>) },
   { key: "twitch", name: "Twitch", href: "https://www.twitch.tv", node: (<>{glyph(siTwitch)}{word("Twitch")}</>) },
   { key: "youtube", name: "YouTube", href: "https://www.youtube.com", node: (<>{glyph(siYoutube)}{word("YouTube")}</>) },
@@ -95,7 +95,7 @@ function BrandStrip() {
                       {...(copy === 1 || i >= BRANDS.length ? { tabIndex: -1 } : {})}
                       className="group flex h-10 items-center gap-2.5 px-8 text-foreground/55 transition-colors duration-200 hover:text-foreground focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground sm:px-12"
                     >
-                      {b.node}
+                      <span className="flex items-center gap-2.5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-1 group-hover:scale-110 group-focus-visible:-translate-y-1 group-focus-visible:scale-110 motion-reduce:transform-none">{b.node}</span>
                     </a>
                   </li>
                 ))}

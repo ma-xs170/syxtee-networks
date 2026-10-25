@@ -31,6 +31,7 @@ export const nav: NavItem[] = [
     label: "Fonctionnalités",
     cards: true,
     children: [
+      { label: "Production", href: "/production", desc: "Nous produisons de A à Z votre prochain stream IRL", icon: "route" },
       { label: "Contrôle à distance", href: "/controle-a-distance", desc: "Pilote OBS depuis ton téléphone", icon: "phone" },
       { label: "Serveurs", href: "/relais", desc: "Relais SRTLA en Amérique et en Europe", icon: "rack" },
     ],

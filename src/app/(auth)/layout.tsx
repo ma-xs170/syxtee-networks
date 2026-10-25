@@ -5,7 +5,7 @@ import GridBackground from "@/components/ui/GridBackground";
 // Pages de connexion : pas de nav ni de footer. Fond noir avec lignes de grille qui s'estompent et halo discret, contenu centré.
 export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (
-    <div className="relative flex min-h-dvh flex-col overflow-hidden bg-background">
+    <div className="public-sans relative flex min-h-dvh flex-col overflow-hidden bg-background">
       <GridBackground />
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(ellipse_50%_60%_at_50%_0%,color-mix(in_srgb,var(--foreground)_9%,transparent),transparent_70%)]" />
       <header className="relative z-10 px-5 pt-5 sm:px-8 sm:pt-7">

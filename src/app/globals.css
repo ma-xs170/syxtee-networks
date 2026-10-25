@@ -891,3 +891,7 @@ html[data-splash="off"] .splash { display: none; }
 @keyframes guardian-fill { from { width: 0; } to { width: 100%; } }
 .guardian-fill { animation: guardian-fill 2.2s cubic-bezier(0.4, 0, 0.2, 1) both; }
 @media (prefers-reduced-motion: reduce) { .guardian-shake, .guardian-glitch, .guardian-fill { animation: none; } }
+
+/* Site public et pages de connexion : la police mono des étiquettes devient Inter, comme le reste du texte (le tableau de bord et l'admin gardent la mono pour leurs valeurs). */
+.public-sans { --font-mono: var(--font-ui), system-ui, sans-serif; }
+.public-sans .font-mono, .public-sans .label-mono, .public-sans .dk-mono { font-family: var(--font-ui), system-ui, sans-serif; font-weight: 600; letter-spacing: 0.14em; }

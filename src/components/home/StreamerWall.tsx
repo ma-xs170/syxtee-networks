@@ -178,23 +178,23 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
   );
 }
 
-/** Volée de cœurs : positions, tailles et rythmes tirés d'un générateur à graine fixe (même rendu serveur et client), un peu comme une œuvre.
- *  Beaucoup de petits, quelques gros ; les gros sont plus flous et plus pâles pour la profondeur. */
+/** Volée de quelques cœurs qui débordent de la section sur les voisines : positions, tailles et rythmes tirés d'un générateur à graine fixe (même rendu serveur et client), un peu comme une œuvre.
+ *  Surtout des petits, quelques gros ; les gros sont plus flous et plus pâles pour la profondeur. */
 const HEARTS = (() => {
   let x = 7;
   const r = () => ((x = (x * 16807) % 2147483647) - 1) / 2147483646;
-  return Array.from({ length: 30 }, (_, i) => {
+  return Array.from({ length: 13 }, (_, i) => {
     const big = r();
     const size = Math.round(big > 0.88 ? 40 + r() * 28 : big > 0.6 ? 20 + r() * 14 : 8 + r() * 9);
     return {
-      left: `${(2 + ((i * 0.618034 + r() * 0.05) % 1) * 96).toFixed(1)}%`,
-      top: `${(8 + r() * 82).toFixed(1)}%`,
+      left: `${(3 + ((i * 0.618034 + r() * 0.05) % 1) * 94).toFixed(1)}%`,
+      top: `${(-40 + r() * 170).toFixed(1)}%`,
       size,
       blur: size > 38 ? 2.5 : size > 19 ? 0.8 : 0,
       op: size > 38 ? 0.18 : size > 19 ? 0.32 : 0.5,
       dx: `${Math.round((r() - 0.5) * 90)}px`,
       rot: `${Math.round((r() - 0.5) * 70)}deg`,
-      rise: `${Math.round(120 + r() * 220)}px`,
+      rise: `${Math.round(160 + r() * 300)}px`,
       delay: `${(r() * 12).toFixed(1)}s`,
       dur: `${(8 + r() * 9).toFixed(1)}s`,
     };
@@ -206,8 +206,8 @@ const HEARTS = (() => {
 export function HoursStat({ hours }: { hours: number | null }) {
   if (!hours || hours < 1) return null;
   return (
-    <section aria-label="Heures de direct transmises" className="relative isolate overflow-hidden border-b border-line py-24 text-center sm:py-32">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 motion-reduce:hidden">
+    <section aria-label="Heures de direct transmises" className="relative z-10 overflow-x-clip border-b border-line py-24 text-center sm:py-32">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 motion-reduce:hidden">
         {HEARTS.map((h, i) => (
           <Heart
             key={i}

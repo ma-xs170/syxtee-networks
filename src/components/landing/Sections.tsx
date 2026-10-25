@@ -45,8 +45,7 @@ function Cell({ className = "", title, text, children, delay = 0, href, cta }: {
 export function HomeHero() {
   return (
     <section id="accueil-hero" data-theme="dark" className="relative isolate flex min-h-dvh items-center overflow-hidden text-foreground">
-      <HeroVideo />
-      <HeroChat />
+      <HeroVideo><HeroChat /></HeroVideo>
       <Container className="relative pb-24 pt-[calc(5rem+65px)] text-center lg:pb-32">
         <h1 className="rise h-serif mx-auto max-w-[16ch] text-[clamp(2.75rem,6.5vw,5.5rem)] [text-shadow:0_2px_30px_rgba(0,0,0,0.5)]" style={rise(0)}>
           <L fr={<>Le live IRL, <em>partout.</em></>} en={<>Live IRL, <em>anywhere.</em></>} />

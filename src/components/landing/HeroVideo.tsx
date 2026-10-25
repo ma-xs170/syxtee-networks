@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 const CLIPS = ["parachute", "scene", "public", "soiree"] as const;
 const HOLD_MS = 7000;
 
-export default function HeroVideo() {
+export default function HeroVideo({ children }: { children?: React.ReactNode }) {
   const [active, setActive] = useState(0);
   const [still, setStill] = useState(false);
   const refs = useRef<(HTMLVideoElement | null)[]>([]);
@@ -57,9 +57,11 @@ export default function HeroVideo() {
           <source src={`/videos/hero-${c}.mp4`} type="video/mp4" />
         </video>
       ))}
+      {/* Le chat s'insère ici : sous le voile, l'ombre et la trame, pour paraître incrusté dans la vidéo. */}
+      {children}
       {/* Assombrit pour la lisibilité, creuse les bords (ombre) et fond le bas vers la page */}
-      <div className="absolute inset-0 bg-background/55" />
-      <div className="absolute inset-0" style={{ background: "radial-gradient(120% 90% at 50% 40%, transparent 35%, color-mix(in srgb, var(--background) 85%, transparent) 100%)" }} />
+      <div className="absolute inset-0 bg-background/40" />
+      <div className="absolute inset-0" style={{ background: "radial-gradient(120% 90% at 50% 40%, transparent 45%, color-mix(in srgb, var(--background) 62%, transparent) 100%)" }} />
       <div className="absolute inset-x-0 bottom-0 h-1/3" style={{ background: "linear-gradient(to bottom, transparent, var(--background))" }} />
       {/* Trame de petits pixels + lignes de balayage */}
       <div className="absolute inset-0 opacity-60 mix-blend-multiply" style={{ backgroundImage: "linear-gradient(to right, rgba(0,0,0,.55) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,.55) 1px, transparent 1px)", backgroundSize: "3px 3px" }} />

@@ -105,6 +105,27 @@ function BrandStrip() {
   );
 }
 
+const PARTNERS = [
+  { name: "THE MOUV", src: "/images/partner-the-mouv.webp", w: 640, h: 267, cls: "h-14 sm:h-16" },
+  { name: "LA SUNSHINES", src: "/images/partner-la-sunshines.webp", w: 640, h: 101, cls: "h-8 sm:h-10" },
+];
+
+/** Partenaires : logos blancs sur fond sombre, discrets (opacité réduite), pleine force au survol. */
+function Partners() {
+  return (
+    <section aria-labelledby="partenaires-titre" className="pb-20 sm:pb-24">
+      <h2 id="partenaires-titre" className="px-4 text-center text-xl font-medium"><L fr="Partenaires" en="Partners" /></h2>
+      <ul className="mx-auto mt-10 flex max-w-4xl flex-wrap items-center justify-center gap-x-16 gap-y-8 px-4">
+        {PARTNERS.map((p) => (
+          <li key={p.name}>
+            <Image src={p.src} alt={p.name} width={p.w} height={p.h} className={`${p.cls} w-auto opacity-70 transition-opacity duration-200 hover:opacity-100`} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export default async function StreamerWall({ streamers }: { streamers: HomeStreamer[] }) {
   if (streamers.length === 0) return null;
   const ranked = [...streamers].sort((a, b) => Number(!!b.live) - Number(!!a.live) || Number(b.partner) - Number(a.partner));
@@ -122,6 +143,7 @@ export default async function StreamerWall({ streamers }: { streamers: HomeStrea
   return (
     <>
     <BrandStrip />
+    <Partners />
     <section aria-labelledby="mur-titre" className="relative isolate overflow-hidden border-b border-line py-24 sm:py-32">
       {/* Fond violet Twitch : large, saturé en haut, qui se fond vers le bas ; quadrillage très discret qui s'estompe avec lui. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: `${GRAIN}, radial-gradient(130% 85% at 50% 0%, color-mix(in srgb, #9146ff 30%, transparent) 0%, color-mix(in srgb, #9146ff 24%, transparent) 25%, color-mix(in srgb, #9146ff 15%, transparent) 50%, color-mix(in srgb, #9146ff 7%, transparent) 72%, transparent 100%), linear-gradient(to bottom, color-mix(in srgb, #9146ff 10%, transparent), transparent 70%)` }} />

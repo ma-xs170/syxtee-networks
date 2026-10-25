@@ -70,7 +70,7 @@ export default function HeroChat() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute right-3 top-[calc(65px+0.5rem)] z-10 hidden w-[17rem] flex-col justify-end gap-[3px] overflow-hidden text-[12.5px] leading-[1.35] text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.95),0_0_8px_rgba(0,0,0,0.6)] sm:flex lg:right-6"
+      className="pointer-events-none absolute right-3 top-[calc(65px+0.5rem)] hidden w-[17rem] flex-col justify-end gap-[3px] overflow-hidden text-[13px] font-medium leading-[1.35] text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.95),0_0_8px_rgba(0,0,0,0.6)] sm:flex lg:right-6"
       style={{ height: "21rem", maskImage: "linear-gradient(to bottom, transparent 0%, #000 22%)", WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, #000 22%)" }}
     >
       {list.map((m) => (

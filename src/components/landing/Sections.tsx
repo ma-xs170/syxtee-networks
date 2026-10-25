@@ -139,7 +139,7 @@ export function ObsBento() {
           <Cell delay={0.0} title={<L fr="Change de scène" en="Switch scenes" />} text={<L fr="N'importe où, d'un tap." en="Anywhere, in one tap." />}>
             <SceneSwitcher />
           </Cell>
-          <Cell delay={0.08} title={<L fr="Mixage Audio" en="Audio Mixing" />} text={<L fr="À distance." en="Remotely." />}>
+          <Cell delay={0.08} title={<L fr="Mixage Audio" en="Audio Mixing" />} text={<L fr="Un vrai contrôle, pensé pour le terrain." en="Real control, built for the field." />}>
             <div aria-hidden="true" className="flex h-24 w-full max-w-xs items-end gap-1.5">
               {[40, 62, 50, 78, 66, 88, 58, 72, 46, 64].map((h, i) => (
                 <span key={i} className={`level-bar h-full flex-1 origin-bottom rounded-t-md ${i > 7 ? "bg-bad" : "bg-foreground/55"}`} style={{ "--p": h / 100, transform: `scaleY(${h / 100})`, animationDuration: `${650 + ((i * 137) % 500)}ms`, animationDelay: `${-((i * 211) % 700)}ms` } as React.CSSProperties} />

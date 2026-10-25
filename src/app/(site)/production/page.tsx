@@ -76,8 +76,10 @@ export default function ProductionPage() {
       </section>
 
       <section className="relative isolate overflow-hidden pb-6 pt-20 text-center lg:pb-8 lg:pt-28">
-        {/* bleu mer */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("#2b7fe0", "100% 50%", 70, 100, 34)} />
+        {/* un halo sous chaque polaroïd, dans l'ordre : forêt (mobilité), lumière chaude (soirée), mer */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("#2f9e5b", "12% 75%", 45, 90, 36)} />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("#e8892b", "50% 80%", 40, 80, 28)} />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("#2b7fe0", "88% 75%", 45, 90, 36)} />
 
         <Container>
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Sur le terrain</p>

@@ -6,7 +6,7 @@ import L from "../L";
 const ITEMS = [
   { src: "/images/categories/irl.webp", tilt: "-rotate-6", drop: "sm:mt-8", fr: "Mobilité", en: "Mobility", href: "https://www.twitch.tv/directory/category/irl" },
   { src: "/images/categories/evenements-speciaux.webp", tilt: "rotate-2", drop: "sm:mt-0", fr: "Événements", en: "Events", href: "https://www.twitch.tv/directory/category/special-events" },
-  { src: "/images/categories/piscines-plages.webp", tilt: "rotate-6", drop: "sm:mt-6", fr: "Piscines, jacuzzi et plages", en: "Pools, Hot Tubs & Beaches", href: "https://www.twitch.tv/directory/category/pools-hot-tubs-and-beaches" },
+  { src: "/images/categories/piscines-plages.webp", tilt: "rotate-6", drop: "sm:mt-6", fr: "Sortie en mer", en: "At sea", href: "https://www.twitch.tv/directory/category/pools-hot-tubs-and-beaches" },
 ];
 
 export default function TwitchCategories() {

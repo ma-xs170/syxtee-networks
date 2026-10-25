@@ -17,26 +17,6 @@ const at = (i: number, f: number) => (i + f) / N; // progrès global figé de la
 
 const stage = (node: ReactNode) => <StoryStage>{node}</StoryStage>;
 
-function Breadcrumb() {
-  return (
-    <nav aria-label="Fil d'Ariane" className="mb-6 font-mono text-xs text-muted">
-      <ol className="flex flex-wrap items-center gap-2">
-        <li>
-          <Link href="/" className="pointer-events-auto hover:text-foreground">
-            Accueil
-          </Link>
-        </li>
-        <li aria-hidden="true" className="text-foreground/20">
-          /
-        </li>
-        <li aria-current="page" className="text-foreground">
-          Fonctionnement
-        </li>
-      </ol>
-    </nav>
-  );
-}
-
 export default function FonctionnementStory() {
   const narrow = useNarrow();
   const scenes: StoryScene[] = [
@@ -44,7 +24,6 @@ export default function FonctionnementStory() {
       kicker: "01 · Téléphone",
       title: "Tout commence dans ta poche.",
       titleAs: "h1",
-      header: <Breadcrumb />,
       paragraphs: ["La caméra filme, Moblin compresse la vidéo en temps réel.", "Puis il la découpe en milliers de petits paquets numérotés."],
       render: (p) => stage(<SceneCapture progress={p} />),
       staticAt: at(0, 0.8),

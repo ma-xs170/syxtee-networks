@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import type { MotionValue } from "motion/react";
 import { AndroidDrawing, ChipGlyph } from "@/components/illustrations/PhoneAndroid";
 import { MoblinDrawing } from "@/components/illustrations/PhoneMoblin";
@@ -182,30 +181,6 @@ function SceneBonding({ progress }: { progress: MotionValue<number> }) {
   );
 }
 
-function Breadcrumb() {
-  return (
-    <nav aria-label="Fil d'Ariane" className="mb-6 font-mono text-xs text-muted">
-      <ol className="flex flex-wrap items-center gap-2">
-        <li>
-          <Link href="/" className="hover:text-foreground">
-            Accueil
-          </Link>
-        </li>
-        <li aria-hidden="true" className="text-foreground/20">
-          /
-        </li>
-        <li className="text-muted">Outils</li>
-        <li aria-hidden="true" className="text-foreground/20">
-          /
-        </li>
-        <li aria-current="page" className="text-foreground">
-          Saily
-        </li>
-      </ol>
-    </nav>
-  );
-}
-
 const scenes: StoryScene[] = [
   {
     kicker: "01 · L'eSIM",
@@ -215,7 +190,6 @@ const scenes: StoryScene[] = [
         Une 4G de plus, en quelques minutes.
       </>
     ),
-    header: <Breadcrumb />,
     paragraphs: [
       "Ton iPhone n'utilise qu'une ligne de données à la fois : impossible d'y ajouter une 2e 4G.",
       "L'eSIM Saily s'installe donc sur un 2e appareil, un téléphone Android, depuis l'app et sans carte physique.",

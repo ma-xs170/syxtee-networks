@@ -39,22 +39,8 @@ function Finale() {
   );
 }
 
-// La page /starlink commence directement par l'histoire : fil d'Ariane et h1 dans la scène 1.
-const breadcrumb = (
-  <nav aria-label="Fil d'Ariane" className="mb-6 font-mono text-xs text-muted lg:mb-8">
-    <ol className="flex flex-wrap items-center gap-2">
-      <li>
-        <Link href="/" className="hover:text-foreground">Accueil</Link>
-      </li>
-      <li aria-hidden="true" className="text-foreground/20">/</li>
-      <li aria-current="page" className="text-foreground">Starlink</li>
-    </ol>
-  </nav>
-);
-
 const scenes: StoryScene[] = [
   {
-    header: breadcrumb,
     kicker: "01 · Comment ça marche",
     title: "Une antenne qui vise le ciel toute seule.",
     titleAs: "h1",

@@ -8,23 +8,10 @@ import MoblinStage from "./MoblinStage";
 
 const APP_STORE = "https://apps.apple.com/app/id6466745933";
 
-const breadcrumb = (
-  <nav aria-label="Fil d'Ariane" className="mb-6 font-mono text-xs text-muted lg:mb-8">
-    <ol className="flex flex-wrap items-center gap-2">
-      <li>
-        <Link href="/" className="hover:text-foreground">Accueil</Link>
-      </li>
-      <li aria-hidden="true" className="text-foreground/20">/</li>
-      <li aria-current="page" className="text-foreground">Moblin</li>
-    </ol>
-  </nav>
-);
-
 const stage = (p: Parameters<StoryScene["render"]>[1]["global"]) => <MoblinStage p={p} />;
 
 const scenes: StoryScene[] = [
   {
-    header: breadcrumb,
     kicker: "01 · Moblin",
     title: "Ton encodeur IRL dans la poche.",
     titleAs: "h1",

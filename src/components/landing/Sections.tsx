@@ -5,7 +5,9 @@ import { ButtonLink } from "../ui/Button";
 import Highlight from "../ui/Highlight";
 import DirectorDemo from "./DirectorDemo";
 import Reveal from "../ui/Reveal";
+import { Envelope, Phone } from "@phosphor-icons/react/dist/ssr";
 import L from "../L";
+import { glow } from "@/lib/glow";
 import TwitchCategories from "./TwitchCategories";
 import Faq from "./Faq";
 import ObsHero from "./ObsHero";
@@ -22,13 +24,6 @@ import { CATALOG, TIERS } from "@/lib/billing";
 
 const h2 = "h-serif text-[clamp(2.25rem,4.5vw,3.5rem)]";
 const lead = "mt-4 max-w-[60ch] text-base leading-relaxed text-muted";
-// Halo de fond d'une section : courbe douce (plusieurs paliers) et bords haut/bas estompés, pour ne jamais laisser de coupure nette.
-// Les halos alternent gauche/droite d'une section à l'autre : jamais deux couleurs côte à côte au raccord.
-const glow = (color: string, at: string, w: number, h: number, a: number): React.CSSProperties => {
-  const c = (n: number) => `color-mix(in srgb, ${color} ${(a * n).toFixed(1)}%, transparent)`;
-  const mask = "linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%)";
-  return { background: `radial-gradient(${w}% ${h}% at ${at}, ${c(1)} 0%, ${c(0.72)} 25%, ${c(0.4)} 48%, ${c(0.15)} 70%, ${c(0.04)} 88%, transparent 100%)`, maskImage: mask, WebkitMaskImage: mask };
-};
 const rise = (i: number) => ({ "--i": i }) as React.CSSProperties;
 
 function Cell({ className = "", title, text, children, delay = 0, href, cta }: { className?: string; title: React.ReactNode; text: React.ReactNode; children?: React.ReactNode; delay?: number; href?: string; cta?: React.ReactNode }) {
@@ -160,8 +155,8 @@ export function ObsBento() {
           </Cell>
           <Cell delay={0.16} title={<L fr="Espaces partagés" en="Shared spaces" />} text={<L fr="Invite un modérateur ou un monteur à piloter avec toi, chacun avec son compte et son rôle." en="Invite a moderator or an editor to control with you, each with their own account and role." />} href="/espaces-partages" cta={<L fr="Découvrir les espaces partagés" en="Discover shared spaces" />}>
             <div aria-hidden="true" className="flex items-center justify-center gap-4">
-              {["M", "L", "S", "+"].map((l) => (
-                <span key={l} className="grid size-14 place-items-center rounded-full border border-line-strong bg-background text-lg font-semibold">{l}</span>
+              {[["M", "from-violet-500 to-pink-500"], ["L", "from-sky-500 to-blue-600"], ["S", "from-emerald-500 to-teal-600"], ["+", "from-amber-400 to-orange-500"]].map(([l, c]) => (
+                <span key={l} className={`grid size-14 place-items-center rounded-2xl bg-gradient-to-br ${c} text-lg font-semibold text-white shadow-lg`}>{l}</span>
               ))}
             </div>
           </Cell>
@@ -338,14 +333,17 @@ export function FaqSection() {
 export function FinalCta() {
   return (
     <section data-theme="dark" className="relative isolate flex min-h-[680px] items-center overflow-hidden border-t border-line bg-background py-24 text-foreground sm:min-h-[820px] sm:py-32">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(50% 55% at 50% 50%, color-mix(in srgb, var(--bad) 20%, transparent), transparent 72%)" }} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("var(--bad)", "50% 50%", 60, 70, 22)} />
       <GuadeloupeMap />
+      {/* Voile sombre derrière le texte : la carte reste en fond, le texte garde tout son contraste. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(40% 45% at 50% 50%, color-mix(in srgb, var(--background) 88%, transparent), transparent 100%)" }} />
       <Container className="relative w-full text-center">
         <h2 className="h-serif mx-auto max-w-[12ch] text-[clamp(2.75rem,6vw,4.5rem)]"><L fr={<>Prêt à partir en <em>direct ?</em></>} en={<>Ready to go <em>live?</em></>} /></h2>
-        <p className="mx-auto mt-5 max-w-[34ch] text-base leading-relaxed text-muted sm:text-lg"><L fr="Production IRL, relais SRTLA et contrôle d'OBS à distance, depuis la Guadeloupe." en="IRL production, SRTLA relays and remote OBS control, from Guadeloupe." /></p>
+        <p className="mx-auto mt-5 max-w-[34ch] text-base leading-relaxed text-foreground/80 sm:text-lg"><L fr="Production IRL, relais SRTLA et contrôle d'OBS à distance, depuis la Guadeloupe." en="IRL production, SRTLA relays and remote OBS control, from Guadeloupe." /></p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link href="/contact" className="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><L fr="Contactez-nous" en="Contact us" /></Link>
+          <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><Phone size={18} weight="fill" aria-hidden="true" /><L fr="Contactez-nous" en="Contact us" /></Link>
           <Link href="/inscription" className="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-full bg-bad px-6 text-[15px] font-medium text-foreground transition-opacity hover:opacity-85"><L fr="Commencer" en="Get started" /></Link>
+          <a href="mailto:contact@syxtee-networks.fr" aria-label="Écrire à contact@syxtee-networks.fr" className="inline-grid size-12 place-items-center rounded-full border border-foreground/25 bg-foreground/[0.06] transition-colors hover:bg-foreground/[0.12]"><Envelope size={20} aria-hidden="true" /></a>
         </div>
       </Container>
     </section>

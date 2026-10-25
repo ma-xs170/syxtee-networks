@@ -785,7 +785,7 @@ dialog[open]::backdrop { opacity: 1; }
 
 
 /* Accueil : le héros passe sous la barre de menu (transparente tant qu'on n'a pas défilé), comme l'exemple. */
-body:has(#accueil-hero) .site-nav { margin-bottom: -65px; }
+body:has(#accueil-hero, [data-hero]) .site-nav { margin-bottom: -65px; }
 
 /* Textes bilingues (composant L) : une seule langue visible, selon <html lang>. */
 .l-en { display: none; }

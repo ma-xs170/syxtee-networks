@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { glow } from "@/lib/glow";
 import { Container } from "./ui";
 
 export default function PageHero({
@@ -16,9 +17,9 @@ export default function PageHero({
   children?: ReactNode;
 }) {
   return (
-    <section className="bg-field relative isolate overflow-hidden border-b border-line">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(60% 90% at 0% 0%, color-mix(in srgb, var(--bad) 30%, transparent), transparent 70%)" }} />
-      <Container className="relative pb-16 pt-12 sm:pb-24 sm:pt-16">
+    <section data-hero className="bg-field relative isolate overflow-hidden border-b border-line">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("var(--bad)", "0% 0%", 70, 100, 30)} />
+      <Container className="relative pb-16 pt-[calc(3rem+65px)] sm:pb-24 sm:pt-[calc(4rem+65px)]">
         <nav aria-label="Fil d'Ariane" className="font-mono text-xs text-muted">
           <ol className="flex flex-wrap items-center gap-2">
             <li>

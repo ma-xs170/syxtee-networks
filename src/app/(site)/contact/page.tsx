@@ -5,6 +5,7 @@ import { DiscordLogo, Envelope, GithubLogo, InstagramLogo, MapPin, YoutubeLogo }
 import ContactForm from "@/components/contact/ContactForm";
 import { Container } from "@/components/ui";
 import { site } from "@/lib/site";
+import { glow } from "@/lib/glow";
 
 // Une seule carte pour toute la page : mêmes marges, mêmes arrondis, mêmes pastilles d'icône.
 const card = "rounded-2xl border border-line bg-surface p-6 sm:p-8";
@@ -27,10 +28,10 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="relative isolate overflow-hidden">
+    <div data-hero className="relative isolate overflow-hidden">
       {/* Dégradé rouge en haut de page, comme un projecteur sur la scène. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[1100px]" style={{ maskImage: "linear-gradient(to bottom, #000 55%, transparent)", WebkitMaskImage: "linear-gradient(to bottom, #000 55%, transparent)", background: "radial-gradient(70% 55% at 0% 0%, color-mix(in srgb, var(--bad) 40%, transparent), transparent 70%), radial-gradient(55% 50% at 100% 30%, color-mix(in srgb, var(--bad) 26%, transparent), transparent 70%)" }} />
-      <section className="pb-12 pt-20 sm:pb-16 sm:pt-28">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[900px]" style={glow("var(--bad)", "0% 0%", 70, 80, 30)} />
+      <section className="pb-12 pt-[calc(5rem+65px)] sm:pb-16 sm:pt-[calc(7rem+65px)]">
         <Container className="max-w-5xl">
           <h1 className="h-serif max-w-[18ch] text-[clamp(2.75rem,6vw,4.5rem)]">Demander une <em>production IRL.</em></h1>
           <p className="mt-6 max-w-[58ch] text-base leading-relaxed text-muted sm:text-lg">Décris ton projet : on s&apos;occupe de la production (régie, cadreur, réseau) et on te répond avec un devis gratuit et sur mesure.</p>

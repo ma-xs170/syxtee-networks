@@ -1,6 +1,7 @@
 import Image from "next/image";
 import L from "../L";
 import { siDji, siKick, siObsstudio, siTwitch, siWebrtc, siYoutube } from "@/lib/brand-icons";
+import { GRAIN } from "@/lib/glow";
 import { avatarTint, FALLBACK_TINT } from "@/lib/avatar-color";
 import type { HomeStreamer } from "@/lib/streamers";
 
@@ -123,7 +124,7 @@ export default async function StreamerWall({ streamers }: { streamers: HomeStrea
     <BrandStrip />
     <section aria-labelledby="mur-titre" className="relative isolate overflow-hidden border-b border-line py-24 sm:py-32">
       {/* Fond violet Twitch : large, saturé en haut, qui se fond vers le bas ; quadrillage très discret qui s'estompe avec lui. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: "radial-gradient(130% 85% at 50% 0%, color-mix(in srgb, #9146ff 30%, transparent) 0%, color-mix(in srgb, #9146ff 24%, transparent) 25%, color-mix(in srgb, #9146ff 15%, transparent) 50%, color-mix(in srgb, #9146ff 7%, transparent) 72%, transparent 100%), linear-gradient(to bottom, color-mix(in srgb, #9146ff 10%, transparent), transparent 70%)" }} />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ background: `${GRAIN}, radial-gradient(130% 85% at 50% 0%, color-mix(in srgb, #9146ff 30%, transparent) 0%, color-mix(in srgb, #9146ff 24%, transparent) 25%, color-mix(in srgb, #9146ff 15%, transparent) 50%, color-mix(in srgb, #9146ff 7%, transparent) 72%, transparent 100%), linear-gradient(to bottom, color-mix(in srgb, #9146ff 10%, transparent), transparent 70%)` }} />
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={{ backgroundImage: "linear-gradient(to right, color-mix(in srgb, var(--foreground) 4%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in srgb, var(--foreground) 4%, transparent) 1px, transparent 1px)", backgroundSize: "72px 72px", maskImage: "linear-gradient(to bottom, #000, transparent 75%)", WebkitMaskImage: "linear-gradient(to bottom, #000, transparent 75%)" }} />
       <svg viewBox="0 0 24 24" width="44" height="44" fill="currentColor" role="img" aria-label="Twitch" className="mx-auto mb-6 block" style={{ color: `#${siTwitch.hex}` }}>
         <path d={siTwitch.path} />

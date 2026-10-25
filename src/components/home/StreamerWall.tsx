@@ -178,13 +178,13 @@ export default function StreamerWall({ streamers }: { streamers: HomeStreamer[] 
   );
 }
 
-/** Volée de quelques cœurs qui débordent de la section sur les voisines : positions, tailles et rythmes tirés d'un générateur à graine fixe (même rendu serveur et client), un peu comme une œuvre.
- *  4 gros cœurs, le reste petit ou moyen ; les gros sont plus flous et plus pâles pour la profondeur. */
+/** Quatre gros cœurs qui débordent de la section sur les voisines : positions, tailles et rythmes tirés d'un générateur à graine fixe (même rendu serveur et client), un peu comme une œuvre.
+ *  4 gros cœurs flous, pas de petits ; les gros sont plus flous et plus pâles pour la profondeur. */
 const HEARTS = (() => {
   let x = 7;
   const r = () => ((x = (x * 16807) % 2147483647) - 1) / 2147483646;
-  return Array.from({ length: 13 }, (_, i) => {
-    const size = Math.round(i < 4 ? 64 + r() * 30 : r() > 0.6 ? 20 + r() * 12 : 8 + r() * 9);
+  return Array.from({ length: 4 }, (_, i) => {
+    const size = Math.round(64 + r() * 30);
     return {
       left: `${(3 + ((i * 0.618034 + r() * 0.05) % 1) * 94).toFixed(1)}%`,
       top: `${(-40 + r() * 170).toFixed(1)}%`,

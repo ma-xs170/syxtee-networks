@@ -74,7 +74,7 @@ export default function ProductionPage() {
         </Container>
       </section>
 
-      <section className="overflow-hidden py-20 text-center lg:py-28">
+      <section className="overflow-hidden pb-6 pt-20 text-center lg:pb-8 lg:pt-28">
         <Container>
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Sur le terrain</p>
           <h2 className="h-serif mx-auto mt-4 max-w-3xl text-[clamp(2.25rem,4.5vw,3.5rem)]">Mobilité, soirée, mer : <em>on te suit partout.</em></h2>
@@ -82,7 +82,7 @@ export default function ProductionPage() {
         <TwitchCategories />
       </section>
 
-      <section className="py-20 lg:py-28">
+      <section className="pb-20 pt-10 lg:pb-28 lg:pt-14">
         <Container>
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Comment ça se passe</p>
           <h2 className="h-serif mt-4 text-[clamp(2.25rem,4.5vw,3.5rem)]">Trois étapes, <em>zéro stress.</em></h2>

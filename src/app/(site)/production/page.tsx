@@ -30,7 +30,7 @@ const glass = "inline-flex h-12 items-center justify-center gap-2 whitespace-now
 export default function ProductionPage() {
   return (
     <>
-      <section data-hero data-theme="dark" className="relative isolate flex min-h-[85dvh] items-end overflow-hidden border-b border-line text-foreground">
+      <section data-hero data-theme="dark" className="relative isolate flex min-h-[85dvh] items-end overflow-hidden text-foreground">
         <HeroVideo />
         <Container className="relative pb-16 pt-[calc(5rem+65px)] sm:pb-24">
           <nav aria-label="Fil d'Ariane" className="font-mono text-xs text-foreground/70">
@@ -53,7 +53,7 @@ export default function ProductionPage() {
         </Container>
       </section>
 
-      <section className="border-b border-line py-20 lg:py-28">
+      <section className="py-20 lg:py-28">
         <Container className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           <div className="lg:sticky lg:top-28 lg:self-start">
             <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Ce qu&apos;on fait</p>
@@ -74,7 +74,7 @@ export default function ProductionPage() {
         </Container>
       </section>
 
-      <section className="overflow-hidden border-b border-line py-20 text-center lg:py-28">
+      <section className="overflow-hidden py-20 text-center lg:py-28">
         <Container>
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Sur le terrain</p>
           <h2 className="h-serif mx-auto mt-4 max-w-3xl text-[clamp(2.25rem,4.5vw,3.5rem)]">Mobilité, soirée, mer : <em>on te suit partout.</em></h2>
@@ -82,7 +82,7 @@ export default function ProductionPage() {
         <TwitchCategories />
       </section>
 
-      <section className="border-b border-line py-20 lg:py-28">
+      <section className="py-20 lg:py-28">
         <Container>
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Comment ça se passe</p>
           <h2 className="h-serif mt-4 text-[clamp(2.25rem,4.5vw,3.5rem)]">Trois étapes, <em>zéro stress.</em></h2>

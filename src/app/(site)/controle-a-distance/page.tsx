@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { ComponentType, CSSProperties } from "react";
 import { siKick, siTwitch, siYoutube } from "@/lib/brand-icons";
 import { DeviceMobile, Faders, LockKey, Rows, ShieldCheck, type IconProps } from "@/components/icons";
-import FloatingPhone from "@/components/remote-showcase/FloatingPhone";
+import ObsHero from "@/components/landing/ObsHero";
 import ProgramPeek from "@/components/mockups/ProgramPeek";
 import PhoneStory, { type Step } from "@/components/remote-showcase/PhoneStory";
 import { Container } from "@/components/ui";
@@ -98,7 +98,7 @@ export default function ControlePage() {
       {/* 1. Hero : deux colonnes, halo rouge en haut à gauche, sous l'en-tête transparent */}
       <section data-hero data-theme="dark" className="relative isolate overflow-hidden border-b border-line bg-background text-foreground">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("var(--bad)", "0% 0%", 70, 90, 30)} />
-        <Container className="grid items-center gap-14 pb-24 pt-[calc(5rem+65px)] lg:grid-cols-[1.1fr_1fr] lg:gap-10 lg:pb-32 lg:pt-[calc(7rem+65px)]">
+        <Container className="grid items-center gap-14 pb-24 pt-[calc(5rem+65px)] lg:grid-cols-[0.8fr_1.2fr] lg:gap-10 lg:pb-32 lg:pt-[calc(7rem+65px)]">
           <div>
             <p className={`rise ${eyebrow}`} style={{ "--i": 0 } as CSSProperties}>Contrôle à distance</p>
             <h1 className="rise h-serif mt-5 max-w-[14ch] text-[clamp(2.75rem,6vw,4.75rem)]" style={{ "--i": 1 } as CSSProperties}>
@@ -112,7 +112,7 @@ export default function ControlePage() {
               <Link href="/application" className={TONAL}>Mettre sur l&apos;écran d&apos;accueil</Link>
             </div>
           </div>
-          <FloatingPhone />
+          <div className="min-w-0 lg:pr-[9%]"><ObsHero /></div>
         </Container>
       </section>
 

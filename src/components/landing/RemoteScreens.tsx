@@ -240,6 +240,7 @@ export function MacUI({ c }: { c: Ctl }) {
 }
 
 type Tab = "scenes" | "sources" | "mixer" | "controls";
+export type PhoneTab = Tab;
 const TABS: [Tab, string, React.ReactNode][] = [
   ["scenes", "Scènes", <><rect key="a" x="3" y="5" width="18" height="14" rx="2" /><path key="b" d="M3 10h18M8 5l-2 5M14 5l-2 5M20 5l-2 5" /></>],
   ["sources", "Sources", <><path key="a" d="M12 3l9 5-9 5-9-5 9-5Z" /><path key="b" d="M3 13l9 5 9-5" /></>],
@@ -248,8 +249,9 @@ const TABS: [Tab, string, React.ReactNode][] = [
 ];
 
 /** Téléphone : mêmes panneaux, un à la fois, avec la barre d'onglets du bas. */
-export function PhoneUI({ c }: { c: Ctl }) {
-  const [tab, setTab] = useState<Tab>("scenes");
+export function PhoneUI({ c, tab: forced }: { c: Ctl; /** Onglet imposé (récit de la page Contrôle à distance) ; sinon c'est le visiteur qui choisit. */ tab?: Tab }) {
+  const [own, setTab] = useState<Tab>("scenes");
+  const tab = forced ?? own;
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-black pt-[54px] text-left text-[13px] text-neutral-100">
       <header className="flex h-11 shrink-0 items-center justify-between border-b border-[#262626] px-3.5">

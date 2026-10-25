@@ -1,6 +1,7 @@
 "use client";
 
-import RemotePhoneScreen, { type RemoteTab } from "../mockups/RemotePhoneScreen";
+import type { PhoneTab } from "../landing/RemoteScreens";
+import RemotePhone from "./RemotePhone";
 import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
 import { useRef } from "react";
 
@@ -9,7 +10,8 @@ import { useRef } from "react";
 // prefers-reduced-motion : pas de défilement piloté, les quatre étapes se lisent à la suite, chacune avec sa capture.
 
 export type Step = { title: string; text: string; src?: string; alt: string };
-const TABS: RemoteTab[] = ["scenes", "sources", "mixer", "controls", "multi", "chat"];
+// L'interface du téléphone a quatre onglets : les sorties multistream et le chat se montrent sur le dernier (Direct).
+const TABS: PhoneTab[] = ["scenes", "sources", "mixer", "controls", "controls", "controls"];
 
 const N = 6;
 
@@ -41,19 +43,8 @@ function Shot({ i, p }: { i: number; p: MotionValue<number> }) {
   const opacity = useWindow(p, i);
   return (
     <motion.div style={{ opacity }} className="absolute inset-0">
-      <RemotePhoneScreen tab={TABS[i] ?? "scenes"} />
+      <RemotePhone tab={TABS[i] ?? "scenes"} />
     </motion.div>
-  );
-}
-
-function Frame({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="relative w-full rounded-[18%/8.3%] border-[1.5px] border-foreground/80 bg-black p-[3.5%] shadow-[0_40px_90px_-30px_rgba(0,0,0,0.9)]" style={{ aspectRatio: "9 / 19.5" }}>
-      <div className="relative h-full w-full overflow-hidden rounded-[14%/6.5%] bg-black">
-        {children}
-        <div aria-hidden="true" className="absolute left-1/2 top-[2.2%] h-[3.6%] w-[30%] -translate-x-1/2 rounded-full bg-black ring-1 ring-white/15" />
-      </div>
-    </div>
   );
 }
 
@@ -72,9 +63,7 @@ export default function PhoneStory({ steps }: { steps: Step[] }) {
               <p className="mt-4 max-w-[42ch] text-base leading-relaxed text-muted">{s.text}</p>
             </div>
             <div className="mx-auto w-full max-w-[16rem]">
-              <Frame>
-                <RemotePhoneScreen tab={TABS[i] ?? "scenes"} />
-              </Frame>
+              <RemotePhone tab={TABS[i] ?? "scenes"} />
             </div>
           </li>
         ))}
@@ -86,11 +75,11 @@ export default function PhoneStory({ steps }: { steps: Step[] }) {
       <div className="sticky top-0 mx-auto grid h-dvh max-w-6xl grid-rows-[auto_1fr] items-center gap-6 px-4 pb-8 pt-20 sm:px-6 lg:grid-cols-2 lg:grid-rows-1 lg:gap-16 lg:py-0">
         <div className="mx-auto h-[min(54dvh,32rem)] lg:order-2 lg:h-[min(78dvh,46rem)]">
           <div className="h-full" style={{ aspectRatio: "9 / 19.5" }}>
-            <Frame>
+            <div className="relative h-full w-full">
               {steps.map((s, i) => (
                 <Shot key={s.title} i={i} p={scrollYProgress} />
               ))}
-            </Frame>
+            </div>
           </div>
         </div>
         <div className="relative h-full lg:order-1 lg:h-[24rem]">

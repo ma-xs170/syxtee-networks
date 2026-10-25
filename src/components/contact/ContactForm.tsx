@@ -37,8 +37,23 @@ const Select = ({ id, name, required, placeholder, options, icons }: { id: strin
     return () => document.removeEventListener("pointerdown", away);
   }, [open]);
   const pick = (o: string) => { setValue(o); setOpen(false); };
+  // Saisie au clavier : les lettres tapées (sans tenir compte des accents ni des majuscules) amènent sur le premier choix qui commence ainsi, Entrée le valide.
+  const typed = useRef({ text: "", at: 0 });
+  const fold = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/-/g, " ").toLowerCase();
+  const typeAhead = (key: string) => {
+    const now = Date.now();
+    typed.current.text = (now - typed.current.at > 900 ? "" : typed.current.text) + key;
+    typed.current.at = now;
+    const q = fold(typed.current.text);
+    const i = options.findIndex((o) => fold(o).startsWith(q));
+    const j = i >= 0 ? i : options.findIndex((o) => fold(o).includes(q));
+    if (j >= 0) { setActive(j); setOpen(true); }
+  };
   const onKey = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") setOpen(false);
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key !== " " || (typed.current.text && Date.now() - typed.current.at < 900))) {
+      e.preventDefault();
+      typeAhead(e.key);
+    } else if (e.key === "Escape") setOpen(false);
     else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
       if (!open) { setActive(Math.max(0, options.indexOf(value))); setOpen(true); }
@@ -51,7 +66,7 @@ const Select = ({ id, name, required, placeholder, options, icons }: { id: strin
   return (
     <div ref={box} className="relative">
       <input name={name} value={value} required={required} readOnly tabIndex={-1} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-0" />
-      <button type="button" id={id} role="combobox" aria-haspopup="listbox" aria-expanded={open} aria-controls={`${id}-list`} onClick={() => { setActive(Math.max(0, options.indexOf(value))); setOpen((o) => !o); }} onKeyDown={onKey} className={`${field} flex items-center justify-between gap-3 pr-4 text-left ${value ? "" : "text-muted/70"}`}>
+      <button type="button" id={id} role="combobox" aria-haspopup="listbox" aria-expanded={open} aria-controls={`${id}-list`} onClick={() => { setActive(Math.max(0, options.indexOf(value))); setOpen((o) => !o); }} onKeyDown={onKey} onBlur={() => { typed.current.text = ""; }} className={`${field} flex items-center justify-between gap-3 pr-4 text-left ${value ? "" : "text-muted/70"}`}>
         <span className="flex min-w-0 items-center gap-2.5">{value && icons?.[value]}<span className="truncate">{value || placeholder}</span></span>
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className={`shrink-0 text-muted transition-transform ${open ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg>
       </button>

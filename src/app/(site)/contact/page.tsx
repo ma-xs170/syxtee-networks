@@ -53,7 +53,7 @@ export default function ContactPage() {
               <ul className="mt-6 grid gap-5">
                 <li className="flex items-center gap-4">
                   <span className={iconBox}><MapPin size={22} aria-hidden="true" /></span>
-                  <span className="text-sm"><span className="block font-medium">Guadeloupe</span><span className="block text-muted">Petit-Bourg, déplacement partout sur l&apos;île</span></span>
+                  <span className="text-sm"><span className="block font-medium">Guadeloupe</span><span className="block text-muted">Basé à Petit-Bourg</span></span>
                 </li>
                 {CONTACTS.map(({ Icon, label, sub, href }) => (
                   <li key={label}>

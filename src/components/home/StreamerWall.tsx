@@ -199,7 +199,7 @@ export function HoursStat({ hours }: { hours: number | null }) {
             key={i}
             weight="fill"
             size={h.size}
-            className="heart-float absolute -translate-x-1/2 text-bad blur-[3px]"
+            className="heart-float absolute -translate-x-1/2 text-bad blur-[2px] max-sm:!size-11 sm:blur-[3px]"
             style={{ left: h.left, top: h.top, animationDelay: h.delay, animationDuration: h.dur, "--r0": h.rot, "--hx": h.dx, "--hy": h.rise, "--ho": h.op } as React.CSSProperties}
           />
         ))}

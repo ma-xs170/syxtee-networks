@@ -89,11 +89,10 @@ export function StreamersIntro({ streamers = [] }: { streamers?: HomeStreamer[] 
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("#9146ff", "0% 0%", 70, 55, 24)} />
       <Container className="text-center">
         <Reveal>
-          <h2 className={`${h2} mx-auto max-w-[20ch]`}><L fr={<>Streamers indépendants : les mêmes outils, <em>pas cher.</em></>} en={<>Independent streamers: the same tools, <em>for less.</em></>} /></h2>
-          <p className={`${lead} mx-auto`}><L fr="Pilote ton OBS depuis ton téléphone et diffuse en SRTLA sur nos relais. Gratuit pour commencer, dès 5 € par mois." en="Control your OBS from your phone and stream over SRTLA on our relays. Free to start, from €5 a month." /></p>
+          <h2 className={`${h2} mx-auto max-w-[20ch]`}><L fr={<>Streamers indépendants&nbsp;: les mêmes outils, <em>pas cher.</em></>} en={<>Independent streamers: the same tools, <em>for less.</em></>} /></h2>
+          <p className={`${lead} mx-auto`}><L fr="Pilote ton OBS depuis ton téléphone. Gratuit pour commencer." en="Control your OBS from your phone. Free to start." /></p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <ButtonLink href="/inscription"><L fr="Créer mon compte" en="Create my account" /></ButtonLink>
-            <ButtonLink href="/tarifs" variant="secondary"><L fr="Voir les tarifs" en="See pricing" /></ButtonLink>
           </div>
         </Reveal>
         <div className="mt-14">

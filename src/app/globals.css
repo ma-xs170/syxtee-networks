@@ -869,3 +869,25 @@ html[data-splash="off"] .splash { display: none; }
 @keyframes splash-neon { 0% { opacity: 0; } 12% { opacity: 0.9; } 18% { opacity: 0.15; } 30% { opacity: 1; } 38% { opacity: 0.35; } 52%, 100% { opacity: 1; } }
 @keyframes splash-out { to { opacity: 0; visibility: hidden; } }
 @media (prefers-reduced-motion: reduce) { .splash { display: none; } }
+
+/* Démo du Gardien : la fenêtre OBS tremble quand elle plante, une barre se remplit pendant la relance. */
+@keyframes guardian-shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-7px) rotate(-0.4deg); }
+  30% { transform: translateX(6px) rotate(0.3deg); }
+  45% { transform: translateX(-4px); }
+  60% { transform: translateX(3px); }
+  80% { transform: translateX(-1px); }
+}
+.guardian-shake { animation: guardian-shake 0.6s ease-out both; }
+@keyframes guardian-glitch {
+  0%, 100% { opacity: 0; transform: translateY(0); }
+  20% { opacity: 0.55; transform: translateY(-12%); }
+  40% { opacity: 0; }
+  55% { opacity: 0.4; transform: translateY(18%); }
+  70% { opacity: 0; }
+}
+.guardian-glitch { background: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--bad) 45%, transparent) 0 3px, transparent 3px 9px); animation: guardian-glitch 0.9s steps(6) both; }
+@keyframes guardian-fill { from { width: 0; } to { width: 100%; } }
+.guardian-fill { animation: guardian-fill 2.2s cubic-bezier(0.4, 0, 0.2, 1) both; }
+@media (prefers-reduced-motion: reduce) { .guardian-shake, .guardian-glitch, .guardian-fill { animation: none; } }

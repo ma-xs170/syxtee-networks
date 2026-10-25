@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ComponentType, CSSProperties } from "react";
 import { ClockCounterClockwise, DeviceMobile, Faders, LockKey, PlugsConnected, ShieldCheck, type IconProps } from "@/components/icons";
+import GuardianDemo from "@/components/landing/GuardianDemo";
 import ObsHero from "@/components/landing/ObsHero";
 import { deviceImage } from "@/lib/device-images";
 import { Container } from "@/components/ui";
@@ -75,21 +76,28 @@ export default function ControlePage() {
       <section aria-labelledby="gardien" className="relative isolate overflow-hidden border-t border-line py-24 sm:py-32">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("var(--bad)", "100% 100%", 70, 60, 24)} />
         <Container>
-          <h2 id="gardien" className="h-serif mx-auto max-w-3xl text-center text-[clamp(2.25rem,4.5vw,3.5rem)]">
-            OBS plante en plein stream&nbsp;? <em>Il redémarre tout seul.</em>
-          </h2>
-          <ul className="mx-auto mt-16 grid max-w-4xl gap-x-12 gap-y-10 sm:grid-cols-3">
-            {GUARDIAN.map((g) => {
-              const Icon = g.icon;
-              return (
-                <li key={g.title}>
-                  <Icon size={26} weight="regular" className="text-foreground" aria-hidden="true" />
-                  <h3 className="mt-4 text-lg font-semibold tracking-tight">{g.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">{g.text}</p>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
+            <GuardianDemo />
+            <div>
+              <h2 id="gardien" className="h-serif text-[clamp(2.25rem,4.5vw,3.5rem)]">
+                OBS plante en plein stream&nbsp;? <em>Il redémarre tout seul.</em>
+              </h2>
+              <ul className="mt-10 grid gap-8">
+                {GUARDIAN.map((g) => {
+                  const Icon = g.icon;
+                  return (
+                    <li key={g.title} className="grid grid-cols-[2rem_1fr] gap-4">
+                      <Icon size={26} weight="regular" className="text-foreground" aria-hidden="true" />
+                      <div>
+                        <h3 className="text-lg font-semibold tracking-tight">{g.title}</h3>
+                        <p className="mt-1 text-sm leading-relaxed text-muted">{g.text}</p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </div>
         </Container>
       </section>
 

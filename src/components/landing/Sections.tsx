@@ -75,7 +75,7 @@ export function ProductionSection() {
 
         <Reveal className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><L fr="Contactez-nous" en="Contact us" /></Link>
-          <ButtonLink href="/cas-d-usage" variant="secondary" className="h-12 px-6 text-[15px]"><L fr="Nos réalisations" en="Our work" /></ButtonLink>
+          <ButtonLink href="/realisations" variant="secondary" className="h-12 px-6 text-[15px]"><L fr="Nos réalisations" en="Our work" /></ButtonLink>
         </Reveal>
         <TwitchCategories />
       </Container>

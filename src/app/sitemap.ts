@@ -7,7 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: site.url, changeFrequency: "weekly", priority: 1 },
     ...navLinks.filter((item) => item.href.startsWith("/")).map((item) => ({ url: `${site.url}${item.href}`, changeFrequency: "monthly" as const, priority: 0.8 })),
     // Pages rangées dans la documentation (plus dans le menu) : toujours publiques.
-    ...["/fonctionnement", "/services", "/moblin", "/starlink", "/saily", "/faq", "/application", "/controle-a-distance", "/regie-ia", "/guide-live-irl", "/multistream", "/espaces-partages", "/contact", "/soutenir", "/production", "/cas-d-usage"].map((href) => ({
+    ...["/fonctionnement", "/services", "/moblin", "/starlink", "/saily", "/faq", "/application", "/controle-a-distance", "/regie-ia", "/guide-live-irl", "/multistream", "/espaces-partages", "/contact", "/soutenir", "/production", "/cas-d-usage", "/realisations"].map((href) => ({
       url: `${site.url}${href}`,
       changeFrequency: "monthly" as const,
       priority: 0.7,

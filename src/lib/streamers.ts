@@ -36,6 +36,8 @@ export function parseChannelLink(input: string): { platform: "twitch"; login: st
 }
 
 const channelUrl = (login: string) => `https://twitch.tv/${login}`;
+/** Photo Twitch publique, sans clé API (repli quand l'API Twitch n'est pas configurée). `fallback=false` : 404 plutôt qu'une image générique, l'initiale prend alors le relais. */
+const publicAvatar = (login: string) => `https://unavatar.io/twitch/${encodeURIComponent(login.toLowerCase())}?fallback=false`;
 
 /** Chaînes ajoutées à la main (approuvées), avec avatar et statut live pour Twitch. */
 async function getFeatured(supabase: SupabaseClient): Promise<HomeStreamer[]> {
@@ -56,7 +58,7 @@ async function getFeatured(supabase: SupabaseClient): Promise<HomeStreamer[]> {
   return rows.map((r) => {
     const u = r.platform === "twitch" ? users.get(r.login.toLowerCase()) : undefined;
     const handle = u?.display_name || r.login;
-    return { handle, firstName: null, partner: false, url: channelUrl(r.login), avatar: r.avatar_url || (u?.profile_image_url ?? null), live: u && live.get(u.id) ? { viewers: live.get(u.id)!.viewers } : null, channels: [{ platform: "twitch" as const, handle, url: channelUrl(r.login) }] };
+    return { handle, firstName: null, partner: false, url: channelUrl(r.login), avatar: r.avatar_url || (u?.profile_image_url ?? publicAvatar(r.login)), live: u && live.get(u.id) ? { viewers: live.get(u.id)!.viewers } : null, channels: [{ platform: "twitch" as const, handle, url: channelUrl(r.login) }] };
   });
 }
 
@@ -99,7 +101,7 @@ export async function getHomeStreamers(): Promise<HomeStreamer[]> {
       firstName: r.first_name?.trim() || null,
       partner: r.partner === true,
       url: main.url,
-      avatar: r.avatar_url || (r.twitch_login ? twitchUsers.get(r.twitch_login.toLowerCase())?.profile_image_url ?? null : null),
+      avatar: r.avatar_url || (r.twitch_login ? twitchUsers.get(r.twitch_login.toLowerCase())?.profile_image_url ?? publicAvatar(r.twitch_login) : null),
       live: r.twitch_id && live.get(r.twitch_id) ? { viewers: live.get(r.twitch_id)!.viewers } : null,
       channels,
     } satisfies HomeStreamer];

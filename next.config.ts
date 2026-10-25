@@ -21,6 +21,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "static-cdn.jtvnw.net" }, // avatars Twitch
       { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" }, // avatars envoyés
       { protocol: "https", hostname: "cdn.discordapp.com" },
+      { protocol: "https", hostname: "unavatar.io" }, // photo Twitch publique (repli sans clé API)
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
     ],
   },

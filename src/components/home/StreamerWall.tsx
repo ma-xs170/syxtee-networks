@@ -3,6 +3,8 @@ import { Heart } from "@phosphor-icons/react/dist/ssr";
 import L from "../L";
 import { siDji, siKick, siObsstudio, siTwitch, siWebrtc, siYoutube } from "@/lib/brand-icons";
 import { GRAIN } from "@/lib/glow";
+import Avatar from "./Avatar";
+import CountUp from "./CountUp";
 import type { HomeStreamer } from "@/lib/streamers";
 
 // Accueil : « Ils nous font confiance. » Une rangée d'avatars ronds, décalés en hauteur, avec le pseudo Twitch en pastille ; elle défile
@@ -21,11 +23,7 @@ function Card({ c }: { c: Card }) {
       {...(c.dup ? { "aria-hidden": true, tabIndex: -1 } : {})}
       className="group mx-2.5 flex w-[17rem] shrink-0 items-center gap-3.5 rounded-xl border border-line bg-black/35 px-4 py-3.5 backdrop-blur-sm transition-colors duration-200 hover:border-foreground/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
     >
-      {s.avatar ? (
-        <Image src={s.avatar} alt="" width={96} height={96} className="size-12 shrink-0 rounded-full object-cover" />
-      ) : (
-        <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-surface-2 text-lg font-semibold uppercase text-muted">{s.handle.charAt(0)}</span>
-      )}
+      <Avatar src={s.avatar} name={s.handle} />
       <span className="min-w-0">
         <span className="flex items-center gap-1.5 font-mono text-[15px] font-medium text-foreground">
           <span className="truncate">@{c.handle.toLowerCase()}</span>
@@ -67,7 +65,7 @@ const BRANDS: Brand[] = [
   { key: "srtla", name: "SRTLA", href: "https://github.com/BELABOX/srtla", node: word("SRTLA") },
   { key: "srt", name: "SRT", href: "https://www.srtalliance.org", node: <Image src="/images/logo-srt.webp" alt="" width={374} height={95} className="h-7 w-auto opacity-55 transition-opacity duration-200 group-hover:opacity-100" /> },
   { key: "rtmp", name: "RTMP", href: "https://en.wikipedia.org/wiki/Real-Time_Messaging_Protocol", node: word("RTMP") },
-  { key: "rist", name: "RIST", href: "https://www.rist.tv", node: (<><Image src="/images/logo-rist-chevrons.webp" alt="" width={400} height={244} className="h-6 w-auto opacity-55 transition-[opacity,transform] duration-300 group-hover:translate-x-1 group-hover:opacity-100 motion-reduce:transform-none" />{word("RIST")}</>) },
+  { key: "rist", name: "RIST", href: "https://www.rist.tv", node: (<><svg viewBox="240 0 1030 620" className="h-6 w-auto shrink-0 opacity-55 transition-opacity duration-200 group-hover:opacity-100" fill="none" stroke="currentColor" strokeWidth="120" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{[0, 291, 590].map((x, n) => <path key={x} d={`M${307 + x} 64L${607 + x} 308L${307 + x} 552`} className="rist-chevron" style={{ animationDelay: `${n * 120}ms` }} />)}</svg>{word("RIST")}</>) },
   { key: "webrtc", name: "WebRTC", href: "https://webrtc.org", node: (<>{glyph(siWebrtc)}{word("WebRTC")}</>) },
   { key: "dji", name: "DJI", href: "https://www.dji.com", node: <span className="-my-4 flex">{glyph(siDji, 72)}</span> },
   { key: "moblin", name: "Moblin", href: "https://github.com/eerimoq/moblin", node: (<><Image src="/images/moblin/icon.png" alt="" width={56} height={56} className="size-7 shrink-0 rounded-md grayscale transition-[filter] duration-300 group-hover:animate-[moblin-wiggle_0.7s_ease-in-out] group-hover:grayscale-0 motion-reduce:animate-none" />{word("Moblin")}</>) },
@@ -81,7 +79,7 @@ function BrandStrip() {
   return (
     <section aria-labelledby="techno-titre" className="pb-20 pt-0 sm:pb-24">
       <h2 id="techno-titre" className="px-4 text-center text-xl font-medium"><L fr="Technologies implémentées" en="Supported technologies" /></h2>
-      <div className="mx-auto mt-10 max-w-5xl overflow-hidden px-4" style={{ maskImage: "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)" }}>
+      <div className="mx-auto mt-5 max-w-5xl overflow-hidden px-4 py-5" style={{ maskImage: "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)" }}>
         <div className="marquee-wrap overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="marquee marquee-l">
             {[0, 1].map((copy) => (
@@ -205,7 +203,7 @@ export function HoursStat({ hours }: { hours: number | null }) {
       </div>
       <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted"><L fr="Déjà" en="Already" /></p>
       <p className="mt-6 flex items-baseline justify-center gap-2">
-        <span className="text-[clamp(4.5rem,12vw,8rem)] font-semibold leading-none tracking-tight tabular-nums">{Math.round(hours).toLocaleString("fr-FR")}</span>
+        <span className="text-[clamp(4.5rem,12vw,8rem)] font-semibold leading-none tracking-tight tabular-nums"><CountUp to={Math.round(hours)} /></span>
         <span className="text-[clamp(1.75rem,4vw,3rem)] font-medium text-muted">h</span>
       </p>
       <p className="mt-6 flex items-center justify-center gap-2 text-lg text-muted"><L fr="De direct. C'est grâce à vous" en="Of live. It's thanks to you" /><Heart size={20} weight="fill" aria-hidden="true" className="text-bad" /></p>

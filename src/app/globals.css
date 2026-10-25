@@ -832,3 +832,12 @@ html[lang="en"] .l-fr { display: none; }
   60% { transform: rotate(-7deg); }
   80% { transform: rotate(4deg); }
 }
+
+/* Chevrons RIST : au survol, une vague qui file de gauche à droite. */
+@keyframes rist-wave {
+  0%, 100% { transform: translateX(0); opacity: 1; }
+  40% { transform: translateX(70px); opacity: 0.35; }
+}
+.rist-chevron { transform-box: fill-box; }
+.group:hover .rist-chevron, .group:focus-visible .rist-chevron { animation: rist-wave 0.9s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .group:hover .rist-chevron, .group:focus-visible .rist-chevron { animation: none; } }

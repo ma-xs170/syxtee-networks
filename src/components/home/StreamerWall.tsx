@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Heart } from "@phosphor-icons/react/dist/ssr";
 import L from "../L";
 import { siDji, siKick, siObsstudio, siTwitch, siWebrtc, siYoutube } from "@/lib/brand-icons";
-import { GRAIN, glow } from "@/lib/glow";
+import { GRAIN } from "@/lib/glow";
 import type { HomeStreamer } from "@/lib/streamers";
 
 // Accueil : « Ils nous font confiance. » Une rangée d'avatars ronds, décalés en hauteur, avec le pseudo Twitch en pastille ; elle défile
@@ -197,7 +197,6 @@ export function HoursStat({ hours }: { hours: number | null }) {
   if (!hours || hours < 1) return null;
   return (
     <section aria-label="Heures de direct transmises" className="relative isolate overflow-hidden border-b border-line py-24 text-center sm:py-32">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("var(--bad)", "50% 100%", 70, 90, 26)} />
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 motion-reduce:hidden">
         {HEARTS.map((h, i) => (
           <Heart key={i} weight="fill" size={h.size} className="heart-float absolute bottom-0 text-bad" style={{ left: h.left, animationDelay: h.delay, animationDuration: h.dur }} />

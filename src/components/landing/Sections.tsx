@@ -133,27 +133,27 @@ export function ObsBento() {
       <Container>
         <Reveal className="text-center">
           <h2 className={`${h2} mx-auto max-w-[20ch]`}><L fr={<>{product.remoteName}, ton OBS <em>dans la poche.</em></>} en={<>Remote control, your OBS <em>in your pocket.</em></>} /></h2>
-          <p className={`${lead} mx-auto`}><L fr="Chaque bouton agit sur ton vrai OBS, en direct." en="Every button acts on your real OBS, live." /></p>
+          <p className={`${lead} mx-auto`}><L fr="Chaque bouton agit sur ton vrai OBS." en="Every button acts on your real OBS." /></p>
         </Reveal>
         <div className="mx-auto mt-12 grid max-w-4xl auto-rows-fr gap-5 md:grid-cols-2">
-          <Cell delay={0.0} title={<L fr="Change de scène en un tap" en="Switch scenes in one tap" />} text={<L fr="Début, direct, connexion perdue, fin : la scène change sur ton OBS, sans attendre." en="Start, live, connection lost, end: the scene changes on your OBS, instantly." />}>
+          <Cell delay={0.0} title={<L fr="Change de scène" en="Switch scenes" />} text={<L fr="N'importe où, d'un tap." en="Anywhere, in one tap." />}>
             <SceneSwitcher />
           </Cell>
-          <Cell delay={0.08} title={<L fr="Mixer audio à distance" en="Remote audio mixer" />} text={<L fr="Coupe un micro ou règle un niveau pendant que tu es sur le terrain." en="Mute a mic or set a level while you are out in the field." />}>
+          <Cell delay={0.08} title={<L fr="Mixage Audio" en="Audio Mixing" />} text={<L fr="À distance." en="Remotely." />}>
             <div aria-hidden="true" className="flex h-24 w-full max-w-xs items-end gap-1.5">
               {[40, 62, 50, 78, 66, 88, 58, 72, 46, 64].map((h, i) => (
                 <span key={i} className={`level-bar h-full flex-1 origin-bottom rounded-t-md ${i > 7 ? "bg-bad" : "bg-foreground/55"}`} style={{ "--p": h / 100, transform: `scaleY(${h / 100})`, animationDuration: `${650 + ((i * 137) % 500)}ms`, animationDelay: `${-((i * 211) % 700)}ms` } as React.CSSProperties} />
               ))}
             </div>
           </Cell>
-          <Cell delay={0.16} title={<L fr="Espaces partagés" en="Shared spaces" />} text={<L fr="Invite un modérateur ou un monteur à piloter avec toi, chacun avec son compte et son rôle." en="Invite a moderator or an editor to control with you, each with their own account and role." />} href="/espaces-partages" cta={<L fr="Découvrir les espaces partagés" en="Discover shared spaces" />}>
+          <Cell delay={0.16} title={<L fr="Espaces partagés" en="Shared spaces" />} text={<L fr="Invite un modérateur à piloter avec toi." en="Invite a moderator to control with you." />} href="/espaces-partages" cta={<L fr="Découvrir les espaces partagés" en="Discover shared spaces" />}>
             <div aria-hidden="true" className="flex items-center justify-center gap-4">
               {[["M", "from-violet-500 to-pink-500"], ["L", "from-sky-500 to-blue-600"], ["S", "from-emerald-500 to-teal-600"], ["+", "from-amber-400 to-orange-500"]].map(([l, c]) => (
                 <span key={l} className={`grid size-14 place-items-center rounded-2xl bg-gradient-to-br ${c} text-lg font-semibold text-white shadow-lg`}>{l}</span>
               ))}
             </div>
           </Cell>
-          <Cell delay={0.24} title={<L fr="Tourne sur ton propre PC ou Mac" en="Runs on your own PC or Mac" />} text={<L fr="Zéro serveur à louer. Tu relies ton ordinateur avec un code." en="No server to rent. You link your computer with a code." />}>
+          <Cell delay={0.24} title={<L fr="Ton PC ou ton Mac" en="Your PC or Mac" />} text={<L fr="Zéro serveur à louer." en="No server to rent." />}>
             <MacAndPc className="mx-auto max-h-full max-w-[320px]" />
           </Cell>
         </div>

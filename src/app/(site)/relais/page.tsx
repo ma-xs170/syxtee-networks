@@ -59,9 +59,6 @@ export default function RelaisPage() {
               );
             })}
           </ul>
-          <p className="mx-auto mt-16 max-w-[44ch] text-center text-sm leading-relaxed text-muted">
-            Choisis le serveur le plus proche de l&apos;endroit où tu filmes. En voyage, change avant le live.
-          </p>
         </Container>
       </section>
 

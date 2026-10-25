@@ -67,7 +67,7 @@ export default function CasDUsagePage() {
         <Container className="text-center">
           <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.25rem,5vw,3.75rem)]">Prêt à raconter ton <em>histoire ?</em></h2>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <ButtonLink href="/contact">Contacter</ButtonLink>
+            <ButtonLink href="/contact">Contactez-nous</ButtonLink>
             <ButtonLink href="/inscription" variant="secondary">Créer mon compte</ButtonLink>
           </div>
         </Container>

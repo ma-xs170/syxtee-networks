@@ -3,7 +3,6 @@ import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button";
-import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Production de live IRL",
@@ -64,8 +63,7 @@ export default function ProductionPage() {
         <Container className="text-center">
           <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.25rem,5vw,3.75rem)]">Parle-nous de ton <em>événement.</em></h2>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <ButtonLink href="/contact">Contacter</ButtonLink>
-            <ButtonLink href={site.videastesUrl} variant="secondary" external>Annuaire des vidéastes</ButtonLink>
+            <ButtonLink href="/contact">Contactez-nous</ButtonLink>
           </div>
           <p className="mt-6 text-sm text-muted">
             Tu streames seul ? <Link href="/tarifs" className="text-foreground underline underline-offset-4">Voir les outils et les tarifs</Link>.

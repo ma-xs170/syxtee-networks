@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useFormStatus } from "react-dom";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
-import { ArrowBendDownRight, Eye, Sliders, Tag, UserPlus, VideoCamera } from "@phosphor-icons/react/dist/ssr";
+import { ArrowBendDownRight, Envelope, Eye, Sliders, Tag, UserPlus } from "@phosphor-icons/react/dist/ssr";
 import type { ComponentType } from "react";
 import { buttonClass, type Variant } from "./button-styles";
 
@@ -11,7 +11,7 @@ import { buttonClass, type Variant } from "./button-styles";
 const ICONS: Record<string, ComponentType<{ size?: number; "aria-hidden"?: boolean | "true" | "false" }>> = {
   "/inscription": UserPlus,
   "/tarifs": Tag,
-  "/contact": VideoCamera,
+  "/contact": Envelope,
   "/controle-a-distance": Sliders,
   "#comment": ArrowBendDownRight,
   "#serveurs": Eye,

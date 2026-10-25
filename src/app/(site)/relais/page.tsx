@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import type { ComponentType, CSSProperties } from "react";
 import { Broadcast, Camera, Globe, type IconProps } from "@/components/icons";
@@ -26,7 +27,9 @@ export default function RelaisPage() {
     <>
       {/* 1. Hero */}
       <section data-hero data-theme="dark" className="relative isolate overflow-hidden border-b border-line bg-background text-foreground">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("#2b7fe0", "50% 0%", 70, 80, 28)} />
+        {/* vraie photo de baies de serveurs, assombrie pour garder le titre lisible */}
+        <Image src="/images/serveurs-baies.webp" alt="" fill priority sizes="100vw" className="-z-20 object-cover opacity-35" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-background/70 via-background/55 to-background" />
         <Container className="pb-24 pt-[calc(5rem+65px)] text-center lg:pb-32 lg:pt-[calc(7rem+65px)]">
           <h1 className="rise h-serif mx-auto max-w-[14ch] text-[clamp(2.75rem,6.5vw,5.5rem)]" style={{ "--i": 0 } as CSSProperties}>
             Ton flux, <em>stabilisé.</em>
@@ -59,6 +62,23 @@ export default function RelaisPage() {
           <p className="mx-auto mt-16 max-w-[44ch] text-center text-sm leading-relaxed text-muted">
             Choisis le serveur le plus proche de l&apos;endroit où tu filmes. En voyage, change avant le live.
           </p>
+        </Container>
+      </section>
+
+      {/* 3. Hébergeur */}
+      <section className="relative isolate overflow-hidden border-t border-line py-24 sm:py-32">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("#2b7fe0", "100% 50%", 60, 100, 30)} />
+        <Container>
+          <div className="grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
+            <div>
+              <span role="img" aria-label="OVHcloud" className="block h-9 w-56 bg-foreground [mask:url(/images/ovhcloud-logo-blanc.png)_left_center/contain_no-repeat]" />
+              <h2 className="h-serif mt-8 text-[clamp(2.25rem,4.5vw,3.5rem)]">Hébergés chez <em>OVHcloud.</em></h2>
+              <p className="mt-5 max-w-[36ch] text-lg leading-relaxed text-muted">Des serveurs fiables, pensés pour le direct.</p>
+            </div>
+            <div className="relative aspect-[3/2] overflow-hidden rounded-2xl border border-line">
+              <Image src="/images/hebergeur-ovh.webp" alt="Bâtiment OVHcloud" fill sizes="(min-width:1024px) 55vw, 100vw" className="object-cover" />
+            </div>
+          </div>
         </Container>
       </section>
     </>

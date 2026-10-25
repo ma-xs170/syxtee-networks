@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ComponentType, CSSProperties } from "react";
-import { DeviceMobile, Faders, LockKey, ShieldCheck, type IconProps } from "@/components/icons";
+import { ClockCounterClockwise, DeviceMobile, Faders, LockKey, PlugsConnected, ShieldCheck, type IconProps } from "@/components/icons";
 import ObsHero from "@/components/landing/ObsHero";
 import { deviceImage } from "@/lib/device-images";
 import PhoneStory, { type Step } from "@/components/remote-showcase/PhoneStory";
@@ -50,10 +50,10 @@ const FEATURES: Feature[] = [
   { title: "Comme une vraie app", text: "SYXTEE sur ton écran d'accueil, en plein écran.", icon: DeviceMobile },
 ];
 
-const GUARDIAN: { tag: string; title: string; text: string }[] = [
-  { tag: "Relance", title: "OBS plante, il revient.", text: "Le Gardien rouvre OBS en quelques secondes et remet tes scènes comme avant." },
-  { tag: "Direct", title: "Ton direct repart.", text: "Si tu étais en direct, il reprend dès qu'OBS est de retour." },
-  { tag: "À distance", title: "Un bouton, où que tu sois.", text: "« Relancer OBS » depuis ton téléphone, même écran verrouillé." },
+const GUARDIAN: Feature[] = [
+  { title: "OBS plante, il revient.", text: "Rouvert en quelques secondes.", icon: ClockCounterClockwise },
+  { title: "Ton direct repart.", text: "Il reprend tout seul.", icon: PlugsConnected },
+  { title: "Un bouton, où que tu sois.", text: "« Relancer OBS » depuis ton téléphone.", icon: DeviceMobile },
 ];
 
 const WHITE = "inline-flex h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85";
@@ -108,24 +108,21 @@ export default function ControlePage() {
       <section aria-labelledby="gardien" className="relative isolate overflow-hidden border-t border-line py-24 sm:py-32">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("var(--bad)", "100% 100%", 70, 60, 24)} />
         <Container>
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 id="gardien" className="h-serif text-[clamp(2.25rem,4.5vw,3.5rem)]">
-              OBS plante en plein stream&nbsp;? <em>Il redémarre tout seul.</em>
-            </h2>
-            <p className="mx-auto mt-6 max-w-[48ch] text-base leading-relaxed text-muted sm:text-lg">
-              Le Gardien veille sur ton Mac, indépendamment d&apos;OBS. Le direct est interrompu le temps du redémarrage, pas toute la soirée.
-            </p>
-          </div>
-          <ol className="mx-auto mt-14 grid max-w-5xl border-t border-line md:grid-cols-3 md:border-l">
-            {GUARDIAN.map((g, i) => (
-              <li key={g.tag} className="border-b border-line p-6 sm:p-8 md:border-r">
-                <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">0{i + 1} · {g.tag}</span>
-                <h3 className="mt-5 text-lg font-semibold tracking-tight">{g.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{g.text}</p>
-              </li>
-            ))}
-          </ol>
-          <p className="mt-6 text-center text-sm text-muted">Disponible sur Mac.</p>
+          <h2 id="gardien" className="h-serif mx-auto max-w-3xl text-center text-[clamp(2.25rem,4.5vw,3.5rem)]">
+            OBS plante en plein stream&nbsp;? <em>Il redémarre tout seul.</em>
+          </h2>
+          <ul className="mx-auto mt-16 grid max-w-4xl gap-x-12 gap-y-10 sm:grid-cols-3">
+            {GUARDIAN.map((g) => {
+              const Icon = g.icon;
+              return (
+                <li key={g.title}>
+                  <Icon size={26} weight="regular" className="text-foreground" aria-hidden="true" />
+                  <h3 className="mt-4 text-lg font-semibold tracking-tight">{g.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{g.text}</p>
+                </li>
+              );
+            })}
+          </ul>
         </Container>
       </section>
 

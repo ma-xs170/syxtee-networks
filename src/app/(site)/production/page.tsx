@@ -34,7 +34,7 @@ export default function ProductionPage() {
       <section data-hero data-theme="dark" className="relative isolate flex min-h-[85dvh] items-end overflow-hidden text-foreground">
         <HeroVideo />
         <Container className="relative pb-16 pt-[calc(5rem+65px)] sm:pb-24">
-          <nav aria-label="Fil d'Ariane" className="font-mono text-xs text-foreground/70">
+          <nav aria-label="Fil d'Ariane" className="text-xs font-medium text-foreground/70">
             <ol className="flex flex-wrap items-center gap-2">
               <li><Link href="/" className="hover:text-foreground">Accueil</Link></li>
               <li aria-hidden="true" className="text-foreground/30">/</li>
@@ -57,14 +57,14 @@ export default function ProductionPage() {
       <section className="py-20 lg:py-28">
         <Container className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           <div className="lg:sticky lg:top-28 lg:self-start">
-            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Ce qu&apos;on fait</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Ce qu&apos;on fait</p>
             <h2 className="h-serif mt-4 text-[clamp(2.25rem,4.5vw,3.5rem)]">Une équipe, <em>un seul direct.</em></h2>
             <p className="mt-5 max-w-[34ch] text-base leading-relaxed text-muted">Tu racontes l&apos;histoire. On s&apos;occupe de tout ce qui la fait arriver jusqu&apos;au public.</p>
           </div>
           <ol className="border-t border-line">
             {OFFERS.map((o) => (
               <li key={o.n} className="group grid grid-cols-[3rem_1fr] gap-4 border-b border-line py-7 sm:grid-cols-[4.5rem_1fr] sm:py-9">
-                <span className="font-mono text-sm text-muted transition-colors group-hover:text-foreground">{o.n}</span>
+                <span className="text-sm font-medium tabular-nums text-muted transition-colors group-hover:text-foreground">{o.n}</span>
                 <div>
                   <h3 className="text-xl font-semibold tracking-tight sm:text-2xl">{o.title}</h3>
                   <p className="mt-2 max-w-[56ch] text-[15px] leading-relaxed text-muted">{o.text}</p>
@@ -82,7 +82,7 @@ export default function ProductionPage() {
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("#2b7fe0", "88% 75%", 45, 90, 36)} />
 
         <Container>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Sur le terrain</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Sur le terrain</p>
           <h2 className="h-serif mx-auto mt-4 max-w-3xl text-[clamp(2.25rem,4.5vw,3.5rem)]">Mobilité, soirée, mer&nbsp;: <em>on te suit partout.</em></h2>
         </Container>
         <TwitchCategories />
@@ -91,13 +91,13 @@ export default function ProductionPage() {
       <section className="pb-20 pt-10 lg:pb-28 lg:pt-14">
 
         <Container>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">Comment ça se passe</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Comment ça se passe</p>
           <h2 className="h-serif mt-4 text-[clamp(2.25rem,4.5vw,3.5rem)]">Trois étapes, <em>zéro stress.</em></h2>
           <ol className="relative mt-14 grid gap-10 md:grid-cols-3 md:gap-8">
             <span aria-hidden="true" className="absolute left-0 right-0 top-5 hidden h-px bg-line md:block" />
             {STEPS.map((s) => (
               <li key={s.n} className="relative">
-                <span className="relative grid size-10 place-items-center rounded-full border border-line bg-background font-mono text-sm text-foreground">{s.n}</span>
+                <span className="relative grid size-10 place-items-center rounded-full border border-line bg-background text-sm font-semibold tabular-nums text-foreground">{s.n}</span>
                 <h3 className="mt-6 text-xl font-semibold tracking-tight">{s.title}</h3>
                 <p className="mt-2 max-w-[34ch] text-[15px] leading-relaxed text-muted">{s.text}</p>
               </li>

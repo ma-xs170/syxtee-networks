@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import FxImage from "@/components/landing/FxImage";
 import Link from "next/link";
 import type { ComponentType, CSSProperties } from "react";
 import { Broadcast, Camera, Globe, type IconProps } from "@/components/icons";
@@ -28,7 +28,7 @@ export default function RelaisPage() {
       {/* 1. Hero */}
       <section data-hero data-theme="dark" className="relative isolate overflow-hidden border-b border-line bg-background text-foreground">
         {/* vraie photo de baies de serveurs, assombrie pour garder le titre lisible */}
-        <Image src="/images/serveurs-baies.webp" alt="" fill priority sizes="100vw" className="-z-20 object-cover opacity-35" />
+        <div aria-hidden="true" className="absolute inset-0 -z-20 opacity-45"><FxImage src="/images/serveurs-baies.webp" sizes="100vw" priority /></div>
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-background/70 via-background/55 to-background" />
         <Container className="pb-24 pt-[calc(5rem+65px)] text-center lg:pb-32 lg:pt-[calc(7rem+65px)]">
           <h1 className="rise h-serif mx-auto max-w-[14ch] text-[clamp(2.75rem,6.5vw,5.5rem)]" style={{ "--i": 0 } as CSSProperties}>
@@ -76,7 +76,7 @@ export default function RelaisPage() {
               <p className="mt-5 max-w-[36ch] text-lg leading-relaxed text-muted">Des serveurs fiables, pensés pour le direct.</p>
             </div>
             <div className="relative aspect-[3/2] overflow-hidden rounded-2xl border border-line">
-              <Image src="/images/hebergeur-ovh.webp" alt="Bâtiment OVHcloud" fill sizes="(min-width:1024px) 55vw, 100vw" className="object-cover" />
+              <FxImage src="/images/hebergeur-ovh.webp" alt="Bâtiment OVHcloud" sizes="(min-width:1024px) 55vw, 100vw" />
             </div>
           </div>
         </Container>

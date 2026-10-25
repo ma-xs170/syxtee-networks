@@ -55,7 +55,7 @@ export function HomeHero() {
         </p>
         <div className="rise mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={rise(2)}>
           <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><L fr="Contactez-nous" en="Contact us" /></Link>
-          <Link href="/inscription" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-bad px-6 text-[15px] font-medium text-foreground transition-opacity hover:opacity-85"><L fr="Commencer" en="Get started" /></Link>
+          <Link href="/realisations" className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-foreground/25 bg-foreground/[0.06] px-6 text-[15px] font-medium text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/[0.12]"><L fr="Nos réalisations" en="Our work" /></Link>
         </div>
       </Container>
     </section>
@@ -333,7 +333,7 @@ export function FinalCta() {
       <Container className="relative w-full text-center">
         <h2 className="h-serif mx-auto max-w-[14ch] text-[clamp(2.75rem,6vw,4.5rem)]"><L fr={<>Ton prochain direct <em>commence ici.</em></>} en={<>Your next live <em>starts here.</em></>} /></h2>
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-full border border-foreground/25 bg-foreground/[0.06] px-6 text-[15px] font-medium text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/[0.12]"><Envelope size={18} weight="fill" aria-hidden="true" /><L fr="Contactez-nous" en="Contact us" /></Link>
+          <Link href="/contact" className="inline-flex h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-full bg-foreground px-6 text-[15px] font-medium text-background transition-opacity hover:opacity-85"><Envelope size={18} weight="fill" aria-hidden="true" /><L fr="Contactez-nous" en="Contact us" /></Link>
           <Link href="/inscription" className="inline-flex h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-full border border-foreground/25 bg-foreground/[0.06] px-6 text-[15px] font-medium text-foreground transition-colors hover:border-foreground/40 hover:bg-foreground/[0.12]"><UserCircle size={18} weight="fill" aria-hidden="true" /><L fr="Créer un compte" en="Create an account" /></Link>
         </div>
       </Container>

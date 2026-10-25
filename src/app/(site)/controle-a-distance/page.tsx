@@ -4,7 +4,6 @@ import type { ComponentType, CSSProperties } from "react";
 import { ClockCounterClockwise, DeviceMobile, Faders, LockKey, PlugsConnected, ShieldCheck, type IconProps } from "@/components/icons";
 import ObsHero from "@/components/landing/ObsHero";
 import { deviceImage } from "@/lib/device-images";
-import PhoneStory, { type Step } from "@/components/remote-showcase/PhoneStory";
 import { Container } from "@/components/ui";
 import { Envelope } from "@phosphor-icons/react/dist/ssr";
 import { glow } from "@/lib/glow";
@@ -14,33 +13,6 @@ export const metadata: Metadata = {
   description: "Pilote le vrai OBS de ton ordinateur depuis ton téléphone : scènes, sources, son, direct. Image et son du programme, où que tu sois.",
   alternates: { canonical: "/controle-a-distance" },
 };
-
-const STEPS: Step[] = [
-  {
-    title: "Une scène. Un toucher.",
-    text: "Touche une scène : OBS change sur ton ordinateur, tout de suite. Et si tu changes dans OBS, ton téléphone suit.",
-    src: "/images/remote/controle-mobile-v5.png",
-    alt: "Liste des scènes d'OBS sur téléphone, la scène en direct en surbrillance",
-  },
-  {
-    title: "Tes sources, d'un doigt.",
-    text: "Montre ou cache n'importe quelle source de la scène, comme l'œil d'OBS. Navigateur, texte, média, flux : tout y est.",
-    src: "/images/remote/controle-mobile-v5-sources.png",
-    alt: "Sources de la scène avec leur type et l'œil pour les afficher ou les masquer",
-  },
-  {
-    title: "Le son, sous ton pouce.",
-    text: "Un fader par piste, les niveaux en direct, le mute et l'écoute. Chaque scène a ses sons : tu ne vois que les bons.",
-    src: "/images/remote/controle-mobile-v5-mixer.png",
-    alt: "Mixeur audio vertical avec niveaux en direct",
-  },
-  {
-    title: "Le direct, en un geste.",
-    text: "Pars en direct, enregistre, surveille le débit. Une confirmation te protège des fausses manipulations.",
-    src: "/images/remote/controle-mobile-v5-controles.png",
-    alt: "Bouton Arrêter le direct en rouge avec la durée, et le débit du flux",
-  },
-];
 
 type Feature = { title: string; text: string; icon: ComponentType<IconProps> };
 const FEATURES: Feature[] = [
@@ -80,12 +52,7 @@ export default function ControlePage() {
         </Container>
       </section>
 
-      {/* 2. Récit défilant : le téléphone, quatre gestes */}
-      <section aria-label="Ce que tu fais depuis ton téléphone">
-        <PhoneStory steps={STEPS} />
-      </section>
-
-      {/* 3. L'essentiel, en quatre lignes */}
+      {/* 2. L'essentiel, en quatre lignes */}
       <section className="border-t border-line py-24 sm:py-32">
         <Container>
           <h2 className="h-serif mx-auto max-w-3xl text-center text-[clamp(2.25rem,4.5vw,3.5rem)]">Tout OBS, sans être <em>devant ton écran.</em></h2>
@@ -104,7 +71,7 @@ export default function ControlePage() {
         </Container>
       </section>
 
-      {/* 4. Gardien : trois lignes, sans cartes */}
+      {/* 3. Gardien : trois lignes, sans cartes */}
       <section aria-labelledby="gardien" className="relative isolate overflow-hidden border-t border-line py-24 sm:py-32">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("var(--bad)", "100% 100%", 70, 60, 24)} />
         <Container>
@@ -126,7 +93,7 @@ export default function ControlePage() {
         </Container>
       </section>
 
-      {/* 5. Appel final */}
+      {/* 4. Appel final */}
       <section data-theme="dark" className="relative isolate overflow-hidden border-t border-line bg-background py-28 text-foreground sm:py-40">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" style={glow("var(--bad)", "50% 40%", 60, 80, 24)} />
         <Container className="text-center">

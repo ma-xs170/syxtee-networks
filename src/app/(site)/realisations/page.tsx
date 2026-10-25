@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import BeachView from "@/components/illustrations/BeachView";
-import Streamer from "@/components/illustrations/Streamer";
-import PageHero from "@/components/PageHero";
+import HoverVideo from "@/components/landing/HoverVideo";
 import { Container } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/Button";
 
@@ -13,39 +11,39 @@ export const metadata: Metadata = {
 };
 
 const SOON = [
-  { title: "Mobilité", tag: "À pied, à vélo, en voiture", Art: Streamer },
-  { title: "Bateau", tag: "En mer", Art: BeachView },
+  { title: "Mobilité", video: "/videos/mobilite-hover" },
+  { title: "Soirée", video: "/videos/event-hover" },
+  { title: "Mer", video: "/videos/mer-hover" },
 ] as const;
 
 export default function RealisationsPage() {
   return (
     <>
-      <PageHero title={<>Nos dernières <em>réalisations.</em></>} crumb="Réalisations">
-        Nous produisons de A à Z votre prochain stream IRL. Nos premières productions arrivent bientôt et s&apos;afficheront ici.
-      </PageHero>
-
-      <section className="border-b border-line py-20 lg:py-28">
-        <Container>
-          <div className="flex items-end justify-between gap-6">
-            <h2 className="h-serif text-[clamp(2.25rem,4.5vw,3.5rem)]">Bientôt, <em>en direct.</em></h2>
-            <span className="shrink-0 rounded-full border border-line px-3 py-1 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">À venir</span>
-          </div>
-          <div className="mt-10 grid gap-4 md:grid-cols-2">
-            {SOON.map(({ title, tag, Art }) => (
-              <article key={title} className="bento-cell flex flex-col overflow-hidden">
-                <div aria-hidden="true" className="h-56 border-b border-line text-foreground/80 sm:h-64"><Art animated={false} /></div>
-                <div className="p-6 sm:p-7">
-                  <p className="font-mono text-xs uppercase tracking-wide text-muted">{tag}</p>
-                  <h3 className="mt-2 text-xl font-semibold tracking-tight">{title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">Première réalisation en préparation.</p>
-                </div>
-              </article>
-            ))}
-          </div>
+      <section data-hero data-theme="dark" className="bg-background text-foreground">
+        <Container className="pb-12 pt-[calc(5rem+65px)] text-center lg:pb-16 lg:pt-[calc(7rem+65px)]">
+          <h1 className="rise h-serif mx-auto max-w-[14ch] text-[clamp(2.75rem,6.5vw,5.5rem)]" style={{ "--i": 0 } as React.CSSProperties}>
+            Nos dernières <em>réalisations.</em>
+          </h1>
+          <p className="rise mx-auto mt-6 max-w-[40ch] text-lg leading-relaxed text-muted" style={{ "--i": 1 } as React.CSSProperties}>
+            Les premières productions arrivent bientôt.
+          </p>
         </Container>
       </section>
 
-      <section className="py-20 lg:py-28">
+      <section className="pb-24 lg:pb-32">
+        <Container>
+          <ul className="mx-auto grid max-w-4xl gap-8 sm:grid-cols-3">
+            {SOON.map(({ title, video }) => (
+              <li key={title}>
+                <HoverVideo video={video} />
+                <p className="mt-4 text-center text-lg font-semibold tracking-tight">{title}</p>
+              </li>
+            ))}
+          </ul>
+        </Container>
+      </section>
+
+      <section className="border-t border-line py-20 lg:py-28">
         <Container className="text-center">
           <h2 className="h-serif mx-auto max-w-3xl text-[clamp(2.25rem,5vw,3.75rem)]">Ton événement sera <em>le prochain.</em></h2>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">

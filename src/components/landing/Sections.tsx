@@ -96,7 +96,7 @@ export function StreamersIntro({ streamers = [] }: { streamers?: HomeStreamer[] 
           </div>
         </Reveal>
         <div className="mt-14">
-          <ObsHero images={{ laptop: deviceImage("laptop"), phone: deviceImage("phone") }} />
+          <ObsHero still images={{ laptop: deviceImage("laptop"), phone: deviceImage("phone") }} />
         </div>
       </Container>
     </section>
@@ -119,7 +119,7 @@ export function ObsHeroSection({ streamers = [] }: { streamers?: HomeStreamer[] 
           <ButtonLink href="#comment" variant="secondary">Voir comment ça marche</ButtonLink>
         </div>
         <div className="rise mt-12" style={rise(3)}>
-          <ObsHero images={{ laptop: deviceImage("laptop"), phone: deviceImage("phone") }} />
+          <ObsHero still images={{ laptop: deviceImage("laptop"), phone: deviceImage("phone") }} />
         </div>
         <div className="mt-8"><StreamerStack streamers={streamers.map((s) => ({ handle: s.handle, avatar: s.avatar }))} /></div>
       </Container>

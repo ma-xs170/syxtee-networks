@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { DeviceIphone, DeviceMac } from "../devices/Devices";
 import { SCENES, type Ctl, type SceneId } from "./ObsScreens";
@@ -11,7 +12,7 @@ import { useLiveStats } from "./useLiveStats";
 // Changer de scène, couper le micro ou lancer le live sur l'un agit sur les deux autres. Tout est simulé côté client.
 export type HeroImages = { laptop?: string | null; phone?: string | null };
 
-export default function ObsHero({ images }: { images?: HeroImages }) {
+export default function ObsHero({ images, still = false }: { images?: HeroImages; /** Vraies captures figées de l'interface au lieu de la démo animée. */ still?: boolean }) {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -30,13 +31,13 @@ export default function ObsHero({ images }: { images?: HeroImages }) {
   }, []);
   // Sans interaction depuis 12 s, les scènes défilent seules (la démo reste vivante).
   useEffect(() => {
-    if (reduce || !visible) return;
+    if (reduce || !visible || still) return;
     const id = setInterval(() => {
       if (Date.now() - lastTouch.current < 12000) return;
       setScene((s) => SCENES[(SCENES.findIndex((x) => x.id === s) + 1) % SCENES.length].id);
     }, 5000);
     return () => clearInterval(id);
-  }, [reduce, visible]);
+  }, [reduce, visible, still]);
 
   const touch = () => (lastTouch.current = Date.now());
   const c: Ctl = {
@@ -94,13 +95,13 @@ export default function ObsHero({ images }: { images?: HeroImages }) {
       {/* ordinateur : caché sur petit écran (téléphone et montre seulement) */}
       <motion.div style={{ x: reduce ? 0 : macX }} className="relative mx-auto hidden w-[78%] md:block">
         <DeviceMac image={images?.laptop}>
-          <MacUI c={c} />
+          {still ? <Image src="/images/remote/controle-bureau-v2.png" alt="Contrôle à distance d'OBS sur ordinateur : aperçu du programme, scènes, sources, mixer audio, contrôles et multistream" width={2560} height={1600} sizes="(min-width: 768px) 750px, 100vw" priority className="h-full w-full object-cover" /> : <MacUI c={c} />}
         </DeviceMac>
       </motion.div>
       {/* téléphone : devant, à droite */}
       <motion.div style={{ x: reduce ? 0 : phoneX, y: reduce ? 0 : phoneY }} className="relative mx-auto w-[50%] max-w-[230px] md:absolute md:bottom-0 md:right-[-9%] md:mx-0 md:w-[21%] md:max-w-none">
         <DeviceIphone image={images?.phone} className="device-float">
-          <PhoneUI c={c} />
+          {still ? <Image src="/images/remote/controle-mobile-v2.png" alt="Contrôle à distance d'OBS sur téléphone : aperçu du programme et liste des scènes" width={780} height={1688} sizes="230px" className="h-full w-full object-cover" /> : <PhoneUI c={c} />}
         </DeviceIphone>
       </motion.div>
     </motion.div>

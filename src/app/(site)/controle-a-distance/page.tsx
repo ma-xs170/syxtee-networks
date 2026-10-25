@@ -112,7 +112,7 @@ export default function ControlePage() {
               <Link href="/application" className={TONAL}>Mettre sur l&apos;écran d&apos;accueil</Link>
             </div>
           </div>
-          <div className="min-w-0 lg:pr-[9%]"><ObsHero /></div>
+          <div className="min-w-0 lg:pr-[9%]"><ObsHero still /></div>
         </Container>
       </section>
 

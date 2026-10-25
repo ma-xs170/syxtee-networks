@@ -24,9 +24,19 @@ const CITIES = [
   "Terre-de-Bas", "Terre-de-Haut", "Trois-Rivières", "Vieux-Fort", "Vieux-Habitants", "Autre (hors Guadeloupe)",
 ];
 
+// Indicatifs téléphoniques avec drapeau : le champ affiche « 🇬🇵 +590 », la liste le pays en entier.
+const DIALS = [
+  ["🇬🇵", "Guadeloupe", "+590"], ["🇲🇶", "Martinique", "+596"], ["🇬🇫", "Guyane", "+594"], ["🇷🇪", "La Réunion", "+262"], ["🇫🇷", "France", "+33"],
+  ["🇧🇪", "Belgique", "+32"], ["🇨🇭", "Suisse", "+41"], ["🇱🇺", "Luxembourg", "+352"], ["🇨🇦", "Canada", "+1"], ["🇺🇸", "États-Unis", "+1"],
+  ["🇬🇧", "Royaume-Uni", "+44"], ["🇩🇪", "Allemagne", "+49"], ["🇪🇸", "Espagne", "+34"], ["🇮🇹", "Italie", "+39"], ["🇵🇹", "Portugal", "+351"],
+  ["🇭🇹", "Haïti", "+509"], ["🇩🇴", "République dominicaine", "+1"], ["🇧🇷", "Brésil", "+55"], ["🇲🇦", "Maroc", "+212"], ["🇩🇿", "Algérie", "+213"],
+  ["🇹🇳", "Tunisie", "+216"], ["🇸🇳", "Sénégal", "+221"], ["🇨🇮", "Côte d'Ivoire", "+225"], ["🇨🇲", "Cameroun", "+237"], ["🇲🇬", "Madagascar", "+261"],
+].map(([flag, name, code]) => `${flag} ${name} ${code}`);
+const dialShort = (o: string) => `${o.split(" ")[0]} ${o.split(" ").at(-1)}`;
+
 // Liste déroulante du site (pas celle du système) : même rendu partout, au clavier comme à la souris.
-const Select = ({ id, name, required, placeholder, options, icons }: { id: string; name: string; required?: boolean; placeholder: string; options: string[]; icons?: Record<string, React.ReactNode> }) => {
-  const [value, setValue] = useState("");
+const Select = ({ id, name, required, placeholder, options, icons, short, wide, initial = "" }: { id: string; name: string; required?: boolean; placeholder: string; options: string[]; icons?: Record<string, React.ReactNode>; short?: (o: string) => string; wide?: boolean; initial?: string }) => {
+  const [value, setValue] = useState(initial);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const box = useRef<HTMLDivElement>(null);
@@ -67,11 +77,11 @@ const Select = ({ id, name, required, placeholder, options, icons }: { id: strin
     <div ref={box} className="relative">
       <input name={name} value={value} required={required} readOnly tabIndex={-1} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-0" />
       <button type="button" id={id} role="combobox" aria-haspopup="listbox" aria-expanded={open} aria-controls={`${id}-list`} onClick={() => { setActive(Math.max(0, options.indexOf(value))); setOpen((o) => !o); }} onKeyDown={onKey} onBlur={() => { typed.current.text = ""; }} className={`${field} flex items-center justify-between gap-3 pr-4 text-left ${value ? "" : "text-muted/70"}`}>
-        <span className="flex min-w-0 items-center gap-2.5">{value && icons?.[value]}<span className="truncate">{value || placeholder}</span></span>
+        <span className="flex min-w-0 items-center gap-2.5">{value && icons?.[value]}<span className="truncate">{value ? (short ? short(value) : value) : placeholder}</span></span>
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className={`shrink-0 text-muted transition-transform ${open ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg>
       </button>
       {open && (
-        <ul id={`${id}-list`} role="listbox" className="absolute inset-x-0 top-[calc(100%+6px)] z-20 max-h-64 overflow-y-auto rounded-xl border border-foreground/20 bg-surface p-1 shadow-lg">
+        <ul id={`${id}-list`} role="listbox" className={`absolute left-0 top-[calc(100%+6px)] z-20 max-h-64 ${wide ? "w-[17rem]" : "inset-x-0"} overflow-y-auto rounded-xl border border-foreground/20 bg-surface p-1 shadow-lg`}>
           {options.map((o, i) => (
             <li key={o} role="option" aria-selected={o === value} ref={open && i === active ? (el) => el?.scrollIntoView({ block: "nearest" }) : undefined} onPointerDown={(e) => e.preventDefault()} onClick={() => pick(o)} onMouseEnter={() => setActive(i)} className={`flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 text-sm sm:min-h-10 ${i === active ? "bg-foreground/[0.08]" : ""} ${o === value ? "font-medium text-foreground" : "text-foreground/90"}`}>
               <span className="flex items-center gap-2.5">{icons?.[o]}{o}</span>
@@ -108,6 +118,13 @@ export default function ContactForm() {
         <div className="grid gap-2">
           <label htmlFor="c-email" className={label}>E-mail *</label>
           <input id="c-email" name="email" type="email" required maxLength={160} autoComplete="email" placeholder="jean@exemple.fr" className={field} />
+        </div>
+        <div className="grid gap-2 sm:col-span-2">
+          <label htmlFor="c-phone" className={label}>Téléphone *</label>
+          <div className="flex gap-3">
+            <div className="w-[8.5rem] shrink-0"><Select id="c-phone-code" name="phone_code" required placeholder="Pays" options={DIALS} initial={DIALS[0]} short={dialShort} wide /></div>
+            <input id="c-phone" name="phone_number" type="tel" inputMode="tel" required minLength={6} maxLength={20} autoComplete="tel-national" placeholder="690 12 34 56" className={field} />
+          </div>
         </div>
         <div className="grid gap-2">
           <label htmlFor="c-type" className={label}>Type d&apos;événement *</label>

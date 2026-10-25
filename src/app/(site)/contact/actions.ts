@@ -24,7 +24,8 @@ const text = (label: string, max: number, min = 1) => z.string().trim().min(min,
 const schema = z.object({
   name: text("Nom", 80),
   email: z.string().trim().toLowerCase().email("Adresse e-mail invalide.").max(160),
-  phone: z.string().trim().max(30).default(""),
+  phone_code: z.string().trim().max(60).default(""),
+  phone_number: z.string().trim().min(1, "Téléphone obligatoire.").max(20, "Téléphone invalide."),
   channel: z.string().trim().max(200).default(""),
   event_type: z.enum(EVENT_TYPES, { error: "Choisis le type d'événement." }),
   location: text("Lieu ou ville", 120),
@@ -46,7 +47,10 @@ export async function contactAction(_prev: ContactState, form: FormData): Promis
   const needs = form.getAll("needs").map(String).filter((n) => NEEDS.includes(n));
   const parsed = schema.safeParse({ ...Object.fromEntries(form), consent: form.get("consent") ?? "" });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide." };
-  const d = parsed.data;
+  const d = { ...parsed.data, phone: "" };
+  const digits = parsed.data.phone_number.replace(/\D/g, "");
+  if (!/^[\d\s().+-]+$/.test(parsed.data.phone_number) || digits.length < 6 || digits.length > 15) return { error: "Numéro de téléphone invalide." };
+  d.phone = `${parsed.data.phone_code.match(/\+\d+$/)?.[0] ?? ""} ${parsed.data.phone_number.replace(/^0+/, "").trim()}`.trim();
   if (d.duration && !(DURATIONS as readonly string[]).includes(d.duration)) return { error: "Durée invalide." };
   if (DISPOSABLE.has(d.email.split("@")[1] ?? "")) return { error: "Les adresses e-mail jetables ne sont pas acceptées." };
   if (LINKS.test(d.name) || (d.message.match(LINKS)?.length ?? 0) > 2) return { ok: true };

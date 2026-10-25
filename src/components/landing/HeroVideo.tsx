@@ -66,8 +66,8 @@ export default function HeroVideo({ children }: { children?: React.ReactNode }) 
             preload={i === 0 ? "auto" : "none"}
             autoPlay={i === 0 && !still}
           >
-            <source src={`/videos/hero-${c}.webm`} type="video/webm" />
             <source src={`/videos/hero-${c}.mp4`} type="video/mp4" />
+            <source src={`/videos/hero-${c}.webm`} type="video/webm" />
           </video>
         ))}
       </div>

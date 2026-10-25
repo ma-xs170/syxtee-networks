@@ -7,7 +7,7 @@ import HoverVideo from "./HoverVideo";
 const ITEMS = [
   { src: "/images/categories/irl.webp", tilt: "-rotate-6", drop: "sm:mt-8", fr: "Mobilité", en: "Mobility", video: "/videos/mobilite-hover", href: "https://www.twitch.tv/directory/category/irl" },
   { src: "/images/categories/evenements-speciaux.webp", tilt: "rotate-2", drop: "sm:mt-0", fr: "Événements", en: "Events", video: "/videos/event-hover", mark: true, href: "https://www.twitch.tv/directory/category/special-events" },
-  { src: "/images/categories/piscines-plages.webp", tilt: "rotate-6", drop: "sm:mt-6", fr: "Sortie en mer", en: "At sea", href: "https://www.twitch.tv/directory/category/pools-hot-tubs-and-beaches" },
+  { src: "/images/categories/piscines-plages.webp", tilt: "rotate-6", drop: "sm:mt-6", fr: "Sortie en mer", en: "At sea", video: "/videos/mer-hover", mark: true, href: "https://www.twitch.tv/directory/category/pools-hot-tubs-and-beaches" },
 ];
 
 export default function TwitchCategories() {

@@ -9,6 +9,7 @@ import { useRef, useState } from "react";
 export default function HoverVideo({ video, mark }: { video: string; mark?: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [on, setOn] = useState(false);
+  const [playing, setPlaying] = useState(false);
 
   const start = () => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -18,6 +19,7 @@ export default function HoverVideo({ video, mark }: { video: string; mark?: bool
   };
   const stop = () => {
     setOn(false);
+    setPlaying(false);
     window.setTimeout(() => ref.current?.pause(), 350);
   };
 
@@ -25,13 +27,13 @@ export default function HoverVideo({ video, mark }: { video: string; mark?: bool
     <span className="relative block aspect-[3/4] w-full overflow-hidden rounded-[2px]" onMouseEnter={start} onMouseLeave={stop} onFocus={start} onBlur={stop}>
       <Image src={`${video}.jpg`} alt="" width={720} height={960} sizes="(min-width: 560px) 260px, 100vw" quality={90} className="aspect-[3/4] w-full object-cover" />
       {mark && <Image src="/images/syxtee-networks-mark.webp" alt="" width={600} height={92} sizes="140px" className="pointer-events-none absolute left-1/2 top-[6%] z-10 w-[50%] -translate-x-1/2" />}
-      <span aria-hidden="true" className={`absolute bottom-3 right-3 grid size-9 place-items-center rounded-full bg-black/55 backdrop-blur-sm transition-opacity duration-300 motion-reduce:opacity-100 ${on ? "opacity-0" : "opacity-100"}`}>
+      <span aria-hidden="true" className={`absolute bottom-3 right-3 grid size-9 place-items-center rounded-full bg-black/55 backdrop-blur-sm transition-opacity duration-300 motion-reduce:opacity-100 ${on && playing ? "opacity-0" : "opacity-100"}`}>
         <svg viewBox="0 0 10 10" className="ml-0.5 size-3 fill-white"><path d="M1 0l9 5-9 5z" /></svg>
       </span>
-      <span aria-hidden="true" className={`absolute inset-0 transition-opacity duration-300 motion-reduce:hidden ${on ? "opacity-100" : "opacity-0"}`}>
-        <video ref={ref} className="absolute inset-0 size-full object-cover" muted loop playsInline preload="none">
-          <source src={`${video}.webm`} type="video/webm" />
+      <span aria-hidden="true" className={`absolute inset-0 transition-opacity duration-300 motion-reduce:hidden ${on && playing ? "opacity-100" : "opacity-0"}`}>
+        <video ref={ref} className="absolute inset-0 size-full object-cover" poster={`${video}.jpg`} muted loop playsInline preload="metadata" onPlaying={() => setPlaying(true)}>
           <source src={`${video}.mp4`} type="video/mp4" />
+          <source src={`${video}.webm`} type="video/webm" />
         </video>
         <span className="film-grain" />
         <span className="absolute inset-0" style={{ background: "radial-gradient(120% 90% at 50% 45%, transparent 50%, rgba(0,0,0,0.55) 100%)" }} />

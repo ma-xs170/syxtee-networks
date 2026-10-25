@@ -115,10 +115,10 @@ function Partners() {
   return (
     <section aria-labelledby="partenaires-titre" className="pb-20 sm:pb-24">
       <h2 id="partenaires-titre" className="px-4 text-center text-xl font-medium"><L fr="Partenaires" en="Partners" /></h2>
-      <ul className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-14 gap-y-8 px-4">
+      <ul className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-12 gap-y-6 px-4">
         {PARTNERS.map((p) => {
           const logo = <Image src={p.src} alt={p.name} width={p.w} height={p.h} className="size-full object-contain opacity-70 transition-opacity duration-200 group-hover:opacity-100" />;
-          const box = "group flex h-20 w-44 items-center justify-center";
+          const box = "group flex h-11 w-28 items-center justify-center";
           return (
             <li key={p.name}>
               {p.href ? (

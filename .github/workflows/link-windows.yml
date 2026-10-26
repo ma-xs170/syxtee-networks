@@ -10,10 +10,10 @@ on:
     inputs:
       obs_tag:
         description: "Version d'OBS visée (tag obs-studio)"
-        default: "32.2.2"
+        default: "32.0.0"
 
 env:
-  OBS_TAG: ${{ inputs.obs_tag || '32.2.2' }}
+  OBS_TAG: ${{ inputs.obs_tag || '32.0.0' }}
 
 jobs:
   windows:

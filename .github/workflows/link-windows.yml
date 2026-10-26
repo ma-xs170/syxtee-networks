@@ -10,10 +10,10 @@ on:
     inputs:
       obs_tag:
         description: "Version d'OBS visée (tag obs-studio)"
-        default: "32.0.0"
+        default: "32.2.2"
 
 env:
-  OBS_TAG: ${{ inputs.obs_tag || '32.0.0' }}
+  OBS_TAG: ${{ inputs.obs_tag || '32.2.2' }}
 
 jobs:
   windows:
@@ -71,6 +71,15 @@ jobs:
           cmake -S link/plugin -B build -G "Visual Studio 17 2022" -A x64 `
             -DCMAKE_MODULE_PATH="$root/obs-studio/cmake/finders" -DCMAKE_PREFIX_PATH="$deps;$root/obs-install"
           cmake --build build --config RelWithDebInfo
+
+      # Diagnostic : dépendances et exports du module (pour comprendre un « le plugin n'apparaît pas dans OBS »).
+      - name: Diagnostic du module
+        shell: pwsh
+        run: |
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
+          $dumpbin = Get-ChildItem "$vs\VC\Tools\MSVC" -Recurse -Filter dumpbin.exe | Where-Object { $_.FullName -match 'Hostx64\\x64' } | Select-Object -First 1
+          & $dumpbin.FullName /dependents build/RelWithDebInfo/syxtee-link.dll
+          & $dumpbin.FullName /exports build/RelWithDebInfo/syxtee-link.dll
 
       # 4. Installeur : copie dans %APPDATA%\obs-studio\plugins\syxtee-link\bin\64bit (sans droits administrateur).
       - name: Installeur

@@ -23,7 +23,8 @@ function PluginBar({ coreUrl, latest }: { coreUrl: string; latest: PluginLatest 
     const t = setTimeout(() => setDetected(detectOs(navigator.userAgent, navigator.platform)), 0);
     return () => clearTimeout(t);
   }, []);
-  const id: OsId = detected === "windows" ? "windows" : "macos";
+  const [chosen, setChosen] = useState<OsId | null>(null);
+  const id: OsId = chosen ?? (detected === "windows" ? "windows" : "macos");
   const file = latest?.[id];
   const label = id === "windows" ? "Windows" : "macOS";
   const Icon = id === "windows" ? WindowsLogo : AppleLogo;
@@ -43,6 +44,19 @@ function PluginBar({ coreUrl, latest }: { coreUrl: string; latest: PluginLatest 
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-3">
+        <div role="group" aria-label="Système" className="inline-flex rounded-full border border-line p-0.5">
+          {(["macos", "windows"] as const).map((o) => (
+            <button
+              key={o}
+              type="button"
+              aria-pressed={id === o}
+              onClick={() => setChosen(o)}
+              className={`h-8 rounded-full px-3 text-xs font-medium transition-colors ${id === o ? "bg-foreground/10 text-foreground" : "text-muted hover:text-foreground"}`}
+            >
+              {o === "macos" ? "macOS" : "Windows"}
+            </button>
+          ))}
+        </div>
         <Link href="/dashboard/plugin" className="text-sm text-muted underline-offset-4 hover:text-foreground hover:underline">
           Comment l&apos;installer
         </Link>

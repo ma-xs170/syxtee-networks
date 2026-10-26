@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { DownloadSimple, AppleLogo } from "@/components/icons";
-import { fmtMo, pluginState, since, type PluginLatest } from "@/lib/plugin";
+import { DownloadSimple, AppleLogo, WindowsLogo } from "@/components/icons";
+import { detectOs, fmtMo, pluginState, since, type OsId, type PluginLatest } from "@/lib/plugin";
 import { sendOnce } from "../remote/callDevice";
 import { Confirm, type ConfirmAsk } from "../remote/ui";
 import { useLiveStatus } from "./LiveStatus";
@@ -16,19 +16,29 @@ import { cx } from "../remote/ui";
 
 const pilot = "inline-flex h-10 items-center justify-center whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors";
 
-/** Plugin pour macOS : toujours à portée, que l'on ait déjà un OBS relié ou non. Les étapes complètes sont sur la page Plugin OBS. */
+/** Plugin OBS : le fichier du système du visiteur (Mac par défaut), toujours à portée. Les étapes complètes sont sur la page Plugin OBS. */
 function PluginBar({ coreUrl, latest }: { coreUrl: string; latest: PluginLatest | null }) {
-  const mac = latest?.macos;
+  const [detected, setDetected] = useState<OsId | null>(null);
+  useEffect(() => {
+    const t = setTimeout(() => setDetected(detectOs(navigator.userAgent, navigator.platform)), 0);
+    return () => clearTimeout(t);
+  }, []);
+  const id: OsId = detected === "windows" ? "windows" : "macos";
+  const file = latest?.[id];
+  const label = id === "windows" ? "Windows" : "macOS";
+  const Icon = id === "windows" ? WindowsLogo : AppleLogo;
   return (
-    <section aria-label="Plugin OBS pour macOS" className="flex flex-col gap-4 tile p-5 sm:flex-row sm:items-center sm:justify-between">
+    <section aria-label={`Plugin OBS pour ${label}`} className="flex flex-col gap-4 tile p-5 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-4">
         <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-line">
-          <AppleLogo size={24} aria-hidden="true" />
+          <Icon size={24} aria-hidden="true" />
         </span>
         <div className="min-w-0">
-          <h2 className="text-base font-semibold tracking-tight">Plugin OBS pour macOS</h2>
+          <h2 className="text-base font-semibold tracking-tight">Plugin OBS pour {label}</h2>
           <p className="mt-0.5 text-sm text-muted">
-            {mac?.available ? `Version ${latest!.version}${mac.size ? ` · ${fmtMo(mac.size)}` : ""} · Mac Apple Silicon et Intel` : "La version macOS arrive dans un instant."}
+            {file?.available
+              ? `Version ${latest!.version}${file.size ? ` · ${fmtMo(file.size)}` : ""} · ${id === "windows" ? `Windows 10 et 11${file.beta ? " · bêta" : ""}` : "Mac Apple Silicon et Intel"}`
+              : `La version ${label} arrive dans un instant.`}
           </p>
         </div>
       </div>
@@ -36,10 +46,10 @@ function PluginBar({ coreUrl, latest }: { coreUrl: string; latest: PluginLatest 
         <Link href="/dashboard/plugin" className="text-sm text-muted underline-offset-4 hover:text-foreground hover:underline">
           Comment l&apos;installer
         </Link>
-        {mac?.available && mac.url ? (
-          <a href={`${coreUrl}${mac.url}`} download className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors">
+        {file?.available && file.url ? (
+          <a href={`${coreUrl}${file.url}`} download className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full btn-tonal px-5 text-sm font-medium transition-colors">
             <DownloadSimple size={18} aria-hidden="true" />
-            Télécharger pour macOS
+            Télécharger pour {label}
           </a>
         ) : (
           <span aria-disabled="true" className="inline-flex h-11 cursor-not-allowed items-center justify-center whitespace-nowrap rounded-full border border-line px-5 text-sm text-muted">

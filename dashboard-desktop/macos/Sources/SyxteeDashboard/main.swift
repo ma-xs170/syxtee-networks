@@ -52,10 +52,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         web.underPageBackgroundColor = NSColor(calibratedWhite: 0.09, alpha: 1)
 
         window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1360, height: 860),
-                          styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+                          styleMask: [.titled, .closable, .miniaturizable, .resizable],
                           backing: .buffered, defer: false)
         window.title = "SYXTEE Dashboard"
-        window.titlebarAppearsTransparent = true
         window.minSize = NSSize(width: 900, height: 600)
         window.contentView = web
         window.setFrameAutosaveName("SyxteeDashboardMain")

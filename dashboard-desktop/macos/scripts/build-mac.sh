@@ -33,6 +33,7 @@ cat > "$APP/Contents/Info.plist" <<PL
 <key>CFBundleVersion</key><string>1</string>
 <key>LSMinimumSystemVersion</key><string>13.0</string>
 <key>NSHighResolutionCapable</key><true/>
+<key>CFBundleURLTypes</key><array><dict><key>CFBundleURLName</key><string>fr.syxtee-networks.dashboard</string><key>CFBundleURLSchemes</key><array><string>syxteedashboard</string></array></dict></array>
 <key>NSCameraUsageDescription</key><string>Aperçu caméra dans le dashboard.</string>
 <key>NSMicrophoneUsageDescription</key><string>Aperçu micro dans le dashboard.</string>
 </dict></plist>

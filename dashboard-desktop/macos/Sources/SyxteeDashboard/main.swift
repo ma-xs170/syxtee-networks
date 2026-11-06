@@ -7,6 +7,38 @@ let allowedHosts = ["syxtee-networks.fr", "www.syxtee-networks.fr", "localhost"]
 final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, WKUIDelegate {
     var window: NSWindow!
     var web: WKWebView!
+    var linkState: String?
+    var origin: String { "\(baseURL.scheme!)://\(baseURL.host!)" + (baseURL.port.map { ":\($0)" } ?? "") }
+
+    // Connexion par le navigateur : l'app ouvre /liaison-app, l'utilisateur clique « Autoriser », le site rappelle l'app via syxteedashboard://
+    @objc func startLink() {
+        var b = [UInt8](repeating: 0, count: 24)
+        _ = SecRandomCopyBytes(kSecRandomDefault, b.count, &b)
+        let st = Data(b).base64EncodedString().replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "")
+        linkState = st
+        NSWorkspace.shared.open(URL(string: "\(origin)/liaison-app?state=\(st)")!)
+        let html = """
+        <body style="background:#171717;color:#eee;font:15px -apple-system;display:grid;place-items:center;height:100vh;margin:0;text-align:center">
+        <div><h2>Autorise l'application dans ton navigateur</h2><p style="color:#999">Clique sur « Autoriser » dans la page qui vient de s'ouvrir.</p>
+        <button onclick="location.href='syxteedashboard://retry'" style="background:#e5322d;color:#fff;border:0;padding:10px 18px;border-radius:8px;font-size:14px;cursor:pointer">Rouvrir le navigateur</button></div></body>
+        """
+        web.loadHTMLString(html, baseURL: nil)
+    }
+
+    func application(_ app: NSApplication, open urls: [URL]) {
+        for url in urls where url.scheme == "syxteedashboard" {
+            if url.host == "retry" { startLink(); continue }
+            guard url.host == "auth",
+                  let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
+                  let st = items.first(where: { $0.name == "state" })?.value, st == linkState,
+                  let hash = items.first(where: { $0.name == "token_hash" })?.value else { continue }
+            linkState = nil
+            var c = URLComponents(string: "\(origin)/auth/confirm")!
+            c.queryItems = [.init(name: "token_hash", value: hash), .init(name: "type", value: "magiclink"), .init(name: "next", value: "/dashboard")]
+            web.load(URLRequest(url: c.url!))
+            NSApp.activate(ignoringOtherApps: true)
+        }
+    }
 
     func applicationDidFinishLaunching(_ n: Notification) {
         let cfg = WKWebViewConfiguration()
@@ -39,6 +71,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
 
     // Liens externes → navigateur par défaut
     func webView(_ w: WKWebView, decidePolicyFor a: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        if let url = a.request.url, url.scheme == "syxteedashboard" {
+            application(NSApp, open: [url]); decisionHandler(.cancel); return
+        }
+        // Page de connexion du site → connexion par le navigateur
+        if let url = a.request.url, a.targetFrame?.isMainFrame ?? true, url.host == baseURL.host,
+           url.path == "/connexion", linkState == nil || url.query?.contains("erreur") == true {
+            startLink(); decisionHandler(.cancel); return
+        }
         if let url = a.request.url, let host = url.host, a.targetFrame?.isMainFrame ?? true,
            !allowedHosts.contains(where: { host == $0 || host.hasSuffix("." + $0) }),
            ["http", "https"].contains(url.scheme ?? "") {
@@ -102,6 +142,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
             add(m, "Suivant", #selector(forward), "]")
             add(m, "Recharger", #selector(reload), "r")
             m.addItem(.separator())
+            add(m, "Se connecter via le navigateur", #selector(startLink))
             add(m, "Ouvrir le site", #selector(openSite))
         }
         sub("Fenêtre") { m in

@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Compile SYXTEE Dashboard (macOS) et l'installe dans ~/Applications. Usage : build-mac.sh [--open]
+# Compile SYXTEE Dashboard (macOS) et l'installe dans ~/Applications. Usage : build-mac.sh [--open] [--zip <dossier>]
 set -euo pipefail
 cd "$(dirname "$0")/.."
 # Un build par architecture puis lipo (le build universel exige Xcode complet)
 for a in arm64 x86_64; do swift build -c release --arch $a; done
+VERSION=$(node -p "require('../../src/config/dashboard-app.json').version")
 BIN=$(mktemp -d)/SyxteeDashboard
 lipo -create -output "$BIN" .build/arm64-apple-macosx/release/SyxteeDashboard .build/x86_64-apple-macosx/release/SyxteeDashboard
 APP="$HOME/Applications/SYXTEE Dashboard.app"
@@ -29,8 +30,8 @@ cat > "$APP/Contents/Info.plist" <<PL
 <key>CFBundleIdentifier</key><string>fr.syxtee-networks.dashboard</string>
 <key>CFBundleIconFile</key><string>AppIcon</string>
 <key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleShortVersionString</key><string>1.0.0</string>
-<key>CFBundleVersion</key><string>1</string>
+<key>CFBundleShortVersionString</key><string>$VERSION</string>
+<key>CFBundleVersion</key><string>$VERSION</string>
 <key>LSMinimumSystemVersion</key><string>13.0</string>
 <key>NSHighResolutionCapable</key><true/>
 <key>CFBundleURLTypes</key><array><dict><key>CFBundleURLName</key><string>fr.syxtee-networks.dashboard</string><key>CFBundleURLSchemes</key><array><string>syxteedashboard</string></array></dict></array>
@@ -40,4 +41,6 @@ cat > "$APP/Contents/Info.plist" <<PL
 PL
 codesign --force --deep --sign - "$APP" >/dev/null 2>&1 || true
 echo "Installé : $APP"
-[ "${1:-}" = "--open" ] && open "$APP"
+if [ "${1:-}" = "--zip" ]; then
+  mkdir -p "$2"; ditto -c -k --keepParent "$APP" "$2/SYXTEE-Dashboard-mac.zip"; echo "Archive : $2/SYXTEE-Dashboard-mac.zip"
+elif [ "${1:-}" = "--open" ]; then open "$APP"; fi

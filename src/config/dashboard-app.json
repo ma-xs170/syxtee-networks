@@ -1,0 +1,9 @@
+{
+  "version": "1.1.0",
+  "released_at": "2026-11-06T00:00:00Z",
+  "notes": [
+    "Nouvelle application SYXTEE Dashboard pour Mac et Windows : le dashboard dans sa propre fenêtre, avec ta session conservée",
+    "Connexion par le navigateur : un clic sur « Autoriser », sans retaper ton mot de passe dans l'application",
+    "La fenêtre se souvient de sa taille et de sa position ; les liens externes s'ouvrent dans ton navigateur"
+  ]
+}

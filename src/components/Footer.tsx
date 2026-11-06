@@ -23,6 +23,7 @@ const columns: { title: string; links: NavLink[] }[] = [
     links: [
       { label: "Documentation", href: "/docs" },
       { label: "FAQ", href: "/faq" },
+      { label: "Application", href: "/telecharger" },
     ],
   },
   {

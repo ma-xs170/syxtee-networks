@@ -1,0 +1,26 @@
+{
+  "name": "syxtee-dashboard",
+  "productName": "SYXTEE Dashboard",
+  "version": "1.1.0",
+  "description": "SYXTEE Dashboard pour Windows",
+  "author": "SYXTEE NETWORKS",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "fr.syxtee-networks.dashboard",
+    "productName": "SYXTEE Dashboard",
+    "files": ["main.js", "package.json"],
+    "directories": { "buildResources": "build", "output": "dist" },
+    "win": { "target": ["nsis"], "icon": "build/icon.png", "artifactName": "SYXTEE-Dashboard-windows.exe" },
+    "nsis": { "oneClick": true, "perMachine": false, "deleteAppDataOnUninstall": false },
+    "protocols": [{ "name": "SYXTEE Dashboard", "schemes": ["syxteedashboard"] }]
+  }
+}

@@ -1,0 +1,57 @@
+# Application SYXTEE Dashboard : Mac (Swift, universelle) et Windows (Electron + installeur NSIS).
+# Les fichiers sont publiés dans la release « dashboard-latest » (liens stables utilisés par la page /telecharger).
+name: SYXTEE Dashboard app
+
+on:
+  push:
+    paths: ["dashboard-desktop/**", "src/config/dashboard-app.json", ".github/workflows/dashboard-app.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  mac:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - run: dashboard-desktop/macos/scripts/build-mac.sh --zip out
+      - uses: actions/upload-artifact@v4
+        with: { name: dashboard-mac, path: out/SYXTEE-Dashboard-mac.zip, if-no-files-found: error }
+
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: dashboard-desktop/windows
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      # Version unique : src/config/dashboard-app.json
+      - name: Version
+        shell: bash
+        run: node -e "const v=require('../../src/config/dashboard-app.json').version;const f='package.json';const p=require('./'+f);p.version=v;require('fs').writeFileSync(f,JSON.stringify(p,null,2))"
+      - run: npm install --no-audit --no-fund
+      - run: npm run dist
+      - uses: actions/upload-artifact@v4
+        with: { name: dashboard-windows, path: dashboard-desktop/windows/dist/SYXTEE-Dashboard-windows.exe, if-no-files-found: error }
+
+  publish:
+    needs: [mac, windows]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: files, merge-multiple: true }
+      - name: Release dashboard-latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V=$(jq -r .version src/config/dashboard-app.json)
+          gh release view dashboard-latest >/dev/null 2>&1 || gh release create dashboard-latest --title "SYXTEE Dashboard" --notes "Dernière version de l'application SYXTEE Dashboard." --latest=false
+          gh release edit dashboard-latest --title "SYXTEE Dashboard $V"
+          gh release upload dashboard-latest files/* --clobber

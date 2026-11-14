@@ -34,7 +34,7 @@ export default async function StatsLayout({ children }: LayoutProps<"/">) {
           </Suspense>
 
           <div className="hidden shrink-0 items-center gap-3 border-l border-line pl-4 md:flex">
-            <span className="max-w-[16ch] truncate font-mono text-xs text-muted" title="Espace actif">{workspace?.name ?? "Personnel"}</span>
+            <span className="max-w-[16ch] truncate font-mono text-xs text-muted" title="Espace actif">{workspace?.name ?? "Tableau de bord"}</span>
             <Link href="/dashboard/cloud" className="rounded-full border border-line px-3.5 py-1.5 text-sm text-muted transition-colors hover:border-foreground/30 hover:text-foreground">Tous les flux</Link>
           </div>
         </div>

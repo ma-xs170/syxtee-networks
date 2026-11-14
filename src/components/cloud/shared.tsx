@@ -231,13 +231,19 @@ export function ModemTile({ index, peer, history, window, total }: { index: numb
 const METER_TICKS = [0, -6, -12, -24, -36, -48];
 const METER_GRADIENT = "linear-gradient(to top, var(--ok) 0%, var(--ok) 70%, var(--warn) 70%, var(--warn) 90%, var(--bad) 90%)";
 
-function Bar({ rms, peak, label, onVideo, name }: { rms: number | null; peak: number | null; label?: string; onVideo: boolean; name: string }) {
+function Bar({ rms, peak, label, ticks = false, onVideo, name }: { rms: number | null; peak: number | null; label?: string; ticks?: boolean; onVideo: boolean; name: string }) {
   const fill = dbToFill(rms);
   return (
     <div className="flex h-full flex-col items-center gap-1">
-      <div className={`relative w-2.5 flex-1 overflow-hidden rounded-sm ${onVideo ? "bg-white/20" : "bg-foreground/10"}`} role="meter" aria-label={name} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={rms == null ? undefined : Math.round(rms)}>
-        <div className="absolute inset-0 transition-[clip-path] duration-200 motion-reduce:transition-none" style={{ background: METER_GRADIENT, clipPath: `inset(${(1 - fill) * 100}% 0 0 0)` }} />
-        {peak != null && peak > -60 && <span aria-hidden="true" className="absolute inset-x-0 h-0.5 bg-foreground transition-[bottom] duration-200 motion-reduce:transition-none" style={{ bottom: `calc(${dbToFill(peak) * 100}% - 1px)` }} />}
+      <div className="relative w-2.5 flex-1">
+        <div className={`absolute inset-0 overflow-hidden rounded-sm ${onVideo ? "bg-white/20" : "bg-foreground/10"}`} role="meter" aria-label={name} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={rms == null ? undefined : Math.round(rms)}>
+          <div className="absolute inset-0 transition-[clip-path] duration-200 motion-reduce:transition-none" style={{ background: METER_GRADIENT, clipPath: `inset(${(1 - fill) * 100}% 0 0 0)` }} />
+          {peak != null && peak > -60 && <span aria-hidden="true" className="absolute inset-x-0 h-0.5 bg-foreground transition-[bottom] duration-200 motion-reduce:transition-none" style={{ bottom: `calc(${dbToFill(peak) * 100}% - 1px)` }} />}
+        </div>
+        {/* Graduations posées dans la boîte même de la barre : 0 dB = haut, −60 dB = bas, alignement exact. */}
+        {ticks && METER_TICKS.map((t) => (
+          <span key={t} aria-hidden="true" className="absolute right-full mr-2 flex h-0 items-center font-mono text-[9px] leading-none text-muted" style={{ bottom: `${dbToFill(t) * 100}%` }}>{t}</span>
+        ))}
       </div>
       {label && <span className="font-mono text-[10px] leading-none text-muted">{label}</span>}
     </div>
@@ -250,20 +256,9 @@ function Bar({ rms, peak, label, onVideo, name }: { rms: number | null; peak: nu
  */
 export function StereoMeter({ audio, className = "", onVideo = false }: { audio: Audio | null | undefined; className?: string; onVideo?: boolean }) {
   return (
-    <div className={`flex ${onVideo ? "" : "relative"} ${className}`}>
-      {!onVideo && (
-        // Même structure que la colonne d'une barre (zone flexible + libellé G/D) : les graduations tombent exactement sur la barre.
-        <div aria-hidden="true" className="absolute inset-y-0 right-full mr-2 flex w-7 flex-col gap-1">
-          <div className="relative flex-1">
-            {METER_TICKS.map((t) => (
-              <span key={t} className="absolute right-0 translate-y-1/2 font-mono text-[9px] leading-none text-muted" style={{ bottom: `${dbToFill(t) * 100}%` }}>{t}</span>
-            ))}
-          </div>
-          <span className="text-[10px] leading-none">&nbsp;</span>
-        </div>
-      )}
+    <div className={`flex ${className}`}>
       <div className={`flex h-full ${onVideo ? "gap-1.5" : "gap-3"}`}>
-        <Bar rms={audio?.l ?? null} peak={audio?.peak_l ?? null} label={onVideo ? undefined : "G"} onVideo={onVideo} name="Niveau audio gauche" />
+        <Bar rms={audio?.l ?? null} peak={audio?.peak_l ?? null} label={onVideo ? undefined : "G"} ticks={!onVideo} onVideo={onVideo} name="Niveau audio gauche" />
         <Bar rms={audio?.r ?? null} peak={audio?.peak_r ?? null} label={onVideo ? undefined : "D"} onVideo={onVideo} name="Niveau audio droit" />
       </div>
     </div>

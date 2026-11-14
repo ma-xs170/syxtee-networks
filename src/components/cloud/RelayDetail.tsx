@@ -152,7 +152,7 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
 
       {view === "live" && (
       <div className="flex flex-wrap items-start gap-4 p-4">
-        <div className="order-last -my-4 w-full min-w-0 max-w-[44rem] self-stretch pt-4 lg:w-[44rem] lg:border-l lg:border-line lg:pl-4">
+        <div className="order-last -my-4 w-full min-w-0 max-w-[44rem] self-stretch py-4 lg:w-[44rem] lg:border-l lg:border-line lg:pl-4">
           {live ? (
             <StreamPreview coreUrl={coreUrl} relayId={current.id} fullControl={{ full, setFull }} />
           ) : (

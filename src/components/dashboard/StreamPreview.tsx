@@ -154,7 +154,7 @@ export default function StreamPreview({ coreUrl, relayId, fullControl, compact }
             <button
               type="button"
               onClick={() => setMuted((m) => !m)}
-              className={`absolute flex h-11 items-center rounded-full bg-black/75 px-4 font-mono text-[10px] uppercase tracking-[0.12em] text-white transition-colors hover:bg-black ${full ? "bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-[max(0.75rem,env(safe-area-inset-right))]" : "bottom-3 right-3"}`}
+              className={`absolute flex items-center rounded bg-black/75 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-white transition-colors hover:bg-black ${full ? "bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-[max(0.75rem,env(safe-area-inset-right))]" : "bottom-3 right-3"}`}
               aria-pressed={!muted}
             >
               {muted ? "Activer le son" : "Couper le son"}
@@ -162,7 +162,7 @@ export default function StreamPreview({ coreUrl, relayId, fullControl, compact }
             {(!fullControl || full) && <button
               type="button"
               onClick={() => setFull(!full)}
-              className={`absolute flex h-11 items-center rounded-full bg-black/75 px-4 font-mono text-[10px] uppercase tracking-[0.12em] text-white transition-colors hover:bg-black ${full ? "right-[max(0.75rem,env(safe-area-inset-right))] top-[max(0.75rem,env(safe-area-inset-top))]" : "bottom-3 left-3"}`}
+              className={`absolute flex items-center rounded bg-black/75 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-white transition-colors hover:bg-black ${full ? "right-[max(0.75rem,env(safe-area-inset-right))] top-[max(0.75rem,env(safe-area-inset-top))]" : "bottom-3 left-3"}`}
             >
               {full ? "Fermer" : "Plein écran"}
             </button>}

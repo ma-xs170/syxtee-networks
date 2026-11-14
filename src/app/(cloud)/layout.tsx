@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Suspense } from "react";
 import CloudTabs from "@/components/cloud/CloudTabs";
 import { redirect } from "next/navigation";
 import { preconnect } from "react-dom";
@@ -27,7 +28,9 @@ export default async function StatsLayout({ children }: LayoutProps<"/">) {
           <span className="hidden font-mono text-xs text-muted sm:inline" aria-hidden="true">/</span>
           <span className="hidden font-mono text-xs uppercase tracking-[0.14em] text-muted sm:inline">Cloud</span>
 
-          <CloudTabs />
+          <Suspense fallback={<span className="ml-auto" />}>
+            <CloudTabs />
+          </Suspense>
 
           <div className="hidden shrink-0 items-center gap-3 border-l border-line pl-4 md:flex">
             <span className="max-w-[16ch] truncate font-mono text-xs text-muted" title="Espace actif">{workspace?.name ?? "Personnel"}</span>

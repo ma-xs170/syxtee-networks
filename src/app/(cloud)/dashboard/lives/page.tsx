@@ -9,7 +9,7 @@ import { listSessions } from "@/lib/dashboard-overview";
 import { loadRelays } from "@/lib/relays";
 import PlanGate from "@/components/plans/PlanGate";
 
-export const metadata: Metadata = { title: "Historique des directs", robots: { index: false } };
+export const metadata: Metadata = { title: "Statistiques des directs", robots: { index: false } };
 
 export default async function LivesPage({ searchParams }: PageProps<"/dashboard/lives">) {
   const [user, { relay: wanted }, profile] = await Promise.all([requireOwner("/dashboard/lives"), searchParams, getProfile()]);
@@ -19,8 +19,8 @@ export default async function LivesPage({ searchParams }: PageProps<"/dashboard/
   return (
     <DashPage>
       <PlanGate feature="lives">
-      <DashHeader lead="Historique des" hl="directs" sub="Tes 100 derniers directs. Ouvre un direct pour voir sa courbe de débit." />
-      <RelayPicker relays={relays} current={current} base="/dashboard/lives" all={relays.length > 1} />
+      <DashHeader lead="Statistiques des" hl="directs" sub={current ? `Les derniers directs de ${relays.find((r) => r.id === current)?.name ?? "ce flux"}. Ouvre un direct pour voir sa courbe de débit.` : "Tes 100 derniers directs. Ouvre un direct pour voir sa courbe de débit."} />
+      {!current && <RelayPicker relays={relays} current={current} base="/dashboard/lives" all={relays.length > 1} />}
       <Tile>
         {sessions.length ? (
           <>

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Suspense } from "react";
 import CloudTabs from "@/components/cloud/CloudTabs";
 import { redirect } from "next/navigation";
@@ -34,7 +35,7 @@ export default async function StatsLayout({ children }: LayoutProps<"/">) {
 
           <div className="hidden shrink-0 items-center gap-3 border-l border-line pl-4 md:flex">
             <span className="max-w-[16ch] truncate font-mono text-xs text-muted" title="Espace actif">{workspace?.name ?? "Personnel"}</span>
-            <a href="/dashboard" className="rounded-full border border-line px-3.5 py-1.5 text-sm text-muted transition-colors hover:border-foreground/30 hover:text-foreground">Tableau de bord</a>
+            <Link href="/dashboard/cloud" className="rounded-full border border-line px-3.5 py-1.5 text-sm text-muted transition-colors hover:border-foreground/30 hover:text-foreground">Tous les flux</Link>
           </div>
         </div>
       </header>

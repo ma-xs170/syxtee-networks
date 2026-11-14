@@ -41,10 +41,10 @@ function Tile({
         />
       )}
       {label && (
-        <span className="absolute inset-x-3 bottom-4 flex justify-center">
+        <span className="absolute inset-x-2 bottom-3 flex justify-center">
           {/* Pastille « liquid glass » : verre dépoli, reflet en haut, fin liseré clair ; posée à distance du bord. */}
           <span
-            className="max-w-full truncate rounded-full border border-white/25 bg-white/[0.12] px-5 py-2 font-sans text-[20px] font-semibold uppercase leading-none tracking-wide text-white backdrop-blur-xl backdrop-saturate-150"
+            className="max-w-full truncate rounded-full border border-white/25 bg-white/[0.12] px-3 py-1 font-sans text-[13px] font-semibold uppercase leading-none tracking-wide text-white backdrop-blur-xl backdrop-saturate-150"
             style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -1px 0 rgba(255,255,255,0.08), 0 4px 14px rgba(0,0,0,0.35)" }}
           >
             {label}

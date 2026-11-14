@@ -1,57 +1,51 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { btn, cx, Icon } from "./ui";
-import type { Obs } from "./useObs";
+import type { Rights } from "./types";
+import { useObs } from "./useObs";
 
-// Multiview comme dans OBS : Aperçu et Programme en grand, puis une vignette par scène. Un clic sur une vignette change de scène.
-// Les vignettes sont des captures d'écran demandées une à une à OBS (une scène à la fois, pour ne pas charger le poste).
+// Multiview comme dans OBS Studio (page à part, plein écran, pour un second écran) : Aperçu et Programme en grand, puis les scènes en vignettes.
+// Cadre rouge = programme, vert = aperçu. Les vignettes sont des captures d'écran demandées une à une à OBS. Un clic sur une scène l'envoie à l'antenne.
 
-type Shot = { src: string; at: number };
+type Shot = { src: string };
+const GAP = "#9a9a9a"; // gris du Multiview d'OBS : le fond de la grille, vu entre les vignettes
 
-/** Une scène, ou « Aperçu » / « Programme » : image + nom en bas, cadre rouge (programme) ou vert (aperçu). */
-function Tile({ label, scene, shot, tone, big, onPick, disabled }: { label: string; scene?: string; shot?: Shot; tone?: "program" | "preview"; big?: boolean; onPick?: () => void; disabled?: boolean }) {
-  const inner = (
+function Tile({ label, shot, tone, onPick, className = "" }: { label: string; shot?: Shot; tone?: "program" | "preview"; onPick?: () => void; className?: string }) {
+  const frame = tone === "program" ? "#d12a1f" : tone === "preview" ? "#2fbf4a" : "transparent";
+  const body = (
     <>
-      {shot ? (
+      {shot && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={shot.src} alt="" draggable={false} className="absolute inset-0 size-full object-contain" />
-      ) : null}
-      <span className={cx("absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-background/80 to-transparent px-2 pb-1.5 pt-6 text-center font-medium", big ? "text-base sm:text-lg" : "font-mono text-[11px] uppercase tracking-wider sm:text-xs")}>
-        {label}
-        {scene && big ? <span className="ml-2 font-mono text-xs uppercase tracking-wider text-muted">{scene}</span> : null}
-      </span>
+      )}
+      {label && <span className="absolute inset-x-0 bottom-[2%] truncate px-2 text-center font-sans text-[clamp(11px,1.5vw,26px)] font-bold uppercase leading-none text-white [text-shadow:0_0_4px_#000]">{label}</span>}
+      {tone && <span aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ boxShadow: `inset 0 0 0 clamp(3px,0.45vw,8px) ${frame}` }} />}
     </>
   );
-  const box = cx("relative aspect-video overflow-hidden rounded-lg bg-black/60", tone === "program" ? "ring-2 ring-bad" : tone === "preview" ? "ring-2 ring-ok" : "ring-1 ring-line");
+  const cls = `relative min-h-0 min-w-0 overflow-hidden bg-black ${className}`;
   return onPick ? (
-    <button type="button" disabled={disabled} onClick={onPick} aria-label={`Scène ${label}`} className={cx(box, "text-left transition-[filter] hover:brightness-110 disabled:opacity-60")}>
-      {inner}
+    <button type="button" onClick={onPick} aria-label={`Scène ${label}`} className={`${cls} cursor-pointer`}>
+      {body}
     </button>
   ) : (
-    <div className={box}>{inner}</div>
+    <div className={cls}>{body}</div>
   );
 }
 
-export default function Multiview({ o, onClose }: { o: Obs; onClose: () => void }) {
+export default function MultiviewScreen({ coreUrl, deviceId, rights }: { coreUrl: string; deviceId: string; rights: Rights }) {
+  const o = useObs({ coreUrl, deviceId, rights });
   const [shots, setShots] = useState<Record<string, Shot>>({});
   const { call } = o;
-  // Ordre de rafraîchissement : programme, aperçu, puis les autres scènes ; lu à chaque tour (les scènes peuvent changer).
-  const want = useRef<{ program: string; preview: string; rest: string[] }>({ program: "", preview: "", rest: [] });
+  // Ce que la boucle de captures lit à chaque tour : programme, aperçu, autres scènes.
+  const want = useRef({ program: "", preview: "", rest: [] as string[] });
+  const preview = o.studioMode && o.preview ? o.preview : o.program;
   useEffect(() => {
-    want.current = { program: o.program, preview: o.studioMode ? o.preview : "", rest: o.scenes.filter((s) => s !== o.program && s !== o.preview) };
-  }, [o.program, o.preview, o.studioMode, o.scenes]);
+    want.current = { program: o.program, preview, rest: o.scenes.filter((s) => s !== o.program && s !== preview) };
+  }, [o.program, preview, o.scenes]);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
-    };
-  }, [onClose]);
+    document.title = `Multiview · ${o.agent.name ?? "OBS"}`;
+  }, [o.agent.name]);
 
   useEffect(() => {
     let live = true;
@@ -63,13 +57,13 @@ export default function Multiview({ o, onClose }: { o: Obs; onClose: () => void 
           await new Promise((r) => setTimeout(r, 800));
           continue;
         }
-        // Le programme et l'aperçu (grands) reviennent une fois sur deux ; les autres vignettes tournent.
-        const name = i % 2 === 0 ? (i % 4 === 0 || !w.preview ? w.program : w.preview) : (w.rest[Math.floor(i / 2) % Math.max(1, w.rest.length)] ?? w.program);
+        // Programme et aperçu (grands) reviennent une fois sur deux ; les autres vignettes tournent.
+        const name = i % 2 === 0 ? (i % 4 === 0 || w.preview === w.program ? w.program : w.preview) : (w.rest[Math.floor(i / 2) % Math.max(1, w.rest.length)] ?? w.program);
         const large = name === w.program || name === w.preview;
         i++;
         try {
           const r = await call<{ imageData: string }>("GetSourceScreenshot", { sourceName: name, imageFormat: "jpg", imageWidth: large ? 960 : 320, imageHeight: large ? 540 : 180, imageCompressionQuality: 55 });
-          if (live && r?.imageData) setShots((s) => ({ ...s, [name]: { src: r.imageData, at: Date.now() } }));
+          if (live && r?.imageData) setShots((s) => ({ ...s, [name]: { src: r.imageData } }));
         } catch {
           /* scène sans image (vide, supprimée) : on passe à la suivante */
         }
@@ -82,35 +76,26 @@ export default function Multiview({ o, onClose }: { o: Obs; onClose: () => void 
     };
   }, [call, o.ready]);
 
+  // 8 vignettes comme dans OBS (2 rangées de 4) ; au-delà, des rangées de plus.
+  const cells = Math.max(8, Math.ceil(o.scenes.length / 4) * 4);
+  const rows = cells / 4;
   const editable = o.ready && o.canScenes;
   return (
-    <div role="dialog" aria-modal="true" aria-label="Multiview" className="fixed inset-0 z-50 flex min-h-dvh flex-col bg-background">
-      <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-line px-3">
-        <h2 className="flex items-baseline gap-2 text-sm font-medium">
-          Multiview
-          <span className="font-mono text-xs font-normal tabular-nums text-muted">{o.scenes.length} scènes</span>
-        </h2>
-        <button type="button" onClick={onClose} className={btn("sm")} aria-label="Fermer le Multiview">
-          <Icon name="close" />
-          <span className="max-sm:sr-only">Fermer</span>
-        </button>
-      </header>
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2 sm:p-3">
-        <div className="mx-auto grid max-w-[110rem] gap-2 sm:gap-3">
-          <div className="grid gap-2 sm:grid-cols-2 sm:gap-3">
-            <Tile label="Aperçu" scene={o.studioMode ? o.preview : undefined} shot={o.studioMode ? shots[o.preview] : undefined} tone={o.studioMode ? "preview" : undefined} big />
-            <Tile label="Programme" scene={o.program} shot={shots[o.program]} tone="program" big />
-          </div>
-          <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
-            {o.scenes.map((sc) => (
-              <li key={sc}>
-                <Tile label={sc} shot={shots[sc]} tone={sc === o.program ? "program" : o.studioMode && sc === o.preview ? "preview" : undefined} onPick={() => o.pick(sc)} disabled={!editable} />
-              </li>
-            ))}
-          </ul>
-          {o.scenes.length === 0 && <p className="py-6 text-center text-sm text-muted">{o.ready ? "Aucune scène dans cette collection." : "En attente d'OBS…"}</p>}
-        </div>
-      </div>
-    </div>
+    <main
+      className="fixed inset-0 grid min-h-dvh gap-[0.5vmin] p-[0.5vmin]"
+      style={{ background: GAP, gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gridTemplateRows: `${rows <= 2 ? "2fr" : `${rows}fr`} repeat(${rows}, minmax(0, 1fr))` }}
+    >
+      <Tile label="Aperçu" shot={shots[preview]} tone={o.studioMode ? "preview" : undefined} className="col-span-2" />
+      <Tile label="Programme" shot={shots[o.program]} tone="program" className="col-span-2" />
+      {Array.from({ length: cells }, (_, n) => {
+        const sc = o.scenes[n];
+        return sc ? (
+          <Tile key={sc} label={sc} shot={shots[sc]} tone={sc === o.program ? "program" : o.studioMode && sc === preview ? "preview" : undefined} onPick={editable ? () => o.pick(sc) : undefined} />
+        ) : (
+          <Tile key={`vide-${n}`} label="" />
+        );
+      })}
+      {!o.ready && <p className="absolute inset-0 grid place-items-center bg-black/70 text-sm text-white">En attente d&apos;OBS…</p>}
+    </main>
   );
 }

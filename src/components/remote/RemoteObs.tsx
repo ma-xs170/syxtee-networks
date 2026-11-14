@@ -8,7 +8,6 @@ import DirectSimple from "./DirectSimple";
 import { SourceEditor } from "./EditTools";
 import LivePanel from "./LivePanel";
 import MixerPanel from "./MixerPanel";
-import Multiview from "./Multiview";
 import ProgramView from "./ProgramView";
 import ScenesPanel from "./ScenesPanel";
 import SettingsPanel from "./SettingsPanel";
@@ -78,7 +77,6 @@ export default function RemoteObs({
   const landscape = useLandscape();
   const [tab, setTab] = useState<Tab>("scenes");
   const [autoOpen, setAutoOpen] = useState(false);
-  const [multiview, setMultiview] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [edit, setEdit] = useState<"props" | "filters" | null>(null);
@@ -112,7 +110,7 @@ export default function RemoteObs({
 
   return (
     <div className="flex h-dvh w-full min-w-0 max-w-[100vw] flex-col overflow-hidden overscroll-none bg-background pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] text-sm text-foreground [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [touch-action:manipulation] max-lg:pb-[env(safe-area-inset-bottom)]">
-      <TopBar o={o} desktop={desktop} onAuto={() => setAutoOpen(true)} onOptions={() => setOptionsOpen(true)} onMultiview={() => setMultiview(true)} invited={!!invite} />
+      <TopBar o={o} desktop={desktop} onAuto={() => setAutoOpen(true)} onOptions={() => setOptionsOpen(true)} onMultiview={() => window.open(`/controle-a-distance/${deviceId}/multiview`, "_blank", "noopener")} invited={!!invite} />
       {!desktop && <StatusStrip o={o} desktop={desktop} />}
       <Alerts o={o} invited={!!invite} />
 
@@ -199,7 +197,6 @@ export default function RemoteObs({
       <Sheet open={!!edit && !!o.selectedItem} onClose={() => setEdit(null)} title={`${edit === "filters" ? "Filtres" : "Propriétés"} · ${o.selectedItem?.name ?? ""}`}>
         {edit && o.selectedItem && <SourceEditor call={o.call} sceneName={o.editing} itemId={o.selectedItem.id} name={o.selectedItem.name} kind={o.selectedItem.kind} canEdit={o.ready && o.canLive} only={edit} />}
       </Sheet>
-      {multiview && <Multiview o={o} onClose={() => setMultiview(false)} />}
       <Confirm ask={ask} onClose={() => setAsk(null)} />
       <Toasts list={o.toasts.list} dismiss={o.toasts.dismiss} />
     </div>

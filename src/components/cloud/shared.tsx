@@ -1,7 +1,7 @@
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
-import { BAD, WARN, dbToFill, fmtKbps, levelOf, seriesStats, share, type Level, type Peer, type Point } from "@/lib/control-center";
+import { useState, type ReactNode } from "react";
+import { WARN, dbToFill, fmtKbps, levelOf, seriesStats, share, type Level, type Peer, type Point } from "@/lib/control-center";
 
 // Éléments communs aux pages Cloud : mêmes types, mêmes courbes, mêmes tuiles.
 
@@ -63,7 +63,6 @@ export function nearest(points: Point[], t: number): Point | null {
  */
 export function Area({ points, window, end, max, className = "h-24", tone = "ok", hover, fmt, showMax, levels }: { levels?: boolean; points: Point[]; window: number; end?: number; max?: number; className?: string; tone?: "ok" | "ink"; hover?: Hover; fmt?: (v: number) => string; showMax?: boolean }) {
   const [own, setOwn] = useState<number | null>(null);
-  const gid = useId();
   const h: Hover = hover ?? { t: own, set: setOwn };
   if (points.length < 2) return <div className={`${className} grid place-items-center rounded-lg border border-dashed border-line text-xs text-muted`}>Pas encore de données</div>;
   const t1 = end ?? points[points.length - 1].t;
@@ -83,18 +82,12 @@ export function Area({ points, window, end, max, className = "h-24", tone = "ok"
     <div className="relative touch-pan-y" onPointerMove={onMove} onPointerDown={onMove} onPointerLeave={() => h.set(null)}>
       <svg viewBox="0 0 100 40" preserveAspectRatio="none" className={`${className} w-full ${color}`} role="img" aria-label={`Courbe, maximum ${nf.format(Math.round(top))}`}>
         <path d="M0 1H100M0 20H100M0 39H100" stroke="currentColor" className="text-foreground" strokeOpacity={0.1} strokeDasharray="1 3" vectorEffect="non-scaling-stroke" />
-        {levels && (
-          <defs>
-            <linearGradient id={gid} gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="0" y2="40">
-              <stop offset={`${(y(WARN) / 40) * 100}%`} stopColor="var(--ok)" />
-              <stop offset={`${(y(WARN) / 40) * 100}%`} stopColor="var(--warn)" />
-              <stop offset={`${(y(BAD) / 40) * 100}%`} stopColor="var(--warn)" />
-              <stop offset={`${(y(BAD) / 40) * 100}%`} stopColor="var(--bad)" />
-            </linearGradient>
-          </defs>
+        <path d={area} fill="currentColor" fillOpacity={levels ? 0.08 : tone === "ok" ? 0.55 : 0.12} />
+        {levels ? (
+          levelRuns(points, x, y).map((r, i) => <path key={i} d={r.d} fill="none" stroke={LEVEL_STROKE[r.level]} strokeWidth={1.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />)
+        ) : (
+          <path d={line} fill="none" stroke="currentColor" strokeWidth={1.25} vectorEffect="non-scaling-stroke" />
         )}
-        <path d={area} fill={levels ? `url(#${gid})` : "currentColor"} fillOpacity={levels ? 0.4 : tone === "ok" ? 0.55 : 0.12} />
-        <path d={line} fill="none" stroke={levels ? `url(#${gid})` : "currentColor"} strokeWidth={1.25} vectorEffect="non-scaling-stroke" />
       </svg>
       {showMax && fmt && <span aria-hidden="true" className="pointer-events-none absolute left-1.5 top-0.5 font-mono text-[10px] text-muted">{fmt(top)}</span>}
       {hit && (
@@ -144,29 +137,40 @@ export function Tile({ label, value, tone, hint, spark, levels }: { label: strin
   );
 }
 
+const LEVEL_STROKE: Record<Level, string> = { off: "var(--muted)", bad: "var(--bad)", warn: "var(--warn)", ok: "var(--ok)" };
+
+/** Courbe découpée en tronçons : chaque tronçon prend la couleur du niveau du relevé où il arrive (la couleur suit le débit, rien n'est coloré d'avance). */
+function levelRuns(points: Point[], x: (t: number) => number, y: (v: number) => number) {
+  const runs: { level: Level; d: string }[] = [];
+  points.forEach((p, i) => {
+    const pt = `${x(p.t).toFixed(2)} ${y(p.v).toFixed(2)}`;
+    if (i === 0) return;
+    const level = levelOf(p.v);
+    const last = runs[runs.length - 1];
+    if (last && last.level === level) last.d += `L${pt}`;
+    else {
+      const prev = points[i - 1];
+      runs.push({ level, d: `M${x(prev.t).toFixed(2)} ${y(prev.v).toFixed(2)}L${pt}` });
+    }
+  });
+  return runs;
+}
+
 /** Mini courbe qui suit la valeur. `levels` : la couleur suit le débit (rouge sous 300 kb/s, orange sous 1 Mb/s, vert au-dessus), sur la courbe elle-même. */
 export function Spark({ points, className = "", levels = false }: { points: Point[]; className?: string; levels?: boolean }) {
-  const gid = useId();
   if (points.length < 2) return <div className={`${className} border-b border-dashed border-line`} aria-hidden="true" />;
   const pts = points.slice(-60);
   const max = Math.max(levels ? WARN * 1.3 : 1, ...pts.map((p) => p.v));
   const y = (v: number) => 30 - (v / max) * 28;
   const d = pts.map((p, i) => `${i ? "L" : "M"}${((i / (pts.length - 1)) * 100).toFixed(1)} ${y(p.v).toFixed(1)}`).join("");
-  const paint = levels ? `url(#${gid})` : "currentColor";
   return (
     <svg viewBox="0 0 100 32" preserveAspectRatio="none" className={className} aria-hidden="true">
-      {levels && (
-        <defs>
-          <linearGradient id={gid} gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="0" y2="32">
-            <stop offset={`${(y(WARN) / 32) * 100}%`} stopColor="var(--ok)" />
-            <stop offset={`${(y(WARN) / 32) * 100}%`} stopColor="var(--warn)" />
-            <stop offset={`${(y(BAD) / 32) * 100}%`} stopColor="var(--warn)" />
-            <stop offset={`${(y(BAD) / 32) * 100}%`} stopColor="var(--bad)" />
-          </linearGradient>
-        </defs>
+      <path d={`${d}L100 32L0 32Z`} fill="currentColor" fillOpacity={levels ? 0.08 : 0.18} />
+      {levels ? (
+        levelRuns(pts, (t) => ((t - pts[0].t) / Math.max(1, pts[pts.length - 1].t - pts[0].t)) * 100, y).map((r, i) => <path key={i} d={r.d} fill="none" stroke={LEVEL_STROKE[r.level]} strokeWidth={1.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />)
+      ) : (
+        <path d={d} fill="none" stroke="currentColor" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
       )}
-      <path d={`${d}L100 32L0 32Z`} fill={paint} fillOpacity={0.18} />
-      <path d={d} fill="none" stroke={paint} strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }

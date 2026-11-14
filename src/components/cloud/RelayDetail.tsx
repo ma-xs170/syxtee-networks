@@ -163,9 +163,6 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
             )}
           </div>
           <div className="flex shrink-0 flex-col items-stretch gap-3 self-stretch">
-            <button type="button" disabled={!live} onClick={() => setFull(true)} className="h-9 whitespace-nowrap rounded-md border border-line px-3 text-sm text-muted transition-colors hover:border-foreground/30 hover:text-foreground disabled:pointer-events-none disabled:opacity-40">
-              Plein écran
-            </button>
             <StereoMeter audio={live ? current.media?.audio : null} className="min-h-0 flex-1 justify-center" />
           </div>
         </div>

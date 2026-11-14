@@ -135,7 +135,15 @@ export default function StreamPreview({ coreUrl, relayId, fullControl, compact }
   return (
     <section className={compact ? "absolute inset-0" : "overflow-hidden rounded-2xl border border-line"} aria-label="Aperçu du flux">
       <div ref={box} className={full ? "fixed inset-0 z-[60] h-dvh w-screen bg-black" : compact ? "relative h-full w-full" : "relative aspect-video bg-black"}>
-        <video ref={video} muted={muted} playsInline autoPlay className={`h-full w-full ${compact ? "object-cover" : "object-contain"} ${state === "playing" ? "" : "invisible"}`} aria-label="Aperçu de ton flux" />
+        <video
+          ref={video}
+          muted={muted}
+          playsInline
+          autoPlay
+          {...(fullControl && !full && state === "playing" ? { role: "button", tabIndex: 0, onClick: () => setFull(true), onKeyDown: (e: React.KeyboardEvent) => e.key === "Enter" && setFull(true) } : {})}
+          className={`h-full w-full ${compact ? "object-cover" : "object-contain"} ${fullControl && !full ? "cursor-zoom-in" : ""} ${state === "playing" ? "" : "invisible"}`}
+          aria-label={fullControl && !full ? "Aperçu de ton flux, ouvrir en plein écran" : "Aperçu de ton flux"}
+        />
         {message && !compact && <p className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-muted">{message}</p>}
         {state === "playing" && !compact && (
           <>

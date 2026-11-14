@@ -28,6 +28,7 @@ export default async function StatsLayout({ children }: LayoutProps<"/">) {
           </Link>
           <span className="hidden font-mono text-xs text-muted sm:inline" aria-hidden="true">/</span>
           <span className="hidden font-mono text-xs uppercase tracking-[0.14em] text-muted sm:inline">Cloud</span>
+          <Link href="/dashboard/cloud" className="ml-2 hidden shrink-0 whitespace-nowrap md:inline-block rounded-full bg-accent px-3.5 py-1.5 text-sm text-on-accent transition-opacity hover:opacity-90">Tous les flux</Link>
 
           <Suspense fallback={<span className="ml-auto" />}>
             <CloudTabs />
@@ -38,7 +39,6 @@ export default async function StatsLayout({ children }: LayoutProps<"/">) {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" /></svg>
               <span className="truncate">{workspace?.name ?? "Tableau de bord"}</span>
             </a>
-            <Link href="/dashboard/cloud" className="whitespace-nowrap rounded-full bg-accent px-3.5 py-1.5 text-sm text-on-accent transition-opacity hover:opacity-90">Tous les flux</Link>
           </div>
         </div>
       </header>

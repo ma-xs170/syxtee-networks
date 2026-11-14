@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import StreamPreview from "@/components/dashboard/StreamPreview";
 import { useMemo, useState } from "react";
 import { dbToFill, efficiency, fmtKbps, quality, qualityLevel } from "@/lib/control-center";
 import { LEVEL, Meter, type Relay } from "./shared";
@@ -18,6 +19,7 @@ function Card({ r, coreUrl, picked }: { r: Relay; coreUrl: string; picked: boole
     <li id={`flux-${r.id}`} className={`overflow-hidden rounded-lg border bg-surface transition-colors ${picked ? "border-foreground/60" : "border-line"}`}>
       <div className="relative aspect-video bg-background">
         <Thumb coreUrl={coreUrl} relayId={r.id} live={r.live} alt={`Aperçu de ${r.name}`} />
+        {r.live && <StreamPreview coreUrl={coreUrl} relayId={r.id} compact />}
         {r.live ? (
           <>
             <span className="absolute left-2 top-2 flex items-center gap-1.5 rounded bg-black/75 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-white">

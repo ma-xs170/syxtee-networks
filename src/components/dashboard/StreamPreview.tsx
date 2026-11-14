@@ -8,8 +8,8 @@ import { activeWorkspace, coreToken } from "./coreClient";
 
 type State = "connecting" | "playing" | "offline" | "unsupported";
 
-/** `fullControl` : plein écran piloté de l'extérieur (bouton placé à côté de l'aperçu) ; le bouton interne disparaît. */
-export default function StreamPreview({ coreUrl, relayId, fullControl }: { coreUrl: string; relayId: string; fullControl?: { full: boolean; setFull: (v: boolean) => void } }) {
+/** `compact` : vidéo seule, sans cadre ni boutons (vignette animée d'une grille). `fullControl` : plein écran piloté de l'extérieur (bouton placé à côté de l'aperçu) ; le bouton interne disparaît. */
+export default function StreamPreview({ coreUrl, relayId, fullControl, compact }: { coreUrl: string; relayId: string; compact?: boolean; fullControl?: { full: boolean; setFull: (v: boolean) => void } }) {
   const video = useRef<HTMLVideoElement>(null);
   const [state, setState] = useState<State>("connecting");
   const [muted, setMuted] = useState(true);
@@ -133,14 +133,11 @@ export default function StreamPreview({ coreUrl, relayId, fullControl }: { coreU
           : null;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-line" aria-labelledby="apercu">
-      <h2 id="apercu" className="sr-only">
-        Aperçu du flux
-      </h2>
-      <div ref={box} className={full ? "fixed inset-0 z-[60] h-dvh w-screen bg-black" : "relative aspect-video bg-black"}>
-        <video ref={video} muted={muted} playsInline autoPlay className={`h-full w-full object-contain ${state === "playing" ? "" : "invisible"}`} aria-label="Aperçu de ton flux" />
-        {message && <p className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-muted">{message}</p>}
-        {state === "playing" && (
+    <section className={compact ? "absolute inset-0" : "overflow-hidden rounded-2xl border border-line"} aria-label="Aperçu du flux">
+      <div ref={box} className={full ? "fixed inset-0 z-[60] h-dvh w-screen bg-black" : compact ? "relative h-full w-full" : "relative aspect-video bg-black"}>
+        <video ref={video} muted={muted} playsInline autoPlay className={`h-full w-full ${compact ? "object-cover" : "object-contain"} ${state === "playing" ? "" : "invisible"}`} aria-label="Aperçu de ton flux" />
+        {message && !compact && <p className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-muted">{message}</p>}
+        {state === "playing" && !compact && (
           <>
             <span className={`absolute flex items-center gap-1.5 rounded bg-black/75 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-white ${full ? "left-[max(0.75rem,env(safe-area-inset-left))] top-[max(0.75rem,env(safe-area-inset-top))]" : "left-3 top-3"}`}>
               <span className="h-1.5 w-1.5 rounded-full bg-live" aria-hidden="true" />

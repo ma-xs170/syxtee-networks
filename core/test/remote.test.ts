@@ -23,7 +23,7 @@ function setup(allowed = new Set([U])) {
     if (!remote.upgrade(req, socket, head)) socket.destroy();
   });
   return new Promise<{ remote: ReturnType<typeof createRemote>; port: number; db: ReturnType<typeof fakeDb>; logs: string[]; stop: () => void }>((res) =>
-    server.listen(0, "127.0.0.1", () => res({ remote, db, logs, port: (server.address() as AddressInfo).port, stop: () => (remote.close(), server.close()) })),
+    server.listen(0, "127.0.0.1", () => res({ remote, db, logs, port: (server.address() as AddressInfo).port, stop: () => (remote.close(), server.close(), server.closeAllConnections()) })),
   );
 }
 
@@ -218,12 +218,13 @@ test("renouvellement : l'ancien jeton de renouvellement meurt, l'ancien accès a
   const t = await pair(s);
   const n = await s.remote.refresh("1.1.1.1", t.refresh);
   assert.ok("token" in n && n.token !== t.token && n.refresh !== t.refresh && n.device_id === t.device_id);
-  // Rejouer l'ancien jeton de renouvellement : refusé.
-  assert.deepEqual(await s.remote.refresh("1.1.1.1", t.refresh), { error: "invalid_token" });
+  // Rejouer l'ancien jeton de renouvellement : toléré pendant la période de grâce (la réponse a pu se perdre), il donne un nouveau jeton.
+  const again = await s.remote.refresh("1.1.1.1", t.refresh);
+  assert.ok("token" in again && again.device_id === t.device_id && again.token !== n.token);
   // L'ancien jeton d'accès ne connecte plus ; le nouveau, si.
   const old = await connectAgent(s, t.token);
   assert.equal(await old.closed, 4003);
-  const fresh = await connectAgent(s, "token" in n ? n.token : "");
+  const fresh = await connectAgent(s, "token" in again ? again.token : "");
   assert.equal((await fresh.next()).type, "ready");
   fresh.ws.close();
   // Format invalide ou inconnu.

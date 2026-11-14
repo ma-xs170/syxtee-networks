@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { coreFetch } from "@/components/dashboard/coreClient";
 import StreamPreview from "@/components/dashboard/StreamPreview";
 import { fmtKbps, levelOf, seriesStats, share, sortPeers, summarize, efficiency, type Level, type Peer, type Point } from "@/lib/control-center";
@@ -64,11 +64,11 @@ function QualityChart({ points, window, label }: { points: Point[]; window: numb
   return (
     <div>
       <div className="flex">
-        <div className="flex h-48 w-8 shrink-0 flex-col justify-between pr-1.5 text-right font-mono text-[10px] tabular-nums text-muted" aria-hidden="true">
+        <div className="flex h-32 w-8 shrink-0 flex-col justify-between pr-1.5 text-right font-mono text-[10px] tabular-nums text-muted" aria-hidden="true">
           {steps.map((f) => <span key={f}>{mb(top * f)}</span>)}
         </div>
         <div className="min-w-0 flex-1 overflow-hidden rounded-lg border border-line bg-background">
-          <Area points={points} window={window} max={top} className="h-48" tone="ink" />
+          <Area points={points} window={window} max={top} className="h-32" tone="ink" />
         </div>
       </div>
       <p className="mt-1 flex justify-between pl-8 font-mono text-[10px] text-muted" aria-hidden="true">
@@ -80,11 +80,21 @@ function QualityChart({ points, window, label }: { points: Point[]; window: numb
   );
 }
 
+/** Bandeau de panneau : libellé mono en capitales, comme la barre d'un outil de montage. */
+function PanelHead({ title, right }: { title: string; right?: ReactNode }) {
+  return (
+    <div className="flex h-9 shrink-0 items-center justify-between gap-3 border-b border-line px-3">
+      <h2 className="font-mono text-[11px] font-normal uppercase tracking-[0.14em] text-muted">{title}</h2>
+      {right}
+    </div>
+  );
+}
+
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-line py-2 last:border-0">
+    <div className="flex items-baseline justify-between gap-4 border-b border-line px-3 py-2 last:border-0">
       <dt className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{label}</dt>
-      <dd className="text-right font-mono text-sm tabular-nums" title={hint}>{value}</dd>
+      <dd className="text-right font-mono text-[13px] tabular-nums" title={hint}>{value}</dd>
     </div>
   );
 }
@@ -92,9 +102,22 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
 /** Indicateur clé : grand chiffre, libellé mono. `warn` colore la valeur quand il faut regarder. */
 function Kpi({ label, value, tone }: { label: string; value: string; tone?: "warn" }) {
   return (
-    <div className="rounded-xl border border-line bg-surface px-4 py-3">
-      <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{label}</p>
-      <p className={`mt-1.5 text-2xl font-semibold tabular-nums tracking-tight ${tone === "warn" ? "text-warn" : ""}`}>{value}</p>
+    <div className="px-4 py-3">
+      <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{label}</p>
+      <p className={`mt-1 text-xl font-semibold tabular-nums tracking-tight ${tone === "warn" ? "text-warn" : ""}`}>{value}</p>
+    </div>
+  );
+}
+
+/** Piste de la chronologie : étiquette et valeur à gauche, courbe à droite. */
+function Track({ label, value, children }: { label: string; value: string; children: ReactNode }) {
+  return (
+    <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] border-b border-line last:border-0 sm:grid-cols-[10rem_minmax(0,1fr)]">
+      <div className="border-r border-line px-3 py-2.5">
+        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{label}</p>
+        <p className="mt-1 font-mono text-sm tabular-nums">{value}</p>
+      </div>
+      <div className="min-w-0 p-2">{children}</div>
     </div>
   );
 }
@@ -104,26 +127,24 @@ function ModemTile({ index, peer, history, window, total }: { index: number; pee
   const pts = history.map((h) => ({ t: h.t, v: h.bitrate }));
   const st = seriesStats(pts);
   return (
-    <article className="rounded-xl border border-line bg-surface p-3" aria-label={`Modem ${index}`}>
+    <article className="bg-surface p-3" aria-label={`Modem ${index}`}>
       <header className="flex items-center gap-2">
-        <span className="font-mono text-xs text-muted">{index}.</span>
-        <span className={`h-2 w-2 rounded-full ${lv.dot}`} aria-hidden="true" />
-        <span className={`text-xs font-medium ${lv.text}`}>{lv.label}</span>
+        <span className="font-mono text-[11px] text-muted">{String(index).padStart(2, "0")}</span>
+        <span className={`h-1.5 w-1.5 rounded-full ${lv.dot}`} aria-hidden="true" />
+        <span className={`font-mono text-[11px] uppercase tracking-[0.08em] ${lv.text}`}>{lv.label}</span>
         <span className="ml-auto font-mono text-sm tabular-nums">{fmtKbps(peer.bitrate)}</span>
       </header>
       <div className="mt-2">
-        <Area points={pts} window={window} tone="ink" />
+        <Area points={pts} window={window} tone="ink" className="h-14" />
       </div>
-      <dl className="mt-2 grid grid-cols-2 gap-x-3 font-mono text-[11px] text-muted">
-        <dt>Part du débit</dt>
+      <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-0.5 font-mono text-[11px] text-muted">
+        <dt>Part</dt>
         <dd className="text-right tabular-nums text-foreground">{share(peer.bitrate, total)} %</dd>
-        <dt>Débit réseau</dt>
-        <dd className="text-right tabular-nums text-foreground">{peer.throughput ? fmtKbps(peer.throughput) : "—"}</dd>
         <dt>Gigue</dt>
         <dd className="text-right tabular-nums text-foreground">{peer.jitter != null ? `${peer.jitter.toFixed(1).replace(".", ",")} ms` : "—"}</dd>
         <dt>Moy. / max</dt>
         <dd className="text-right tabular-nums text-foreground">{fmtKbps(st.avg)} / {fmtKbps(st.max)}</dd>
-        <dt>Temps coupé</dt>
+        <dt>Coupé</dt>
         <dd className={`text-right tabular-nums ${st.down > 10 ? "text-bad" : "text-foreground"}`}>{st.down} %</dd>
       </dl>
     </article>
@@ -218,55 +239,86 @@ export default function ControlCenter({ coreUrl }: { coreUrl: string }) {
   const gone = connIds.filter((id) => !peers.some((p) => p.connection_id === id));
 
   return (
-    <div className="space-y-6">
-      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Relais">
-        {relays.map((r) => {
-          const on = r.id === current?.id;
-          return (
-            <li key={r.id}>
-              <button type="button" aria-pressed={on} onClick={() => setPicked(r.id)} className={`w-full rounded-xl border p-3 text-left transition-colors ${on ? "border-foreground/50 bg-surface" : "border-line hover:border-foreground/25"}`}>
-                <span className="flex items-center gap-2">
-                  <span className={`h-2 w-2 rounded-full ${r.live ? "bg-live" : "bg-muted/50"}`} aria-hidden="true" />
-                  <span className="truncate text-sm font-medium">{r.name}</span>
-                  <span className="ml-auto font-mono text-[11px] uppercase text-muted">{r.live ? "En direct" : "Hors ligne"}</span>
-                </span>
-                <span className="mt-1.5 block font-mono text-xs tabular-nums text-muted">
-                  {r.live && r.sample ? `${fmtKbps(r.sample.bitrate)} · ${r.peers.length} modem${r.peers.length > 1 ? "s" : ""} · ${Math.round(r.sample.rtt)} ms` : "—"}
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+    <div className="overflow-hidden rounded-xl border border-line bg-surface" role="region" aria-label="Centre de contrôle des statistiques">
+      {/* Barre d'outils : relais regardé à gauche, période à droite. */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-background px-3 py-2">
+        <span className={`h-2 w-2 rounded-full ${live ? "bg-live" : "bg-muted/50"}`} aria-hidden="true" />
+        <p className="min-w-0 truncate text-sm font-semibold">{current?.name}</p>
+        <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">{live ? `En direct · ${duration(current?.since ?? null, now)}` : "Hors ligne"}</span>
+        <div role="group" aria-label="Période" className="ml-auto inline-flex rounded-md border border-line p-0.5 font-mono text-[11px]">
+          {RANGES.map((r) => (
+            <button key={r.id} type="button" aria-pressed={range === r.id} onClick={() => setRange(r.id)} className={`rounded px-3 py-1 transition-colors ${range === r.id ? "bg-foreground text-background" : "text-muted hover:text-foreground"}`}>
+              {r.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {current && (
         <>
-          <section aria-label="Indicateurs clés" className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-            <Kpi label="Débit utile" value={live && sm ? fmtKbps(sm.bitrate) : "—"} />
-            <Kpi label="Latence (RTT)" value={live && sm ? `${Math.round(sm.rtt)} ms` : "—"} />
-            <Kpi label="Pertes (1 min)" value={live && current.lost_1m != null ? nf.format(current.lost_1m) : "—"} tone={live && (current.lost_1m ?? 0) > 0 ? "warn" : undefined} />
-            <Kpi label="Rendement" value={live && eff != null ? `${eff} %` : "—"} />
-            <Kpi label="Modems actifs" value={live ? `${sum.active} / ${peers.length}` : "—"} tone={live && sum.weak > 0 ? "warn" : undefined} />
-            <Kpi label="En direct depuis" value={live ? duration(current.since, now) : "—"} />
-          </section>
+          <div className="grid lg:grid-cols-[15rem_minmax(0,1fr)_19rem] lg:divide-x lg:divide-line">
+            {/* Gauche : relais du compte. */}
+            <aside aria-label="Relais" className="border-b border-line lg:border-b-0">
+              <PanelHead title="Relais" right={<span className="font-mono text-[11px] text-muted">{relays.filter((r) => r.live).length} / {relays.length}</span>} />
+              <ul>
+                {relays.map((r) => {
+                  const on = r.id === current.id;
+                  return (
+                    <li key={r.id} className="border-b border-line last:border-0">
+                      <button type="button" aria-pressed={on} onClick={() => setPicked(r.id)} className={`w-full px-3 py-2.5 text-left transition-colors ${on ? "bg-foreground/[0.07]" : "hover:bg-foreground/[0.04]"}`}>
+                        <span className="flex items-center gap-2">
+                          <span className={`h-2 w-2 shrink-0 rounded-full ${r.live ? "bg-live" : "bg-muted/50"}`} aria-hidden="true" />
+                          <span className="truncate text-sm font-medium">{r.name}</span>
+                          <span className="ml-auto font-mono text-[10px] uppercase text-muted">{r.protocol}</span>
+                        </span>
+                        <span className="mt-1 block pl-4 font-mono text-[11px] tabular-nums text-muted">
+                          {r.live && r.sample ? `${fmtKbps(r.sample.bitrate)} · ${r.peers.length} modem${r.peers.length > 1 ? "s" : ""} · ${Math.round(r.sample.rtt)} ms` : "Hors ligne"}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </aside>
 
-          <section className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.85fr)_minmax(0,1.25fr)]" aria-label={`Moniteur de ${current.name}`}>
-            <div className="space-y-3">
-              {live ? (
-                <StreamPreview coreUrl={coreUrl} relayId={current.id} />
-              ) : (
-                <div className="grid aspect-video place-items-center rounded-2xl border border-line bg-background px-6 text-center text-sm text-muted">Hors ligne : l&apos;aperçu revient dès que le flux arrive.</div>
-              )}
-              <div className="flex items-center gap-2 rounded-2xl border border-line bg-surface px-4 py-3">
-                <span className={`h-2 w-2 rounded-full ${live ? "bg-live" : "bg-muted/50"}`} aria-hidden="true" />
-                <h2 className="truncate text-sm font-semibold">{current.name}</h2>
-                <span className="ml-auto font-mono text-[11px] uppercase text-muted">{live ? duration(current.since, now) : "Hors ligne"}</span>
+            {/* Centre : indicateurs, aperçu, connexions. */}
+            <div className="min-w-0">
+              <section aria-label="Indicateurs clés" className="grid grid-cols-2 divide-x divide-y divide-line border-b border-line sm:grid-cols-3 sm:divide-y-0 xl:grid-cols-6">
+                <Kpi label="Débit utile" value={live && sm ? fmtKbps(sm.bitrate) : "—"} />
+                <Kpi label="Latence" value={live && sm ? `${Math.round(sm.rtt)} ms` : "—"} />
+                <Kpi label="Pertes · 1 min" value={live && current.lost_1m != null ? nf.format(current.lost_1m) : "—"} tone={live && (current.lost_1m ?? 0) > 0 ? "warn" : undefined} />
+                <Kpi label="Rendement" value={live && eff != null ? `${eff} %` : "—"} />
+                <Kpi label="Modems actifs" value={live ? `${sum.active} / ${peers.length}` : "—"} tone={live && sum.weak > 0 ? "warn" : undefined} />
+                <Kpi label="Débit réseau" value={live && net > 0 ? fmtKbps(net) : "—"} />
+              </section>
+              <div className="border-b border-line bg-background p-3">
+                {live ? (
+                  <StreamPreview coreUrl={coreUrl} relayId={current.id} />
+                ) : (
+                  <div className="grid aspect-video place-items-center rounded-lg border border-dashed border-line px-6 text-center text-sm text-muted">Hors ligne : l&apos;aperçu revient dès que le flux arrive.</div>
+                )}
               </div>
+              <section aria-label="Connexions">
+                <PanelHead title="Connexions" right={peers.length > 0 ? <span className="font-mono text-[11px] text-muted">{peers.length} modem{peers.length > 1 ? "s" : ""}</span> : undefined} />
+                {peers.length === 0 && gone.length === 0 ? (
+                  <p className="px-3 py-8 text-center text-sm text-muted">{live ? "Flux en direct sans détail par connexion (flux SRT simple)." : "Aucune connexion : le direct n'est pas démarré."}</p>
+                ) : (
+                  <div className="grid gap-px bg-line sm:grid-cols-2 xl:grid-cols-3">
+                    {peers.map((p, i) => (
+                      <ModemTile key={p.connection_id} index={i + 1} peer={p} history={conns[p.connection_id] ?? []} window={win} total={sum.total} />
+                    ))}
+                    {gone.map((id, i) => (
+                      <ModemTile key={id} index={peers.length + i + 1} peer={{ connection_id: id, bitrate: 0 }} history={conns[id] ?? []} window={win} total={sum.total} />
+                    ))}
+                  </div>
+                )}
+              </section>
             </div>
 
-            <div className="rounded-2xl border border-line bg-surface p-4">
-              <h2 className="text-sm font-semibold">Mesures en direct</h2>
-              <dl className="mt-2">
+            {/* Droite : mesures en direct. */}
+            <aside aria-label="Mesures en direct" className="border-t border-line lg:border-t-0">
+              <PanelHead title="Mesures en direct" />
+              <dl>
                 <Stat label="Pertes (1 min)" value={current.lost_1m != null ? nf.format(current.lost_1m) : "—"} />
                 <Stat label="Congestion" value={sm ? `${Math.round(sm.congestion * 100)} %` : "—"} />
                 <Stat label="Débit utile" value={sm ? fmtKbps(sm.bitrate) : "—"} />
@@ -278,55 +330,28 @@ export default function ControlCenter({ coreUrl }: { coreUrl: string }) {
                 <Stat label="Modems actifs" value={live ? `${sum.active} / ${peers.length}` : "—"} hint="Connexions qui portent plus de 300 kb/s" />
                 <Stat label="Modems faibles" value={live ? String(sum.weak) : "—"} hint="Moins de 1 Mb/s" />
               </dl>
-            </div>
-
-            <div className="rounded-2xl border border-line bg-surface p-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <h2 className="text-sm font-semibold">Qualité <span className="font-mono font-normal text-muted">{sm ? fmtKbps(sm.bitrate) : "—"}</span></h2>
-                <div role="group" aria-label="Période" className="ml-auto inline-flex rounded-full border border-line p-0.5 text-[13px]">
-                  {RANGES.map((r) => (
-                    <button key={r.id} type="button" aria-pressed={range === r.id} onClick={() => setRange(r.id)} className={`rounded-full px-3 py-1 transition-colors ${range === r.id ? "bg-foreground text-background" : "text-muted hover:text-foreground"}`}>
-                      {r.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-3">
-                <QualityChart points={bitrateSeries} window={win} label={RANGES.find((r) => r.id === range)!.label} />
-              </div>
-              <dl className="mt-3 grid grid-cols-2 gap-x-6 sm:grid-cols-4">
+              <PanelHead title={`Période · ${RANGES.find((r) => r.id === range)!.label}`} />
+              <dl>
                 <Stat label="Moyen" value={fmtKbps(bs.avg)} />
                 <Stat label="Pic" value={fmtKbps(bs.max)} />
                 <Stat label="Creux" value={fmtKbps(bs.min)} />
                 <Stat label="Sous 300 kb/s" value={`${bs.down} %`} hint="Part du temps où le débit utile est presque nul" />
               </dl>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <div>
-                  <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Latence (RTT, ms)</p>
-                  <Area points={rttSeries} window={win} className="h-16" tone="ink" />
-                </div>
-                <div>
-                  <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Pertes · {nf.format(lost)}</p>
-                  <Area points={lossSeries} window={win} className="h-16" tone="ink" max={Math.max(10, ...lossSeries.map((p) => p.v)) * 1.1} />
-                </div>
-              </div>
-            </div>
-          </section>
+            </aside>
+          </div>
 
-          <section aria-label="Connexions">
-            <h2 className="mb-3 text-sm font-semibold">Connexions (modems) {peers.length > 0 && <span className="font-normal text-muted">· {peers.length}</span>}</h2>
-            {peers.length === 0 && gone.length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-line p-8 text-center text-sm text-muted">{live ? "Flux en direct sans détail par connexion (flux SRT simple)." : "Aucune connexion : le direct n'est pas démarré."}</p>
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
-                {peers.map((p, i) => (
-                  <ModemTile key={p.connection_id} index={i + 1} peer={p} history={conns[p.connection_id] ?? []} window={win} total={sum.total} />
-                ))}
-                {gone.map((id, i) => (
-                  <ModemTile key={id} index={peers.length + i + 1} peer={{ connection_id: id, bitrate: 0 }} history={conns[id] ?? []} window={win} total={sum.total} />
-                ))}
-              </div>
-            )}
+          {/* Bas : chronologie, une piste par mesure. */}
+          <section aria-label="Chronologie" className="border-t border-line">
+            <PanelHead title="Chronologie" right={<span className="font-mono text-[11px] text-muted">−{RANGES.find((r) => r.id === range)!.label} → maintenant</span>} />
+            <Track label="Débit utile" value={sm ? fmtKbps(sm.bitrate) : "—"}>
+              <QualityChart points={bitrateSeries} window={win} label={RANGES.find((r) => r.id === range)!.label} />
+            </Track>
+            <Track label="Latence · ms" value={sm ? `${Math.round(sm.rtt)} ms` : "—"}>
+              <Area points={rttSeries} window={win} className="h-16" tone="ink" />
+            </Track>
+            <Track label="Pertes" value={nf.format(lost)}>
+              <Area points={lossSeries} window={win} className="h-16" tone="ink" max={Math.max(10, ...lossSeries.map((p) => p.v)) * 1.1} />
+            </Track>
           </section>
         </>
       )}

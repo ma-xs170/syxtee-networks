@@ -10,10 +10,9 @@ export default async function StatsPage() {
   await requireOwner("/dashboard/statistiques");
   return (
     <PlanGate feature="stats">
-      <div className="mb-8">
-        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">Centre de contrôle</p>
-        <h1 className="mt-2 text-[clamp(1.75rem,3vw,2.5rem)] font-semibold leading-tight tracking-tight">Tes statistiques</h1>
-        <p className="mt-2 max-w-[70ch] text-sm leading-relaxed text-muted">Débit, latence, pertes et une case par modem, en direct et sur 24 heures, pour chacun de tes relais.</p>
+      <div className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+        <h1 className="text-xl font-semibold tracking-tight">Statistiques</h1>
+        <p className="text-sm text-muted">Débit, latence, pertes et une case par modem, en direct et sur 24 heures.</p>
       </div>
       <ControlCenter coreUrl={publicCoreUrl} />
     </PlanGate>

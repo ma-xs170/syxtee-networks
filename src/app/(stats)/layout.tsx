@@ -39,7 +39,7 @@ export default async function StatsLayout({ children }: LayoutProps<"/">) {
           </div>
         </div>
       </header>
-      <main id="contenu" className="mx-auto w-full max-w-[1680px] flex-1 px-4 pb-16 pt-8 sm:px-6 lg:px-8">{children}</main>
+      <main id="contenu" className="mx-auto w-full max-w-[1680px] flex-1 px-4 pb-16 pt-6 sm:px-6 lg:px-8">{children}</main>
       <footer className="border-t border-line">
         <p className="mx-auto flex w-full max-w-[1680px] flex-wrap items-center justify-between gap-2 px-4 py-4 font-mono text-[11px] text-muted sm:px-6 lg:px-8">
           <span>Mesures du Core, relevées toutes les 2 secondes</span>

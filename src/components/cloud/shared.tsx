@@ -63,6 +63,7 @@ export function nearest(points: Point[], t: number): Point | null {
  */
 export function Area({ points, window, end, max, className = "h-24", tone = "ok", hover, fmt, showMax, levels }: { levels?: boolean; points: Point[]; window: number; end?: number; max?: number; className?: string; tone?: "ok" | "ink"; hover?: Hover; fmt?: (v: number) => string; showMax?: boolean }) {
   const [own, setOwn] = useState<number | null>(null);
+  const [over, setOver] = useState(false); // le trait n'apparaît que sur la courbe survolée, même si le survol est partagé
   const h: Hover = hover ?? { t: own, set: setOwn };
   if (points.length < 2) return <div className={`${className} grid place-items-center rounded-lg border border-dashed border-line text-xs text-muted`}>Pas encore de données</div>;
   const t1 = end ?? points[points.length - 1].t;
@@ -73,13 +74,14 @@ export function Area({ points, window, end, max, className = "h-24", tone = "ok"
   const line = points.map((p, i) => `${i ? "L" : "M"}${x(p.t).toFixed(2)} ${y(p.v).toFixed(2)}`).join("");
   const area = `${line}L${x(points[points.length - 1].t).toFixed(2)} 40L${x(points[0].t).toFixed(2)} 40Z`;
   const color = tone === "ok" ? "text-ok" : "text-foreground";
-  const hit = h.t != null && h.t >= t0 && h.t <= t1 ? nearest(points, h.t) : null;
+  const hit = over && h.t != null && h.t >= t0 && h.t <= t1 ? nearest(points, h.t) : null;
   const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    setOver(true);
     const r = e.currentTarget.getBoundingClientRect();
     h.set(t0 + Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * window);
   };
   return (
-    <div className="relative touch-pan-y" onPointerMove={onMove} onPointerDown={onMove} onPointerLeave={() => h.set(null)}>
+    <div className="relative touch-pan-y" onPointerMove={onMove} onPointerDown={onMove} onPointerLeave={() => { setOver(false); h.set(null); }}>
       <svg viewBox="0 0 100 40" preserveAspectRatio="none" className={`${className} w-full ${color}`} role="img" aria-label={`Courbe, maximum ${nf.format(Math.round(top))}`}>
         <path d="M0 1H100M0 20H100M0 39H100" stroke="currentColor" className="text-foreground" strokeOpacity={0.1} strokeDasharray="1 3" vectorEffect="non-scaling-stroke" />
         <path d={area} fill="currentColor" fillOpacity={levels ? 0.08 : tone === "ok" ? 0.55 : 0.12} />

@@ -54,8 +54,8 @@ export function seriesStats(points: Point[]) {
 
 export const fmtKbps = (kbps: number) => (kbps >= 1000 ? `${(kbps / 1000).toFixed(1).replace(".", ",")} Mb/s` : `${Math.round(kbps)} kb/s`);
 
-/** Débit détaillé, deux décimales, toujours en kb/s (2349,49 kb/s). */
-export const fmtKbpsFull = (kbps: number) => `${kbps.toFixed(2).replace(".", ",")} kb/s`;
+/** Débit détaillé, deux décimales au plus, sans zéros inutiles, toujours en kb/s (2349,49 kb/s, 2290 kb/s). */
+export const fmtKbpsFull = (kbps: number) => `${kbps.toFixed(2).replace(/\.?0+$/, "").replace(".", ",")} kb/s`;
 
 /**
  * Qualité du flux, de 0 à 100 : 100 moins la congestion (jusqu'à 60 points), les paquets perdus sur la dernière minute (jusqu'à 25 points)

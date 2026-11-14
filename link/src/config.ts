@@ -37,7 +37,7 @@ export type LinkConfig = {
 };
 
 export const DEFAULT_CORE = "https://15-235-25-77.sslip.io";
-export const DEFAULT_SITE = "https://syxtee-networks.vercel.app";
+export const DEFAULT_SITE = "https://www.syxtee-networks.fr";
 
 export const defaults = (): LinkConfig => ({ core: DEFAULT_CORE, site: DEFAULT_SITE, token: "", refresh: "", expires: 0, destination: "", liveScene: "", autoBackup: {}, lastBackup: {}, previewEnabled: true, onboarded: false, lowLatency: true, obs: { host: "127.0.0.1", port: 4455, password: "" }, backup: DEFAULT_BACKUP, auto: DEFAULT_AUTO, audio: DEFAULT_AUDIO, director: DEFAULT_DIRECTOR });
 
@@ -59,7 +59,7 @@ export function load(): LinkConfig {
     const j = JSON.parse(readFileSync(file(), "utf8")) as Partial<LinkConfig>;
     return {
       core: typeof j.core === "string" && /^https?:\/\//.test(j.core) ? j.core.replace(/\/$/, "") : d.core,
-      site: typeof j.site === "string" && /^https:\/\//.test(j.site) ? j.site.replace(/\/$/, "") : d.site,
+      site: typeof j.site === "string" && /^https:\/\//.test(j.site) && !/\.vercel\.app(\/|$)/.test(j.site) ? j.site.replace(/\/$/, "") : d.site,
       token: typeof j.token === "string" ? j.token : "",
       refresh: typeof j.refresh === "string" ? j.refresh : "",
       expires: Number(j.expires) || 0,

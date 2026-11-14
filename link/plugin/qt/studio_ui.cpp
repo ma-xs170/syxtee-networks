@@ -41,7 +41,7 @@ namespace {
 // Vert = en ordre / en direct, ambre = à regarder, rouge = erreur, bleu = interrupteur. Les polices (Inter, Geist Mono) viennent du système :
 // on demande les familles du site en premier, puis celles de la machine. Les propriétés de police des libellés « mono » sont posées dans
 // le code (monoFont) et non dans la feuille de style, qui l'emporterait.
-const char *kSite = "https://syxtee-networks.vercel.app";
+const char *kSite = "https://www.syxtee-networks.fr";
 
 const char *kStyle = R"(
 QDialog { background: #050505; }

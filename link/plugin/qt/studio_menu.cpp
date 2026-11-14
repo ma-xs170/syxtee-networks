@@ -41,7 +41,7 @@ void install()
 	menu = main->menuBar()->addMenu("SYXTEE");
 	QObject::connect(menu->addAction("SYXTEE Studio"), &QAction::triggered, menu, [] { open_window(); });
 	menu->addSeparator();
-	QObject::connect(menu->addAction("Ouvrir le tableau de bord"), &QAction::triggered, menu, [] { QDesktopServices::openUrl(QUrl("https://syxtee-networks.vercel.app/dashboard")); });
+	QObject::connect(menu->addAction("Ouvrir le tableau de bord"), &QAction::triggered, menu, [] { QDesktopServices::openUrl(QUrl("https://www.syxtee-networks.fr/dashboard")); });
 	QObject::connect(menu->addAction("Page de réglages (navigateur)"), &QAction::triggered, menu, [] { QDesktopServices::openUrl(QUrl("http://127.0.0.1:47831/")); });
 	blog(LOG_INFO, "[syxtee-link] menu SYXTEE ajouté");
 }

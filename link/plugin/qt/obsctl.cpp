@@ -762,7 +762,7 @@ bool wizardAdd(obs_properties_t *, obs_property_t *, void *data)
 
 bool wizardCreateRelay(obs_properties_t *, obs_property_t *, void *)
 {
-	QDesktopServices::openUrl(QUrl("https://syxtee-networks.vercel.app/dashboard/relais"));
+	QDesktopServices::openUrl(QUrl("https://www.syxtee-networks.fr/dashboard/relais"));
 	return false;
 }
 

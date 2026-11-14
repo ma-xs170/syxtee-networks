@@ -151,14 +151,17 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
       </section>
 
       {view === "live" && (
-      <div className="flex flex-wrap items-start gap-4 p-4">
-        <div className="order-last -my-4 w-full min-w-0 max-w-[44rem] self-stretch py-4 lg:w-[44rem] lg:border-l lg:border-line lg:pl-4">
-          {live ? (
-            <StreamPreview coreUrl={coreUrl} relayId={current.id} fullControl={{ full, setFull }} />
-          ) : (
-            <div className="grid aspect-video place-items-center rounded-2xl border border-dashed border-line px-6 text-center text-sm text-muted">Hors ligne : l&apos;aperçu revient dès que le flux arrive.</div>
-          )}
-        </div>
+      <div className="flex flex-wrap items-start p-4">
+        <section aria-label="Aperçu" className="order-last -mr-4 -my-4 flex w-full min-w-0 max-w-[44rem] flex-col self-stretch border-line lg:w-[44rem] lg:border-l">
+          <PanelHead title="Aperçu" />
+          <div className="p-4">
+            {live ? (
+              <StreamPreview coreUrl={coreUrl} relayId={current.id} fullControl={{ full, setFull }} />
+            ) : (
+              <div className="grid aspect-video place-items-center rounded-2xl border border-dashed border-line px-6 text-center text-sm text-muted">Hors ligne : l&apos;aperçu revient dès que le flux arrive.</div>
+            )}
+          </div>
+        </section>
 
         <section aria-label="VU-mètre" className="order-2 -my-4 flex shrink-0 flex-col self-stretch border-l border-line sm:min-w-[11rem]">
           <PanelHead title="VU-mètre" />

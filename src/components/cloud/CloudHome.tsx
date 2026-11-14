@@ -22,7 +22,7 @@ function Card({ r, coreUrl, picked }: { r: Relay; coreUrl: string; picked: boole
         {r.live ? (
           <>
             <span className="absolute left-2 top-2 flex items-center gap-1.5 rounded bg-black/75 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-white">
-              <span className="h-1.5 w-1.5 rounded-full bg-live" aria-hidden="true" />
+              <span className="h-1.5 w-1.5 rounded-full bg-bad" aria-hidden="true" />
               Direct
             </span>
             <StereoMeter audio={r.media?.audio} onVideo className="absolute bottom-2 left-2 top-9" />
@@ -103,7 +103,7 @@ export default function CloudHome({ coreUrl }: { coreUrl: string }) {
                         }}
                         className={`flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors ${picked === r.id ? "bg-foreground/[0.07]" : "hover:bg-foreground/[0.04]"}`}
                       >
-                        <span className={`h-2.5 w-2.5 shrink-0 rounded-[2px] ${r.live ? "bg-live" : "bg-muted/50"}`} aria-hidden="true" />
+                        <span className={`h-2.5 w-2.5 shrink-0 rounded-[2px] ${r.live ? "bg-bad" : "bg-muted/50"}`} aria-hidden="true" />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium">{r.name}</span>
                           <span className="block truncate font-mono text-[11px] tabular-nums text-muted">{r.live && r.sample ? `${fmtKbps(r.sample.bitrate)}${efficiency(r.peers) != null ? ` · ${efficiency(r.peers)} %` : ""}` : "Hors ligne"}</span>

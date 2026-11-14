@@ -148,7 +148,7 @@ export default function StreamPreview({ coreUrl, relayId, fullControl, compact }
         {state === "playing" && !compact && (
           <>
             <span className={`absolute flex items-center gap-1.5 rounded bg-black/75 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-white ${full ? "left-[max(0.75rem,env(safe-area-inset-left))] top-[max(0.75rem,env(safe-area-inset-top))]" : "left-3 top-3"}`}>
-              <span className="h-1.5 w-1.5 rounded-full bg-live" aria-hidden="true" />
+              <span className="h-1.5 w-1.5 rounded-full bg-bad" aria-hidden="true" />
               Direct
             </span>
             <button

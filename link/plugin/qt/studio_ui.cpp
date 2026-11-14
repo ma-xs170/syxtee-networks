@@ -1170,7 +1170,7 @@ private:
 			return row(title, sub, b, IcFrame);
 		};
 		addRow(l, linkRow("Tableau de bord", "Relais, abonnement, contrôle à distance", QString("%1/dashboard").arg(kSite)), true);
-		addRow(l, linkRow("Page de réglages", "La même fenêtre, dans ton navigateur", QString("http://127.0.0.1:%1/").arg(47831)));
+		addRow(l, linkRow("SYXTEE Networks", "Tes scènes et ton compte, dans ton navigateur", QString("https://www.syxtee-networks.fr/dashboard/scenes")));
 		diagOut_ = label("", "meta");
 		static_cast<QVBoxLayout *>(l->layout())->addWidget(diagOut_);
 		diagOut_->setContentsMargins(0, 0, 0, 12);

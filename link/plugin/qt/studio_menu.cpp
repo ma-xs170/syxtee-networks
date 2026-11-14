@@ -42,7 +42,7 @@ void install()
 	QObject::connect(menu->addAction("SYXTEE Studio"), &QAction::triggered, menu, [] { open_window(); });
 	menu->addSeparator();
 	QObject::connect(menu->addAction("Ouvrir le tableau de bord"), &QAction::triggered, menu, [] { QDesktopServices::openUrl(QUrl("https://www.syxtee-networks.fr/dashboard")); });
-	QObject::connect(menu->addAction("Page de réglages (navigateur)"), &QAction::triggered, menu, [] { QDesktopServices::openUrl(QUrl("http://127.0.0.1:47831/")); });
+	QObject::connect(menu->addAction("SYXTEE Networks (navigateur)"), &QAction::triggered, menu, [] { QDesktopServices::openUrl(QUrl("https://www.syxtee-networks.fr/dashboard/scenes")); });
 	blog(LOG_INFO, "[syxtee-link] menu SYXTEE ajouté");
 }
 

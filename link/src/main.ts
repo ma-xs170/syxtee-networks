@@ -43,7 +43,7 @@ async function main() {
     save(cfg);
     console.log("Ce PC est déconnecté. Retire aussi l'appareil dans SYXTEE Studio.");
   } else if (cmd === "panel") {
-    openUrl("http://127.0.0.1:47831/");
+    openUrl(`${cfg.site}/dashboard/scenes`);
   } else if (cmd === "run") {
     const stamp = () => new Date().toLocaleTimeString("fr-FR");
     const h = startHelper({ parentPid, log: (m) => console.log(`${stamp()}  ${m}`) });

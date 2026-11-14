@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define PANEL_URL "http://127.0.0.1:47831/"
+#define PANEL_URL "https://www.syxtee-networks.fr/dashboard/scenes"
 
 /* Interface Qt (qt/studio_menu.cpp) : menu « SYXTEE » dans la barre d'OBS et fenêtre « SYXTEE Studio ». */
 bool syxtee_ui_load(void);

@@ -9,7 +9,7 @@ import { coreCall } from "./corehttp.ts";
 import { fixLiveScene, hasSource } from "./livescene.ts";
 import { Login } from "./login.ts";
 import { setTokens } from "./tokens.ts";
-import { listCollections } from "./obsconfig.ts";
+import { currentCollection, listCollections } from "./obsconfig.ts";
 import { PANEL } from "./panel.ts";
 import { plan } from "./scenesync.ts";
 import { askBackup, openUrl } from "./system.ts";
@@ -39,9 +39,10 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
     save(cfg);
     startAgent();
     log("connecté au compte SYXTEE");
-    // Proposition de sauvegarde avant toute utilisation : boîte native, sinon la page locale montre le même écran.
+    // Proposition de sauvegarde avant toute utilisation : boîte native ; si oui, la collection ouverte part tout de suite, sans page locale.
     void askBackup().then((yes) => {
-      if (yes) openUrl(`http://127.0.0.1:${PORT}/`);
+      const c = currentCollection();
+      if (yes && c) void agent?.runBackup(c);
     });
   });
 
@@ -303,7 +304,7 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
     server.close();
   }
 
-  return { stop, state, openPanel: () => openUrl(`http://127.0.0.1:${PORT}/`), cfg, login: () => login };
+  return { stop, state, openPanel: () => openUrl(`${cfg.site}/dashboard/scenes`), cfg, login: () => login };
 }
 
 function end(res: ServerResponse, code: number, msg: string) {

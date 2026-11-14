@@ -23,6 +23,21 @@ export function listCollections(): string[] {
     .sort((a, b) => a.localeCompare(b));
 }
 
+/** Collection de scènes ouverte dans OBS (global.ini ou user.ini, clé SceneCollection), sinon la première de la liste. */
+export function currentCollection(): string {
+  const all = listCollections();
+  for (const f of ["user.ini", "global.ini"]) {
+    try {
+      const m = /^SceneCollection=(.*)$/m.exec(readFileSync(join(obsRoot(), f), "utf8"));
+      const name = m?.[1].trim();
+      if (name && all.includes(name)) return name;
+    } catch {
+      /* fichier absent : suivant */
+    }
+  }
+  return all[0] ?? "";
+}
+
 export type WsConfig = { enabled: boolean; port: number; password: string; authRequired: boolean };
 
 /** Réglages du serveur WebSocket d'OBS (plugin_config/obs-websocket/config.json), ou null si OBS ne les a pas encore écrits. */

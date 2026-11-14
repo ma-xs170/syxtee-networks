@@ -159,9 +159,9 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
           )}
         </div>
 
-        <section aria-label="VU-mètre" className="-my-4 flex shrink-0 flex-col self-stretch border-l border-line">
+        <section aria-label="VU-mètre" className="-my-4 flex shrink-0 flex-col self-stretch border-l border-line sm:min-w-[11rem]">
           <PanelHead title="VU-mètre" />
-          <div className="px-4 py-3">
+          <div className="flex flex-1 items-center justify-center px-6 py-3">
             <StereoMeter audio={live ? current.media?.audio : null} className="h-[20rem] justify-center" />
           </div>
         </section>

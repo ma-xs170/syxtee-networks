@@ -59,6 +59,10 @@ export default function ProgramVideo({
   const [latency, setLatency] = useState<number | null>(null);
   const [showMs, setShowMs] = useState(true);
   const [level, setLevel] = useState<PreviewLevel>(DEFAULT_LEVEL);
+  /** Choix manuel de la qualité (null : automatique). Lu par la veille, qui ne bouge plus tant qu'un niveau est forcé. */
+  const [manual, setManual] = useState<PreviewLevel | null>(null);
+  const manualRef = useRef<PreviewLevel | null>(null);
+  const moveRef = useRef<((l: PreviewLevel) => void) | null>(null);
   const qualityCb = useRef(onQuality);
   useEffect(() => {
     qualityCb.current = onQuality;
@@ -77,7 +81,7 @@ export default function ProgramVideo({
     let stats: ReturnType<typeof setInterval> | undefined;
     let playing = false;
     // Veille de qualité : on baisse vite (perte, latence ou images qui manquent), on remonte lentement (connexion saine et assez large).
-    let cur: PreviewLevel = Math.min(DEFAULT_LEVEL, connectionCap()) as PreviewLevel;
+    let cur: PreviewLevel = manualRef.current ?? (Math.min(DEFAULT_LEVEL, connectionCap()) as PreviewLevel);
     let changedAt = 0;
     let bad = 0;
     let good = 0;
@@ -91,6 +95,7 @@ export default function ProgramVideo({
       setLevel(next);
       qualityCb.current?.(next);
     };
+    moveRef.current = move;
 
     const retry = (ms: number) => {
       if (!gone) timer = setTimeout(() => void connect(), ms);
@@ -184,7 +189,7 @@ export default function ProgramVideo({
             prevLost = lost;
             prevRecv = recv;
             const loss = dLost + dRecv > 0 ? (dLost / (dLost + dRecv)) * 100 : 0;
-            if (!playing || !qualityCb.current) return;
+            if (!playing || !qualityCb.current || manualRef.current != null) return;
             const sick = loss > 4 || rtt > 350 || (fps > 0 && fps < 12);
             const healthy = loss < 0.5 && rtt < 150 && fps >= 20;
             bad = sick ? bad + 1 : 0;
@@ -217,6 +222,7 @@ export default function ProgramVideo({
       clearTimeout(timer);
       clearTimeout(giveUp);
       el?.removeEventListener("playing", onPlaying);
+      moveRef.current = null;
       close();
     };
   }, [watch, attempt]);
@@ -249,9 +255,30 @@ export default function ProgramVideo({
         </div>
       )}
       {showLatency && phase === "playing" && latency != null && (
-        <button type="button" title="Qualité de l'aperçu (automatique selon ta connexion) et latence estimée. Cliquer pour masquer." onClick={() => setShowMs((s) => !s)} className="absolute bottom-2 right-2 rounded bg-background/70 px-1.5 py-0.5 font-mono text-[11px] tabular-nums text-muted">
-          {showMs ? `${PREVIEW_LABEL[level]} · ${latency} ms` : "ms"}
-        </button>
+        <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded bg-background/70 px-1.5 py-0.5 font-mono text-[11px] tabular-nums text-muted">
+          <button type="button" title="Latence estimée. Cliquer pour masquer." onClick={() => setShowMs((s) => !s)}>
+            {showMs ? `${PREVIEW_LABEL[level]} · ${latency} ms` : "ms"}
+          </button>
+          <select
+            aria-label="Qualité de l'aperçu"
+            title="Qualité de l'aperçu : automatique selon ta connexion, ou forcée"
+            value={manual ?? "auto"}
+            onChange={(e) => {
+              const v = e.target.value === "auto" ? null : (Number(e.target.value) as PreviewLevel);
+              manualRef.current = v;
+              setManual(v);
+              if (v != null) moveRef.current?.(v);
+            }}
+            className="cursor-pointer rounded bg-transparent text-muted hover:text-foreground focus-visible:outline-none"
+          >
+            <option value="auto">Auto</option>
+            {PREVIEW_LABEL.map((l, i) => (
+              <option key={l} value={i}>
+                {l}
+              </option>
+            ))}
+          </select>
+        </div>
       )}
     </div>
   );

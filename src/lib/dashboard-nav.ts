@@ -33,7 +33,7 @@ export type SectionTab = { label: string; href: string };
 /** Onglets de la section Cloud. */
 export const statsTabs: SectionTab[] = [
   { label: "Cloud", href: "/dashboard/cloud" },
-  { label: "Historique", href: "/dashboard/lives" },
+  { label: "Statistiques", href: "/dashboard/lives" },
 ];
 
 /** Un lien de la barre reste actif sur toutes les pages de sa section. */

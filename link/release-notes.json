@@ -1,4 +1,7 @@
 {
+  "0.9.8": [
+    "Aperçu : niveau 1080p (5 Mbit/s) pour le contrôle à distance, choisi automatiquement sur une très bonne connexion"
+  ],
   "0.9.7": [
     "Connexion : le compte n'est plus déconnecté après une coupure réseau pendant le renouvellement, ni si le fichier de réglages est abîmé (copie de secours)"
   ],

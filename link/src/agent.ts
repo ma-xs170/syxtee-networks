@@ -27,7 +27,7 @@ const PREVIEW_LEVELS = [
   { kbps: 5000, height: 1080 },
 ] as const;
 
-export const VERSION = "0.9.7";
+export const VERSION = "0.9.8";
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
 export const OBS_METHODS = new Set([

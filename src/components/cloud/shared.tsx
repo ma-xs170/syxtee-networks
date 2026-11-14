@@ -187,12 +187,12 @@ export function TimeAxis({ window, end }: { window: number; end: number }) {
 
 export function Track({ label, value, children }: { label: string; value: string; children: ReactNode }) {
   return (
-    <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] border-b border-line last:border-0 sm:grid-cols-[10rem_minmax(0,1fr)]">
-      <div className="border-r border-line px-3 py-2.5">
-        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{label}</p>
-        <p className="mt-1 font-mono text-sm tabular-nums">{value}</p>
+    <div className="rounded-lg bg-foreground/[0.05] p-3 transition-colors hover:bg-foreground/[0.07]">
+      <div className="flex items-baseline justify-between gap-4 px-1">
+        <p className="font-mono text-[11px] text-muted">{label}</p>
+        <p className="whitespace-nowrap text-xl font-semibold leading-tight tabular-nums tracking-tight">{value}</p>
       </div>
-      <div className="min-w-0 p-2">{children}</div>
+      <div className="mt-2 min-w-0">{children}</div>
     </div>
   );
 }

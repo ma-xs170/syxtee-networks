@@ -198,10 +198,9 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
       </div>
       )}
 
-      <section aria-label="Chronologie" className={view === "live" ? "border-t border-line" : ""}>
-        <PanelHead
-          title="Chronologie"
-          right={
+      <section aria-label="Chronologie" className="space-y-3 border-t border-line p-4">
+        <div className="flex items-center justify-between gap-3 px-1">
+          <h2 className="font-mono text-[11px] font-normal uppercase tracking-[0.14em] text-muted">Chronologie</h2>
             <div className="flex items-center gap-3">
               <span className="hidden font-mono text-[11px] tabular-nums text-muted sm:inline">{ht != null && ht >= end - win && ht <= end ? fmtFull(ht) : ""}</span>
               {view === "stats" && <div role="group" aria-label="Période" className="inline-flex rounded-md border border-line p-0.5 font-mono text-[11px]">
@@ -212,8 +211,7 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
                 ))}
               </div>}
             </div>
-          }
-        />
+        </div>
         <Track label="Débit utile" value={at(bitrateSeries, (v) => fmtKbps(v), sm ? fmtKbps(sm.bitrate) : "—")}>
           <Area points={bitrateSeries} window={win} end={end} hover={hover} fmt={fmtKbps} levels showMax className="h-24" />
         </Track>
@@ -223,10 +221,7 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
         <Track label="Pertes" value={at(lossSeries, (v) => nf.format(Math.round(v)), nf.format(lost))}>
           <Area points={lossSeries} window={win} end={end} hover={hover} fmt={(v) => nf.format(Math.round(v))} showMax className="h-24" tone="ink" max={Math.max(10, ...lossSeries.map((p) => p.v)) * 1.1} />
         </Track>
-        <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] border-t border-line sm:grid-cols-[10rem_minmax(0,1fr)]">
-          <div className="border-r border-line" />
-          <div className="min-w-0 px-2 pb-2"><TimeAxis window={win} end={end} /></div>
-        </div>
+        <div className="px-4"><TimeAxis window={win} end={end} /></div>
       </section>
       {children}
     </div>

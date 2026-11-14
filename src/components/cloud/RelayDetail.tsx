@@ -183,7 +183,7 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
         <section aria-label="Modems" className="order-1 flex min-w-0 flex-1 basis-[14rem] flex-col border-l border-line">
           <PanelHead title="Modems" right={peers.length > 0 ? <span className="font-mono text-[11px] text-muted">{peers.length} connecté{peers.length > 1 ? "s" : ""}</span> : undefined} />
           {peers.length === 0 && gone.length === 0 ? (
-            <p className="px-3 py-8 text-center text-sm text-muted">{live ? "Flux en direct sans détail par connexion (flux SRT simple)." : "Aucune connexion : le direct n'est pas démarré."}</p>
+            <p className="grid flex-1 place-items-center px-3 py-8 text-center text-sm text-muted">{live ? "Flux en direct sans détail par connexion (flux SRT simple)." : "Aucune connexion : le direct n'est pas démarré."}</p>
           ) : (
             <div className="grid gap-3 p-3 [grid-template-columns:repeat(auto-fill,minmax(16rem,1fr))]">
               {peers.map((p, i) => <ModemTile key={p.connection_id} index={i + 1} peer={p} history={conns[p.connection_id] ?? []} window={win} total={sum.total} />)}

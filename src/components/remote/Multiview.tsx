@@ -41,7 +41,7 @@ function Tile({
         />
       )}
       {label && (
-        <span className="absolute inset-x-0 bottom-[2%] truncate px-2 text-center font-sans text-[clamp(9px,1.05vw,20px)] font-bold uppercase leading-none text-white [text-shadow:0_0_4px_#000]">
+        <span className="absolute inset-x-0 bottom-[2%] truncate px-2 text-center font-sans text-[22px] font-bold uppercase leading-none text-white [text-shadow:0_0_4px_#000]">
           {label}
         </span>
       )}
@@ -49,7 +49,7 @@ function Tile({
         <span
           aria-hidden="true"
           className="pointer-events-none absolute inset-0"
-          style={{ boxShadow: `inset 0 0 0 clamp(2px,0.3vw,6px) ${frame}` }}
+          style={{ boxShadow: `inset 0 0 0 4px ${frame}` }}
         />
       )}
     </>
@@ -146,15 +146,24 @@ export default function MultiviewScreen({
   // 8 vignettes comme dans OBS (2 rangées de 4) ; au-delà, des rangées de plus.
   const cells = Math.max(8, Math.ceil(o.scenes.length / 4) * 4);
   const rows = cells / 4;
+  const [win, setWin] = useState({ w: 1920, h: 1080 });
+  useEffect(() => {
+    const fit = () => setWin({ w: window.innerWidth, h: window.innerHeight });
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, []);
   const editable = o.ready && o.canScenes;
   return (
-    <main className="fixed inset-0 grid min-h-dvh place-items-center bg-black">
+    <main className="fixed inset-0 overflow-hidden bg-black">
+      {/* Toile fixe de 1920 × 1080 (plus haute si plus de 8 scènes) comme le Multiview d'OBS, mise à l'échelle de la fenêtre : même rendu en 4K. */}
       <div
-        className="grid gap-[0.4vmin] p-[0.4vmin]"
+        className="absolute left-1/2 top-1/2 grid gap-[6px] p-[6px]"
         style={{
           background: GAP,
-          width: `min(100vw, calc(100dvh * 64 / ${(rows + 2) * 9}))`,
-          aspectRatio: `64 / ${(rows + 2) * 9}`,
+          width: 1920,
+          height: (540 * (rows + 2)) / 2,
+          transform: `translate(-50%, -50%) scale(${Math.min(win.w / 1920, win.h / (270 * (rows + 2))) || 1})`,
           gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
           gridTemplateRows: `${rows}fr repeat(${rows}, minmax(0, 1fr))`,
         }}

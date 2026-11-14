@@ -1,4 +1,7 @@
 {
+  "0.9.9": [
+    "Bouton « Mise à jour » dans SYXTEE Studio quand une nouvelle version du plugin est publiée"
+  ],
   "0.9.8": [
     "Aperçu : niveau 1080p (5 Mbit/s) pour le contrôle à distance, choisi automatiquement sur une très bonne connexion"
   ],

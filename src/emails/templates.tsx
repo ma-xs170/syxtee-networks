@@ -288,8 +288,26 @@ export function samples(): { key: string; label: string; email: Email }[] {
     { key: "g2", label: "g) Formule : J-7", email: planChanged({ plan: "partner", until: in30, expiring: true }) },
     { key: "h", label: "h) 1 mois gagné", email: freeMonth({ until: in30 }) },
     { key: "i", label: "i) Paiement refusé", email: paymentFailed({ amount: 999, currency: "eur" }) },
+    { key: "k", label: "k) Mise à jour du plugin", email: pluginUpdate({ version: "0.9.8", notes: ["Aperçu : niveau 1080p pour le contrôle à distance"] }) },
     { key: "j", label: "j) Invitation à l'équipe", email: staffInvite({ inviter: "Mathis", role: "support", url: `${site.url}/equipe/invitation/exemple`, expires: in30 }) },
   ];
+}
+
+/** Nouvelle version du plugin SYXTEE Link : prévient les comptes dont un poste est en retard. */
+export function pluginUpdate(o: { version: string; notes: string[] }): Email {
+  return {
+    subject: `Plugin SYXTEE Link ${o.version} : mise à jour disponible`,
+    element: (
+      <Layout preview={`Version ${o.version} du plugin à télécharger.`} reason="Tu reçois ce message car un de tes postes OBS utilise une ancienne version du plugin.">
+        <Title lead="Mise à jour du plugin" hl={`${o.version}.`} />
+        {o.notes.map((n) => (
+          <Text key={n} style={p}>• {n}</Text>
+        ))}
+        <Text style={p}>Dans OBS, ouvre SYXTEE Studio : le bouton « Mise à jour » télécharge l&apos;installeur. Ferme OBS avant de l&apos;installer.</Text>
+        <Cta href={`${site.url}/dashboard/plugin`}>Télécharger la mise à jour</Cta>
+      </Layout>
+    ),
+  };
 }
 
 /** Invitation à piloter l'OBS de quelqu'un (lien secret, sans compte). */

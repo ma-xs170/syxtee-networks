@@ -554,6 +554,7 @@ private:
 	QString destName_;
 
 	QLabel *badge_ = nullptr, *version_ = nullptr, *toast_ = nullptr;
+	QPushButton *updateBtn_ = nullptr;
 	Dot *badgeDot_ = nullptr;
 	QStackedWidget *root_ = nullptr, *tabs_ = nullptr;
 	QPushButton *tabBtn_[3] = {};
@@ -667,6 +668,15 @@ private:
 		version_->setWordWrap(false);
 		head->addWidget(pill);
 		head->addWidget(version_);
+		updateBtn_ = new QPushButton;
+		updateBtn_->setCursor(Qt::PointingHandCursor);
+		updateBtn_->setStyleSheet("QPushButton { background: #dc2626; color: #fff; border: none; border-radius: 10px; padding: 3px 10px; font-size: 11px; font-weight: 600; } QPushButton:hover { background: #ef4444; }");
+		updateBtn_->hide();
+		QObject::connect(updateBtn_, &QPushButton::clicked, this, [this] {
+			const QString u = state_.value("update").toObject().value("url").toString();
+			if (!u.isEmpty()) QDesktopServices::openUrl(QUrl(u));
+		});
+		head->addWidget(updateBtn_);
 		outer->addLayout(head);
 
 		root_ = new QStackedWidget;
@@ -1319,6 +1329,15 @@ private:
 		const QJsonObject st = s.value("status").toObject();
 		const bool coreOn = st.value("core").toString() == "on";
 		version_->setText("v" + s.value("version").toString());
+		{
+			const QJsonObject up = s.value("update").toObject();
+			const QString uv = up.value("version").toString();
+			updateBtn_->setVisible(!uv.isEmpty());
+			if (!uv.isEmpty()) {
+				updateBtn_->setText("Mise à jour " + uv + " · Télécharger");
+				updateBtn_->setToolTip(up.value("notes").toArray().isEmpty() ? QString() : up.value("notes").toArray().at(0).toString());
+			}
+		}
 		badge_->setText(coreOn && paired ? "Connecté" : paired ? "Connexion…" : "Non connecté");
 		badgeDot_->set(coreOn && paired ? kOk : paired ? kWarn : kFaint, !paired, paired && !coreOn);
 		if (hostEdit_ && hostEdit_->text().isEmpty()) hostEdit_->setText(s.value("host").toString()); // remplacé par le nom du registre dès qu'il arrive

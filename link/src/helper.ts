@@ -61,8 +61,30 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
     return res.ok ? j : { error: cloudError(j.error) };
   };
 
+  // Mise à jour du plugin : on interroge le Core (manifeste publié) au démarrage puis chaque heure ; le plugin affiche un bouton « Mettre à jour ».
+  let update: { version: string; url: string; notes: string[] } | null = null;
+  const newer = (a: string, b: string) => {
+    const pa = a.split(".").map(Number), pb = b.split(".").map(Number);
+    for (let i = 0; i < 3; i++) if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) > (pb[i] || 0);
+    return false;
+  };
+  const checkUpdate = async () => {
+    try {
+      const res = await fetch(`${cfg.core}/v1/plugin/latest`, { signal: AbortSignal.timeout(10_000) });
+      if (!res.ok) return;
+      const j = (await res.json()) as { version?: string; notes?: string[]; macos?: { available?: boolean; url?: string | null }; windows?: { available?: boolean; url?: string | null } };
+      const f = process.platform === "win32" ? j.windows : j.macos;
+      update = j.version && f?.available && f.url && newer(j.version, VERSION) ? { version: j.version, url: `${cfg.core}${f.url}`, notes: Array.isArray(j.notes) ? j.notes.slice(0, 5) : [] } : null;
+    } catch {
+      /* réseau absent : on réessaie à la prochaine heure */
+    }
+  };
+  void checkUpdate();
+  setInterval(() => void checkUpdate(), 3_600_000).unref();
+
   const state = () => ({
     version: VERSION,
+    update,
     host: hostname().slice(0, 40),
     core: cfg.core,
     paired: cfg.token !== "",

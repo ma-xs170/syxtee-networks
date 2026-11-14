@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { purgeTrash } from "@/lib/access";
 import { runManagedExpiry } from "@/lib/managed";
 import { runPlanExpiry } from "@/lib/plan-admin";
+import { runPluginUpdateNotices } from "@/lib/plugin-notify";
 import { hasAdmin } from "@/lib/supabase/admin";
 
 // Tâche quotidienne des formules (cron du VPS) : échéances → Gratuit, rappels à J-7.
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
   try {
     const expiry = await runPlanExpiry();
     // Même passage quotidien : vide la corbeille des demandes d'accès (30 jours).
-    return NextResponse.json({ ok: true, ...expiry, ...(await runManagedExpiry()), trash_purged: await purgeTrash() });
+    return NextResponse.json({ ok: true, ...expiry, ...(await runManagedExpiry()), trash_purged: await purgeTrash(), ...(await runPluginUpdateNotices()) });
   } catch (e) {
     console.error("cron formules", e);
     return NextResponse.json({ error: (e as Error).message }, { status: 502 });

@@ -89,6 +89,16 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
   );
 }
 
+/** Indicateur clé : grand chiffre, libellé mono. `warn` colore la valeur quand il faut regarder. */
+function Kpi({ label, value, tone }: { label: string; value: string; tone?: "warn" }) {
+  return (
+    <div className="rounded-xl border border-line bg-surface px-4 py-3">
+      <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{label}</p>
+      <p className={`mt-1.5 text-2xl font-semibold tabular-nums tracking-tight ${tone === "warn" ? "text-warn" : ""}`}>{value}</p>
+    </div>
+  );
+}
+
 function ModemTile({ index, peer, history, window, total }: { index: number; peer: Peer; history: PeerRow[]; window: number; total: number }) {
   const lv = LEVEL[levelOf(peer.bitrate)];
   const pts = history.map((h) => ({ t: h.t, v: h.bitrate }));
@@ -231,6 +241,15 @@ export default function ControlCenter({ coreUrl }: { coreUrl: string }) {
 
       {current && (
         <>
+          <section aria-label="Indicateurs clés" className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+            <Kpi label="Débit utile" value={live && sm ? fmtKbps(sm.bitrate) : "—"} />
+            <Kpi label="Latence (RTT)" value={live && sm ? `${Math.round(sm.rtt)} ms` : "—"} />
+            <Kpi label="Pertes (1 min)" value={live && current.lost_1m != null ? nf.format(current.lost_1m) : "—"} tone={live && (current.lost_1m ?? 0) > 0 ? "warn" : undefined} />
+            <Kpi label="Rendement" value={live && eff != null ? `${eff} %` : "—"} />
+            <Kpi label="Modems actifs" value={live ? `${sum.active} / ${peers.length}` : "—"} tone={live && sum.weak > 0 ? "warn" : undefined} />
+            <Kpi label="En direct depuis" value={live ? duration(current.since, now) : "—"} />
+          </section>
+
           <section className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.85fr)_minmax(0,1.25fr)]" aria-label={`Moniteur de ${current.name}`}>
             <div className="space-y-3">
               {live ? (

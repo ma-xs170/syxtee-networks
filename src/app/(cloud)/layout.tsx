@@ -22,10 +22,10 @@ export default async function StatsLayout({ children }: LayoutProps<"/">) {
     <div className="dash-surface flex min-h-dvh flex-col">
       <header className="sticky top-0 z-40 border-b border-line bg-background/95">
         <div className="flex h-14 w-full items-center gap-4 px-4">
-          <a href="/dashboard" className="flex shrink-0 items-center gap-3" aria-label="Retour à l'espace client SYXTEE">
+          <Link href="/dashboard/cloud" className="flex shrink-0 items-center gap-3" aria-label="SYXTEE Cloud : tous les flux">
             <Image src="/logo-400.png" alt="" width={20} height={28} style={{ width: 20, height: "auto" }} className="ink-img" priority />
             <span className="hidden text-sm font-semibold tracking-[0.18em] sm:inline">SYXTEE</span>
-          </a>
+          </Link>
           <span className="hidden font-mono text-xs text-muted sm:inline" aria-hidden="true">/</span>
           <span className="hidden font-mono text-xs uppercase tracking-[0.14em] text-muted sm:inline">Cloud</span>
 

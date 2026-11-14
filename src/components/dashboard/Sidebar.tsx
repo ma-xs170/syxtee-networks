@@ -6,11 +6,9 @@ import { usePathname, useRouter } from "next/navigation";
 import CommandPalette, { type Command } from "./CommandPalette";
 import { createContext, useContext, useEffect, useRef, useState, useTransition, type ComponentType } from "react";
 import {
-  Archive,
   FilmStrip,
   CalendarBlank,
   CaretUpDown,
-  HardDrives,
   Cloud,
   List,
   Lock,
@@ -42,7 +40,18 @@ const WsCtx = createContext<WorkspaceInfo>({ workspaces: [], activeId: null, lef
 type Item = { sharedOnly?: boolean; label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean; wordmark?: string; /** « À venir » : pas encore ouvert (l'admin y accède quand même). */ soon?: boolean; /** Pastille de nouveauté à droite du libellé. */ fresh?: boolean };
 type Group = { title?: string; items: Item[] };
 
-// Menu : Tableau de bord + Cloud, deux groupes (Diffuser dans l’ordre du flux : Serveurs, Appareils, Direct, Destinations ; Studio), Aide en bas. Le profil (en haut) ouvre Compte, espaces, thème, déconnexion.
+// Menu : Tableau de bord + Cloud, puis Diffuser (Connexions, Contrôle à distance, Destinations), Sauvegardes (OBS Studio, Enregistrements) et Programme (Calendrier, Équipe), Aide en bas. Le profil (en haut) ouvre Compte, espaces, thème, déconnexion.
+/** Logo OBS Studio (cercle et trois pales), en trait comme les autres icônes du menu. */
+function ObsIcon({ size = 20, className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9.25" />
+      <path d="M12 6.2a5.8 5.8 0 0 1 5 2.9M17.6 13.9a5.8 5.8 0 0 1-3.6 3.7M8.2 16.6a5.8 5.8 0 0 1-1.3-6.6" />
+      <circle cx="12" cy="12" r="1.2" />
+    </svg>
+  );
+}
+
 const GROUPS: Group[] = [
   {
     items: [
@@ -55,16 +64,20 @@ const GROUPS: Group[] = [
     title: "Diffuser",
     items: [
       { label: "Connexions", href: "/dashboard/serveurs", icon: Radio, feature: "relais" },
-      { label: "Appareils", href: "/dashboard/appareils", icon: HardDrives },
-      { label: "Direct", href: "/dashboard/direct", icon: SlidersHorizontal, feature: "relais" },
+      { label: "Contrôle à distance", href: "/dashboard/direct", icon: SlidersHorizontal, feature: "relais" },
       { label: "Destinations", href: "/dashboard/destinations", icon: ShareNetwork },
     ],
   },
   {
-    title: "Studio",
+    title: "Sauvegardes",
     items: [
-      { label: "Scènes", href: "/dashboard/scenes", icon: Archive, feature: "relais" },
+      { label: "OBS Studio", href: "/dashboard/scenes", icon: ObsIcon, feature: "relais" },
       { label: "Enregistrements", href: "/dashboard/enregistrements", icon: FilmStrip, feature: "relais" },
+    ],
+  },
+  {
+    title: "Programme",
+    items: [
       { label: "Calendrier", href: "/dashboard/calendrier", icon: CalendarBlank },
       { label: "Équipe", href: "/dashboard/equipe", icon: UsersThree, feature: "relais" },
     ],

@@ -152,7 +152,7 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
 
   return (
     <div className="min-w-0 flex-1">
-      <section aria-label="Indicateurs clés" className="flex flex-wrap gap-2 border-b border-line px-4 py-3">
+      <section aria-label="Indicateurs clés" className="flex flex-wrap gap-2 px-4 pt-3">
         <Session since={live ? current.since : null} />
         <Tile label="Débit" value={live && sm ? fmtKbpsFull(sm.bitrate) : "—"} tone={live && sm ? levelOf(sm.bitrate) : "off"} spark={live ? bitrateSeries : undefined} levels hint="Débit vidéo reçu, sans les retransmissions" />
         <Tile label="Qualité" value={q != null ? `${q} %` : "—"} tone={live ? qualityLevel(q) : "off"} hint="Note globale : congestion, pertes et modems faibles" />
@@ -211,7 +211,7 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
       </div>
       )}
 
-      <section aria-label="Chronologie" className="space-y-3 border-t border-line p-4">
+      <section aria-label="Chronologie" className="space-y-3 p-4">
         <div className="flex items-center justify-between gap-3 px-1">
           <h2 className="font-mono text-[11px] font-normal uppercase tracking-[0.14em] text-muted">Chronologie</h2>
             <div className="flex items-center gap-3">

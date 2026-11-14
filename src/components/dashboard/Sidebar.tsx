@@ -41,7 +41,7 @@ const WsCtx = createContext<WorkspaceInfo>({ workspaces: [], activeId: null, lef
 type Item = { sharedOnly?: boolean; label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean; wordmark?: string; /** « À venir » : pas encore ouvert (l'admin y accède quand même). */ soon?: boolean; /** Pastille de nouveauté à droite du libellé. */ fresh?: boolean };
 type Group = { title?: string; items: Item[] };
 
-// Menu : Tableau de bord + Cloud, puis Diffuser (Connexions, Contrôle à distance, Destinations), Programme (Calendrier, Équipe) et Sauvegardes (OBS Studio, Enregistrements), Aide en bas. Le profil (en haut) ouvre Compte, espaces, thème, déconnexion.
+// Menu : Tableau de bord + Cloud, puis Diffuser (Serveur, Contrôle à distance, Destinations), Programme (Calendrier, Équipe) et Sauvegardes (OBS Studio, Enregistrements), Aide en bas. Le profil (en haut) ouvre Compte, espaces, thème, déconnexion.
 /** Logo OBS Studio (cercle et trois pales), en trait comme les autres icônes du menu. */
 function ObsIcon({ size = 20, className }: IconProps) {
   return (
@@ -64,7 +64,7 @@ const GROUPS: Group[] = [
   {
     title: "Diffuser",
     items: [
-      { label: "Connexions", href: "/dashboard/serveurs", icon: Radio, feature: "relais" },
+      { label: "Serveur", href: "/dashboard/serveurs", icon: Radio, feature: "relais" },
       { label: "Contrôle à distance", href: "/dashboard/direct", icon: SlidersHorizontal, feature: "relais" },
       { label: "Destinations", href: "/dashboard/destinations", icon: ShareNetwork },
     ],
@@ -331,7 +331,7 @@ function Content({ admin, onNavigate }: { admin: boolean; onNavigate: () => void
 // Flux = tes flux (SRTLA, RTMP) ; OBS = liste des postes, plugin, et l'interface d'un OBS (/controle-a-distance/<poste>).
 const TABS: (Item & { also?: string[] })[] = [
   { label: "Tableau", href: "/dashboard", icon: SquaresFour },
-  { label: "Connexions", href: "/dashboard/serveurs", icon: Radio, feature: "relais" },
+  { label: "Serveur", href: "/dashboard/serveurs", icon: Radio, feature: "relais" },
   { label: "Direct", href: "/dashboard/direct", icon: SlidersHorizontal, feature: "relais", also: ["/dashboard/obs", "/dashboard/plugin", "/controle-a-distance"] },
 ];
 

@@ -34,8 +34,11 @@ export default async function StatsLayout({ children }: LayoutProps<"/">) {
           </Suspense>
 
           <div className="hidden shrink-0 items-center gap-3 border-l border-line pl-4 md:flex">
-            <a href="/dashboard" className="max-w-[16ch] truncate font-mono text-xs text-muted transition-colors hover:text-foreground" title="Ouvrir le tableau de bord">{workspace?.name ?? "Tableau de bord"}</a>
-            <Link href="/dashboard/cloud" className="rounded-full border border-line px-3.5 py-1.5 text-sm text-muted transition-colors hover:border-foreground/30 hover:text-foreground">Tous les flux</Link>
+            <a href="/dashboard" className="flex max-w-[18ch] items-center gap-1.5 font-mono text-xs text-muted transition-colors hover:text-foreground" title="Ouvrir le tableau de bord">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
+              <span className="truncate">{workspace?.name ?? "Tableau de bord"}</span>
+            </a>
+            <Link href="/dashboard/cloud" className="whitespace-nowrap rounded-full bg-accent px-3.5 py-1.5 text-sm text-on-accent transition-opacity hover:opacity-90">Tous les flux</Link>
           </div>
         </div>
       </header>

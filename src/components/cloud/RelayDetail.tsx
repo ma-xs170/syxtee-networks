@@ -193,7 +193,7 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
         </aside>
       </div>
 
-      <div className="grid lg:grid-cols-[minmax(0,1fr)_19rem] lg:divide-x lg:divide-line">
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:divide-x lg:divide-line">
         <section aria-label="Connexions" className="min-w-0">
           <PanelHead title="Connexions" right={peers.length > 0 ? <span className="font-mono text-[11px] text-muted">{peers.length} modem{peers.length > 1 ? "s" : ""}</span> : undefined} />
           {peers.length === 0 && gone.length === 0 ? (

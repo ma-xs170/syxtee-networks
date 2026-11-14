@@ -248,7 +248,7 @@ function Bar({ rms, peak, label, onVideo, name }: { rms: number | null; peak: nu
  */
 export function StereoMeter({ audio, className = "", onVideo = false }: { audio: Audio | null | undefined; className?: string; onVideo?: boolean }) {
   return (
-    <div className={`flex gap-1.5 ${className}`}>
+    <div className={`flex gap-2 ${className}`}>
       {!onVideo && (
         <div aria-hidden="true" className="relative mb-[15px] w-7">
           {METER_TICKS.map((t) => (
@@ -256,8 +256,10 @@ export function StereoMeter({ audio, className = "", onVideo = false }: { audio:
           ))}
         </div>
       )}
-      <Bar rms={audio?.l ?? null} peak={audio?.peak_l ?? null} label={onVideo ? undefined : "G"} onVideo={onVideo} name="Niveau audio gauche" />
-      <Bar rms={audio?.r ?? null} peak={audio?.peak_r ?? null} label={onVideo ? undefined : "D"} onVideo={onVideo} name="Niveau audio droit" />
+      <div className={`flex h-full ${onVideo ? "gap-1.5" : "gap-3"}`}>
+        <Bar rms={audio?.l ?? null} peak={audio?.peak_l ?? null} label={onVideo ? undefined : "G"} onVideo={onVideo} name="Niveau audio gauche" />
+        <Bar rms={audio?.r ?? null} peak={audio?.peak_r ?? null} label={onVideo ? undefined : "D"} onVideo={onVideo} name="Niveau audio droit" />
+      </div>
     </div>
   );
 }

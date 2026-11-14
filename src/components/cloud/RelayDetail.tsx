@@ -77,7 +77,7 @@ function Session({ since }: { since: number | null }) {
 
 export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; relayId: string }) {
   const { relays, error, now } = useControl(coreUrl);
-  const [range, setRange] = useState<RangeId>("15m");
+  const range: RangeId = "15m";
   const [hist, setHist] = useState<Sample[]>([]);
   const [conns, setConns] = useState<Record<string, PeerRow[]>>({});
   const [full, setFull] = useState(false);
@@ -198,16 +198,7 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
         <PanelHead
           title="Chronologie"
           right={
-            <div className="flex items-center gap-3">
-              <span className="hidden font-mono text-[11px] tabular-nums text-muted sm:inline">{ht != null && ht >= end - win && ht <= end ? fmtFull(ht) : ""}</span>
-              <div role="group" aria-label="Période" className="inline-flex rounded-md border border-line p-0.5 font-mono text-[11px]">
-                {RANGES.map((r) => (
-                  <button key={r.id} type="button" aria-pressed={range === r.id} onClick={() => setRange(r.id)} className={`rounded px-2.5 py-0.5 transition-colors ${range === r.id ? "bg-foreground text-background" : "text-muted hover:text-foreground"}`}>
-                    {r.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <span className="hidden font-mono text-[11px] tabular-nums text-muted sm:inline">{ht != null && ht >= end - win && ht <= end ? fmtFull(ht) : ""}</span>
           }
         />
         <Track label="Débit utile" value={at(bitrateSeries, (v) => fmtKbps(v), sm ? fmtKbps(sm.bitrate) : "—")}>

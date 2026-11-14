@@ -11,7 +11,7 @@ import {
   CalendarBlank,
   CaretUpDown,
   HardDrives,
-  ChartBar,
+  Cloud,
   List,
   Lock,
   Radio,
@@ -42,9 +42,15 @@ const WsCtx = createContext<WorkspaceInfo>({ workspaces: [], activeId: null, lef
 type Item = { sharedOnly?: boolean; label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean; wordmark?: string; /** « À venir » : pas encore ouvert (l'admin y accède quand même). */ soon?: boolean; /** Pastille de nouveauté à droite du libellé. */ fresh?: boolean };
 type Group = { title?: string; items: Item[] };
 
-// Menu : Tableau de bord, trois groupes (Diffuser dans l'ordre du flux : Serveurs, Appareils, Direct, Destinations ; Studio ; Croissance), Aide en bas. Le profil (en haut) ouvre Compte, espaces, thème, déconnexion.
+// Menu : Tableau de bord + Cloud, deux groupes (Diffuser dans l’ordre du flux : Serveurs, Appareils, Direct, Destinations ; Studio), Aide en bas. Le profil (en haut) ouvre Compte, espaces, thème, déconnexion.
 const GROUPS: Group[] = [
-  { items: [{ label: "Tableau de bord", href: "/dashboard", icon: SquaresFour }] },
+  {
+    items: [
+      { label: "Tableau de bord", href: "/dashboard", icon: SquaresFour },
+      // Page à part (cloud.syxtee-networks.fr) : s'ouvre dans un nouvel onglet.
+      { label: "Cloud", href: "/dashboard/cloud", icon: Cloud, external: true },
+    ],
+  },
   {
     title: "Diffuser",
     items: [
@@ -61,13 +67,6 @@ const GROUPS: Group[] = [
       { label: "Enregistrements", href: "/dashboard/enregistrements", icon: FilmStrip, feature: "relais" },
       { label: "Calendrier", href: "/dashboard/calendrier", icon: CalendarBlank },
       { label: "Équipe", href: "/dashboard/equipe", icon: UsersThree, feature: "relais" },
-    ],
-  },
-  {
-    title: "Croissance",
-    items: [
-      // Page à part (cloud.syxtee-networks.fr) : s'ouvre dans un nouvel onglet.
-      { label: "Cloud", href: "/dashboard/cloud", icon: ChartBar, external: true },
     ],
   },
 ];

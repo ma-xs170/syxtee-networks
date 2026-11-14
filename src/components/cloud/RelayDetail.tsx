@@ -151,18 +151,20 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
       </section>
 
       <div className="flex flex-wrap items-start gap-4 p-4">
-        <div className="flex w-full min-w-0 max-w-[44rem] items-start gap-3 lg:w-[44rem]">
-          <div className="w-full min-w-0">
-            {live ? (
-              <StreamPreview coreUrl={coreUrl} relayId={current.id} fullControl={{ full, setFull }} />
-            ) : (
-              <div className="grid aspect-video place-items-center rounded-2xl border border-dashed border-line px-6 text-center text-sm text-muted">Hors ligne : l&apos;aperçu revient dès que le flux arrive.</div>
-            )}
-          </div>
-          <div className="flex max-h-[20rem] shrink-0 flex-col items-stretch gap-3 self-start">
-            <StereoMeter audio={live ? current.media?.audio : null} className="h-[20rem] max-h-full justify-center" />
-          </div>
+        <div className="w-full min-w-0 max-w-[44rem] lg:w-[44rem]">
+          {live ? (
+            <StreamPreview coreUrl={coreUrl} relayId={current.id} fullControl={{ full, setFull }} />
+          ) : (
+            <div className="grid aspect-video place-items-center rounded-2xl border border-dashed border-line px-6 text-center text-sm text-muted">Hors ligne : l&apos;aperçu revient dès que le flux arrive.</div>
+          )}
         </div>
+
+        <section aria-label="VU-mètre" className="-my-4 flex shrink-0 flex-col self-stretch border-l border-line">
+          <PanelHead title="VU-mètre" />
+          <div className="px-4 py-3">
+            <StereoMeter audio={live ? current.media?.audio : null} className="h-[20rem] justify-center" />
+          </div>
+        </section>
 
         <section aria-label="Modems" className="-my-4 flex min-w-0 flex-1 basis-[16rem] flex-col self-stretch border-l border-line">
           <PanelHead title="Modems" right={peers.length > 0 ? <span className="font-mono text-[11px] text-muted">{peers.length} connecté{peers.length > 1 ? "s" : ""}</span> : undefined} />

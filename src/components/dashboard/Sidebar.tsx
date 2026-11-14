@@ -9,6 +9,7 @@ import {
   FilmStrip,
   CalendarBlank,
   CaretUpDown,
+  ArrowUpRight,
   Cloud,
   List,
   Lock,
@@ -121,6 +122,7 @@ function NavLink({ item, active, locked, soon, onNavigate, hovered, onHover }: {
         </>
       )}
       {locked && <Lock size={14} className="relative z-10 ml-auto shrink-0 text-muted" aria-label="Verrouillé dans ta formule" />}
+      {item.external && <ArrowUpRight size={14} className="relative z-10 ml-auto shrink-0 text-muted" aria-label="S'ouvre dans un nouvel onglet" />}
       {item.fresh && <span className="relative z-10 ml-auto shrink-0 rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-on-accent">Nouveau</span>}
     </>
   );

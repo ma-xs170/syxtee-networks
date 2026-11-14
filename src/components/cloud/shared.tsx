@@ -1,0 +1,159 @@
+"use client";
+
+import type { ReactNode } from "react";
+import { fmtKbps, levelOf, seriesStats, share, type Level, type Peer, type Point } from "@/lib/control-center";
+
+// Éléments communs aux pages Cloud : mêmes types, mêmes courbes, mêmes tuiles.
+
+export type Sample = { t: number; bitrate: number; rtt: number; dropped: number; buffer: number | null; latency: number | null; congestion: number; links: number };
+export type Media = { width: number | null; height: number | null; codec: string | null; fps: number | null; audio_db: number | null };
+export type Relay = { id: string; name: string; protocol: string; live: boolean; since: number | null; sample: Sample | null; lost_1m: number | null; media: Media | null; peers: Peer[] };
+export type PeerRow = { t: number; bitrate: number; throughput: number | null; jitter: number | null };
+
+export const RANGES = [
+  { id: "15m", label: "15 min", ms: 15 * 60_000 },
+  { id: "1h", label: "1 h", ms: 3_600_000 },
+  { id: "6h", label: "6 h", ms: 6 * 3_600_000 },
+  { id: "24h", label: "24 h", ms: 24 * 3_600_000 },
+] as const;
+export type RangeId = (typeof RANGES)[number]["id"];
+
+export const nf = new Intl.NumberFormat("fr-FR");
+export const LEVEL: Record<Level, { dot: string; text: string; label: string }> = {
+  off: { dot: "bg-muted/50", text: "text-muted", label: "Coupé" },
+  bad: { dot: "bg-bad", text: "text-bad", label: "Très bas" },
+  warn: { dot: "bg-warn", text: "text-warn", label: "Faible" },
+  ok: { dot: "bg-ok", text: "text-ok", label: "Bon" },
+};
+
+export function duration(sinceMs: number | null, now: number) {
+  if (!sinceMs) return "—";
+  const s = Math.max(0, Math.floor((now - sinceMs) / 1000));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  return h ? `${h} h ${String(m).padStart(2, "0")}` : `${m} min ${String(s % 60).padStart(2, "0")} s`;
+}
+
+export const formatOf = (m: Media | null) => (m?.width && m.height ? `${m.width}x${m.height}${m.fps ? ` · ${Math.round(m.fps)} i/s` : ""}` : "—");
+
+/** Aire : valeur dans le temps. `tone` "ok" = couleur d'état, "ink" = encre (graphiques sans état). */
+export function Area({ points, window, max, className = "h-24", tone = "ok" }: { points: Point[]; window: number; max?: number; className?: string; tone?: "ok" | "ink" }) {
+  if (points.length < 2) return <div className={`${className} grid place-items-center rounded-lg border border-dashed border-line text-xs text-muted`}>Pas encore de données</div>;
+  const t1 = points[points.length - 1].t;
+  const t0 = t1 - window;
+  const top = max ?? Math.max(1000, ...points.map((p) => p.v)) * 1.1;
+  const x = (t: number) => Math.max(0, ((t - t0) / window) * 100);
+  const y = (v: number) => 40 - Math.min(1, v / top) * 38;
+  const line = points.map((p, i) => `${i ? "L" : "M"}${x(p.t).toFixed(2)} ${y(p.v).toFixed(2)}`).join("");
+  const area = `${line}L${x(points[points.length - 1].t).toFixed(2)} 40L${x(points[0].t).toFixed(2)} 40Z`;
+  const color = tone === "ok" ? "text-ok" : "text-foreground";
+  return (
+    <svg viewBox="0 0 100 40" preserveAspectRatio="none" className={`${className} w-full ${color}`} role="img" aria-label={`Courbe, maximum ${nf.format(Math.round(top))}`}>
+      <path d="M0 1H100M0 20H100M0 39H100" stroke="currentColor" className="text-foreground" strokeOpacity={0.1} strokeDasharray="1 3" vectorEffect="non-scaling-stroke" />
+      <path d={area} fill="currentColor" fillOpacity={tone === "ok" ? 0.55 : 0.12} />
+      <path d={line} fill="none" stroke="currentColor" strokeWidth={1.25} vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
+/** Courbe de débit avec repères : échelle en Mb/s à gauche, temps en bas. */
+export function QualityChart({ points, window, label }: { points: Point[]; window: number; label: string }) {
+  const top = Math.max(1000, ...points.map((p) => p.v)) * 1.1;
+  const steps = [1, 2 / 3, 1 / 3, 0];
+  const mb = (v: number) => (v / 1000).toFixed(v >= 10000 ? 0 : 1).replace(".", ",");
+  return (
+    <div>
+      <div className="flex">
+        <div className="flex h-32 w-8 shrink-0 flex-col justify-between pr-1.5 text-right font-mono text-[10px] tabular-nums text-muted" aria-hidden="true">
+          {steps.map((f) => <span key={f}>{mb(top * f)}</span>)}
+        </div>
+        <div className="min-w-0 flex-1 overflow-hidden rounded-lg border border-line bg-background">
+          <Area points={points} window={window} max={top} className="h-32" tone="ink" />
+        </div>
+      </div>
+      <p className="mt-1 flex justify-between pl-8 font-mono text-[10px] text-muted" aria-hidden="true">
+        <span>−{label}</span>
+        <span>maintenant</span>
+      </p>
+      <p className="sr-only">Débit en Mb/s sur les {label} écoulées.</p>
+    </div>
+  );
+}
+
+export function PanelHead({ title, right }: { title: string; right?: ReactNode }) {
+  return (
+    <div className="flex h-9 shrink-0 items-center justify-between gap-3 border-b border-line px-3">
+      <h2 className="font-mono text-[11px] font-normal uppercase tracking-[0.14em] text-muted">{title}</h2>
+      {right}
+    </div>
+  );
+}
+
+export function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4 border-b border-line px-3 py-2 last:border-0">
+      <dt className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{label}</dt>
+      <dd className="text-right font-mono text-[13px] tabular-nums" title={hint}>{value}</dd>
+    </div>
+  );
+}
+
+export function Kpi({ label, value, tone }: { label: string; value: string; tone?: "warn" }) {
+  return (
+    <div className="px-4 py-3">
+      <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{label}</p>
+      <p className={`mt-1 text-xl font-semibold tabular-nums tracking-tight ${tone === "warn" ? "text-warn" : ""}`}>{value}</p>
+    </div>
+  );
+}
+
+export function Track({ label, value, children }: { label: string; value: string; children: ReactNode }) {
+  return (
+    <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] border-b border-line last:border-0 sm:grid-cols-[10rem_minmax(0,1fr)]">
+      <div className="border-r border-line px-3 py-2.5">
+        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{label}</p>
+        <p className="mt-1 font-mono text-sm tabular-nums">{value}</p>
+      </div>
+      <div className="min-w-0 p-2">{children}</div>
+    </div>
+  );
+}
+
+export function ModemTile({ index, peer, history, window, total }: { index: number; peer: Peer; history: PeerRow[]; window: number; total: number }) {
+  const lv = LEVEL[levelOf(peer.bitrate)];
+  const pts = history.map((h) => ({ t: h.t, v: h.bitrate }));
+  const st = seriesStats(pts);
+  return (
+    <article className="bg-surface p-3" aria-label={`Modem ${index}`}>
+      <header className="flex items-center gap-2">
+        <span className="font-mono text-[11px] text-muted">{String(index).padStart(2, "0")}</span>
+        <span className={`h-1.5 w-1.5 rounded-full ${lv.dot}`} aria-hidden="true" />
+        <span className={`font-mono text-[11px] uppercase tracking-[0.08em] ${lv.text}`}>{lv.label}</span>
+        <span className="ml-auto font-mono text-sm tabular-nums">{fmtKbps(peer.bitrate)}</span>
+      </header>
+      <div className="mt-2">
+        <Area points={pts} window={window} tone="ink" className="h-14" />
+      </div>
+      <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-0.5 font-mono text-[11px] text-muted">
+        <dt>Part</dt>
+        <dd className="text-right tabular-nums text-foreground">{share(peer.bitrate, total)} %</dd>
+        <dt>Gigue</dt>
+        <dd className="text-right tabular-nums text-foreground">{peer.jitter != null ? `${peer.jitter.toFixed(1).replace(".", ",")} ms` : "—"}</dd>
+        <dt>Moy. / max</dt>
+        <dd className="text-right tabular-nums text-foreground">{fmtKbps(st.avg)} / {fmtKbps(st.max)}</dd>
+        <dt>Coupé</dt>
+        <dd className={`text-right tabular-nums ${st.down > 10 ? "text-bad" : "text-foreground"}`}>{st.down} %</dd>
+      </dl>
+    </article>
+  );
+}
+
+/** Vumètre vertical, −60 dB en bas, 0 dB en haut. Pas de son mesuré : jauge vide. */
+export function Meter({ fill, className = "" }: { fill: number; className?: string }) {
+  const color = fill > 0.92 ? "bg-bad" : fill > 0.75 ? "bg-warn" : "bg-ok";
+  return (
+    <div className={`relative w-1.5 overflow-hidden rounded-full bg-white/20 ${className}`} role="meter" aria-label="Niveau audio" aria-valuemin={-60} aria-valuemax={0} aria-valuenow={Math.round(fill * 60 - 60)}>
+      <div className={`absolute inset-x-0 bottom-0 ${color} transition-[height] duration-300 motion-reduce:transition-none`} style={{ height: `${fill * 100}%` }} />
+    </div>
+  );
+}

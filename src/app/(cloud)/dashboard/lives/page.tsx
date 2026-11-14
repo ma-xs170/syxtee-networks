@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { SessionList } from "@/components/dashboard/sessions";
-import { ArrowLink, DashHeader, DashPage, Tile, SectionTabs } from "@/components/dashboard/ui";
+import { ArrowLink, DashHeader, DashPage, Tile } from "@/components/dashboard/ui";
 import RelayPicker from "@/components/relais/RelayPicker";
-import { statsTabs } from "@/lib/dashboard-nav";
 import { getProfile } from "@/lib/auth/dal";
 import { requireOwner } from "@/lib/workspace";
 import { accountTimezone } from "@/lib/regions";
@@ -19,7 +18,6 @@ export default async function LivesPage({ searchParams }: PageProps<"/dashboard/
   const sessions = await listSessions({ limit: 100, relayId: current ?? undefined });
   return (
     <DashPage>
-      <SectionTabs tabs={statsTabs} current="/dashboard/lives" label="Cloud" />
       <PlanGate feature="lives">
       <DashHeader lead="Historique des" hl="directs" sub="Tes 100 derniers directs. Ouvre un direct pour voir sa courbe de débit." />
       <RelayPicker relays={relays} current={current} base="/dashboard/lives" all={relays.length > 1} />

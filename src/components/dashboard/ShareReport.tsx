@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { shareLiveAction } from "@/app/(dashboard)/dashboard/lives/[id]/actions";
+import { shareLiveAction } from "@/app/(cloud)/dashboard/lives/[id]/actions";
 
 // Partager le rapport d'un direct : crée un lien public (sans compte, sans clé, sans nom de relais), qu'on peut couper à tout moment.
 

@@ -56,12 +56,12 @@ const nextConfig: NextConfig = {
       { source: "/:path*", has: host(ROOT), destination: `${WWW}/:path*`, permanent: true },
       ...[
       // Cloud : toujours sur cloud (le centre de contrôle, pleine page).
-      ...to(CLOUD, ["/dashboard/cloud"], except("cloud")),
+      ...to(CLOUD, ["/dashboard/cloud", "/dashboard/lives"], except("cloud")),
       // Espace client : toujours sur app. Sur cloud, seule la page Cloud reste : le reste du dashboard renvoie sur app.
       ...to(APP, APP_PAGES, except("app", "cloud")),
       ...to(APP, ["/bienvenue", "/cam"], [`cloud.${ROOT}`]),
       { source: "/dashboard", has: host(`cloud.${ROOT}`), destination: `${APP}/dashboard`, permanent: true },
-      { source: "/dashboard/:path((?!cloud(?:/|$)).+)", has: host(`cloud.${ROOT}`), destination: `${APP}/dashboard/:path`, permanent: true },
+      { source: "/dashboard/:path((?!(?:cloud|lives)(?:/|$)).+)", has: host(`cloud.${ROOT}`), destination: `${APP}/dashboard/:path`, permanent: true },
       // Administration : toujours sur admin.
       ...to(ADMIN, ["/admin"], except("admin")),
       // Contrôle à distance d'un poste : toujours sur remote. (La page de présentation /controle-a-distance reste sur www.)

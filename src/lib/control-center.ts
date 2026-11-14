@@ -53,3 +53,19 @@ export function seriesStats(points: Point[]) {
 }
 
 export const fmtKbps = (kbps: number) => (kbps >= 1000 ? `${(kbps / 1000).toFixed(1).replace(".", ",")} Mb/s` : `${Math.round(kbps)} kb/s`);
+
+/**
+ * Qualité du flux, de 0 à 100 : 100 moins la congestion (jusqu'à 60 points), les paquets perdus sur la dernière minute (jusqu'à 25 points)
+ * et un point par connexion faible (jusqu'à 15 points). Null quand le flux n'est pas en direct.
+ */
+export function quality(s: { congestion: number } | null, lost1m: number | null, peers: Peer[]): number | null {
+  if (!s) return null;
+  const weak = peers.filter((p) => p.bitrate < WARN).length;
+  const q = 100 - Math.min(1, Math.max(0, s.congestion)) * 60 - Math.min(25, (lost1m ?? 0) * 0.5) - Math.min(15, weak * 5);
+  return Math.max(0, Math.min(100, Math.round(q)));
+}
+
+export const qualityLevel = (q: number | null): Level => (q == null ? "off" : q < 50 ? "bad" : q < 80 ? "warn" : "ok");
+
+/** Niveau audio en dB (−90 à 0) vers une jauge de 0 à 1 (−60 dB et moins : vide). */
+export const dbToFill = (db: number | null) => (db == null ? 0 : Math.max(0, Math.min(1, (db + 60) / 60)));

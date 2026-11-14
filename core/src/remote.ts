@@ -44,6 +44,7 @@ const MAX_PAYLOAD = 512 * 1024;
 /** Jeton d'accès : 1 h. Jeton de renouvellement : 90 jours, tourné à chaque usage. */
 const ACCESS_TTL_MS = 3_600_000;
 const REFRESH_TTL_MS = 90 * 86_400_000;
+const REFRESH_GRACE_MS = 10 * 60_000;
 /** Actions d'OBS (hors lectures) : 60 par 10 s et par appareil. */
 const ACTION_LIMIT = 60;
 /** Volume (fader glissé) : 400 par 10 s et par appareil. */
@@ -680,14 +681,23 @@ export function createRemote(o: {
         fail(ip);
         return { error: "invalid_token" };
       }
-      const { data } = await o.db.from("link_devices").select("id, user_id, revoked_at, refresh_expires_at").eq("refresh_hash", hashToken(refreshToken)).maybeSingle();
-      const d = data as { id: string; user_id: string; revoked_at: string | null; refresh_expires_at: string | null } | null;
-      if (!d || d.revoked_at || !d.refresh_expires_at || Date.parse(d.refresh_expires_at) <= now() || !o.canUse(d.user_id)) {
+      const h = hashToken(refreshToken);
+      const cols = "id, user_id, revoked_at, refresh_expires_at, refresh_hash, prev_refresh_hash, prev_refresh_until";
+      let { data } = await o.db.from("link_devices").select(cols).eq("refresh_hash", h).maybeSingle();
+      if (!data) ({ data } = await o.db.from("link_devices").select(cols).eq("prev_refresh_hash", h).maybeSingle());
+      const d = data as { id: string; user_id: string; revoked_at: string | null; refresh_expires_at: string | null; refresh_hash: string | null; prev_refresh_hash: string | null; prev_refresh_until: string | null } | null;
+      // Jeton courant, ou précédent encore dans sa période de grâce (la réponse de la rotation s'est perdue en route).
+      const current = !!d && d.refresh_hash === h;
+      const grace = !!d && !current && d.prev_refresh_hash === h && !!d.prev_refresh_until && Date.parse(d.prev_refresh_until) > now();
+      if (!d || (!current && !grace) || d.revoked_at || !d.refresh_expires_at || Date.parse(d.refresh_expires_at) <= now() || !o.canUse(d.user_id)) {
         fail(ip);
         return { error: "invalid_token" };
       }
       const t = issueFields();
-      const { data: upd, error } = await o.db.from("link_devices").update(t.row).eq("id", d.id).eq("refresh_hash", hashToken(refreshToken)).is("revoked_at", null).select("id");
+      // Le jeton présenté devient « précédent » : valable encore 10 minutes. Rotation dans la période de grâce : l'actuel prend sa place.
+      const keep = current ? h : d.refresh_hash;
+      const upd0 = o.db.from("link_devices").update({ ...t.row, prev_refresh_hash: keep, prev_refresh_until: new Date(now() + REFRESH_GRACE_MS).toISOString() }).eq("id", d.id).is("revoked_at", null);
+      const { data: upd, error } = await (current ? upd0.eq("refresh_hash", h) : upd0.eq("prev_refresh_hash", h)).select("id");
       if (error || !Array.isArray(upd) || upd.length === 0) return { error: "server" }; // course perdue : un autre renouvellement a déjà tourné le jeton
       return { device_id: d.id, ...t.out };
     },

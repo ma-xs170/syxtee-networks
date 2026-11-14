@@ -137,9 +137,12 @@ test("jetons : renouvellement HTTP, rotation, révocation, refus d'un appareil p
   const r1 = await app.inject({ method: "POST", url: "/v1/link/token/refresh", payload: { refresh: p.refresh } });
   assert.equal(r1.statusCode, 200);
   assert.notEqual(r1.json().token, p.token);
-  assert.equal((await app.inject({ method: "POST", url: "/v1/link/token/refresh", payload: { refresh: p.refresh } })).statusCode, 401); // rejoué
+  // Rejeu de l'ancien jeton : toléré pendant la période de grâce (la réponse de la rotation a pu se perdre), jamais un jeton inconnu.
+  const r1b = await app.inject({ method: "POST", url: "/v1/link/token/refresh", payload: { refresh: p.refresh } });
+  assert.equal(r1b.statusCode, 200);
+  assert.equal((await app.inject({ method: "POST", url: "/v1/link/token/refresh", payload: { refresh: `slr_${"0".repeat(48)}` } })).statusCode, 401);
   assert.equal((await app.inject({ method: "GET", url: "/v1/link/backups", headers: { authorization: `Bearer ${p.token}` } })).statusCode, 401); // ancien accès mort
-  assert.equal((await app.inject({ method: "GET", url: "/v1/link/backups", headers: { authorization: `Bearer ${r1.json().token}` } })).statusCode, 200);
+  assert.equal((await app.inject({ method: "GET", url: "/v1/link/backups", headers: { authorization: `Bearer ${r1b.json().token}` } })).statusCode, 200); // le dernier renouvellement fait foi
 
   // Registre : jamais d'empreinte ; renommer ; révoquer.
   const list = (await app.inject({ method: "GET", url: "/v1/me/link/devices", headers: user })).json();

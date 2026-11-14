@@ -1,4 +1,7 @@
 {
+  "0.9.7": [
+    "Connexion : le compte n'est plus déconnecté après une coupure réseau pendant le renouvellement, ni si le fichier de réglages est abîmé (copie de secours)"
+  ],
   "0.9.6": [
     "Connexion : le lien de liaison du compte ouvre syxtee-networks.fr (l'ancienne adresse vercel.app n'est plus utilisée, même dans les réglages déjà enregistrés)"
   ],

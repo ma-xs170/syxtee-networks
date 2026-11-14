@@ -1,4 +1,4 @@
-import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { cleanDirector, DEFAULT_DIRECTOR, type DirectorConfig } from "./director.ts";
@@ -52,11 +52,22 @@ function recordOf<T>(v: unknown, ok: (x: unknown) => boolean): Record<string, T>
 export const dir = () => process.env.SYXTEE_LINK_HOME || join(homedir(), ".syxtee-link");
 const file = () => join(dir(), "config.json");
 
+function readJson(path: string): Partial<LinkConfig> | null {
+  try {
+    if (!existsSync(path)) return null;
+    const j = JSON.parse(readFileSync(path, "utf8")) as unknown;
+    return j && typeof j === "object" ? (j as Partial<LinkConfig>) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function load(): LinkConfig {
   const d = defaults();
-  if (!existsSync(file())) return d;
+  // Fichier absent ou abîmé (coupure pendant l'écriture) : on reprend la dernière copie saine plutôt que de déconnecter le compte.
+  const j = readJson(file()) ?? readJson(`${file()}.bak`);
+  if (!j) return d;
   try {
-    const j = JSON.parse(readFileSync(file(), "utf8")) as Partial<LinkConfig>;
     return {
       core: typeof j.core === "string" && /^https?:\/\//.test(j.core) ? j.core.replace(/\/$/, "") : d.core,
       site: typeof j.site === "string" && /^https:\/\//.test(j.site) && !/\.vercel\.app(\/|$)/.test(j.site) ? j.site.replace(/\/$/, "") : d.site,
@@ -86,6 +97,12 @@ export function save(c: LinkConfig) {
   mkdirSync(dir(), { recursive: true, mode: 0o700 });
   const tmp = `${file()}.tmp`;
   writeFileSync(tmp, JSON.stringify(c, null, 2), { mode: 0o600 });
+  try {
+    if (existsSync(file()) && readJson(file())) copyFileSync(file(), `${file()}.bak`);
+    chmodSync(`${file()}.bak`, 0o600);
+  } catch {
+    // La copie de secours est facultative.
+  }
   renameSync(tmp, file());
   try {
     chmodSync(file(), 0o600);

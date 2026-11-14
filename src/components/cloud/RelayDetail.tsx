@@ -75,9 +75,9 @@ function Session({ since }: { since: number | null }) {
   return <Tile label="Session" value={since ? `${p(Math.floor(sec / 3600))}:${p(Math.floor((sec % 3600) / 60))}:${p(sec % 60)}` : "00:00:00"} tone={since ? undefined : "off"} hint={since ? `Début du flux : ${fmtFull(since)}` : "Aucun direct en cours"} />;
 }
 
-export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; relayId: string }) {
+export default function RelayDetail({ coreUrl, relayId, view = "live", children }: { coreUrl: string; relayId: string; view?: "live" | "stats"; children?: React.ReactNode }) {
   const { relays, error, now } = useControl(coreUrl);
-  const range: RangeId = "15m";
+  const [range, setRange] = useState<RangeId>("15m");
   const [hist, setHist] = useState<Sample[]>([]);
   const [conns, setConns] = useState<Record<string, PeerRow[]>>({});
   const [full, setFull] = useState(false);
@@ -150,6 +150,7 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
         <Tile label="Modems actifs" value={live ? `${sum.active} / ${peers.length}` : "—"} tone={live && sum.weak > 0 ? "warn" : undefined} />
       </section>
 
+      {view === "live" && (
       <div className="flex flex-wrap items-start gap-4 p-4">
         <div className="w-full min-w-0 max-w-[44rem] lg:w-[44rem]">
           {live ? (
@@ -195,12 +196,23 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
           </dl>
         </aside>
       </div>
+      )}
 
-      <section aria-label="Chronologie" className="border-t border-line">
+      {view === "stats" && (
+      <section aria-label="Chronologie">
         <PanelHead
           title="Chronologie"
           right={
-            <span className="hidden font-mono text-[11px] tabular-nums text-muted sm:inline">{ht != null && ht >= end - win && ht <= end ? fmtFull(ht) : ""}</span>
+            <div className="flex items-center gap-3">
+              <span className="hidden font-mono text-[11px] tabular-nums text-muted sm:inline">{ht != null && ht >= end - win && ht <= end ? fmtFull(ht) : ""}</span>
+              <div role="group" aria-label="Période" className="inline-flex rounded-md border border-line p-0.5 font-mono text-[11px]">
+                {RANGES.map((r) => (
+                  <button key={r.id} type="button" aria-pressed={range === r.id} onClick={() => setRange(r.id)} className={`rounded px-2.5 py-0.5 transition-colors ${range === r.id ? "bg-foreground text-background" : "text-muted hover:text-foreground"}`}>
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           }
         />
         <Track label="Débit utile" value={at(bitrateSeries, (v) => fmtKbps(v), sm ? fmtKbps(sm.bitrate) : "—")}>
@@ -217,6 +229,8 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
           <div className="min-w-0 px-2 pb-2"><TimeAxis window={win} end={end} /></div>
         </div>
       </section>
+      )}
+      {children}
     </div>
   );
 }

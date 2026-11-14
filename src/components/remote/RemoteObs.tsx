@@ -8,6 +8,7 @@ import DirectSimple from "./DirectSimple";
 import { SourceEditor } from "./EditTools";
 import LivePanel from "./LivePanel";
 import MixerPanel from "./MixerPanel";
+import Multiview from "./Multiview";
 import ProgramView from "./ProgramView";
 import ScenesPanel from "./ScenesPanel";
 import SettingsPanel from "./SettingsPanel";
@@ -77,6 +78,7 @@ export default function RemoteObs({
   const landscape = useLandscape();
   const [tab, setTab] = useState<Tab>("scenes");
   const [autoOpen, setAutoOpen] = useState(false);
+  const [multiview, setMultiview] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [edit, setEdit] = useState<"props" | "filters" | null>(null);
@@ -110,7 +112,7 @@ export default function RemoteObs({
 
   return (
     <div className="flex h-dvh w-full min-w-0 max-w-[100vw] flex-col overflow-hidden overscroll-none bg-background pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] text-sm text-foreground [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [touch-action:manipulation] max-lg:pb-[env(safe-area-inset-bottom)]">
-      <TopBar o={o} desktop={desktop} onAuto={() => setAutoOpen(true)} onOptions={() => setOptionsOpen(true)} invited={!!invite} />
+      <TopBar o={o} desktop={desktop} onAuto={() => setAutoOpen(true)} onOptions={() => setOptionsOpen(true)} onMultiview={() => setMultiview(true)} invited={!!invite} />
       {!desktop && <StatusStrip o={o} desktop={desktop} />}
       <Alerts o={o} invited={!!invite} />
 
@@ -197,6 +199,7 @@ export default function RemoteObs({
       <Sheet open={!!edit && !!o.selectedItem} onClose={() => setEdit(null)} title={`${edit === "filters" ? "Filtres" : "Propriétés"} · ${o.selectedItem?.name ?? ""}`}>
         {edit && o.selectedItem && <SourceEditor call={o.call} sceneName={o.editing} itemId={o.selectedItem.id} name={o.selectedItem.name} kind={o.selectedItem.kind} canEdit={o.ready && o.canLive} only={edit} />}
       </Sheet>
+      {multiview && <Multiview o={o} onClose={() => setMultiview(false)} />}
       <Confirm ask={ask} onClose={() => setAsk(null)} />
       <Toasts list={o.toasts.list} dismiss={o.toasts.dismiss} />
     </div>
@@ -263,7 +266,7 @@ function CollectionMenu({ o }: { o: Obs }) {
 
 // ── Barre du haut ────────────────────────────────────────────────────────────────────────────────────────────────────
 
-function TopBar({ o, desktop, onAuto, onOptions, invited }: { o: Obs; desktop: boolean; onAuto: () => void; onOptions: () => void; invited: boolean }) {
+function TopBar({ o, desktop, onAuto, onOptions, onMultiview, invited }: { o: Obs; desktop: boolean; onAuto: () => void; onOptions: () => void; onMultiview: () => void; invited: boolean }) {
   const autoOn = !!o.roles && (o.roles.enabled || !!o.roles.autoEnabled);
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b border-line px-3 lg:h-12 lg:px-3.5">
@@ -284,6 +287,10 @@ function TopBar({ o, desktop, onAuto, onOptions, invited }: { o: Obs; desktop: b
         <div className="ml-3 flex min-w-0 items-center gap-3">
           <span aria-hidden="true" className="h-5 w-px shrink-0 bg-line" />
           <CollectionMenu o={o} />
+          <button type="button" disabled={!o.ready} onClick={onMultiview} className="flex h-8 items-center gap-1.5 rounded-md px-2 text-[13px] hover:bg-foreground/[0.06] disabled:opacity-40">
+            <Icon name="layers" className="size-4 text-muted" />
+            Multiview
+          </button>
         </div>
       )}
       <div className="ml-auto flex min-w-0 items-center gap-3">

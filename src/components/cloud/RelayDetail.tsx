@@ -159,16 +159,17 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
               <div className="grid aspect-video place-items-center rounded-2xl border border-dashed border-line px-6 text-center text-sm text-muted">Hors ligne : l&apos;aperçu revient dès que le flux arrive.</div>
             )}
           </div>
-          <div className="flex shrink-0 flex-col items-stretch gap-3 self-stretch">
-            <StereoMeter audio={live ? current.media?.audio : null} className="min-h-0 flex-1 justify-center" />
+          <div className="flex max-h-[20rem] shrink-0 flex-col items-stretch gap-3 self-start">
+            <StereoMeter audio={live ? current.media?.audio : null} className="h-[20rem] max-h-full justify-center" />
           </div>
         </div>
 
-        <section aria-label="Connexions" className="min-w-0 flex-1 basis-[16rem]">
+        <section aria-label="Modems" className="-my-4 flex min-w-0 flex-1 basis-[16rem] flex-col self-stretch border-l border-line">
+          <PanelHead title="Modems" right={peers.length > 0 ? <span className="font-mono text-[11px] text-muted">{peers.length} connecté{peers.length > 1 ? "s" : ""}</span> : undefined} />
           {peers.length === 0 && gone.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-line px-3 py-8 text-center text-sm text-muted">{live ? "Flux en direct sans détail par connexion (flux SRT simple)." : "Aucune connexion : le direct n'est pas démarré."}</p>
+            <p className="px-3 py-8 text-center text-sm text-muted">{live ? "Flux en direct sans détail par connexion (flux SRT simple)." : "Aucune connexion : le direct n'est pas démarré."}</p>
           ) : (
-            <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(16rem,1fr))]">
+            <div className="grid gap-3 p-3 [grid-template-columns:repeat(auto-fill,minmax(16rem,1fr))]">
               {peers.map((p, i) => <ModemTile key={p.connection_id} index={i + 1} peer={p} history={conns[p.connection_id] ?? []} window={win} total={sum.total} />)}
               {gone.map((id, i) => <ModemTile key={id} index={peers.length + i + 1} peer={{ connection_id: id, bitrate: 0 }} history={conns[id] ?? []} window={win} total={sum.total} />)}
             </div>

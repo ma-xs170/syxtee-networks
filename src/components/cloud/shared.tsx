@@ -204,7 +204,7 @@ export function ModemTile({ index, peer, history, window, total }: { index: numb
   return (
     <article className="rounded-lg border border-line bg-surface p-3" aria-label={`Modem ${index}`}>
       <header className="flex items-center gap-2">
-        <span className="font-mono text-[11px] text-muted">{String(index).padStart(2, "0")}</span>
+        <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-foreground">Modem {index}</span>
         <span className={`h-1.5 w-1.5 rounded-full ${lv.dot}`} aria-hidden="true" />
         <span className={`font-mono text-[11px] uppercase tracking-[0.08em] ${lv.text}`}>{lv.label}</span>
         <span className="ml-auto font-mono text-sm tabular-nums">{fmtKbps(peer.bitrate)}</span>

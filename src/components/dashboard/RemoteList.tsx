@@ -75,7 +75,7 @@ function PluginBar({ coreUrl, latest }: { coreUrl: string; latest: PluginLatest 
   );
 }
 
-function Card({ d, now, pushing, outdated, coreUrl }: { d: LinkDevice; now: number; pushing: string[]; outdated: boolean; coreUrl: string }) {
+function Card({ d, now, pushing, outdated, coreUrl, onRemove }: { d: LinkDevice; now: number; pushing: string[]; outdated: boolean; coreUrl: string; onRemove: (id: string) => Promise<boolean> }) {
   const [ask, setAsk] = useState<ConfirmAsk>(null);
   const [state, setState] = useState<"idle" | "launching" | "sent">("idle");
   const [error, setError] = useState("");
@@ -92,6 +92,15 @@ function Card({ d, now, pushing, outdated, coreUrl }: { d: LinkDevice; now: numb
       setState("idle");
     }
   }
+  /** Retire le poste du compte : ses accès sont coupés tout de suite (le plugin devra être relié de nouveau pour revenir). */
+  const removeAsk = () =>
+    setAsk({
+      title: "Supprimer ce poste ?",
+      text: `${d.name} sera retiré de ton compte${d.online ? " et déconnecté tout de suite" : ""}. Pour le remettre, il faudra relier de nouveau le plugin OBS.`,
+      ok: "Oui, supprimer",
+      danger: true,
+      run: () => void onRemove(d.id).then((ok) => !ok && setError("Suppression impossible pour le moment.")),
+    });
   const launchAsk = () => setAsk({ title: "Lancer OBS ?", text: `Êtes-vous sûr de vouloir lancer OBS sur ${d.name} ? Il s'ouvre à distance, sur l'ordinateur.`, ok: "Oui, lancer OBS", run: () => void launch() });
 
   return (
@@ -108,6 +117,10 @@ function Card({ d, now, pushing, outdated, coreUrl }: { d: LinkDevice; now: numb
           {d.online && pushing.length > 0 && ` · pousse ${pushing.join(", ")}`}
         </p>
       </div>
+      <div className="flex items-center gap-2">
+      <button type="button" onClick={removeAsk} aria-label={`Supprimer ${d.name}`} title="Supprimer ce poste" className="grid size-10 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-foreground/10 hover:text-bad">
+        <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" /></svg>
+      </button>
       {d.online ? (
         <Link href={`/controle-a-distance/${d.id}`} className={pilot}>
           Piloter OBS
@@ -121,13 +134,15 @@ function Card({ d, now, pushing, outdated, coreUrl }: { d: LinkDevice; now: numb
           {error && <p role="alert" className="max-w-[28ch] text-[13px] text-warn sm:text-right">{error}</p>}
         </div>
       )}
+      </div>
+      {d.online && error && <p role="alert" className="text-[13px] text-warn">{error}</p>}
       <Confirm ask={ask} onClose={() => setAsk(null)} />
     </li>
   );
 }
 
 export default function RemoteList({ coreUrl, demo }: { coreUrl: string; demo?: DevicesDemo }) {
-  const { devices, latest, error } = useLinkDevices(coreUrl, 3000, demo);
+  const { devices, latest, error, revoke } = useLinkDevices(coreUrl, 3000, demo);
   const live = useLiveStatus();
   const pushing = (live.state?.relays ?? []).filter((r) => r.live).map((r) => r.name);
   const [now, setNow] = useState(() => Date.now());
@@ -167,7 +182,7 @@ export default function RemoteList({ coreUrl, demo }: { coreUrl: string; demo?: 
           ) : (
             <ul className="grid gap-3">
               {(list as LinkDevice[]).map((d) => (
-                <Card key={d.id} d={d} now={now} pushing={pushing} outdated={pluginState(d.plugin_version, latest) === "outdated"} coreUrl={coreUrl} />
+                <Card key={d.id} d={d} now={now} pushing={pushing} outdated={pluginState(d.plugin_version, latest) === "outdated"} coreUrl={coreUrl} onRemove={revoke} />
               ))}
             </ul>
           )}

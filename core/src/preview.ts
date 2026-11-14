@@ -80,8 +80,14 @@ export function createPreviews(o: { dir: string; host: string; port: number; int
     let delay = 2000;
     const listen = () => {
       if (pr.stopped) return;
-      const c = spawn("ffmpeg", audioArgs({ host: o.host, port: o.port, playId: k.play_id }), { stdio: ["ignore", "pipe", "ignore"] });
+      const c = spawn("ffmpeg", audioArgs({ host: o.host, port: o.port, playId: k.play_id }), { stdio: ["ignore", "pipe", "pipe"] });
       pr.child = c;
+      let errLogged = false;
+      c.stderr.on("data", (d: Buffer) => {
+        if (errLogged) return;
+        errLogged = true;
+        o.log(`vumètre ${id} : ${d.toString().trim().split("\n")[0].slice(0, 200)}`);
+      });
       let buf = "";
       let cur = { l: -90, r: -90, peak_l: -90, peak_r: -90 };
       let got = false;

@@ -212,8 +212,7 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
       )}
 
       <section aria-label="Chronologie" className="space-y-3 p-4">
-        <div className="flex items-center justify-between gap-3 px-1">
-          <h2 className="font-mono text-[11px] font-normal uppercase tracking-[0.14em] text-muted">Chronologie</h2>
+        <div className="flex items-center justify-end gap-3 px-1">
             <div className="flex items-center gap-3">
               <span className="hidden font-mono text-[11px] tabular-nums text-muted sm:inline">{ht != null && ht >= end - win && ht <= end ? fmtFull(ht) : ""}</span>
               {view === "stats" && <div role="group" aria-label="Période" className="inline-flex rounded-md border border-line p-0.5 font-mono text-[11px]">

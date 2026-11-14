@@ -6,7 +6,7 @@ import { renameRelayAction } from "@/app/(dashboard)/dashboard/serveurs/actions"
 import { coreFetch } from "@/components/dashboard/coreClient";
 import StreamPreview from "@/components/dashboard/StreamPreview";
 import { dbToFill, efficiency, fmtKbps, levelOf, quality, qualityLevel, seriesStats, sortPeers, summarize } from "@/lib/control-center";
-import { Area, duration, formatOf, LEVEL, Meter, ModemTile, nf, PanelHead, RANGES, Stat, Tile, TimeAxis, Track, fmtFull, nearest, type Hover, type PeerRow, type RangeId, type Sample } from "./shared";
+import { Area, formatOf, LEVEL, Meter, ModemTile, nf, PanelHead, RANGES, Stat, Tile, TimeAxis, Track, fmtFull, nearest, type Hover, type PeerRow, type RangeId, type Sample } from "./shared";
 import { useControl } from "./useControl";
 
 // Page d'un flux : aperçu en haut à gauche, infos (nom, format) à droite, puis toutes les mesures en direct,
@@ -175,7 +175,7 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
           </div>
         </div>
 
-        <aside aria-label="Infos" className="w-full self-start rounded-lg border border-line bg-surface sm:w-[22rem]">
+        <aside aria-label="Infos" className="w-full self-start rounded-lg border border-line bg-surface sm:w-[22rem] lg:ml-auto">
           <PanelHead title="Infos" />
           <dl>
             <Info label="Nom"><Rename id={current.id} name={current.name} /></Info>

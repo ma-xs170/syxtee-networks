@@ -234,14 +234,16 @@ export function ModemTile({ index, peer, history, window, total }: { index: numb
 }
 
 const METER_TICKS = [0, -6, -12, -24, -36, -48];
-const METER_GRADIENT = "linear-gradient(to top, var(--ok) 0%, var(--ok) 70%, var(--warn) 70%, var(--warn) 90%, var(--bad) 90%)";
+// Même jauge que le vumètre du contrôle à distance : dégradé vert, orange puis rouge, gamme toujours visible en teinte sombre.
+const METER_GRADIENT = "linear-gradient(to top, var(--ok) 0%, var(--ok) 55%, var(--warn) 80%, var(--bad) 100%)";
 
 function Bar({ rms, peak, label, ticks = false, onVideo, name }: { rms: number | null; peak: number | null; label?: string; ticks?: boolean; onVideo: boolean; name: string }) {
   const fill = dbToFill(rms);
   return (
     <div className="flex h-full flex-col items-center gap-1">
-      <div className="relative w-2.5 flex-1">
-        <div className={`absolute inset-0 overflow-hidden rounded-sm ${onVideo ? "bg-white/20" : "bg-foreground/10"}`} role="meter" aria-label={name} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={rms == null ? undefined : Math.round(rms)}>
+      <div className="relative w-1 flex-1">
+        <div className="absolute inset-0 overflow-hidden rounded-[1px]" role="meter" aria-label={name} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={rms == null ? undefined : Math.round(rms)}>
+          <div className="absolute inset-0 opacity-[0.18]" style={{ background: METER_GRADIENT }} />
           <div className="absolute inset-0 transition-[clip-path] duration-200 motion-reduce:transition-none" style={{ background: METER_GRADIENT, clipPath: `inset(${(1 - fill) * 100}% 0 0 0)` }} />
           {peak != null && peak > -60 && <span aria-hidden="true" className="absolute inset-x-0 h-0.5 bg-foreground transition-[bottom] duration-200 motion-reduce:transition-none" style={{ bottom: `calc(${dbToFill(peak) * 100}% - 1px)` }} />}
         </div>

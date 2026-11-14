@@ -56,7 +56,7 @@ function Rename({ id, name }: { id: string; name: string }) {
 
 function Info({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-line px-3 py-2.5 last:border-0">
+    <div className="flex flex-1 items-center justify-between gap-4 border-b border-line px-3 py-2.5 last:border-0">
       <dt className="shrink-0 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{label}</dt>
       <dd className="min-w-0 text-right font-mono text-[13px] tabular-nums">{children}</dd>
     </div>
@@ -175,9 +175,9 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
           )}
         </section>
 
-        <aside aria-label="Infos" className="w-full self-start rounded-lg border border-line bg-surface sm:w-[22rem]">
+        <aside aria-label="Infos" className="-mb-4 -mt-4 -mr-4 flex w-full flex-col self-stretch border-l border-line bg-surface sm:w-[22rem]">
           <PanelHead title="Infos" />
-          <dl>
+          <dl className="flex flex-1 flex-col">
             <Info label="Nom"><Rename id={current.id} name={current.name} /></Info>
             <Info label="Format">{formatOf(current.media)}</Info>
             <Info label="Codec">{current.media?.codec ? current.media.codec.toUpperCase() : "—"}</Info>

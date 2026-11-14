@@ -88,7 +88,7 @@ export default function MonthView({
   const listEvents = forDay(listDay);
   return (
     <>
-    <div onPointerDownCapture={(e) => (pointer.current = e.pointerType)} className="select-none overflow-hidden rounded-2xl border border-line lg:flex lg:h-[calc(100dvh-11.5rem)] lg:min-h-[28rem] lg:flex-col" role="grid" aria-label="Calendrier du mois">
+    <div onPointerDownCapture={(e) => (pointer.current = e.pointerType)} className="select-none overflow-hidden rounded-2xl border border-line lg:flex lg:h-[calc(100dvh-8rem)] lg:min-h-[28rem] lg:flex-col" role="grid" aria-label="Calendrier du mois">
       <div className="grid grid-cols-[repeat(7,minmax(0,1fr))] border-b border-line bg-surface text-center font-mono text-[11px] uppercase tracking-[0.12em] text-muted" role="row">
         {days.slice(0, 7).map((d) => (
           <div key={d.getDay()} role="columnheader" className="py-2.5">

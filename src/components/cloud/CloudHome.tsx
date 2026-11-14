@@ -102,7 +102,7 @@ export default function CloudHome({ coreUrl }: { coreUrl: string }) {
                         }}
                         className={`flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors ${picked === r.id ? "bg-foreground/[0.07]" : "hover:bg-foreground/[0.04]"}`}
                       >
-                        <span className={`h-2.5 w-2.5 shrink-0 rounded-[2px] ${r.live ? "bg-bad" : "bg-muted/50"}`} aria-hidden="true" />
+                        <span className={`h-6 w-1.5 shrink-0 rounded-full ${r.live ? "bg-bad" : "bg-muted/50"}`} aria-hidden="true" />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium">{r.name}</span>
                           <span className="block truncate font-mono text-[11px] tabular-nums text-muted">{r.live && r.sample ? `${fmtKbps(r.sample.bitrate)}${efficiency(r.peers) != null ? ` · ${efficiency(r.peers)} %` : ""}` : "Hors ligne"}</span>

@@ -160,14 +160,14 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
           )}
         </div>
 
-        <section aria-label="VU-mètre" className="-my-4 flex shrink-0 flex-col self-stretch border-l border-line sm:min-w-[11rem]">
+        <section aria-label="VU-mètre" className="order-2 -my-4 flex shrink-0 flex-col self-stretch border-l border-line sm:min-w-[11rem]">
           <PanelHead title="VU-mètre" />
           <div className="flex flex-1 items-center justify-center px-6 py-3">
             <StereoMeter audio={live ? current.media?.audio : null} className="h-[20rem] justify-center" />
           </div>
         </section>
 
-        <section aria-label="Modems" className="-my-4 flex min-w-0 flex-1 basis-[16rem] flex-col self-stretch border-l border-line">
+        <section aria-label="Modems" className="order-1 -my-4 flex min-w-0 flex-1 basis-[16rem] flex-col self-stretch border-l border-line">
           <PanelHead title="Modems" right={peers.length > 0 ? <span className="font-mono text-[11px] text-muted">{peers.length} connecté{peers.length > 1 ? "s" : ""}</span> : undefined} />
           {peers.length === 0 && gone.length === 0 ? (
             <p className="px-3 py-8 text-center text-sm text-muted">{live ? "Flux en direct sans détail par connexion (flux SRT simple)." : "Aucune connexion : le direct n'est pas démarré."}</p>

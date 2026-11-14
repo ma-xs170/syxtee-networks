@@ -6,7 +6,7 @@ import { delta, fmtAgo, fmtDuration, fmtInt, type Overview as OverviewData, type
 import { pluginState } from "@/lib/plugin";
 import { DailyBars } from "./charts";
 import { apiFetch } from "./apiFetch";
-import { Card, Column, DkButton, DkLink, DkTabButtons, ListRow, PageTitle, StatusBadge } from "./kit";
+import { Card, Column, DkButton, DkLink, DkTabButtons, ListRow, PageTitle } from "./kit";
 import RelayAnalysis from "@/components/relais/RelayAnalysis";
 import { useLiveStatus } from "./LiveStatus";
 import UpcomingLives from "./UpcomingLives";
@@ -114,6 +114,46 @@ function LiveAnalysis({ coreUrl }: { coreUrl: string }) {
   );
 }
 
+/** Poste OBS en petit : même carte que « Contrôle à distance », « Piloter OBS » (en ligne) ou « Lancer OBS » (hors ligne, après confirmation). */
+function DeviceMini({ d, coreUrl }: { d: { id: string; name: string; online: boolean; plugin_version: string }; coreUrl: string }) {
+  const [ask, setAsk] = useState<ConfirmAsk>(null);
+  const [state, setState] = useState<"idle" | "launching" | "sent">("idle");
+  const [error, setError] = useState("");
+  async function launch() {
+    setState("launching");
+    setError("");
+    try {
+      await sendOnce(coreUrl, d.id, "guardian.launchObs", {}, 20_000);
+      setState("sent");
+    } catch (e) {
+      setError((e as Error).message);
+      setState("idle");
+    }
+  }
+  const btn = "inline-flex h-8 shrink-0 items-center justify-center whitespace-nowrap rounded-full btn-tonal px-4 text-[13px] font-medium transition-colors disabled:opacity-60";
+  return (
+    <div className="tile flex items-center justify-between gap-3 px-4 py-3">
+      <div className="min-w-0">
+        <p className={`flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] ${d.online ? "text-foreground" : "text-muted"}`}>
+          <span aria-hidden="true" className={`size-1.5 rounded-full ${d.online ? "bg-foreground" : "border border-muted"}`} />
+          {d.online ? "En ligne" : "Hors ligne"}
+        </p>
+        <p className="mt-1 truncate text-[15px] font-semibold tracking-tight">{d.name}</p>
+        <p className="font-mono text-[11px] text-muted">Plugin {d.plugin_version || "?"}</p>
+        {error && <p role="alert" className="mt-1 text-[12px] text-warn">{error}</p>}
+      </div>
+      {d.online ? (
+        <Link href={`/controle-a-distance/${d.id}`} className={btn}>Piloter OBS</Link>
+      ) : (
+        <button type="button" disabled={state !== "idle"} className={btn} onClick={() => setAsk({ title: "Lancer OBS ?", text: `Êtes-vous sûr de vouloir lancer OBS sur ${d.name} ? Il s'ouvre à distance, sur l'ordinateur.`, ok: "Oui, lancer OBS", run: () => void launch() })}>
+          {state === "launching" ? "Envoi…" : state === "sent" ? "Lancement…" : "Lancer OBS"}
+        </button>
+      )}
+      <Confirm ask={ask} onClose={() => setAsk(null)} />
+    </div>
+  );
+}
+
 export default function Overview({ initial, coreUrl = "", demo, upcoming, canEditCalendar = true }: { initial: OverviewData; coreUrl?: string; demo?: DevicesDemo; upcoming?: LiveEvent[]; canEditCalendar?: boolean }) {
   const [now] = useState(() => Date.now());
   const [range, setRange] = useState<Range>(initial.range);
@@ -186,26 +226,16 @@ export default function Overview({ initial, coreUrl = "", demo, upcoming, canEdi
         </Card>
 
         <div className="grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-2">
-          <Card>
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-[16px] text-foreground">Appareils</h2>
-              <Link href="/dashboard/appareils" className="text-[13px] text-muted hover:text-foreground">Gérer</Link>
-            </div>
-            <ul className="mt-2">
-              {devices === null ? (
-                <li className="dk-row text-muted">Chargement…</li>
-              ) : devices.length === 0 ? (
-                <li className="dk-row text-muted">Aucun appareil relié.</li>
-              ) : (
-                devices.slice(0, 3).map((d) => (
-                  <li key={d.id}>
-                    <ListRow title={d.name} sub={d.plugin_version ? `Plugin ${d.plugin_version}` : undefined} trailing={<StatusBadge tone={d.online ? "ok" : "neutral"}>{d.online ? "En ligne" : "Hors ligne"}</StatusBadge>} />
-                  </li>
-                ))
-              )}
-            </ul>
-            {outdated && latest && <p className="mt-2 text-[13px]" style={{ color: "var(--dk-amber)" }}>Plugin à mettre à jour ({latest.version}).</p>}
-          </Card>
+          <div className="flex min-w-0 flex-col gap-3">
+            {devices === null ? (
+              <p className="text-[14px] text-muted">Chargement…</p>
+            ) : devices.length === 0 ? (
+              <p className="text-[14px] text-muted">Aucun OBS relié.</p>
+            ) : (
+              devices.slice(0, 3).map((d) => <DeviceMini key={d.id} d={d} coreUrl={coreUrl} />)
+            )}
+            {outdated && latest && <p className="text-[13px]" style={{ color: "var(--dk-amber)" }}>Plugin à mettre à jour ({latest.version}).</p>}
+          </div>
 
           <Card>
             <div className="flex items-center justify-between gap-3">

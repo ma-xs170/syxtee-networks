@@ -163,7 +163,7 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
       </section>
 
       {view === "live" && (
-      <div className="flex flex-wrap items-stretch">
+      <div className="mx-4 my-3 flex flex-wrap items-stretch overflow-hidden rounded-2xl border border-line">
         <section aria-label="Aperçu" className="order-last flex w-full min-w-0 flex-col border-line lg:w-[40rem] lg:border-l">
           <PanelHead title="Aperçu" />
           {live ? (

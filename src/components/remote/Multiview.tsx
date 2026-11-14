@@ -10,21 +10,58 @@ import { useObs } from "./useObs";
 type Shot = { src: string };
 const GAP = "#9a9a9a"; // gris du Multiview d'OBS : le fond de la grille, vu entre les vignettes
 
-function Tile({ label, shot, tone, onPick, className = "" }: { label: string; shot?: Shot; tone?: "program" | "preview"; onPick?: () => void; className?: string }) {
-  const frame = tone === "program" ? "#d12a1f" : tone === "preview" ? "#2fbf4a" : "transparent";
+function Tile({
+  label,
+  shot,
+  tone,
+  onPick,
+  className = "",
+}: {
+  label: string;
+  shot?: Shot;
+  tone?: "program" | "preview";
+  onPick?: () => void;
+  className?: string;
+}) {
+  const frame =
+    tone === "program"
+      ? "#d12a1f"
+      : tone === "preview"
+        ? "#2fbf4a"
+        : "transparent";
   const body = (
     <>
       {shot && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={shot.src} alt="" draggable={false} className="absolute inset-0 size-full object-contain" />
+        <img
+          src={shot.src}
+          alt=""
+          draggable={false}
+          className="absolute inset-0 size-full object-contain"
+        />
       )}
-      {label && <span className="absolute inset-x-0 bottom-[2%] truncate px-2 text-center font-sans text-[clamp(11px,1.5vw,26px)] font-bold uppercase leading-none text-white [text-shadow:0_0_4px_#000]">{label}</span>}
-      {tone && <span aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ boxShadow: `inset 0 0 0 clamp(3px,0.45vw,8px) ${frame}` }} />}
+      {label && (
+        <span className="absolute inset-x-0 bottom-[2%] truncate px-2 text-center font-sans text-[clamp(9px,1.05vw,20px)] font-bold uppercase leading-none text-white [text-shadow:0_0_4px_#000]">
+          {label}
+        </span>
+      )}
+      {tone && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{ boxShadow: `inset 0 0 0 clamp(2px,0.3vw,6px) ${frame}` }}
+        />
+      )}
     </>
   );
   const cls = `relative min-h-0 min-w-0 overflow-hidden bg-black ${className}`;
   return onPick ? (
-    <button type="button" onClick={onPick} aria-label={`Scène ${label}`} className={`${cls} cursor-pointer`}>
+    <button
+      type="button"
+      onClick={onPick}
+      aria-label={`Scène ${label}`}
+      className={`${cls} cursor-pointer`}
+    >
       {body}
     </button>
   ) : (
@@ -32,7 +69,15 @@ function Tile({ label, shot, tone, onPick, className = "" }: { label: string; sh
   );
 }
 
-export default function MultiviewScreen({ coreUrl, deviceId, rights }: { coreUrl: string; deviceId: string; rights: Rights }) {
+export default function MultiviewScreen({
+  coreUrl,
+  deviceId,
+  rights,
+}: {
+  coreUrl: string;
+  deviceId: string;
+  rights: Rights;
+}) {
   const o = useObs({ coreUrl, deviceId, rights });
   const [shots, setShots] = useState<Record<string, Shot>>({});
   const { call } = o;
@@ -40,7 +85,11 @@ export default function MultiviewScreen({ coreUrl, deviceId, rights }: { coreUrl
   const want = useRef({ program: "", preview: "", rest: [] as string[] });
   const preview = o.studioMode && o.preview ? o.preview : o.program;
   useEffect(() => {
-    want.current = { program: o.program, preview, rest: o.scenes.filter((s) => s !== o.program && s !== preview) };
+    want.current = {
+      program: o.program,
+      preview,
+      rest: o.scenes.filter((s) => s !== o.program && s !== preview),
+    };
   }, [o.program, preview, o.scenes]);
 
   useEffect(() => {
@@ -58,12 +107,30 @@ export default function MultiviewScreen({ coreUrl, deviceId, rights }: { coreUrl
           continue;
         }
         // Programme et aperçu (grands) reviennent une fois sur deux ; les autres vignettes tournent.
-        const name = i % 2 === 0 ? (i % 4 === 0 || w.preview === w.program ? w.program : w.preview) : (w.rest[Math.floor(i / 2) % Math.max(1, w.rest.length)] ?? w.program);
+        const name =
+          i % 2 === 0
+            ? i % 4 === 0 || w.preview === w.program
+              ? w.program
+              : w.preview
+            : (w.rest[Math.floor(i / 2) % Math.max(1, w.rest.length)] ??
+              w.program);
         const large = name === w.program || name === w.preview;
         i++;
         try {
-          const r = await call<{ imageData: string }>("GetSourceScreenshot", { sourceName: name, imageFormat: "jpg", imageWidth: large ? 960 : 320, imageHeight: large ? 540 : 180, imageCompressionQuality: 55 });
-          if (live && r?.imageData) setShots((s) => ({ ...s, [name]: { src: r.imageData } }));
+          const r = await call<{ imageData: string }>("GetSourceScreenshot", {
+            sourceName: name,
+            imageFormat: "jpg",
+            imageWidth: large ? 960 : 320,
+            imageHeight: large ? 540 : 180,
+            imageCompressionQuality: 55,
+          });
+          if (live && r?.imageData)
+            setShots((s) => ({
+              ...s,
+              [name]: {
+                src: r.imageData.replace(/^data:image\/jpg/, "data:image/jpeg"),
+              },
+            }));
         } catch {
           /* scène sans image (vide, supprimée) : on passe à la suivante */
         }
@@ -81,21 +148,55 @@ export default function MultiviewScreen({ coreUrl, deviceId, rights }: { coreUrl
   const rows = cells / 4;
   const editable = o.ready && o.canScenes;
   return (
-    <main
-      className="fixed inset-0 grid min-h-dvh gap-[0.5vmin] p-[0.5vmin]"
-      style={{ background: GAP, gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gridTemplateRows: `${rows <= 2 ? "2fr" : `${rows}fr`} repeat(${rows}, minmax(0, 1fr))` }}
-    >
-      <Tile label="Aperçu" shot={shots[preview]} tone={o.studioMode ? "preview" : undefined} className="col-span-2" />
-      <Tile label="Programme" shot={shots[o.program]} tone="program" className="col-span-2" />
-      {Array.from({ length: cells }, (_, n) => {
-        const sc = o.scenes[n];
-        return sc ? (
-          <Tile key={sc} label={sc} shot={shots[sc]} tone={sc === o.program ? "program" : o.studioMode && sc === preview ? "preview" : undefined} onPick={editable ? () => o.pick(sc) : undefined} />
-        ) : (
-          <Tile key={`vide-${n}`} label="" />
-        );
-      })}
-      {!o.ready && <p className="absolute inset-0 grid place-items-center bg-black/70 text-sm text-white">En attente d&apos;OBS…</p>}
+    <main className="fixed inset-0 grid min-h-dvh place-items-center bg-black">
+      <div
+        className="grid gap-[0.4vmin] p-[0.4vmin]"
+        style={{
+          background: GAP,
+          width: `min(100vw, calc(100dvh * 64 / ${(rows + 2) * 9}))`,
+          aspectRatio: `64 / ${(rows + 2) * 9}`,
+          gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+          gridTemplateRows: `${rows}fr repeat(${rows}, minmax(0, 1fr))`,
+        }}
+      >
+        <Tile
+          label="Aperçu"
+          shot={shots[preview]}
+          tone={o.studioMode ? "preview" : undefined}
+          className="col-span-2"
+        />
+        <Tile
+          label="Programme"
+          shot={shots[o.program]}
+          tone="program"
+          className="col-span-2"
+        />
+        {Array.from({ length: cells }, (_, n) => {
+          const sc = o.scenes[n];
+          return sc ? (
+            <Tile
+              key={sc}
+              label={sc}
+              shot={shots[sc]}
+              tone={
+                sc === o.program
+                  ? "program"
+                  : o.studioMode && sc === preview
+                    ? "preview"
+                    : undefined
+              }
+              onPick={editable ? () => o.pick(sc) : undefined}
+            />
+          ) : (
+            <Tile key={`vide-${n}`} label="" />
+          );
+        })}
+      </div>
+      {!o.ready && (
+        <p className="absolute inset-0 grid place-items-center bg-black/70 text-sm text-white">
+          En attente d&apos;OBS…
+        </p>
+      )}
     </main>
   );
 }

@@ -14,9 +14,9 @@ const GIVE_UP_MS = 5000;
 
 type Phase = "connecting" | "playing" | "failed";
 
-/** Qualité de l'aperçu, de la plus légère (0 : 360p, 0,5 Mbit/s) à la plus nette (2 : 720p, 2,5 Mbit/s). Le plugin applique le niveau (kbps + hauteur). */
-export type PreviewLevel = 0 | 1 | 2;
-export const PREVIEW_LABEL = ["360p", "540p", "720p"] as const;
+/** Qualité de l'aperçu, de la plus légère (0 : 360p, 0,5 Mbit/s) à la plus nette (3 : 1080p, 5 Mbit/s). Le plugin applique le niveau (kbps + hauteur). */
+export type PreviewLevel = 0 | 1 | 2 | 3;
+export const PREVIEW_LABEL = ["360p", "540p", "720p", "1080p"] as const;
 const DEFAULT_LEVEL: PreviewLevel = 1;
 const COOLDOWN_DOWN_MS = 12_000;
 const COOLDOWN_UP_MS = 45_000;
@@ -28,6 +28,7 @@ function connectionCap(): PreviewLevel {
   if (c.saveData || c.effectiveType === "slow-2g" || c.effectiveType === "2g" || c.effectiveType === "3g") return 0;
   if (typeof c.downlink === "number" && c.downlink < 2) return 0;
   if (typeof c.downlink === "number" && c.downlink < 5) return 1;
+  if (typeof c.downlink === "number" && c.downlink >= 10) return 3; // Chrome plafonne la mesure à 10 : très bonne connexion
   return 2;
 }
 

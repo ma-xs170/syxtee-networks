@@ -472,8 +472,8 @@ Json startWhip(const Json &d)
 	const QString server = d.value("server").toString();
 	if (!server.startsWith("https://") || server.size() > 400) throw Fail{"Adresse WHIP invalide."};
 	stopWhip();
-	const int kbps = std::min(3000, std::max(300, d.value("kbps").toInt(1200)));
-	const int height = std::min(720, std::max(270, d.value("height").toInt(540)));
+	const int kbps = std::min(6000, std::max(300, d.value("kbps").toInt(1200)));
+	const int height = std::min(1080, std::max(270, d.value("height").toInt(540)));
 	obs_video_info ovi;
 	if (!obs_get_video_info(&ovi) || !ovi.base_width || !ovi.base_height) throw Fail{"Pas de vidéo."};
 	const int width = int(std::lround(double(height) * ovi.base_width / ovi.base_height / 2.0)) * 2;

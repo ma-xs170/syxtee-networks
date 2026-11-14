@@ -19,11 +19,12 @@ import { fixLiveScene, fluxName } from "./livescene.ts";
 import { freshToken, refreshTokens } from "./tokens.ts";
 import { takeResume, writeStreaming } from "./state.ts";
 
-/** Niveaux de l'aperçu vidéo : du plus léger (connexion faible) au plus net. Le plugin accepte 300 à 3 000 kbit/s et 270 à 720 px de hauteur. */
+/** Niveaux de l'aperçu vidéo : du plus léger (connexion faible) au plus net. Le plugin accepte 300 à 6 000 kbit/s et 270 à 1 080 px de hauteur. */
 const PREVIEW_LEVELS = [
   { kbps: 500, height: 360 },
   { kbps: 1200, height: 540 },
   { kbps: 2500, height: 720 },
+  { kbps: 5000, height: 1080 },
 ] as const;
 
 export const VERSION = "0.9.7";
@@ -91,7 +92,7 @@ export class Agent {
   private relaysAt = 0;
   /** Aperçu vidéo (WHIP). `mode` : « video » (image + son), « jpeg » (repli, images sans son), « idle » (personne ne regarde). */
   private whip: { active: boolean; starting: boolean; failedAt: number; reason: string; touchedAt: number } = { active: false, starting: false, failedAt: 0, reason: "", touchedAt: 0 };
-  /** Niveau de qualité de l'aperçu demandé par le navigateur (0 : 360p, 1 : 540p, 2 : 720p), appliqué au prochain envoi WHIP. */
+  /** Niveau de qualité de l'aperçu demandé par le navigateur (0 : 360p, 1 : 540p, 2 : 720p, 3 : 1080p), appliqué au prochain envoi WHIP. */
   private previewLevel = 1;
   get whipReason() {
     return this.whip.reason;

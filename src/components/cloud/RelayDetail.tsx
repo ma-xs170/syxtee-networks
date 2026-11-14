@@ -153,7 +153,8 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
   const lossSeries = hist.map((s) => ({ t: s.t, v: s.dropped }));
   const lost = hist.reduce((a, s) => a + s.dropped, 0);
   const connIds = sortPeers(Object.keys(conns).map((connection_id) => ({ connection_id }))).map((c) => c.connection_id);
-  const gone = connIds.filter((id) => !peers.some((p) => p.connection_id === id));
+  // Connexion coupée : montrée seulement pendant la minute qui suit (un redémarrage ou une reconnexion crée une nouvelle connexion, les anciennes ne doivent pas s'empiler).
+  const gone = live ? connIds.filter((id) => !peers.some((p) => p.connection_id === id) && (conns[id]?.at(-1)?.t ?? 0) >= now - 60_000) : [];
   const end = bitrateSeries.length ? bitrateSeries[bitrateSeries.length - 1].t : now;
   const hover: Hover = { t: ht, set: setHt };
   // Valeur du relevé survolé ; sans survol, la valeur actuelle.

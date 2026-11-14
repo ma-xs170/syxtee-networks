@@ -109,9 +109,9 @@ export function Area({ points, window, end, max, className = "h-24", tone = "ok"
 
 export function PanelHead({ title, right }: { title: string; right?: ReactNode }) {
   return (
-    <div className="flex h-9 shrink-0 items-center justify-between gap-3 border-b border-line px-3">
+    <div className="relative flex h-9 shrink-0 items-center justify-center border-b border-line px-3">
       <h2 className="font-mono text-[11px] font-normal uppercase tracking-[0.14em] text-muted">{title}</h2>
-      {right}
+      {right && <span className="absolute right-3 top-1/2 -translate-y-1/2">{right}</span>}
     </div>
   );
 }

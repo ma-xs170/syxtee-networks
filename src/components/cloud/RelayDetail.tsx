@@ -60,8 +60,20 @@ const INFO_ICONS = {
   codec: <path d="m8 8-4 4 4 4m8-8 4 4-4 4m-3-10-2 12" />,
   protocole: <><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z" /></>,
   qualite: <path d="M4 18V9m5.3 9V5m5.4 13v-7M20 18V8" />,
+  debit: <path d="M3 12h3l2-6 4 12 3-9 2 3h4" />,
   audio: <path d="M4 10v4h3.5L12 18V6L7.5 10H4Zm11.5-.5a4 4 0 0 1 0 5m2.5-7.5a7.5 7.5 0 0 1 0 10" />,
 } as const;
+
+/** Mode de débit déduit des derniers relevés : CBR (débit presque constant), VBR (il suit la scène), ABR (variation modérée, l'encodeur l'ajuste). Rien n'est affiché sans assez de mesures. */
+function rateMode(points: { v: number }[]): { label: string; hint: string } | null {
+  const v = points.slice(-60).map((p) => p.v).filter((x) => x > 0);
+  if (v.length < 15) return null;
+  const mean = v.reduce((a, b) => a + b, 0) / v.length;
+  const cv = Math.sqrt(v.reduce((a, b) => a + (b - mean) ** 2, 0) / v.length) / mean;
+  if (cv < 0.1) return { label: "CBR", hint: "Débit constant." };
+  if (cv > 0.3) return { label: "VBR", hint: "Débit variable." };
+  return { label: "ABR", hint: "Débit adaptatif." };
+}
 
 function Info({ label, icon, children }: { label: string; icon: keyof typeof INFO_ICONS; children: React.ReactNode }) {
   return (
@@ -198,6 +210,12 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
             <Info label="Nom" icon="nom"><Rename id={current.id} name={current.name} /></Info>
             <Info label="Format" icon="format">{formatOf(current.media)}</Info>
             <Info label="Codec" icon="codec">{current.media?.codec ? current.media.codec.toUpperCase() : "—"}</Info>
+            <Info label="Débit" icon="debit">
+              {(() => {
+                const m = live ? rateMode(bitrateSeries) : null;
+                return m ? <span title={m.hint}>{m.label}</span> : "—";
+              })()}
+            </Info>
             <Info label="Protocole" icon="protocole">{current.protocol.toUpperCase()}</Info>
             <Info label="Qualité" icon="qualite">
               <span className="inline-flex items-center gap-1.5">

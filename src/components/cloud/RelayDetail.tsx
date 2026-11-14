@@ -152,7 +152,7 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
 
       {view === "live" && (
       <div className="flex flex-wrap items-start gap-4 p-4">
-        <div className="w-full min-w-0 max-w-[44rem] lg:w-[44rem]">
+        <div className="order-last -my-4 w-full min-w-0 max-w-[44rem] self-stretch pt-4 lg:w-[44rem] lg:border-l lg:border-line lg:pl-4">
           {live ? (
             <StreamPreview coreUrl={coreUrl} relayId={current.id} fullControl={{ full, setFull }} />
           ) : (
@@ -179,7 +179,7 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
           )}
         </section>
 
-        <aside aria-label="Infos" className="-mb-4 -mt-4 -mr-4 flex w-full flex-col self-stretch border-l border-line bg-surface sm:w-[22rem]">
+        <aside aria-label="Infos" className="order-first -mb-4 -ml-4 -mt-4 flex w-full flex-col self-stretch bg-surface sm:w-[22rem]">
           <PanelHead title="Infos" />
           <dl className="flex flex-1 flex-col">
             <Info label="Nom"><Rename id={current.id} name={current.name} /></Info>

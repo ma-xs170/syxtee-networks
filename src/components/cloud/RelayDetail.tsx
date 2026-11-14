@@ -211,8 +211,8 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
       </div>
       )}
 
-      <section aria-label="Chronologie" className="space-y-3 p-4">
-        <div className="flex items-center justify-end gap-3 px-1">
+      <section aria-label="Chronologie" className={`space-y-3 px-4 pb-4 ${view === "stats" ? "pt-4" : "pt-0"}`}>
+        {view === "stats" && <div className="flex items-center justify-end gap-3 px-1">
             <div className="flex items-center gap-3">
               <span className="hidden font-mono text-[11px] tabular-nums text-muted sm:inline">{ht != null && ht >= end - win && ht <= end ? fmtFull(ht) : ""}</span>
               {view === "stats" && <div role="group" aria-label="Période" className="inline-flex rounded-md border border-line p-0.5 font-mono text-[11px]">
@@ -223,7 +223,7 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
                 ))}
               </div>}
             </div>
-        </div>
+        </div>}
         <Track label="Débit utile" value={at(bitrateSeries, (v) => fmtKbps(v), sm ? fmtKbps(sm.bitrate) : "—")}>
           <Area points={bitrateSeries} window={win} end={end} hover={hover} fmt={fmtKbps} levels showMax className="h-24" />
         </Track>

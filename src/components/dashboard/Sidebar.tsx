@@ -58,7 +58,7 @@ const GROUPS: Group[] = [
     items: [
       { label: "Tableau de bord", href: "/dashboard", icon: SquaresFour },
       // Page à part (cloud.syxtee-networks.fr) : s'ouvre dans un nouvel onglet.
-      { label: "SYXTEE · CLOUD", href: "/dashboard/cloud", icon: Cloud, external: true },
+      { label: "Cloud", href: "/dashboard/cloud", icon: Cloud, external: true },
     ],
   },
   {

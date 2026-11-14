@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { dbToFill, fmtKbps, levelOf, seriesStats, share, type Level, type Peer, type Point } from "@/lib/control-center";
+import { useId, useState, type ReactNode } from "react";
+import { BAD, WARN, dbToFill, fmtKbps, levelOf, seriesStats, share, type Level, type Peer, type Point } from "@/lib/control-center";
 
 // Éléments communs aux pages Cloud : mêmes types, mêmes courbes, mêmes tuiles.
 
@@ -61,13 +61,14 @@ export function nearest(points: Point[], t: number): Point | null {
  * `hover` partage le survol entre plusieurs courbes (chronologie) ; sans lui, la courbe affiche sa propre infobulle (`fmt` met la valeur en forme).
  * `tone` "ok" = couleur d'état, "ink" = encre (graphiques sans état).
  */
-export function Area({ points, window, end, max, className = "h-24", tone = "ok", hover, fmt, showMax }: { points: Point[]; window: number; end?: number; max?: number; className?: string; tone?: "ok" | "ink"; hover?: Hover; fmt?: (v: number) => string; showMax?: boolean }) {
+export function Area({ points, window, end, max, className = "h-24", tone = "ok", hover, fmt, showMax, levels }: { levels?: boolean; points: Point[]; window: number; end?: number; max?: number; className?: string; tone?: "ok" | "ink"; hover?: Hover; fmt?: (v: number) => string; showMax?: boolean }) {
   const [own, setOwn] = useState<number | null>(null);
+  const gid = useId();
   const h: Hover = hover ?? { t: own, set: setOwn };
   if (points.length < 2) return <div className={`${className} grid place-items-center rounded-lg border border-dashed border-line text-xs text-muted`}>Pas encore de données</div>;
   const t1 = end ?? points[points.length - 1].t;
   const t0 = t1 - window;
-  const top = max ?? Math.max(1000, ...points.map((p) => p.v)) * 1.1;
+  const top = max ?? Math.max(levels ? WARN * 1.3 : 1000, ...points.map((p) => p.v)) * 1.1;
   const x = (t: number) => Math.max(0, Math.min(100, ((t - t0) / window) * 100));
   const y = (v: number) => 40 - Math.min(1, v / top) * 38;
   const line = points.map((p, i) => `${i ? "L" : "M"}${x(p.t).toFixed(2)} ${y(p.v).toFixed(2)}`).join("");
@@ -82,8 +83,18 @@ export function Area({ points, window, end, max, className = "h-24", tone = "ok"
     <div className="relative touch-pan-y" onPointerMove={onMove} onPointerDown={onMove} onPointerLeave={() => h.set(null)}>
       <svg viewBox="0 0 100 40" preserveAspectRatio="none" className={`${className} w-full ${color}`} role="img" aria-label={`Courbe, maximum ${nf.format(Math.round(top))}`}>
         <path d="M0 1H100M0 20H100M0 39H100" stroke="currentColor" className="text-foreground" strokeOpacity={0.1} strokeDasharray="1 3" vectorEffect="non-scaling-stroke" />
-        <path d={area} fill="currentColor" fillOpacity={tone === "ok" ? 0.55 : 0.12} />
-        <path d={line} fill="none" stroke="currentColor" strokeWidth={1.25} vectorEffect="non-scaling-stroke" />
+        {levels && (
+          <defs>
+            <linearGradient id={gid} gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="0" y2="40">
+              <stop offset={`${(y(WARN) / 40) * 100}%`} stopColor="var(--ok)" />
+              <stop offset={`${(y(WARN) / 40) * 100}%`} stopColor="var(--warn)" />
+              <stop offset={`${(y(BAD) / 40) * 100}%`} stopColor="var(--warn)" />
+              <stop offset={`${(y(BAD) / 40) * 100}%`} stopColor="var(--bad)" />
+            </linearGradient>
+          </defs>
+        )}
+        <path d={area} fill={levels ? `url(#${gid})` : "currentColor"} fillOpacity={levels ? 0.4 : tone === "ok" ? 0.55 : 0.12} />
+        <path d={line} fill="none" stroke={levels ? `url(#${gid})` : "currentColor"} strokeWidth={1.25} vectorEffect="non-scaling-stroke" />
       </svg>
       {showMax && fmt && <span aria-hidden="true" className="pointer-events-none absolute left-1.5 top-0.5 font-mono text-[10px] text-muted">{fmt(top)}</span>}
       {hit && (
@@ -120,7 +131,7 @@ export function Stat({ label, value, hint }: { label: string; value: string; hin
 }
 
 /** Tuile de la barre du haut : valeur en grand, libellé dessous, couleur d'état optionnelle, courbe optionnelle. */
-export function Tile({ label, value, tone, hint, spark }: { label: string; value: string; tone?: Level | "warn"; hint?: string; spark?: Point[] }) {
+export function Tile({ label, value, tone, hint, spark, levels }: { label: string; value: string; tone?: Level | "warn"; hint?: string; spark?: Point[]; levels?: boolean }) {
   const color = tone === "ok" ? "text-ok" : tone === "warn" ? "text-warn" : tone === "bad" ? "text-bad" : tone === "off" ? "text-muted" : "";
   return (
     <div className="flex min-w-[7.5rem] flex-1 items-center gap-3 rounded-lg bg-foreground/[0.05] px-3 py-2 transition-colors hover:bg-foreground/[0.09]" title={hint}>
@@ -128,21 +139,34 @@ export function Tile({ label, value, tone, hint, spark }: { label: string; value
         <p className={`truncate text-xl font-semibold leading-tight tabular-nums tracking-tight ${color}`}>{value}</p>
         <p className="truncate font-mono text-[11px] leading-tight text-muted">{label}</p>
       </div>
-      {spark && <Spark points={spark} className={`ml-auto h-8 w-16 shrink-0 ${color}`} />}
+      {spark && <Spark points={spark} levels={levels} className={`ml-auto h-8 w-16 shrink-0 ${color}`} />}
     </div>
   );
 }
 
-/** Mini courbe qui suit la valeur (couleur de la tuile). */
-export function Spark({ points, className = "" }: { points: Point[]; className?: string }) {
+/** Mini courbe qui suit la valeur. `levels` : la couleur suit le débit (rouge sous 300 kb/s, orange sous 1 Mb/s, vert au-dessus), sur la courbe elle-même. */
+export function Spark({ points, className = "", levels = false }: { points: Point[]; className?: string; levels?: boolean }) {
+  const gid = useId();
   if (points.length < 2) return <div className={`${className} border-b border-dashed border-line`} aria-hidden="true" />;
   const pts = points.slice(-60);
-  const max = Math.max(1, ...pts.map((p) => p.v));
-  const d = pts.map((p, i) => `${i ? "L" : "M"}${((i / (pts.length - 1)) * 100).toFixed(1)} ${(30 - (p.v / max) * 28).toFixed(1)}`).join("");
+  const max = Math.max(levels ? WARN * 1.3 : 1, ...pts.map((p) => p.v));
+  const y = (v: number) => 30 - (v / max) * 28;
+  const d = pts.map((p, i) => `${i ? "L" : "M"}${((i / (pts.length - 1)) * 100).toFixed(1)} ${y(p.v).toFixed(1)}`).join("");
+  const paint = levels ? `url(#${gid})` : "currentColor";
   return (
     <svg viewBox="0 0 100 32" preserveAspectRatio="none" className={className} aria-hidden="true">
-      <path d={`${d}L100 32L0 32Z`} fill="currentColor" fillOpacity={0.18} />
-      <path d={d} fill="none" stroke="currentColor" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
+      {levels && (
+        <defs>
+          <linearGradient id={gid} gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="0" y2="32">
+            <stop offset={`${(y(WARN) / 32) * 100}%`} stopColor="var(--ok)" />
+            <stop offset={`${(y(WARN) / 32) * 100}%`} stopColor="var(--warn)" />
+            <stop offset={`${(y(BAD) / 32) * 100}%`} stopColor="var(--warn)" />
+            <stop offset={`${(y(BAD) / 32) * 100}%`} stopColor="var(--bad)" />
+          </linearGradient>
+        </defs>
+      )}
+      <path d={`${d}L100 32L0 32Z`} fill={paint} fillOpacity={0.18} />
+      <path d={d} fill="none" stroke={paint} strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }

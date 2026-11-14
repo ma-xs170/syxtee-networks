@@ -144,7 +144,7 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
     <div className="min-w-0 flex-1">
       <section aria-label="Indicateurs clés" className="flex flex-wrap gap-2 border-b border-line px-4 py-3">
         <Session since={live ? current.since : null} />
-        <Tile label="Débit" value={live && sm ? fmtKbps(sm.bitrate) : "—"} tone={live && sm ? levelOf(sm.bitrate) : "off"} spark={live ? bitrateSeries : undefined} hint="Débit vidéo reçu, sans les retransmissions" />
+        <Tile label="Débit" value={live && sm ? fmtKbps(sm.bitrate) : "—"} tone={live && sm ? levelOf(sm.bitrate) : "off"} spark={live ? bitrateSeries : undefined} levels hint="Débit vidéo reçu, sans les retransmissions" />
         <Tile label="Qualité" value={q != null ? `${q} %` : "—"} tone={live ? qualityLevel(q) : "off"} hint="Note globale : congestion, pertes et modems faibles" />
         <Tile label="Latence" value={live && sm ? `${Math.round(sm.rtt)} ms` : "—"} spark={live ? rttSeries : undefined} hint="Temps aller-retour entre l'encodeur et le serveur" />
         <Tile label="Pertes · 1 min" value={live && current.lost_1m != null ? nf.format(current.lost_1m) : "—"} tone={live && (current.lost_1m ?? 0) > 0 ? "warn" : undefined} />
@@ -217,7 +217,7 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
           }
         />
         <Track label="Débit utile" value={at(bitrateSeries, (v) => fmtKbps(v), sm ? fmtKbps(sm.bitrate) : "—")}>
-          <Area points={bitrateSeries} window={win} end={end} hover={hover} fmt={fmtKbps} showMax className="h-28" />
+          <Area points={bitrateSeries} window={win} end={end} hover={hover} fmt={fmtKbps} levels showMax className="h-28" />
           <TimeAxis window={win} end={end} />
         </Track>
         <Track label="Latence" value={at(rttSeries, (v) => `${Math.round(v)} ms`, sm ? `${Math.round(sm.rtt)} ms` : "—")}>

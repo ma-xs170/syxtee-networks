@@ -11,7 +11,7 @@ export default async function CalendarPage() {
   const [events, token, ws] = await Promise.all([listEvents(owner.id), getShareToken(owner.id), getActiveWorkspace()]);
   const team = ws ? (await loadMembers(ws.id)).members.map((m) => ({ id: m.user_id, name: m.name, kind: m.kind })) : [];
   return (
-    <DashPage className="max-w-[1400px]">
+    <DashPage className="max-w-[1400px] lg:!pb-6 lg:!pt-6">
       <h1 className="sr-only">Calendrier des lives</h1>
       <CalendarApp initial={events} editable={canManage(owner.workspace)} shareToken={token} team={team} />
     </DashPage>

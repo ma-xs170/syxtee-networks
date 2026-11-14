@@ -88,7 +88,7 @@ export default function MonthView({
   const listEvents = forDay(listDay);
   return (
     <>
-    <div onPointerDownCapture={(e) => (pointer.current = e.pointerType)} className="select-none overflow-hidden rounded-2xl border border-line" role="grid" aria-label="Calendrier du mois">
+    <div onPointerDownCapture={(e) => (pointer.current = e.pointerType)} className="select-none overflow-hidden rounded-2xl border border-line lg:flex lg:h-[calc(100dvh-11.5rem)] lg:min-h-[28rem] lg:flex-col" role="grid" aria-label="Calendrier du mois">
       <div className="grid grid-cols-[repeat(7,minmax(0,1fr))] border-b border-line bg-surface text-center font-mono text-[11px] uppercase tracking-[0.12em] text-muted" role="row">
         {days.slice(0, 7).map((d) => (
           <div key={d.getDay()} role="columnheader" className="py-2.5">
@@ -96,7 +96,7 @@ export default function MonthView({
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-[repeat(7,minmax(0,1fr))]" role="rowgroup">
+      <div className="grid grid-cols-[repeat(7,minmax(0,1fr))] lg:min-h-0 lg:flex-1 lg:auto-rows-fr" role="rowgroup">
         {days.map((d, i) => {
           const list = forDay(d);
           const isToday = sameDay(d, today);
@@ -125,7 +125,7 @@ export default function MonthView({
               onDoubleClick={(e) => {
                 if (editable && e.target === e.currentTarget) onCreate(d);
               }}
-              className={`min-h-[3.75rem] min-w-0 overflow-hidden border-line p-1 sm:min-h-[8.25rem] sm:p-1.5 ${i % 7 !== 6 ? "border-r" : ""} ${i < 35 ? "border-b" : ""} ${target ? "bg-foreground/[0.1]" : inMonth ? "" : "bg-foreground/[0.025]"} ${editable ? "cursor-cell" : ""}`}
+              className={`min-h-[3.75rem] min-w-0 overflow-hidden border-line p-1 sm:min-h-[8.25rem] sm:p-1.5 lg:min-h-0 ${i % 7 !== 6 ? "border-r" : ""} ${i < 35 ? "border-b" : ""} ${target ? "bg-foreground/[0.1]" : inMonth ? "" : "bg-foreground/[0.025]"} ${editable ? "cursor-cell" : ""}`}
             >
               <div className="pointer-events-none flex justify-center pt-0.5 sm:justify-end sm:pr-0.5">
                 <span className={`grid h-6 min-w-6 place-items-center rounded-full px-1 text-xs font-medium sm:text-sm ${isToday ? "bg-accent text-on-accent" : phoneDay && sameDay(phoneDay, d) ? "bg-foreground/[0.14] text-foreground" : inMonth ? "text-foreground" : "text-muted"}`}>{d.getDate() === 1 ? `${d.getDate()} ${new Intl.DateTimeFormat("fr-FR", { month: "short" }).format(d)}` : d.getDate()}</span>

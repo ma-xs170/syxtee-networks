@@ -8,10 +8,21 @@ import type { Mix } from "./types";
 // Mélangeur audio : une ligne par source, avec le niveau en direct sous le curseur de volume (même échelle, -60 à 0 dB).
 
 const fmtDb = (db: number) => (Number.isFinite(db) && db > -100 ? db.toFixed(1) : "-inf");
-const levelColor = (db: number) => (db > -6 ? "bg-bad" : db > -18 ? "bg-warn" : "bg-ok");
+/** Même jauge que le Direct : dégradé vert, orange puis rouge, gamme toujours visible en teinte sombre ; deux canaux (G/D). */
+const METER = "linear-gradient(to right, var(--ok) 0%, var(--ok) 55%, var(--warn) 80%, var(--bad) 100%)";
+
+function Bar({ db, muted, label }: { db: number; muted: boolean; label: string }) {
+  return (
+    <div role="meter" aria-label={label} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={Math.round(Math.max(-60, db))} className="relative h-1 overflow-hidden rounded-[1px]">
+      <div className="absolute inset-0 opacity-[0.18]" style={{ background: METER }} />
+      <div className="absolute inset-0" style={{ background: METER, clipPath: `inset(0 ${100 - (muted ? 0 : dbToPct(db))}% 0 0)` }} />
+    </div>
+  );
+}
 
 function Strip({ o, m }: { o: Obs; m: Mix }) {
-  const level = o.levels[m.name] ?? -100;
+  const mono = o.levels[m.name] ?? -100;
+  const [left, right] = o.levelsLR[m.name] ?? [mono, mono];
   const value = Number.isFinite(m.db) ? Math.max(-60, Math.min(0, m.db)) : -60;
   const edit = o.ready && o.canScenes;
   return (
@@ -24,8 +35,9 @@ function Strip({ o, m }: { o: Obs; m: Mix }) {
           <span className="shrink-0 font-mono text-xs tabular-nums text-muted">{m.muted ? "coupé" : `${fmtDb(m.db)} dB`}</span>
         </div>
         <div className="relative mt-0.5 h-8">
-          <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-foreground/15" role="meter" aria-label={`Niveau ${m.name}`} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={Math.round(Math.max(-60, level))}>
-            <div className={cx("h-full rounded-full", levelColor(level))} style={{ width: `${m.muted ? 0 : dbToPct(level)}%`, transition: "width 60ms linear" }} />
+          <div className="absolute inset-x-0 top-1/2 grid -translate-y-1/2 gap-0.5">
+            <Bar db={left} muted={m.muted} label={`Niveau gauche ${m.name}`} />
+            <Bar db={right} muted={m.muted} label={`Niveau droit ${m.name}`} />
           </div>
           <input
             type="range"

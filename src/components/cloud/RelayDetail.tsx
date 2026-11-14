@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { renameRelayAction } from "@/app/(dashboard)/dashboard/serveurs/actions";
 import { coreFetch } from "@/components/dashboard/coreClient";
 import StreamPreview from "@/components/dashboard/StreamPreview";
-import { efficiency, fmtKbps, levelOf, quality, qualityLevel, sortPeers, summarize } from "@/lib/control-center";
+import { efficiency, fmtKbps, fmtKbpsFull, levelOf, quality, qualityLevel, sortPeers, summarize } from "@/lib/control-center";
 import { Area, formatOf, LEVEL, ModemTile, nf, PanelHead, RANGES, StereoMeter, Tile, TimeAxis, Track, fmtFull, nearest, type Hover, type PeerRow, type RangeId, type Sample } from "./shared";
 import { useControl } from "./useControl";
 
@@ -144,13 +144,13 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
     <div className="min-w-0 flex-1">
       <section aria-label="Indicateurs clés" className="flex flex-wrap gap-2 border-b border-line px-4 py-3">
         <Session since={live ? current.since : null} />
-        <Tile label="Débit" value={live && sm ? fmtKbps(sm.bitrate) : "—"} tone={live && sm ? levelOf(sm.bitrate) : "off"} spark={live ? bitrateSeries : undefined} levels hint="Débit vidéo reçu, sans les retransmissions" />
+        <Tile label="Débit" value={live && sm ? fmtKbpsFull(sm.bitrate) : "—"} tone={live && sm ? levelOf(sm.bitrate) : "off"} spark={live ? bitrateSeries : undefined} levels hint="Débit vidéo reçu, sans les retransmissions" />
         <Tile label="Qualité" value={q != null ? `${q} %` : "—"} tone={live ? qualityLevel(q) : "off"} hint="Note globale : congestion, pertes et modems faibles" />
         <Tile label="Latence" value={live && sm ? `${Math.round(sm.rtt)} ms` : "—"} spark={live ? rttSeries : undefined} hint="Temps aller-retour entre l'encodeur et le serveur" />
         <Tile label="Pertes · 1 min" value={live && current.lost_1m != null ? nf.format(current.lost_1m) : "—"} tone={live && (current.lost_1m ?? 0) > 0 ? "warn" : undefined} />
         <Tile label="Rendement" value={live && eff != null ? `${eff} %` : "—"} hint="Part du débit réseau qui est du débit utile" />
         <Tile label="Modems actifs" value={live ? `${sum.active} / ${peers.length}` : "—"} tone={live && sum.weak > 0 ? "warn" : undefined} />
-        <Tile label="Débit réseau" value={live && net > 0 ? fmtKbps(net) : "—"} hint="Retransmissions comprises" />
+        <Tile label="Débit réseau" value={live && net > 0 ? fmtKbpsFull(net) : "—"} hint="Retransmissions comprises" />
       </section>
 
       <div className="flex flex-wrap items-start gap-4 p-4">

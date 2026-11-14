@@ -248,9 +248,9 @@ function Bar({ rms, peak, label, onVideo, name }: { rms: number | null; peak: nu
  */
 export function StereoMeter({ audio, className = "", onVideo = false }: { audio: Audio | null | undefined; className?: string; onVideo?: boolean }) {
   return (
-    <div className={`flex gap-2 ${className}`}>
+    <div className={`flex ${onVideo ? "" : "relative"} ${className}`}>
       {!onVideo && (
-        <div aria-hidden="true" className="relative mb-[15px] w-7">
+        <div aria-hidden="true" className="absolute bottom-[15px] right-full top-0 mr-2 w-7">
           {METER_TICKS.map((t) => (
             <span key={t} className="absolute right-0 -translate-y-1/2 font-mono text-[9px] leading-none text-muted" style={{ bottom: `${dbToFill(t) * 100}%` }}>{t}</span>
           ))}

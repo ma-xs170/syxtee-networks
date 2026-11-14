@@ -13,9 +13,10 @@ export default function CloudTabs() {
     { href: relay ? `/dashboard/cloud/${relay}` : "/dashboard/cloud", base: "/dashboard/cloud", label: "Cloud" },
     { href: relay ? `/dashboard/cloud/${relay}/statistiques` : "/dashboard/lives", base: "/dashboard/lives", label: "Statistiques" },
   ];
+  const shown = relay ? tabs : tabs.slice(0, 1); // Statistiques n'apparaît que depuis la page d'un flux
   return (
     <nav aria-label="Cloud" className="ml-auto flex items-center gap-1 overflow-x-auto">
-      {tabs.map((t) => {
+      {shown.map((t) => {
         const stats = pathname.endsWith("/statistiques");
         const on = t.base === "/dashboard/lives" ? stats || pathname.startsWith("/dashboard/lives") : !stats && (pathname === t.base || pathname.startsWith(`${t.base}/`));
         return (

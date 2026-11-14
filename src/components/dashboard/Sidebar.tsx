@@ -40,7 +40,7 @@ const WsCtx = createContext<WorkspaceInfo>({ workspaces: [], activeId: null, lef
 type Item = { sharedOnly?: boolean; label: string; href: string; icon: ComponentType<IconProps>; feature?: Feature; external?: boolean; wordmark?: string; /** « À venir » : pas encore ouvert (l'admin y accède quand même). */ soon?: boolean; /** Pastille de nouveauté à droite du libellé. */ fresh?: boolean };
 type Group = { title?: string; items: Item[] };
 
-// Menu : Tableau de bord + Cloud, puis Diffuser (Connexions, Contrôle à distance, Destinations), Sauvegardes (OBS Studio, Enregistrements) et Programme (Calendrier, Équipe), Aide en bas. Le profil (en haut) ouvre Compte, espaces, thème, déconnexion.
+// Menu : Tableau de bord + Cloud, puis Diffuser (Connexions, Contrôle à distance, Destinations), Programme (Calendrier, Équipe) et Sauvegardes (OBS Studio, Enregistrements), Aide en bas. Le profil (en haut) ouvre Compte, espaces, thème, déconnexion.
 /** Logo OBS Studio (cercle et trois pales), en trait comme les autres icônes du menu. */
 function ObsIcon({ size = 20, className }: IconProps) {
   return (
@@ -69,17 +69,17 @@ const GROUPS: Group[] = [
     ],
   },
   {
-    title: "Sauvegardes",
-    items: [
-      { label: "OBS Studio", href: "/dashboard/scenes", icon: ObsIcon, feature: "relais" },
-      { label: "Enregistrements", href: "/dashboard/enregistrements", icon: FilmStrip, feature: "relais" },
-    ],
-  },
-  {
     title: "Programme",
     items: [
       { label: "Calendrier", href: "/dashboard/calendrier", icon: CalendarBlank },
       { label: "Équipe", href: "/dashboard/equipe", icon: UsersThree, feature: "relais" },
+    ],
+  },
+  {
+    title: "Sauvegardes",
+    items: [
+      { label: "OBS Studio", href: "/dashboard/scenes", icon: ObsIcon, feature: "relais" },
+      { label: "Enregistrements", href: "/dashboard/enregistrements", icon: FilmStrip, feature: "relais" },
     ],
   },
 ];

@@ -53,4 +53,4 @@ jobs:
         env:
           HOST: ${{ secrets.VPS_HOST }}
           USER_NAME: ${{ secrets.VPS_USER }}
-        run: ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes "$USER_NAME@$HOST" "sudo /opt/syxtee/repo/scripts/deploy.sh"
+        run: ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes "$USER_NAME@$HOST" "cd /opt/syxtee/repo && sudo git pull --ff-only && sudo bash scripts/deploy.sh"

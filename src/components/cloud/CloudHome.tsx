@@ -10,13 +10,6 @@ import { useControl } from "./useControl";
 // Cloud : logiciel pleine page. Les flux à gauche, leurs aperçus en direct à droite (une vignette par flux),
 // avec vumètre, débit et qualité en surimpression. « Contrôler » ouvre la page du flux.
 
-type Filter = "all" | "live" | "off";
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: "all", label: "Tous" },
-  { id: "live", label: "En direct" },
-  { id: "off", label: "Hors ligne" },
-];
-
 function Card({ r, coreUrl, picked }: { r: Relay; coreUrl: string; picked: boolean }) {
   const q = r.live ? quality(r.sample, r.lost_1m, r.peers) : null;
   const lv = LEVEL[qualityLevel(q)];
@@ -64,13 +57,12 @@ function Card({ r, coreUrl, picked }: { r: Relay; coreUrl: string; picked: boole
 export default function CloudHome({ coreUrl }: { coreUrl: string }) {
   const { relays, error } = useControl(coreUrl);
   const [q, setQ] = useState("");
-  const [filter, setFilter] = useState<Filter>("all");
   const [picked, setPicked] = useState<string | null>(null);
 
   const shown = useMemo(() => {
     const term = q.trim().toLowerCase();
-    return (relays ?? []).filter((r) => (filter === "all" || (filter === "live") === r.live) && (!term || r.name.toLowerCase().includes(term)));
-  }, [relays, q, filter]);
+    return (relays ?? []).filter((r) => !term || r.name.toLowerCase().includes(term));
+  }, [relays, q]);
   const liveCount = relays?.filter((r) => r.live).length ?? 0;
 
   if (!relays) {
@@ -90,36 +82,41 @@ export default function CloudHome({ coreUrl }: { coreUrl: string }) {
             <span className="font-mono text-[11px] text-muted">{liveCount} / {relays.length} en direct</span>
           </div>
           <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un flux" aria-label="Rechercher un flux" className="h-9 w-full rounded-md border border-line bg-background px-3 text-sm placeholder:text-muted focus-visible:border-foreground/40 focus-visible:outline-none" />
-          <div role="group" aria-label="Filtrer par état" className="flex rounded-md border border-line p-0.5 font-mono text-[11px]">
-            {FILTERS.map((f) => (
-              <button key={f.id} type="button" aria-pressed={filter === f.id} onClick={() => setFilter(f.id)} className={`flex-1 rounded px-2 py-1 transition-colors ${filter === f.id ? "bg-foreground text-background" : "text-muted hover:text-foreground"}`}>
-                {f.label}
-              </button>
-            ))}
-          </div>
         </div>
-        <ul className="min-h-0 flex-1 overflow-y-auto">
-          {shown.map((r) => (
-            <li key={r.id} className="border-b border-line">
-              <button
-                type="button"
-                onClick={() => {
-                  setPicked(r.id);
-                  document.getElementById(`flux-${r.id}`)?.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-                }}
-                className={`flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors ${picked === r.id ? "bg-foreground/[0.07]" : "hover:bg-foreground/[0.04]"}`}
-              >
-                <span className={`h-2.5 w-2.5 shrink-0 rounded-[2px] ${r.live ? "bg-live" : "bg-muted/50"}`} aria-hidden="true" />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">{r.name}</span>
-                  <span className="block truncate font-mono text-[11px] tabular-nums text-muted">{r.live && r.sample ? `${fmtKbps(r.sample.bitrate)}${efficiency(r.peers) != null ? ` · ${efficiency(r.peers)} %` : ""}` : "Hors ligne"}</span>
-                </span>
-                <span className="font-mono text-[10px] uppercase text-muted">{r.protocol}</span>
-              </button>
-            </li>
-          ))}
-          {shown.length === 0 && <li className="px-3 py-6 text-center text-sm text-muted">Aucun flux.</li>}
-        </ul>
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {[
+            { title: "En direct", items: shown.filter((r) => r.live) },
+            { title: "Hors ligne", items: shown.filter((r) => !r.live) },
+          ].map((g) =>
+            g.items.length === 0 ? null : (
+              <section key={g.title} aria-label={g.title} className="border-b border-line">
+                <h3 className="border-b border-line px-3 py-2 font-mono text-[11px] font-normal uppercase tracking-[0.14em] text-muted">{g.title}</h3>
+                <ul className="divide-y divide-line">
+                  {g.items.map((r) => (
+                    <li key={r.id}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPicked(r.id);
+                          document.getElementById(`flux-${r.id}`)?.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+                        }}
+                        className={`flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors ${picked === r.id ? "bg-foreground/[0.07]" : "hover:bg-foreground/[0.04]"}`}
+                      >
+                        <span className={`h-2.5 w-2.5 shrink-0 rounded-[2px] ${r.live ? "bg-live" : "bg-muted/50"}`} aria-hidden="true" />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-medium">{r.name}</span>
+                          <span className="block truncate font-mono text-[11px] tabular-nums text-muted">{r.live && r.sample ? `${fmtKbps(r.sample.bitrate)}${efficiency(r.peers) != null ? ` · ${efficiency(r.peers)} %` : ""}` : "Hors ligne"}</span>
+                        </span>
+                        <span className="font-mono text-[10px] uppercase text-muted">{r.protocol}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ),
+          )}
+          {shown.length === 0 && <p className="px-3 py-6 text-center text-sm text-muted">Aucun flux.</p>}
+        </div>
       </aside>
 
       <section aria-label="Aperçus en direct" className="min-w-0 flex-1 p-4">

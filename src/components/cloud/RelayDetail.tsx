@@ -125,7 +125,6 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
   const sm = current.sample;
   const q = live ? quality(sm, current.lost_1m, peers) : null;
   const ql = LEVEL[qualityLevel(q)];
-  const net = peers.reduce((a, p) => a + (p.throughput ?? 0), 0);
   const bitrateSeries = hist.map((s) => ({ t: s.t, v: s.bitrate }));
   const rttSeries = hist.map((s) => ({ t: s.t, v: s.rtt }));
   const lossSeries = hist.map((s) => ({ t: s.t, v: s.dropped }));
@@ -150,7 +149,6 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
         <Tile label="Pertes · 1 min" value={live && current.lost_1m != null ? nf.format(current.lost_1m) : "—"} tone={live && (current.lost_1m ?? 0) > 0 ? "warn" : undefined} />
         <Tile label="Rendement" value={live && eff != null ? `${eff} %` : "—"} hint="Part du débit réseau qui est du débit utile" />
         <Tile label="Modems actifs" value={live ? `${sum.active} / ${peers.length}` : "—"} tone={live && sum.weak > 0 ? "warn" : undefined} />
-        <Tile label="Débit réseau" value={live && net > 0 ? fmtKbpsFull(net) : "—"} hint="Retransmissions comprises" />
       </section>
 
       <div className="flex flex-wrap items-start gap-4 p-4">

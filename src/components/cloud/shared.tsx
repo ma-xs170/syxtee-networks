@@ -127,12 +127,12 @@ export function Stat({ label, value, hint }: { label: string; value: string; hin
 export function Tile({ label, value, tone, hint, spark, levels }: { label: string; value: string; tone?: Level | "warn"; hint?: string; spark?: Point[]; levels?: boolean }) {
   const color = tone === "ok" ? "text-ok" : tone === "warn" ? "text-warn" : tone === "bad" ? "text-bad" : tone === "off" ? "text-muted" : "";
   return (
-    <div className="flex min-w-[7.5rem] flex-1 items-center gap-3 rounded-lg bg-foreground/[0.05] px-3 py-2 transition-colors hover:bg-foreground/[0.09]" title={hint}>
-      <div className="min-w-0">
-        <p className={`truncate text-xl font-semibold leading-tight tabular-nums tracking-tight ${color}`}>{value}</p>
+    <div className={`flex flex-1 items-center justify-center gap-4 rounded-lg bg-foreground/[0.05] px-3 py-2 transition-colors hover:bg-foreground/[0.09] ${spark ? "min-w-[16rem]" : "min-w-[7.5rem]"}`} title={hint}>
+      <div className="min-w-0 text-center">
+        <p className={`whitespace-nowrap text-xl font-semibold leading-tight tabular-nums tracking-tight ${color}`}>{value}</p>
         <p className="truncate font-mono text-[11px] leading-tight text-muted">{label}</p>
       </div>
-      {spark && <Spark points={spark} levels={levels} className={`ml-auto h-8 w-16 shrink-0 ${color}`} />}
+      {spark && <Spark points={spark} levels={levels} className={`h-8 w-16 shrink-0 ${color}`} />}
     </div>
   );
 }

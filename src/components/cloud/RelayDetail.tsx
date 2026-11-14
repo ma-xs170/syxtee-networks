@@ -54,10 +54,22 @@ function Rename({ id, name }: { id: string; name: string }) {
   );
 }
 
-function Info({ label, children }: { label: string; children: React.ReactNode }) {
+const INFO_ICONS = {
+  nom: <path d="M4 7h16M4 12h16M4 17h10" />,
+  format: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m10 9.5 5 2.5-5 2.5v-5Z" /></>,
+  codec: <path d="m8 8-4 4 4 4m8-8 4 4-4 4m-3-10-2 12" />,
+  protocole: <><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z" /></>,
+  qualite: <path d="M4 18V9m5.3 9V5m5.4 13v-7M20 18V8" />,
+  audio: <path d="M4 10v4h3.5L12 18V6L7.5 10H4Zm11.5-.5a4 4 0 0 1 0 5m2.5-7.5a7.5 7.5 0 0 1 0 10" />,
+} as const;
+
+function Info({ label, icon, children }: { label: string; icon: keyof typeof INFO_ICONS; children: React.ReactNode }) {
   return (
-    <div className="flex flex-1 items-center justify-between gap-4 border-b border-line px-3 py-2.5 last:border-0">
-      <dt className="shrink-0 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{label}</dt>
+    <div className="flex flex-1 items-center justify-between gap-4 border-b border-line px-4 py-2.5 last:border-0">
+      <dt className="flex shrink-0 items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">{INFO_ICONS[icon]}</svg>
+        {label}
+      </dt>
       <dd className="min-w-0 text-right font-mono text-[13px] tabular-nums">{children}</dd>
     </div>
   );
@@ -182,20 +194,20 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
           )}
         </section>
 
-        <aside aria-label="Infos" className="order-first -mb-4 -ml-4 -mt-4 flex w-full flex-col self-stretch bg-surface sm:w-[22rem]">
+        <aside aria-label="Infos" className="order-first -mb-4 -ml-4 -mt-4 flex w-full flex-col self-stretch sm:w-[22rem]">
           <PanelHead title="Infos" />
           <dl className="flex flex-1 flex-col">
-            <Info label="Nom"><Rename id={current.id} name={current.name} /></Info>
-            <Info label="Format">{formatOf(current.media)}</Info>
-            <Info label="Codec">{current.media?.codec ? current.media.codec.toUpperCase() : "—"}</Info>
-            <Info label="Protocole">{current.protocol.toUpperCase()}</Info>
-            <Info label="Qualité">
+            <Info label="Nom" icon="nom"><Rename id={current.id} name={current.name} /></Info>
+            <Info label="Format" icon="format">{formatOf(current.media)}</Info>
+            <Info label="Codec" icon="codec">{current.media?.codec ? current.media.codec.toUpperCase() : "—"}</Info>
+            <Info label="Protocole" icon="protocole">{current.protocol.toUpperCase()}</Info>
+            <Info label="Qualité" icon="qualite">
               <span className="inline-flex items-center gap-1.5">
                 <span className={`h-1.5 w-1.5 rounded-full ${ql.dot}`} aria-hidden="true" />
                 {q != null ? `${q} %` : "—"}
               </span>
             </Info>
-            <Info label="Audio">{live && current.media?.audio_db != null ? `${Math.round(current.media.audio_db)} dB` : "—"}</Info>
+            <Info label="Audio" icon="audio">{live && current.media?.audio_db != null ? `${Math.round(current.media.audio_db)} dB` : "—"}</Info>
           </dl>
         </aside>
       </div>

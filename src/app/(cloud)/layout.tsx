@@ -23,11 +23,11 @@ export default async function StatsLayout({ children }: LayoutProps<"/">) {
       <header className="sticky top-0 z-40 border-b border-line bg-background/95">
         <div className="flex h-14 w-full items-center gap-4 px-4">
           <Link href="/dashboard/cloud" className="flex shrink-0 items-center gap-3" aria-label="SYXTEE Cloud : tous les flux">
-            <Image src="/logo-400.png" alt="" width={20} height={28} style={{ width: 20, height: "auto" }} className="ink-img" priority />
-            <span className="hidden text-sm font-semibold tracking-[0.18em] sm:inline">SYXTEE</span>
+            <Image src="/logo-400.png" alt="" width={20} height={28} style={{ width: 20, height: "auto" }} className="ink-img block" priority />
+            <span className="hidden text-sm font-semibold leading-none tracking-[0.18em] sm:inline">SYXTEE</span>
           </Link>
-          <span className="hidden font-mono text-xs text-muted sm:inline" aria-hidden="true">/</span>
-          <span className="hidden font-mono text-xs uppercase tracking-[0.14em] text-muted sm:inline">Cloud</span>
+          <span className="hidden font-mono text-xs leading-none text-muted sm:inline" aria-hidden="true">/</span>
+          <span className="hidden font-mono text-xs uppercase leading-none tracking-[0.14em] text-muted sm:inline">Cloud</span>
           <Link href="/dashboard/cloud" className="ml-2 hidden shrink-0 whitespace-nowrap md:inline-block rounded-full bg-accent px-3.5 py-1.5 text-sm text-on-accent transition-opacity hover:opacity-90">Tous les flux</Link>
 
           <Suspense fallback={<span className="ml-auto" />}>

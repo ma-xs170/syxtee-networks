@@ -13,6 +13,7 @@ export default function StreamPreview({ coreUrl, relayId, fullControl, compact, 
   const video = useRef<HTMLVideoElement>(null);
   const [state, setState] = useState<State>("connecting");
   const [muted, setMuted] = useState(true);
+  const [detail, setDetail] = useState("Connexion au service SYXTEE…"); // étape en cours, affichée sous le logo pendant le chargement
   const box = useRef<HTMLDivElement>(null);
   const [fullLocal, setFullLocal] = useState(false);
   const full = fullControl ? fullControl.full : fullLocal;
@@ -59,6 +60,7 @@ export default function StreamPreview({ coreUrl, relayId, fullControl, compact, 
     const again = () => {
       teardown();
       if (stopped) return;
+      setDetail("Flux hors ligne : nouvelle tentative dans 3 s…");
       setState("offline");
       retry = setTimeout(start, 3000);
     };
@@ -72,10 +74,13 @@ export default function StreamPreview({ coreUrl, relayId, fullControl, compact, 
         return;
       }
       try {
+        setDetail("Connexion au service SYXTEE…");
         const { default: mpegts } = await import("mpegts.js");
         if (!mpegts.isSupported()) return setState("unsupported");
+        setDetail("Authentification de ta session…");
         const token = await coreToken();
         if (stopped) return;
+        setDetail("Ouverture du flux vidéo…");
         mpegts.LoggingControl.enableAll = false;
         const p = mpegts.createPlayer(
           { type: "mpegts", isLive: true, url: `${coreUrl}/v1/me/relays/${relayId}/live.ts` },
@@ -92,8 +97,10 @@ export default function StreamPreview({ coreUrl, relayId, fullControl, compact, 
         player = p;
         p.on(mpegts.Events.ERROR, again);
         p.on(mpegts.Events.LOADING_COMPLETE, again);
+        p.on(mpegts.Events.MEDIA_INFO, () => setDetail("Réception de la vidéo…"));
         p.attachMediaElement(el!);
         p.load();
+        setDetail("En attente des premières images…");
         await Promise.resolve(p.play()).catch(() => {});
       } catch {
         again();
@@ -105,6 +112,7 @@ export default function StreamPreview({ coreUrl, relayId, fullControl, compact, 
       if (document.visibilityState === "hidden") {
         if (retry) clearTimeout(retry);
         teardown();
+        setDetail("Connexion au service SYXTEE…");
         setState("connecting");
       } else if (!player) {
         if (retry) clearTimeout(retry);
@@ -123,14 +131,7 @@ export default function StreamPreview({ coreUrl, relayId, fullControl, compact, 
     };
   }, [coreUrl, relayId]);
 
-  const message =
-    state === "unsupported"
-      ? "Ce navigateur ne lit pas l'aperçu vidéo. Essaie Chrome, Firefox ou Safari à jour."
-      : state === "offline"
-        ? "L'aperçu apparaît dès que ton flux est en ligne."
-        : state === "connecting"
-          ? "Connexion au flux…"
-          : null;
+  const loading = state === "connecting" || state === "offline";
 
   return (
     <section className={compact ? "absolute inset-0" : flush ? "overflow-hidden" : "overflow-hidden rounded-2xl border border-line"} aria-label="Aperçu du flux">
@@ -144,7 +145,19 @@ export default function StreamPreview({ coreUrl, relayId, fullControl, compact, 
           className={`h-full w-full ${compact ? "object-cover" : "object-contain"} ${fullControl && !full ? "cursor-zoom-in" : ""} ${state === "playing" ? "" : "invisible"}`}
           aria-label={fullControl && !full ? "Aperçu de ton flux, ouvrir en plein écran" : "Aperçu de ton flux"}
         />
-        {message && !compact && <p className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-muted">{message}</p>}
+        {state === "unsupported" && !compact && <p className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-muted">Ce navigateur ne lit pas l&apos;aperçu vidéo. Essaie Chrome, Firefox ou Safari à jour.</p>}
+        {loading && !compact && (
+          <div role="status" className="absolute inset-0 flex flex-col items-center justify-center px-6">
+            <div className="flex flex-1 items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-400.png" alt="" width={44} height={62} className="h-14 w-auto animate-pulse brightness-0 invert motion-reduce:animate-none" />
+            </div>
+            <div className="pb-5 text-center">
+              <p className="text-sm font-medium text-white">Connexion en cours</p>
+              <p className="mt-1 font-mono text-[11px] text-white/60">{detail}</p>
+            </div>
+          </div>
+        )}
         {state === "playing" && !compact && (
           <>
             <span className={`absolute flex items-center gap-1.5 rounded bg-black/75 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-white ${full ? "left-[max(0.75rem,env(safe-area-inset-left))] top-[max(0.75rem,env(safe-area-inset-top))]" : "left-3 top-3"}`}>

@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-// Onglets de la barre Cloud : Cloud (flux) et Historique (anciens directs), tous deux sur l'hôte cloud.
+// Onglets de la barre Cloud : Cloud (flux) et Statistiques (anciens directs), tous deux sur l'hôte cloud.
 const TABS = [
   { href: "/dashboard/cloud", label: "Cloud" },
-  { href: "/dashboard/lives", label: "Historique" },
+  { href: "/dashboard/lives", label: "Statistiques" },
 ];
 
 export default function CloudTabs() {

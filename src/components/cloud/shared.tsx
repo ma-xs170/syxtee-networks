@@ -118,12 +118,31 @@ export function Stat({ label, value, hint }: { label: string; value: string; hin
   );
 }
 
-export function Kpi({ label, value, tone, hint }: { label: string; value: string; tone?: "warn"; hint?: string }) {
+/** Tuile de la barre du haut : valeur en grand, libellé dessous, couleur d'état optionnelle, courbe optionnelle. */
+export function Tile({ label, value, tone, hint, spark }: { label: string; value: string; tone?: Level | "warn"; hint?: string; spark?: Point[] }) {
+  const color = tone === "ok" ? "text-ok" : tone === "warn" ? "text-warn" : tone === "bad" ? "text-bad" : tone === "off" ? "text-muted" : "";
   return (
-    <div className="px-4 py-3 transition-colors hover:bg-foreground/[0.03]" title={hint}>
-      <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{label}</p>
-      <p className={`mt-1 text-xl font-semibold tabular-nums tracking-tight ${tone === "warn" ? "text-warn" : ""}`}>{value}</p>
+    <div className="flex min-w-[7.5rem] flex-1 items-center gap-3 rounded-lg bg-foreground/[0.05] px-3 py-2 transition-colors hover:bg-foreground/[0.09]" title={hint}>
+      <div className="min-w-0">
+        <p className={`truncate text-xl font-semibold leading-tight tabular-nums tracking-tight ${color}`}>{value}</p>
+        <p className="truncate font-mono text-[11px] leading-tight text-muted">{label}</p>
+      </div>
+      {spark && <Spark points={spark} className={`ml-auto h-8 w-16 shrink-0 ${color}`} />}
     </div>
+  );
+}
+
+/** Mini courbe qui suit la valeur (couleur de la tuile). */
+export function Spark({ points, className = "" }: { points: Point[]; className?: string }) {
+  if (points.length < 2) return <div className={`${className} border-b border-dashed border-line`} aria-hidden="true" />;
+  const pts = points.slice(-60);
+  const max = Math.max(1, ...pts.map((p) => p.v));
+  const d = pts.map((p, i) => `${i ? "L" : "M"}${((i / (pts.length - 1)) * 100).toFixed(1)} ${(30 - (p.v / max) * 28).toFixed(1)}`).join("");
+  return (
+    <svg viewBox="0 0 100 32" preserveAspectRatio="none" className={className} aria-hidden="true">
+      <path d={`${d}L100 32L0 32Z`} fill="currentColor" fillOpacity={0.18} />
+      <path d={d} fill="none" stroke="currentColor" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
+    </svg>
   );
 }
 

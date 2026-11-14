@@ -5,8 +5,8 @@ import { useCallback, useEffect, useState } from "react";
 import { renameRelayAction } from "@/app/(dashboard)/dashboard/serveurs/actions";
 import { coreFetch } from "@/components/dashboard/coreClient";
 import StreamPreview from "@/components/dashboard/StreamPreview";
-import { dbToFill, efficiency, fmtKbps, quality, qualityLevel, seriesStats, sortPeers, summarize } from "@/lib/control-center";
-import { Area, duration, formatOf, Kpi, LEVEL, Meter, ModemTile, nf, PanelHead, RANGES, Stat, TimeAxis, Track, fmtFull, nearest, type Hover, type PeerRow, type RangeId, type Sample } from "./shared";
+import { dbToFill, efficiency, fmtKbps, levelOf, quality, qualityLevel, seriesStats, sortPeers, summarize } from "@/lib/control-center";
+import { Area, duration, formatOf, LEVEL, Meter, ModemTile, nf, PanelHead, RANGES, Stat, Tile, TimeAxis, Track, fmtFull, nearest, type Hover, type PeerRow, type RangeId, type Sample } from "./shared";
 import { useControl } from "./useControl";
 
 // Page d'un flux : aperçu en haut à gauche, infos (nom, format) à droite, puis toutes les mesures en direct,
@@ -61,6 +61,18 @@ function Info({ label, children }: { label: string; children: React.ReactNode })
       <dd className="min-w-0 text-right font-mono text-[13px] tabular-nums">{children}</dd>
     </div>
   );
+}
+
+function Session({ since }: { since: number | null }) {
+  const [t, setT] = useState(() => Date.now());
+  useEffect(() => {
+    if (!since) return;
+    const id = setInterval(() => setT(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [since]);
+  const sec = since ? Math.max(0, Math.floor((t - since) / 1000)) : 0;
+  const p = (n: number) => String(n).padStart(2, "0");
+  return <Tile label="Session" value={since ? `${p(Math.floor(sec / 3600))}:${p(Math.floor((sec % 3600) / 60))}:${p(sec % 60)}` : "00:00:00"} tone={since ? undefined : "off"} hint={since ? `Début du flux : ${fmtFull(since)}` : "Aucun direct en cours"} />;
 }
 
 export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; relayId: string }) {
@@ -148,6 +160,17 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
         </div>
       </div>
 
+      <section aria-label="Indicateurs clés" className="flex flex-wrap gap-2 border-b border-line px-4 py-3">
+        <Session since={live ? current.since : null} />
+        <Tile label="Débit" value={live && sm ? fmtKbps(sm.bitrate) : "—"} tone={live && sm ? levelOf(sm.bitrate) : "off"} spark={live ? bitrateSeries : undefined} hint="Débit vidéo reçu, sans les retransmissions" />
+        <Tile label="Qualité" value={q != null ? `${q} %` : "—"} tone={live ? qualityLevel(q) : "off"} hint="Note globale : congestion, pertes et modems faibles" />
+        <Tile label="Latence" value={live && sm ? `${Math.round(sm.rtt)} ms` : "—"} spark={live ? rttSeries : undefined} hint="Temps aller-retour entre l'encodeur et le serveur" />
+        <Tile label="Pertes · 1 min" value={live && current.lost_1m != null ? nf.format(current.lost_1m) : "—"} tone={live && (current.lost_1m ?? 0) > 0 ? "warn" : undefined} />
+        <Tile label="Rendement" value={live && eff != null ? `${eff} %` : "—"} hint="Part du débit réseau qui est du débit utile" />
+        <Tile label="Modems actifs" value={live ? `${sum.active} / ${peers.length}` : "—"} tone={live && sum.weak > 0 ? "warn" : undefined} />
+        <Tile label="Débit réseau" value={live && net > 0 ? fmtKbps(net) : "—"} hint="Retransmissions comprises" />
+      </section>
+
       <div className="flex flex-wrap items-start gap-4 p-4">
         <div className="flex w-full min-w-0 max-w-[44rem] items-start gap-3 lg:w-[44rem]">
           <div className="w-full min-w-0">
@@ -185,15 +208,6 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
           </dl>
         </aside>
       </div>
-
-      <section aria-label="Indicateurs clés" className="grid grid-cols-2 divide-x divide-y divide-line border-y border-line sm:grid-cols-3 sm:divide-y-0 xl:grid-cols-6">
-        <Kpi label="Débit utile" value={live && sm ? fmtKbps(sm.bitrate) : "—"} hint="Débit vidéo reçu, sans les retransmissions" />
-        <Kpi label="Latence" value={live && sm ? `${Math.round(sm.rtt)} ms` : "—"} hint="Temps aller-retour entre l'encodeur et le serveur" />
-        <Kpi label="Pertes · 1 min" value={live && current.lost_1m != null ? nf.format(current.lost_1m) : "—"} tone={live && (current.lost_1m ?? 0) > 0 ? "warn" : undefined} />
-        <Kpi label="Rendement" value={live && eff != null ? `${eff} %` : "—"} hint="Part du débit réseau qui est du débit utile" />
-        <Kpi label="Modems actifs" value={live ? `${sum.active} / ${peers.length}` : "—"} tone={live && sum.weak > 0 ? "warn" : undefined} />
-        <Kpi label="Débit réseau" value={live && net > 0 ? fmtKbps(net) : "—"} />
-      </section>
 
       <div className="grid lg:grid-cols-[minmax(0,1fr)_19rem] lg:divide-x lg:divide-line">
         <section aria-label="Connexions" className="min-w-0">

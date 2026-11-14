@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { fmtKbps, levelOf, seriesStats, share, type Level, type Peer, type Point } from "@/lib/control-center";
 
 // Éléments communs aux pages Cloud : mêmes types, mêmes courbes, mêmes tuiles.
@@ -36,46 +36,66 @@ export function duration(sinceMs: number | null, now: number) {
 
 export const formatOf = (m: Media | null) => (m?.width && m.height ? `${m.width}x${m.height}${m.fps ? ` · ${Math.round(m.fps)} i/s` : ""}` : "—");
 
-/** Aire : valeur dans le temps. `tone` "ok" = couleur d'état, "ink" = encre (graphiques sans état). */
-export function Area({ points, window, max, className = "h-24", tone = "ok" }: { points: Point[]; window: number; max?: number; className?: string; tone?: "ok" | "ink" }) {
+export type Hover = { t: number | null; set: (t: number | null) => void };
+
+export const fmtClock = (t: number, seconds = false) => new Date(t).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: seconds ? "2-digit" : undefined });
+export const fmtFull = (t: number) => new Date(t).toLocaleString("fr-FR", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+/** Point de la série le plus proche d'un instant (série triée par temps). */
+export function nearest(points: Point[], t: number): Point | null {
+  if (points.length === 0) return null;
+  let lo = 0;
+  let hi = points.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (points[mid].t < t) lo = mid + 1;
+    else hi = mid;
+  }
+  const prev = points[Math.max(0, lo - 1)];
+  return Math.abs(prev.t - t) <= Math.abs(points[lo].t - t) ? prev : points[lo];
+}
+
+/**
+ * Aire : valeur dans le temps, survolable : un trait suit le pointeur et indique l'heure et la valeur du relevé le plus proche.
+ * `hover` partage le survol entre plusieurs courbes (chronologie) ; sans lui, la courbe affiche sa propre infobulle (`fmt` met la valeur en forme).
+ * `tone` "ok" = couleur d'état, "ink" = encre (graphiques sans état).
+ */
+export function Area({ points, window, end, max, className = "h-24", tone = "ok", hover, fmt, showMax }: { points: Point[]; window: number; end?: number; max?: number; className?: string; tone?: "ok" | "ink"; hover?: Hover; fmt?: (v: number) => string; showMax?: boolean }) {
+  const [own, setOwn] = useState<number | null>(null);
+  const h: Hover = hover ?? { t: own, set: setOwn };
   if (points.length < 2) return <div className={`${className} grid place-items-center rounded-lg border border-dashed border-line text-xs text-muted`}>Pas encore de données</div>;
-  const t1 = points[points.length - 1].t;
+  const t1 = end ?? points[points.length - 1].t;
   const t0 = t1 - window;
   const top = max ?? Math.max(1000, ...points.map((p) => p.v)) * 1.1;
-  const x = (t: number) => Math.max(0, ((t - t0) / window) * 100);
+  const x = (t: number) => Math.max(0, Math.min(100, ((t - t0) / window) * 100));
   const y = (v: number) => 40 - Math.min(1, v / top) * 38;
   const line = points.map((p, i) => `${i ? "L" : "M"}${x(p.t).toFixed(2)} ${y(p.v).toFixed(2)}`).join("");
   const area = `${line}L${x(points[points.length - 1].t).toFixed(2)} 40L${x(points[0].t).toFixed(2)} 40Z`;
   const color = tone === "ok" ? "text-ok" : "text-foreground";
+  const hit = h.t != null && h.t >= t0 && h.t <= t1 ? nearest(points, h.t) : null;
+  const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    h.set(t0 + Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * window);
+  };
   return (
-    <svg viewBox="0 0 100 40" preserveAspectRatio="none" className={`${className} w-full ${color}`} role="img" aria-label={`Courbe, maximum ${nf.format(Math.round(top))}`}>
-      <path d="M0 1H100M0 20H100M0 39H100" stroke="currentColor" className="text-foreground" strokeOpacity={0.1} strokeDasharray="1 3" vectorEffect="non-scaling-stroke" />
-      <path d={area} fill="currentColor" fillOpacity={tone === "ok" ? 0.55 : 0.12} />
-      <path d={line} fill="none" stroke="currentColor" strokeWidth={1.25} vectorEffect="non-scaling-stroke" />
-    </svg>
-  );
-}
-
-/** Courbe de débit avec repères : échelle en Mb/s à gauche, temps en bas. */
-export function QualityChart({ points, window, label }: { points: Point[]; window: number; label: string }) {
-  const top = Math.max(1000, ...points.map((p) => p.v)) * 1.1;
-  const steps = [1, 2 / 3, 1 / 3, 0];
-  const mb = (v: number) => (v / 1000).toFixed(v >= 10000 ? 0 : 1).replace(".", ",");
-  return (
-    <div>
-      <div className="flex">
-        <div className="flex h-32 w-8 shrink-0 flex-col justify-between pr-1.5 text-right font-mono text-[10px] tabular-nums text-muted" aria-hidden="true">
-          {steps.map((f) => <span key={f}>{mb(top * f)}</span>)}
-        </div>
-        <div className="min-w-0 flex-1 overflow-hidden rounded-lg border border-line bg-background">
-          <Area points={points} window={window} max={top} className="h-32" tone="ink" />
-        </div>
-      </div>
-      <p className="mt-1 flex justify-between pl-8 font-mono text-[10px] text-muted" aria-hidden="true">
-        <span>−{label}</span>
-        <span>maintenant</span>
-      </p>
-      <p className="sr-only">Débit en Mb/s sur les {label} écoulées.</p>
+    <div className="relative touch-pan-y" onPointerMove={onMove} onPointerDown={onMove} onPointerLeave={() => h.set(null)}>
+      <svg viewBox="0 0 100 40" preserveAspectRatio="none" className={`${className} w-full ${color}`} role="img" aria-label={`Courbe, maximum ${nf.format(Math.round(top))}`}>
+        <path d="M0 1H100M0 20H100M0 39H100" stroke="currentColor" className="text-foreground" strokeOpacity={0.1} strokeDasharray="1 3" vectorEffect="non-scaling-stroke" />
+        <path d={area} fill="currentColor" fillOpacity={tone === "ok" ? 0.55 : 0.12} />
+        <path d={line} fill="none" stroke="currentColor" strokeWidth={1.25} vectorEffect="non-scaling-stroke" />
+      </svg>
+      {showMax && fmt && <span aria-hidden="true" className="pointer-events-none absolute left-1.5 top-0.5 font-mono text-[10px] text-muted">{fmt(top)}</span>}
+      {hit && (
+        <>
+          <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 w-px bg-foreground/50" style={{ left: `${x(hit.t)}%` }} />
+          <span aria-hidden="true" className="pointer-events-none absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-background bg-foreground" style={{ left: `${x(hit.t)}%`, top: `${(y(hit.v) / 40) * 100}%` }} />
+          {!hover && (
+            <span className={`pointer-events-none absolute top-1 whitespace-nowrap rounded bg-background/90 px-1.5 py-0.5 font-mono text-[10px] tabular-nums ${x(hit.t) > 55 ? "right-1" : "left-1"}`}>
+              {fmtClock(hit.t, true)} · {fmt ? fmt(hit.v) : nf.format(Math.round(hit.v))}
+            </span>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -91,18 +111,28 @@ export function PanelHead({ title, right }: { title: string; right?: ReactNode }
 
 export function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-line px-3 py-2 last:border-0">
+    <div className="flex items-baseline justify-between gap-4 border-b border-line px-3 py-2 transition-colors last:border-0 hover:bg-foreground/[0.04]" title={hint}>
       <dt className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{label}</dt>
-      <dd className="text-right font-mono text-[13px] tabular-nums" title={hint}>{value}</dd>
+      <dd className="text-right font-mono text-[13px] tabular-nums">{value}</dd>
     </div>
   );
 }
 
-export function Kpi({ label, value, tone }: { label: string; value: string; tone?: "warn" }) {
+export function Kpi({ label, value, tone, hint }: { label: string; value: string; tone?: "warn"; hint?: string }) {
   return (
-    <div className="px-4 py-3">
+    <div className="px-4 py-3 transition-colors hover:bg-foreground/[0.03]" title={hint}>
       <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{label}</p>
       <p className={`mt-1 text-xl font-semibold tabular-nums tracking-tight ${tone === "warn" ? "text-warn" : ""}`}>{value}</p>
+    </div>
+  );
+}
+
+/** Graduations de l'axe du temps (heures et minutes) sous une courbe. */
+export function TimeAxis({ window, end }: { window: number; end: number }) {
+  const ticks = Array.from({ length: 6 }, (_, i) => end - window + (window * i) / 5);
+  return (
+    <div aria-hidden="true" className="mt-1 flex justify-between font-mono text-[10px] tabular-nums text-muted">
+      {ticks.map((t, i) => <span key={i}>{i === 5 ? "maintenant" : fmtClock(t)}</span>)}
     </div>
   );
 }
@@ -132,7 +162,7 @@ export function ModemTile({ index, peer, history, window, total }: { index: numb
         <span className="ml-auto font-mono text-sm tabular-nums">{fmtKbps(peer.bitrate)}</span>
       </header>
       <div className="mt-2">
-        <Area points={pts} window={window} tone="ink" className="h-14" />
+        <Area points={pts} window={window} tone="ink" className="h-14" fmt={fmtKbps} />
       </div>
       <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-0.5 font-mono text-[11px] text-muted">
         <dt>Part</dt>

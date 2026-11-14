@@ -6,7 +6,7 @@ import { renameRelayAction } from "@/app/(dashboard)/dashboard/serveurs/actions"
 import { coreFetch } from "@/components/dashboard/coreClient";
 import StreamPreview from "@/components/dashboard/StreamPreview";
 import { dbToFill, efficiency, fmtKbps, quality, qualityLevel, seriesStats, sortPeers, summarize } from "@/lib/control-center";
-import { Area, duration, formatOf, Kpi, LEVEL, Meter, ModemTile, nf, PanelHead, QualityChart, RANGES, Stat, Track, type PeerRow, type RangeId, type Sample } from "./shared";
+import { Area, duration, formatOf, Kpi, LEVEL, Meter, ModemTile, nf, PanelHead, RANGES, Stat, TimeAxis, Track, fmtFull, nearest, type Hover, type PeerRow, type RangeId, type Sample } from "./shared";
 import { useControl } from "./useControl";
 
 // Page d'un flux : aperçu en haut à gauche, infos (nom, format) à droite, puis toutes les mesures en direct,
@@ -69,6 +69,7 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
   const [hist, setHist] = useState<Sample[]>([]);
   const [conns, setConns] = useState<Record<string, PeerRow[]>>({});
   const [full, setFull] = useState(false);
+  const [ht, setHt] = useState<number | null>(null);
 
   const current = relays?.find((r) => r.id === relayId) ?? null;
   const live = !!current?.live;
@@ -121,6 +122,13 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
   const connIds = sortPeers(Object.keys(conns).map((connection_id) => ({ connection_id }))).map((c) => c.connection_id);
   const gone = connIds.filter((id) => !peers.some((p) => p.connection_id === id));
   const fill = dbToFill(current.media?.audio_db ?? null);
+  const end = bitrateSeries.length ? bitrateSeries[bitrateSeries.length - 1].t : now;
+  const hover: Hover = { t: ht, set: setHt };
+  // Valeur du relevé survolé ; sans survol, la valeur actuelle.
+  const at = (pts: { t: number; v: number }[], f: (v: number) => string, fallback: string) => {
+    const p = ht != null && ht >= end - win && ht <= end ? nearest(pts, ht) : null;
+    return p ? f(p.v) : fallback;
+  };
 
   return (
     <div className="min-w-0 flex-1">
@@ -140,16 +148,16 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
         </div>
       </div>
 
-      <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <div className="flex min-w-0 items-start gap-3">
-          <div className="w-full max-w-[40rem] min-w-0">
+      <div className="flex flex-wrap items-start gap-4 p-4">
+        <div className="flex w-full min-w-0 max-w-[44rem] items-start gap-3 lg:w-[44rem]">
+          <div className="w-full min-w-0">
             {live ? (
               <StreamPreview coreUrl={coreUrl} relayId={current.id} fullControl={{ full, setFull }} />
             ) : (
               <div className="grid aspect-video place-items-center rounded-2xl border border-dashed border-line px-6 text-center text-sm text-muted">Hors ligne : l&apos;aperçu revient dès que le flux arrive.</div>
             )}
           </div>
-          <div className="flex shrink-0 flex-col items-stretch gap-3">
+          <div className="flex shrink-0 flex-col items-center gap-3">
             <button type="button" disabled={!live} onClick={() => setFull(true)} className="h-9 whitespace-nowrap rounded-md border border-line px-3 text-sm text-muted transition-colors hover:border-foreground/30 hover:text-foreground disabled:pointer-events-none disabled:opacity-40">
               Plein écran
             </button>
@@ -160,7 +168,7 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
           </div>
         </div>
 
-        <aside aria-label="Infos" className="self-start rounded-lg border border-line bg-surface">
+        <aside aria-label="Infos" className="w-full self-start rounded-lg border border-line bg-surface sm:w-[22rem]">
           <PanelHead title="Infos" />
           <dl>
             <Info label="Nom"><Rename id={current.id} name={current.name} /></Info>
@@ -179,10 +187,10 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
       </div>
 
       <section aria-label="Indicateurs clés" className="grid grid-cols-2 divide-x divide-y divide-line border-y border-line sm:grid-cols-3 sm:divide-y-0 xl:grid-cols-6">
-        <Kpi label="Débit utile" value={live && sm ? fmtKbps(sm.bitrate) : "—"} />
-        <Kpi label="Latence" value={live && sm ? `${Math.round(sm.rtt)} ms` : "—"} />
+        <Kpi label="Débit utile" value={live && sm ? fmtKbps(sm.bitrate) : "—"} hint="Débit vidéo reçu, sans les retransmissions" />
+        <Kpi label="Latence" value={live && sm ? `${Math.round(sm.rtt)} ms` : "—"} hint="Temps aller-retour entre l'encodeur et le serveur" />
         <Kpi label="Pertes · 1 min" value={live && current.lost_1m != null ? nf.format(current.lost_1m) : "—"} tone={live && (current.lost_1m ?? 0) > 0 ? "warn" : undefined} />
-        <Kpi label="Rendement" value={live && eff != null ? `${eff} %` : "—"} />
+        <Kpi label="Rendement" value={live && eff != null ? `${eff} %` : "—"} hint="Part du débit réseau qui est du débit utile" />
         <Kpi label="Modems actifs" value={live ? `${sum.active} / ${peers.length}` : "—"} tone={live && sum.weak > 0 ? "warn" : undefined} />
         <Kpi label="Débit réseau" value={live && net > 0 ? fmtKbps(net) : "—"} />
       </section>
@@ -193,30 +201,28 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
           {peers.length === 0 && gone.length === 0 ? (
             <p className="px-3 py-8 text-center text-sm text-muted">{live ? "Flux en direct sans détail par connexion (flux SRT simple)." : "Aucune connexion : le direct n'est pas démarré."}</p>
           ) : (
-            <div className="grid gap-px bg-line sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-3 p-3 [grid-template-columns:repeat(auto-fill,minmax(15rem,1fr))]">
               {peers.map((p, i) => <ModemTile key={p.connection_id} index={i + 1} peer={p} history={conns[p.connection_id] ?? []} window={win} total={sum.total} />)}
               {gone.map((id, i) => <ModemTile key={id} index={peers.length + i + 1} peer={{ connection_id: id, bitrate: 0 }} history={conns[id] ?? []} window={win} total={sum.total} />)}
             </div>
           )}
         </section>
 
-        <aside aria-label="Mesures en direct" className="border-t border-line lg:border-t-0">
-          <PanelHead title="Mesures en direct" />
-          <dl>
-            <Stat label="Pertes (1 min)" value={current.lost_1m != null ? nf.format(current.lost_1m) : "—"} />
-            <Stat label="Congestion" value={sm ? `${Math.round(sm.congestion * 100)} %` : "—"} />
-            <Stat label="Débit utile" value={sm ? fmtKbps(sm.bitrate) : "—"} />
-            <Stat label="Débit réseau" value={net > 0 ? fmtKbps(net) : "—"} hint="Retransmissions comprises" />
-            <Stat label="Rendement" value={eff != null ? `${eff} %` : "—"} hint="Part du débit réseau qui est du débit utile" />
-            <Stat label="RTT" value={sm ? `${Math.round(sm.rtt)} ms` : "—"} />
-            <Stat label="Latence SRT" value={sm?.latency != null ? `${Math.round(sm.latency)} ms` : "—"} />
-            <Stat label="Tampon" value={sm?.buffer != null ? `${Math.round(sm.buffer)} ms` : "—"} />
-            <Stat label="Modems actifs" value={live ? `${sum.active} / ${peers.length}` : "—"} hint="Connexions qui portent plus de 300 kb/s" />
-            <Stat label="Modems faibles" value={live ? String(sum.weak) : "—"} hint="Moins de 1 Mb/s" />
-          </dl>
+        <aside aria-label="Détails" className="border-t border-line lg:border-t-0">
+          {live && (
+            <>
+              <PanelHead title="En direct" />
+              <dl>
+                <Stat label="Congestion" value={sm ? `${Math.round(sm.congestion * 100)} %` : "—"} hint="Part de la bande passante saturée" />
+                <Stat label="Latence SRT" value={sm?.latency != null ? `${Math.round(sm.latency)} ms` : "—"} />
+                <Stat label="Tampon" value={sm?.buffer != null ? `${Math.round(sm.buffer)} ms` : "—"} />
+                <Stat label="Modems faibles" value={String(sum.weak)} hint="Moins de 1 Mb/s" />
+              </dl>
+            </>
+          )}
           <PanelHead title={`Période · ${rangeLabel}`} />
           <dl>
-            <Stat label="Moyen" value={fmtKbps(bs.avg)} />
+            <Stat label="Moyen" value={fmtKbps(bs.avg)} hint="Débit utile moyen" />
             <Stat label="Pic" value={fmtKbps(bs.max)} />
             <Stat label="Creux" value={fmtKbps(bs.min)} />
             <Stat label="Sous 300 kb/s" value={`${bs.down} %`} hint="Part du temps où le débit utile est presque nul" />
@@ -226,15 +232,16 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
       </div>
 
       <section aria-label="Chronologie" className="border-t border-line">
-        <PanelHead title="Chronologie" right={<span className="font-mono text-[11px] text-muted">−{rangeLabel} → maintenant</span>} />
-        <Track label="Débit utile" value={sm ? fmtKbps(sm.bitrate) : "—"}>
-          <QualityChart points={bitrateSeries} window={win} label={rangeLabel} />
+        <PanelHead title="Chronologie" right={<span className="font-mono text-[11px] tabular-nums text-muted">{ht != null && ht >= end - win && ht <= end ? fmtFull(ht) : `−${rangeLabel} → maintenant`}</span>} />
+        <Track label="Débit utile" value={at(bitrateSeries, (v) => fmtKbps(v), sm ? fmtKbps(sm.bitrate) : "—")}>
+          <Area points={bitrateSeries} window={win} end={end} hover={hover} fmt={fmtKbps} showMax className="h-28" />
+          <TimeAxis window={win} end={end} />
         </Track>
-        <Track label="Latence · ms" value={sm ? `${Math.round(sm.rtt)} ms` : "—"}>
-          <Area points={rttSeries} window={win} className="h-16" tone="ink" />
+        <Track label="Latence" value={at(rttSeries, (v) => `${Math.round(v)} ms`, sm ? `${Math.round(sm.rtt)} ms` : "—")}>
+          <Area points={rttSeries} window={win} end={end} hover={hover} fmt={(v) => `${Math.round(v)} ms`} showMax className="h-16" tone="ink" />
         </Track>
-        <Track label="Pertes" value={nf.format(lost)}>
-          <Area points={lossSeries} window={win} className="h-16" tone="ink" max={Math.max(10, ...lossSeries.map((p) => p.v)) * 1.1} />
+        <Track label="Pertes" value={at(lossSeries, (v) => nf.format(Math.round(v)), nf.format(lost))}>
+          <Area points={lossSeries} window={win} end={end} hover={hover} fmt={(v) => nf.format(Math.round(v))} showMax className="h-16" tone="ink" max={Math.max(10, ...lossSeries.map((p) => p.v)) * 1.1} />
         </Track>
       </section>
     </div>

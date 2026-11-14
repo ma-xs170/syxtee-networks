@@ -198,20 +198,19 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
       </div>
       )}
 
-      {view === "stats" && (
-      <section aria-label="Chronologie">
+      <section aria-label="Chronologie" className={view === "live" ? "border-t border-line" : ""}>
         <PanelHead
           title="Chronologie"
           right={
             <div className="flex items-center gap-3">
               <span className="hidden font-mono text-[11px] tabular-nums text-muted sm:inline">{ht != null && ht >= end - win && ht <= end ? fmtFull(ht) : ""}</span>
-              <div role="group" aria-label="Période" className="inline-flex rounded-md border border-line p-0.5 font-mono text-[11px]">
+              {view === "stats" && <div role="group" aria-label="Période" className="inline-flex rounded-md border border-line p-0.5 font-mono text-[11px]">
                 {RANGES.map((r) => (
                   <button key={r.id} type="button" aria-pressed={range === r.id} onClick={() => setRange(r.id)} className={`rounded px-2.5 py-0.5 transition-colors ${range === r.id ? "bg-foreground text-background" : "text-muted hover:text-foreground"}`}>
                     {r.label}
                   </button>
                 ))}
-              </div>
+              </div>}
             </div>
           }
         />
@@ -229,7 +228,6 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
           <div className="min-w-0 px-2 pb-2"><TimeAxis window={win} end={end} /></div>
         </div>
       </section>
-      )}
       {children}
     </div>
   );

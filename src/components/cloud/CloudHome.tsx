@@ -62,7 +62,8 @@ export default function CloudHome({ coreUrl }: { coreUrl: string }) {
 
   const shown = useMemo(() => {
     const term = q.trim().toLowerCase();
-    return (relays ?? []).filter((r) => !term || r.name.toLowerCase().includes(term));
+    // En direct d'abord, hors ligne derrière ; à état égal, ordre alphabétique. Le tri suit l'état en continu.
+    return (relays ?? []).filter((r) => !term || r.name.toLowerCase().includes(term)).sort((a, b) => Number(b.live) - Number(a.live) || a.name.localeCompare(b.name, "fr", { numeric: true }));
   }, [relays, q]);
   const liveCount = relays?.filter((r) => r.live).length ?? 0;
 

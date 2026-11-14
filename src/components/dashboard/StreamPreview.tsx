@@ -147,12 +147,12 @@ export default function StreamPreview({ coreUrl, relayId, fullControl, compact, 
         />
         {state === "unsupported" && !compact && <p className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-muted">Ce navigateur ne lit pas l&apos;aperçu vidéo. Essaie Chrome, Firefox ou Safari à jour.</p>}
         {loading && !compact && (
-          <div role="status" className="absolute inset-0 flex flex-col items-center justify-center px-6">
-            <div className="flex flex-1 items-center justify-center">
+          <div role="status" className="absolute inset-0 flex flex-col items-center justify-center gap-5 px-6">
+            <div className="flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo-400.png" alt="" width={44} height={62} className="h-14 w-auto animate-pulse brightness-0 invert motion-reduce:animate-none" />
             </div>
-            <div className="pb-5 text-center">
+            <div className="text-center">
               <p className="text-sm font-medium text-white">Connexion en cours</p>
               <p className="mt-1 font-mono text-[11px] text-white/60">{detail}</p>
             </div>

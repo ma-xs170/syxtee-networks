@@ -167,7 +167,18 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
           </div>
         </div>
 
-        <aside aria-label="Infos" className="w-full self-start rounded-lg border border-line bg-surface sm:w-[22rem] lg:ml-auto">
+        <section aria-label="Connexions" className="min-w-0 flex-1 basis-[16rem]">
+          {peers.length === 0 && gone.length === 0 ? (
+            <p className="rounded-lg border border-dashed border-line px-3 py-8 text-center text-sm text-muted">{live ? "Flux en direct sans détail par connexion (flux SRT simple)." : "Aucune connexion : le direct n'est pas démarré."}</p>
+          ) : (
+            <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(16rem,1fr))]">
+              {peers.map((p, i) => <ModemTile key={p.connection_id} index={i + 1} peer={p} history={conns[p.connection_id] ?? []} window={win} total={sum.total} />)}
+              {gone.map((id, i) => <ModemTile key={id} index={peers.length + i + 1} peer={{ connection_id: id, bitrate: 0 }} history={conns[id] ?? []} window={win} total={sum.total} />)}
+            </div>
+          )}
+        </section>
+
+        <aside aria-label="Infos" className="w-full self-start rounded-lg border border-line bg-surface sm:w-[22rem]">
           <PanelHead title="Infos" />
           <dl>
             <Info label="Nom"><Rename id={current.id} name={current.name} /></Info>
@@ -183,21 +194,6 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
             <Info label="Audio">{live && current.media?.audio_db != null ? `${Math.round(current.media.audio_db)} dB` : "—"}</Info>
           </dl>
         </aside>
-      </div>
-
-      <div>
-        <section aria-label="Connexions" className="min-w-0">
-          <PanelHead title="Connexions" right={peers.length > 0 ? <span className="font-mono text-[11px] text-muted">{peers.length} modem{peers.length > 1 ? "s" : ""}</span> : undefined} />
-          {peers.length === 0 && gone.length === 0 ? (
-            <p className="px-3 py-8 text-center text-sm text-muted">{live ? "Flux en direct sans détail par connexion (flux SRT simple)." : "Aucune connexion : le direct n'est pas démarré."}</p>
-          ) : (
-            <div className="grid gap-3 p-3 [grid-template-columns:repeat(auto-fill,minmax(15rem,1fr))]">
-              {peers.map((p, i) => <ModemTile key={p.connection_id} index={i + 1} peer={p} history={conns[p.connection_id] ?? []} window={win} total={sum.total} />)}
-              {gone.map((id, i) => <ModemTile key={id} index={peers.length + i + 1} peer={{ connection_id: id, bitrate: 0 }} history={conns[id] ?? []} window={win} total={sum.total} />)}
-            </div>
-          )}
-        </section>
-
       </div>
 
       <section aria-label="Chronologie" className="border-t border-line">

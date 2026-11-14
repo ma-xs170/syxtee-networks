@@ -198,7 +198,7 @@ export function ModemTile({ index, peer, history, window, total }: { index: numb
   const pts = history.map((h) => ({ t: h.t, v: h.bitrate }));
   const st = seriesStats(pts);
   return (
-    <article className="bg-surface p-3" aria-label={`Modem ${index}`}>
+    <article className="rounded-lg border border-line bg-surface p-3" aria-label={`Modem ${index}`}>
       <header className="flex items-center gap-2">
         <span className="font-mono text-[11px] text-muted">{String(index).padStart(2, "0")}</span>
         <span className={`h-1.5 w-1.5 rounded-full ${lv.dot}`} aria-hidden="true" />
@@ -206,15 +206,15 @@ export function ModemTile({ index, peer, history, window, total }: { index: numb
         <span className="ml-auto font-mono text-sm tabular-nums">{fmtKbps(peer.bitrate)}</span>
       </header>
       <div className="mt-2">
-        <Area points={pts} window={window} tone="ink" className="h-14" fmt={fmtKbps} />
+        <Area points={pts} window={window} levels className="h-14" fmt={fmtKbps} />
       </div>
-      <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-0.5 font-mono text-[11px] text-muted">
+      <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 font-mono text-[11px] text-muted">
         <dt>Part</dt>
         <dd className="text-right tabular-nums text-foreground">{share(peer.bitrate, total)} %</dd>
         <dt>Gigue</dt>
         <dd className="text-right tabular-nums text-foreground">{peer.jitter != null ? `${peer.jitter.toFixed(1).replace(".", ",")} ms` : "—"}</dd>
         <dt>Moy. / max</dt>
-        <dd className="text-right tabular-nums text-foreground">{fmtKbps(st.avg)} / {fmtKbps(st.max)}</dd>
+        <dd className="whitespace-nowrap text-right tabular-nums text-foreground">{fmtKbps(st.avg)} / {fmtKbps(st.max)}</dd>
         <dt>Coupé</dt>
         <dd className={`text-right tabular-nums ${st.down > 10 ? "text-bad" : "text-foreground"}`}>{st.down} %</dd>
       </dl>

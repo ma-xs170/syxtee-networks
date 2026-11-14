@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { fmtKbps, levelOf, seriesStats, share, type Level, type Peer, type Point } from "@/lib/control-center";
+import { dbToFill, fmtKbps, levelOf, seriesStats, share, type Level, type Peer, type Point } from "@/lib/control-center";
 
 // Éléments communs aux pages Cloud : mêmes types, mêmes courbes, mêmes tuiles.
 
 export type Sample = { t: number; bitrate: number; rtt: number; dropped: number; buffer: number | null; latency: number | null; congestion: number; links: number };
-export type Media = { width: number | null; height: number | null; codec: string | null; fps: number | null; audio_db: number | null };
+export type Media = { width: number | null; height: number | null; codec: string | null; fps: number | null; audio_db: number | null; audio?: Audio | null };
+export type Audio = { l: number; r: number; peak_l: number; peak_r: number };
 export type Relay = { id: string; name: string; protocol: string; live: boolean; since: number | null; sample: Sample | null; lost_1m: number | null; media: Media | null; peers: Peer[] };
 export type PeerRow = { t: number; bitrate: number; throughput: number | null; jitter: number | null };
 
@@ -197,12 +198,38 @@ export function ModemTile({ index, peer, history, window, total }: { index: numb
   );
 }
 
-/** Vumètre vertical, −60 dB en bas, 0 dB en haut. Pas de son mesuré : jauge vide. */
-export function Meter({ fill, className = "" }: { fill: number; className?: string }) {
-  const color = fill > 0.92 ? "bg-bad" : fill > 0.75 ? "bg-warn" : "bg-ok";
+const METER_TICKS = [0, -6, -12, -24, -36, -48];
+const METER_GRADIENT = "linear-gradient(to top, var(--ok) 0%, var(--ok) 70%, var(--warn) 70%, var(--warn) 90%, var(--bad) 90%)";
+
+function Bar({ rms, peak, label, onVideo, name }: { rms: number | null; peak: number | null; label?: string; onVideo: boolean; name: string }) {
+  const fill = dbToFill(rms);
   return (
-    <div className={`relative w-1.5 overflow-hidden rounded-full bg-white/20 ${className}`} role="meter" aria-label="Niveau audio" aria-valuemin={-60} aria-valuemax={0} aria-valuenow={Math.round(fill * 60 - 60)}>
-      <div className={`absolute inset-x-0 bottom-0 ${color} transition-[height] duration-300 motion-reduce:transition-none`} style={{ height: `${fill * 100}%` }} />
+    <div className="flex h-full flex-col items-center gap-1">
+      <div className={`relative w-2.5 flex-1 overflow-hidden rounded-sm ${onVideo ? "bg-white/20" : "bg-foreground/10"}`} role="meter" aria-label={name} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={rms == null ? undefined : Math.round(rms)}>
+        <div className="absolute inset-0 transition-[clip-path] duration-200 motion-reduce:transition-none" style={{ background: METER_GRADIENT, clipPath: `inset(${(1 - fill) * 100}% 0 0 0)` }} />
+        {peak != null && peak > -60 && <span aria-hidden="true" className="absolute inset-x-0 h-0.5 bg-foreground transition-[bottom] duration-200 motion-reduce:transition-none" style={{ bottom: `calc(${dbToFill(peak) * 100}% - 1px)` }} />}
+      </div>
+      {label && <span className="font-mono text-[10px] leading-none text-muted">{label}</span>}
+    </div>
+  );
+}
+
+/**
+ * Vumètre stéréo : deux canaux (G/D), niveau moyen en barre, crête en trait, graduation en dB (−60 en bas, 0 en haut).
+ * `onVideo` : version compacte posée sur une image (sans graduation ni libellés). Sans mesure : barres vides.
+ */
+export function StereoMeter({ audio, className = "", onVideo = false }: { audio: Audio | null | undefined; className?: string; onVideo?: boolean }) {
+  return (
+    <div className={`flex gap-1.5 ${className}`}>
+      {!onVideo && (
+        <div aria-hidden="true" className="relative mb-[15px] w-7">
+          {METER_TICKS.map((t) => (
+            <span key={t} className="absolute right-0 -translate-y-1/2 font-mono text-[9px] leading-none text-muted" style={{ bottom: `${dbToFill(t) * 100}%` }}>{t}</span>
+          ))}
+        </div>
+      )}
+      <Bar rms={audio?.l ?? null} peak={audio?.peak_l ?? null} label={onVideo ? undefined : "G"} onVideo={onVideo} name="Niveau audio gauche" />
+      <Bar rms={audio?.r ?? null} peak={audio?.peak_r ?? null} label={onVideo ? undefined : "D"} onVideo={onVideo} name="Niveau audio droit" />
     </div>
   );
 }

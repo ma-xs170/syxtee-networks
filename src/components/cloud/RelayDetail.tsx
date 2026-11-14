@@ -5,8 +5,8 @@ import { useCallback, useEffect, useState } from "react";
 import { renameRelayAction } from "@/app/(dashboard)/dashboard/serveurs/actions";
 import { coreFetch } from "@/components/dashboard/coreClient";
 import StreamPreview from "@/components/dashboard/StreamPreview";
-import { dbToFill, efficiency, fmtKbps, levelOf, quality, qualityLevel, seriesStats, sortPeers, summarize } from "@/lib/control-center";
-import { Area, formatOf, LEVEL, Meter, ModemTile, nf, PanelHead, RANGES, Stat, Tile, TimeAxis, Track, fmtFull, nearest, type Hover, type PeerRow, type RangeId, type Sample } from "./shared";
+import { efficiency, fmtKbps, levelOf, quality, qualityLevel, seriesStats, sortPeers, summarize } from "@/lib/control-center";
+import { Area, formatOf, LEVEL, ModemTile, nf, PanelHead, RANGES, Stat, StereoMeter, Tile, TimeAxis, Track, fmtFull, nearest, type Hover, type PeerRow, type RangeId, type Sample } from "./shared";
 import { useControl } from "./useControl";
 
 // Page d'un flux : aperçu en haut à gauche, infos (nom, format) à droite, puis toutes les mesures en direct,
@@ -133,7 +133,6 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
   const lost = hist.reduce((a, s) => a + s.dropped, 0);
   const connIds = sortPeers(Object.keys(conns).map((connection_id) => ({ connection_id }))).map((c) => c.connection_id);
   const gone = connIds.filter((id) => !peers.some((p) => p.connection_id === id));
-  const fill = dbToFill(current.media?.audio_db ?? null);
   const end = bitrateSeries.length ? bitrateSeries[bitrateSeries.length - 1].t : now;
   const hover: Hover = { t: ht, set: setHt };
   // Valeur du relevé survolé ; sans survol, la valeur actuelle.
@@ -164,14 +163,11 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
               <div className="grid aspect-video place-items-center rounded-2xl border border-dashed border-line px-6 text-center text-sm text-muted">Hors ligne : l&apos;aperçu revient dès que le flux arrive.</div>
             )}
           </div>
-          <div className="flex shrink-0 flex-col items-center gap-3">
+          <div className="flex shrink-0 flex-col items-stretch gap-3 self-stretch">
             <button type="button" disabled={!live} onClick={() => setFull(true)} className="h-9 whitespace-nowrap rounded-md border border-line px-3 text-sm text-muted transition-colors hover:border-foreground/30 hover:text-foreground disabled:pointer-events-none disabled:opacity-40">
               Plein écran
             </button>
-            <div className="flex flex-col items-center gap-1.5" aria-hidden={!live}>
-              <Meter fill={fill} className="h-24" />
-              <span className="font-mono text-[10px] text-muted">dB</span>
-            </div>
+            <StereoMeter audio={live ? current.media?.audio : null} className="min-h-0 flex-1 justify-center" />
           </div>
         </div>
 

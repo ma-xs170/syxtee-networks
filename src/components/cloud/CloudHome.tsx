@@ -3,8 +3,8 @@
 import Link from "next/link";
 import StreamPreview from "@/components/dashboard/StreamPreview";
 import { useMemo, useState } from "react";
-import { dbToFill, efficiency, fmtKbps, quality, qualityLevel } from "@/lib/control-center";
-import { formatOf, LEVEL, Meter, type Relay } from "./shared";
+import { efficiency, fmtKbps, quality, qualityLevel } from "@/lib/control-center";
+import { formatOf, LEVEL, StereoMeter, type Relay } from "./shared";
 import Thumb from "./Thumb";
 import { useControl } from "./useControl";
 
@@ -14,7 +14,6 @@ import { useControl } from "./useControl";
 function Card({ r, coreUrl, picked }: { r: Relay; coreUrl: string; picked: boolean }) {
   const q = r.live ? quality(r.sample, r.lost_1m, r.peers) : null;
   const lv = LEVEL[qualityLevel(q)];
-  const fill = dbToFill(r.media?.audio_db ?? null);
   return (
     <li id={`flux-${r.id}`} className={`overflow-hidden rounded-lg border bg-surface transition-colors ${picked ? "border-foreground/60" : "border-line"}`}>
       <div className="relative aspect-video bg-background">
@@ -26,7 +25,7 @@ function Card({ r, coreUrl, picked }: { r: Relay; coreUrl: string; picked: boole
               <span className="h-1.5 w-1.5 rounded-full bg-live" aria-hidden="true" />
               Direct
             </span>
-            <Meter fill={fill} className="absolute bottom-2 left-2 top-9" />
+            <StereoMeter audio={r.media?.audio} onVideo className="absolute bottom-2 left-2 top-9" />
             <dl className="absolute bottom-2 right-2 grid grid-cols-[auto_auto] gap-x-3 gap-y-0.5 rounded bg-black/70 px-2 py-1.5 font-mono text-[10px] leading-4 text-white">
               <dt className="text-white/70">Format</dt>
               <dd className="text-right tabular-nums">{formatOf(r.media)}</dd>

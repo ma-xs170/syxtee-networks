@@ -12,7 +12,7 @@ export function DashPage({ children, className = "" }: { children: ReactNode; cl
   return <div className={`mx-auto w-full max-w-[1200px] px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-12 ${className}`}>{children}</div>;
 }
 
-/** Onglets d'une section (Statistiques, Scanner) : une page par onglet, adresse inchangée. */
+/** Onglets d'une section (Cloud, Scanner) : une page par onglet, adresse inchangée. */
 export function SectionTabs({ tabs, current, label, className = "mb-8" }: { tabs: SectionTab[]; current: string; label: string; className?: string }) {
   return (
     <nav aria-label={label} className={`overflow-x-auto ${className}`}>

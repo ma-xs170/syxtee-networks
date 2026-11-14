@@ -59,7 +59,7 @@ export default function Nav({ variant = "site", admin = false }: { variant?: "si
   const dash = variant === "dashboard";
   const items = dash ? (account ? withLocks(dashboardNav, account.features) : dashboardNav) : nav;
   const groups: MenuGroup[] = dash ? dashboardGroups(admin) : [{ links: siteAccountLinks }];
-  // « Vue d'ensemble » (/dashboard) n'est active que sur sa propre page. Statistiques et Scanner : toute leur section.
+  // « Vue d'ensemble » (/dashboard) n'est active que sur sa propre page. Cloud et Scanner : toute leur section.
   const isActive = (href: string) =>
     [href, ...(dash ? (activeAlso[href] ?? []) : [])].some((h) => pathname === h || (h !== "/dashboard" && pathname.startsWith(`${h}/`)));
 

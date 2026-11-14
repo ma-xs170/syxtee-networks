@@ -15,7 +15,7 @@ const ICONS: Record<string, Icon> = {
   calendrier: CalendarBlank,
   equipe: UsersThree,
   espaces: UsersThree,
-  statistiques: ChartBar,
+  cloud: ChartBar,
   aide: Question,
   plugin: PuzzlePiece,
   cam: Camera,

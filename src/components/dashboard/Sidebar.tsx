@@ -66,8 +66,8 @@ const GROUPS: Group[] = [
   {
     title: "Croissance",
     items: [
-      // Page à part (stats.syxtee-networks.fr) : s'ouvre dans un nouvel onglet.
-      { label: "Statistiques", href: "/dashboard/statistiques", icon: ChartBar, external: true },
+      // Page à part (cloud.syxtee-networks.fr) : s'ouvre dans un nouvel onglet.
+      { label: "Cloud", href: "/dashboard/cloud", icon: ChartBar, external: true },
     ],
   },
 ];

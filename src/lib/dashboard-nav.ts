@@ -10,7 +10,7 @@ export type DashTool = DashLink & { desc: string; icon: DashIcon; feature?: Feat
 export type DashMenu = { label: string; children: DashTool[]; note?: string; dot?: boolean };
 export type DashItem = DashLink | DashMenu;
 
-// 4 entrées : un seul menu déroulant (Direct). Statistiques et Scanner regroupent leurs pages en onglets (SectionTabs).
+// 4 entrées : un seul menu déroulant (Direct). Cloud et Scanner regroupent leurs pages en onglets (SectionTabs).
 // Le compte (profil, formule, paramètres, admin, aide) vit dans le panneau de l'avatar, à droite.
 export const dashboardNav: DashItem[] = [
   { label: "Accueil", href: "/dashboard" },
@@ -25,20 +25,20 @@ export const dashboardNav: DashItem[] = [
     label: "Production",
     children: [{ label: "Scènes", href: "/dashboard/scenes", desc: "Tes collections de scènes sauvegardées", icon: "plan", feature: "remote" }],
   },
-  { label: "Statistiques", href: "/dashboard/statistiques" },
+  { label: "Cloud", href: "/dashboard/cloud" },
 ];
 
 export type SectionTab = { label: string; href: string };
 
-/** Onglets de la section Statistiques. */
+/** Onglets de la section Cloud. */
 export const statsTabs: SectionTab[] = [
-  { label: "Statistiques", href: "/dashboard/statistiques" },
+  { label: "Cloud", href: "/dashboard/cloud" },
   { label: "Historique", href: "/dashboard/lives" },
 ];
 
 /** Un lien de la barre reste actif sur toutes les pages de sa section. */
 export const activeAlso: Record<string, string[]> = {
-  "/dashboard/statistiques": statsTabs.map((t) => t.href),
+  "/dashboard/cloud": statsTabs.map((t) => t.href),
 };
 
 /** Entrées verrouillées (cadenas) pour la formule donnée. */

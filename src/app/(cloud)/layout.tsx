@@ -6,12 +6,12 @@ import { publicCoreUrl } from "@/lib/core";
 import { supabaseUrl } from "@/lib/supabase/env";
 import { getActiveWorkspace } from "@/lib/workspace";
 
-// Statistiques : une page à part (stats.syxtee-networks.fr), sans barre latérale. Barre du haut : retour à l'espace client, espace actif, onglets.
+// Cloud : une page à part (cloud.syxtee-networks.fr), sans barre latérale. Barre du haut : retour à l'espace client, espace actif, onglets.
 // Même session que le dashboard (cookie partagé entre les sous-domaines) ; le Core revérifie chaque appel.
 export default async function StatsLayout({ children }: LayoutProps<"/">) {
   if (publicCoreUrl) preconnect(publicCoreUrl, { crossOrigin: "anonymous" });
   if (supabaseUrl) preconnect(supabaseUrl, { crossOrigin: "anonymous" });
-  await requireUser("/dashboard/statistiques");
+  await requireUser("/dashboard/cloud");
   const [profile, workspace] = await Promise.all([getProfile(), getActiveWorkspace()]);
   if (!profile?.onboarded_at) redirect("/bienvenue");
 
@@ -25,10 +25,10 @@ export default async function StatsLayout({ children }: LayoutProps<"/">) {
             <span className="hidden text-sm font-semibold tracking-[0.18em] sm:inline">SYXTEE</span>
           </a>
           <span className="hidden font-mono text-xs text-muted sm:inline" aria-hidden="true">/</span>
-          <span className="hidden font-mono text-xs uppercase tracking-[0.14em] text-muted sm:inline">Statistiques</span>
+          <span className="hidden font-mono text-xs uppercase tracking-[0.14em] text-muted sm:inline">Cloud</span>
 
-          <nav aria-label="Statistiques" className="ml-auto flex items-center gap-1 overflow-x-auto">
-            <span aria-current="page" className={`${tab} bg-accent text-on-accent`}>Statistiques</span>
+          <nav aria-label="Cloud" className="ml-auto flex items-center gap-1 overflow-x-auto">
+            <span aria-current="page" className={`${tab} bg-accent text-on-accent`}>Cloud</span>
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- autre hôte (app) : navigation complète */}
             <a href="/dashboard/lives" className={`${tab} text-muted hover:text-foreground`}>Historique</a>
           </nav>

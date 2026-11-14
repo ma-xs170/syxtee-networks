@@ -35,7 +35,7 @@ const nextConfig: NextConfig = {
     }));
   },
   async redirects() {
-    // Sous-domaines : www = site, app = espace client, auth = connexion, admin = administration, remote = contrôle à distance d'OBS, docs = documentation, status = état du service, stats = statistiques. Le même projet sert les huit ; ces règles renvoient chaque page sur son hôte.
+    // Sous-domaines : www = site, app = espace client, auth = connexion, admin = administration, remote = contrôle à distance d'OBS, docs = documentation, status = état du service, cloud = centre de contrôle Cloud. Le même projet sert les huit ; ces règles renvoient chaque page sur son hôte.
     const ROOT = "syxtee-networks.fr";
     const WWW = `https://www.${ROOT}`;
     const APP = `https://app.${ROOT}`;
@@ -44,24 +44,24 @@ const nextConfig: NextConfig = {
     const REMOTE = `https://remote.${ROOT}`;
     const DOCS = `https://docs.${ROOT}`;
     const STATUS = `https://status.${ROOT}`;
-    const STATS = `https://stats.${ROOT}`;
+    const CLOUD = `https://cloud.${ROOT}`;
     const host = (value: string) => [{ type: "host" as const, value }];
     const AUTH_PAGES = ["/connexion", "/inscription", "/mot-de-passe-oublie", "/reinitialiser", "/premiere-connexion"];
     const APP_PAGES = ["/dashboard", "/bienvenue", "/cam"];
-    const OTHER_HOSTS = ["www", "app", "auth", "admin", "remote", "docs", "status", "videastes", "stats"].map((h) => `${h}.${ROOT}`);
+    const OTHER_HOSTS = ["www", "app", "auth", "admin", "remote", "docs", "status", "videastes", "cloud"].map((h) => `${h}.${ROOT}`);
     const except = (...keep: string[]) => OTHER_HOSTS.filter((h) => !keep.includes(h.split(".")[0]));
     const to = (base: string, sources: string[], from: string[]) =>
       from.flatMap((h) => sources.flatMap((src) => [{ source: src, has: host(h), destination: `${base}${src}`, permanent: true }, ...(src === "/cam" || src === "/bienvenue" || AUTH_PAGES.includes(src) ? [] : [{ source: `${src}/:path*`, has: host(h), destination: `${base}${src}/:path*`, permanent: true }])]));
     const hostRoutes = [
       { source: "/:path*", has: host(ROOT), destination: `${WWW}/:path*`, permanent: true },
       ...[
-      // Statistiques : toujours sur stats (le centre de contrôle, pleine page).
-      ...to(STATS, ["/dashboard/statistiques"], except("stats")),
-      // Espace client : toujours sur app. Sur stats, seule la page Statistiques reste : le reste du dashboard renvoie sur app.
-      ...to(APP, APP_PAGES, except("app", "stats")),
-      ...to(APP, ["/bienvenue", "/cam"], [`stats.${ROOT}`]),
-      { source: "/dashboard", has: host(`stats.${ROOT}`), destination: `${APP}/dashboard`, permanent: true },
-      { source: "/dashboard/:path((?!statistiques(?:/|$)).+)", has: host(`stats.${ROOT}`), destination: `${APP}/dashboard/:path`, permanent: true },
+      // Cloud : toujours sur cloud (le centre de contrôle, pleine page).
+      ...to(CLOUD, ["/dashboard/cloud"], except("cloud")),
+      // Espace client : toujours sur app. Sur cloud, seule la page Cloud reste : le reste du dashboard renvoie sur app.
+      ...to(APP, APP_PAGES, except("app", "cloud")),
+      ...to(APP, ["/bienvenue", "/cam"], [`cloud.${ROOT}`]),
+      { source: "/dashboard", has: host(`cloud.${ROOT}`), destination: `${APP}/dashboard`, permanent: true },
+      { source: "/dashboard/:path((?!cloud(?:/|$)).+)", has: host(`cloud.${ROOT}`), destination: `${APP}/dashboard/:path`, permanent: true },
       // Administration : toujours sur admin.
       ...to(ADMIN, ["/admin"], except("admin")),
       // Contrôle à distance d'un poste : toujours sur remote. (La page de présentation /controle-a-distance reste sur www.)
@@ -77,7 +77,7 @@ const nextConfig: NextConfig = {
       { source: "/", has: host(`docs.${ROOT}`), destination: "/docs", permanent: false },
       { source: "/", has: host(`status.${ROOT}`), destination: "/statut", permanent: false },
       { source: "/", has: host(`videastes.${ROOT}`), destination: "/videastes", permanent: false },
-      { source: "/", has: host(`stats.${ROOT}`), destination: "/dashboard/statistiques", permanent: false },
+      { source: "/", has: host(`cloud.${ROOT}`), destination: "/dashboard/cloud", permanent: false },
       { source: "/", has: host(`remote.${ROOT}`), destination: `${APP}/dashboard/direct`, permanent: false },
       ],
     ];
@@ -90,8 +90,9 @@ const nextConfig: NextConfig = {
       { source: "/dashboard/encodeurs", destination: "/dashboard/appareils", permanent: true },
       { source: "/dashboard/backups", destination: "/dashboard/scenes", permanent: true },
       { source: "/dashboard/invitations", destination: "/dashboard/equipe", permanent: true },
-      { source: "/dashboard/stats", destination: "/dashboard/statistiques", permanent: true },
-      { source: "/dashboard/analyses", destination: "/dashboard/statistiques", permanent: true },
+      { source: "/dashboard/stats", destination: "/dashboard/cloud", permanent: true },
+      { source: "/dashboard/statistiques", destination: "/dashboard/cloud", permanent: true },
+      { source: "/dashboard/analyses", destination: "/dashboard/cloud", permanent: true },
       { source: "/dashboard/documentation", destination: "/dashboard/aide?onglet=documentation", permanent: true },
       { source: "/dashboard/support", destination: "/dashboard/aide", permanent: true },
       { source: "/dashboard/parametres", destination: "/dashboard/compte?onglet=preferences", permanent: true },
@@ -134,7 +135,7 @@ const nextConfig: NextConfig = {
       { source: "/couverture", destination: "/", permanent: true },
       { source: "/antennes", destination: "/", permanent: true },
       { source: "/offres", destination: "/acces", permanent: true },
-      { source: "/dashboard/contributions", destination: "/dashboard/statistiques", permanent: true },
+      { source: "/dashboard/contributions", destination: "/dashboard/cloud", permanent: true },
       { source: "/dashboard/sante", destination: "/dashboard/serveurs", permanent: true },
       { source: "/dashboard/mire", destination: "/dashboard/serveurs", permanent: true },
       { source: "/dashboard/obs", destination: "/dashboard/direct", permanent: true },

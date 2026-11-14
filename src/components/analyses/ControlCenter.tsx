@@ -239,7 +239,7 @@ export default function ControlCenter({ coreUrl }: { coreUrl: string }) {
   const gone = connIds.filter((id) => !peers.some((p) => p.connection_id === id));
 
   return (
-    <div className="overflow-hidden rounded-xl border border-line bg-surface" role="region" aria-label="Centre de contrôle des statistiques">
+    <div className="overflow-hidden rounded-xl border border-line bg-surface" role="region" aria-label="Centre de contrôle Cloud">
       {/* Barre d'outils : relais regardé à gauche, période à droite. */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-background px-3 py-2">
         <span className={`h-2 w-2 rounded-full ${live ? "bg-live" : "bg-muted/50"}`} aria-hidden="true" />

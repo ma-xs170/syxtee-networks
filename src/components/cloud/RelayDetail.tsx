@@ -163,26 +163,24 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
       </section>
 
       {view === "live" && (
-      <div className="flex flex-wrap items-start p-4">
-        <section aria-label="Aperçu" className="order-last -mr-4 -my-4 flex w-full min-w-0 max-w-[44rem] flex-col self-stretch border-line lg:w-[44rem] lg:border-l">
+      <div className="flex flex-wrap items-stretch">
+        <section aria-label="Aperçu" className="order-last flex w-full min-w-0 flex-col border-line lg:w-[40rem] lg:border-l">
           <PanelHead title="Aperçu" />
-          <div className="p-4">
-            {live ? (
-              <StreamPreview coreUrl={coreUrl} relayId={current.id} fullControl={{ full, setFull }} />
-            ) : (
-              <div className="grid aspect-video place-items-center rounded-2xl border border-dashed border-line px-6 text-center text-sm text-muted">Hors ligne : l&apos;aperçu revient dès que le flux arrive.</div>
-            )}
-          </div>
+          {live ? (
+            <StreamPreview coreUrl={coreUrl} relayId={current.id} fullControl={{ full, setFull }} flush />
+          ) : (
+            <div className="grid aspect-video place-items-center px-6 text-center text-sm text-muted">Hors ligne : l&apos;aperçu revient dès que le flux arrive.</div>
+          )}
         </section>
 
-        <section aria-label="VU-mètre" className="order-2 -my-4 flex shrink-0 flex-col self-stretch border-l border-line sm:min-w-[11rem]">
+        <section aria-label="VU-mètre" className="order-2 flex shrink-0 flex-col border-l border-line sm:w-[9rem]">
           <PanelHead title="VU-mètre" />
           <div className="flex flex-1 items-center justify-center px-6 py-3">
             <StereoMeter audio={live ? current.media?.audio : null} className="h-[20rem] justify-center" />
           </div>
         </section>
 
-        <section aria-label="Modems" className="order-1 -my-4 flex min-w-0 flex-1 basis-[16rem] flex-col self-stretch border-l border-line">
+        <section aria-label="Modems" className="order-1 flex min-w-0 flex-1 basis-[14rem] flex-col border-l border-line">
           <PanelHead title="Modems" right={peers.length > 0 ? <span className="font-mono text-[11px] text-muted">{peers.length} connecté{peers.length > 1 ? "s" : ""}</span> : undefined} />
           {peers.length === 0 && gone.length === 0 ? (
             <p className="px-3 py-8 text-center text-sm text-muted">{live ? "Flux en direct sans détail par connexion (flux SRT simple)." : "Aucune connexion : le direct n'est pas démarré."}</p>
@@ -194,7 +192,7 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
           )}
         </section>
 
-        <aside aria-label="Infos" className="order-first -mb-4 -ml-4 -mt-4 flex w-full flex-col self-stretch sm:w-[22rem]">
+        <aside aria-label="Infos" className="order-first flex w-full flex-col sm:w-[18rem]">
           <PanelHead title="Infos" />
           <dl className="flex flex-1 flex-col">
             <Info label="Nom" icon="nom"><Rename id={current.id} name={current.name} /></Info>

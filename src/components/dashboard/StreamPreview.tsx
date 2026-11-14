@@ -8,8 +8,8 @@ import { activeWorkspace, coreToken } from "./coreClient";
 
 type State = "connecting" | "playing" | "offline" | "unsupported";
 
-/** `compact` : vidéo seule, sans cadre ni boutons (vignette animée d'une grille). `fullControl` : plein écran piloté de l'extérieur (bouton placé à côté de l'aperçu) ; le bouton interne disparaît. */
-export default function StreamPreview({ coreUrl, relayId, fullControl, compact }: { coreUrl: string; relayId: string; compact?: boolean; fullControl?: { full: boolean; setFull: (v: boolean) => void } }) {
+/** `flush` : sans cadre ni arrondi, collé aux bords de son panneau. `compact` : vidéo seule, sans cadre ni boutons (vignette animée d'une grille). `fullControl` : plein écran piloté de l'extérieur (bouton placé à côté de l'aperçu) ; le bouton interne disparaît. */
+export default function StreamPreview({ coreUrl, relayId, fullControl, compact, flush }: { coreUrl: string; relayId: string; compact?: boolean; flush?: boolean; fullControl?: { full: boolean; setFull: (v: boolean) => void } }) {
   const video = useRef<HTMLVideoElement>(null);
   const [state, setState] = useState<State>("connecting");
   const [muted, setMuted] = useState(true);
@@ -133,7 +133,7 @@ export default function StreamPreview({ coreUrl, relayId, fullControl, compact }
           : null;
 
   return (
-    <section className={compact ? "absolute inset-0" : "overflow-hidden rounded-2xl border border-line"} aria-label="Aperçu du flux">
+    <section className={compact ? "absolute inset-0" : flush ? "overflow-hidden" : "overflow-hidden rounded-2xl border border-line"} aria-label="Aperçu du flux">
       <div ref={box} className={full ? "fixed inset-0 z-[60] h-dvh w-screen bg-black" : compact ? "relative h-full w-full" : "relative aspect-video bg-black"}>
         <video
           ref={video}

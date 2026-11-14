@@ -69,6 +69,8 @@ export type Deps = {
   reclassUser?: (userId: string) => Promise<number>;
   verifyUser: (authorization: string | undefined, workspace?: string) => Promise<string | null>;
   previewPath: (relayId: string) => string;
+  /** Format et niveau audio du flux en direct (absent : aperçus désactivés). */
+  previewInfo?: (relayId: string) => { width: number | null; height: number | null; codec: string | null; fps: number | null; audio_db: number | null; audio: { l: number; r: number; peak_l: number; peak_r: number } | null } | null;
   /** Aperçu vidéo en direct (MPEG-TS) ; absent si les aperçus sont désactivés. */
   liveFeed?: (r: Relay) => LiveFeed;
   onKeysChanged: () => void;
@@ -444,6 +446,7 @@ export function buildServer(d: Deps) {
           since: s.live ? s.since : null,
           sample: sm,
           lost_1m: sm ? d.samples.history(relay.id, since).reduce((a, x) => a + x.dropped, 0) : null,
+          media: s.live ? (d.previewInfo?.(relay.id) ?? null) : null,
           peers: s.live ? (s.peers ?? []) : [],
         };
       });

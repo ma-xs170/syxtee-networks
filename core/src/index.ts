@@ -288,6 +288,7 @@ const app = buildServer({
   backups,
   recordings,
   previewPath: (id) => previews?.path(id) ?? "",
+  previewInfo: (id) => previews?.info(id) ?? null,
   liveFeed: previews ? (r) => openLive({ host: config.SLS_SRT_HOST, port: config.SRT_PLAY_PORT, playId: r.play_id }) : undefined,
   onKeysChanged: () => void refreshKeys(),
   slsHealthy: async () => {

@@ -84,7 +84,7 @@ function Session({ since }: { since: number | null }) {
   }, [since]);
   const sec = since ? Math.max(0, Math.floor((t - since) / 1000)) : 0;
   const p = (n: number) => String(n).padStart(2, "0");
-  return <Tile label="Session" value={since ? `${p(Math.floor(sec / 3600))}:${p(Math.floor((sec % 3600) / 60))}:${p(sec % 60)}` : "00:00:00"} tone={since ? undefined : "off"} hint={since ? `Début du flux : ${fmtFull(since)}` : "Aucun direct en cours"} />;
+  return <Tile label="Session" value={since ? `${p(Math.floor(sec / 3600))}:${p(Math.floor((sec % 3600) / 60))}:${p(sec % 60)}` : "00:00:00"} tone={since ? undefined : "off"} hint={since ? `Ton flux est en direct depuis ${fmtFull(since)}. Le compteur tourne tant que la vidéo arrive.` : "Hors ligne : aucun flux reçu. La session démarre dès que ton encodeur envoie la vidéo."} />;
 }
 
 export default function RelayDetail({ coreUrl, relayId, view = "live", children }: { coreUrl: string; relayId: string; view?: "live" | "stats"; children?: React.ReactNode }) {
@@ -154,12 +154,12 @@ export default function RelayDetail({ coreUrl, relayId, view = "live", children 
     <div className="min-w-0 flex-1">
       <section aria-label="Indicateurs clés" className="flex flex-wrap gap-2 px-4 pt-3">
         <Session since={live ? current.since : null} />
-        <Tile label="Débit" value={live && sm ? fmtKbpsFull(sm.bitrate) : "—"} tone={live && sm ? levelOf(sm.bitrate) : "off"} spark={live ? bitrateSeries : undefined} levels hint="Débit vidéo reçu, sans les retransmissions" />
-        <Tile label="Qualité" value={q != null ? `${q} %` : "—"} tone={live ? qualityLevel(q) : "off"} hint="Note globale : congestion, pertes et modems faibles" />
-        <Tile label="Latence" value={live && sm ? `${Math.round(sm.rtt)} ms` : "—"} spark={live ? rttSeries : undefined} hint="Temps aller-retour entre l'encodeur et le serveur" />
-        <Tile label="Pertes · 1 min" value={live && current.lost_1m != null ? nf.format(current.lost_1m) : "—"} tone={live && (current.lost_1m ?? 0) > 0 ? "warn" : undefined} />
-        <Tile label="Rendement" value={live && eff != null ? `${eff} %` : "—"} hint="Part du débit réseau qui est du débit utile" />
-        <Tile label="Modems actifs" value={live ? `${sum.active} / ${peers.length}` : "—"} tone={live && sum.weak > 0 ? "warn" : undefined} />
+        <Tile label="Débit" value={live && sm ? fmtKbpsFull(sm.bitrate) : "—"} tone={live && sm ? levelOf(sm.bitrate) : "off"} spark={live ? bitrateSeries : undefined} levels hint={live ? "Débit vidéo reçu, sans les retransmissions. Vert au-dessus de 1 Mb/s, orange sous 1 Mb/s, rouge sous 300 kb/s." : "Hors ligne : pas de débit tant que le flux n'arrive pas."} />
+        <Tile label="Qualité" value={q != null ? `${q} %` : "—"} tone={live ? qualityLevel(q) : "off"} hint={live ? "Note globale de ton flux : congestion, pertes et modems faibles. 100 % : rien à signaler." : "Hors ligne : la note revient dès que le flux est en direct."} />
+        <Tile label="Latence" value={live && sm ? `${Math.round(sm.rtt)} ms` : "—"} spark={live ? rttSeries : undefined} hint={live ? "Temps aller-retour entre ton encodeur et le serveur SYXTEE. Plus il est bas, plus le direct est réactif." : "Hors ligne : mesuré seulement quand le flux est en direct."} />
+        <Tile label="Pertes · 1 min" value={live && current.lost_1m != null ? nf.format(current.lost_1m) : "—"} tone={live && (current.lost_1m ?? 0) > 0 ? "warn" : undefined} hint={live ? "Paquets perdus sur la dernière minute. 0 : le flux arrive sans accroc, sinon l'image peut saccader." : "Hors ligne : aucun paquet reçu."} />
+        <Tile label="Rendement" value={live && eff != null ? `${eff} %` : "—"} hint={live ? "Part du débit réseau qui est du débit utile. Le reste sert aux retransmissions et à la correction d'erreurs." : "Hors ligne : calculé quand le flux est en direct."} />
+        <Tile label="Modems actifs" value={live ? `${sum.active} / ${peers.length}` : "—"} tone={live && sum.weak > 0 ? "warn" : undefined} hint={live ? (peers.length ? "Connexions réseau (modems, Wi-Fi) qui envoient ton flux : actives sur le total connecté. Orange : l'une est faible." : "Flux simple, sans détail par connexion : un seul chemin réseau.") : "Hors ligne : aucune connexion réseau n'envoie de flux."} />
       </section>
 
       {view === "live" && (

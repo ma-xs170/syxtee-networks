@@ -125,16 +125,21 @@ export function Stat({ label, value, hint }: { label: string; value: string; hin
   );
 }
 
-/** Tuile de la barre du haut : valeur en grand, libellé dessous, couleur d'état optionnelle, courbe optionnelle. */
+/** Tuile de la barre du haut : valeur en grand, libellé dessous, couleur d'état optionnelle, courbe optionnelle. `hint` : petite bulle au survol (ou au focus clavier) qui explique la valeur. */
 export function Tile({ label, value, tone, hint, spark, levels }: { label: string; value: string; tone?: Level | "warn"; hint?: string; spark?: Point[]; levels?: boolean }) {
   const color = tone === "ok" ? "text-ok" : tone === "warn" ? "text-warn" : tone === "bad" ? "text-bad" : tone === "off" ? "text-muted" : "";
   return (
-    <div className={`flex flex-1 items-center justify-center gap-4 rounded-lg bg-foreground/[0.05] px-3 py-2 transition-colors hover:bg-foreground/[0.09] ${spark ? "min-w-[16rem]" : "min-w-[7.5rem]"}`} title={hint}>
+    <div tabIndex={hint ? 0 : undefined} aria-label={hint ? `${label} : ${value}. ${hint}` : undefined} className={`group relative flex flex-1 items-center justify-center gap-4 rounded-lg bg-foreground/[0.05] px-3 py-2 outline-none transition-colors hover:bg-foreground/[0.09] focus-visible:ring-2 focus-visible:ring-foreground/30 ${spark ? "min-w-[16rem]" : "min-w-[7.5rem]"}`}>
       <div className="min-w-0 text-center">
         <p className={`whitespace-nowrap text-xl font-semibold leading-tight tabular-nums tracking-tight ${color}`}>{value}</p>
         <p className="truncate font-mono text-[11px] leading-tight text-muted">{label}</p>
       </div>
       {spark && <Spark points={spark} levels={levels} className={`h-8 w-16 shrink-0 ${color}`} />}
+      {hint && (
+        <span role="tooltip" className="pointer-events-none absolute left-1/2 top-full z-30 mt-2 w-60 max-w-[80vw] -translate-x-1/2 rounded-lg border border-line bg-surface px-3 py-2 text-left text-xs font-normal leading-snug text-foreground opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none">
+          {hint}
+        </span>
+      )}
     </div>
   );
 }

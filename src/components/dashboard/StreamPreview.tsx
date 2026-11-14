@@ -8,12 +8,15 @@ import { activeWorkspace, coreToken } from "./coreClient";
 
 type State = "connecting" | "playing" | "offline" | "unsupported";
 
-export default function StreamPreview({ coreUrl, relayId }: { coreUrl: string; relayId: string }) {
+/** `fullControl` : plein écran piloté de l'extérieur (bouton placé à côté de l'aperçu) ; le bouton interne disparaît. */
+export default function StreamPreview({ coreUrl, relayId, fullControl }: { coreUrl: string; relayId: string; fullControl?: { full: boolean; setFull: (v: boolean) => void } }) {
   const video = useRef<HTMLVideoElement>(null);
   const [state, setState] = useState<State>("connecting");
   const [muted, setMuted] = useState(true);
   const box = useRef<HTMLDivElement>(null);
-  const [full, setFull] = useState(false);
+  const [fullLocal, setFullLocal] = useState(false);
+  const full = fullControl ? fullControl.full : fullLocal;
+  const setFull = fullControl ? fullControl.setFull : setFullLocal;
 
   // Plein écran : l'API du navigateur quand elle existe (Android, ordinateur, iPad), sinon (iPhone) la vidéo prend toute la fenêtre.
   // Paysage demandé quand c'est possible ; Échap ou la croix referment ; la page derrière ne défile plus.
@@ -35,7 +38,7 @@ export default function StreamPreview({ coreUrl, relayId }: { coreUrl: string; r
       screen.orientation?.unlock?.();
       if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
     };
-  }, [full]);
+  }, [full, setFull]);
 
   useEffect(() => {
     const el = video.current;
@@ -151,13 +154,13 @@ export default function StreamPreview({ coreUrl, relayId }: { coreUrl: string; r
             >
               {muted ? "Activer le son" : "Couper le son"}
             </button>
-            <button
+            {(!fullControl || full) && <button
               type="button"
-              onClick={() => setFull((f) => !f)}
+              onClick={() => setFull(!full)}
               className={`absolute flex h-11 items-center rounded-full bg-black/75 px-4 font-mono text-[10px] uppercase tracking-[0.12em] text-white transition-colors hover:bg-black ${full ? "right-[max(0.75rem,env(safe-area-inset-right))] top-[max(0.75rem,env(safe-area-inset-top))]" : "bottom-3 left-3"}`}
             >
               {full ? "Fermer" : "Plein écran"}
-            </button>
+            </button>}
           </>
         )}
       </div>

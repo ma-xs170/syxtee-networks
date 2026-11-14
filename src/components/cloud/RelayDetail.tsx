@@ -68,6 +68,7 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
   const [range, setRange] = useState<RangeId>("15m");
   const [hist, setHist] = useState<Sample[]>([]);
   const [conns, setConns] = useState<Record<string, PeerRow[]>>({});
+  const [full, setFull] = useState(false);
 
   const current = relays?.find((r) => r.id === relayId) ?? null;
   const live = !!current?.live;
@@ -140,17 +141,22 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
       </div>
 
       <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <div className="flex gap-3">
-          <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="w-full max-w-[40rem] min-w-0">
             {live ? (
-              <StreamPreview coreUrl={coreUrl} relayId={current.id} />
+              <StreamPreview coreUrl={coreUrl} relayId={current.id} fullControl={{ full, setFull }} />
             ) : (
               <div className="grid aspect-video place-items-center rounded-2xl border border-dashed border-line px-6 text-center text-sm text-muted">Hors ligne : l&apos;aperçu revient dès que le flux arrive.</div>
             )}
           </div>
-          <div className="flex flex-col items-center gap-1.5 py-1" aria-hidden={!live}>
-            <Meter fill={fill} className="min-h-24 flex-1" />
-            <span className="font-mono text-[10px] text-muted">dB</span>
+          <div className="flex shrink-0 flex-col items-stretch gap-3">
+            <button type="button" disabled={!live} onClick={() => setFull(true)} className="h-9 whitespace-nowrap rounded-md border border-line px-3 text-sm text-muted transition-colors hover:border-foreground/30 hover:text-foreground disabled:pointer-events-none disabled:opacity-40">
+              Plein écran
+            </button>
+            <div className="flex flex-col items-center gap-1.5" aria-hidden={!live}>
+              <Meter fill={fill} className="h-24" />
+              <span className="font-mono text-[10px] text-muted">dB</span>
+            </div>
           </div>
         </div>
 

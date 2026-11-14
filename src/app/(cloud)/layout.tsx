@@ -34,7 +34,7 @@ export default async function StatsLayout({ children }: LayoutProps<"/">) {
           </Suspense>
 
           <div className="hidden shrink-0 items-center gap-3 border-l border-line pl-4 md:flex">
-            <a href="/dashboard" className="flex max-w-[18ch] items-center gap-1.5 font-mono text-xs text-muted transition-colors hover:text-foreground" title="Ouvrir le tableau de bord">
+            <a href="/dashboard" className="flex items-center gap-1.5 whitespace-nowrap font-mono text-xs text-muted transition-colors hover:text-foreground" title="Ouvrir le tableau de bord">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" /></svg>
               <span className="truncate">{workspace?.name ?? "Tableau de bord"}</span>
             </a>

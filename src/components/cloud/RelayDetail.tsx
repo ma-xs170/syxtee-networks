@@ -5,8 +5,8 @@ import { useCallback, useEffect, useState } from "react";
 import { renameRelayAction } from "@/app/(dashboard)/dashboard/serveurs/actions";
 import { coreFetch } from "@/components/dashboard/coreClient";
 import StreamPreview from "@/components/dashboard/StreamPreview";
-import { efficiency, fmtKbps, levelOf, quality, qualityLevel, seriesStats, sortPeers, summarize } from "@/lib/control-center";
-import { Area, formatOf, LEVEL, ModemTile, nf, PanelHead, RANGES, Stat, StereoMeter, Tile, TimeAxis, Track, fmtFull, nearest, type Hover, type PeerRow, type RangeId, type Sample } from "./shared";
+import { efficiency, fmtKbps, levelOf, quality, qualityLevel, sortPeers, summarize } from "@/lib/control-center";
+import { Area, formatOf, LEVEL, ModemTile, nf, PanelHead, RANGES, StereoMeter, Tile, TimeAxis, Track, fmtFull, nearest, type Hover, type PeerRow, type RangeId, type Sample } from "./shared";
 import { useControl } from "./useControl";
 
 // Page d'un flux : aperçu en haut à gauche, infos (nom, format) à droite, puis toutes les mesures en direct,
@@ -129,7 +129,6 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
   const bitrateSeries = hist.map((s) => ({ t: s.t, v: s.bitrate }));
   const rttSeries = hist.map((s) => ({ t: s.t, v: s.rtt }));
   const lossSeries = hist.map((s) => ({ t: s.t, v: s.dropped }));
-  const bs = seriesStats(bitrateSeries);
   const lost = hist.reduce((a, s) => a + s.dropped, 0);
   const connIds = sortPeers(Object.keys(conns).map((connection_id) => ({ connection_id }))).map((c) => c.connection_id);
   const gone = connIds.filter((id) => !peers.some((p) => p.connection_id === id));
@@ -189,7 +188,7 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
         </aside>
       </div>
 
-      <div className="grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:divide-x lg:divide-line">
+      <div>
         <section aria-label="Connexions" className="min-w-0">
           <PanelHead title="Connexions" right={peers.length > 0 ? <span className="font-mono text-[11px] text-muted">{peers.length} modem{peers.length > 1 ? "s" : ""}</span> : undefined} />
           {peers.length === 0 && gone.length === 0 ? (
@@ -202,27 +201,6 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
           )}
         </section>
 
-        <aside aria-label="Détails" className="border-t border-line lg:border-t-0">
-          {live && (
-            <>
-              <PanelHead title="En direct" />
-              <dl>
-                <Stat label="Congestion" value={sm ? `${Math.round(sm.congestion * 100)} %` : "—"} hint="Part de la bande passante saturée" />
-                <Stat label="Latence SRT" value={sm?.latency != null ? `${Math.round(sm.latency)} ms` : "—"} />
-                <Stat label="Tampon" value={sm?.buffer != null ? `${Math.round(sm.buffer)} ms` : "—"} />
-                <Stat label="Modems faibles" value={String(sum.weak)} hint="Moins de 1 Mb/s" />
-              </dl>
-            </>
-          )}
-          <PanelHead title={`Période · ${rangeLabel}`} />
-          <dl>
-            <Stat label="Moyen" value={fmtKbps(bs.avg)} hint="Débit utile moyen" />
-            <Stat label="Pic" value={fmtKbps(bs.max)} />
-            <Stat label="Creux" value={fmtKbps(bs.min)} />
-            <Stat label="Sous 300 kb/s" value={`${bs.down} %`} hint="Part du temps où le débit utile est presque nul" />
-            <Stat label="Paquets perdus" value={nf.format(lost)} />
-          </dl>
-        </aside>
       </div>
 
       <section aria-label="Chronologie" className="border-t border-line">

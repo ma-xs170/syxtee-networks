@@ -65,7 +65,6 @@ export default function CloudHome({ coreUrl }: { coreUrl: string }) {
     // En direct d'abord, hors ligne derrière ; à état égal, ordre alphabétique. Le tri suit l'état en continu.
     return (relays ?? []).filter((r) => !term || r.name.toLowerCase().includes(term)).sort((a, b) => Number(b.live) - Number(a.live) || a.name.localeCompare(b.name, "fr", { numeric: true }));
   }, [relays, q]);
-  const liveCount = relays?.filter((r) => r.live).length ?? 0;
 
   if (!relays) {
     return error ? (
@@ -81,7 +80,6 @@ export default function CloudHome({ coreUrl }: { coreUrl: string }) {
         <div className="space-y-2 border-b border-line p-3">
           <div className="flex items-baseline justify-between">
             <h2 className="font-mono text-[11px] font-normal uppercase tracking-[0.14em] text-muted">Flux</h2>
-            <span className="font-mono text-[11px] text-muted">{liveCount} / {relays.length} en direct</span>
           </div>
           <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un flux" aria-label="Rechercher un flux" className="h-9 w-full rounded-md border border-line bg-background px-3 text-sm placeholder:text-muted focus-visible:border-foreground/40 focus-visible:outline-none" />
         </div>

@@ -252,10 +252,14 @@ export function StereoMeter({ audio, className = "", onVideo = false }: { audio:
   return (
     <div className={`flex ${onVideo ? "" : "relative"} ${className}`}>
       {!onVideo && (
-        <div aria-hidden="true" className="absolute bottom-[15px] right-full top-0 mr-2 w-7">
-          {METER_TICKS.map((t) => (
-            <span key={t} className="absolute right-0 -translate-y-1/2 font-mono text-[9px] leading-none text-muted" style={{ bottom: `${dbToFill(t) * 100}%` }}>{t}</span>
-          ))}
+        // Même structure que la colonne d'une barre (zone flexible + libellé G/D) : les graduations tombent exactement sur la barre.
+        <div aria-hidden="true" className="absolute inset-y-0 right-full mr-2 flex w-7 flex-col gap-1">
+          <div className="relative flex-1">
+            {METER_TICKS.map((t) => (
+              <span key={t} className="absolute right-0 translate-y-1/2 font-mono text-[9px] leading-none text-muted" style={{ bottom: `${dbToFill(t) * 100}%` }}>{t}</span>
+            ))}
+          </div>
+          <span className="text-[10px] leading-none">&nbsp;</span>
         </div>
       )}
       <div className={`flex h-full ${onVideo ? "gap-1.5" : "gap-3"}`}>

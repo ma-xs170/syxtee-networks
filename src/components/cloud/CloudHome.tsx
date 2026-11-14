@@ -4,7 +4,7 @@ import Link from "next/link";
 import StreamPreview from "@/components/dashboard/StreamPreview";
 import { useMemo, useState } from "react";
 import { dbToFill, efficiency, fmtKbps, quality, qualityLevel } from "@/lib/control-center";
-import { LEVEL, Meter, type Relay } from "./shared";
+import { formatOf, LEVEL, Meter, type Relay } from "./shared";
 import Thumb from "./Thumb";
 import { useControl } from "./useControl";
 
@@ -29,7 +29,7 @@ function Card({ r, coreUrl, picked }: { r: Relay; coreUrl: string; picked: boole
             <Meter fill={fill} className="absolute bottom-2 left-2 top-9" />
             <dl className="absolute bottom-2 right-2 grid grid-cols-[auto_auto] gap-x-3 gap-y-0.5 rounded bg-black/70 px-2 py-1.5 font-mono text-[10px] leading-4 text-white">
               <dt className="text-white/70">Format</dt>
-              <dd className="text-right tabular-nums">{r.media?.height ? `${r.media.height}p` : "—"}</dd>
+              <dd className="text-right tabular-nums">{formatOf(r.media)}</dd>
               <dt className="text-white/70">Débit</dt>
               <dd className="text-right tabular-nums">{r.sample ? fmtKbps(r.sample.bitrate) : "—"}</dd>
               <dt className="text-white/70">Qualité</dt>

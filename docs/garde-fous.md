@@ -19,7 +19,7 @@ Ce qui protège le site, point par point (les 20 contrôles), où c'est dans le 
 | 11 | Seulement les données affichées | Colonnes explicites (`PROFILE_COLUMNS`, `AFFILIATE_COLUMNS`) au lieu de `select("*")` sur les chemins fréquents. |
 | 12 | Index | Migration `0054_garde_fous.sql` (clients Stripe, comptes, paiements, commandes…). |
 | 13 | Listes en pages | `Pager` : demandes d'accès, devis, support, relais, codes Encodeur (en plus des comptes et du journal, déjà paginés). |
-| 14 | Compression | `compress: true` (gzip sur le VPS, brotli sur Vercel), images AVIF/WebP. |
+| 14 | Compression | `compress: true` (gzip sur le VPS), images AVIF/WebP. |
 | 15 | Poids des fichiers | Avatar 2 Mo, photos de support 4 Mo × 5 (type vérifié sur le contenu), limites aussi côté bucket Supabase, corps JSON des routes `/api/app/*` 32 Ko (`readJson`), `/api/log-error` 4 Ko. |
 | 16 | Cache | `revalidate` sur l'accueil (5 min), statut (30 s), pages affiliées (60 s) ; images optimisées 1 jour ; `/images`, `/visuals`, `/devices`, `/icons`… 1 jour + 7 jours en revalidation douce (`next.config.ts`). |
 | 17 | Alerte si le site tombe | `/api/health` + `.github/workflows/uptime.yml` (toutes les 5 min, depuis GitHub : voit aussi une panne du VPS). Le bot Discord alerte déjà sur les services. |
@@ -39,7 +39,6 @@ Ce qui protège le site, point par point (les 20 contrôles), où c'est dans le 
 
 À faire dans chaque tableau de bord (rien de tout cela ne peut se faire depuis le dépôt) :
 
-- **Vercel** : Settings → Billing → *Spend Management* : fixer un montant mensuel, cocher « mettre le projet en pause » et les alertes e-mail à 50/75/100 %.
 - **Supabase** : Organization → Billing : laisser *Spend Cap* **activé** (il bloque les dépassements au lieu de les facturer) ; sinon fixer des alertes d'usage.
 - **Google Cloud (YouTube)** : le quota de 10 000 unités/jour est déjà un plafond dur ; ajouter une alerte à 80 % (IAM et administration → Quotas) et un budget Billing à 0 € si la facturation est liée.
 - **Resend** : le plan fixe le nombre d'e-mails ; le code plafonne à 2 000/jour. Activer l'alerte d'usage.
@@ -59,7 +58,7 @@ Ce qui protège le site, point par point (les 20 contrôles), où c'est dans le 
 node scripts/load-test.mjs --url http://localhost:3000 --visitors 50 --seconds 30
 ```
 
-- Vise **ton** site (local, aperçu Vercel, ou production en heure creuse). Production : commencer à 10 visiteurs, monter par paliers.
+- Vise **ton** site (local, production en heure creuse). Production : commencer à 10 visiteurs, monter par paliers.
 - Sort en code 1 si plus de 1 % d'erreurs ou p95 > 3 000 ms (`--max-p95`).
 - Les réponses 429 comptent comme « limitées », pas comme erreurs : si elles apparaissent sur les pages publiques, la limite est trop basse.
 

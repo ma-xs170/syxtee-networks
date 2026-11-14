@@ -478,7 +478,7 @@ test("invitation : lien secret sans compte, droits appliqués par le serveur, r�
   assert.deepEqual(await remote.createInvite(U, { label: "", level: "view" }), { error: "invalid" });
   assert.deepEqual(await remote.createInvite(U, { label: "Modo", level: "root" }), { error: "invalid" });
   assert.deepEqual(await remote.createInvite(U, { label: "Modo", level: "view", email: "pas-un-email" }), { error: "invalid" });
-  // Formule sans invités : refusé ; plafond atteint : refusé (la limite vient de la formule, connue du serveur Vercel).
+  // Formule sans invités : refusé ; plafond atteint : refusé (la limite vient de la formule, connue du serveur du site).
   assert.deepEqual(await remote.createInvite(U, { label: "Modo", level: "view", limit: 0 }), { error: "forbidden" });
   const inv = await remote.createInvite(U, { label: "Modo Léa", email: "Lea@Example.com", level: "scenes", expiresHours: 24 });
   assert.ok("token" in inv && isInviteToken(inv.token));

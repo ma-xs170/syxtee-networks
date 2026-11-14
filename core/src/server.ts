@@ -31,7 +31,7 @@ import type { LiveFeed } from "./preview.ts";
 import type { Recordings } from "./recordings.ts";
 
 // API HTTP du Core (derrière Caddy en HTTPS).
-// /v1/users/:id/*  → serveur Vercel, jeton de service.
+// /v1/users/:id/*  → serveur du site, jeton de service.
 // /v1/me/*         → navigateur, jeton de session Supabase (seulement ses propres relais).
 // /ping            → public : mesure de latence depuis le navigateur (choix du serveur).
 
@@ -143,7 +143,7 @@ export function buildServer(d: Deps) {
     reply.code(204).header("Cache-Control", "no-store").header("Access-Control-Allow-Origin", "*").header("Timing-Allow-Origin", "*").send(),
   );
 
-  // ───── Serveur Vercel ─────
+  // ───── Serveur du site ─────
   const view = (r: Relay) => relayView(r, d.config, d.health.state(r.id)?.live ?? false);
   const relayParams = z.object({ id: z.uuid(), rid: z.uuid() });
   /** Relais :rid du compte :id, ou 404 (un relais d'un autre compte n'existe pas pour lui). */
@@ -246,7 +246,7 @@ export function buildServer(d: Deps) {
     return { alerts: rows.map((a) => ({ at: a.at, relay_id: a.relay_id, ip: a.ip, country: a.country, protocol: a.protocol })) };
   });
 
-  // ───── Admin (serveur Vercel, après vérification du rôle) : page Sécurité ─────
+  // ───── Admin (serveur du site, après vérification du rôle) : page Sécurité ─────
   if (d.security) {
     const sec = d.security;
     app.get("/v1/admin/security", { preHandler: service }, async (req) => {
@@ -995,7 +995,7 @@ export function buildServer(d: Deps) {
         return preview.watch(id);
       });
     }
-    // ── Invitations : un lien donne le contrôle à distance à quelqu'un sans compte (créées par le serveur Vercel, jeton de service) ──
+    // ── Invitations : un lien donne le contrôle à distance à quelqu'un sans compte (créées par le serveur du site, jeton de service) ──
     app.get("/v1/users/:id/link/invites", { preHandler: service }, async (req) => {
       const { id } = uuid.parse(req.params);
       return { invites: await remote.invites(id) };

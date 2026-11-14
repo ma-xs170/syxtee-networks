@@ -1,6 +1,6 @@
 import "server-only";
 
-// Client du SYXTEE Core (VPS), côté serveur Vercel uniquement : jeton de service CORE_API_TOKEN.
+// Client du SYXTEE Core (VPS), côté serveur du site uniquement : jeton de service CORE_API_TOKEN.
 // Le navigateur appelle le Core directement (santé, aperçu) avec son jeton de session Supabase.
 
 const coreUrl = (process.env.CORE_URL ?? "").trim().replace(/\/$/, "");

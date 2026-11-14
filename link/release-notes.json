@@ -1,4 +1,7 @@
 {
+  "0.9.6": [
+    "Connexion : le lien de liaison du compte ouvre syxtee-networks.fr (l'ancienne adresse vercel.app n'est plus utilisée, même dans les réglages déjà enregistrés)"
+  ],
   "0.9.5": [
     "Stabilité : l'aperçu du programme utilise l'encodeur logiciel x264 sur Mac (VideoToolbox faisait planter OBS à l'arrêt)"
   ],

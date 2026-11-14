@@ -2,7 +2,7 @@ import "server-only";
 import { headers } from "next/headers";
 import { createAdminClient, hasAdmin } from "@/lib/supabase/admin";
 
-/** IP du visiteur (Vercel renseigne x-forwarded-for). */
+/** IP du visiteur (Caddy renseigne x-forwarded-for). */
 export async function clientIp() {
   const h = await headers();
   return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";

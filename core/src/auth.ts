@@ -2,7 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { createRemoteJWKSet, jwtVerify, type JWTVerifyGetKey } from "jose";
 
 // Deux façons d'appeler le Core :
-// - le serveur Vercel (actions du dashboard) : jeton de service partagé CORE_API_TOKEN ;
+// - le serveur du site (actions du dashboard) : jeton de service partagé CORE_API_TOKEN ;
 // - le navigateur (santé en direct, aperçu) : jeton de session Supabase, vérifié avec les clés publiques du projet (JWKS).
 
 export function isServiceToken(header: string | undefined, token: string) {

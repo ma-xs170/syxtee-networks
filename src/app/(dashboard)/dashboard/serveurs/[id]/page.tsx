@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DashPage } from "@/components/dashboard/ui";
@@ -32,7 +31,7 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
   const { db, ownerId } = await dataClient();
   let q = db.from("live_sessions").select("id, started_at, ended_at, duration_s, avg_kbps, peak_kbps, reconnects").eq("relay_id", id).gte("started_at", new Date(Date.now() - 30 * 86_400_000).toISOString()).order("started_at", { ascending: false }).limit(60);
   if (ownerId) q = q.eq("user_id", ownerId);
-  const [relay, sessionsRes, h, profile] = await Promise.all([getRelay(user.id, id).catch(() => null), q, headers(), getProfile()]);
+  const [relay, sessionsRes, profile] = await Promise.all([getRelay(user.id, id).catch(() => null), q, getProfile()]);
   if (!relay) {
     return (
       <DashPage>
@@ -50,14 +49,11 @@ export default async function RelayPage({ params, searchParams }: { params: Prom
 
   // Serveur utilisé et latence estimée depuis la position du visiteur.
   const server = serverById(relay.server);
-  // Position : le pays choisi à la création du compte ; à défaut, la position de la connexion.
+  // Position : le pays choisi à la création du compte.
   const fromAccount = countryCoords(profile?.country);
-  const lat = Number(h.get("x-vercel-ip-latitude"));
-  const lon = Number(h.get("x-vercel-ip-longitude"));
-  const fromIp = h.get("x-vercel-ip-latitude") && Number.isFinite(lat) && Number.isFinite(lon) ? { lat, lon } : null;
-  const here = fromAccount ?? fromIp;
+  const here = fromAccount;
   const countryName = profile?.country ? (new Intl.DisplayNames(["fr"], { type: "region" }).of(profile.country) ?? profile.country) : null;
-  const fromLabel = fromAccount && countryName ? `Depuis ${countryName}` : fromIp ? "Depuis ta position" : "Position inconnue";
+  const fromLabel = fromAccount && countryName ? `Depuis ${countryName}` : "Position inconnue";
   const estimate = server && here ? estimateRtt(distanceKm(here, server)) : null;
   const tone = latencyTone(estimate);
 

@@ -4,8 +4,8 @@ import { runManagedExpiry } from "@/lib/managed";
 import { runPlanExpiry } from "@/lib/plan-admin";
 import { hasAdmin } from "@/lib/supabase/admin";
 
-// Tâche quotidienne des formules (Vercel Cron, voir vercel.json) : échéances → Gratuit, rappels à J-7.
-// Vercel envoie « Authorization: Bearer <CRON_SECRET> » ; tout autre appel est refusé.
+// Tâche quotidienne des formules (cron du VPS) : échéances → Gratuit, rappels à J-7.
+// Le cron envoie « Authorization: Bearer <CRON_SECRET> » ; tout autre appel est refusé.
 export const maxDuration = 120;
 
 export async function GET(request: NextRequest) {

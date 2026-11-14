@@ -6,7 +6,7 @@ Les relais, les clés (chiffrées) et les comptes sont dans Supabase : ils ne bo
 ## Ce qu'il faut savoir avant
 
 - **`RELAY_KEYS_SECRET` est vital.** Les clés des relais sont chiffrées en base avec ce secret. Sans la même valeur sur le nouveau serveur, toutes les URLs deviennent illisibles. Copie-le depuis `/opt/syxtee/.env` de l'ancien serveur, ne le régénère pas.
-- **`CORE_API_TOKEN`** doit être identique à celui de Vercel (sinon le dashboard ne parle plus au Core).
+- **`CORE_API_TOKEN`** doit être identique à celui du site (sinon le dashboard ne parle plus au Core).
 - **`SLS_API_KEY` change** : le nouveau `srtla-receiver` génère sa propre clé. `setup-env.sh` la détecte tout seul.
 - **L'adresse des relais ne change plus** : `RELAY_PUBLIC_HOST=relais.syxtee-networks.fr`. À la bascule, repointer l'enregistrement DNS A `relais` vers la nouvelle IP (TTL bas, 300 s, la veille). Les streamers ne touchent à rien. Seul `CORE_DOMAIN` (API du Core, en `…sslip.io`) suit l'IP.
 - Les relais seront coupés pendant la bascule finale (quelques minutes).
@@ -98,7 +98,7 @@ mkdir -p data && chown -R 1000:1000 data
 ## 6. Bascule (fenêtre calme, prévenir les streamers)
 
 - [ ] Prévenir sur le Discord : « le relais change d'adresse le <date> à <heure>, il faudra coller les nouvelles URLs dans Moblin / OBS / caméras ».
-- [ ] Vercel (Production et Preview) : `CORE_URL=https://<NOUVEAU_CORE_DOMAIN>` (`CORE_API_TOKEN` inchangé), puis redéployer.
+- [ ] `.env.web` du site : `CORE_URL=https://<NOUVEAU_CORE_DOMAIN>` (`CORE_API_TOKEN` inchangé), puis redéployer.
 - [ ] Vérifier le dashboard : « Mes relais » affiche les URLs avec la nouvelle IP.
 - [ ] Arrêter le Core de l'ancien serveur pour éviter deux Core sur la même base : `docker compose stop core guard` (sur l'ancien).
 - [ ] Les streamers recollent leurs URLs. Vérifier un live complet : Moblin vers le relais, lecture dans OBS, santé du flux dans le dashboard.
@@ -113,4 +113,4 @@ mkdir -p data && chown -R 1000:1000 data
 
 ## Retour arrière
 
-Remettre `CORE_URL` de l'ancien serveur sur Vercel, redéployer, relancer `docker compose start core guard` sur l'ancien droplet. Les URLs d'origine fonctionnent de nouveau.
+Remettre `CORE_URL` de l'ancien serveur dans `.env.web`, redéployer, relancer `docker compose start core guard` sur l'ancien droplet. Les URLs d'origine fonctionnent de nouveau.

@@ -1,7 +1,7 @@
 # SYXTEE NETWORKS — site vitrine
 
 Site vitrine du relais IRL SRTLA low-cost **SYXTEE NETWORKS**.
-Stack : Next.js (App Router) + Tailwind CSS v4, 100 % statique, déployé sur Vercel.
+Stack : Next.js (App Router) + Tailwind CSS v4, 100 % statique, déployé sur le VPS OVH.
 Support : **Discord uniquement** → https://discord.gg/CD68F8yZuZ
 
 ## Lancer en local

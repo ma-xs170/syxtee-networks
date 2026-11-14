@@ -18,7 +18,7 @@ URL de retour OAuth de Supabase (appelée `CALLBACK` plus bas) :
 
 ## 2. Réglages Auth en code : `supabase/config.toml`
 
-URL du site, URL de retour autorisées (prod, previews Vercel, localhost), lien valable 10 minutes et liaison manuelle
+URL du site, URL de retour autorisées (prod, localhost), lien valable 10 minutes et liaison manuelle
 sont déclarés dans `supabase/config.toml` et appliqués avec :
 
 ```
@@ -47,11 +47,11 @@ Au premier passage dans le dashboard, une modale leur demande prénom et nom (mi
 Tous les emails (vérification, mot de passe oublié, changement d'email, alertes, bienvenue) sont nos modèles React Email
 (`src/emails`), envoyés par le site via Resend. Pour les emails d'auth, Supabase appelle `/api/auth/email-hook`.
 
-1. **Resend** : créer un compte, puis une clé API (`re_…`) → `RESEND_API_KEY` dans Vercel.
+1. **Resend** : créer un compte, puis une clé API (`re_…`) → `RESEND_API_KEY` dans .env.web.
    Sans domaine vérifié, laisser `EMAIL_FROM` vide : l'expéditeur de test ne livre qu'à l'adresse du compte Resend.
    Avec un domaine (étape 7) : `EMAIL_FROM=SYXTEE <connexion@ton-domaine>`.
 2. **Supabase → Authentication → Hooks → Send Email** : type HTTPS, URL `https://<site>/api/auth/email-hook`,
-   générer le secret (`v1,whsec_…`) → `SEND_EMAIL_HOOK_SECRET` dans Vercel. Redéployer, puis activer le hook
+   générer le secret (`v1,whsec_…`) → `SEND_EMAIL_HOOK_SECRET` dans .env.web. Redéployer, puis activer le hook
    (ou `enabled = true` dans `config.toml` + `supabase config push`).
 3. Tester : `/dev/emails` (admin) → « M'envoyer tous les tests ».
 
@@ -77,7 +77,7 @@ Migrations : `0013_names.sql` puis `0015_emails.sql` (production ET test).
 
 ## 5. Variables d'environnement
 
-`.env.local` (dev) et **Vercel → Settings → Environment Variables** (Production + Preview) : voir `.env.example`.
+`.env.local` (dev) et `.env.web` du VPS : voir `.env.example`.
 Tests : `.env.test.local` avec `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_SECRET_KEY` (projet **de test**).
 
 ---
@@ -89,7 +89,7 @@ Tests : `.env.test.local` avec `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY
 1. dev.twitch.tv/console → se connecter (activer la double authentification si demandé) → **Applications → Register Your Application**.
 2. Name : `SYXTEE` · OAuth Redirect URLs : `CALLBACK` (ajouter aussi celle du projet de test) · Category : `Website Integration` · Client Type : **Confidential** → Create.
 3. **Manage** → copier le **Client ID** → **New Secret** → copier le secret.
-4. Coller dans Supabase (Twitch) ET dans `TWITCH_CLIENT_ID` / `TWITCH_CLIENT_SECRET` (Vercel + `.env.local`).
+4. Coller dans Supabase (Twitch) ET dans `TWITCH_CLIENT_ID` / `TWITCH_CLIENT_SECRET` (`.env.web` + `.env.local`).
 
 ### Discord
 

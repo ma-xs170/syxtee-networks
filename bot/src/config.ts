@@ -26,7 +26,7 @@ const schema = z.object({
   DATA_DIR: z.string().default("./data"),
   BOT_PORT: z.coerce.number().default(8790),
   BOT_HOST: z.string().default("127.0.0.1"),
-  // Jeton de POST /announce (annonce depuis un script ou Vercel). Vide = route désactivée.
+  // Jeton de POST /announce (annonce depuis un script ou le site). Vide = route désactivée.
   BOT_ANNOUNCE_TOKEN: z.string().min(24).optional(),
 
   // Alertes de panne / retour à la normale dans le salon.

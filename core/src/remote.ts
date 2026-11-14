@@ -49,7 +49,7 @@ const ACTION_LIMIT = 60;
 /** Volume (fader glissé) : 400 par 10 s et par appareil. */
 const VOLUME_LIMIT = 400;
 const KEEP_BACKUP_VERSIONS = 4;
-/** Plafond par défaut d'invitations actives si le serveur Vercel n'envoie pas la limite de la formule. */
+/** Plafond par défaut d'invitations actives si le serveur du site n'envoie pas la limite de la formule. */
 const DEFAULT_ACTIVE_INVITES = 3;
 
 /** Droits d'une invitation (migration 0045). Le serveur applique ces règles : l'interface n'est qu'un confort. */
@@ -743,7 +743,7 @@ export function createRemote(o: {
       const level = INVITE_LEVELS.find((l) => l === i.level);
       const email = i.email ? text(i.email, 254).toLowerCase() : null;
       if (!label || !level) return { error: "invalid" };
-      // Limite de la formule (envoyée par le serveur Vercel, qui connaît le compte) : 0 = pas d'invités.
+      // Limite de la formule (envoyée par le serveur du site, qui connaît le compte) : 0 = pas d'invités.
       const limit = typeof i.limit === "number" && Number.isFinite(i.limit) && i.limit >= 0 ? Math.floor(i.limit) : DEFAULT_ACTIVE_INVITES;
       if (limit === 0) return { error: "forbidden" };
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "invalid" };

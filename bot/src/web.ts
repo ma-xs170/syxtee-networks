@@ -47,7 +47,7 @@ type PushPayload = {
   commits?: { id: string; message: string; url: string; distinct?: boolean }[];
 };
 
-/** Actions du panel du site (routes /api/*, jeton Bearer = CORE_API_TOKEN, celui que Vercel utilise déjà pour le Core). */
+/** Actions du panel du site (routes /api/*, jeton Bearer = CORE_API_TOKEN, celui que le site utilise déjà pour le Core). */
 export type AdminApi = {
   status(): Promise<unknown>;
   presence(p: { mode: "auto" | "custom"; type: PresenceType; text: string }): void;

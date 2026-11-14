@@ -2,13 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Dossier de build séparé pour les tests e2e (un `next dev` peut déjà tourner sur .next).
-  // Image Docker autonome (hébergement OVH, voir Dockerfile). Sans effet sur Vercel.
+  // Image Docker autonome (hébergement OVH, voir Dockerfile).
   output: "standalone",
   // Cache navigateur : une page déjà vue ou pré-chargée reste instantanée (retour arrière, aller-retour entre onglets).
   // Les actions serveur (revalidatePath) vident ce cache, donc les listes modifiées se rafraîchissent quand même.
   experimental: { staleTimes: { dynamic: 30, static: 180 }, serverActions: { bodySizeLimit: "20mb" } },
   distDir: process.env.NEXT_DIST_DIR || ".next",
-  // Réponses compressées (gzip sur l'image Docker ; Vercel ajoute brotli) et pas d'en-tête X-Powered-By.
+  // Réponses compressées (gzip sur l'image Docker) et pas d'en-tête X-Powered-By.
   compress: true,
   poweredByHeader: false,
   images: {

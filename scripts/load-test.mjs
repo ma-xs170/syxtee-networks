@@ -7,7 +7,7 @@
 // Sortie : requêtes, débit, erreurs, codes HTTP, temps de réponse (médiane, p95, p99).
 // Code de sortie 1 si plus de 1 % d'erreurs ou si le p95 dépasse --max-p95 (3000 ms par défaut) : utilisable en CI.
 //
-// À lancer seulement contre TON site (local, aperçu Vercel ou production en heure creuse), jamais contre un site tiers.
+// À lancer seulement contre TON site (local, production en heure creuse), jamais contre un site tiers.
 // Sur la production : commencer à 10 visiteurs, monter par paliers. Les limites anti-abus (429) comptent comme « limité », pas comme erreur.
 
 const args = new Map(process.argv.slice(2).flatMap((a, i, all) => (a.startsWith("--") ? [[a.slice(2), all[i + 1]]] : [])));

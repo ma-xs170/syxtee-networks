@@ -18,10 +18,10 @@ export function describeDevice(ua: string) {
   return `${browser} sur ${os}`;
 }
 
-/** Ville et pays approximatifs (en-têtes géo de Vercel ; absents en local). */
+/** Ville et pays approximatifs (en-têtes géo du proxy ; absents en local). */
 function place(h: Headers) {
-  const city = h.get("x-vercel-ip-city");
-  const country = h.get("x-vercel-ip-country");
+  const city = h.get("x-geo-city");
+  const country = h.get("x-geo-country");
   const c = city ? decodeURIComponent(city) : null;
   return [c, country].filter(Boolean).join(", ") || null;
 }

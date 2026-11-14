@@ -1,6 +1,6 @@
 import "server-only";
 
-// Client du bot Discord SYXTEE (VPS), côté serveur Vercel uniquement. Le bot est derrière le Caddy du Core sur /discord/*,
+// Client du bot Discord SYXTEE (VPS), côté serveur du site uniquement. Le bot est derrière le Caddy du Core sur /discord/*,
 // avec le même jeton de service que le Core (CORE_API_TOKEN).
 
 const base = `${(process.env.CORE_URL ?? "").trim().replace(/\/$/, "")}/discord/api`;

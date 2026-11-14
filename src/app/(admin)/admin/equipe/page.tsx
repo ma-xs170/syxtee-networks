@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Admin · Équipe", robots: { index: 
 
 // Équipe : tous les membres (propriétaire, administrateurs, développeurs, debuggers, cybersécurité, support), leur présence,
 // leur région, leur rôle coloré. Le propriétaire invite par e-mail, change les rôles et les permissions, renvoie un mot de passe.
-// Les autres membres voient la liste (lecture seule). Propriétaire : OWNER_EMAIL (Vercel), sinon la 1re adresse de ADMIN_EMAILS.
+// Les autres membres voient la liste (lecture seule). Propriétaire : OWNER_EMAIL, sinon la 1re adresse de ADMIN_EMAILS.
 
 export default async function AdminTeamPage() {
   const { access } = await requireStaff("any");

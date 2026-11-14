@@ -71,7 +71,7 @@ export async function revokeInviteAction(inviteId: string) {
   revalidatePath("/admin/equipe");
 }
 
-/** Rôle, permissions et activation d'un membre invité (les administrateurs de l'environnement se gèrent sur Vercel). */
+/** Rôle, permissions et activation d'un membre invité (les administrateurs de l'environnement se gèrent dans .env.web). */
 export async function updateMemberAction(userId: string, _prev: TeamState, form: FormData): Promise<TeamState> {
   const owner = await requireAdmin("team");
   const role = form.get("role");

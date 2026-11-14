@@ -121,7 +121,7 @@ create policy "Avatar : supprimer" on storage.objects
   for delete to authenticated using (bucket_id = 'avatars' and (storage.foldername(name))[1] = (select auth.uid())::text);
 
 -- ─────────────────────── Limitation des envois ───────────────────────
--- Les appels à Supabase partent du serveur Vercel (même IP pour tout le monde) : on limite nous-mêmes,
+-- Les appels à Supabase partent du serveur du site (même IP pour tout le monde) : on limite nous-mêmes,
 -- par adresse email et par IP du visiteur. Accessible uniquement avec la clé secrète (service_role).
 
 create schema if not exists private;

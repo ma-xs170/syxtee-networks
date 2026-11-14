@@ -21,7 +21,7 @@ export type TeamMember = {
   role: AnyRole;
   permissions: Permission[];
   active: boolean;
-  /** « env » : propriétaire et administrateurs de l'environnement (modifiables sur Vercel seulement) ; « db » : membres invités. */
+  /** « env » : propriétaire et administrateurs de l'environnement (modifiables dans .env.web seulement) ; « db » : membres invités. */
   source: "env" | "db";
 };
 

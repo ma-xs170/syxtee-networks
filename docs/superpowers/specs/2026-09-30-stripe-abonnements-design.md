@@ -55,7 +55,7 @@ L'abonnement Stripe décide de la formule, via `applyBillingEvent` (`plan-admin.
 - Revenus : chiffre d'affaires du mois, MRR (mensuels + annuels / 12), remboursements, historique sur 12 mois, calculés depuis `billing_payments` et `profiles`.
 - Fiche compte : état de l'abonnement, lien vers le client dans le tableau de bord Stripe. Avertissement si l'admin met en Partenaire un compte qui a un abonnement actif.
 
-## Clés (Vercel, variables sensibles)
+## Clés (variables sensibles du VPS)
 
 - `STRIPE_SECRET_KEY` : clé **restreinte** `rk_…`. Customers : écriture. Checkout Sessions : écriture. Customer portal : écriture. Subscriptions, Invoices, Prices : lecture.
 - `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`.

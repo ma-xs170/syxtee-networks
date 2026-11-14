@@ -2,7 +2,7 @@ import "server-only";
 import Stripe from "stripe";
 import { PROD_TIERS, TIERS, type Interval, type PaidTier, type ProdTier } from "./billing";
 
-// Client Stripe côté serveur. STRIPE_SECRET_KEY : clé RESTREINTE (rk_…) stockée en variable sensible Vercel.
+// Client Stripe côté serveur. STRIPE_SECRET_KEY : clé RESTREINTE (rk_…) stockée en variable sensible du VPS.
 // Droits : Customers (écriture), Checkout Sessions (écriture), Customer portal (écriture),
 // Subscriptions, Invoices et Prices (lecture). Le webhook, lui, n'appelle pas l'API.
 //

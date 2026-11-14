@@ -12,7 +12,7 @@ const schema = z.object({
   HOST: z.string().default("0.0.0.0"),
   // Origines autorisées à appeler le Core depuis le navigateur (dashboard), séparées par des virgules.
   CORS_ORIGINS: z.string().default("https://www.syxtee-networks.fr,https://app.syxtee-networks.fr,https://auth.syxtee-networks.fr,https://admin.syxtee-networks.fr,https://remote.syxtee-networks.fr,https://stats.syxtee-networks.fr,http://localhost:3000"),
-  // Jeton partagé avec le serveur Vercel (actions du dashboard). Long et aléatoire.
+  // Jeton partagé avec le serveur du site (actions du dashboard). Long et aléatoire.
   CORE_API_TOKEN: z.string().min(32, "CORE_API_TOKEN : 32 caractères minimum"),
 
   // Chiffrement des clés des relais au repos (AES-256-GCM) : `openssl rand -hex 32`. À sauvegarder : sans lui,

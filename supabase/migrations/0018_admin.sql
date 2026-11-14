@@ -1,6 +1,6 @@
 -- SYXTEE : espace admin (Prompt J). À exécuter sur le projet de production ET sur le projet de test.
 --
--- Rôle en base, synchronisé depuis ADMIN_EMAILS (Vercel) à chaque connexion : l'email n'est jamais écrit ici.
+-- Rôle en base, synchronisé depuis ADMIN_EMAILS à chaque connexion : l'email n'est jamais écrit ici.
 -- Tout le reste est lu et écrit avec la clé secrète, côté serveur, derrière requireAdmin() + TOTP (aal2).
 
 alter table public.profiles

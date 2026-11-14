@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { cleanPermissions, isRole, PERMISSION_KEYS, type AnyRole, type Permission } from "@/lib/staff";
 
 // Équipe : trois sources, vérifiées côté serveur dans chaque page, chaque action et chaque route /admin. Un compte normal reçoit une 404.
-//  1. Propriétaire : OWNER_EMAIL (Vercel), sinon la première adresse de ADMIN_EMAILS. Toutes les permissions, gère l'équipe.
+//  1. Propriétaire : OWNER_EMAIL, sinon la première adresse de ADMIN_EMAILS. Toutes les permissions, gère l'équipe.
 //  2. Administrateurs : les adresses de ADMIN_EMAILS (jamais écrites dans le code). Toutes les permissions sauf la gestion de l'équipe.
 //  3. Membres invités : table staff_members (0047_staff.sql), rôle et permissions modifiables par le propriétaire.
 // Double authentification obligatoire pour tous : session vérifiée par un code TOTP (niveau aal2), sinon /admin/2fa.

@@ -1,4 +1,4 @@
-# Héberger le site sur le VPS OVH (bhs1), sans Vercel
+# Héberger le site sur le VPS OVH (bhs1)
 
 Le site Next.js tourne dans un conteneur `web` à côté du Core, derrière le Caddy déjà en place (HTTPS automatique). Huit hôtes pour un seul conteneur :
 
@@ -51,7 +51,7 @@ sudo docker compose logs --tail 50 web
 curl -I https://staging.syxtee-networks.fr
 ```
 
-## 5. Tâche planifiée (remplace le cron Vercel)
+## 5. Tâche planifiée 
 
 `sudo crontab -e` :
 
@@ -67,17 +67,12 @@ Sur staging les redirections entre `www`, `app` et `auth` ne s'appliquent pas (h
 ## 7. Bascule
 
 - [ ] `.env` : `SITE_DOMAINS=syxtee-networks.fr, www.syxtee-networks.fr, app.syxtee-networks.fr, auth.syxtee-networks.fr, admin.syxtee-networks.fr, remote.syxtee-networks.fr, docs.syxtee-networks.fr, status.syxtee-networks.fr`, puis `sudo docker compose up -d caddy`.
-- [ ] DNS OVH : `@`, `www`, `app`, `auth` en **A vers `15.235.25.77`** (supprimer les CNAME Vercel).
+- [ ] DNS OVH : `@`, `www`, `app`, `auth` en **A vers `15.235.25.77`**.
 - [ ] Supabase, Authentication, URL Configuration : Site URL `https://www.syxtee-networks.fr`, Redirect URLs `app.`, `auth.`, `admin.`, `remote.`, `docs.`, `status.`, `www.` (`/**`).
 - [ ] Stripe : webhook `https://www.syxtee-networks.fr/api/stripe/webhook`.
 - [ ] OAuth Twitch / Kick / Google (liaison du multichat) : URI de retour `https://app.syxtee-networks.fr/api/chat/callback/twitch` (idem `kick`, `youtube`).
 - [ ] Bot Discord : `SITE_URL=https://www.syxtee-networks.fr`.
 - [ ] Vérifier une connexion, un paiement test Stripe et le multichat.
-- [ ] Supprimer le projet Vercel (et `vercel.json`) quand tout est validé.
-
-## Retour arrière (avant la suppression de Vercel)
-
-Remettre les anciens enregistrements DNS vers Vercel (TTL 300 s : quelques minutes).
 
 ## Mises à jour
 
@@ -87,7 +82,7 @@ cd /opt/syxtee/repo && sudo git pull && cd .. && sudo docker compose up -d --bui
 
 Pas de déploiement automatique au `git push` : c'est une commande à lancer sur le VPS.
 
-## Ce qui change par rapport à Vercel
+## Particularités du VPS
 
 - Pas de géolocalisation par IP dans les en-têtes : la ville et le pays disparaissent de l'e-mail « nouvel appareil ».
 - Pas de CDN mondial : les images et pages statiques sortent du VPS (Canada). Caddy compresse en zstd et gzip.

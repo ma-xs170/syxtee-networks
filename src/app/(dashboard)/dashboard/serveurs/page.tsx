@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { DashPage } from "@/components/dashboard/ui";
 import RelayList from "@/components/relais/RelayList";
 import SecurityAlerts from "@/components/relais/SecurityAlerts";
@@ -12,18 +11,10 @@ import PlanGate from "@/components/plans/PlanGate";
 
 export const metadata: Metadata = { title: "Connexions", robots: { index: false } };
 
-/** Position approximative du visiteur (géolocalisation IP de Vercel), pour estimer la latence des serveurs à venir. */
-async function visitorGeo() {
-  const h = await headers();
-  const lat = Number(h.get("x-vercel-ip-latitude"));
-  const lon = Number(h.get("x-vercel-ip-longitude"));
-  return h.get("x-vercel-ip-latitude") && Number.isFinite(lat) && Number.isFinite(lon) ? { lat, lon } : null;
-}
-
 export default async function RelaisPage({ searchParams }: PageProps<"/dashboard/serveurs">) {
   const user = await requireOwner("/dashboard/serveurs");
   const { nouveau } = await searchParams;
-  const [{ relays, status }, geo, alerts, plan] = await Promise.all([loadRelays(user.id), visitorGeo(), listAlerts(user.id).catch(() => []), getPlan()]);
+  const [{ relays, status }, alerts, plan] = await Promise.all([loadRelays(user.id), listAlerts(user.id).catch(() => []), getPlan()]);
   const active = relays.filter((r) => !r.archived).length;
 
   return (
@@ -31,7 +22,7 @@ export default async function RelaisPage({ searchParams }: PageProps<"/dashboard
       <PlanGate feature="relais">
       {status === "ok" ? (
         <>
-          <RelayList relays={relays} active={active} max={relayLimit(plan)} coreUrl={publicCoreUrl} geo={geo} autoOpen={nouveau === "1"} />
+          <RelayList relays={relays} active={active} max={relayLimit(plan)} coreUrl={publicCoreUrl} geo={null} autoOpen={nouveau === "1"} />
           <SecurityAlerts alerts={alerts} relays={relays} />
         </>
       ) : (

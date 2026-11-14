@@ -144,22 +144,6 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
 
   return (
     <div className="min-w-0 flex-1">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-surface px-4 py-2.5">
-        <Link href="/dashboard/cloud" className="inline-flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-sm text-muted transition-colors hover:border-foreground/30 hover:text-foreground">
-          <span aria-hidden="true">←</span> Cloud
-        </Link>
-        <span className={`h-2 w-2 rounded-full ${live ? "bg-live" : "bg-muted/50"}`} aria-hidden="true" />
-        <h1 className="min-w-0 truncate text-base font-semibold">{current.name}</h1>
-        <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted">{live ? `En direct · ${duration(current.since, now)}` : "Hors ligne"}</span>
-        <div role="group" aria-label="Période" className="ml-auto inline-flex rounded-md border border-line p-0.5 font-mono text-[11px]">
-          {RANGES.map((r) => (
-            <button key={r.id} type="button" aria-pressed={range === r.id} onClick={() => setRange(r.id)} className={`rounded px-3 py-1 transition-colors ${range === r.id ? "bg-foreground text-background" : "text-muted hover:text-foreground"}`}>
-              {r.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <section aria-label="Indicateurs clés" className="flex flex-wrap gap-2 border-b border-line px-4 py-3">
         <Session since={live ? current.since : null} />
         <Tile label="Débit" value={live && sm ? fmtKbps(sm.bitrate) : "—"} tone={live && sm ? levelOf(sm.bitrate) : "off"} spark={live ? bitrateSeries : undefined} hint="Débit vidéo reçu, sans les retransmissions" />
@@ -246,7 +230,21 @@ export default function RelayDetail({ coreUrl, relayId }: { coreUrl: string; rel
       </div>
 
       <section aria-label="Chronologie" className="border-t border-line">
-        <PanelHead title="Chronologie" right={<span className="font-mono text-[11px] tabular-nums text-muted">{ht != null && ht >= end - win && ht <= end ? fmtFull(ht) : `−${rangeLabel} → maintenant`}</span>} />
+        <PanelHead
+          title="Chronologie"
+          right={
+            <div className="flex items-center gap-3">
+              <span className="hidden font-mono text-[11px] tabular-nums text-muted sm:inline">{ht != null && ht >= end - win && ht <= end ? fmtFull(ht) : `−${rangeLabel} → maintenant`}</span>
+              <div role="group" aria-label="Période" className="inline-flex rounded-md border border-line p-0.5 font-mono text-[11px]">
+                {RANGES.map((r) => (
+                  <button key={r.id} type="button" aria-pressed={range === r.id} onClick={() => setRange(r.id)} className={`rounded px-2.5 py-0.5 transition-colors ${range === r.id ? "bg-foreground text-background" : "text-muted hover:text-foreground"}`}>
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          }
+        />
         <Track label="Débit utile" value={at(bitrateSeries, (v) => fmtKbps(v), sm ? fmtKbps(sm.bitrate) : "—")}>
           <Area points={bitrateSeries} window={win} end={end} hover={hover} fmt={fmtKbps} showMax className="h-28" />
           <TimeAxis window={win} end={end} />

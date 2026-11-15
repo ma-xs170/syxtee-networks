@@ -86,7 +86,7 @@ export default function Strengths() {
         </li>
       ))}
       <li className="bento-cell flex flex-col justify-between p-7 lg:col-span-1">
-        <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">À venir</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{product.availability === "soon" ? "À venir" : product.availability === "preorder" ? "Précommande" : "Disponible"}</p>
         <div>
           <p className="h-serif text-[clamp(2.5rem,5vw,3.75rem)]">{product.priceLabel(product.price)}</p>
           <Link href="/tarifs#encodeur" className="mt-3 inline-block text-sm text-foreground underline underline-offset-4 decoration-foreground/50 hover:decoration-foreground">Abonnement (requis)</Link>

@@ -37,7 +37,7 @@ export default function EncodeurPage() {
               <p className="mt-4 max-w-md text-base leading-relaxed text-foreground/85">{product.tagline}</p>
             </div>
             <div className="flex shrink-0 items-center gap-4 self-start rounded-full bg-foreground/10 py-2 pl-6 pr-2 backdrop-blur lg:self-auto">
-              <span className="text-sm"><span className="font-medium">{product.priceLabel(product.price)}</span> <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">À venir</span></span>
+              <span className="text-sm"><span className="font-medium">{product.priceLabel(product.price)}</span> <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{product.availability === "soon" ? "À venir" : product.availability === "preorder" ? "Précommande" : "Disponible"}</span></span>
               <ButtonLink href="/acces" className="whitespace-nowrap">{ctaLabel(product.availability)}</ButtonLink>
             </div>
           </div>

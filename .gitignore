@@ -51,3 +51,6 @@ next-env.d.ts
 
 # Plan business privé (coûts, factures)
 /founder/
+
+# graphify
+graphify-out/

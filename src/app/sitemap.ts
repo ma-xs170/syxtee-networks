@@ -22,6 +22,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${site.url}/credits`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${site.url}/cgu`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${site.url}/confidentialite`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${site.url}/cookies`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${site.url}/a-propos`, changeFrequency: "yearly", priority: 0.4 },
   ];
   // Une page peut venir du menu et de la liste « documentation » : une seule entrée par URL.
   return [...new Map(entries.map((e) => [e.url, e])).values()];

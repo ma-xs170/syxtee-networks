@@ -31,6 +31,7 @@ const columns: { title: string; links: NavLink[] }[] = [
     links: [
       { label: "Mentions légales", href: "/mentions-legales" },
       { label: "Confidentialité", href: "/confidentialite" },
+      { label: "Cookies", href: "/cookies" },
       { label: "CGU", href: "/cgu" },
       { label: "CGV", href: "/cgv" },
     ],

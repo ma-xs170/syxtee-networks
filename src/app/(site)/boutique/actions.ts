@@ -24,7 +24,7 @@ export async function startProductCheckout(productId: string, quantity = 1): Pro
   const user = await requireUser("/boutique");
   if (!(productId in PRICE)) return { error: "Article inconnu." };
   const price = process.env[PRICE[productId as Product]];
-  if (!process.env.STRIPE_SECRET_KEY || !price) return { error: "Les commandes ouvrent bientôt. Demande ton accès pour être prévenu." };
+  if (!process.env.STRIPE_SECRET_KEY || !price) return { error: "Cet article n'est pas disponible à la commande pour le moment. Écris à contact@syxtee-networks.fr pour être prévenu." };
   const qty = Math.max(1, Math.min(5, Math.floor(quantity) || 1));
   const profile = await getProfile();
   const base = await origin();

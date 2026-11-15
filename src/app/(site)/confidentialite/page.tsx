@@ -17,7 +17,7 @@ export default function ConfidentialitePage() {
   return (
     <LegalPage title="Politique de confidentialité" updated="[À COMPLÉTER]">
       <LegalBlock title="Responsable du traitement">
-        <p>{site.name}, [À COMPLÉTER : nom du responsable, adresse, email de contact].</p>
+        <p>{site.name}, édité par LAWCY MUSIC (SIRET 131 041 725 00014), 2476 chemin de Bel Air Desrozières, 97170 Petit-Bourg, Guadeloupe. Contact : contact@syxtee-networks.fr.</p>
       </LegalBlock>
 
       <LegalBlock title="Données collectées et finalités">

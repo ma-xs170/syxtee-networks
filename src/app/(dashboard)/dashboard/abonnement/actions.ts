@@ -30,7 +30,7 @@ async function customerFor(user: { id: string; email?: string | null }, name: st
 
 export async function startCheckout(tier: PaidTier, interval: Interval): Promise<BillingState> {
   const user = await requireUser("/dashboard/abonnement");
-  if (!hasStripe) return { error: "Le paiement n'est pas encore ouvert. Réessaie bientôt." };
+  if (!hasStripe) return { error: "Le paiement est momentanément indisponible. Réessaie dans quelques minutes ou écris à contact@syxtee-networks.fr." };
   if (!isPaidTier(tier) || (interval !== "month" && interval !== "year")) return { error: "Formule inconnue." };
   if (!priceId(tier, interval)) return { error: "Cette formule n'est pas encore ouverte à la vente." };
   const profile = await getProfile();

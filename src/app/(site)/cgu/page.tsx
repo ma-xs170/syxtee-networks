@@ -17,7 +17,7 @@ export default function CguPage() {
       </LegalBlock>
       <LegalBlock title="2. Éditeur">
         <p>
-          {site.name}, [À COMPLÉTER : forme juridique, SIRET, adresse]. Voir les <Link href="/mentions-legales" className="text-foreground underline">mentions légales</Link>.
+          {site.name}, édité par LAWCY MUSIC (SIRET 131 041 725 00014), 2476 chemin de Bel Air Desrozières, 97170 Petit-Bourg, Guadeloupe. Voir les <Link href="/mentions-legales" className="text-foreground underline">mentions légales</Link>.
         </p>
       </LegalBlock>
       <LegalBlock title="3. Compte">

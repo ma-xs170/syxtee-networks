@@ -84,6 +84,8 @@ pre{margin:0;padding:12px 16px;font:11.5px/1.6 ui-monospace,Menlo,monospace;colo
     <div class="card"><div class="grid"><label class="f">Source surveillée<select id="bksource"></select></label><label class="f">Scène de secours<select id="bkscene"></select></label>
       <label class="f">Bascule après<select id="bkfreeze"><option value="2">2 s d'image figée</option><option value="3">3 s</option><option value="4">4 s</option><option value="6">6 s</option><option value="10">10 s</option></select></label></div>
       <div class="row"><div><b>Bascule automatique</b><small>Passe seul sur la scène de secours.</small></div><label class="switch"><input type="checkbox" id="bkon" aria-label="Bascule automatique" /><i></i></label></div></div>
+    <h2>Journaux</h2><p class="sub">Un fichier .txt complet (agent, Gardien, dernière session OBS), enregistré dans Téléchargements.</p>
+    <div class="card"><div class="row"><div><b>Exporter les journaux</b><small id="logsout">Pour comprendre une panne.</small></div><button class="btn" id="logsexp">Exporter</button></div></div>
     <h2>Compte</h2>
     <div class="card"><div class="row"><div><b>Ce PC est relié à ton compte</b><small>Retire aussi l'appareil dans SYXTEE Studio.</small></div><button class="btn" id="unpair">Déconnecter</button></div></div>
   </div>
@@ -146,6 +148,7 @@ $("obskip").onclick=function(){api("/api/onboarded",{})};
 $("gobackup").onclick=function(){if($("col").value)api("/api/backup",{collection:$("col").value})};
 $("bksource").onchange=function(e){sw({source:e.target.value})};$("bkscene").onchange=function(e){sw({scene:e.target.value})};
 $("bkfreeze").onchange=function(e){sw({freezeSeconds:Number(e.target.value)})};$("bkon").onchange=function(e){sw({enabled:e.target.checked})};
+$("logsexp").onclick=function(){var b=$("logsexp");b.disabled=true;$("logsout").textContent="Export en cours…";api("/api/logs/export",{}).then(function(r){b.disabled=false;$("logsout").textContent=r.ok?"Enregistré : "+r.path:"Échec : "+(r.error||"inconnu")}).catch(function(){b.disabled=false;$("logsout").textContent="Export impossible"})};
 $("unpair").onclick=function(){api("/api/unpair",{})};
 function tick(){api("/api/state").then(render).catch(function(){$("toptext").textContent="Application arrêtée"})}
 tick();setInterval(tick,1200);

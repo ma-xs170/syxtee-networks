@@ -27,7 +27,9 @@ const PREVIEW_LEVELS = [
   { kbps: 5000, height: 1080 },
 ] as const;
 
-export const VERSION = "0.9.9";
+export const VERSION = "0.9.10";
+/** Silence maximal du Core (aucun message ni `pong`) avant de refermer la connexion et de se reconnecter. */
+export const WATCHDOG_MS = 60_000;
 
 /** Méthodes OBS que le Core laisse passer (liste blanche aussi appliquée ici : l'agent ne fait pas confiance au serveur). */
 export const OBS_METHODS = new Set([
@@ -729,17 +731,41 @@ export class Agent {
     }
     this.core = ws;
     let delay = 3000;
+    // Surveillance du lien : le Core répond `pong` à chaque `ping`. Une fois qu'il en a répondu un, un silence de plus de 60 s
+    // veut dire que la connexion est morte sans que le système l'ait signalé (Wi-Fi coupé puis rétabli, routeur, veille) : on la referme et on se reconnecte.
+    let lastRx = Date.now();
+    let pongs = false;
+    let gone = false;
+    const openedAt = Date.now();
+    const watchdog = setInterval(() => {
+      if (gone) return;
+      if (pongs && Date.now() - lastRx > WATCHDOG_MS) {
+        this.log(`Core : plus de réponse depuis ${Math.round((Date.now() - lastRx) / 1000)} s, connexion refermée`);
+        try {
+          ws.close();
+        } catch {
+          /* déjà fermée */
+        }
+        void closed(4999, "watchdog");
+        return;
+      }
+      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "ping" }));
+    }, 20_000);
+    this.timers.push(watchdog as unknown as ReturnType<typeof setTimeout>);
     ws.onopen = () => ws.send(JSON.stringify({ type: "hello", token: this.cfg.token, name: hostName(), platform: process.platform, os: osLabel(), host: hostName(), version: VERSION }));
     ws.onmessage = (ev) => {
+      lastRx = Date.now();
       let m: { type?: string; id?: string; method?: string; params?: Record<string, unknown> };
       try {
         m = JSON.parse(String(ev.data));
       } catch {
         return;
       }
-      if (m.type === "ready") {
+      if (m.type === "pong") pongs = true;
+      else if (m.type === "ready") {
         this.status.core = "on";
         this.status.lastError = "";
+        this.log("Core : connecté");
         this.scheduleReauth(ws);
         this.emit();
       } else if (m.type === "viewers") {
@@ -748,29 +774,31 @@ export class Agent {
         void this.managePreview();
       } else if (m.type === "req" && typeof m.id === "string" && typeof m.method === "string") void this.handle(m.id, m.method, m.params ?? {});
     };
-    ws.onclose = async (e) => {
+    const closed = async (code: number, reason: string) => {
+      if (gone) return;
+      gone = true;
+      clearInterval(watchdog);
       this.status.core = "off";
       if (this.reauthTimer) clearTimeout(this.reauthTimer);
-      if (e.code === 4005) {
+      this.log(`Core : déconnecté (code ${code}${reason ? `, ${reason}` : ""}, ouvert depuis ${Math.round((Date.now() - openedAt) / 1000)} s)`);
+      if (this.stopped) return;
+      if (code === 4005) {
+        // Appareil révoqué : on ne coupe plus l'agent pour de bon, on réessaie lentement (le PC redevient joignable dès qu'il est reconnecté au compte).
         this.err("Appareil révoqué : reconnecte-le à ton compte.");
-        this.stopped = true;
-        return;
-      }
-      if (e.code === 4003 || e.code === 4006) {
-        // Jeton d'accès périmé ou refusé : un renouvellement règle le cas normal, sinon le PC doit être reconnecté.
+        delay = 5 * 60_000;
+      } else if (code === 4003 || code === 4006) {
+        // Jeton d'accès périmé ou refusé : un renouvellement règle le cas normal.
         const r = this.cfg.refresh ? await refreshTokens(this.cfg) : "revoked";
         if (this.stopped) return;
         if (r === "revoked") {
           this.err("Appareil refusé ou révoqué : reconnecte-le à ton compte.");
-          this.stopped = true;
-          return;
-        }
-        delay = r === "ok" ? 500 : 10_000;
-      }
-      if (e.code === 4000) delay = 30_000; // remplacé par une autre session du même poste : n'insiste pas
+          delay = 60_000;
+        } else delay = r === "ok" ? 500 : 10_000;
+      } else if (code === 4000) delay = 30_000; // remplacé par une autre session du même poste : n'insiste pas
       this.emit();
       this.later(() => this.connectCore(), delay);
     };
+    ws.onclose = (e) => void closed(e.code, e.reason);
     ws.onerror = () => {};
   }
 

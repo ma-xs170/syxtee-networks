@@ -222,7 +222,8 @@ export function createRemote(o: {
       } catch {
         return;
       }
-      if (m.type === "res" && typeof m.id === "string") {
+      if (m.type === "ping") send(ws, { type: "pong" });
+      else if (m.type === "res" && typeof m.id === "string") {
         const p = pending.get(m.id);
         if (!p || p.agent !== authed) return;
         clearTimeout(p.timer);
@@ -268,7 +269,8 @@ export function createRemote(o: {
       } catch {
         return;
       }
-      if (m.type === "res" && typeof m.id === "string") {
+      if (m.type === "ping") send(ws, { type: "pong" });
+      else if (m.type === "res" && typeof m.id === "string") {
         const p = pending.get(m.id);
         if (!p || p.agent !== authed) return;
         clearTimeout(p.timer);

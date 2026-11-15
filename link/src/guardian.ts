@@ -2,7 +2,7 @@ import { execFile, spawn, type ChildProcess } from "node:child_process";
 import { readdirSync, rmSync } from "node:fs";
 import { hostname } from "node:os";
 import { join } from "node:path";
-import { VERSION } from "./agent.ts";
+import { VERSION, WATCHDOG_MS } from "./agent.ts";
 import { load } from "./config.ts";
 import { obsRoot } from "./obsconfig.ts";
 import { DEFAULT_SETTINGS, readObsExe, readSession, readSettings, readStreaming, writeResume, writeSettings, type GuardianSettings } from "./state.ts";
@@ -273,26 +273,52 @@ export function startGuardian(opts: { log?: (m: string) => void } = {}) {
     }
     ws = sock;
     sentToken = cfg.token;
+    // Même surveillance que l'agent : sans réponse du Core pendant 60 s (une fois qu'il a répondu un `pong`), on referme et on se reconnecte.
+    let lastRx = Date.now();
+    let pongs = false;
+    let gone = false;
+    const openedAt = Date.now();
+    const closed = (code: number, reason: string) => {
+      if (gone) return;
+      gone = true;
+      clearInterval(watchdog);
+      if (ws === sock) ws = null;
+      log(`Core : déconnecté (code ${code}${reason ? `, ${reason}` : ""}, ouvert depuis ${Math.round((Date.now() - openedAt) / 1000)} s)`);
+      if (code === 4005) return later(5 * 60_000); // appareil révoqué : il faut le reconnecter
+      if (code === 4003 || code === 4006) delay = 5000;
+      later(delay);
+      delay = Math.min(delay * 2, 60_000);
+    };
+    const watchdog = setInterval(() => {
+      if (gone) return;
+      if (pongs && Date.now() - lastRx > WATCHDOG_MS) {
+        log(`Core : plus de réponse depuis ${Math.round((Date.now() - lastRx) / 1000)} s, connexion refermée`);
+        try {
+          sock.close();
+        } catch {
+          /* déjà fermée */
+        }
+        return closed(4999, "watchdog");
+      }
+      if (sock.readyState === WebSocket.OPEN) sock.send(JSON.stringify({ type: "ping" }));
+    }, 20_000);
     sock.onopen = () => sock.send(JSON.stringify({ type: "hello", token: cfg.token, name: hostname(), platform: process.platform, os: osLabel(), host: hostname(), version: VERSION }));
     sock.onmessage = (ev) => {
+      lastRx = Date.now();
       let m: { type?: string; id?: string; method?: string; params?: Record<string, unknown> };
       try {
         m = JSON.parse(String(ev.data));
       } catch {
         return;
       }
-      if (m.type === "ready") {
+      if (m.type === "pong") pongs = true;
+      else if (m.type === "ready") {
         delay = 3000;
+        log("Core : connecté");
         push();
       } else if (m.type === "req" && typeof m.id === "string" && typeof m.method === "string") void handle(sock, m.id, m.method, m.params ?? {});
     };
-    sock.onclose = (e) => {
-      if (ws === sock) ws = null;
-      if (e.code === 4005) return later(5 * 60_000); // appareil révoqué : il faut le reconnecter
-      if (e.code === 4003 || e.code === 4006) delay = 5000;
-      later(delay);
-      delay = Math.min(delay * 2, 60_000);
-    };
+    sock.onclose = (e) => closed(e.code, e.reason);
     sock.onerror = () => {};
   }
 

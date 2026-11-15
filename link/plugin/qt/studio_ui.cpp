@@ -583,7 +583,7 @@ private:
 	Switch *pilot_ = nullptr;
 	// poste
 	QLineEdit *hostEdit_ = nullptr;
-	QLabel *pingOut_ = nullptr, *accName_ = nullptr, *accMail_ = nullptr, *avatar_ = nullptr, *diagOut_ = nullptr;
+	QLabel *pingOut_ = nullptr, *accName_ = nullptr, *accMail_ = nullptr, *avatar_ = nullptr, *diagOut_ = nullptr, *logsOut_ = nullptr;
 	QString avatarUrl_, hostSaved_;
 	bool loadingSettings_ = false;
 
@@ -1146,6 +1146,29 @@ private:
 		ph->addWidget(ping);
 		addRow(m, row("Nom du poste", "Affiché sur le site, dans Mes OBS et Contrôle à distance", hw, IcMonitor), true);
 		addRow(m, row("Test de connexion", "Latence vers les serveurs SYXTEE", pw, IcSource));
+		logsOut_ = label("", "meta");
+		logsOut_->setWordWrap(false);
+		auto *logsBtn = button("Exporter", "small");
+		QObject::connect(logsBtn, &QPushButton::clicked, this, [this, logsBtn] {
+			logsBtn->setEnabled(false);
+			logsOut_->setText("Export en cours…");
+			post("/api/logs/export", {}, [this, logsBtn](const QJsonObject &o) {
+				logsBtn->setEnabled(true);
+				if (o.value("ok").toBool()) {
+					logsOut_->setText("Enregistré dans Téléchargements");
+					QDesktopServices::openUrl(QUrl::fromLocalFile(o.value("path").toString()));
+				} else {
+					logsOut_->setText("Export impossible");
+				}
+			});
+		});
+		auto *lw = new QWidget;
+		auto *lh = new QHBoxLayout(lw);
+		lh->setContentsMargins(0, 0, 0, 0);
+		lh->setSpacing(10);
+		lh->addWidget(logsOut_);
+		lh->addWidget(logsBtn);
+		addRow(m, row("Journaux", "Fichier .txt complet (agent, Gardien, OBS) pour comprendre une panne", lw, IcSource));
 		v->addWidget(m);
 
 		// COMPTE

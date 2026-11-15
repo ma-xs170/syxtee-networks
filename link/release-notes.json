@@ -1,4 +1,8 @@
 {
+  "0.9.10": [
+    "Connexion : si le lien avec le serveur se coupe sans prévenir (Wi-Fi, routeur), le plugin se reconnecte seul au bout d'une minute au lieu de rester hors ligne",
+    "Journaux : chaque connexion et déconnexion du serveur est notée avec son code, et un bouton « Exporter les journaux » enregistre un .txt complet dans Téléchargements"
+  ],
   "0.9.9": [
     "Bouton « Mise à jour » dans SYXTEE Studio quand une nouvelle version du plugin est publiée"
   ],

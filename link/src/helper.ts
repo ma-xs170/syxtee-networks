@@ -7,6 +7,7 @@ import { cloudError } from "./cloud.ts";
 import { load, save, type LinkConfig } from "./config.ts";
 import { coreCall } from "./corehttp.ts";
 import { fixLiveScene, hasSource } from "./livescene.ts";
+import { exportLogs } from "./logexport.ts";
 import { Login } from "./login.ts";
 import { setTokens } from "./tokens.ts";
 import { currentCollection, listCollections } from "./obsconfig.ts";
@@ -244,6 +245,14 @@ export function startHelper(opts: { parentPid?: number; log?: (m: string) => voi
         else delete cfg.autoBackup[c];
         save(cfg);
         return json({ ok: true });
+      }
+      case "POST /api/logs/export": {
+        // Journaux complets (agent, Gardien, dernière session OBS) dans un .txt du dossier Téléchargements.
+        try {
+          return json({ ok: true, path: exportLogs({ sessionLogs: logs }) });
+        } catch (e) {
+          return json({ ok: false, error: (e as Error).message });
+        }
       }
       case "POST /api/login/start":
         void login.start();
